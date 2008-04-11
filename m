@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYDKLNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYDKLRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760202AbYDKLNc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbYDKLNY
+	id S1760121AbYDKLRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759324AbYDKLRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:13:24 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37155 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759492AbYDKLNW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:13:22 -0400
-Date: Fri, 11 Apr 2008 20:17:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.25-rc8-mm2
-Message-Id: <20080411201724.e820122b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-	<20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
-	<1207910058.7212.1.camel@haji>
-	<20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 07:17:11 -0400
+Received: from www.tglx.de ([62.245.132.106]:57345 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759446AbYDKLRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 07:17:11 -0400
+Date: Fri, 11 Apr 2008 13:17:03 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
+Message-ID: <20080411111703.GD3185@local>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com> <20080411092158.GB31625@digi.com> <20080411103346.GC3185@local> <20080411110358.GC19973@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080411110358.GC19973@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 19:57:38 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Fri, Apr 11, 2008 at 01:03:58PM +0200, Uwe Kleine-König wrote:
+> Hello,
+> 
+> Hans J. Koch wrote:
+> > On Fri, Apr 11, 2008 at 11:21:58AM +0200, Uwe Kleine-König wrote:
+> > > 
+> > > Below is a new version that uses linux/stringify and zeros size for
+> > > unused mappings (line 102ff).
+> > 
+> > Thanks, but it doesn't compile, neither with -rc8 nor with Linus' git.
+> > 
+> > One problem can easily be fixed, the macro is called __stringify, not
+> > stringify.
+> I just notice that, too.  My mail address that and your's just crossed
+> each other.
+>  
+> > But what about this:
+> > 
+> > ERROR: "clk_get" [drivers/uio/uio_pdrv.ko] undefined!
+> > ERROR: "clk_enable" [drivers/uio/uio_pdrv.ko] undefined!
+> > ERROR: "clk_disable" [drivers/uio/uio_pdrv.ko] undefined!
+> > ERROR: "clk_put" [drivers/uio/uio_pdrv.ko] undefined!
+> > 
+> > Do you have any extra patches applied?
+> Yes I have, but nothing special.  This is part of a generic API defined
+> in include/linux/clk.h.  One of it's use it to abstract away some
+> platform dependencies.  There are several architectures that define
+> it[1].
 
-> > What happens when it doesn't boot? Does it hang or do you get an oops?
-> just hangs. before showing anything.
-> 
-> 
-> > Can you reproduce it with the 'for-mm' branch of:
-> > 
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
-> > 
-> 
-> will try. 
-> 
-slab-2.6.git booted well :(
-Hmm, It seems I have to dig somewhere different...
+I know. Unfortunately, I tested on x86_64, and it doesn't compile.
+If it's depending on something, then this dependency should be added in
+Kconfig. If it can be selected in the configuration, I expect it to
+compile (and work).
 
 Thanks,
--Kame 
+Hans
 
+
+> I used it to allow enabling the device only when the device is
+> opened.  Typical things in the enable routine are enabling a clock or
+> reserve and configure gpios etc.
+> 
+> A minimal dummy implementation that should work here is:
+> 
+> 	#define clk_get(dev, id)	NULL
+> 	#define clk_put(clk)		((void)0)
+> 	#define clk_enable(clk)		(1)
+> 	#define clk_disable(clk)	((void)0)
+> 
+> Best regards
+> Uwe
+> 
+> [1] Try:
+> 
+> 	git ls-files -z | xargs -0 perl -n -e 'print "$ARGV\n" if /EXPORT_SYMBOL(?:_GPL)?\s*\(\s*clk_get\s*\)/;'
+> 
+> -- 
+> Uwe Kleine-König, Software Engineer
+> Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+> Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
