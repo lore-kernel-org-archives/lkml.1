@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYDKCIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbYDKCzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbYDKCIy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Apr 2008 22:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYDKCIn
+	id S1757802AbYDKCzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Apr 2008 22:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbYDKCzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Apr 2008 22:08:43 -0400
-Received: from po-out-1718.google.com ([72.14.252.155]:63070 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbYDKCIm (ORCPT
+	Thu, 10 Apr 2008 22:55:09 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:48180 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbYDKCzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Apr 2008 22:08:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=daAEVGOGlSDstJgA/1TMzoKWPvvMNtgfjRjXdxBKL1/CbHRf5ZcBAzK/SfjEcxtgFICBCPNwrs5ZzYndZXkT0iulLP35Kqj8Zp3YoMn41LtD4TbCkR3CNkywHJ8D0k3qbSAxr2sWOoBzzjrUWx/i+dIn/Cky0VMUSTk+vL+KSXo=
-Message-ID: <47FEC823.9000100@gmail.com>
-Date: Fri, 11 Apr 2008 11:08:35 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 10 Apr 2008 22:55:08 -0400
+Date: Fri, 11 Apr 2008 04:55:06 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>, agk@redhat.com,
+       mingo@redhat.com, neilb@suse.de
+Subject: Re: Data corruption on software RAID
+In-Reply-To: <47FE224D.2020309@tmr.com>
+Message-ID: <Pine.LNX.4.64.0804110448120.22052@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0804080033430.13352@artax.karlin.mff.cuni.cz>
+ <47FD0BE8.4070105@tmr.com> <Pine.LNX.4.64.0804100503160.26713@artax.karlin.mff.cuni.cz>
+ <47FE224D.2020309@tmr.com>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com> <47FE46AC.5000901@ru.mvista.com> <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org> <47FE5B76.40409@ru.mvista.com> <A567023C-17FC-402D-9394-29DFFA816891@kernel.crashing.org>
-In-Reply-To: <A567023C-17FC-402D-9394-29DFFA816891@kernel.crashing.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
->>> but there is no reason not to make it work properly.  For example I  
->>> believe libata uses devm_* and the fsl SATA driver (non-PCI) will 
->>> need  to work in cases similar to the 44x.
->>
->>   Well, as for sata_fsl, it calls of_iomap() which does The Right Thing.
+> Currently you can go for hours without ever reaching a clean state on active
+> files. By not deliberately allowing the buffer to change during a write the
+> chances for getting consistent data on the disk should be significantly
+> improved.
+
+It can already happen that one device writes the sector and other not if 
+the power is interrupted. And all RAID implementations already deal with 
+it by resynchronizing the modified areas in case of crash. So they could 
+resynchronize modify-while-write cases as well, with the same code.
+
+... or I don't know if MM maintainers want to add locking to the pages 
+that are under a write. Personally, I wouldn't do it.
+
+> > From my point of view that trick with thread doing sync() and turning off
+> > region bits looks best. I'd like to know if that solution doesn't have any
+> > other flaw.
+> >
+> >   
+> > > For reliable operation I would want all copies (and/or CRCs) to be 
+> > > written on an fsync, by the time I bother to fsync I really, really, 
+> > > want the data on the disk.
+> > >     
+> >
+> > fsync already works this way.
+> >   
 > 
-> Fair, but I don't see why we should introduce new APIs that are already 
-> "broken".  We went through a lot of effort to clean up and introduce 
-> resource_t (and clearly still have some bugs) for the >32-bit physical 
-> address problem.
+> The point I was making is that after you change the code I would still want
+> that to happen. And your comment above seems to indicate a goal of getting
+> consistent data after a crash, with less concern that it be the most recent
+> data written. Sorry in advance if that's a misreading of "you just must not
+> forget to resync them after a crash."
 
-Yes, please go ahead.  In case it wasn't clear, I wasn't objecting to 
-the fix at all.  I was just curious what could actually happen on x86.
+There would be no problem with fsync. Fsync writes the synced data to both 
+devices. So after a crash you can select any of the devices as a resync 
+master copy, and you get the data that you wrote before sync() or fsync().
 
--- 
-tejun
+Mikulas
