@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbYDKIBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYDKIB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759122AbYDKIBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYDKIBh
+	id S1759596AbYDKIB5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbYDKIBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:01:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:16800 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757520AbYDKIBg (ORCPT
+	Fri, 11 Apr 2008 04:01:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39063 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757997AbYDKIBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BoTBGfBJsL6yKy8PpGNsrdSVTYPBboEwCb/8Ohv/5yvgWqW7aLHdwrF0Rf8fOjRS+K/jz0UIzm45xhBknBRsONrNIHeH9XfQE/U1zmfYa9oE0IH06E73eAHDtR/LRdGtRLSlMFp+teYT4vPlm3npKo8ZcK57FVf0E7r6X2jIlNI=
-Message-ID: <517f3f820804110101n595fb901rae58da6badb64a55@mail.gmail.com>
-Date: Fri, 11 Apr 2008 10:01:30 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
-Cc: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-       "Eugene Teo" <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
-       "Neil Horman" <nhorman@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1207899930.7074.23.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Apr 2008 04:01:39 -0400
+Date: Fri, 11 Apr 2008 10:06:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Karsten Wiese <fzu@wemgehoertderstaat.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: set_cyc2ns_scale() remove tsc_now and ns_now
+Message-ID: <20080411080617.GP10019@one.firstfloor.org>
+References: <200804102331.11815.fzu@wemgehoertderstaat.de> <873apsn8g7.fsf@basil.nowhere.org> <20080411075554.GA6834@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080208145950.GA3910@kernel.sg> <1202483445.6292.1.camel@lappy>
-	 <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
-	 <1204212100.12120.9.camel@twins>
-	 <cfd18e0f0802280744q18ccad3at3c88bac166806118@mail.gmail.com>
-	 <1204213821.12120.15.camel@twins>
-	 <cfd18e0f0804110038q3b7740c9q1a96858d9531ab92@mail.gmail.com>
-	 <1207899930.7074.23.camel@twins>
-X-Google-Sender-Auth: cd1d804e2ddaf848
+In-Reply-To: <20080411075554.GA6834@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/11/08, Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
-> On Thu, Feb 28, 2008 at 5:50 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->  >
->  > On Thu, 2008-02-28 at 16:44 +0100, Michael Kerrisk wrote:
+On Fri, Apr 11, 2008 at 09:55:54AM +0200, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > (actually it is still the wrong time -- really needs a grace period 
+> > during which the TSC is not used 
+> > ftp://firstfloor.org/pub/ak/quilt/patches/sched-clock implemented some 
+> > of these ideas against an older kernel)
+> 
+> recent CPUs have constant-freq TSCs so it's mostly a legacy issue, but 
 
-[...]
+Actually there millions of non constant freq TSC CPUs shipped each
+quarter ... 
 
->  > I've been testing this patch.  Above you seemed to be saying that
->  > doing a sched_yield() would be equivalent to a sleep, causing the rt
->  > counter to be reset to zero.  Howver, the results I'm seeing suggest
->  > that a sched_yield() does not cause the counter to be reset to zero
->  > (i.e., despite calling sched_yield() at frequent intervals, the
->  > process still encounters the RLIM_RTTIME soft limit and gets SIGXCPU).
->  >  Can you comment?
->
->
-> It appears you are right. I must have been staring at something else
->  than code when I said that :-(, yield() will indeed _not_ reset the
->  counter.
->
->  Now, I think it makes some sense to reset it, because we do try to play
->  nice by calling yield. OTOH we don't actually block and become
->  unrunnable - we'll still be contending for CPU time.
+> we dont really have to worry about complications like grace periods - 
+> higher layers in the scheduler protect against temporary sched_clock() 
+> outliers.
 
-On the one hand, it seems reasonable to reset the counter.  The POSIX
-definition of sched_yield() says that it "shall force the running
-thread to relinquish the processor until it again becomes the head of
-its thread list".
+But you still get scheduling hickups even with the sanity check. If the 
+scheduler depends on a smooth time that is not good and my (admittedly much less 
+than yours) understanding of CFS is that it relies on that. Especially ondemand 
+can cause quite a lot of cpufreq changes on some workloads.
 
-On the other hand, what if this is the only runnable real-time
-process?  Then sched_yield() is effectively a no-op, and a runaway
-process could lock up the system (which I gather is what RLIMIT_RTTIME
-was primarily designed to prevent).
+> So i think this can all be done much simpler. Just get rid of 
+> the global cpu_khz notion, sched_clock() should simply follow the ->freq 
+> value - and that's it.
 
-I don't really have a strong leaning either way about what should be
-done, other than that we should probably make a specific choice, and
-document it in the setrlimit(2) man page.
+At some point you have to generate an offset to something and that
+offset must be different for different frequencies, otherwise
+you get large systematic errors
 
-Cheers,
+(<imagine complicated mathematical proof why this is so, but it should
+be fairly obvious>)
 
-Michael
--- 
-I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
+-Andi
+
