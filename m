@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYDKE6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYDKFA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbYDKE6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 00:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYDKE6P
+	id S1758329AbYDKFA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 01:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbYDKFAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 00:58:15 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:51101 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbYDKE6N (ORCPT
+	Fri, 11 Apr 2008 01:00:22 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:21210 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbYDKFAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 00:58:13 -0400
-Message-ID: <47FEEF6F.2000505@linux.vnet.ibm.com>
-Date: Fri, 11 Apr 2008 10:26:15 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 11 Apr 2008 01:00:21 -0400
+Date: Fri, 11 Apr 2008 01:00:20 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, roland@redhat.com
+Subject: [PATCH] reorganize <linux/linkage.h>
+Message-ID: <20080411050019.GC27073@phobos.i.cabal.ca>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm] Add an owner to the mm_struct (v9)
-References: <20080410091602.4472.32172.sendpatchset@localhost.localdomain> <20080411123339.89aea319.kamezawa.hiroyu@jp.fujitsu.com> <47FEE89A.1010102@linux.vnet.ibm.com> <20080411134739.1aae8bae.kamezawa.hiroyu@jp.fujitsu.com> <47FEED67.1080006@linux.vnet.ibm.com> <20080411135810.87536503.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080411135810.87536503.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 11 Apr 2008 10:17:35 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> Good question. It is possible that clone() was called with CLONE_VM without
->> CLONE_THREAD. In which case we have threads sharing the VM without a thread
->> group leader. Please see zap_threads() for a similar search pattern.
->>
-> Oh. thank you for kindly explanation.
-> 
-> I'll test this on 2.6.25-rc8-mm2.
-> 
+Commit 54a015104136974262afa4b8ddd943ea70dec8a2 adds some new magic
+asmlinkage_protect gizmo, but that can only be used from C code, not
+assembly. Protect relevant bits of <linux/linkage.h> with !__ASSEMBLY__
+so this can't leak into assembly source.
 
-Thanks for the review and help with testing.
+Fixes a couple build errors on my boxes,
+  AS      arch/parisc/kernel/pacache.o
+In file included from arch/parisc/kernel/pacache.S:40:
+include/linux/linkage.h:34: error: syntax error in macro parameter list
+make[1]: *** [arch/parisc/kernel/pacache.o] Error 1
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+(__ALIGN gets used in both kernel and assembly context, so make sure it
+is outside of the ifdeffery.)
+
+Signed-off-by: Kyle McMartin <kmcmartin@redhat.com>
+---
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index b163c5c..e848f74 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -3,6 +3,13 @@
+ 
+ #include <asm/linkage.h>
+ 
++#ifndef __ALIGN
++#define __ALIGN		.align 4,0x90
++#define __ALIGN_STR	".align 4,0x90"
++#endif
++
++#if !defined(__ASSEMBLY__)
++
+ #ifdef __cplusplus
+ #define CPP_ASMLINKAGE extern "C"
+ #else
+@@ -34,12 +41,11 @@
+ # define asmlinkage_protect(n, ret, args...)	do { } while (0)
+ #endif
+ 
+-#ifndef __ALIGN
+-#define __ALIGN		.align 4,0x90
+-#define __ALIGN_STR	".align 4,0x90"
+-#endif
++#define NORET_TYPE    /**/
++#define ATTRIB_NORET  __attribute__((noreturn))
++#define NORET_AND     noreturn,
+ 
+-#ifdef __ASSEMBLY__
++#else
+ 
+ #define ALIGN __ALIGN
+ #define ALIGN_STR __ALIGN_STR
+@@ -80,10 +86,6 @@
+   END(name)
+ #endif
+ 
+-#endif
+-
+-#define NORET_TYPE    /**/
+-#define ATTRIB_NORET  __attribute__((noreturn))
+-#define NORET_AND     noreturn,
++#endif /*__ASSEMBLY__*/
+ 
+ #endif
