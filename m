@@ -1,149 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbYDKO7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbYDKPAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759817AbYDKO7f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYDKO7G
+	id S1760377AbYDKPAT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759785AbYDKO77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:59:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:41418 "EHLO ozlabs.org"
+	Fri, 11 Apr 2008 10:59:59 -0400
+Received: from rtr.ca ([76.10.145.34]:2999 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759461AbYDKO7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:59:04 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] anon_inodes.c cleanups.
-Date: Fri, 11 Apr 2008 08:35:07 +1000
-User-Agent: KMail/1.9.9
+	id S1759366AbYDKO77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:59:59 -0400
+Message-ID: <47FF7CED.9090601@rtr.ca>
+Date: Fri, 11 Apr 2008 10:59:57 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
+       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru>
+In-Reply-To: <20080411143537.GA27874@2ka.mipt.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804110835.07989.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd pointed me at anon_inode_getfd(), and the code annoyed me enough
-to send this patch.
+Evgeniy Polyakov wrote:
+> On Fri, Apr 11, 2008 at 09:19:17AM -0400, Mark Lord (lkml@rtr.ca) wrote:
+>>>> Or I can ignore it, like the net developers, since I have a workaround.
+>>>> And then we'll see what other apps are broken upon 2.6.25 final release.
+>> That's not demanding, that's quite relaxed.  I had a good workaround,
+>> and didn't really care any more at that point.  Just though it was rather
+>> odd that none of the developers seemed interested in tracking it down.
+>> I offered tons of help, gave it, and said I didn't have time for a full
+>> bisect at that juncture.
+>>
+>> For that, I get repeatedly slammed by the netdev folks.
+>> Even after I put aside *paid* work to submit to your demands.
+>>
+>> Next time around, I won't bother reporting bugs to you folks,
+>> that's for damned sure.
+> 
+> Actually that will be the best decision from evolutional point of view. 
+> 
+> Bugs, which 'are thrown back to your face' like what you did with this
+> one, are useless. Developers already know, that bugs exist. 
+> 
+> If you do not care about bug, why do you ever bothered filling it?
+..
 
-Mainly because the init routine carefully checks for errors, then panics
-(because we shouldn't run out of memory at boot).  Unfortunately, it's
-actually worse than simply oopsing, where we'd know what had failed.
+Because I care, about Linux's reputation and performance.
+I care about basic networking operations, and knew that this bug
+would probably affect other applications once widely deployed.
 
-Davide, please consider parts of this patch, at least.
+I care about Linux.  That's why.
 
-Cheers,
-Rusty.
-----
-1) anon_inode_inode can be read_mostly, same as anon_inode_mnt.
-2) The IS_ERR(anon_inode_inode) check is unneeded, since we panic on
-   boot if that were true.
-3) anon_inode_mkinode has one caller, so it's a little confusing.
-4) Don't clean up before panic.
-5) Panic gives less information than an oops would, plus is untested.
+> If you do not want to help fixing it ...
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Where the hell did I *ever* say that?
+I did nothing but offer help, and respond quickly.
 
-diff -r 51bdbdc4f199 fs/anon_inodes.c
---- a/fs/anon_inodes.c	Thu Apr 10 15:55:52 2008 +1000
-+++ b/fs/anon_inodes.c	Fri Apr 11 08:12:51 2008 +1000
-@@ -22,7 +22,7 @@
- #include <asm/uaccess.h>
- 
- static struct vfsmount *anon_inode_mnt __read_mostly;
--static struct inode *anon_inode_inode;
-+static struct inode *anon_inode_inode __read_mostly;
- static const struct file_operations anon_inode_fops;
- 
- static int anon_inodefs_get_sb(struct file_system_type *fs_type, int flags,
-@@ -78,9 +78,6 @@ int anon_inode_getfd(int *pfd, struct in
- 	struct dentry *dentry;
- 	struct file *file;
- 	int error, fd;
--
--	if (IS_ERR(anon_inode_inode))
--		return -ENODEV;
- 
- 	error = get_unused_fd();
- 	if (error < 0)
-@@ -138,19 +135,18 @@ err_put_unused_fd:
- }
- EXPORT_SYMBOL_GPL(anon_inode_getfd);
- 
--/*
-- * A single inode exists for all anon_inode files. Contrary to pipes,
-- * anon_inode inodes have no associated per-instance data, so we need
-- * only allocate one of them.
-- */
--static struct inode *anon_inode_mkinode(void)
-+static int __init anon_inode_init(void)
- {
--	struct inode *inode = new_inode(anon_inode_mnt->mnt_sb);
-+	register_filesystem(&anon_inode_fs_type);
-+	anon_inode_mnt = kern_mount(&anon_inode_fs_type);
-+	anon_inode_inode = new_inode(anon_inode_mnt->mnt_sb);
- 
--	if (!inode)
--		return ERR_PTR(-ENOMEM);
--
--	inode->i_fop = &anon_inode_fops;
-+	/*
-+	 * A single inode exists for all anon_inode files. Contrary to pipes,
-+	 * anon_inode inodes have no associated per-instance data, so we need
-+	 * only allocate one of them.
-+	 */
-+	anon_inode_inode->i_fop = &anon_inode_fops;
- 
- 	/*
- 	 * Mark the inode dirty from the very beginning,
-@@ -158,41 +154,15 @@ static struct inode *anon_inode_mkinode(
- 	 * list because mark_inode_dirty() will think
- 	 * that it already _is_ on the dirty list.
- 	 */
--	inode->i_state = I_DIRTY;
--	inode->i_mode = S_IRUSR | S_IWUSR;
--	inode->i_uid = current->fsuid;
--	inode->i_gid = current->fsgid;
--	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
--	return inode;
--}
--
--static int __init anon_inode_init(void)
--{
--	int error;
--
--	error = register_filesystem(&anon_inode_fs_type);
--	if (error)
--		goto err_exit;
--	anon_inode_mnt = kern_mount(&anon_inode_fs_type);
--	if (IS_ERR(anon_inode_mnt)) {
--		error = PTR_ERR(anon_inode_mnt);
--		goto err_unregister_filesystem;
--	}
--	anon_inode_inode = anon_inode_mkinode();
--	if (IS_ERR(anon_inode_inode)) {
--		error = PTR_ERR(anon_inode_inode);
--		goto err_mntput;
--	}
-+	anon_inode_inode->i_state = I_DIRTY;
-+	anon_inode_inode->i_mode = S_IRUSR | S_IWUSR;
-+	anon_inode_inode->i_uid = current->fsuid;
-+	anon_inode_inode->i_gid = current->fsgid;
-+	anon_inode_inode->i_atime =
-+		anon_inode_inode->i_mtime =
-+		anon_inode_inode->i_ctime = CURRENT_TIME;
- 
- 	return 0;
--
--err_mntput:
--	mntput(anon_inode_mnt);
--err_unregister_filesystem:
--	unregister_filesystem(&anon_inode_fs_type);
--err_exit:
--	panic(KERN_ERR "anon_inode_init() failed (%d)\n", error);
- }
- 
- fs_initcall(anon_inode_init);
--
+The one thing I did not have time for initially,
+was a painstaking blunt instrument binary search of
+every commit since v2.6.24.
+
+There are other ways to debug things and find the causes
+quickly, with less impact upon the reporters of bugs.
+
+The current generation of kernel "code submitters" here
+seems to have never learned those.  Bummer.
+
+Cheers
