@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbYDKRGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbYDKRKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761619AbYDKRGO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbYDKRF7
+	id S1760682AbYDKRKl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759521AbYDKRKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:05:59 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:43916 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760214AbYDKRF6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:05:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pf+wtYSfD6y+qY1S7o4Ae5dvxiyr9VtqSSKkdRnWk7mMQXy1ekOzjoCVwjBl1vkt2QhOsR6TUCU7ZVItoaneszeeiHm2VBKId5AqP2q3vhy8OtlE/Ev2fKtFP0m+4XCgWd1JHQXlYeJdhr1V5wqQV/Aj86zdejwob7bs6li4gQg=  ;
-X-YMail-OSG: d4F_aakVM1m5zqZ6f6fW3nPGjJswYdmmq66dQsdemVBdvHiZkV5PFzashdy0.fV0cr1zQ3Iz4g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH] GPIO: #include <linux/kernel.h> for might_sleep
-Date: Fri, 11 Apr 2008 10:05:51 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-In-Reply-To: <1207902290-25381-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Fri, 11 Apr 2008 13:10:33 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46049 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbYDKRKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 13:10:33 -0400
+Date: Fri, 11 Apr 2008 20:09:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Dave Jones <davej@redhat.com>,
+       drepper@redhat.com, mingo@redhat.com, tglx@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] Fix compile breakage caused by asmlinkage_protect
+Message-ID: <20080411170934.GB25788@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.00.0804101447240.3143@woody.linux-foundation.org> <20080410223738.80A8326F992@magilla.localdomain> <20080411114654.GA12270@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0804110744100.3143@woody.linux-foundation.org> <20080411151156.GJ9785@ZenIV.linux.org.uk> <alpine.LFD.1.00.0804110821400.3143@woody.linux-foundation.org> <20080411153728.GG27073@phobos.i.cabal.ca> <1207929787.21379.5.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804111005.52041.david-b@pacbell.net>
+In-Reply-To: <1207929787.21379.5.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 April 2008, Uwe Kleine-König wrote:
-> I like having headers being independend of the order of inclusion.
+On Fri, Apr 11, 2008 at 06:03:07PM +0200, Martin Schwidefsky wrote:
+>...
+> --- a/arch/s390/kernel/Makefile
+> +++ b/arch/s390/kernel/Makefile
+> @@ -2,7 +2,7 @@
+>  # Makefile for the linux kernel.
+>  #
+>  
+> -EXTRA_AFLAGS	:= -traditional
+> +EXTRA_AFLAGS	:= 
+>...
 
-That's a pretty unusual policy.  Not one that's generally
-followed in the kernel, either ... 
+You can simply ditch the line.
 
+cu
+Adrian
 
-> Usually I order all includes alphabetically (and grouped by linux/,
-> asm/, etc.). 
+-- 
 
-If you like alphabetical, why the exception for <asm/...> ??
-:)
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-
-> This doesn't work with gpio.h because then kernel.h is 
-> included to late.
-
-So include <linux/kernel.h> first.  There *is* a policy
-of avoiding extra #includes ... extras slow down builds.
-
-- Dave
