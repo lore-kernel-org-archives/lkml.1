@@ -1,157 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbYDKTZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbYDKTZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbYDKTZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 15:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYDKTZU
+	id S1761519AbYDKTZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbYDKTZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 15:25:20 -0400
-Received: from mail0.scram.de ([78.47.204.202]:57174 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754530AbYDKTZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 15:25:19 -0400
-X-Spam-Score: -4.085
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <47FFBB6E.1060008@scram.de>
-Date: Fri, 11 Apr 2008 21:26:38 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+	Fri, 11 Apr 2008 15:25:44 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39009 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756148AbYDKTZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 15:25:43 -0400
+Date: Fri, 11 Apr 2008 12:25:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: travis@sgi.com
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+In-Reply-To: <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804111223380.20334@schroedinger.engr.sgi.com>
+References: <20080411074145.GA4944@elte.hu>  <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
+  <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> 
+ <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-       linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: [PATCHv2 7/7] [POWERPC] Add i2c pins to dts and board setup
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize I2C pins on boards with CPM1/CPM2 controllers.
+On Fri, 11 Apr 2008, Pekka Enberg wrote:
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
- arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
- arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
- 6 files changed, 41 insertions(+), 0 deletions(-)
+> slab bug and I don't see any recent changes to the page allocator
+> either that would explain this.
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 7285ca1..ff6c6f7 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -215,6 +215,16 @@
- 				linux,network-index = <1>;
- 				fsl,cpm-command = <16200300>;
- 			};
-+
-+			i2c@11860 {
-+				compatible = "fsl,mpc8272-i2c",
-+					     "fsl,cpm2-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <11860 20 8afc 2>;
-+				interrupts = <1 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-command = <29600000>;
-+			};
- 		};
- 
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-index daf9433..d669049 100644
---- a/arch/powerpc/boot/dts/mpc866ads.dts
-+++ b/arch/powerpc/boot/dts/mpc866ads.dts
-@@ -169,6 +169,16 @@
- 				fsl,cpm-command = <0000>;
- 				linux,network-index = <1>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc866-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-index d84a012..d3ddda7 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -214,6 +214,16 @@
- 				fsl,cpm-command = <0080>;
- 				linux,network-index = <2>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc885-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 7d30187..8054c68 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* I2C */
-+	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c028a5b..caaec29 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
- 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
-+
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 6e7ded0..45ed6cd 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
- 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
- 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
- #endif
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
--- 
-1.5.4.5
+I also have an internal report that x86-git causes boot to fail with an 8p 
+if one starts with a x86_64 config file and then converts to 
+x86_32. Somehow the NR_CPUS is set to 255 in that case. Could this 
+exhaust memory? I guess the per cpu cleanup work may figure in that area.
+Mike?
 
