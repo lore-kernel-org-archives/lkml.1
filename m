@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbYDKJZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbYDKJ2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbYDKJZk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 05:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbYDKJZW
+	id S1759901AbYDKJ2P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 05:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbYDKJ2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 05:25:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55897 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758607AbYDKJZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 05:25:20 -0400
-Date: Fri, 11 Apr 2008 11:24:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
-Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at
-	mm/slab.c:2103!"
-Message-ID: <20080411092452.GE10801@elte.hu>
-References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com> <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
+	Fri, 11 Apr 2008 05:28:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:22189 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758251AbYDKJ17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 05:27:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TGC4PxVtMVuK0q1+ZbTD1N0Mf3PIPuCe1I9AR3LpoWaRp5aMS6C7XB/QeV8CaPWclUtgAjPdzOT6Qfk1W42I23DMIW0mdKI5J5dD69P0PtInufpxuUVgP44fgPOg3MoDE1koezxtTtvoDnAxKyQM3LqBBxSE3etLeX2JwHEHJIc=
+Message-ID: <cfd18e0f0804110227w37915734r8ca31271a3dfc8ab@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:27:59 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Eugene Teo" <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+       "Neil Horman" <nhorman@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1207905668.7074.32.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080208145950.GA3910@kernel.sg> <1202483445.6292.1.camel@lappy>
+	 <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
+	 <1204212100.12120.9.camel@twins>
+	 <cfd18e0f0804110156l658107e5x1f2695cacfc3ac75@mail.gmail.com>
+	 <1207904485.7074.28.camel@twins>
+	 <cfd18e0f0804110216l3c679bb6ned83f5d58d1c9d66@mail.gmail.com>
+	 <1207905668.7074.32.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-
-> On Fri, Apr 11, 2008 at 12:05 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >  >  Right. Then you probably want to look into any changes in arch/x86/
-> >  >  related to setting up the zonelists. I'm fairly certain this is not a
-> >  >  slab bug and I don't see any recent changes to the page allocator
-> >  >  either that would explain this.
+On Fri, Apr 11, 2008 at 11:21 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> On Fri, 2008-04-11 at 11:16 +0200, Michael Kerrisk wrote:
+> > On Fri, Apr 11, 2008 at 11:01 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > On Fri, 2008-04-11 at 10:56 +0200, Michael Kerrisk wrote:
+> > > > On Thu, Feb 28, 2008 at 5:21 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > > >
+> > > > > On Thu, 2008-02-28 at 16:12 +0100, Michael Kerrisk wrote:
+> > > > > > Peter,
+> > > > > >
+> > > > > > Could you please provide some text describing RLIMIT_RTTIMEfor the
+> > > > > > getrlimit.2 man page.
+> > > > >
+> > > > > The rlimit sets a timeout in [us] for SCHED_RR and SCHED_FIFO tasks.
+> > > > > This time is measured between sleeps, so a schedule in RR or a
+> > > > > preemption in either is not a sleep - the task needs to be dequeued and
+> > > > > enqueued for the timer to reset.
+> > > > >
+> > > > > Upon reaching the cur limit we start giving SIGXCPU every second, upon
+> > > > > reaching the hard limit we give SIGKILL - matching RLIMIT_CPU.
+> > > > >
+> > > > > Time is measured in tick granularity (for now).
+> > > >
+> > > > So I have another question: why is the granularity of this rlimit
+> > > > microseconds?  On the one hand, specifying limits down at the
+> > > > microsecond level seems (to my naive eye) unlikely to be useful.  (But
+> > > > perhaps I have missed a thread where this was explained.)  On the
+> > > > other hand, it means that on 32-bit the largest time limit we can set
+> > > > is ~4000 seconds, and I wonder if there are scenarios where it might
+> > > > be useful to have larger limits than that.
+> > > >
+> > > > Why not, for example, have a granularity of milliseconds?
+> > >
+> > > The us scale seemed the best fit in that it allows sub-ms granularity
+> > > while still allowing for quite long periods too. I'd preferred ns scale
+> > > as that is what we use throughout the scheduler where possible - but
+> > > that seemed too restrictive at the high end.
+> > >
+> > > No real hard arguments either way.
 > >
-> >  I'd be willing to put some money on this:
-> >
-> >  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b7ad149d62ffffaccb9f565dfe7e5bae739d6836
-> 
-> And I'd lose as you're 32-bit. Oh well, that's the price to pay for 
-> pretending to know x86 arch internals.
+> > I'm curious: what scenarios require sub-millisecond timeouts?
+>
+> I'm not sure, nor will they actually work atm since its tick based.
 
-yeah, sorry - we are working hard to unify generic bits like that, but 
-it's a huge architecture.
+Just to make sure me and the man page are clear: by tick-based, you
+mean the granularity is in jiffies, right?
 
-btw., i always felt that the zone/memory setup is rather fragile and 
-ad-hoc in places and it trusts the architecture code too much. Just in 
-the .25 cycle i've seen about a dozen bugs all around that thing. I 
-believe we should work on making the info that an architecture feeds to 
-the MM "fool proof" - i.e. sanity-check for overlaps and other common 
-setup errors. It is easy for an architecture to mess up those things... 
-Especially on oddball systems that are too large or too small to be 
-normally tested. It's a common, reoccuring bug pattern that we could 
-avoid by being a bit more resilient.
+> But
+> I'm not wanting to exclude too many things, and 4k second upper limit is
+> plenty large.
 
-if this is a zone setup bug then a sanity-check could catch it right 
-where it happens - not much later in the slab code or so.
+Okay.
 
-	Ingo
+And following on from my other conversation in this thread...  What
+should/will be the specified behavior w.r.t. resetting or not
+resetting the timer on a sched_yield()?
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug? Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
