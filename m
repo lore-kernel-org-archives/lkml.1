@@ -1,687 +1,618 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbYDKUvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbYDKUwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761318AbYDKUvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 16:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYDKUvL
+	id S1761464AbYDKUwi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 16:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760017AbYDKUwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 16:51:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57133 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbYDKUvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 16:51:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: x86 git tree broken (bisected)
-Date: Fri, 11 Apr 2008 22:51:08 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl> <86802c440804111326t4c3ff4b6od33a128560b58aec@mail.gmail.com>
-In-Reply-To: <86802c440804111326t4c3ff4b6od33a128560b58aec@mail.gmail.com>
+	Fri, 11 Apr 2008 16:52:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43244 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759709AbYDKUw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 16:52:28 -0400
+Date: Fri, 11 Apr 2008 13:51:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.25-rc9
+Message-ID: <alpine.LFD.1.00.0804111340240.3143@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_988/HjaalGwxmIc"
-Message-Id: <200804112251.09769.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_988/HjaalGwxmIc
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Friday, 11 of April 2008, Yinghai Lu wrote:
-> On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
-> >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
-> >  > >
-> >  > > * Ingo Molnar <mingo@elte.hu> wrote:
-> >  > >
-> >  > > > > > > First, the X server doesn't want to start (it says it couldn't
-> >  > > > > > > mmap the framebuffer).
-> >  > > > > >
-> >  > > > > > could you send your .config?
-> >  > > > >
-> >  > > > > Attached.
-> >  > > >
-> >  > > > could you disable this option:
-> >  > > >
-> >  > > >  CONFIG_NONPROMISC_DEVMEM=y
-> >  > > >
-> >  > > > does it help with the X problem?
-> >  >
-> >  > That didn't help.
-> >  >
-> >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
-> >  > > rather new distro (Fedora 8) which has Xorg 7.2.
-> >  >
-> >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
-> >  >
-> >  > I think the problem is somehow related to the Radeon.
-> >
-> >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
-> >  causing problems.
-> >
-> >  Unfortunately, I can't revert cleanly it, because there are two more commits
-> >  depending on it in a highly nontrivial fashion, so I have reverted all three
-> >  commits
-> >
-> >  a365998cd2cecfb827469dbd57c29602c106cb83
-> >  44f7f90fbe7a3a99aab082f765346514b7b5c705
-> >  ea1441bdf53692c3dc1fd2658addcf1205629661
-> >
-> >  and X starts again.  Also, suspend to RAM works from under X.
-> 
-> please keep the three patches and applied the two attached debug patches.
-> 
-> i wonder if there is some io allocation overlapping with your system.
+I really don't want to do this, and I was actually hoping to release 
+2.6.25 last weekend (which is why -rc9 is a few days late - just me hoping 
+to not do another -rc at all), but I've done an -rc9.
 
-Attached is a boot dmesg output from the current x86 git tree with your two
-patches applied.
+The changes in -rc9 are pretty small (shortlog appended), and 60% of them 
+are m68k updates - mostly defconfigs. And some doc updates.
 
-Thanks,
-Rafael
+But there's some network driver updates (tg3 and wireless hostap stand 
+out), some late XFS patches and a mvsas driver update (the mvsas driver is 
+new in 2.6.25, so that's not going to regress anything ;).
 
---Boundary-00=_988/HjaalGwxmIc
-Content-Type: text/x-log;
-  charset="iso-8859-15";
-  name="dmesg.log"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="dmesg.log"
+The rest is mostly one-liners, with a few reverts going on.
 
-Linux version 2.6.25-rc8-x86-latest.git (rafael@chimera) (gcc version 4.2.1 (SUSE Linux)) #16 SMP Fri Apr 11 23:08:15 CEST 2008
-Command line: root=/dev/md1 vga=0x31a resume=/dev/sda2
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
- BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000007ffb0000 (usable)
- BIOS-e820: 000000007ffb0000 - 000000007ffc0000 (ACPI data)
- BIOS-e820: 000000007ffc0000 - 000000007fff0000 (ACPI NVS)
- BIOS-e820: 000000007fff0000 - 0000000080000000 (reserved)
- BIOS-e820: 00000000ff7c0000 - 0000000100000000 (reserved)
-Entering add_active_range(0, 0, 158) 0 entries of 256 used
-Entering add_active_range(0, 256, 524208) 1 entries of 256 used
-max_pfn_mapped = 1048576
-x86: PAT support disabled.
-init_memory_mapping
-DMI 2.3 present.
-ACPI: RSDP 000F9B60, 0014 (r0 ACPIAM)
-ACPI: RSDT 7FFB0000, 0030 (r1 A M I  OEMRSDT   8000526 MSFT       97)
-ACPI: FACP 7FFB0200, 0084 (r2 A M I  OEMFACP   8000526 MSFT       97)
-ACPI: DSDT 7FFB0400, 45A7 (r1  939M2 939M2120      120 INTL  2002026)
-ACPI: FACS 7FFC0000, 0040
-ACPI: APIC 7FFB0390, 0068 (r1 A M I  OEMAPIC   8000526 MSFT       97)
-ACPI: OEMB 7FFC0040, 0056 (r1 A M I  AMI_OEM   8000526 MSFT       97)
-Entering add_active_range(0, 0, 158) 0 entries of 256 used
-Entering add_active_range(0, 256, 524208) 1 entries of 256 used
-  early res: 0 [0-fff] BIOS data page
-  early res: 1 [6000-7fff] TRAMPOLINE
-  early res: 2 [200000-b33c6f] TEXT DATA BSS
-  early res: 3 [378e2000-37fefac8] RAMDISK
-  early res: 4 [9ec00-fffff] BIOS reserved
-  early res: 5 [8000-bfff] PGTABLE
-Zone PFN ranges:
-  DMA             0 ->     4096
-  DMA32        4096 ->  1048576
-  Normal    1048576 ->  1048576
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0:        0 ->      158
-    0:      256 ->   524208
-On node 0 totalpages: 524110
-  DMA zone: 56 pages used for memmap
-  DMA zone: 2461 pages reserved
-  DMA zone: 1481 pages, LIFO batch:0
-  DMA32 zone: 7110 pages used for memmap
-  DMA32 zone: 513002 pages, LIFO batch:31
-  Normal zone: 0 pages used for memmap
-  Movable zone: 0 pages used for memmap
-ACPI: PM-Timer IO Port: 0x808
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 0-23
-ACPI: IOAPIC (id[0x03] address[0xfec10000] gsi_base[24])
-IOAPIC[1]: apic_id 3, version 0, address 0xfec10000, GSI 24-39
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Setting APIC routing to flat
-Using ACPI (MADT) for SMP configuration information
-PM: Registered nosave memory: 000000000009e000 - 000000000009f000
-PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
-PM: Registered nosave memory: 00000000000a0000 - 00000000000e8000
-PM: Registered nosave memory: 00000000000e8000 - 0000000000100000
-Allocating PCI resources starting at 88000000 (gap: 80000000:7f7c0000)
-SMP: Allowing 2 CPUs, 0 hotplug CPUs
-PERCPU: Allocating 31152 bytes of per cpu data
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 514483
-Kernel command line: root=/dev/md1 vga=0x31a resume=/dev/sda2
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-TSC calibrated against PM_TIMER
-Marking TSC unstable due to TSCs unsynchronized
-time.c: Detected 2200.078 MHz processor.
-Console: colour dummy device 80x25
-console [tty0] enabled
-Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-... MAX_LOCKDEP_SUBCLASSES:    8
-... MAX_LOCK_DEPTH:          48
-... MAX_LOCKDEP_KEYS:        2048
-... CLASSHASH_SIZE:           1024
-... MAX_LOCKDEP_ENTRIES:     8192
-... MAX_LOCKDEP_CHAINS:      16384
-... CHAINHASH_SIZE:          8192
- memory used by lock dependency info: 1648 kB
- per task-struct memory footprint: 2688 bytes
-Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-Checking aperture...
-Node 0: aperture @ de000000 size 32 MB
-Aperture too small (32 MB)
-AGP bridge at 00:04:00
-Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
-Aperture too small (0 MB)
-Your BIOS doesn't leave a aperture memory hole
-Please enable the IOMMU option in the BIOS setup
-This costs you 64 MB of RAM
-Mapping aperture over 65536 KB of RAM @ 4000000
-PM: Registered nosave memory: 0000000004000000 - 0000000008000000
-Memory: 1981548k/2096832k available (2985k kernel code, 114240k reserved, 1655k data, 284k init)
-CPA: page pool initialized 1 of 1 pages preallocated
-Calibrating delay using timer specific routine.. 4404.11 BogoMIPS (lpj=8808221)
-Security Framework initialized
-SELinux:  Initializing.
-SELinux:  Starting in permissive mode
-selinux_register_security:  Registering secondary module capability
-Capability LSM initialized as secondary
-Mount-cache hash table entries: 256
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-ACPI: Core revision 20070126
-CPU0: AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ stepping 01
-Using local APIC timer interrupts.
-APIC timer calibration result 12500446
-Detected 12.500 MHz APIC timer.
-lockdep: fixing up alternatives.
-Booting processor 1/1 ip 6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4400.18 BogoMIPS (lpj=8800363)
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-x86: PAT support disabled.
-CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ stepping 01
-Brought up 2 CPUs
-Total of 2 processors activated (8804.29 BogoMIPS).
-CPU0 attaching sched-domain:
- domain 0: span 3
-  groups: 1 2
-CPU1 attaching sched-domain:
- domain 0: span 3
-  groups: 2 1
-khelper used greatest stack depth: 5752 bytes left
-net_namespace: 1112 bytes
-Time: 21:11:45  Date: 04/11/08
-NET: Registered protocol family 16
-No dock devices found.
-node 0 link 0: io port [1000, ffffff]
-TOM: 0000000080000000 aka 2048M
-node 0 link 0: mmio [e0000000, efffffff]
-node 0 link 0: mmio [a0000, bffff]
-node 0 link 0: mmio [80000000, ffffffff]
-bus: [00,ff] on node 0 link 0
-bus: 00 index 0 io port: [1000, ffffff]
-bus: 00 index 1 io port: [0, ffff]
-bus: 00 index 2 mmio: [80000000, fcffffffff]
-bus: 00 index 3 mmio: [a0000, bffff]
-bus: 00 index 4 mmio: [80000000, ffffffff]
-ACPI: bus type pci registered
-PCI: Using configuration type 1 for base access
-ACPI: EC: Look up EC in DSDT
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: 0000:00:04.0 reg 10 32bit mmio: [de000000, dfffffff]
-pci 0000:00:07.1: quirk: region 0800-083f claimed by ali7101 ACPI
-PCI: 0000:00:08.0 reg 10 io port: [e800, e8ff]
-PCI: 0000:00:08.0 reg 14 32bit mmio: [ff6ff000, ff6fffff]
-PCI: 0000:00:11.0 reg 10 io port: [e400, e4ff]
-PCI: 0000:00:11.0 reg 14 32bit mmio: [ff6fec00, ff6fecff]
-PCI: 0000:00:12.0 reg 20 io port: [ff00, ff0f]
-PCI: 0000:00:12.1 reg 10 io port: [ec00, ec07]
-PCI: 0000:00:12.1 reg 14 io port: [e080, e083]
-PCI: 0000:00:12.1 reg 18 io port: [e000, e007]
-PCI: 0000:00:12.1 reg 1c io port: [dc00, dc03]
-PCI: 0000:00:12.1 reg 20 io port: [d880, d88f]
-PCI: 0000:00:13.0 reg 10 32bit mmio: [ff6fd000, ff6fdfff]
-PCI: 0000:00:13.1 reg 10 32bit mmio: [ff6fc000, ff6fcfff]
-PCI: 0000:00:13.2 reg 10 32bit mmio: [ff6fb000, ff6fbfff]
-PCI: 0000:00:13.3 reg 10 32bit mmio: [ff6fe800, ff6fe8ff]
-PCI: 0000:01:00.0 reg 10 32bit mmio: [d0000000, d7ffffff]
-PCI: 0000:01:00.0 reg 14 io port: [b000, b0ff]
-PCI: 0000:01:00.0 reg 18 32bit mmio: [ff2f0000, ff2fffff]
-PCI: 0000:01:00.1 reg 10 32bit mmio: [ff2e0000, ff2effff]
-PCI: bridge 0000:00:01.0 io port: [9000, bfff]
-PCI: bridge 0000:00:01.0 32bit mmio: [ff200000, ff2fffff]
-PCI: bridge 0000:00:01.0 32bit mmio pref: [cbf00000, dbefffff]
-PCI: bridge 0000:00:02.0 32bit mmio: [ff300000, ff3fffff]
-PCI: bridge 0000:00:05.0 32bit mmio: [ff400000, ff4fffff]
-PCI: 0000:04:06.0 reg 10 io port: [c800, c8ff]
-PCI: 0000:04:06.0 reg 14 32bit mmio: [ff5ffc00, ff5ffcff]
-PCI: Transparent bridge - 0000:00:06.0
-PCI: bridge 0000:00:06.0 io port: [c000, cfff]
-PCI: bridge 0000:00:06.0 32bit mmio: [ff500000, ff5fffff]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P4._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.HTT_._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEB1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEB2._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 11 12 14 *15), disabled.
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs *3 4 5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11 12 14 15) *9
-ACPI: PCI Interrupt Link [LNKP] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-ACPI Warning (tbutils-0217): Incorrect checksum in table [OEMB] -  6A, should be 5D [20070126]
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 14 devices
-ACPI: ACPI bus type pnp unregistered
-SCSI subsystem initialized
-libata version 3.00 loaded.
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-PCI: Cannot allocate resource region 8 of bridge 0000:00:01.0
-PCI: Cannot allocate resource region 8 of bridge 0000:00:02.0
-PCI: Cannot allocate resource region 8 of bridge 0000:00:05.0
-PCI: Cannot allocate resource region 8 of bridge 0000:00:06.0
-PCI: Cannot allocate resource region 1 of device 0000:00:08.0
-PCI: Cannot allocate resource region 1 of device 0000:00:11.0
-PCI: Cannot allocate resource region 0 of device 0000:00:13.0
-PCI: Cannot allocate resource region 0 of device 0000:00:13.1
-PCI: Cannot allocate resource region 0 of device 0000:00:13.2
-PCI: Cannot allocate resource region 0 of device 0000:00:13.3
-PCI: Cannot allocate resource region 2 of device 0000:01:00.0
-PCI: Cannot allocate resource region 0 of device 0000:01:00.1
-PCI: Cannot allocate resource region 1 of device 0000:04:06.0
-DMAR:parse DMAR table failure.
-agpgart: Detected AGP bridge 20
-agpgart: Aperture pointing to RAM
-agpgart: Aperture from AGP @ de000000 size 4096 MB
-agpgart: Aperture too small (0 MB)
-agpgart: No usable aperture found.
-agpgart: Consider rebooting with iommu=memaper=2 to get a good aperture.
-system 00:07: ioport range 0x480-0x48f has been reserved
-system 00:07: ioport range 0x4d0-0x4d1 has been reserved
-system 00:07: ioport range 0x800-0x87f could not be reserved
-system 00:07: ioport range 0x400-0x40f has been reserved
-system 00:08: iomem range 0xfec00000-0xfec00fff has been reserved
-system 00:08: iomem range 0xfee00000-0xfee00fff has been reserved
-system 00:08: iomem range 0xe0000000-0xefffffff has been reserved
-system 00:08: iomem range 0xfec10000-0xfec10fff has been reserved
-system 00:08: iomem range 0xffb80000-0xffffffff could not be reserved
-system 00:0c: ioport range 0x290-0x29f has been reserved
-system 00:0d: iomem range 0x0-0x9ffff could not be reserved
-system 00:0d: iomem range 0xc0000-0xcffff has been reserved
-system 00:0d: iomem range 0xe0000-0xfffff could not be reserved
-system 00:0d: iomem range 0x100000-0x7fffffff could not be reserved
-system 00:0d: iomem range 0x0-0x0 could not be reserved
-PCI: Bridge: 0000:00:01.0
-  IO window: 9000-bfff
-  MEM window: 0x100000000-0x1000fffff
-  PREFETCH window: 0x00000000cbf00000-0x00000000dbefffff
-PCI: Bridge: 0000:00:02.0
-  IO window: disabled.
-  MEM window: disabled.
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:05.0
-  IO window: disabled.
-  MEM window: disabled.
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:06.0
-  IO window: c000-cfff
-  MEM window: 0x100100000-0x1001fffff
-  PREFETCH window: 0x0000000100200000-0x00000001002fffff
-ACPI: PCI Interrupt 0000:00:01.0[A] -> GSI 29 (level, low) -> IRQ 29
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 34 (level, low) -> IRQ 34
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-PCI: Setting latency timer of device 0000:00:05.0 to 64
-PCI: Setting latency timer of device 0000:00:06.0 to 64
-bus: 00 index 0 mmio: [1000, ffffff]
-bus: 00 index 1 io port: [0, ffff]
-bus: 00 index 2 mmio: [80000000, fcffffffff]
-bus: 00 index 3 mmio: [a0000, bffff]
-bus: 00 index 4 mmio: [80000000, ffffffff]
-bus: 01 index 0 io port: [9000, bfff]
-bus: 01 index 1 mmio: [100000000, 1000fffff]
-bus: 01 index 2 mmio: [cbf00000, dbefffff]
-bus: 01 index 3 mmio: [0, 0]
-bus: 02 index 0 mmio: [0, 0]
-bus: 02 index 1 mmio: [ff300000, ff3fffff]
-bus: 02 index 2 mmio: [0, 0]
-bus: 02 index 3 mmio: [0, 0]
-bus: 03 index 0 mmio: [0, 0]
-bus: 03 index 1 mmio: [ff400000, ff4fffff]
-bus: 03 index 2 mmio: [0, 0]
-bus: 03 index 3 mmio: [0, 0]
-bus: 04 index 0 io port: [c000, cfff]
-bus: 04 index 1 mmio: [100100000, 1001fffff]
-bus: 04 index 2 mmio: [100200000, 1002fffff]
-bus: 04 index 3 mmio: [1000, ffffff]
-bus: 04 index 4 io port: [0, ffff]
-bus: 04 index 5 mmio: [80000000, fcffffffff]
-bus: 04 index 6 mmio: [a0000, bffff]
-bus: 04 index 7 mmio: [80000000, ffffffff]
-NET: Registered protocol family 2
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-IP route cache hash table entries: 65536 (order: 7, 524288 bytes)
-TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
-TCP bind hash table entries: 65536 (order: 9, 3670016 bytes)
-TCP: Hash tables configured (established 262144 bind 65536)
-TCP reno registered
-checking if image is initramfs... it is
-Freeing initrd memory: 7222k freed
-audit: initializing netlink socket (disabled)
-type=2000 audit(1207948305.996:1): initialized
-Total HugeTLB memory allocated, 0
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-SELinux:  Registering netfilter hooks
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-pci 0000:01:00.0: Boot video device
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:01.0:pcie00]
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:02.0:pcie00]
-vesafb: framebuffer at 0xd0000000, mapped to 0xffffc20000080000, using 5120k, total 16384k
-vesafb: mode is 1280x1024x16, linelength=2560, pages=5
-vesafb: scrolling: redraw
-vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Console: switching to colour frame buffer device 160x64
-fb0: VESA VGA frame buffer device
-Real Time Clock Driver v1.12ac
-Linux agpgart interface v0.103
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:0b: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-brd: module loaded
-loop: module loaded
-PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input0
-input: PC Speaker as /class/input/input1
-logips2pp: Detected unknown logitech mouse model 127
-input: ImExPS/2 Logitech Explorer Mouse as /class/input/input2
-md: multipath personality registered for level -4
-cpuidle: using governor ladder
-cpuidle: using governor menu
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 33
-PM: Resume from partition /dev/sda2
-PM: Checking hibernation image.
-PM: Error -6 checking image file
-PM: Resume from disk failed.
-  Magic number: 4:657:196
-  hash matches device ttys8
-  hash matches device ttypb
-Freeing unused kernel memory: 284k freed
-Write protecting the kernel read-only data: 4356k
-mount used greatest stack depth: 5592 bytes left
-ACPI: ACPI0007:00 is registered as cooling_device0
-ACPI: ACPI0007:01 is registered as cooling_device1
-ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 19 (level, low) -> IRQ 19
-scsi0 : pata_ali
-scsi1 : pata_ali
-ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xff00 irq 14
-ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xff08 irq 15
-ata1.00: ATAPI: TSSTcorpCD/DVDW SH-S182M, SB03, max UDMA/33
-ata1.00: WARNING: ATAPI DMA disabled for reliablity issues.  It can be enabled
-ata1.00: WARNING: via pata_ali.atapi_dma modparam or corresponding sysfs node.
-ata1.00: configured for UDMA/33
-scsi 0:0:0:0: CD-ROM            TSSTcorp CD/DVDW SH-S182M SB03 PQ: 0 ANSI: 5
-modprobe used greatest stack depth: 4664 bytes left
-sata_uli 0000:00:12.1: version 1.3
-ACPI: PCI Interrupt 0000:00:12.1[A] -> GSI 19 (level, low) -> IRQ 19
-scsi2 : sata_uli
-scsi3 : sata_uli
-ata3: SATA max UDMA/133 cmd 0xec00 ctl 0xe080 bmdma 0xd880 irq 19
-ata4: SATA max UDMA/133 cmd 0xe000 ctl 0xdc00 bmdma 0xd888 irq 19
-ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata3.00: ATA-7: SAMSUNG HD160JJ, WU100-33, max UDMA7
-ata3.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata3.00: configured for UDMA/133
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata4.00: ATA-7: SAMSUNG SP2004C, VM100-50, max UDMA7
-ata4.00: 390721968 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata4.00: configured for UDMA/133
-scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD160JJ  WU10 PQ: 0 ANSI: 5
-scsi 3:0:0:0: Direct-Access     ATA      SAMSUNG SP2004C  VM10 PQ: 0 ANSI: 5
-md: raid1 personality registered for level 1
-BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
-Driver 'sd' needs updating - please use bus_type methods
-sd 2:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
- sda:<6>ACPI: PCI Interrupt 0000:00:13.0[A] -> GSI 20 (level, low) -> IRQ 20
-ohci_hcd 0000:00:13.0: OHCI Host Controller
- sda1 sda2 sda3 sda4 <<6>ohci_hcd 0000:00:13.0: new USB bus registered, assigned bus number 1
-ohci_hcd 0000:00:13.0: irq 20, io mem 0x100301000
- sda5 sda6 sda7 sda8 sda9 >
-sd 2:0:0:0: [sda] Attached SCSI disk
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 3 ports detected
-sd 3:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-sd 3:0:0:0: [sdb] Write Protect is off
-sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 3:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-sd 3:0:0:0: [sdb] Write Protect is off
-sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sdb: sdb1 sdb2 sdb3 sdb4 < sdb5 sdb6 sdb7<6>usb usb1: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
- sdb8<6>usb usb1: Product: OHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
- sdb9<6>usb usb1: SerialNumber: 0000:00:13.0
-ACPI: PCI Interrupt 0000:00:13.1[B] -> GSI 21 (level, low) -> IRQ 21
-ohci_hcd 0000:00:13.1: OHCI Host Controller
- sdb10 >
-ohci_hcd 0000:00:13.1: new USB bus registered, assigned bus number 2
-sd 3:0:0:0: [sdb] Attached SCSI disk
-ohci_hcd 0000:00:13.1: irq 21, io mem 0x100302000
-modprobe used greatest stack depth: 4280 bytes left
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 3 ports detected
-usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: OHCI Host Controller
-usb usb2: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
-usb usb2: SerialNumber: 0000:00:13.1
-ACPI: PCI Interrupt 0000:00:13.2[C] -> GSI 22 (level, low) -> IRQ 22
-ohci_hcd 0000:00:13.2: OHCI Host Controller
-ohci_hcd 0000:00:13.2: new USB bus registered, assigned bus number 3
-ohci_hcd 0000:00:13.2: irq 22, io mem 0x100303000
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 3 ports detected
-usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb3: Product: OHCI Host Controller
-usb usb3: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
-usb usb3: SerialNumber: 0000:00:13.2
-ACPI: PCI Interrupt 0000:00:13.3[D] -> GSI 23 (level, low) -> IRQ 23
-ehci_hcd 0000:00:13.3: EHCI Host Controller
-ehci_hcd 0000:00:13.3: new USB bus registered, assigned bus number 4
-ehci_hcd 0000:00:13.3: debug port 1
-ehci_hcd 0000:00:13.3: irq 23, io mem 0x100304100
-ehci_hcd 0000:00:13.3: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 8 ports detected
-usb usb4: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb4: Product: EHCI Host Controller
-usb usb4: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ehci_hcd
-usb usb4: SerialNumber: 0000:00:13.3
-md: raid0 personality registered for level 0
-xor: automatically using best checksumming function: generic_sse
-   generic_sse:  7022.000 MB/sec
-xor: using function: generic_sse (7022.000 MB/sec)
-async_tx: api initialized (sync-only)
-raid6: int64x1   2149 MB/s
-raid6: int64x2   2731 MB/s
-raid6: int64x4   2371 MB/s
-raid6: int64x8   2188 MB/s
-raid6: sse2x1    2277 MB/s
-raid6: sse2x2    3125 MB/s
-raid6: sse2x4    3741 MB/s
-raid6: using algorithm sse2x4 (3741 MB/s)
-md: raid6 personality registered for level 6
-md: raid5 personality registered for level 5
-md: raid4 personality registered for level 4
-md: md1 stopped.
-md: bind<sda3>
-md: bind<sdb3>
-raid1: raid set md1 active with 2 out of 2 mirrors
-PM: Marking nosave pages: 000000000009e000 - 0000000000100000
-PM: Marking nosave pages: 0000000004000000 - 0000000008000000
-PM: Basic memory bitmaps created
-PM: Basic memory bitmaps freed
-PM: Starting manual resume from disk
-PM: Resume from partition 8:2
-PM: Checking hibernation image.
-PM: Resume from disk failed.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md1, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-mount used greatest stack depth: 3712 bytes left
-modprobe used greatest stack depth: 3656 bytes left
-scsi 0:0:0:0: Attached scsi generic sg0 type 5
-sd 2:0:0:0: Attached scsi generic sg1 type 0
-sd 3:0:0:0: Attached scsi generic sg2 type 0
-input: Power Button (FF) as /class/input/input3
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /class/input/input4
-ACPI: Power Button (CM) [PWRB]
-uli526x: ULi M5261/M5263 net driver, version 0.9.3 (2005-7-29)
-ACPI: PCI Interrupt 0000:00:11.0[A] -> GSI 17 (level, low) -> IRQ 17
-Driver 'sr' needs updating - please use bus_type methods
-eth0: ULi M5263 at pci0000:00:11.0, 00:13:8f:3a:0b:96, irq 17.
-8139too Fast Ethernet driver 0.9.28
-ACPI: PCI Interrupt 0000:04:06.0[A] -> GSI 21 (level, low) -> IRQ 21
-eth1: RealTek RTL8139 at 0xc800, 00:48:54:4b:5c:38, IRQ 21
-eth1:  Identified 8139 chip type 'RTL-8139A'
-sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 0:0:0:0: Attached scsi CD-ROM sr0
-Floppy drive(s): fd0 is 1.44M
-FDC 0 is a post-1991 82077
-parport_pc 00:06: reported by Plug and Play ACPI
-parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,EPP,ECP,DMA]
-udev: renamed network interface eth1 to eth0
-udev: renamed network interface eth0_rename to eth1
-ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/ac97/ac97_codec.c:2053: AC'97 1 does not respond - RESET
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/ac97/ac97_codec.c:2062: AC'97 1 access is not valid [0xffffffff], removing mixer.
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/intel8x0.c:2157: Unable to initialize codec #1
-intel8x0_measure_ac97_clock: measured 52386 usecs
-intel8x0: clocking to 48000
-md: md2 stopped.
-device-mapper: uevent: version 1.0.3
-md: bind<sda5>
-device-mapper: ioctl: 4.13.0-ioctl (2007-10-18) initialised: dm-devel@redhat.com
-md: bind<sdb5>
-raid1: raid set md2 active with 2 out of 2 mirrors
-md: md3 stopped.
-md: bind<sda6>
-md: bind<sdb6>
-raid1: raid set md3 active with 2 out of 2 mirrors
-md: md4 stopped.
-md: bind<sda8>
-md: bind<sdb8>
-raid1: raid set md4 active with 2 out of 2 mirrors
-md: md5 stopped.
-md: bind<sda9>
-md: bind<sdb9>
-raid1: raid set md5 active with 2 out of 2 mirrors
-md: md0 stopped.
-md: bind<sda1>
-md: bind<sdb1>
-raid1: raid set md0 active with 2 out of 2 mirrors
-fsck.ext3 used greatest stack depth: 3432 bytes left
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md0, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-ReiserFS: md4: found reiserfs format "3.6" with standard journal
-ReiserFS: md4: using ordered data mode
-ReiserFS: md4: journal params: device md4, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-ReiserFS: md4: checking transaction log (md4)
-ReiserFS: md4: Using r5 hash to sort names
-ReiserFS: md5: found reiserfs format "3.6" with standard journal
-ReiserFS: md5: using ordered data mode
-ReiserFS: md5: journal params: device md5, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-ReiserFS: md5: checking transaction log (md5)
-ReiserFS: md5: Using r5 hash to sort names
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md2, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md3, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-Adding 2104504k swap on /dev/sda2.  Priority:42 extents:1 across:2104504k
-Adding 2104504k swap on /dev/sdb2.  Priority:42 extents:1 across:2104504k
-powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ processors (2 cpu cores) (version 2.20.00)
-powernow-k8:    0 : fid 0xe (2200 MHz), vid 0xa
-powernow-k8:    1 : fid 0xc (2000 MHz), vid 0xa
-powernow-k8:    2 : fid 0xa (1800 MHz), vid 0xa
-powernow-k8:    3 : fid 0x2 (1000 MHz), vid 0xa
-Xorg:4255 /dev/mem ioremap_change_attr failed write-back for 100000000-100010000
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-ADDRCONF(NETDEV_UP): eth1: link is not ready
-ip6_tables: (C) 2000-2006 Netfilter Core Team
-ip_tables: (C) 2000-2006 Netfilter Core Team
-warning: `named' uses 32-bit capabilities (legacy support in use)
-uli526x: eth1 NIC Link is Up 100 Mbps Full duplex
-ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-Clocksource tsc unstable (delta = -75598224 ns)
-eth1: no IPv6 routers present
-X:5038 /dev/mem ioremap_change_attr failed write-back for 100000000-100010000
+Dirstat:
 
---Boundary-00=_988/HjaalGwxmIc--
+	   4.2% Documentation/filesystems/
+	   3.2% Documentation/networking/
+	  11.4% Documentation/
+	  55.7% arch/m68k/configs/
+	  59.4% arch/m68k/
+	   2.0% arch/powerpc/
+	  65.7% arch/
+	   3.6% drivers/net/
+	   4.2% drivers/scsi/
+	  12.7% drivers/
+	   2.3% fs/
+	   2.2% include/
+	   3.9% net/
+
+anyway, the reason for not doing a 2.6.25 is that some people are making 
+noises about slab/page-alloc setup issues, and I wanted something out this 
+week, but didn't feel comfy doing a final release.
+
+That said, I think I'll have to do 2.6.25 early next week regardless, 
+because we can't just keep holding things back forever. At some point it 
+will have to turn into a 2.6.25.x issue, and the developers with stuff 
+pending for the next version need to be able to start merging.
+
+			Linus
+
+PS. This has been a somewhat frustrating last week or so. So if I was even 
+less polite to somebody than usual in public or private emails, my 
+apologies. You know who you are.
+
+---
+Abhijeet Kolekar (1):
+      iwlwifi: fix n-band association problem
+
+Adrian Bunk (18):
+      [ATM]: Make atm/he.c:read_prom_byte() static
+      [ATM] atm/idt77252.c: Make 2 functions static
+      [NET]: Remove Documentation/networking/sk98lin.txt
+      V4L/DVB (7485): v4l2-int-device.c: add MODULE_LICENSE
+      ide-pnp.c: add MODULE_LICENSE
+      ide/pci/cmd640.c: add MODULE_LICENSE
+      ide/ppc/mpc8xx.c: add MODULE_LICENSE
+      ide/ppc/pmac.c: add MODULE_LICENSE
+      ide/arm/ide_arm.c: add MODULE_LICENSE
+      ide/cris/ide-cris.c: add MODULE_LICENSE
+      ide/h8300/ide-h8300.c: add MODULE_LICENSE
+      ide/legacy/gayle.c: add MODULE_LICENSE
+      ide/legacy/buddha.c: add MODULE_LICENSE
+      ide/legacy/falconide.c: add MODULE_LICENSE
+      ide/legacy/macide: add MODULE_LICENSE
+      ide/legacy/q40ide.c: add MODULE_LICENSE
+      net/tokenring/olympic.c section fixes
+      m68k: use KBUILD_DEFCONFIG
+
+Al Viro (1):
+      fix endian lossage in forcedeth
+
+Alan Stern (1):
+      USB: fix bug in sg initialization in usbtest
+
+Alexey Korolev (1):
+      mtd: fix broken state in CFI driver caused by FL_SHUTDOWN
+
+Alok Kataria (1):
+      acpi: fix "buggy BIOS check" when CPUs are hot removed
+
+Andi Kleen (1):
+      [NET]: srandom32 fixes for networking v2
+
+Andrea Arcangeli (1):
+      Fix bounce setting for 64-bit
+
+Andrew Morton (1):
+      alpha: get_current(): don't add zero to current_thread_info()->task
+
+Andrew Paprocki (1):
+      [WATCHDOG] it8712f_wdt Zero MSB timeout byte when disabling watchdog
+
+Anthony Liguori (1):
+      virtio_net: remove overzealous printk
+
+Anton Vorontsov (1):
+      [POWERPC] 83xx: Fix wrong USB phy type in mpc837xrdb dts
+
+Arjan van de Ven (1):
+      es1968: fix sleep-while-holding-lock bug
+
+Balbir Singh (1):
+      memory controller: make memory resource control aware of boot options
+
+Bartlomiej Sieka (1):
+      [POWERPC] mpc5200: Amalgamated DTS fixes and updates
+
+Bartlomiej Zolnierkiewicz (3):
+      ide-h8300: 32-bit I/O is unsupported
+      ide: use ->ata_input_data in ide_driveid_update()
+      libata: fix IDENTIFY order in ata_bus_probe()
+
+Benjamin Herrenschmidt (3):
+      [POWERPC] Fix iSeries hard irq enabling regression
+      [POWERPC] Fix deadlock with mmu_hash_lock in hash_page_sync
+      pata_sil680: Fix build on arch/ppc
+
+Benoit Boissinot (2):
+      IPv6: only update the lifetime of the relevant temporary address
+      IPv6: do not create temporary adresses with too short preferred lifetime
+
+Bjorn Helgaas (2):
+      V4L/DVB (7486): radio-cadet: wrap PNP probe code in #ifdef CONFIG_PNP
+      pnp: increase number of devices supported per protocol
+
+Brad Sawatzky (1):
+      USB: serial: fix regression in Visor/Palm OS module for kernels >= 2.6.24
+
+Bryan Wu (1):
+      fix bug - executing FDPIC ELF on NFS mount triggers BUG() at mm/nommu.c:862:/do_mmap_private()
+
+Carol Hebert (1):
+      ipmi: change device node ordering to reflect probe order
+
+Christian Borntraeger (1):
+      kvm: provide kvm.h for all architecture: fixes headers_install
+
+Chuck Lever (1):
+      SUNRPC: Fix a memory leak in rpc_create()
+
+Clark Rawlins (1):
+      USB: Allow initialization of broken keyspan serial adapters.
+
+Cyrill Gorcunov (2):
+      V4L/DVB (7461): bttv: fix missed index check
+      V4L/DVB (7460): bttv: Bt832 - fix possible NULL pointer deref
+
+Dan Williams (1):
+      md: close a livelock window in handle_parity_checks5
+
+Daniel Drake (1):
+      ipw2200: set MAC address on radiotap interface
+
+Daniel Lezcano (1):
+      [NETNS][IPV6] tcp - assign the netns for timewait sockets
+
+Daniel Wagner (1):
+      rt61pci: rt61pci_beacon_update do not free skb twice
+
+Dave Young (2):
+      bluetooth : use lockdep sub-classes for diffrent bluetooth protocol
+      bluetooth : __rfcomm_dlc_close lock fix
+
+David Brownell (3):
+      drivers/net/usb/pegasus.c: remove in_atomic() check
+      USB: another ehci_iaa_watchdog fix
+      spi: documentation tweaks
+
+David Chinner (1):
+      [XFS] Fix superblock features2 field alignment problem
+
+David Howells (5):
+      FRV: Handle update_mmu_cache() being called when current->mm is NULL [try #2]
+      FRV: Move STACK_TOP_MAX up [try #2]
+      FRV: Add support for emulation of userspace atomic ops [try #2]
+      FRV: Make NOMMU-mode work with base addresses other than 0xC0000000 [try #2]
+      FRV: Don't make smp_{r, w, }mb() interpolate MEMBAR when CONFIG_SMP=n [try #2]
+
+David S. Miller (11):
+      [NET]: Use local_irq_{save,restore}() in napi_complete().
+      [SPARC64]: Don't open-code {get,put}_cpu_var() in flush_tlb_pending().
+      [BOND]: Fix warning in bond_sysfs.c
+      [ATM] firestream: Fix uninitialized var warning.
+      [INET]: inet_frag_evictor() must run with BH disabled
+      [LLC]: Kill llc_station_mac_sa symbol export.
+      [SPARC64]: Fix FPU saving in 64-bit signal handling.
+      [SPARC64]: Fix user accesses in regset code.
+      [NET]: Undo code bloat in hot paths due to print_mac().
+      [SPARC]: Fix several regset and ptrace bugs.
+      [IPV4]: Fix byte value boundary check in do_ip_getsockopt().
+
+Davide Libenzi (2):
+      eventfd/kaio integration fix
+      signalfd: fix for incorrect SI_QUEUE user data reporting
+
+Denis V. Lunev (4):
+      [NETFILTER]: Replate direct proc_fops assignment with proc_create call.
+      [IPV6]: Event type in addrconf_ifdown is mis-used.
+      [IPV6]: inet6_dev on loopback should be kept until namespace stop.
+      [IPV6]: Fix refcounting for anycast dst entries.
+
+Dmitri Vorobiev (1):
+      Fix typos in Documentation/unaligned-memory-access.txt
+
+Dmitry Adamushko (1):
+      mtd/chips: add missing set_current_state() to cfi_{amdstd,staa}_sync()
+
+Eliezer Tamir (1):
+      BNX2X: Correct bringing chip out of reset
+
+Eric Paris (1):
+      SELinux: don't BUG if fs reuses a superblock
+
+Eric Sandeen (2):
+      [XFS] remove shouting-indirection macros from xfs_sb.h
+      [XFS] Ensure "both" features2 slots are consistent
+
+FUJITA Tomonori (2):
+      sparc64: add the segment boundary checking to IOMMUs while merging SG entries
+      sparc64: remove unused calc_npages() in iommu_common.h
+
+Fabio Checconi (2):
+      cfq-iosched: fix rcu freeing of cfq io contexts
+      cfq-iosched: do not leak ioc_data across iosched switches
+
+Florian Fainelli (1):
+      USB: cp2101: Add identifiers for the Telegesys ETRX2USB
+
+Geert Uytterhoeven (1):
+      m68k: update defconfigs for 2.6.25
+
+Grant Grundler (1):
+      [netdrvr] tulip_read_eeprom fixes for BUG 4420
+
+Harvey Harrison (2):
+      net: marvell.c fix sparse shadowed variable warning
+      lzo: fix typo in decompressor
+
+Heiko Carstens (1):
+      Fix "$(AS) -traditional" compile breakage caused by asmlinkage_protect
+
+Herbert Xu (3):
+      [NET]: Add preemption point in qdisc_run
+      [IPV6]: Fix ICMP relookup error path dst leak
+      [ICMP]: Ensure that ICMP relookup maintains status quo
+
+Holger Schurig (2):
+      libertas: fix spinlock recursion bug
+      libertas: fix mode initialization problem
+
+Hugh Dickins (2):
+      splice: use mapping_gfp_mask
+      scsi: fix sense_slab/bio swapping livelock
+
+Ilpo Järvinen (4):
+      [TCP]: Restore 2.6.24 mark_head_lost behavior for newreno/fack
+      [TCP]: Fix NewReno's fast rexmit/recovery problems with GSOed skb
+      [TCP]: tcp_simple_retransmit can cause S+L
+      [TCP]: Don't allow FRTO to take place while MTU is being probed
+
+Ingo Molnar (4):
+      forcedeth: fix locking bug with netconsole
+      x86: fix nmi_watchdog=2 on Pentium-D CPUs
+      x86: print message if nmi_watchdog=2 cannot be enabled
+      revert "x86: tsc prevent time going backwards"
+
+Ivan Kokshaysky (1):
+      alpha: fix ALSA DMA mmap crash
+
+Ivo van Doorn (1):
+      rt2x00: Ignore set_state(STATE_SLEEP) failure
+
+J. Bruce Fields (4):
+      Spell out behavior of atomic_dec_and_lock() in kerneldoc
+      Documentation: move nfsroot.txt to filesystems/
+      Documentation: move rpc-cache.txt to filesystems/
+      Move sched-rt-group.txt to scheduler/
+
+James Bottomley (2):
+      Revert "[SCSI] fix bsg queue oops with iscsi logout"
+      [SCSI] libsas: Warn if ATA device detected but CONFIG_SCSI_SAS_ATA not set
+
+James Smart (1):
+      [SCSI] hosts.c: fixes for "no error" reported after error scenarios
+
+Jan Engelhardt (2):
+      Fixes to the seq_file document
+      [NETFILTER]: nf_nat: autoload IPv4 connection tracking
+
+Jan Niehusmann (1):
+      mac80211: trigger ieee80211_sta_work after opening interface
+
+Jarek Poplawski (1):
+      [ROSE/AX25] af_rose: rose_release() fix
+
+Jeff Layton (1):
+      NFS: initialize flags field in nfs_open_context
+
+Jens Axboe (1):
+      splice: fix infinite loop in generic_file_splice_read()
+
+Jesse Barnes (1):
+      fix IS_I9XX macro in i915 DRM driver
+
+Jim Meyering (1):
+      doc: fix typo in SubmittingPatches
+
+Jiri Slaby (2):
+      Char: ip2, fix sparse warnings
+      Char: rio, fix sparse warnings
+
+Johann Felix Soden (1):
+      ata/sata_fsl: Remove unused variable in sata_fsl_probe
+
+Johannes Berg (1):
+      nl80211: fix STA AID bug
+
+Jonathan Corbet (2):
+      Add the seq_file documentation
+      Fill out information on patch tags in SubmittingPatches
+
+Joonwoo Park (3):
+      [LLC]: bogus llc packet length
+      [LLC]: station source mac address
+      [LLC]: skb allocation size for responses
+
+Josef Bacik (1):
+      selinux: prevent rentry into the FS
+
+Joy Latten (1):
+      [CRYPTO] xcbc: Fix crash when ipsec uses xcbc-mac with big data chunk
+
+Julia Lawall (1):
+      drivers/net/wireless/iwlwifi/iwl-4965.c: correct use of ! and &
+
+KAMEZAWA Hiroyuki (1):
+      memcg: fix node_state handling
+
+Karsten Wiese (1):
+      x86: fix call to set_cyc2ns_scale() from time_cpufreq_notifier()
+
+Kay Sievers (5):
+      spi: fix platform driver hotplug/coldplug
+      usb gadget: fix platform driver hotplug/coldplug
+      usb host: fix platform driver hotplug/coldplug
+      watchdog: fix platform driver hotplug/coldplug
+      rtc: fix platform driver hotplug/coldplug
+
+Ke Wei (8):
+      [SCSI] mvsas: fill in error info record and phy mode6 bits.
+      [SCSI] mvsas: a tag handler implementation
+      [SCSI] mvsas : interrupt handling
+      [SCSI] mvsas: check hd whether unplugged
+      [SCSI] mvsas: retry aborting task.
+      [SCSI] mvsas: fix the buffer of rx DMA overflow bug
+      [SCSI] mvsas: get phy info.
+      [SCSI] mvsas: check subsystem id
+
+Ken'ichi Ohmichi (1):
+      vmcoreinfo: add the symbol "phys_base"
+
+Kim Phillips (2):
+      [POWERPC] 83xx: enable usb in 837x rdb and 83xx defconfigs
+      [POWERPC] sata_fsl: reduce compatibility to fsl,pq-sata
+
+Krzysztof Helt (1):
+      acpi thermal: fix result check
+
+Kumar Gala (2):
+      [POWERPC] fsldma: Use compatiable binding as spec
+      [POWERPC] Fix defconfigs so we dont set both GENRTC and RTCLIB
+
+Larry Finger (1):
+      ssb-pcicore: Fix IRQ TPS flag handling
+
+Laurent Pinchart (1):
+      [POWERPC] Fix CPM2 SCC1 clock initialization.
+
+Leonardo Potenza (1):
+      [ATM] drivers/atm/iphase.c: compilation warning fix
+
+Linus Torvalds (6):
+      parport_pc: make sure to release IO ports after probing for IT87XX
+      Be more careful about marking buffers dirty
+      Revert "ACPI: Ignore _BQC object when registering backlight device"
+      Revert "smc91x: fix build breakage from the SMC_GET_MAC_ADDR API upgrade"
+      Add commentary about the new "asmlinkage_protect()" macro
+      Linux 2.6.25-rc9
+
+Marc Pignat (1):
+      atmel_serial: fix uart/console concurrent access
+
+Mark Fasheh (1):
+      Add additional examples in Documentation/spinlocks.txt
+
+Mark McLoughlin (3):
+      xen: refactor xen_{alloc,release}_{pt,pd}()
+      xen: Do not pin/unpin PMD pages
+      xen: Clear PG_pinned in release_{pt,pd}()
+
+Mathieu Desnoyers (1):
+      markers: use synchronize_sched()
+
+Matt Carlson (1):
+      [TG3]: Add PHY workaround for 5784
+
+Matti Linnanvuori (1):
+      net: Comment dev_kfree_skb_irq and dev_kfree_skb_any better
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (7499): v4l/dvb Kconfig: Fix bugzilla #10067
+
+Maxim Shchetynin (1):
+      [POWERPC] Fix rtas_flash procfs interface
+
+Michael Abd-El-Malek (1):
+      xen: fix grant table bug
+
+Michael Buesch (3):
+      b43: Add DMA mapping failure messages
+      b43: Fix PCMCIA IRQ routing
+      ssb-mipscore: Fix interrupt vectors
+
+Michael Ellerman (1):
+      Make pasemi_mac.c depend on PPC_PASEMI to prevent link errors
+
+Michael Hennerich (1):
+      spi: spi_bfin5xx: remove unused label
+
+Michael Krufky (4):
+      V4L/DVB (7495): s5h1409: fix blown-away bit in function s5h1409_set_gpio
+      V4L/DVB (7496): pvrusb2: add new usb pid for 75xxx models
+      V4L/DVB (7497): pvrusb2: add new usb pid for 73xxx models
+      pvrusb2: fix broken build due to patch order dependency
+
+Michael Trimarchi (1):
+      atmel_serial: avoid stopping pdc during transmission
+
+Mike Frysinger (3):
+      Blackfin EMAC Driver: delete unused variables to fixup gcc warnings
+      usb net: asix does not really need 10/100mbit
+      spi: spi_bfin5xx build fix
+
+Mike Pagano (1):
+      cciss: error: implicit declaration of function 'sg_init_table'
+
+Mike Snitzer (1):
+      nbd: prevent sock_xmit from attempting to use a NULL socket
+
+Patrick McHardy (3):
+      [LLC]: Restrict LLC sockets to root
+      [XFRM]: xfrm_user: fix selector family initialization
+      [NETFILTER]: xt_hashlimit: fix mask calculation
+
+Paul Menage (2):
+      cgroups: add cgroup support for enabling controllers at boot time
+      cgroups: include hierarchy ids in /proc/<pid>/cgroup
+
+Paul Mundt (1):
+      i2c-ibm_iic: Fast mode parm desc fixup
+
+Pavel Emelyanov (2):
+      [VLAN]: Proc entry is not renamed when vlan device name changes.
+      [VLAN]: Fix egress priority mappings leak.
+
+Pavel Machek (1):
+      x86, agpgart: scary messages are fortunately obsolete
+
+Pete Zaitcev (1):
+      ub: remove BUG() after __blk_end_request and fix the condition causing it
+
+Peter Korsgaard (1):
+      dm9601: Fix multicast hash table handling
+
+Ralf Baechle (1):
+      [MIPS] Handle aliases in vmalloc correctly.
+
+Randy Dunlap (1):
+      rtc: rtc-s35390a.c needs the bitreverse library
+
+Ravikiran G Thirumalai (1):
+      x86: fix breakage of vSMP irq operations
+
+René Bürgel (1):
+      [POWERPC] Fix MPC5200 (not B!) device tree so FEC ethernet works
+
+Richard Kennedy (1):
+      USB: ohci: fix 2 timers to fire at jiffies + 1s
+
+Robert Fitzsimons (3):
+      V4L/DVB (7277): bttv: Re-enabling radio support requires the use of struct bttv_fh
+      V4L/DVB (7278): bttv: Re-enable radio tuner support for VIDIOCGFREQ/VIDIOCSFREQ ioctls
+      V4L/DVB (7400): bttv: Add a radio compat_ioctl file operation
+
+Robert P. J. Day (3):
+      lapb: use the shorter LIST_HEAD form for brevity
+      bluetooth: replace deprecated RW_LOCK_UNLOCKED macros
+      efs: update error msg to not refer to deleted read_inode()
+
+Robert Spanton (1):
+      USB: serial: ti_usb_3410_5052: Correct TUSB3410 endpoint requirements.
+
+Roland McGrath (3):
+      x86 ptrace: avoid unnecessary wrmsr
+      asmlinkage_protect replaces prevent_tail_call
+      asmlinkage_protect sys_io_getevents
+
+Roman Zippel (1):
+      HFS+: fix unlink of links
+
+Rusty Russell (3):
+      [NET]: Don't send ICMP_FRAG_NEEDED for GSO packets
+      Fix booting pentium+ with dodgy TSC
+      virtio: remove overzealous BUG_ON.
+
+Sergei Shtylyov (3):
+      [MIPS] Pb1200: Fix header breakage
+      [MIPS] Make KGDB compile on UP
+      siimage: fix kernel oops on PPC 44x
+
+Sreenivasa Honnur (1):
+      S2io: Version update for Tx completion patch
+
+Stefano Brivio (1):
+      b43legacy: fix bcm4303 crash
+
+Stephen Hemminger (1):
+      sky2: fix suspend/resume races
+
+Stephen Smalley (2):
+      selinux: handle files opened with flags 3 by checking ioctl permission
+      SELinux: more GFP_NOFS fixups to prevent selinux from re-entering the fs code
+
+Steven Rostedt (1):
+      pop previous section in alternative.c
+
+Steven Toth (3):
+      V4L/DVB (7464): Convert driver to use a single SRAM memory map
+      V4L/DVB (7465): Fix eeprom parsing and errors on the HVR1800 products
+      V4L/DVB (7466): Avoid minor model number warning when an OEM HVR1250 board is detected
+
+Suresh Siddha (1):
+      x86: fix 64-bit asm NOPS for CONFIG_GENERIC_CPU
+
+Sven Schnelle (3):
+      afs: add missing up_write() on return
+      afs: remove smp_prcessor_id() from debug macro
+      rxrpc: remove smp_processor_id() from debug macro
+
+Tejun Heo (3):
+      libata: uninline atapi_cmd_type()
+      libata: ATA_12/16 doesn't fall into ATAPI_MISC
+      pata_ali: disable ATAPI DMA
+
+Thomas Gleixner (2):
+      x86: tsc prevent time going backwards
+      x86: revert assign IRQs to hpet timer
+
+Thomas Graf (1):
+      [ESP]: Ensure IV is in linear part of the skb to avoid BUG() due to OOB access
+
+Till Harbaum (1):
+      i2c-tiny-usb: New VID/PID pair
+
+Tobias Mueller (1):
+      Input: appletouch - add product IDs for the 4th generation MacBooks
+
+Trond Myklebust (1):
+      SUNRPC: don't call flush_dcache_page() with an invalid pointer
+
+Troy Kisky (1):
+      i2c-davinci: Fix lost interrupt
+
+Valentine Barshak (1):
+      ibm_newemac: emac_tx_csum typo fix
+
+Venki Pallipadi (1):
+      x86: Simplify cpu_idle_wait
+
+Vitja Makarov (1):
+      spi: spi_bfin5xx: fix probe() sequencing
+
+Vladimir Koutny (2):
+      mac80211: correct use_short_preamble handling
+      mac80211: use short_preamble mode from capability if ERP IE not present
+
+Will Newton (1):
+      Fix a typo in highres.txt
+
+YOSHIFUJI Hideaki (2):
+      [IPV6] MCAST: Ensure to check multicast listener(s).
+      [IP] UDP: Use SEQ_START_TOKEN.
