@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYDKIIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYDKIIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbYDKIIH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbYDKIHy
+	id S1759524AbYDKIIy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbYDKIIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:07:54 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:36337 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1757561AbYDKIHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:07:53 -0400
-X-Spam-Check-By: mail.local.tull.net
-From: Nick Andrew <nick@nick-andrew.net>
-Subject: [PATCH 2/2] RAID: remove trailing space from printk line
-To: mingo@elte.hu, trivial@kernel.org, neilb@suse.de
-Cc: <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Date: Fri, 11 Apr 2008 18:07:43 +1000
-Message-ID: <20080411080743.12362.56864.stgit@marcab.local.tull.net>
-In-Reply-To: <20080411080637.12362.47954.stgit@marcab.local.tull.net>
-References: <20080411080637.12362.47954.stgit@marcab.local.tull.net>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+	Fri, 11 Apr 2008 04:08:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49677 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757799AbYDKIIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 04:08:38 -0400
+Date: Fri, 11 Apr 2008 10:13:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: npiggin@suse.de
+Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com,
+       andi@firstfloor.org, kniht@linux.vnet.ibm.com
+Subject: Re: [patch 11/17] hugetlbfs: support larger than MAX_ORDER
+Message-ID: <20080411081317.GQ10019@one.firstfloor.org>
+References: <20080410170232.015351000@nick.local0.net> <20080410171101.551336000@nick.local0.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080410171101.551336000@nick.local0.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RAID: remove trailing space from printk line
+>  	spin_lock(&hugetlb_lock);
+> -	if (h->surplus_huge_pages_node[nid]) {
+> +	if (h->surplus_huge_pages_node[nid] && h->order <= MAX_ORDER) {
 
-drivers/md/*.[ch] contains only one more printk line with a trailing space.
-Remove it.
+As Andrew Hastings pointed out earlier this all needs to be h->order < MAX_ORDER
+[got pretty much all the checks wrong off by one]. It won't affect anything
+on x86-64 but might cause problems on archs which have exactly MAX_ORDER
+sized huge pages.
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
+>  		update_and_free_page(h, page);
+>  		h->surplus_huge_pages--;
+>  		h->surplus_huge_pages_node[nid]--;
+> @@ -220,6 +221,9 @@ static struct page *alloc_fresh_huge_pag
+>  {
+>  	struct page *page;
+>  
+> +	if (h->order > MAX_ORDER)
 
- drivers/md/md.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>= etc.
 
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 61ccbd2..5ebfb4d 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -4152,7 +4152,7 @@ static int hot_remove_disk(mddev_t * mddev, dev_t dev)
- 
- 	return 0;
- busy:
--	printk(KERN_WARNING "md: cannot remove active disk %s from %s ... \n",
-+	printk(KERN_WARNING "md: cannot remove active disk %s from %s ...\n",
- 		bdevname(rdev->bdev,b), mdname(mddev));
- 	return -EBUSY;
- }
-
+-Andi
