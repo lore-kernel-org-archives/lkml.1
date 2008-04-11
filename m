@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbYDKJXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYDKJZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759834AbYDKJXM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 05:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbYDKJW7
+	id S1759873AbYDKJZN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 05:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758836AbYDKJZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 05:22:59 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:17063 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758749AbYDKJW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 05:22:57 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-12.tower-164.messagelabs.com!1207905775!19769722!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Fri, 11 Apr 2008 11:21:58 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080411092158.GB31625@digi.com>
+	Fri, 11 Apr 2008 05:25:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:49538 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758348AbYDKJZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 05:25:00 -0400
+Date: Fri, 11 Apr 2008 11:24:50 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] [RFC] UIO: generic platform driver
+Message-ID: <20080411092449.GB3185@local>
 References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-4-git-send-email-Uwe.Kleine-Koenig@digi.com> <1207831023-8583-5-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080410224804.GI3193@local> <20080411062106.GA18096@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080411062106.GA18096@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Apr 2008 09:21:58.0445 (UTC) FILETIME=[7DF1E5D0:01C89BB5]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15842.003
-X-TM-AS-Result: No--17.959000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
-Hello,
+On Fri, Apr 11, 2008 at 08:21:06AM +0200, Uwe Kleine-KÃ¶nig wrote:
+> Hello Hans,
+> 
+> Hans J. Koch wrote:
+> > > +/* XXX: I thought there already exists something like STRINGIFY, but I could not
+> > > + * find it ...
+> > > + */
+> > 
+> > Why do you want that macro? You only use it once. The macro definition and the
+> > comment above are more than you can ever expect to save with it.
+> See below.
+> BTW, I found it, it's in linux/stringify.h.  And there are several
+> possible users:
 
+All right, I won't argue about this one. If you like it, use it.
+
+> 
+> > > +static int uio_pdrv_open(struct uio_info *info, struct inode *inode)
+> > > +{
+> > > +	struct uio_platdata *pdata = info->priv;
+> > > +	int ret;
+> > > +
+> > > +	BUG_ON(pdata->uioinfo != info);
+> > 
+> > How can this BUG ever be triggered?
+> I hope it cannot, that's why it is a bug if it happens. :-)  And one
+> should expect that no BUG_ON should ever be triggered.  I usually use
+> BUG_ON for "declaring" preconditions.
+
+OK, as this is a generic driver where we don't know what crap people
+will pass in, it might be justified. OK.
+
+>  
 > > > +	for (i = 0; i < pdev->num_resources; ++i) {
 > > > +		struct resource *r = &pdev->resource[i];
+> > 
+> > Please don't define new variables in the middle of a function.
+> This is a matter of taste.  In my eyes it's better to declare it here
+> because then it's easier to see where it's used.
+
+No. It's more important to see which variables are declared in the
+function and which are declared elsewhere. If you have to search the
+whole body of a function for possible declarations, this is BAD. And if
+it's not clear where a variable is used, the function is too long or has
+other style problems. Your function is short and clean, so where's the
+problem? Please move the declaration to the top of the function.
+
+>  
 > > > +
 > > > +		if (r->flags != IORESOURCE_MEM)
 > > > +			continue;
@@ -53,224 +85,80 @@ Hello,
 > > 		if (i >= MAX_UIO_MAPS) {
 > > 		...
 > OK.
-While reworking the code I saw that your variant is not correct because
-if pdev has resources with flags != IORESOURCE_MEM the constraint
+> 
+> BTW would you be open to redefine uio_info as:
+> 
+> 	struct uio_info {
+> 		struct uio_device       *uio_dev;
+> 		...
+> 		size_t			num_memmaps;
+> 		struct uio_mem		mem[];
+> 	}
+> 
+> This allows to allocate exactly the number of members in the mem array
+> that are needed (for the cost of a size_t).  (You just do:
+> 
+> 	uio_info uioinfo = kzalloc(sizeof(*uioinfo) + num_memmaps * sizeof(uioinfo->mem[0]), GFP_KERNEL);
+> 
+> it's still one chunk of memory and usage is similar---just with
+> MAX_UIO_MAPS substituted by uioinfo->num_memmaps.)
 
-	uiomem == &uioinfo->mem[i]
+I don't like it. It makes things more complicated without any obvious
+gain. sizeof(struct uio_info) would return wrong values, you need to
+free the extra memory, userspace applications need to be able to deal
+with 10000 mappings...
 
-doesn't hold.
+If there's an actual usecase where 5 mappings are not enough, we can
+talk about increasing MAX_UIO_MAPS to some other value.
 
-Below is a new version that uses linux/stringify and zeros size for
-unused mappings (line 102ff).
+> 	
+> > > +			dev_warn(&pdev->dev, "device has more than "
+> > > +					STRINGIFY(MAX_UIO_MAPS)
+> > > +					" I/O memory resources.\n");
+> > 
+> > What about this:
+> > 
+> > 			dev_warn(&pdev->dev, "device has more than %d"
+> > 				" I/O memory resources.\n", MAX_UIO_MAPS);
+> > 
+> > would save the macro.
+> The macro is for free, using "%d" is not:
+> 
+> 	ukleinek@zentaur:~/kbuild-ns921x$ size drivers/uio/uio_pdrv_with*
+> 	   text    data     bss     dec     hex filename
+> 	    808      72       0     880     370 drivers/uio/uio_pdrv_withoutstringify.o
+> 	    800      72       0     872     368 drivers/uio/uio_pdrv_withstringify.o
+> 
+> You might consider that a bit over-engineered :-)
 
-Best regards
-Uwe
+As I said above, feel free to use it.
 
- drivers/uio/Kconfig    |    7 ++
- drivers/uio/Makefile   |    1 +
- drivers/uio/uio_pdrv.c |  163 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 171 insertions(+), 0 deletions(-)
- create mode 100644 drivers/uio/uio_pdrv.c
+> 
+> > > +	ret = uio_register_device(&pdev->dev, pdata->uioinfo);
+> > > +
+> > > +	if (ret) {
+> > > +		clk_put(pdata->clk);
+> > > +err_clk_get:
+> > > +
+> > > +		kfree(pdata);
+> > > +err_alloc_pdata:
+> > > +err_uioinfo:
+> > > +		return ret;
+> > > +	}
+> > 
+> > How I hate labels within blocks... OK, I admit, it looks good here...
+> > Well...
+> That's a matter of taste, too, I like it that way.  Probably it doesn't
+> matter for the compiler (I havn't tried), but this way it's one goto
+> less.  And if it doesn't matter for the compiler it's at least nice for
+> the reader.  Though obviously YMMV.
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 6bc2891..5ec353f 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -26,4 +26,11 @@ config UIO_CIF
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called uio_cif.
- 
-+config UIO_PDRV
-+	tristate "Userspace I/O platform driver"
-+	help
-+	  Generic platform driver for Userspace I/O devices.
-+
-+	  If you don't know what to do here, say N.
-+
- endif
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index 7fecfb4..a6dcb99 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_UIO)	+= uio.o
- obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
-+obj-$(CONFIG_UIO_PDRV) += uio_pdrv.o
-diff --git a/drivers/uio/uio_pdrv.c b/drivers/uio/uio_pdrv.c
-new file mode 100644
-index 0000000..47506aa
---- /dev/null
-+++ b/drivers/uio/uio_pdrv.c
-@@ -0,0 +1,163 @@
-+/*
-+ * drivers/uio/uio_pdrv.c
-+ *
-+ * Copyright (C) 2008 by Digi International Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+#include <linux/clk.h>
-+#include <linux/platform_device.h>
-+#include <linux/uio_driver.h>
-+#include <linux/stringify.h>
-+
-+#define DRIVER_NAME "uio"
-+
-+struct uio_platdata {
-+	struct uio_info *uioinfo;
-+	struct clk *clk;
-+};
-+
-+static int uio_pdrv_open(struct uio_info *info, struct inode *inode)
-+{
-+	struct uio_platdata *pdata = info->priv;
-+	int ret;
-+
-+	BUG_ON(pdata->uioinfo != info);
-+
-+	ret = clk_enable(pdata->clk);
-+	if (ret)
-+		/* XXX: better use dev_dbg, but which device should I use?
-+		 * info->uio_dev->dev isn't accessible here as struct uio_device
-+		 * is opaque.
-+		 */
-+		pr_debug("%s: err_clk_enable -> %d\n", __func__, ret);
-+
-+	return ret;
-+}
-+
-+static int uio_pdrv_release(struct uio_info *info, struct inode *inode)
-+{
-+	struct uio_platdata *pdata = info->priv;
-+
-+	BUG_ON(pdata->uioinfo != info);
-+
-+	clk_disable(pdata->clk);
-+
-+	return 0;
-+}
-+
-+static int uio_pdrv_probe(struct platform_device *pdev)
-+{
-+	struct uio_info *uioinfo = pdev->dev.platform_data;
-+	struct uio_platdata *pdata;
-+	struct uio_mem *uiomem;
-+	int ret = -ENODEV;
-+	int i;
-+
-+	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-+		dev_dbg(&pdev->dev, "%s: err_uioinfo\n", __func__);
-+		goto err_uioinfo;
-+	}
-+
-+	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata) {
-+		ret = -ENOMEM;
-+		dev_dbg(&pdev->dev, "%s: err_alloc_pdata\n", __func__);
-+		goto err_alloc_pdata;
-+	}
-+
-+	pdata->uioinfo = uioinfo;
-+
-+	pdata->clk = clk_get(&pdev->dev, DRIVER_NAME);
-+	if (IS_ERR(pdata->clk)) {
-+		ret = PTR_ERR(pdata->clk);
-+		dev_dbg(&pdev->dev, "%s: err_clk_get -> %d\n", __func__, ret);
-+		goto err_clk_get;
-+	}
-+
-+	uiomem = &uioinfo->mem[0];
-+
-+	for (i = 0; i < pdev->num_resources; ++i) {
-+		struct resource *r = &pdev->resource[i];
-+
-+		if (r->flags != IORESOURCE_MEM)
-+			continue;
-+
-+		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
-+			dev_warn(&pdev->dev, "device has more than "
-+					stringify(MAX_UIO_MAPS)
-+					" I/O memory resources.\n");
-+			break;
-+		}
-+
-+		uiomem->memtype = UIO_MEM_PHYS;
-+		uiomem->addr = r->start;
-+		uiomem->size = r->end - r->start + 1;
-+		++uiomem;
-+	}
-+
-+	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
-+		uiomem->size = 0;
-+		++uiomem;
-+	}
-+
-+	pdata->uioinfo->open = uio_pdrv_open;
-+	pdata->uioinfo->release = uio_pdrv_release;
-+	pdata->uioinfo->priv = pdata;
-+
-+	ret = uio_register_device(&pdev->dev, pdata->uioinfo);
-+
-+	if (ret) {
-+		clk_put(pdata->clk);
-+err_clk_get:
-+
-+		kfree(pdata);
-+err_alloc_pdata:
-+err_uioinfo:
-+		return ret;
-+	}
-+
-+	platform_set_drvdata(pdev, pdata);
-+
-+	return 0;
-+}
-+
-+static int uio_pdrv_remove(struct platform_device *pdev)
-+{
-+	struct uio_platdata *pdata = platform_get_drvdata(pdev);
-+
-+	uio_unregister_device(pdata->uioinfo);
-+
-+	clk_put(pdata->clk);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver uio_pdrv = {
-+	.probe = uio_pdrv_probe,
-+	.remove = uio_pdrv_remove,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init uio_pdrv_init(void)
-+{
-+	return platform_driver_register(&uio_pdrv);
-+}
-+
-+static void __exit uio_pdrv_exit(void)
-+{
-+	platform_driver_unregister(&uio_pdrv);
-+}
-+module_init(uio_pdrv_init);
-+module_exit(uio_pdrv_exit);
-+
-+MODULE_AUTHOR("Uwe Kleine-Koenig");
-+MODULE_DESCRIPTION("Userspace I/O platform driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:" DRIVER_NAME);
--- 
-1.5.4.5
+As I said, it looks OK here. You can keep it if you like it.
 
+I'd like to thank you for your work. After giving it some thought, I
+really like the idea of having a generic UIO driver for platform
+devices. I think many people (including /me) will use it. So, please send
+an updated patch, I think we should push it to mainline.
 
-
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Thanks,
+Hans
