@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYDKOeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYDKOgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbYDKOeV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYDKOeO
+	id S1760208AbYDKOgs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYDKOgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:34:14 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:1908 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757774AbYDKOeN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:34:13 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 11 Apr 2008 14:34:10.0358 (UTC) FILETIME=[1B08FD60:01C89BE1]
-Content-class: urn:content-classes:message
-Subject: Re: VM - a plenty of inactive memory
-Date: Fri, 11 Apr 2008 10:34:10 -0400
-Message-ID: <Pine.LNX.4.61.0804111024020.4784@chaos.analogic.com>
-In-Reply-To: <cf40c6a90804110613v46de93f2nea1b2376bbd48953@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: VM - a plenty of inactive memory
-thread-index: Acib4RsQuyNfC+e0T0yXhxe8Ce9V4Q==
-References: <cf40c6a90804090213u55491ceay9b211d75d74dc29c@mail.gmail.com> <874pabrx6b.fsf@saeurebad.de> <cf40c6a90804110613v46de93f2nea1b2376bbd48953@mail.gmail.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Andreas Grimm" <agrimm61@gmail.com>
-Cc: "Johannes Weiner" <hannes@saeurebad.de>, <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.000.1023-15842.003
-X-TM-AS-Result: No--13.031700-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Fri, 11 Apr 2008 10:36:36 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41823 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758488AbYDKOgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 10:36:36 -0400
+Date: Fri, 11 Apr 2008 18:35:37 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
+       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Message-ID: <20080411143537.GA27874@2ka.mipt.ru>
+References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FF6555.50004@rtr.ca>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 11, 2008 at 09:19:17AM -0400, Mark Lord (lkml@rtr.ca) wrote:
+> >>Or I can ignore it, like the net developers, since I have a workaround.
+> >>And then we'll see what other apps are broken upon 2.6.25 final release.
+> 
+> That's not demanding, that's quite relaxed.  I had a good workaround,
+> and didn't really care any more at that point.  Just though it was rather
+> odd that none of the developers seemed interested in tracking it down.
+> I offered tons of help, gave it, and said I didn't have time for a full
+> bisect at that juncture.
+> 
+> For that, I get repeatedly slammed by the netdev folks.
+> Even after I put aside *paid* work to submit to your demands.
+> 
+> Next time around, I won't bother reporting bugs to you folks,
+> that's for damned sure.
 
-On Fri, 11 Apr 2008, Andreas Grimm wrote:
+Actually that will be the best decision from evolutional point of view. 
 
-> Hi everybody,
->
-> i investigated this further. The tunables swappiness, drop_caches etc.
-> are no options to solve this. The problem is becoming very unpleasent,
-> because the system isn't able to cache that much:
->
-> The 16GB system (expected behaviour):
-> MemTotal:     16619808 kB
-> MemFree:       4490032 kB
-> Cached:        6929448 kB
-> Inactive:      1670812 kB
->
-> The 32GB system :
-> MemTotal:     33265916 kB
-> MemFree:        600000 kB
-> Cached:        1561124 kB
-> Inactive:     25873128 kB
->
-> Don't you think this is insane? Wasting 25GB at the expense of caching
-> (compare the cached value)? I'm clueless about this issue. Who (which
-> process) owns that memory? Is there a way to flush this inactive
-> memory? I assume that this memory hasn't been reclaimed for days,
-> because the amount of inactive memory is at this level for days now.
->
-> All values in /proc/sys/vm are at the defaults again, on both systems.
->
-> Any help would be appreciated.
->
-> Andreas
+Bugs, which 'are thrown back to your face' like what you did with this
+one, are useless. Developers already know, that bugs exist. 
 
-Wasting 25GB? It looks to me as though the kernel cached
-(didn't write pages to disk yet) just about all it needed,
-and there is lots of memory that it just doesn't need
-  --yet! This means that if you have tasks that need memory
-in a hurry, they'll get it without any disk accesses.
+If you do not care about bug, why do you ever bothered filling it?
+You expected that anyone will start running to fix it for you.
+You were wrong. Developers only fix bugs, which do not require
+mind-reading and magnetic quantification of your brain.
 
-The kernel doesn't expand to use all the memory just to
-spread itself all over the place. It uses what it needs,
-caches some buffered data, and keepts track of all the
-memory it has. If you want to use more cache, do '-lsR /'.
-That'll read every directory into memory. It probably
-won't go away until someody needs more memory.
+If you do not want to help fixing it, do not expect it will be fixed at
+all. Sentence, that you will probably understand better: no one get paid
+to fix it.
 
+No one get fun fixing something with description you provided
+(not sure about David though, probably he has some masochistic
+propensities doing that and trying to get some bits of information
+from reportes for years).
+You were suggested some simple checks, they did not help.
+Developers can not remotely control electrons in your wires, so next
+sugestion was bisecting, which ended up with some crap from your point.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+If you want bug got fixed, provide info and if it is not enough, help by
+trying what you are being suggested, if you do not want, stop.
 
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- 
+	Evgeniy Polyakov
