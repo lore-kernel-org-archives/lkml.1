@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYDKItS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYDKIun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbYDKItS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 04:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757833AbYDKItK
+	id S1759428AbYDKIun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 04:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbYDKIuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 04:49:10 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:43294 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756662AbYDKItJ (ORCPT
+	Fri, 11 Apr 2008 04:50:35 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:58183 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757833AbYDKIuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 04:49:09 -0400
-Date: Fri, 11 Apr 2008 10:49:03 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080411084903.GK26777@enneenne.com>
-References: <20080410160630.GA24885@enneenne.com> <1207851751-25703-1-git-send-email-giometti@linux.it> <1207851751-25703-2-git-send-email-giometti@linux.it> <1207851751-25703-3-git-send-email-giometti@linux.it> <1207851751-25703-4-git-send-email-giometti@linux.it> <1207851751-25703-5-git-send-email-giometti@linux.it> <1207851751-25703-6-git-send-email-giometti@linux.it> <20080410210918.3be98868@core> <20080411075515.GH26777@enneenne.com> <20080411092840.3cc4de67@core>
+	Fri, 11 Apr 2008 04:50:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=du8poAkJ8OaGYswT6440blIrfpRXL5Jv318Ckl3ucJCvAmyL2mHZjCYfhd07otntzjN9aQ9EYS6pDuLFjk8hJ/Vek46Ia9sJdwkOCd1ytLP1+b21GwWgENazzlrUyc8+piOkcR2BI/bHQO1yiKEC4aTtFLwAHqKostKjBMiZB2U=
+Message-ID: <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
+Date: Fri, 11 Apr 2008 11:50:33 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
+       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080411092840.3cc4de67@core>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <20080411074145.GA4944@elte.hu>
+	 <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
+X-Google-Sender-Auth: 6fa7331f9dd1544e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 09:28:40AM +0100, Alan Cox wrote:
-> > How can I do that? From a serial device I just need the IRQ time
-> > arrival, no other data at all. How a ldisc can help me in this task?
-> 
-> At the moment you can't. That needs fixing. Most of the infrastructure is
-> there but not all of it.
-> 
-> > This patch adds PPS support just for UARTs, other devices should
-> > provide their own support by using the new provided API. :)
-> 
-> I do not want PPS code adding to every single serial driver. That way
-> lies madness. We do it once, and in the right layer. I'll take a further
+Hi Ingo,
+>  On Fri, Apr 11, 2008 at 10:41 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>  >  our x86.git randconfig auto-qa found a mm/slab.c early-bootup crash in
+>  >  mainline that got introduced since v2.6.24.
+>  >
+>  >   http://redhat.com/~mingo/misc/log-Thu_Apr_10_10_41_16_CEST_2008.bad
+>  >   http://redhat.com/~mingo/misc/config-Thu_Apr_10_10_41_16_CEST_2008.bad
+>  >
+>  >  Note, the very same bzImage does not crash on other testboxes - only on
+>  >  this 8-way box with 4GB of RAM.
+>  >
+>  >  i tried a "use v2.6.24's slab.c" revert (with a few API fixes needed for
+>  >  it to build on .25) but that didnt solve the problem either.
 
-The problem is that deferencing the pps_event() call will cause severe
-problems to PPS accuracy... here you can find some considerations on
-this topic:
+On Fri, Apr 11, 2008 at 11:21 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>  As mentioned privately, I suspect it's the page allocator changes that
+>  went into 2.6.24. Mel, Christoph, any ideas?
 
-   http://ml.enneenne.com/pipermail/linuxpps/2008-April/001738.html
+So I'm thinking it's probably related to this patch:
 
-> look at it after the tty->ops patch is merged. At that point we'll be in
-> a good position to add the needed ops/callbacks.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=523b945855a1427000ffc707c610abe5947ae607
 
-Can you please give me an URL where I can see that patch?
+As kmalloc_node() in setup_cpu_cache() returns NULL, it seems likely
+to be due to the use of GFP_THISNODE in cache_alloc_refill() when
+calling cache_grow() and that the semantics changed. No idea why page
+allocator would think your UMA "local node" has no memory though.
 
-Thanks a lot for your help,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+                        Pekka
