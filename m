@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbYDKUHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYDKUWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbYDKUHM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 16:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbYDKUG6
+	id S1760341AbYDKUWx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 16:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759031AbYDKUWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 16:06:58 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45028 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757321AbYDKUG5 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 16:06:57 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Mark Lord <lkml@rtr.ca>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       tilman@imap.cc, yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>,
-       rjw@sisk.pl, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-In-Reply-To: Your message of "Fri, 11 Apr 2008 10:59:57 EDT."
-             <47FF7CED.9090601@rtr.ca>
-From: Valdis.Kletnieks@vt.edu
-References: <47FEADCB.7070104@rtr.ca> <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru>
-            <47FF7CED.9090601@rtr.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1207943927_4539P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 11 Apr 2008 15:58:47 -0400
-Message-ID: <22897.1207943927@turing-police.cc.vt.edu>
+	Fri, 11 Apr 2008 16:22:41 -0400
+Received: from ZSM1387.piap.pl ([195.187.100.11]:52324 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758942AbYDKUWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 16:22:40 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       "Kok\, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak\, John" <john.ronciak@intel.com>,
+       "Allan\, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+References: <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com>
+	<20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com>
+	<20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org>
+	<20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com>
+	<20080411164542.GA4066@infradead.org>
+	<alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org>
+	<20080411175304.GF11962@parisc-linux.org>
+	<alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 11 Apr 2008 22:22:37 +0200
+In-Reply-To: <alpine.LFD.1.00.0804111146450.3143@woody.linux-foundation.org> (Linus Torvalds's message of "Fri\, 11 Apr 2008 11\:51\:07 -0700 \(PDT\)")
+Message-ID: <m3fxtsp2eq.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1207943927_4539P
-Content-Type: text/plain; charset=us-ascii
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-On Fri, 11 Apr 2008 10:59:57 EDT, Mark Lord said:
+> Nobody wants to care deeply whether it's a PCI-E or PCI chip. In fact, 
+> it's almost impossible to tell. Here, quickly, tell me which one mine is 
+> (this is from /sbin/lspci):
+>
+> 	00:19.0 Ethernet controller: Intel Corporation 82566DM Gigabit Network Connection (rev 02)
+>
+> and tell me how you knew..
 
-> The one thing I did not have time for initially,
-> was a painstaking blunt instrument binary search of
-> every commit since v2.6.24.
+I guess PCIE. You already came across a similar problem.
 
-The nice thing about binary search is that it's by definition an
-O(log2(N)) operation, which isn't bad at all as far as algorithms go.
-
-The truly blunt instrument here would be a linear search of every commit...
-
-
-
---==_Exmh_1207943927_4539P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFH/8L3cC3lWbTT17ARAqJAAKC17YoTbNXtjO74Cjix2TH8lXnMEgCgxEhM
-zVFXyJR40oOzhDfY/4004+k=
-=DXhx
------END PGP SIGNATURE-----
-
---==_Exmh_1207943927_4539P--
+Have I won something? :-)
+-- 
+Krzysztof Halasa
