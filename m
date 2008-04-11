@@ -1,113 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761141AbYDKQVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbYDKQVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761141AbYDKQVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 12:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbYDKQU0
+	id S1761276AbYDKQVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 12:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760576AbYDKQU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 12:20:26 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34215 "EHLO
+	Fri, 11 Apr 2008 12:20:28 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34258 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760297AbYDKQUZ (ORCPT
+	with ESMTP id S1760404AbYDKQU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 12:20:25 -0400
-Message-Id: <20080411161957.931693000@bull.net>
+	Fri, 11 Apr 2008 12:20:27 -0400
+Message-Id: <20080411161958.430185000@bull.net>
 References: <20080411161702.460410000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Fri, 11 Apr 2008 18:17:04 +0200
+Date: Fri, 11 Apr 2008 18:17:05 +0200
 From: Nadia.Derbey@bull.net
 To: efault@gmx.de
 Cc: manfred@colorfullife.com, linux-kernel@vger.kernel.org,
        paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
        peterz@infradead.org, xemul@openvz.org,
        Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 02/13] Change ridr structure
-Content-Disposition: inline; filename=change_ridr_struct.patch
+Subject: [PATCH 03/13] Fix ridr_pre_get()
+Content-Disposition: inline; filename=ridr_pre_get.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 02/13]
+[PATCH 03/13]
 
-This patch changes the ridr structures to make them use RCU.
+This patch only fixes the ridr_pre_get() portion of ridr.c, to introduce a
+per-cpu pool of preloaded ridr layer structures, and define the
+ridr_pre_get[_end]() routines.
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 ---
- include/linux/ridr.h |   42 +++++++++++++++++++++++++++---------------
- 1 file changed, 27 insertions(+), 15 deletions(-)
+ include/linux/ridr.h |    7 ++++++-
+ lib/ridr.c           |   50 ++++++++++++++++++++++++++++++++++++--------------
+ 2 files changed, 42 insertions(+), 15 deletions(-)
 
 Index: linux-2.6.25-rc8-mm1/include/linux/ridr.h
 ===================================================================
---- linux-2.6.25-rc8-mm1.orig/include/linux/ridr.h	2008-04-11 17:17:41.000000000 +0200
-+++ linux-2.6.25-rc8-mm1/include/linux/ridr.h	2008-04-11 17:34:35.000000000 +0200
-@@ -9,41 +9,53 @@
- #define _RIDR_H_
- 
- #include <linux/idr.h>
-+#include <linux/rcupdate.h>
- 
- struct ridr_layer {
- 	unsigned long		 bitmap; /* A zero bit means "space here" */
- 	struct ridr_layer	*ary[1<<IDR_BITS];
- 	int			 count;	 /* When zero, we can release it */
-+	struct rcu_head		 rcu_head;
- };
- 
- struct ridr {
--	struct ridr_layer *top;
--	struct ridr_layer *id_free;
- 	int		  layers;
--	int		  id_free_cnt;
--	spinlock_t	  lock;
-+	gfp_t		  gfp_mask;
-+	struct ridr_layer *top;
- };
- 
--#define RIDR_INIT(name)						\
-+#define RIDR_INIT(mask)						\
- {								\
--	.top		= NULL,					\
--	.id_free	= NULL,					\
- 	.layers 	= 0,					\
--	.id_free_cnt	= 0,					\
--	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),	\
-+	.gfp_mask 	= (mask),				\
-+	.top		= NULL,					\
- }
--#define DEFINE_RIDR(name)	struct ridr name = RIDR_INIT(name)
-+#define DEFINE_RIDR(name, mask)	struct ridr name = RIDR_INIT(mask)
- 
--#define INIT_RIDR(name)							\
-+#define INIT_RIDR(name, mask)						\
- do {									\
--	(name)->top		= NULL;					\
--	(name)->id_free		= NULL;					\
- 	(name)->layers		= 0;					\
--	(name)->id_free_cnt	= 0;					\
--	(name)->lock		= __SPIN_LOCK_UNLOCKED(name.lock);	\
-+	(name)->gfp_mask 	= (mask);				\
-+	(name)->top		= NULL;					\
- } while (0)
- 
- 
-+/**
-+ * Ridr synchronization (see radix-tree.h)
-+ *
-+ * ridr_find() is able to be called locklessly, using RCU. The caller must
-+ * ensure calls to this function are made within rcu_read_lock() regions.
-+ * Other readers (lock-free or otherwise) and modifications may be running
-+ * concurrently.
-+ *
-+ * It is still required that the caller manage the synchronization and
-+ * lifetimes of the items. So if RCU lock-free lookups are used, typically
-+ * this would mean that the items have their own locks, or are amenable to
-+ * lock-free access; and that the items are freed by RCU (or only freed after
-+ * having been deleted from the ridr tree *and* a synchronize_rcu() grace
-+ * period).
-+ */
-+
- /*
-  * This is what we export.
+--- linux-2.6.25-rc8-mm1.orig/include/linux/ridr.h	2008-04-11 17:34:35.000000000 +0200
++++ linux-2.6.25-rc8-mm1/include/linux/ridr.h	2008-04-11 17:41:20.000000000 +0200
+@@ -61,10 +61,15 @@ do {									\
   */
+ 
+ void *ridr_find(struct ridr *idp, int id);
+-int ridr_pre_get(struct ridr *idp, gfp_t gfp_mask);
++int ridr_pre_get(gfp_t gfp_mask);
+ int ridr_get_new(struct ridr *idp, void *ptr, int *id);
+ void ridr_remove(struct ridr *idp, int id);
+ 
+ void __init ridr_init_cache(void);
+ 
++static inline void ridr_pre_get_end(void)
++{
++	preempt_enable();
++}
++
+ #endif /* _RIDR_H_ */
+Index: linux-2.6.25-rc8-mm1/lib/ridr.c
+===================================================================
+--- linux-2.6.25-rc8-mm1.orig/lib/ridr.c	2008-04-11 17:30:28.000000000 +0200
++++ linux-2.6.25-rc8-mm1/lib/ridr.c	2008-04-11 17:40:13.000000000 +0200
+@@ -13,6 +13,15 @@
+ 
+ static struct kmem_cache *ridr_layer_cache;
+ 
++/*
++ * Per-cpu pool of preloaded layers
++ */
++struct ridr_preget {
++	int nr;
++	struct ridr_layer *layers[MAX_LEVEL];
++};
++DEFINE_PER_CPU(struct ridr_preget, ridr_pregets) = { 0, };
++
+ static struct ridr_layer *alloc_layer(struct ridr *idp)
+ {
+ 	struct ridr_layer *p;
+@@ -75,23 +84,36 @@ static void ridr_mark_full(struct ridr_l
+  * @idp:	ridr handle
+  * @gfp_mask:	memory allocation flags
+  *
+- * This function should be called prior to locking and calling the
+- * following function.  It preallocates enough memory to satisfy
+- * the worst possible allocation.
++ * Load up this CPU's ridr_layer buffer with sufficient objects to
++ * ensure that the addition of a single element in the tree cannot fail.
+  *
+- * If the system is REALLY out of memory this function returns 0,
+- * otherwise 1.
++ * If the system is REALLY out of memory this function returns 0, with
++ * preemption enabled.
++ * Otherwise 1, with preemption disabled.
+  */
+-int ridr_pre_get(struct ridr *idp, gfp_t gfp_mask)
++int ridr_pre_get(gfp_t gfp_mask)
+ {
+-	while (idp->id_free_cnt < IDR_FREE_MAX) {
+-		struct ridr_layer *new;
+-		new = kmem_cache_alloc(ridr_layer_cache, gfp_mask);
+-		if (new == NULL)
+-			return (0);
+-		free_layer(idp, new);
+-	}
+-	return 1;
++	struct ridr_preget *idp;
++	struct ridr_layer *layer;
++	int ret = 0;
++
++	preempt_disable();
++	idp = &__get_cpu_var(ridr_pregets);
++	while (idp->nr < ARRAY_SIZE(idp->layers)) {
++		preempt_enable();
++		layer = kmem_cache_alloc(ridr_layer_cache, gfp_mask);
++		if (layer == NULL)
++			goto out;
++		preempt_disable();
++		idp = &__get_cpu_var(ridr_pregets);
++		if (idp->nr < ARRAY_SIZE(idp->layers))
++			idp->layers[idp->nr++] = layer;
++		else
++			kmem_cache_free(ridr_layer_cache, layer);
++	}
++	ret = 1;
++out:
++	return ret;
+ }
+ EXPORT_SYMBOL(ridr_pre_get);
+ 
 
 --
