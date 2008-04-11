@@ -1,50 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbYDKLtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYDKLsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbYDKLtE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 07:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759712AbYDKLsv
+	id S1760631AbYDKLsr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 07:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759850AbYDKLsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 07:48:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33905 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760617AbYDKLsp (ORCPT
+	Fri, 11 Apr 2008 07:48:36 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:36625 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759712AbYDKLse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 07:48:45 -0400
-Date: Fri, 11 Apr 2008 13:49:30 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: matthltc@us.ibm.com
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 1/4] Container Freezer: Add TIF_FREEZE flag to all
-	architectures
-Message-ID: <20080411114930.GB1740@elf.ucw.cz>
-References: <20080403210316.397506379@us.ibm.com> <20080403210316.659937801@us.ibm.com>
+	Fri, 11 Apr 2008 07:48:34 -0400
+Message-ID: <47FF500E.6020503@nttdata.co.jp>
+Date: Fri, 11 Apr 2008 20:48:30 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+Organization: NTT DATA CORPORATION
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080403210316.659937801@us.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Stephen Smalley <sds@tycho.nsa.gov>
+CC: Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>	 <20080404122408.986477936@I-love.SAKURA.ne.jp>	 <200804071140.59247.paul.moore@hp.com>  <47FC8052.9070409@nttdata.co.jp>	 <1207745357.21223.391.camel@moss-spartans.epoch.ncsc.mil>	 <47FDAC57.9000701@nttdata.co.jp> <1207831882.21223.694.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1207831882.21223.694.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Apr 2008 11:48:31.0055 (UTC) FILETIME=[F6BFB5F0:01C89BC9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-04-03 14:03:17, matthltc@us.ibm.com wrote:
-> This patch is the first step in making the refrigerator() available 
-> to all architectures, even for those without power management. 
+On 4/10/2008 9:51 PM, Stephen Smalley wrote:
+>>> There are two options:
+>>> 1) Submit patches to pass down the vfsmounts to the vfs helpers so that
+>>> they can be passed to the existing security_inode hooks. -or-
+>>> 2) Submit patches to add new security hooks to the callers where the
+>>> vfsmount is already available (some have suggested moving the existing
+>>> security_inode hooks to the callers, but that would cause problems for
+>>> SELinux as I've posted elsewhere, so adding new hooks is preferable, and
+>>> then SELinux can just default to the dummy functions for those new
+>>> hooks).
+>> Thank you for your suggestions. I drew a diagram. Is this correct?
 > 
-> The purpose of such a change is to be able to use the refrigerator() 
-> in a new control group subsystem which will implement a control group
-> freezer.
-> 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> Cc: linux-pm@lists.linux-foundation.org
+> I think the text above is self-explanatory; I'm not sure what the
+> diagram adds.  Also, Matthew Wilcox pointed out a third option that you
+> ought to consider, and you can look to the example of audit filesystem
+> watches there, which leverages inotify internally.
+The diagram was meant to help clarifying things not to add/change
+the information. I also like texts but IMO diagrams are useful
+for starting arguments over networks.
 
-ACK.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes. Regarding the third option, Tetsuo is preparing to respond
+(Matthew, sorry for snail response. it's on the way).
+
+> If that isn't feasible for some reason, then option (2) should be fairly
+> straightforward - you just define and insert some new security hooks in
+> the callers where the vfsmount is already available.
+
+My diagram worked very well for me. I noticed theoretically
+there are four options.
+
+option (1) "pass down the vfsmounts to the vfs helpers"
+           (let "vfsmount" bridge namespace and filesystems)
++ LSM needs less changes
+- VFS and filesystems need more changes
+
+option (2) "add new security hooks to the callers"
+           (adding hooks in namespace)
++ VFS and filesystems need very little changes
+- LSM needs to be added new hooks
+
+option (3) "pathname based policy and inode based access control" (by Wilcox)
+           (self-explanatory)
++ does not need changes for LSM nor VFS
+- can not keep consistency of policy and results
+
+option (4) "introduce completely orthogonal access control besides LSM"
+           (like devcgroup, r/o bind mounts (in mm tree))
++ does not need LSM changes
++ pathname based MAC can coexists with label based MAC
+- should not ... (the LAST method)
+
+
+Regarding option 3, Tetsuo will explain difficulties in
+another message. TOMOYO Linux project is planning to
+make patches of option 2 because it's the most straightforward way
+as you suggested. Also we will be carefully watching the
+discussion of "vfs: add helpers to check r/o bind mounts".
+
+Regards,
+Toshiharu Harada
+NTT DATA CORPORATION
+
+
