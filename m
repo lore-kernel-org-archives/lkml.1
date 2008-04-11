@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYDKPAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYDKPFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbYDKPAj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 11:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760570AbYDKPAQ
+	id S1760360AbYDKPFO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 11:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759476AbYDKPFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 11:00:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41915 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760479AbYDKPAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 11:00:15 -0400
-Date: Fri, 11 Apr 2008 07:58:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] reorganize <linux/linkage.h>
-In-Reply-To: <20080411050019.GC27073@phobos.i.cabal.ca>
-Message-ID: <alpine.LFD.1.00.0804110747370.3143@woody.linux-foundation.org>
-References: <20080411050019.GC27073@phobos.i.cabal.ca>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 11 Apr 2008 11:05:01 -0400
+Received: from depni.sinp.msu.ru ([213.131.7.21]:60596 "EHLO depni.sinp.msu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759078AbYDKPFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 11:05:01 -0400
+X-Greylist: delayed 1311 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Apr 2008 11:05:01 EDT
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+References: <20080410160630.GA24885@enneenne.com>
+	<1207851751-25703-1-git-send-email-giometti@linux.it>
+	<1207851751-25703-2-git-send-email-giometti@linux.it>
+	<1207851751-25703-3-git-send-email-giometti@linux.it>
+	<1207851751-25703-4-git-send-email-giometti@linux.it>
+	<1207851751-25703-5-git-send-email-giometti@linux.it>
+	<1207851751-25703-6-git-send-email-giometti@linux.it>
+	<20080410210918.3be98868@core> <20080411075515.GH26777@enneenne.com>
+	<20080411092840.3cc4de67@core> <20080411084903.GK26777@enneenne.com>
+Date: Fri, 11 Apr 2008 18:43:07 +0400
+In-Reply-To: <20080411084903.GK26777@enneenne.com> (Rodolfo Giometti's message
+	of "Fri, 11 Apr 2008 10:49:03 +0200")
+Message-ID: <87prsw78qs.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rodolfo Giometti <giometti@enneenne.com> writes:
 
-On Fri, 11 Apr 2008, Kyle McMartin wrote:
+> The problem is that deferencing the pps_event() call will cause severe
+> problems to PPS accuracy... here you can find some considerations on
+> this topic:
 >
-> Commit 54a015104136974262afa4b8ddd943ea70dec8a2 adds some new magic
-> asmlinkage_protect gizmo, but that can only be used from C code, not
-> assembly. Protect relevant bits of <linux/linkage.h> with !__ASSEMBLY__
-> so this can't leak into assembly source.
+>    http://ml.enneenne.com/pipermail/linuxpps/2008-April/001738.html
+>
 
-Ok, so s390 had a similar issue, and I assumed that they were just usign a 
-broken C pre-processor for asm, but now I'm starting to wonder about it.
-
-Why cannot your pre-processor handle that thing?
-
-It doesn't matter if it is C or assembly, the pre-processor should be the 
-same. That #define isn't used for asm, so it shouldn't _matter_ for asm. 
-What's going on?
-
-I'm starting to suspect that it's the fact that some architectures still 
-have
-
-	EXTRA_AFLAGS  := -traditional
-
-or equivalent and I'm wondering whether that is really necessary. IIRC x86 
-got rid of the use of --traditional a long time ago, exactly because it 
-caused problems with any fancier C preprocessor things.
-
-It would probably be much better to try to lose that -traditional from 
-affected architectures, because otherwise issues like this will keep 
-popping up just because the most common architecture doesn't use the 
-limited preprocessor..
-
-		Linus
+What about adding precise timestamping to the lowest possible irq
+handling level ( arch/*/entry*.S ) and then export that information
+in a general way so it is useful for other applications?
