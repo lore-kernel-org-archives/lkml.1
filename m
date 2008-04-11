@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761829AbYDKUjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbYDKUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761829AbYDKUjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 16:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760529AbYDKUhe
+	id S1762107AbYDKUjk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 16:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760593AbYDKUhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 11 Apr 2008 16:37:34 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42473 "EHLO
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38955 "EHLO
 	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759989AbYDKUha (ORCPT
+	by vger.kernel.org with ESMTP id S1760077AbYDKUha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Apr 2008 16:37:30 -0400
-X-Sasl-enc: mLAihEhifTOLEYSkk9hsQ+mVNrbJ8m5M0B4WrDgF0sim 1207946249
+X-Sasl-enc: mLAuhUhkZzmRBJCyntd4UvyKNrbJ8m5M0B4WrDgF0sim 1207946249
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: linux-kernel@vger.kernel.org
 Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
        Ivo van Doorn <IvDoorn@gmail.com>,
        "John W. Linville" <linville@tuxdriver.com>,
        Dmitry Torokhov <dtor@mail.ru>
-Subject: [PATCH 5/8] rfkill: add read-only rfkill switch support
-Date: Fri, 11 Apr 2008 17:37:21 -0300
-Message-Id: <1207946244-14525-6-git-send-email-hmh@hmh.eng.br>
+Subject: [PATCH 8/8] rfkill: add parameter to disable radios by default
+Date: Fri, 11 Apr 2008 17:37:24 -0300
+Message-Id: <1207946244-14525-9-git-send-email-hmh@hmh.eng.br>
 X-Mailer: git-send-email 1.5.4.4
 In-Reply-To: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
 References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
@@ -27,109 +27,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some devices (notably laptops) have read-only rfkill switches.  Those
-devices are slider or rocker switches that are *physically* manipulated by
-the user, most of the time tied to hardware or firmware functions that
-automatically rf-kill and/or hot-unplug radio devices when in the "radios
-off" position.
+Currently, radios are always enabled when their rfkill interface is
+registered.  This is not optimal, the safest state for a radio is to be
+offline unless the user turns it on.
 
-Software must not (and in fact, cannot) attempt to change the state of any
-such switch.  These switches exist because of international regulations
-regarding radio emission devices on airplanes and other sensitive areas.
-They must never be overriden.
+Add a module parameter that causes all radios to be disabled when their
+rfkill interface is registered.  Add override parameters for each rfkill
+switch type as well, just in case the user wants the defaults to be
+different for a given radio type.
 
-While one can easily report the *change* of state of these switches using
-the input layer EV_SW SW_RADIO event, typically userspace needs to have
-immediate access of the current switch state.  It makes sense to have all
-radio kill switches grouped under the rfkill sysfs interface instead of
-every driver doing its own thing.
+We don't change the module default, but I'd really recommed doing so in a
+future patch.
 
-Make the toggle_radio() hook no longer be mandatory.  read-only rfkill
-switches are those who have their toggle_radio() hook set to NULL.
+The parameters are called "default_state" (global), and
+"default_<type>_state", where <type> is: "wlan", "bluetooth", "uwb",
+"wimax", or "any".  Note that "any" realy is a type and does not mean every
+radio type (use the global "default_state" parameter for that.
+
+The precedence order is "most specific first".
 
 Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Cc: Ivo van Doorn <IvDoorn@gmail.com>
 Cc: John W. Linville <linville@tuxdriver.com>
 Cc: Dmitry Torokhov <dtor@mail.ru>
 ---
- include/linux/rfkill.h |    3 ++-
- net/rfkill/rfkill.c    |   18 +++++++++++++-----
- 2 files changed, 15 insertions(+), 6 deletions(-)
+ net/rfkill/rfkill.c |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 58 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
-index 844e961..931d32b 100644
---- a/include/linux/rfkill.h
-+++ b/include/linux/rfkill.h
-@@ -60,7 +60,8 @@ enum rfkill_state {
-  * @mutex: Guards switch state transitions
-  * @data: Pointer to the RF button drivers private data which will be
-  *	passed along when toggling radio state.
-- * @toggle_radio(): Mandatory handler to control state of the radio.
-+ * @toggle_radio(): handler to control state of the radio. Must be
-+ *	NULL for read-only switches.
-  * @get_state(): handler to read current radio state from hardware,
-  *      may be called from atomic context, should return 0 on success.
-  * @led_trigger: A LED trigger for this button's LED.
 diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-index 88b0558..d149d94 100644
+index 9d3bffb..421de8c 100644
 --- a/net/rfkill/rfkill.c
 +++ b/net/rfkill/rfkill.c
-@@ -81,7 +81,7 @@ static int rfkill_toggle_radio(struct rfkill *rfkill,
- 	    !rfkill->get_state(rfkill->data, &newstate))
- 		rfkill->state = newstate;
+@@ -39,6 +39,34 @@ MODULE_LICENSE("GPL");
+ static LIST_HEAD(rfkill_list);	/* list of registered rf switches */
+ static DEFINE_MUTEX(rfkill_mutex);
  
--	if (state != rfkill->state) {
-+	if (rfkill->toggle_radio && state != rfkill->state) {
- 		retval = rfkill->toggle_radio(rfkill->data, state);
- 		if (!retval)
- 			rfkill->state = state;
-@@ -196,6 +196,9 @@ static ssize_t rfkill_state_store(struct device *dev,
- 	unsigned int state = simple_strtoul(buf, NULL, 0);
- 	int error;
- 
-+	if (!rfkill->toggle_radio)
-+		return -EACCES;
++static unsigned int rfkill_default_state = RFKILL_STATE_ON;
++static unsigned int rfkill_default_state_wlan = UINT_MAX;
++static unsigned int rfkill_default_state_bluetooth = UINT_MAX;
++static unsigned int rfkill_default_state_uwb = UINT_MAX;
++static unsigned int rfkill_default_state_wimax = UINT_MAX;
++static unsigned int rfkill_default_state_wwan = UINT_MAX;
++static unsigned int rfkill_default_state_any = UINT_MAX;
 +
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
++module_param_named(default_state, rfkill_default_state, uint, 0444);
++MODULE_PARM_DESC(default_state,
++		 "Default initial state for all radio types, 0 = radio off");
++
++#define RFKILL_RADIO_DEFAULT(__type) \
++	module_param_named(default_##__type##_state, \
++			   rfkill_default_state_##__type, uint, 0444); \
++	MODULE_PARM_DESC(default_##__type##_state, \
++			 "Override initial state for radios of type " \
++			 #__type ", 0 = radio off");
++
++RFKILL_RADIO_DEFAULT(wlan)
++RFKILL_RADIO_DEFAULT(bluetooth)
++RFKILL_RADIO_DEFAULT(uwb)
++RFKILL_RADIO_DEFAULT(wimax)
++RFKILL_RADIO_DEFAULT(wwan)
++RFKILL_RADIO_DEFAULT(any)
++
++#undef RFKILL_RADIO_DEFAULT
++
+ static enum rfkill_state rfkill_states[RFKILL_TYPE_MAX];
  
-@@ -278,7 +281,8 @@ static int rfkill_suspend(struct device *dev, pm_message_t state)
- 		if (state.event & PM_EVENT_SLEEP) {
- 			mutex_lock(&rfkill->mutex);
  
--			if (rfkill->state == RFKILL_STATE_ON)
-+			if (rfkill->state == RFKILL_STATE_ON &&
-+			    rfkill->toggle_radio)
- 				rfkill->toggle_radio(rfkill->data,
- 						     RFKILL_STATE_OFF);
+@@ -485,6 +513,17 @@ void rfkill_unregister(struct rfkill *rfkill)
+ }
+ EXPORT_SYMBOL(rfkill_unregister);
  
-@@ -298,7 +302,8 @@ static int rfkill_resume(struct device *dev)
- 	if (dev->power.power_state.event != PM_EVENT_ON) {
- 		mutex_lock(&rfkill->mutex);
- 
--		if (rfkill->state == RFKILL_STATE_ON)
-+		if (rfkill->state == RFKILL_STATE_ON &&
-+		    rfkill->toggle_radio)
- 			rfkill->toggle_radio(rfkill->data, RFKILL_STATE_ON);
- 
- 		mutex_unlock(&rfkill->mutex);
-@@ -427,11 +432,14 @@ int rfkill_register(struct rfkill *rfkill)
- 	struct device *dev = &rfkill->dev;
- 	int error;
- 
--	if (!rfkill->toggle_radio)
--		return -EINVAL;
- 	if (rfkill->type >= RFKILL_TYPE_MAX)
- 		return -EINVAL;
- 
-+	if (!rfkill->toggle_radio) {
-+		rfkill->user_claim_unsupported = 1;
-+		rfkill->user_claim = 0;
++static int __init rfkill_init_states(unsigned int state, enum rfkill_type type)
++{
++	if (state == UINT_MAX)
++		return 0;
++	else if (state == RFKILL_STATE_OFF || state == RFKILL_STATE_ON) {
++		rfkill_states[type] = state;
++		return 0;
 +	}
++	return 1;
++}
 +
- 	snprintf(dev->bus_id, sizeof(dev->bus_id),
- 		 "rfkill%ld", (long)atomic_inc_return(&rfkill_no) - 1);
+ /*
+  * Rfkill module initialization/deinitialization.
+  */
+@@ -493,8 +532,26 @@ static int __init rfkill_init(void)
+ 	int error;
+ 	int i;
  
++	if (rfkill_default_state != RFKILL_STATE_OFF &&
++	    rfkill_default_state != RFKILL_STATE_ON)
++		return -EINVAL;
++
+ 	for (i = 0; i < ARRAY_SIZE(rfkill_states); i++)
+-		rfkill_states[i] = RFKILL_STATE_ON;
++		rfkill_states[i] = rfkill_default_state;
++
++	if (rfkill_init_states(rfkill_default_state_wlan,
++				  RFKILL_TYPE_WLAN)
++	    || rfkill_init_states(rfkill_default_state_bluetooth,
++				  RFKILL_TYPE_BLUETOOTH)
++	    || rfkill_init_states(rfkill_default_state_uwb,
++				  RFKILL_TYPE_UWB)
++	    || rfkill_init_states(rfkill_default_state_wimax,
++				  RFKILL_TYPE_WIMAX)
++	    || rfkill_init_states(rfkill_default_state_wwan,
++				  RFKILL_TYPE_WWAN)
++	    || rfkill_init_states(rfkill_default_state_any,
++				  RFKILL_TYPE_ANY))
++		return -EINVAL;
+ 
+ 	error = class_register(&rfkill_class);
+ 	if (error) {
 -- 
 1.5.4.4
 
