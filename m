@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761420AbYDKT0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYDKT1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761420AbYDKT0f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 15:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbYDKT00
+	id S1758220AbYDKT1P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbYDKT07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 15:26:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56720 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757767AbYDKT00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 15:26:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai.lu@sun.com>
-Subject: Re: x86 git tree broken (bisected)
-Date: Fri, 11 Apr 2008 21:26:28 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <20080410203800.GA14560@elte.hu> <200804110028.22290.rjw@sisk.pl>
-In-Reply-To: <200804110028.22290.rjw@sisk.pl>
+	Fri, 11 Apr 2008 15:26:59 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50813 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756886AbYDKT07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 15:26:59 -0400
+Date: Fri, 11 Apr 2008 12:26:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@Sun.COM
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+In-Reply-To: <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804111226120.20334@schroedinger.engr.sgi.com>
+References: <20080411074145.GA4944@elte.hu>  <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
+  <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> 
+ <20080411085411.GA10181@elte.hu>  <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
+ <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804112126.29455.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
-> On Thursday, 10 of April 2008, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > > > First, the X server doesn't want to start (it says it couldn't 
-> > > > > > mmap the framebuffer).
-> > > > > 
-> > > > > could you send your .config?
-> > > > 
-> > > > Attached.
-> > > 
-> > > could you disable this option:
-> > > 
-> > >  CONFIG_NONPROMISC_DEVMEM=y
-> > > 
-> > > does it help with the X problem?
+On Fri, 11 Apr 2008, Pekka Enberg wrote:
+
+> I'd be willing to put some money on this:
 > 
-> That didn't help.
-> 
-> > btw., Xorg works fine here on a comparable AMD system - but i use a 
-> > rather new distro (Fedora 8) which has Xorg 7.2.
-> 
-> My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
-> 
-> I think the problem is somehow related to the Radeon.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b7ad149d62ffffaccb9f565dfe7e5bae739d6836
 
-The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
-"x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
-causing problems.
+Allowing systems without node 0 is a major change for x86.
 
-Unfortunately, I can't revert cleanly it, because there are two more commits
-depending on it in a highly nontrivial fashion, so I have reverted all three
-commits
-
-a365998cd2cecfb827469dbd57c29602c106cb83
-44f7f90fbe7a3a99aab082f765346514b7b5c705
-ea1441bdf53692c3dc1fd2658addcf1205629661
-
-and X starts again.  Also, suspend to RAM works from under X.
-
-Thanks,
-Rafael
