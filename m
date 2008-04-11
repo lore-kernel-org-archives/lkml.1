@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbYDKOYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYDKOam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760070AbYDKOYY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 10:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbYDKOYP
+	id S1760032AbYDKOam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 10:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYDKOac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 10:24:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33425 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753462AbYDKOYO (ORCPT
+	Fri, 11 Apr 2008 10:30:32 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55615 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbYDKOab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 10:24:14 -0400
-Subject: Re: 2.6.25-rc8-mm2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20080411221714.5f917a72.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-	 <20080411185703.a5407940.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080411192346.6872472a.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1207910058.7212.1.camel@haji>
-	 <20080411195738.16e9ef92.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080411201724.e820122b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080411221714.5f917a72.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 11 Apr 2008 17:24:11 +0300
-Message-Id: <1207923851.7212.14.camel@haji>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.12.1 
+	Fri, 11 Apr 2008 10:30:31 -0400
+Date: Fri, 11 Apr 2008 08:30:13 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: paul.moore@hp.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Message-ID: <20080411143013.GB11962@parisc-linux.org>
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 22:17 +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 11 Apr 2008 20:17:24 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > slab-2.6.git booted well :(
-> > Hmm, It seems I have to dig somewhere different...
-> > 
-> Sorry, I tested *master* branch ;), under *testing* branch it reproduced.
+On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
+> Matthew Wilcox wrote:
+> > When the rule is put in place, say "No modifications to /etc/passwd",
+> > look up the inode and major:minor of /etc/passwd.  If there's a rename,
+> > look up the new inode number.  If it's mounted elsewhere, it doesn't
+> > matter, they still can't modify it because it has the same
+> > major:minor:inode.
 > 
-> bisected. (see below)
-> 
-> I'm sorry I can't use my box for next 2 days. I can test possible fix
-> on Monday (in Japan). 
-> 
-> ==bisect result==
-> 831d78b552aade2c383cf8d75b180dd35f81a4e3 is first bad commit
-> commit 831d78b552aade2c383cf8d75b180dd35f81a4e3
-> Author: Christoph Lameter <clameter@sgi.com>
-> Date:   Tue Apr 8 22:26:30 2008 +0300
-> 
->     SLUB: Add KICKABLE to avoid repeated kick() attempts
-> 
->     Add a flag KICKABLE to be set on slabs with a defragmentation method
-> 
->     Clear the flag if a kick action is not successful in reducing the
->     number of objects in a slab. This will avoid future attempts to
->     kick objects out.
-> 
->     The KICKABLE flag is set again when all objects of the slab have been
->     allocated (Occurs during removal of a slab from the partial lists).
-> 
->     Reviewed-by: Rik van Riel <riel@redhat.com>
->     Signed-off-by: Christoph Lameter <clameter@sgi.com>
->     Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> If write access is denied because of a rule "No modifications to /etc/passwd",
+> a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
+> "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
+> "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
 
-My bad, sorry. Fixed and pushed out.
+That's a fundamental limitation of pathname-based security though.
+If the same file exists in two places, you have to resolve the question
+of which rule overrides the other.
 
-			Pekka
+In my role as a sysadmin, I would consider it a flaw if someone could
+edit a file I'd marked uneditable -- simply by creating a hard-link to it.
+If we look at existing systems, such as the immutable bit, those apply to
+inodes, not to paths, so they can't be evaded.  If a system such as TOMOYA
+allows evasion this easily, then it doesn't seem like an improvement.
 
->From 7c7e7e5e7ec07c0a47705b2d21c779c39ba02252 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Fri, 11 Apr 2008 17:17:43 +0300
-Subject: [PATCH] slub: add missing slab_unlock() to __kmem_cache_shrink()
+So when considering your problem, I worked from the point of view of the
+attacker "Oh, I can't modify /etc/passwd?  In that case, I'll create
+a new name to the same file", and then figured out a defense to it.
+I did not consider the case where the admin /wants/ to allow access
+through different pathnames to the same file that's denied access.
+That doesn't seem like a secure system to me.
 
-If page is not kickable, remember to slab_unlock() before continuing the loop.
+In short, if a file is named as protected, I think the admin clearly
+means to protect that file -- no matter what name is used to address it.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slub.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+> If rules are described like "No modifications to passwd_t",
+> it is correct to deny modifications of the file when the file
+> with passwd_t was renamed or bind-mounted or hard-linked.
+> Those who want to do access restriction based on the entity of the file
+> prefer rules described using inodes (or labels).
+> 
+> If rules are described like "No modifications to /etc/passwd" and
+> "Allow modifications to /tmp/passwd", it is wrong to deny modifications of
+> the file when /etc/passwd was renamed or bind-mounted or hard-linked to
+> /tmp/passwd .
+> Those who want to do access restriction based on the location of the file
+> prefer rules described using pathnames.
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 4b694a7..f09f1fb 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2926,8 +2926,10 @@ static unsigned long __kmem_cache_shrink(struct kmem_cache *s, int node,
- 			continue;
- 
- 		if (page->inuse) {
--			if (!SlabKickable(page))
-+			if (!SlabKickable(page)) {
-+				slab_unlock(page);
- 				continue;
-+			}
- 
- 			if (page->inuse * 100 >=
- 					s->defrag_ratio * page->objects) {
+My impression of pathname-based security was that it was preferred
+because it's easier to administer than setting labels and making sure
+everything has the right capabilities.  But from what you're saying,
+it seems like it's no additional security at all.
+
+Let's take an example.  We have the two rules "nobody can edit
+/etc/passwd" and "root can edit /tmp/passwd".  A daemon running as root
+is compromised.  Instead of being able to simply write to /etc/passwd,
+the attacker has to "ln /etc/passwd /tmp" first.  There's no additional
+security here, just obfuscation.
+
+So I say a 'DENY' rule must always override an 'ALLOW' rule where two
+filenames happen to map to the same file.  Or it's just snake-oil.
+
 -- 
-1.5.2.5
-
-
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
