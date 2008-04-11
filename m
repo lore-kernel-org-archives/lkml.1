@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbYDKKyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbYDKK4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760521AbYDKKyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 06:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759324AbYDKKx7
+	id S1760166AbYDKK4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 06:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbYDKK4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 06:53:59 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59974 "EHLO
+	Fri, 11 Apr 2008 06:56:25 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60119 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759138AbYDKKx6 (ORCPT
+	with ESMTP id S1759372AbYDKK4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 06:53:58 -0400
-Date: Fri, 11 Apr 2008 12:54:45 +0200
+	Fri, 11 Apr 2008 06:56:25 -0400
+Date: Fri, 11 Apr 2008 12:57:12 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andi Kleen <andi@firstfloor.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: BUG: using smp_processor_id() during suspend with 2.6.25-rc8
-Message-ID: <20080411105445.GB18770@elf.ucw.cz>
-References: <c4e36d110804070625n17eb44e1nbb5558f500f13438@mail.gmail.com> <Pine.LNX.4.64.0804080008420.3896@jikos.suse.cz> <20080407222352.GG16647@one.firstfloor.org> <200804080029.31102.rjw@sisk.pl> <Pine.LNX.4.64.0804080030500.3896@jikos.suse.cz> <20080410094554.GA10321@ucw.cz> <Pine.LNX.4.64.0804110122470.3896@jikos.suse.cz> <20080411104902.GA8734@elf.ucw.cz> <20080411105108.GA1844@elte.hu>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: Justin Mattock <justinmattock@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: suspend issue
+Message-ID: <20080411105712.GC18770@elf.ucw.cz>
+References: <dd18b0c30804052103s7357bb86yf7bf11d38d2911b3@mail.gmail.com> <1207490104.4597.36.camel@localhost> <20080406232849.GA789@elf.ucw.cz> <1207736730.4320.1.camel@localhost> <20080410100234.GB11084@ucw.cz> <1207865152.21472.2.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080411105108.GA1844@elte.hu>
+In-Reply-To: <1207865152.21472.2.camel@localhost>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-04-11 12:51:09, Ingo Molnar wrote:
+On Fri 2008-04-11 00:05:52, Soeren Sonnenburg wrote:
+> On Thu, 2008-04-10 at 12:02 +0200, Pavel Machek wrote:
+> > On Wed 2008-04-09 12:25:30, Soeren Sonnenburg wrote:
+> > > On Mon, 2008-04-07 at 01:28 +0200, Pavel Machek wrote:
+> > > > On Sun 2008-04-06 13:55:04, Soeren Sonnenburg wrote:
+> > > > > On Sun, 2008-04-06 at 04:03 +0000, Justin Mattock wrote:
+> > > > > > Hello; I seem to have discovered something with echo mem > /sys/power/state.
+> > > > > > I recompile the kernel and had forgotten to compile fglrx, when
+> > > > > > performing a suspend without fglrx I was confronted with the dreaded
+> > > > > > blank screen and a reboot. then as a test I compiled fglrx and loaded,
+> > > > > > and to my amazement suspend reacted properly again.
+> > > > > 
+> > > > > Yeah, but I it does not even work without X - console only!
+> > > > > 
+> > > > > s2ram -f -p used to work since at least 2.6.20 ... and is now not
+> > > > > anymore in 2.6.25-*
+> > > > 
+> > > > Can you do git bisect?
+> > > 
+> > > I just tried, and the problem is that 25-rc1 already fails to suspend -
+> > > so I am not sure how I could get more insight into this failure *on
+> > > resume*... any ideas?
+> > 
+> > Well, 2.6.20 worked, so bisect should be easy, right?
 > 
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > diff --git a/lib/smp_processor_id.c b/lib/smp_processor_id.c
-> > index 6c90fb9..8195c37 100644
-> > --- a/lib/smp_processor_id.c
-> > +++ b/lib/smp_processor_id.c
-> > @@ -35,6 +35,13 @@ unsigned int debug_smp_processor_id(void
-> >  		goto out;
-> >  
-> >  	/*
-> > +	 * It is valid to assume CPU-locality if there's just one
-> > +	 * CPU active
-> > +	 */
-> > +	if (num_online_cpus() == 1)
-> > +		goto out;
-> 
-> thanks Pavel, i picked this up into sched-devel.git - it makes sense 
-> independently of whether it solves the warning.
+> I don't quite understand... 2.6.24 worked yes, but 2.6.25-rc1 didn't
+> even *suspend*. However the problem lies not in suspending but no
+> display on *resume*. So the bug is hidden by the hang on suspend and I
+> don't see how I can check when resume broke.
 
-Thanks!
+Hmm, you could bisect the resume regression, revert that, and then go
+on to find the suspend regression.
 
-(I just want to fix the underlying problem in suspend, too. I guess
-I'll just do something like
+...ok, not easy, I see.
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 8e13fd9..adb7850 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -367,6 +367,7 @@ int sysdev_suspend(pm_message_t state)
- 			/* Call auxillary drivers first */
- 			list_for_each_entry(drv, &cls->drivers, entry) {
- 				if (drv->suspend) {
-+					BUG_ON(!in_interrupt());
- 					ret = drv->suspend(sysdev, state);
- 					if (ret)
- 						goto aux_driver;
-@@ -442,6 +443,7 @@ int sysdev_resume(void)
- 		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
- 			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
- 
-+			BUG_ON(!in_interrupt());
- 			__sysdev_resume(sysdev);
- 		}
- 	}
-
-...to catch this kind of problems early).
-									Pavel
+Do you have kernel.org bugzilla # I could look at? Perhaps this can be
+debugged using printks or something...
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
