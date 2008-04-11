@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbYDKQqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbYDKQzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761244AbYDKQqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 12:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbYDKQp7
+	id S1761321AbYDKQzU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 12:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760440AbYDKQzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 12:45:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60490 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758527AbYDKQp7 (ORCPT
+	Fri, 11 Apr 2008 12:55:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36157 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760164AbYDKQzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 12:45:59 -0400
-Date: Fri, 11 Apr 2008 12:45:42 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-Message-ID: <20080411164542.GA4066@infradead.org>
-References: <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FF9060.5040202@intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 11 Apr 2008 12:55:08 -0400
+Subject: Re: 2.6.25-rc8-mm2 -- kernel/sched.c:8294: error: unknown field
+	=?UTF-8?Q?=E2=80=98read=5Fuint=E2=80=99?= specified in initializer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Apr 2008 18:55:02 +0200
+Message-Id: <1207932902.7157.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 09:22:56AM -0700, Kok, Auke wrote:
-> You don't provide a solution, nor does anyone, and I don't see any solution to
-> what you want but to completely cancel this driver split.
-> 
-> And I'm _not_ going to do that.
+On Fri, 2008-04-11 at 09:48 -0400, Miles Lane wrote:
+> CC      kernel/sched.o
+> kernel/sched.c:8294: error: unknown field 'read_uint' specified in initializer
+> kernel/sched.c:8294: warning: initialization makes integer from
+> pointer without a cast
+> kernel/sched.c:8295: error: unknown field 'write_uint' specified in initializer
+> kernel/sched.c:8295: warning: initialization from incompatible pointer type
 
-As a start we could do two driver keyed off a single Kconfig variable.
-And then find a way to get users informed that they might need to
-enabled the other one
+someone mucked around with the cgroup api; this should fix it:
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 7119895..8b4e0b6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8291,8 +8291,8 @@ static struct cftype cpu_files[] = {
+ 	},
+ 	{
+ 		.name = "rt_period_us",
+-		.read_uint = cpu_rt_period_read_uint,
+-		.write_uint = cpu_rt_period_write_uint,
++		.read_u64 = cpu_rt_period_read_uint,
++		.write_u64 = cpu_rt_period_write_uint,
+ 	},
+ #endif
+ };
+
+
