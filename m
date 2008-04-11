@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYDKNU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYDKNlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbYDKNU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 09:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYDKNUU
+	id S1759476AbYDKNlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 09:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYDKNlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 09:20:20 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37962 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752765AbYDKNUT (ORCPT
+	Fri, 11 Apr 2008 09:41:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58134 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYDKNlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 09:20:19 -0400
-X-Sasl-enc: 1fSgNwb0787MKYakCYfuXVZqr/5+UYLtOsqCP/y+kzzR 1207920016
-Message-ID: <47FF658E.2040808@ladisch.de>
-Date: Fri, 11 Apr 2008 15:20:14 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Dimitri Gorokhovik <dimitri.gorokhovik@leacom.fr>
-CC: tglx@linutronix.de, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HPET: register additional counter-only char device
-References: <1207904307.13216.15.camel@laphroaig>
-In-Reply-To: <1207904307.13216.15.camel@laphroaig>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 09:41:24 -0400
+Subject: Re: [PATCH 1/2] HAVE_SET_RESTORE_SIGMASK
+From: David Woodhouse <dwmw2@infradead.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Roland McGrath <roland@redhat.com>,
+       "Linus Torvalds <torvalds@linux-foundation.org>Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, miles@gnu.org,
+       geert@linux-m68k.org, zippel@linux-m68k.org
+In-Reply-To: <20080410203250.GA21589@flint.arm.linux.org.uk>
+References: <20080329001230.D013726FA1D@magilla.localdomain>
+	 <20080329001341.7F93826FA1D@magilla.localdomain>
+	 <alpine.LFD.1.00.0803281746480.14670@woody.linux-foundation.org>
+	 <20080329022408.0DD4726FA1D@magilla.localdomain>
+	 <20080329031146.6FF7126FA1D@magilla.localdomain>
+	 <1207741532.27048.64.camel@shinybook.infradead.org>
+	 <20080410203250.GA21589@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 11 Apr 2008 14:40:34 +0100
+Message-Id: <1207921234.22291.4.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Gorokhovik wrote:
-> I need to have many processes all reading from userspace the counter register
-> of the (same) HPET hardware. Just reading counter values, not handling timers,
-> enabling/disabling interrupts etc. `/dev/hpet' doesn't allow for this, as the
-> number of times it can be opened is limited by the number of timers available.
+On Thu, 2008-04-10 at 21:32 +0100, Russell King wrote: 
+> On Wed, Apr 09, 2008 at 12:45:32PM +0100, David Woodhouse wrote:
+> > On Fri, 2008-03-28 at 20:11 -0700, Roland McGrath wrote:
+> > > Change all the #ifdef TIF_RESTORE_SIGMASK conditionals in non-arch
+> > > code to #ifdef HAVE_SET_RESTORE_SIGMASK.
+> > 
+> > That ifdef was only supposed to be a temporary thing until all
+> > architectures had implemented TIF_RESTORE_SIGMASK anyway.
+> > 
+> > It looks like only ARM, v850 and m68k which are still missing it; if
+> > those three architectures can catch up, then hopefully it can die off
+> > completely quite soon.
+> 
+> Well, we don't have the pselect/ppoll/epoll_wait syscalls and there's
+> been no demand for them, so I don't particularly see the point of
+> going to the trouble of adding support for something no one's
+> interested in using.
 
-Indeed.  The driver assumes that userspace wants to program its own
-timer (like an RTC device).  Allowing mmap() on the hardware counter was
-more an afterthought.
+You're not likely to see demand for it from users. I believe glibc will
+emulate it as best it can (which is not very well), and things will
+appear to work.... most of the time.
 
-> What would be the right way to implement such a support? For now, I simply
-> register a new misc device, '/dev/hpetctr', along with '/dev/hpet', for the same
-> ACPI device and on the same occasion.
+-- 
+dwmw2
 
-Your patch circumvents CONFIG_HPET_MMAP.
-
-Another possibility would be to allow the device to be opened
-infinitely many times but not to allocate a hardware timer until one of
-the ioctls is called.  This means that opening /dev/hpet does not
-guarantee that a timer is available, but this has already been possible
-previously because request_irq() might fail.
-
-
-Regards,
-Clemens
