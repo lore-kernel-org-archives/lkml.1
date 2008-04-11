@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbYDKRMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbYDKROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbYDKRMw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 13:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbYDKRMm
+	id S1761253AbYDKROR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 13:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760703AbYDKROC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 13:12:42 -0400
-Received: from jabberwock.ucw.cz ([89.250.246.4]:37799 "EHLO jabberwock.ucw.cz"
+	Fri, 11 Apr 2008 13:14:02 -0400
+Received: from keg.few.vu.nl ([130.37.24.4]:46262 "EHLO keg.few.vu.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759907AbYDKRMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 13:12:41 -0400
-Date: Fri, 11 Apr 2008 19:10:26 +0200
-From: Martin Mares <mj@ucw.cz>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
+	id S1760404AbYDKROB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 13:14:01 -0400
+X-Greylist: delayed 1159 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Apr 2008 13:14:01 EDT
+Date: Fri, 11 Apr 2008 18:54:17 +0200 (CEST)
+From: Erik Bosman <ebn310@few.vu.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrea Arcangeli <andrea@cpushare.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-Message-ID: <mj+md-20080411.170932.9941.albireo@ucw.cz>
-References: <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org> <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com>
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
+Message-ID: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47FF9060.5040202@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
 
-> You don't provide a solution, nor does anyone, and I don't see any solution to
-> what you want but to completely cancel this driver split.
+    This patch adds prctl commands that make it possible
+    to deny the execution of timestamp counters in userspace.
+    If this is not implemented on a specific architecture,
+    prctl will return -EINVAL.
 
-Maybe you could rename both configuration switches, so that you bring it to
-the attention of everybody who does make oldconfig?
+	Signed-off-by: Erik Bosman <ejbosman@cs.vu.nl>
+---
+ include/linux/prctl.h |    6 ++++++
+ kernel/sys.c          |   13 ++++++++++++-
+ 2 files changed, 18 insertions(+), 1 deletions(-)
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-main(){char *s="main(){char *s=%c%s%c;printf(s,34,s,34);}";printf(s,34,s,34);}
+diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+index 3800639..5c80b19 100644
+--- a/include/linux/prctl.h
++++ b/include/linux/prctl.h
+@@ -67,4 +67,10 @@
+ #define PR_CAPBSET_READ 23
+ #define PR_CAPBSET_DROP 24
+
++/* Get/set the process' ability to use the timestamp counter instruction */
++#define PR_GET_TSC 25
++#define PR_SET_TSC 26
++# define PR_TSC_ENABLE		1	/* allow the use of the timestamp counter */
++# define PR_TSC_SIGSEGV		2	/* throw a SIGSEGV instead of reading the TSC */
++
+ #endif /* _LINUX_PRCTL_H */
+diff --git a/kernel/sys.c b/kernel/sys.c
+index a626116..6a0cc71 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -67,6 +67,12 @@
+ #ifndef SET_ENDIAN
+ # define SET_ENDIAN(a,b)	(-EINVAL)
+ #endif
++#ifndef GET_TSC_CTL
++# define GET_TSC_CTL(a)		(-EINVAL)
++#endif
++#ifndef SET_TSC_CTL
++# define SET_TSC_CTL(a)		(-EINVAL)
++#endif
+
+ /*
+  * this is where the system-wide overflow UID and GID are defined, for
+@@ -1737,7 +1743,12 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+ #else
+ 			return -EINVAL;
+ #endif
+-
++		case PR_GET_TSC:
++			error = GET_TSC_CTL(arg2);
++			break;
++		case PR_SET_TSC:
++			error = SET_TSC_CTL(arg2);
++			break;
+ 		default:
+ 			error = -EINVAL;
+ 			break;
