@@ -1,225 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbYDKTVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbYDKTWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760919AbYDKTVe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 15:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbYDKTV0
+	id S1758317AbYDKTWK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 15:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYDKTV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 15:21:26 -0400
-Received: from mail0.scram.de ([78.47.204.202]:51120 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757756AbYDKTVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 15:21:25 -0400
-X-Spam-Score: -4.082
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <47FFBA7B.8050900@scram.de>
-Date: Fri, 11 Apr 2008 21:22:35 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+	Fri, 11 Apr 2008 15:21:56 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:60868 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758220AbYDKTVz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 15:21:55 -0400
+Date: Fri, 11 Apr 2008 13:21:54 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [DOC PATCH] semaphore documentation
+Message-ID: <20080411192153.GH11962@parisc-linux.org>
+References: <20080410143403.c03757e5.akpm@linux-foundation.org> <20080410220816.GY11962@parisc-linux.org> <20080410151907.91f11c74.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-       linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCHv2 3/7] i2c: OF helpers for the i2c API
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080410151907.91f11c74.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements various helpers to support OF bindings for
-the i2c API.
+On Thu, Apr 10, 2008 at 03:19:07PM -0700, Andrew Morton wrote:
+> On Thu, 10 Apr 2008 16:08:16 -0600
+> Matthew Wilcox <matthew@wil.cx> wrote:
+> > It seems very strange to me to document the API with the implementation
+> > rather than with the declaration.  It's almost as if we expect people to
+> > have to read the implementation to figure out how stuff works.
+> 
+> That approach makes sense for C++.  But for C, the code is .c-centric.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/of/Kconfig     |    6 +++
- drivers/of/Makefile    |    1 +
- drivers/of/i2c.c       |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_i2c.h |   24 ++++++++++
- 4 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 drivers/of/i2c.c
- create mode 100644 include/linux/of_i2c.h
+I've never programmed in C++ ... I just expect to find API documentation
+in header files.
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index c03072b..89396f1 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -1,3 +1,9 @@
- config OF_DEVICE
- 	def_bool y
- 	depends on OF && (SPARC || PPC_OF)
-+
-+config OF_I2C
-+	def_bool y
-+	depends on OF && I2C
-+	help
-+	  OpenFirmware I2C accessors
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index ab9be5d..655b982 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -1,2 +1,3 @@
- obj-y = base.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
-+obj-$(CONFIG_OF_I2C)	+= i2c.o
-diff --git a/drivers/of/i2c.c b/drivers/of/i2c.c
-new file mode 100644
-index 0000000..6316891
---- /dev/null
-+++ b/drivers/of/i2c.c
-@@ -0,0 +1,115 @@
-+/*
-+ * OF helpers for the I2C API
+> That's particularly the case with the kernel, where we explicitly work to
+> make the .c files the things which people look at, while not caring about
+> the .h files.  Look at how much we say "get that ifdef out of there and
+> hide it in the header file".
+
+I see that as being "move the complexity around" and "get the interfaces
+right", not "hide it in the header files where nobody ever looks".
+
+> > How about a note in semaphore.c that says "refer to semaphore.h for
+> > usage information"?
+> 
+> No, please document it in the C file, where people expect to find it.
+
+Fine, I've done it the other way round.
+
+Please review this doc-patch.  Without comments, I'll commit it to the
+semaphore git tree tomorrow.
+
+diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
+index a7125da..9cae64b 100644
+--- a/include/linux/semaphore.h
++++ b/include/linux/semaphore.h
+@@ -4,8 +4,7 @@
+  *
+  * Distributed under the terms of the GNU GPL, version 2
+  *
+- * Counting semaphores allow up to <n> tasks to acquire the semaphore
+- * simultaneously.
++ * Please see kernel/semaphore.c for documentation of these functions
+  */
+ #ifndef __LINUX_SEMAPHORE_H
+ #define __LINUX_SEMAPHORE_H
+@@ -13,11 +12,7 @@
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
+ 
+-/*
+- * The spinlock controls access to the other members of the semaphore.
+- * 'count' represents how many more tasks can acquire this semaphore.
+- * Tasks waiting for the lock are kept on the wait_list.
+- */
++/* Please don't access any members of this structure directly */
+ struct semaphore {
+ 	spinlock_t		lock;
+ 	unsigned int		count;
+@@ -46,41 +41,11 @@ static inline void sema_init(struct semaphore *sem, int val)
+ #define init_MUTEX(sem)		sema_init(sem, 1)
+ #define init_MUTEX_LOCKED(sem)	sema_init(sem, 0)
+ 
+-/*
+- * Attempt to acquire the semaphore.  If another task is already holding the
+- * semaphore, sleep until the semaphore is released.
+- */
+ extern void down(struct semaphore *sem);
+-
+-/*
+- * As down(), except the sleep may be interrupted by a signal.  If it is,
+- * this function will return -EINTR.
+- */
+ extern int __must_check down_interruptible(struct semaphore *sem);
+-
+-/*
+- * As down_interruptible(), except the sleep may only be interrupted by
+- * signals which are fatal to this process.
+- */
+ extern int __must_check down_killable(struct semaphore *sem);
+-
+-/*
+- * As down(), except this function will not sleep.  It will return 0 if it
+- * acquired the semaphore and 1 if the semaphore was contended.  This
+- * function may be called from any context, including interrupt and softirq.
+- */
+ extern int __must_check down_trylock(struct semaphore *sem);
+-
+-/*
+- * As down(), except this function will return -ETIME if it fails to
+- * acquire the semaphore within the specified number of jiffies.
+- */
+ extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
+-
+-/*
+- * Release the semaphore.  Unlike mutexes, up() may be called from any
+- * context and even by tasks which have never called down().
+- */
+ extern void up(struct semaphore *sem);
+ 
+ #endif /* __LINUX_SEMAPHORE_H */
+diff --git a/kernel/semaphore.c b/kernel/semaphore.c
+index bef977b..5c2942e 100644
+--- a/kernel/semaphore.c
++++ b/kernel/semaphore.c
+@@ -3,6 +3,26 @@
+  * Author: Matthew Wilcox <willy@linux.intel.com>
+  *
+  * Distributed under the terms of the GNU GPL, version 2
 + *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * This file implements counting semaphores.
++ * A counting semaphore may be acquired 'n' times before sleeping.
++ * See mutex.c for single-acquisition sleeping locks which enforce
++ * rules which allow code to be debugged more easily.
 + */
 +
-+#include <linux/i2c.h>
-+#include <linux/of.h>
-+
-+struct i2c_driver_device {
-+	char    *of_device;
-+	char    *i2c_type;
-+};
-+
-+static struct i2c_driver_device i2c_devices[] = {
-+	{ "dallas,ds1374", "rtc-ds1374" },
-+};
-+
-+static int of_find_i2c_driver(struct device_node *node,
-+			      struct i2c_board_info *info)
-+{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
-+
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-+		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-+			continue;
-+		if (strlcpy(info->type, i2c_devices[i].i2c_type,
-+			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+			return -ENOMEM;
-+
-+		return 0;
-+	}
-+
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
-+
-+	/* 2. search for linux,<i2c-type> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			if (strlcpy(info->type, p,
-+				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+				return -ENOMEM;
-+			return 0;
-+		}
-+
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
-+	}
-+
-+	/* 3. take fist compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node)
-+{
-+	void *result;
-+	struct device_node *node;
-+
-+	for_each_child_of_node(adap_node, node) {
-+		struct i2c_board_info info = {};
-+		const u32 *addr;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR
-+			       "of-i2c: invalid i2c device entry\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		if (of_find_i2c_driver(node, &info) < 0) {
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+
-+		info.addr = *addr;
-+
-+		request_module(info.type);
-+
-+		result = i2c_new_device(adap, &info);
-+		if (result == NULL) {
-+			printk(KERN_ERR
-+			       "of-i2c: Failed to load driver for %s\n",
-+			       info.type);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(of_register_i2c_devices);
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-new file mode 100644
-index 0000000..2e5a967
---- /dev/null
-+++ b/include/linux/of_i2c.h
-@@ -0,0 +1,24 @@
 +/*
-+ * Generic I2C API implementation for PowerPC.
++ * Some notes on the implementation:
 + *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
++ * The spinlock controls access to the other members of the semaphore.
++ * down_trylock() and up() can be called from interrupt context, so we
++ * have to disable interrupts when taking the lock.  It turns out various
++ * parts of the kernel expect to be able to use down() on a semaphore in
++ * interrupt context when they know it will succeed, so we have to use
++ * irqsave variants for down(), down_interruptible() and down_killable()
++ * too.
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * The ->count variable represents how many more tasks can acquire this
++ * semaphore.  If it's zero, there may be tasks waiting on the wait_list.
+  */
+ 
+ #include <linux/compiler.h>
+@@ -12,22 +32,23 @@
+ #include <linux/semaphore.h>
+ #include <linux/spinlock.h>
+ 
+-/*
+- * Some notes on the implementation:
+- *
+- * down_trylock() and up() can be called from interrupt context.
+- * So we have to disable interrupts when taking the lock.
+- *
+- * The ->count variable defines how many more tasks can acquire the
+- * semaphore.  If it's zero, there may be tasks waiting on the list.
+- */
+-
+ static noinline void __down(struct semaphore *sem);
+ static noinline int __down_interruptible(struct semaphore *sem);
+ static noinline int __down_killable(struct semaphore *sem);
+ static noinline int __down_timeout(struct semaphore *sem, long jiffies);
+ static noinline void __up(struct semaphore *sem);
+ 
++/**
++ * down - acquire the semaphore
++ * @sem: the semaphore to be acquired
++ *
++ * Acquires the semaphore.  If no more tasks are allowed to acquire the
++ * semaphore, calling this function will put the task to sleep until the
++ * semaphore is released.
++ *
++ * Use of this function is deprecated, please use down_interruptible() or
++ * down_killable() instead.
 + */
-+
-+#ifndef __LINUX_OF_I2C_H
-+#define __LINUX_OF_I2C_H
-+
-+#include <linux/i2c.h>
-+
-+#ifdef CONFIG_OF_I2C
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node);
-+
-+#endif /* CONFIG_OF_I2C */
-+
-+#endif /* __LINUX_OF_I2C_H */
+ void down(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+@@ -41,6 +62,15 @@ void down(struct semaphore *sem)
+ }
+ EXPORT_SYMBOL(down);
+ 
++/**
++ * down_interruptible - acquire the semaphore unless interrupted
++ * @sem: the semaphore to be acquired
++ *
++ * Attempts to acquire the semaphore.  If no more tasks are allowed to
++ * acquire the semaphore, calling this function will put the task to sleep.
++ * If the sleep is interrupted by a signal, this function will return -EINTR.
++ * If the semaphore is successfully acquired, this function returns 0.
++ */
+ int down_interruptible(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+@@ -57,6 +87,16 @@ int down_interruptible(struct semaphore *sem)
+ }
+ EXPORT_SYMBOL(down_interruptible);
+ 
++/**
++ * down_killable - acquire the semaphore unless killed
++ * @sem: the semaphore to be acquired
++ *
++ * Attempts to acquire the semaphore.  If no more tasks are allowed to
++ * acquire the semaphore, calling this function will put the task to sleep.
++ * If the sleep is interrupted by a fatal signal, this function will return
++ * -EINTR.  If the semaphore is successfully acquired, this function returns
++ * 0.
++ */
+ int down_killable(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+@@ -78,7 +118,7 @@ EXPORT_SYMBOL(down_killable);
+  * @sem: the semaphore to be acquired
+  *
+  * Try to acquire the semaphore atomically.  Returns 0 if the mutex has
+- * been acquired successfully and 1 if it is contended.
++ * been acquired successfully or 1 if it it cannot be acquired.
+  *
+  * NOTE: This return value is inverted from both spin_trylock and
+  * mutex_trylock!  Be careful about this when converting code.
+@@ -101,6 +141,16 @@ int down_trylock(struct semaphore *sem)
+ }
+ EXPORT_SYMBOL(down_trylock);
+ 
++/**
++ * down_timeout - acquire the semaphore within a specified time
++ * @sem: the semaphore to be acquired
++ * @jiffies: how long to wait before failing
++ *
++ * Attempts to acquire the semaphore.  If no more tasks are allowed to
++ * acquire the semaphore, calling this function will put the task to sleep.
++ * If the semaphore is not released within the specified number of jiffies,
++ * this function returns -ETIME.  It returns 0 if the semaphore was acquired.
++ */
+ int down_timeout(struct semaphore *sem, long jiffies)
+ {
+ 	unsigned long flags;
+@@ -117,6 +167,13 @@ int down_timeout(struct semaphore *sem, long jiffies)
+ }
+ EXPORT_SYMBOL(down_timeout);
+ 
++/**
++ * up - release the semaphore
++ * @sem: the semaphore to release
++ *
++ * Release the semaphore.  Unlike mutexes, up() may be called from any
++ * context and even by tasks which have never called down().
++ */
+ void up(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+
 -- 
-1.5.4.5
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
