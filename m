@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYDLSjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYDLSno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYDLSjY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 14:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755719AbYDLSjQ
+	id S1757277AbYDLSno (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 14:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbYDLSne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 14:39:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:37974 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755092AbYDLSjQ (ORCPT
+	Sat, 12 Apr 2008 14:43:34 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:38950 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755595AbYDLSnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 14:39:16 -0400
-Date: Sun, 13 Apr 2008 00:09:02 +0530
-From: Shakul Mohideen Hameed <smohideen@blackhole.labs.rootshell.ws>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [GIT] git-clone failure over http
-Message-ID: <20080412183902.GB5444@debian>
-References: <c42f92750804092213p7b2c5607sa48a83086d45a825@mail.gmail.com> <47FEEDD0.4000505@zytor.com>
+	Sat, 12 Apr 2008 14:43:33 -0400
+Date: Sun, 13 Apr 2008 00:13:17 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm2
+Message-ID: <20080412184317.GB18122@skywalker>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080411134036.GB3821@cs181133002.pp.htv.fi> <20080411212222.b3c1177e.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47FEEDD0.4000505@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080411212222.b3c1177e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 10, 2008 at 09:49:20PM -0700, H. Peter Anvin wrote:
-> Shakul Mohideen Hameed wrote:
-> >I am getting errors while cloning few of the kernel sources over HTTP.
-> >Both proxy/direct modes are failing.
-> >Please advise.
-> >    - smohideen
-> >
+On Fri, Apr 11, 2008 at 09:22:22PM -0700, Andrew Morton wrote:
+> On Fri, 11 Apr 2008 16:40:36 +0300 Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> This happens when the repository maintainer hasn't done:
+> > On Thu, Apr 10, 2008 at 08:33:54PM -0700, Andrew Morton wrote:
+> > >...
+> > > Changes since 2.6.25-rc8-mm1:
+> > >...
+> > > +ext4-is-busted-on-m68k.patch
+> > > 
+> > >  ext4 doesn't build on m68k
+> > >...
+> > 
+> > Is this due to the generic_find_next_le_bit compile error I reported as 
+> > 2.6.25 regression (there seems to be some discussion recently how to 
+> > fix it - hopefully for 2.6.25) or is there even more breakage in -mm?
 > 
-> 	chmod +x <repo>.git/hooks/post-update
+> Yes, it's the bitops screwup.
 > 
-> This has to be done manually for some reason.
+> I saw some related linux-ext4 email float past yesterday, so something
+> might be happening.
 > 
-> 	-hpa
 
-Transconnect http://transconnect.sf.net has allowed me to download the
-sources through an http proxy..
+It would really help if we can get some m68k people to look at patch
+i posted.
 
- -smohideen
+http://article.gmane.org/gmane.comp.file-systems.ext4/5944
+
+
+-aneesh
