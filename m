@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYDLPo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYDLPra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYDLPo7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 11:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYDLPov
+	id S1754683AbYDLPra (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 11:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYDLPrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 11:44:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:9264 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbYDLPou (ORCPT
+	Sat, 12 Apr 2008 11:47:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:13231 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYDLPrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 11:44:50 -0400
+	Sat, 12 Apr 2008 11:47:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=u1WJydSm/yvohsekDAkLov1EDBSnywS8j175R4Pywd2yFXhI1jKvCcmkt/wguUKyv4COTb1016sg2ldJJZsBD1MaBngJ1CfMBgFBulsgZrFsg24yPyrAgvHdDKhwam0NyZZOrcDs7sAo3ZN1e/k+hPed+p6Vvz+PbOG/QpsvOfk=
-Message-ID: <4800D818.5070901@gmail.com>
-Date: Sat, 12 Apr 2008 17:41:12 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bCXwx3d3/K27gMTEWtR0yJ9uykaKDYuE1gqHVut/YxQPsmtz4iQnVxUCxZNz8dUYcWU2tiIXaJMnOheAxe+5jRYAR/5hp5/eWdajxgE01QEQpDD1fluCQfLBRY/vM2NYVVrsmmYH6Diw6WU5OmEQA0ie0PlI6SVK70fDbsQACjc=
+Date: Sat, 12 Apr 2008 11:47:11 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
+Message-ID: <20080412154711.GA3221@anvil.corenet.prv>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-4-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de
-Subject: [PATCH 3/3] x86: unlock_ExtINT_logic() - fix section mismatch warnings
-References: <4800D743.3000405@gmail.com>
-In-Reply-To: <4800D743.3000405@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207946244-14525-4-git-send-email-hmh@hmh.eng.br>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warning:
-WARNING: arch/x86/kernel/built-in.o(.text+0x12cc9): Section mismatch in reference from the function unlock_ExtINT_logic()
+Hi Henrique,
 
-unlock_ExtINT_logic() is only used by __init check_timer(). Annotate unlock_ExtINT_logic() witch __init.
+On Fri, Apr 11, 2008 at 05:37:19PM -0300, Henrique de Moraes Holschuh wrote:
+> The *_RADIO input events are related to all radios in a system.  There are
+> two: KEY_RADIO and SW_RADIO.
+> 
 
-Signed-off-by: Jacek Luczak <luczak.jacek@gmail.com>
+KEY_RADIO is reserved for selecting radio input (as pooosed to TV, AUX,
+etc) with a remote control. Rfkill woudl need a separate keycode if it
+needs "all types of radios" event.
 
----
- io_apic_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Btw, is there any devices in the wild that actually have separate
+switches for different types of transmitters?
 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index 2e2f420..696b8e4 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2068,7 +2068,7 @@ static void __init setup_nmi(void)
-  * cycles as some i82489DX-based boards have glue logic that keeps the
-  * 8259A interrupt line asserted until INTA.  --macro
-  */
--static inline void unlock_ExtINT_logic(void)
-+static inline void __init unlock_ExtINT_logic(void)
- {
- 	int apic, pin, i;
- 	struct IO_APIC_route_entry entry0, entry1;
+-- 
+Dmitry
