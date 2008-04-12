@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYDLUb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYDLUcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbYDLUb1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 16:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYDLUbT
+	id S1757352AbYDLUcd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 16:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYDLUc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 16:31:19 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:40395 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756650AbYDLUbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 16:31:18 -0400
-Date: Sat, 12 Apr 2008 17:30:12 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Frederik Himpe <fhimpe@telenet.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Audio skipping with 2.6.24.4 and 2.6.25-rc9
-Message-ID: <20080412203012.GA8167@localhost.ift.unesp.br>
-Mail-Followup-To: Frederik Himpe <fhimpe@telenet.be>,
-	linux-kernel@vger.kernel.org
-References: <pan.2008.04.12.16.13.01@telenet.be> <20080412191914.GA6573@localhost.ift.unesp.br> <pan.2008.04.12.20.19.55@telenet.be>
+	Sat, 12 Apr 2008 16:32:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41056 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbYDLUcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 16:32:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 12 Apr 2008 22:31:25 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] firewire: fw-ohci: work around generation bug in TI
+ controllers (fix AV/C and more)
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de>
+Message-ID: <tkrat.3e4f8089bffc4e81@s5r6.in-berlin.de>
+References: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <pan.2008.04.12.20.19.55@telenet.be>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 12.Apr'08 at 20:19:55 +0000, Frederik Himpe wrote:
-> On Sat, 12 Apr 2008 16:19:14 -0300, Carlos R. Mafra wrote:
-> 
-> > But in the log you uploaded you have only two se.wait_max greater than
-> > 40 msecs
-> > 
-> > [mafra@localhost:~]$ grep se.wait_max cfs-debug-info-2008.04.12-18.00.20
-> > |awk '{ {if ($3 > 40.000000) print $3} }' 44.153039
-> > 50.841370
-> > 
-> > As these numbers are only a bit greater than 40, I guess your problem is
-> > not related to the CFS scheduler.
-> > 
-> > Can you try latencytop? ( www.latencytop.org )
-> 
-> I'm not too sure how I should use latencytop and interpret its results. I 
-> start latencytop, and reproduce the problem while rhythmbox is playing. It 
-> seems that it automatically changes the selected application in the bottom 
-> list after a few seconds, probably based on the CPU usage, where it 
-> selects most of the time either compiz or X. The upper half of latencytop 
-> is always empty, for all applications. In the lower half, it shows for all 
-> applications something like:
-> 
-> Process X (7972)
-> Scheduler: waiting for cpu     43.5 msec         43.5 msec
-> 
-> Only the times differ between the different processes.
+Unlike the ohci1394 driver, fw-ohci uses the selfIDGeneration field of
+bus reset packets to determine the generation of incoming requests as
+per OHCI 1.1 clause 8.4.2.3.  This is more precise --- provided that the
+controller inserts the correct generation.  Texas Instruments chips
+often don't.
 
-Did you try with the git version of latencytop?
-I remember that once I downloaded latencytop from the website 
-and the upper half of latencytop was also always empty, and
-that the git version was better and showed the latencies.
+This prevented the transmission of response packets, which for example
+broke AV/C transactions as used when communicating with miniDV cameras
+and any other AV/C devices.
 
+There is apparently no way to detect and adjust incorrect generations.
+Therefore we ignore the generation of bus reset packets from TI chips
+and use the generation of the self ID buffer instead.  Alas this is
+received at a slightly wrong time.  In rare cases, this could cause us
+to not respond to legitimate requests or to respond to expired requests.
+(The latter is less likely because the bus reset packet AR event is
+typically handled before the self ID complete event.)
+
+Bug reported by Mladen Kuntner, who was extraordinarily patient while
+dealing with the driver maintainers.
+https://bugzilla.redhat.com/show_bug.cgi?id=243081
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+
+update: use a quirk flag for simpler code
+
+ drivers/firewire/fw-ohci.c |   21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -181,6 +181,7 @@ struct fw_ohci {
+ 	int request_generation;	/* for timestamping incoming requests */
+ 	u32 bus_seconds;
+ 	bool old_uninorth;
++	bool bus_reset_packet_quirk;
+ 
+ 	/*
+ 	 * Spinlock for accessing fw_ohci data.  Never call out of
+@@ -571,14 +572,19 @@ static __le32 *handle_ar_packet(struct a
+ 	 * generation.  We only need this for requests; for responses
+ 	 * we use the unique tlabel for finding the matching
+ 	 * request.
++	 *
++	 * Alas some chips sometimes emit bus reset packets with a
++	 * wrong generation.  We set the correct generation for these
++	 * at a slightly incorrect time (in bus_reset_tasklet).
+ 	 */
+-
+-	if (evt == OHCI1394_evt_bus_reset)
+-		ohci->request_generation = (p.header[2] >> 16) & 0xff;
+-	else if (ctx == &ohci->ar_request_ctx)
++	if (evt == OHCI1394_evt_bus_reset) {
++		if (!ohci->bus_reset_packet_quirk)
++			ohci->request_generation = (p.header[2] >> 16) & 0xff;
++	} else if (ctx == &ohci->ar_request_ctx) {
+ 		fw_core_handle_request(&ohci->card, &p);
+-	else
++	} else {
+ 		fw_core_handle_response(&ohci->card, &p);
++	}
+ 
+ 	return buffer + length + 1;
+ }
+@@ -1285,6 +1291,9 @@ static void bus_reset_tasklet(unsigned l
+ 	context_stop(&ohci->at_response_ctx);
+ 	reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
+ 
++	if (ohci->bus_reset_packet_quirk)
++		ohci->request_generation = generation;
++
+ 	/*
+ 	 * This next bit is unrelated to the AT context stuff but we
+ 	 * have to do it under the spinlock also.  If a new config rom
+@@ -2360,6 +2369,8 @@ pci_probe(struct pci_dev *dev, const str
+ 	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
+ 			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
+ #endif
++	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
++
+ 	spin_lock_init(&ohci->lock);
+ 
+ 	tasklet_init(&ohci->bus_reset_tasklet,
+
+-- 
+Stefan Richter
+-=====-==--- -=-- -==--
+http://arcgraph.de/sr/
 
