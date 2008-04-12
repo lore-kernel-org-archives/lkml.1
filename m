@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYDLPMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYDLPQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbYDLPMW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 11:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYDLPMP
+	id S1754458AbYDLPQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 11:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYDLPP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 11:12:15 -0400
-Received: from wp093.webpack.hosteurope.de ([80.237.132.100]:42497 "EHLO
-	wp093.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752736AbYDLPMO (ORCPT
+	Sat, 12 Apr 2008 11:15:56 -0400
+Received: from qb-out-0506.google.com ([72.14.204.232]:6848 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833AbYDLPP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 11:12:14 -0400
-Message-ID: <4800D14C.8020209@nuuz.at>
-Date: Sat, 12 Apr 2008 17:12:12 +0200
-From: Marcus Nutzinger <marcus@nuuz.at>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
+	Sat, 12 Apr 2008 11:15:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=izKk+sn7VLNCz8BnjJL0Jn5c9XBuq7VYoRlg450ySiTxb2peS7nmo5i8hoJ/V5DrEUrK31sdhaiXbRnCEXTtLefnxkx5urll08hrIknabwEE2nFuqRui4QvMFE90LB6oIqmVb5ohO/i7kT6DBuc9/m8Aa8XrMTkcDcfMy6OmvIg=
+Date: Sat, 12 Apr 2008 23:12:12 +0800 (CST)
+Message-Id: <20080412.231212.103246256.xiyou.wangcong@gmail.com>
 To: linux-kernel@vger.kernel.org
-CC: Greg KH <greg@kroah.com>
-Subject: Re: Kernel BUG at fs/sysfs/file.c:552
-References: <47FCCDB7.9070203@nuuz.at> <20080412043139.GB13154@kroah.com>
-In-Reply-To: <20080412043139.GB13154@kroah.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: akpm@osdl.org, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] UML: Remove a useless function
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;marcus@nuuz.at;1208013134;7281de6e;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-> With the nvidia driver, you're not going to get much help on this list
-> :(
+arch/um/drivers/chan_kern.c::chan_out_fd() is not used by anyone.
+Remove it.
 
-Well I don't like the driver either but the problem is really totally
-unrealted I think..
+Compile testing passed.
 
-> Hm, did you create two files with the same name?
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
-No I only wanted to create one file on the first try, just to test the
-sysfs interface. It should only give an attribute under /sys/devices,
-called "writer_pid", which prints 0 or an actual PID of a process
-writing to my virtual device.
+---
+ arch/um/drivers/chan_kern.c |   13 -------------
+ arch/um/include/chan_kern.h |    1 -
+ 2 files changed, 0 insertions(+), 14 deletions(-)
 
-I've just tried some other stuff just this minute and now it seems to
-work, I get a directory under /sys/devices! Unfortunately I can't say
-what the real problem was and why this kernel bug occured...
+diff --git a/arch/um/drivers/chan_kern.c b/arch/um/drivers/chan_kern.c
+index de22a10..6e51424 100644
+--- a/arch/um/drivers/chan_kern.c
++++ b/arch/um/drivers/chan_kern.c
+@@ -583,19 +583,6 @@ int parse_chan_pair(char *str, struct line *line, int device,
+ 	return 0;
+ }
+ 
+-int chan_out_fd(struct list_head *chans)
+-{
+-	struct list_head *ele;
+-	struct chan *chan;
+-
+-	list_for_each(ele, chans) {
+-		chan = list_entry(ele, struct chan, list);
+-		if (chan->primary && chan->output)
+-			return chan->fd;
+-	}
+-	return -1;
+-}
+-
+ void chan_interrupt(struct list_head *chans, struct delayed_work *task,
+ 		    struct tty_struct *tty, int irq)
+ {
+diff --git a/arch/um/include/chan_kern.h b/arch/um/include/chan_kern.h
+index de5f697..1e65145 100644
+--- a/arch/um/include/chan_kern.h
++++ b/arch/um/include/chan_kern.h
+@@ -44,7 +44,6 @@ extern void close_chan(struct list_head *chans, int delay_free_irq);
+ extern int chan_window_size(struct list_head *chans, 
+ 			     unsigned short *rows_out, 
+ 			     unsigned short *cols_out);
+-extern int chan_out_fd(struct list_head *chans);
+ extern int chan_config_string(struct list_head *chans, char *str, int size,
+ 			      char **error_out);
+ 
+-- 
+1.5.2.4
 
-But I've another question: This directory doesn't only contain the
-attribute ("writer_pid") which I've created in the code, but also a
-subdirectory "power" and another attribute "uevent".. Could you explain
-to me what's this all about? Are these just standard attributes which
-are added to every device which registers there? (Sounds obviousely
-because other directories under my /sys/devices tree contain them too..).
-
-> Care to post your code?
-
-I've uploaded it to http://www.nuuz.at/temp/vdd.c. I didn't want to post
-the whole code here, I hope that's ok!
-
-thanks for replying,
-regards
-Marcus Nutzinger
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFIANFMeEFjZ1Jaui4RAlbfAJ9XzbidhogUUMexqhuc/YPMzIaAjgCdGEtA
-0NtTj7FkOfpaYdXQZklTlf0=
-=FmIo
------END PGP SIGNATURE-----
