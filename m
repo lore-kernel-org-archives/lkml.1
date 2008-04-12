@@ -1,45 +1,27 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbYDLNiK (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 12 Apr 2008 09:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYDLNh5
+	id S1756405AbYDLRrz (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 12 Apr 2008 13:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYDLRrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 09:37:57 -0400
-Received: from tomts35-srv.bellnexxia.net ([209.226.175.109]:50197 "EHLO
-	tomts35-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754064AbYDLNh4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 09:37:56 -0400
-Message-Id: <6k1gas$vnkm4@toip40-bus.srvr.bell.ca>
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmQgAMFXAEjR4q/5/2dsb2JhbACBXYZeiFke
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [194.177.202.247]
-From: UK LOTTERY HEADQUARTERS <novelletto@bellnet.ca>
-Reply-To: pinkett.brown1@btinternet.com
-Organization: UK LOTTERY HEADQUARTERS
-To: <info@winner.com>
-Subject: Congratulation Winner
-Date: Sat, 12 Apr 2008 9:37:54 -0400
+	Sat, 12 Apr 2008 13:47:43 -0400
+Received: from hu-out-0506.google.com ([72.14.214.229]:60530 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692AbYDLRrm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 13:47:42 -0400
+Message-ID: <8c00db660804121047t7c072aa8g3d2da7e2e66b4498@mail.gmail.com>
+Date: Sun, 13 Apr 2008 01:47:32 +0800
+From: "=?BIG5?B?p2Srs6iw?=" <0r54et54ds3@gmail.com>
+To: linyao@mailwebs.com
+Subject: =?BIG5?B?MjAwOC80LzEzILuwp9akV2F2LWRheSAxOjQ3?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=BIG5
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1761273AbYDLNiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756405AbYDLRrz@vger.kernel.org>
 
-You won the sum of =A31,000,000,00 GBP from our monthly PROGRAM, you ar=
-e
-hereby advised to get back to us via email, to claim your prize.
-Contact Dr. Pinkett Brown
-Email: pinkett.brown1@btinternet.com
-Claims Requirements:
-1.full name:2.Home Address\Country.
-Mrs. Mariam Wilcox.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+MjAwOC80LzEzIC0gMTo0NwqhuqG7ofChvqHzCgq3c6+4tn259aRXqNOs3aRGtE6qvrlEIQoKaHR0
+cDovL3NhbS5hdi1kYXkubmV0LwoKCqG9ob6h9aH3ofgKob6huqG+ofahugo=
