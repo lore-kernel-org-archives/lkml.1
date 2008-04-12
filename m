@@ -1,160 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761823AbYDLMSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbYDLMTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761823AbYDLMSv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 08:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbYDLMSL
+	id S1761924AbYDLMTO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 08:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761577AbYDLMSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 08:18:11 -0400
+	Sat, 12 Apr 2008 08:18:17 -0400
 Received: from fk-out-0910.google.com ([209.85.128.189]:35944 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761509AbYDLMSJ (ORCPT
+	with ESMTP id S1761558AbYDLMSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 08:18:09 -0400
+	Sat, 12 Apr 2008 08:18:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=huzm75oY9a7AaZAhJGfuhgxFoa8RrVAqM25exutmvtaJdWZA1suOJarWKcJiCupmw6FthIea2GFtNYc0dGMpJnZTglLrysj8xamoiUyC2/amDiw/LkKYpwoKuaUnjpyW3ZChMqswcJ6/N9EgHd4zOVOrMVmfN7hnQg/Di/9QyiE=
+        b=raBDpEX7k4NFZtOjO8LRYTeod4HoS+gp8pJyZp7PVal/3eGKq14BAhHWq3Cpc+r4UnZGzSqCoEAJdOT8l7GKGGUPXPZWoHIWcbyy+wBzR8fgoLb3KN0FnHm96/pIAt/twyZzFolvagFsw8GmkJ9aNfNLAuTIYhNDVjfVcEE1JvQ=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 12 Apr 2008 14:34:15 +0200
-Message-Id: <20080412123415.18751.51136.sendpatchset@localhost.localdomain>
+Date: Sat, 12 Apr 2008 14:34:22 +0200
+Message-Id: <20080412123422.18751.64166.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080412123401.18751.17246.sendpatchset@localhost.localdomain>
 References: <20080412123401.18751.17246.sendpatchset@localhost.localdomain>
-Subject: [PATCH 3/9] ide: add ->tf_load and ->tf_read methods
+Subject: [PATCH 4/9] ide-cris: add ->tf_{load,read} methods
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ->tf_load and ->tf_read methods to ide_hwif_t and set the default
-  methods in default_hwif_transport().
-
-* Use ->tf_{load,read} instead o calling ide_tf_{load,read}() directly.
-
-* Make ide_tf_{load,read}() static.
+Add ->tf_{load,read} methods so cris_ide_{outb,outw,inb,inw}()
+can be used directly.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-io.c       |    4 ++--
- drivers/ide/ide-iops.c     |    7 +++++--
- drivers/ide/ide-lib.c      |    2 +-
- drivers/ide/ide-taskfile.c |    2 +-
- include/linux/ide.h        |    8 +++++---
- 5 files changed, 14 insertions(+), 9 deletions(-)
+ drivers/ide/cris/ide-cris.c |   87 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
 
-Index: b/drivers/ide/ide-io.c
+Index: b/drivers/ide/cris/ide-cris.c
 ===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -330,7 +330,7 @@ void ide_end_drive_cmd (ide_drive_t *dri
- 			tf->error = err;
- 			tf->status = stat;
- 
--			ide_tf_read(drive, task);
-+			drive->hwif->tf_read(drive, task);
- 
- 			if (task->tf_flags & IDE_TFLAG_DYN)
- 				kfree(task);
-@@ -1638,7 +1638,7 @@ void ide_pktcmd_tf_load(ide_drive_t *dri
- 	task.tf.lbah    = (bcount >> 8) & 0xff;
- 
- 	ide_tf_dump(drive->name, &task.tf);
--	ide_tf_load(drive, &task);
-+	drive->hwif->tf_load(drive, &task);
+--- a/drivers/ide/cris/ide-cris.c
++++ b/drivers/ide/cris/ide-cris.c
+@@ -775,6 +775,90 @@ static void __init cris_setup_ports(hw_r
+ 	hw->ack_intr = cris_ide_ack_intr;
  }
  
- EXPORT_SYMBOL_GPL(ide_pktcmd_tf_load);
-Index: b/drivers/ide/ide-iops.c
-===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -127,7 +127,7 @@ void SELECT_MASK (ide_drive_t *drive, in
- 		port_ops->maskproc(drive, mask);
- }
- 
--void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
-+static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct ide_io_ports *io_ports = &hwif->io_ports;
-@@ -172,7 +172,7 @@ void ide_tf_load(ide_drive_t *drive, ide
- 			   io_ports->device_addr);
- }
- 
--void ide_tf_read(ide_drive_t *drive, ide_task_t *task)
-+static void ide_tf_read(ide_drive_t *drive, ide_task_t *task)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct ide_io_ports *io_ports = &hwif->io_ports;
-@@ -323,6 +323,9 @@ static void ata_output_data(ide_drive_t 
- 
- void default_hwif_transport(ide_hwif_t *hwif)
- {
-+	hwif->tf_load	  = ide_tf_load;
-+	hwif->tf_read	  = ide_tf_read;
++static void cris_tf_load(ide_drive_t *drive, ide_task_t *task)
++{
++	struct ide_io_ports *io_ports = &drive->hwif->io_ports;
++	struct ide_taskfile *tf = &task->tf;
++	u8 HIHI = (task->tf_flags & IDE_TFLAG_LBA48) ? 0xE0 : 0xEF;
 +
- 	hwif->input_data  = ata_input_data;
- 	hwif->output_data = ata_output_data;
- }
-Index: b/drivers/ide/ide-lib.c
-===================================================================
---- a/drivers/ide/ide-lib.c
-+++ b/drivers/ide/ide-lib.c
-@@ -487,7 +487,7 @@ static void ide_dump_sector(ide_drive_t 
- 	else
- 		task.tf_flags = IDE_TFLAG_IN_LBA | IDE_TFLAG_IN_DEVICE;
- 
--	ide_tf_read(drive, &task);
-+	drive->hwif->tf_read(drive, &task);
- 
- 	if (lba48 || (tf->device & ATA_LBA))
- 		printk(", LBAsect=%llu",
-Index: b/drivers/ide/ide-taskfile.c
-===================================================================
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -109,7 +109,7 @@ ide_startstop_t do_rw_taskfile (ide_driv
- 
- 	if ((task->tf_flags & IDE_TFLAG_DMA_PIO_FALLBACK) == 0) {
- 		ide_tf_dump(drive->name, tf);
--		ide_tf_load(drive, task);
-+		hwif->tf_load(drive, task);
- 	}
- 
- 	switch (task->data_phase) {
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -429,6 +429,8 @@ struct ide_dma_ops {
- 	void	(*dma_timeout)(struct ide_drive_s *);
- };
- 
-+struct ide_task_s;
++	if (task->tf_flags & IDE_TFLAG_FLAGGED)
++		HIHI = 0xFF;
 +
- typedef struct hwif_s {
- 	struct hwif_s *next;		/* for linked-list in ide_hwgroup_t */
- 	struct hwif_s *mate;		/* other hwif from same PCI chip */
-@@ -469,6 +471,9 @@ typedef struct hwif_s {
- 	const struct ide_port_ops	*port_ops;
- 	const struct ide_dma_ops	*dma_ops;
- 
-+	void (*tf_load)(ide_drive_t *, struct ide_task_s *);
-+	void (*tf_read)(ide_drive_t *, struct ide_task_s *);
++	ide_set_irq(drive, 1);
 +
- 	void (*input_data)(ide_drive_t *, struct request *, void *, unsigned);
- 	void (*output_data)(ide_drive_t *, struct request *, void *, unsigned);
++	if (task->tf_flags & IDE_TFLAG_OUT_DATA)
++		cris_ide_outw((tf->hob_data << 8) | tf->data,
++			      io_ports->data_addr);
++
++	if (task->tf_flags & IDE_TFLAG_OUT_HOB_FEATURE)
++		cris_ide_outb(tf->hob_feature, io_ports->feature_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_HOB_NSECT)
++		cris_ide_outb(tf->hob_nsect, io_ports->nsect_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_HOB_LBAL)
++		cris_ide_outb(tf->hob_lbal, io_ports->lbal_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_HOB_LBAM)
++		cris_ide_outb(tf->hob_lbam, io_ports->lbam_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_HOB_LBAH)
++		cris_ide_outb(tf->hob_lbah, io_ports->lbah_addr);
++
++	if (task->tf_flags & IDE_TFLAG_OUT_FEATURE)
++		cris_ide_outb(tf->feature, io_ports->feature_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_NSECT)
++		cris_ide_outb(tf->nsect, io_ports->nsect_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_LBAL)
++		cris_ide_outb(tf->lbal, io_ports->lbal_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_LBAM)
++		cris_ide_outb(tf->lbam, io_ports->lbam_addr);
++	if (task->tf_flags & IDE_TFLAG_OUT_LBAH)
++		cris_ide_outb(tf->lbah, io_ports->lbah_addr);
++
++	if (task->tf_flags & IDE_TFLAG_OUT_DEVICE)
++		cris_ide_outb((tf->device & HIHI) | drive->select.all,
++			      io_ports->device_addr);
++}
++
++static void cris_tf_read(ide_drive_t *drive, ide_task_t *task)
++{
++	struct ide_io_ports *io_ports = &drive->hwif->io_ports;
++	struct ide_taskfile *tf = &task->tf;
++
++	if (task->tf_flags & IDE_TFLAG_IN_DATA) {
++		u16 data = cris_ide_inw(io_ports->data_addr);
++
++		tf->data = data & 0xff;
++		tf->hob_data = (data >> 8) & 0xff;
++	}
++
++	/* be sure we're looking at the low order bits */
++	cris_ide_outb(drive->ctl & ~0x80, io_ports->ctl_addr);
++
++	if (task->tf_flags & IDE_TFLAG_IN_NSECT)
++		tf->nsect  = cris_ide_inb(io_ports->nsect_addr);
++	if (task->tf_flags & IDE_TFLAG_IN_LBAL)
++		tf->lbal   = cris_ide_inb(io_ports->lbal_addr);
++	if (task->tf_flags & IDE_TFLAG_IN_LBAM)
++		tf->lbam   = cris_ide_inb(io_ports->lbam_addr);
++	if (task->tf_flags & IDE_TFLAG_IN_LBAH)
++		tf->lbah   = cris_ide_inb(io_ports->lbah_addr);
++	if (task->tf_flags & IDE_TFLAG_IN_DEVICE)
++		tf->device = cris_ide_inb(io_ports->device_addr);
++
++	if (task->tf_flags & IDE_TFLAG_LBA48) {
++		cris_ide_outb(drive->ctl | 0x80, io_ports->ctl_addr);
++
++		if (task->tf_flags & IDE_TFLAG_IN_HOB_FEATURE)
++			tf->hob_feature = cris_ide_inb(io_ports->feature_addr);
++		if (task->tf_flags & IDE_TFLAG_IN_HOB_NSECT)
++			tf->hob_nsect   = cris_ide_inb(io_ports->nsect_addr);
++		if (task->tf_flags & IDE_TFLAG_IN_HOB_LBAL)
++			tf->hob_lbal    = cris_ide_inb(io_ports->lbal_addr);
++		if (task->tf_flags & IDE_TFLAG_IN_HOB_LBAM)
++			tf->hob_lbam    = cris_ide_inb(io_ports->lbam_addr);
++		if (task->tf_flags & IDE_TFLAG_IN_HOB_LBAH)
++			tf->hob_lbah    = cris_ide_inb(io_ports->lbah_addr);
++	}
++}
++
+ static const struct ide_port_ops cris_port_ops = {
+ 	.set_pio_mode		= cris_set_pio_mode,
+ 	.set_dma_mode		= cris_set_dma_mode,
+@@ -812,6 +896,9 @@ static int __init init_e100_ide(void)
  
-@@ -951,9 +956,6 @@ typedef struct ide_task_s {
+ 		ide_init_port_hw(hwif, &hw);
  
- void ide_tf_dump(const char *, struct ide_taskfile *);
- 
--void ide_tf_load(ide_drive_t *, ide_task_t *);
--void ide_tf_read(ide_drive_t *, ide_task_t *);
--
- extern void SELECT_DRIVE(ide_drive_t *);
- extern void SELECT_MASK(ide_drive_t *, int);
++		hwif->tf_load = cris_tf_load;
++		hwif->tf_read = cris_tf_read;
++
+ 		hwif->input_data  = cris_input_data;
+ 		hwif->output_data = cris_output_data;
  
