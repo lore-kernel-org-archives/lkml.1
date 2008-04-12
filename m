@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbYDLLEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbYDLL32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761471AbYDLLEx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 07:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760932AbYDLLE1
+	id S1760865AbYDLL32 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 07:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYDLL3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 07:04:27 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34316 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759803AbYDLLEU (ORCPT
+	Sat, 12 Apr 2008 07:29:18 -0400
+Received: from proxy1.bredband.net ([195.54.101.71]:45787 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757447AbYDLL3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 07:04:20 -0400
-Date: Sat, 12 Apr 2008 11:59:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-Message-ID: <20080412115950.1cbb9cfa@core>
-In-Reply-To: <m3prsva3y7.fsf@maximus.localdomain>
-References: <m3prtzsszg.fsf@maximus.localdomain>
-	<m3tzj92xq6.fsf@maximus.localdomain>
-	<m33aqedg0a.fsf@maximus.localdomain>
-	<m37if4oz1g.fsf@maximus.localdomain>
-	<20080411221448.22b69ff5.akpm@linux-foundation.org>
-	<m3prsva3y7.fsf@maximus.localdomain>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 12 Apr 2008 07:29:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsQ7ANo5AEhT48OPPGdsb2JhbACBXY9sAQEBATCYUA
+Message-ID: <48009D04.3000509@coderworld.net>
+Date: Sat, 12 Apr 2008 13:29:08 +0200
+From: Richard Jonsson <richie@coderworld.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rc8] Regression: key repeats and skips in music during compilation
+References: <200804041222.35025.elendil@planet.nl> <200804071229.27113.rjw@sisk.pl> <20080407112459.GA11532@linux.vnet.ibm.com> <200804071403.59500.elendil@planet.nl>
+In-Reply-To: <200804071403.59500.elendil@planet.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008 10:10:40 +0200
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+Frans Pop skrev:
+> On Monday 07 April 2008, Dhaval Giani wrote:
+>> On Mon, Apr 07, 2008 at 12:29:26PM +0200, Rafael J. Wysocki wrote:
+>>> On Monday, 7 of April 2008, Frans Pop wrote:
+>>>> On Monday 07 April 2008, Rafael J. Wysocki wrote:
+>>>>> On Sunday, 6 of April 2008, Rafael J. Wysocki wrote:
+>>>>>> On Friday, 4 of April 2008, Frans Pop wrote:
+>>>>>>> While compiling glibc I am getting frequent short skips in
+>>>>>>> music play anddddddddddddddddd I have now three times seen key
+>>>>>>> repeats (as in this sentence). When there is a skip in the
+>>>>>>> music, there is also a delay in characters being typed
+>>>>>>> appearing on the screen.
+>>>>>> Can you test with CONFIG_GROUP_SCHED unset, please?
+>>>>> I was able to reproduce this issue with -rc8 on one of my test
+>>>>> systems,
+>>>> In the mean time I have verified that the issue also existed in rc6,
+>>>> so it's not a recent regression.
+>>>>
+>>>>> but I'm not any more with the current Linus' tree and
+>>>>> CONFIG_GROUP_SCHED unset, FWIW.
+>>>> Hmm. Does that mean that you _can_ reproduce it with git HEAD and
+>>>> CONFIG_GROUP_SCHED set? That would mean it is still an issue in HEAD
+>>>> and group scheduling is the culprit.
+>>> Well, CONFIG_GROUP_SCHED is known to cause problems, AFAICS, and some
+>>> fixes are scheduled for the 2.6.26 time frame.
+>> I thought we had most of the issues ironed out.
+> 
+> Note that I can also reproduce the issue with a kernel that does *not* have 
+> CONFIG_GROUP_SCHED set. I still get the music skips (maybe less frequently, 
+> but that's hard to measure), and I've have also seen key repeats once.
+> 
+> Anything I can do to provide additional info on this?
+> 
+> Cheers,
+> FJP
+> 
+> # CONFIG_CGROUPS is not set
+> # CONFIG_GROUP_SCHED is not set
+> (config otherwise identical to my initial mail)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > It never hurts to resend.  It was 6000 patches ago and my mind is a blank.
-> 
-> Sure, here is it. Some description, well:
-> 
-> PPP support in generic HDLC in Linux 2.6.25 is broken and will cause
-> a kernel panic when a device configured in PPP mode is activated.
-> 
-> It will be replaced by new PPP implementation after Linux 2.6.25 is
-> released.
+Hi
 
-Thats a pretty bad regression. Surely the correct fix is to revert the
-change series that caused the breakage then re-merge that and fixes for
-HDLC PPP for 2.6.26, not just leave it broken ?
+I reported about this problem a while back [1], and have been busy 
+bisecting. I have verified the issue in v2.6.25-rc6 and I'm about 99% 
+certain that the issue is not present in v2.6.25-rc5-300-gb663c6f.
+
+I've been running this kernel for 3 days now with no problems.
+
+It's a bit worrying to me that it's more frequent in builds between rc6 
+and rc7 than vanilla rc6. Newer builds than rc7 not tested.
+
+I've not noticed stuttering audio, but at one time I saw stuttering 
+video in a way I don't normally see. May be incidence.
+
+Maybe relevant config:
+# CONFIG_CGROUPS is not set
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+# CONFIG_RT_GROUP_SCHED is not set
+# CONFIG_CGROUP_SCHED is not set
+
+[1]: http://lkml.org/lkml/2008/3/29/96
