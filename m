@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbYDLIvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbYDLIwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbYDLIvP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 04:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbYDLIu5
+	id S1761011AbYDLIwz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 04:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYDLIwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 04:50:57 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:40902 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756240AbYDLIu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 04:50:56 -0400
-Date: Sat, 12 Apr 2008 10:50:51 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [RFC 3/3] mac80211: annotate with __requires_rcu
-In-Reply-To: <20080410134829.412424000@sipsolutions.net>
-Message-ID: <Pine.LNX.4.64.0804121050160.28120@vixen.sonytel.be>
-References: <20080410134810.629048000@sipsolutions.net>
- <20080410134829.412424000@sipsolutions.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1964633417-1207990251=:28120"
+	Sat, 12 Apr 2008 04:52:47 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:46743 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757539AbYDLIwr (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 04:52:47 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.25-rc8-mm2 - CONFIG_PROFILE_LIKELY broke again...
+In-Reply-To: Your message of "Thu, 10 Apr 2008 20:33:54 PDT."
+             <20080410203354.f0a6f464.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1207990361_3279P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 12 Apr 2008 04:52:41 -0400
+Message-ID: <4045.1207990361@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--==_Exmh_1207990361_3279P
+Content-Type: text/plain; charset=us-ascii
 
----584349381-1964633417-1207990251=:28120
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Thu, 10 Apr 2008 20:33:54 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
 
-On Thu, 10 Apr 2008, Johannes Berg wrote:
-> --- everything.orig/net/mac80211/key.h	2008-04-10 15:36:20.000000000 +0200
-> +++ everything/net/mac80211/key.h	2008-04-10 15:36:45.000000000 +0200
-> @@ -146,7 +146,7 @@ struct ieee80211_key *ieee80211_key_allo
->   */
->  void ieee80211_key_link(struct ieee80211_key *key,
->  			struct ieee80211_sub_if_data *sdata,
-> -			struct sta_info *sta);
-> +			struct sta_info *sta) __requires(RCU);
-                                              ^^^^^^^^^^^^^^^
-					      __requires_rcu? (for consistency)
+OK, I found the issue I was chasing when I noticed the WARN from genapic_64.c.
 
-With kind regards,
+After seeing that I'd gotten all the way to remove-div_long_long_rem.patch I
+took a close look at the remaining several dozen patches, and took a wild
+stab in the dark.. .and ta-da...
 
-Geert Uytterhoeven
-Software Architect
+PROFILE_LIKELY broke between -rc8-mm1 and -rc8-mm2.  Setting it to 'y'
+gets me an instant reboot similar to what I was seeing against -rc2-mm.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+And changed between -mm1 and -mm2 (datestamp of 04/08):
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+patches/profile-likely-unlikely-macros.patch
+patches/profile-likely-unlikely-macros-fix.patch
 
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-1964633417-1207990251=:28120--
+I found the profile-likely-unlikely-macros-fix-2.patch from last time around,
+but the code has changed a bunch since then so it isn't a clean apply (and in
+fact, it's so different it's not even easily hand-patchable - stuff like
+!!(foo) has appeared).  
+
+
+
+
+--==_Exmh_1207990361_3279P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIAHhZcC3lWbTT17ARAvEjAKCvHLnNXI9rRajaXmkQGP9FHMU8XQCgmytn
+D1QIuPFnOsihNOekUsu5200=
+=JxiI
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1207990361_3279P--
