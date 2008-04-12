@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYDKXy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbYDLAF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbYDKXy7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 19:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYDKXys
+	id S1759280AbYDLAF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 20:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbYDLAFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 19:54:48 -0400
-Received: from mail.lang.hm ([64.81.33.126]:34199 "EHLO bifrost.lang.hm"
+	Fri, 11 Apr 2008 20:05:48 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36484 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbYDKXyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 19:54:47 -0400
-Date: Fri, 11 Apr 2008 16:58:33 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Daniel Barkalow <barkalow@iabervon.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-In-Reply-To: <47FFF7B5.3000609@garzik.org>
-Message-ID: <alpine.DEB.1.10.0804111655520.6058@asgard>
-References: <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org>
- <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <alpine.LNX.1.00.0804111700550.19665@iabervon.org> <alpine.LFD.1.00.0804111556200.3143@woody.linux-foundation.org>
- <47FFF7B5.3000609@garzik.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1756527AbYDLAFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 20:05:48 -0400
+Date: Sat, 12 Apr 2008 10:05:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
+       i2c@lm-sensors.org
+Subject: Re: [PATCHv2 3/7] i2c: OF helpers for the i2c API
+Message-Id: <20080412100536.5f0589df.sfr@canb.auug.org.au>
+In-Reply-To: <47FFBA7B.8050900@scram.de>
+References: <47FFBA7B.8050900@scram.de>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008, Jeff Garzik wrote:
+--Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Linus Torvalds wrote:
->> .. but that said, I think your patch is certainly better than what we have 
->> now (or what Ingo was complaining about for the next merge window). I 
->> certainly could live with it. I would just suggest against ever then 
->> removing that "generic E1000" choice.
+On Fri, 11 Apr 2008 21:22:35 +0200 Jochen Friedrich <jochen@scram.de> wrote:
 >
->
-> You mean never ever remove PCI-E support from e1000?
->
-> Won't that will inflict long term headaches on the people that matter most -- 
-> users and maintainers -- to avoid short term headaches for kernel power 
-> users?
+> This patch implements various helpers to support OF bindings for
+> the i2c API.
+>=20
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
 
-no, it sounds like he's saying make the E1000 option select both E1000_PCI 
-and E1000_PCIE (which could be selected seperately) and never remove the 
-E1000 option.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-after people trust the E1000e driver the PCI ids can be removed from 
-E1000, but people who only select E1000 will continue to work becouse the 
-build system will now build both the PCI and PCI-e drivers when E1000 is 
-selected.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-David Lang
+--Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH//zUTgG2atn1QN8RAjRvAJ4kzEMylk8uOFwwMIbuEpawKlMMQgCfXvSH
+YKY0iFd/fDtauTTaR8vb6TA=
+=ZgwY
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7--
