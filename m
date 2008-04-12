@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbYDLT2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYDLTea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153AbYDLT2c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 15:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbYDLT2Z
+	id S1757623AbYDLTea (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 15:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYDLTeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 15:28:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60103 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754106AbYDLT2Y (ORCPT
+	Sat, 12 Apr 2008 15:34:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40359 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754235AbYDLTeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 15:28:24 -0400
-Date: Sat, 12 Apr 2008 12:27:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [DOC PATCH] semaphore documentation
-Message-Id: <20080412122724.0897d881.akpm@linux-foundation.org>
-In-Reply-To: <20080412141250.GK11962@parisc-linux.org>
-References: <20080410143403.c03757e5.akpm@linux-foundation.org>
-	<20080410220816.GY11962@parisc-linux.org>
-	<20080410151907.91f11c74.akpm@linux-foundation.org>
-	<20080411192153.GH11962@parisc-linux.org>
-	<20080411132754.b1c1fd8f.randy.dunlap@oracle.com>
-	<20080411220911.3e7ab3e4.akpm@linux-foundation.org>
-	<20080412141250.GK11962@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 12 Apr 2008 15:34:22 -0400
+Message-ID: <48010C70.2030902@zytor.com>
+Date: Sat, 12 Apr 2008 12:24:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, sukadev@us.ibm.com,
+       Andrew Morton <akpm@osdl.org>, serue@us.ibm.com, matthltc@us.ibm.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Multiple instances of devpts
+References: <20080412172933.GA19295@us.ibm.com>	 <20080412183514.GO9785@ZenIV.linux.org.uk>  <48010583.3020403@zytor.com> <1208027757.28187.25.camel@x61.ebiederm.org>
+In-Reply-To: <1208027757.28187.25.camel@x61.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008 08:12:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Fri, Apr 11, 2008 at 10:09:11PM -0700, Andrew Morton wrote:
-> > On Fri, 11 Apr 2008 13:27:54 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > Looks good to me.  Thanks.
-> > 
-> > Yup, most excellent.
+Eric W. Biederman wrote:
+>>
+>> /dev/ptmx can be a symlink ptmx -> pts/ptmx, and we add a ptmx instance 
+>> inside the devpts filesystem.  Each devpts filesystem is responsible for 
+>> its own pool of ptys, with own numbering, etc.
+>>
+>> This does mean that entries in /dev/pts are more than just plain device 
+>> nodes, which they are now (you can cp -a a device node from /dev/pts 
+>> into another filesystem and it will still "just work"), but I doubt this 
+>> actually matters to anyone.  If anyone cares, now I guess would be a 
+>> good time to speak up.
 > 
-> Thanks for the review.
+> Agreed.   That is another legitimate path.  And if all you care about is
+> isolation and not dealing with the general class of problems with the
+> global device number to device mapping that is sane.  I know we have
+> several other virtual devices that we tend to care about but ptys are
+> the real world pain point.
 > 
-> > btw, down() and friends should have might_sleep() checks in them, shouldn't
-> > they?  They don't seem to be in there, nor in mainline
-> > lib/semaphore-sleepers.c.  Confused.
-> 
-> Mmm.  Ingo gets annoyed when I add additional checks to semaphores -- he
-> wants them to maintain their current semantics and to get better checking
-> by migrating more users to mutexes.  I've already exposed at least one
-> problem (in aacraid) by adding the __must_check to down_interruptible().
-> 
-> As I wrote in one of the comments, we have places in the kernel which
-> know that even though they're in a non-sleeping context, there is at
-> least one more token left in the semaphore.  One place this bit me was
-> in start_kernel().  We disable interrupts and then call lock_kernel()
-> which calls down().  Since we're in start_kernel(), we know there's
-> nothing else running and this is perfectly safe.  But a might_sleep()
-> would warn bogusly.
 
-urgh, yes, I'd forgotten about that mess.
+Thinking about it further, allowing this restriction would also allow a 
+whole lot of cleanups inside the pty setup, since it would eliminate the 
+need to do a separate lookup to find the corresponding devpts entry in 
+pty_open().  The benefit here comes from the closer coupling between the 
+pty and the devpts filesystem and isn't at all related to namespaces, 
+but it's a very nice side benefit.
 
-I suppose that if might_sleep() checking in down() is useful (and surely it
-is) we could provide a separate down_im_stupid() (and
-lock_kernel_im_stupid()) which omits the check, and call that from the
-problematic sites.
-
-> I'd be open to putting a might_sleep() in __down().  We definitely are
-> going to sleep at that point, so getting a warning out of it would
-> be good.
-
-I think it'd be worth playing with some time, but it's off-topic for this
-current work.
-
->  I thought that schedule() would warn itself in that case,
-> but I can't see the code that would do that now I check.
-
-schedule() will warn ("scheduling while atomic"), but only if we happened
-to hit contention.
+	-hpa
