@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYDLS0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYDLSgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbYDLS0g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 14:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbYDLS01
+	id S1756749AbYDLSgC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 14:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbYDLSfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 14:26:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:34168 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbYDLS00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 14:26:26 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [PATCH] anon_inodes.c cleanups.
-Date: Sun, 13 Apr 2008 04:26:09 +1000
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>
-References: <200804110835.07989.rusty@rustcorp.com.au> <Pine.LNX.4.64.0804111807340.12407@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0804111807340.12407@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Apr 2008 14:35:51 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58996 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755092AbYDLSfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 14:35:51 -0400
+Date: Sat, 12 Apr 2008 19:35:14 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: sukadev@us.ibm.com
+Cc: Andrew Morton <akpm@osdl.org>, serue@us.ibm.com, matthltc@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Helper patches for PTY namespaces
+Message-ID: <20080412183514.GO9785@ZenIV.linux.org.uk>
+References: <20080412172933.GA19295@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804130426.09365.rusty@rustcorp.com.au>
+In-Reply-To: <20080412172933.GA19295@us.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 April 2008 11:15:26 Davide Libenzi wrote:
-> On Fri, 11 Apr 2008, Rusty Russell wrote:
-> > Arnd pointed me at anon_inode_getfd(), and the code annoyed me enough
-> > to send this patch.
-> >
-> > Mainly because the init routine carefully checks for errors, then panics
-> > (because we shouldn't run out of memory at boot).  Unfortunately, it's
-> > actually worse than simply oopsing, where we'd know what had failed.
-> >
-> > 1) anon_inode_inode can be read_mostly, same as anon_inode_mnt.
->
-> Sure.
->
-> > 3) anon_inode_mkinode has one caller, so it's a little confusing.
->
-> Hmm? The function groups the code necessary to create the anonfds inode.
-> If every function that has one call site would be inlined, we'd have
-> monster long functions. Functions also have the purpose to group some code
-> that does some task, into a single unit (and the function name hopefully
-> gives an hint about what's doing). The compiler (not that in this case
-> really matter, since it's not even a slow-path, is a once-run path) may
-> take care of inlining, if sees that appropriate.
+On Sat, Apr 12, 2008 at 10:29:33AM -0700, sukadev@us.ibm.com wrote:
+> 
+> Some simple helper patches to enable implementation of multiple PTY
+> (or device) namespaces.
+> 
+> 	[PATCH 1/4]: Propagate error code from devpts_pty_new
+> 	[PATCH 2/4]: Factor out PTY index allocation
+> 	[PATCH 3/4]: Move devpts globals into init_pts_ns
+> 	[PATCH 3/4]: Enable multiple mounts of /dev/pts
+> 
+> This patchset is based on earlier versions developed by Serge Hallyn
+> and Matt Helsley.
 
-If you'd called it, say, "setup_anon_inode()", it would be fine.  It seems 
-overly generic unless you planned on calling it elsewhere.
+*boggle*
 
-> > 2) The IS_ERR(anon_inode_inode) check is unneeded, since we panic on
-> >    boot if that were true.
-> > 4) Don't clean up before panic.
-> > 5) Panic gives less information than an oops would, plus is untested.
->
-> I remember we changed the failure-path of anonfds a couple of times along
-> the way, but I can't find email traces about why we did it.
-> So, I prefer error-checked code instead of oopses, and given that the
-> anonfds subsystem is not a required one for most of the components of the
-> kernel/userspace, I'd rather prefer to drop the panic().
+Care to explain how that "namespace" is different from devpts instance?
+IOW, why the devil do you guys ignore Occam's Razor?
 
-We've seen this debate before, and I'm firmly on the "don't turn oopses into  
-errors on boot paths" side.  I know others disagree.
+Frankly, this nonsense has gone far enough; I can buy the need to compensate
+for shitty APIs (sockets, non-fs-based-IPC, etc.), but devpts *is* *a*
+*fucking* *filesystem*.  Already.  And as such it's already present in
+normal, real, we-really-shouldn't-have-any-other-if-not-for-ancient-stupidity
+namespace.
 
-Given that it should never happen, I'd argue the highest priority minimal 
-amount of code, and second is ease of debugging if it ever did happen to 
-someone.  Oopsing has those features.
-
-> Anyway, I'll let this handle with Al (cc-ed now). The ananofds interface
-> has been changed to remove the inode** and file** parameters (noone but
-> KVM was using them), and Al already has those changes in his vfs tree
-> (plus fixes for KVM, I think).
-
-OK, fine.
-
-Thanks,
-Rusty.
+Why not simply allow independent instances of devpts and be done with that?
