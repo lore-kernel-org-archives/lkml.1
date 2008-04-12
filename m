@@ -1,38 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbYDLCbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYDLDTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758589AbYDLCbO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 22:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYDLCbD
+	id S1758787AbYDLDTq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 23:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbYDLDTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 22:31:03 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37028 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755087AbYDLCbD (ORCPT
+	Fri, 11 Apr 2008 23:19:35 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:10674 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756818AbYDLDTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 22:31:03 -0400
-Date: Sat, 12 Apr 2008 03:31:00 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: dhowells@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] suspicious code in frv/kernel/traps.c
-Message-ID: <20080412023100.GN9785@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Apr 2008 23:19:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rmQtf8OLyBs5QBjicUuIm60n7w4ZRsyErvyRBxIqeYH7rTV3t+4iLwSiRxMUUk4xMs2m81RhiKvd2Fv/RttctWVIlnb1noYi5xxC0zIfuO1r//Bws5tqB3AxlzsZSZbGxOcthkYpgNGpMj+XBXnUDWCErhNUc0XvMRz/jp94Ibk=
+Message-ID: <170fa0d20804112019h73928c99paadcc363539fea9c@mail.gmail.com>
+Date: Fri, 11 Apr 2008 23:19:33 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: Western Digital GreenPower drives and Linux
+Cc: devzero@web.de, lkml@metanurb.dk, pernegger@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <200804112200.28854.tvrtko@ursulin.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+References: <234148243@web.de> <200804112200.28854.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In insn_access_error():
-        info.si_addr    = (void *) ((epcr0 & EPCR0_V) ? (epcr0 & EPCR0_PC) : __frame->pc);
+On Fri, Apr 11, 2008 at 5:00 PM, Tvrtko A. Ursulin <tvrtko@ursulin.net> wrote:
+>
+>  > >I got back from WD's tech support and received a DOS utility which can
+>  > > control this drive feature, apparently using vendor specific commands.
+>  > > With it head unload timer can be disabled or set to a period between
+>  > > 100ms and 25.5s.
+>
+>  Followup with some good news.
+>
+>  Head unload timer settings seems to be persistent across powering off. Having
+>  set it to a maximum value of 25.5 seconds my disk is now behaving much more
+>  reasonable.
+>
+>  To actually do it I used FreeDOS floppy image burnt on a CD-RW as a bootable
+>  image plus wdidle3.exe in the filesystem itself.
+>
+>  BTW, WD's tech support has gone silent so chances for an easier solution are
+>  not so great.
 
-In illegal_instruction():
-        info.si_addr    = (void *) ((epcr0 & EPCR0_PC) ? (epcr0 & EPCR0_PC) : __frame->pc);
+Any chance you could make your iso available for the freedos w/
+wdidle3.exe bootable cd?
 
-and with
+I can't track down wdidle3.exe on wdc.com; they have "Data Lifeguard"
+and such but I have no idea if the wdidle3.exe is buried in those
+downloads.
 
-#define EPCR0_V                 0x00000001      /* register content validity indicator */
-#define EPCR0_PC                0xfffffffc      /* faulting instruction address */
-
-it really smells like a braino in the latter...
+thanks,
+Mike
