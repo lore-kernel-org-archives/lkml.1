@@ -1,90 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbYDLMQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbYDLMR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761209AbYDLMQT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 08:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbYDLMQG
+	id S1761401AbYDLMR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 08:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759132AbYDLMRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 08:16:06 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46748 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756799AbYDLMQD (ORCPT
+	Sat, 12 Apr 2008 08:17:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:20257 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757823AbYDLMRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 08:16:03 -0400
-X-Sasl-enc: iOJFENHUqTK/lci0JnYqEM5aY9Cd8zXHbmtKi5ZDtdpP 1208002562
-Date: Sat, 12 Apr 2008 09:15:54 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Inaky Perez-Gonzalez <inaky@linux.intel.com>,
-       =?iso-8859-1?Q?I=F1aky_P=E9rez-Gonz=E1lez?= 
-	<inaky.perez-gonzalez@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 6/8] rfkill: add the WWAN radio type
-Message-ID: <20080412121554.GB3402@khazad-dum.debian.net>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-7-git-send-email-hmh@hmh.eng.br> <200804121236.45670.IvDoorn@gmail.com>
+	Sat, 12 Apr 2008 08:17:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=QCh1kpUoIlCEG8G34/Iy2Z16MHm7B+Ty049Am/DITwBg+wK6S5MNrdDuLs/Cjsuxx0tNxRUygx7UMWq/6HCYOND2+RLgMG18J3SFo8XLIigw2Hp9UmwLygXhQOckmvuS2V5nhKZ/fghHMlJeTBZ1i6kELM8N62ldYvsshH1OEhc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 3/4] ide: add struct ide_dma_ops
+Date: Sat, 12 Apr 2008 14:32:03 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200803091700.46136.bzolnier@gmail.com> <200803181512.50134.bzolnier@gmail.com> <47FF636E.4070903@ru.mvista.com>
+In-Reply-To: <47FF636E.4070903@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804121236.45670.IvDoorn@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804121432.03366.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008, Ivo van Doorn wrote:
-> On Friday 11 April 2008, Henrique de Moraes Holschuh wrote:
-> > Unfortunately, instead of adding a generic Wireless WAN type, a technology-
-> > specific type (WiMAX) was added.  That's useless for other WWAN devices,
-> > such as EDGE, UMTS, X-RTT and other such radios.
+
+Hi,
+
+On Friday 11 April 2008, Sergei Shtylyov wrote:
+> Hello.
 > 
-> Then perhaps we should replace WiMAX with the WWAN type?
-
-And have KEY_WIMAX interact with WWAN, or rename KEY_WIMAX to KEY_WWAN as
-well?
-
-I do think it should be OK to do both renames, since it is very unlikely
-that a device would have keys for WIMAX and WWAN at the same type.  We
-don't even have to rename KEY_WIMAX, we can have KEY_WWAN and KEY_WIMAX map
-both to the same keycode.
-
-Inaky?
-
-> > Add a WWAN rfkill type for generic wireless WAN devices.  No keys are added
-> > as most devices use KEY_RADIO for WWAN control and need no specific keycode
-> > added.
+> Bartlomiej Zolnierkiewicz wrote:
 > 
-> In the discussion around the WiMAX addition I do remember people wanted
-> it to have a seperate key code because it was "different technology". Wouldn't that
-> be the same for all WWAN technologies?
+> >>    Now where is the code which selects the correct dma_ops for the 
+> >>> HPT36x/370/372/372N chip with device ID 4 I'm asking you?  :-) 
+> 
+> > fixed
+> 
+>     Not actually... :-/
 
-IMO, this is an USER INTERFACE part of the kernel.  The user will either
-interact with radios one-by-one (and the rfkill class provides this anyway,
-even without separate types), or he will want to deal with abstract
-concepts: "all radios", "wireless wan", "wireles lan", "personal-space
-radios (UWB, BT)"...
+Arghhh.  I see now that the HPT370/370A needs a special handling...
+(HPT372/372N has already been handled by 'idx++')
 
-I.e. I am not even sure we should have UWB and BT as separate types...  but
-naming UWB "Bluetooth" would be wrong, too, so a proper fix there is harder
-(breaks stable ABI with userspace).
+[...]
 
-> Aka, should the WiMAX keycode be changed to a WWAN keycode in input.h
-> and then be used for all WWAN rfkill switches?
+> > @@ -1483,6 +1489,7 @@ static const struct ide_port_info hpt366
+> >  		.enablebits	= {{0x50,0x04,0x04}, {0x54,0x04,0x04}},
+> >  		.udma_mask	= ATA_UDMA5,
+> >  		.port_ops	= &hpt3xx_port_ops,
+> > +		.dma_ops	= &hpt370_dma_ops,
+> 
+>     Wrong -- HPT374 should have hpt37x_dma_ops...
 
-I'd think so.
+Yep, thanks for catching it.
 
-We can add a desc field to rfkill with a more human-friendly, not required
-to be unique, description of the switch.
+interdiff between v2->v3:
 
- e.g.:  "Intel WiMAX 1234 radio switch"
-        "ThinkPad builtin bluetooth switch"
+[...]
+v3:
+* Two bugs slipped in v2 (noticed by Sergei):
+  - use correct DMA ops for HPT374 (for real this time)
+  - handle HPT370/HPT370A properly
 
-and so on.  It will be far more useful than making the switch type a
-technology-granular thing.  And it will be useful for GUIs in userspace.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+[...]
+diff -u b/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
+--- b/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -1489,7 +1489,7 @@
+ 		.enablebits	= {{0x50,0x04,0x04}, {0x54,0x04,0x04}},
+ 		.udma_mask	= ATA_UDMA5,
+ 		.port_ops	= &hpt3xx_port_ops,
+-		.dma_ops	= &hpt370_dma_ops,
++		.dma_ops	= &hpt37x_dma_ops,
+ 		.host_flags	= IDE_HFLAGS_HPT3XX,
+ 		.pio_mask	= ATA_PIO4,
+ 		.mwdma_mask	= ATA_MWDMA2,
+@@ -1563,6 +1563,10 @@
+ 	d.name = info->chip_name;
+ 	d.udma_mask = info->udma_mask;
+ 
++	/* fixup ->dma_ops for HPT370/HPT370A */
++	if (info == &hpt370 || info == &hpt370a)
++		d.dma_ops = &hpt370_dma_ops;
++
+ 	pci_set_drvdata(dev, (void *)info);
+ 
+ 	if (info == &hpt36x || info == &hpt374)
