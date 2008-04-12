@@ -1,77 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbYDLP41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYDLQBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbYDLP41 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 11:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYDLP4G
+	id S1755309AbYDLQBs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 12:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYDLQBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 11:56:06 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:15710 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbYDLP4F (ORCPT
+	Sat, 12 Apr 2008 12:01:41 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:56866 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164AbYDLQBk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 11:56:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UEcJYrm7FPHtzcHvDOzAp4wnQ2THwuHe9aeXhIvALviU/Ib6ZwRa4lsH6S6QveitccWFciCNMZMN1pWlSQU6MA71yGhLZ93vzatVoXZhsHchYqUPntJURSHM7CRXzHm1clWq6YHJNKgDCLj4P+x3fIRj7r168PBVwlCeEAKaDWc=
-Message-ID: <170fa0d20804120856w786b625cv41af33072605dab7@mail.gmail.com>
-Date: Sat, 12 Apr 2008 11:56:02 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Subject: Re: Western Digital GreenPower drives and Linux
-Cc: devzero@web.de, lkml@metanurb.dk, pernegger@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <170fa0d20804120820x1eced1ebl47b6a2f6593ea029@mail.gmail.com>
+	Sat, 12 Apr 2008 12:01:40 -0400
+Date: Sat, 12 Apr 2008 18:01:38 +0200
+Message-Id: <236468686@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <234148243@web.de> <200804112200.28854.tvrtko@ursulin.net>
-	 <170fa0d20804112019h73928c99paadcc363539fea9c@mail.gmail.com>
-	 <200804120811.12468.tvrtko@ursulin.net>
-	 <170fa0d20804120820x1eced1ebl47b6a2f6593ea029@mail.gmail.com>
+From: devzero@web.de
+To: Luis Sousa <ls.luis_sousa@yahoo.com.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sata io freeze, 2.6.18 and also 2.6.24 [POSSIBLE SOLUTION]
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX187Ls4zRT04jLV3KYBP99DpNHIZD3ks7SlOZOhnH6N6b9bVb
+ M8BrX4PXy6E/BKgH19jzYGLI/+QPjY2afzLkHyqPRDrbAF22AA=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 11:20 AM, Mike Snitzer <snitzer@gmail.com> wrote:
->
-> On Sat, Apr 12, 2008 at 3:11 AM, Tvrtko A. Ursulin <tvrtko@ursulin.net> wrote:
->  > On Saturday 12 April 2008 04:19:33 Mike Snitzer wrote:
->  >  > Any chance you could make your iso available for the freedos w/
->  >  > wdidle3.exe bootable cd?
->  >  >
->  >  > I can't track down wdidle3.exe on wdc.com; they have "Data Lifeguard"
->  >  > and such but I have no idea if the wdidle3.exe is buried in those
->  >  > downloads.
->  >
->  >  According to the licence which comes with that thing distribution is not
->  >  allowed. Also it wouldn't be bad if more people contacted WD about it so that
->  >  they figure out they at least need to make it available as a download, if not
->  >  something better.
->
->  Just an FYI, I had a look at my counters for a 1TB GP I've had in
->  always-on service (expansion drive for my tivo; which runs Linux) for
->  6 months.  I'm not seeing any issues, Load_Cycle_Count is quite low.
->
->  Device Model:     WDC WD10EACS-32ZJB0
->  Firmware Version: 01.01B01
->
->    9 Power_On_Hours          0x0032   094   094   000    Old_age
->  Always       -       4763
->   12 Power_Cycle_Count       0x0032   100   100   000    Old_age
->  Always       -       7
->  193 Load_Cycle_Count        0x0032   200   200   000    Old_age
->  Always       -       9
->
->  Given the Tivo is constantly doing IO it must've prevented the disk
->  from ever spinning down.
+hi luis, 
 
-Turns out 'wdidle3 /R' on my drive reported:
-"Idle3 Timer is disabled"
+glad that it worked - but let us better call this a possible workaround, not a solution.
 
-I took no explicit action to disable it 6 months ago. It strikes me as
-odd that WD would disable the Idle3 timer in firmware given the whole
-"GreenPower" campaign but I was pleasantly surprised; others may be
-too...
+mind that you loose lots of performance with this, because all i/o is handled by the cpu now.
+
+> If everything goes well, I'll reduce the command line
+> in order to narrow the problem further down.
+
+yes, please!
+
+regards
+roland
+
+
+
+
+
+> -----Ursprüngliche Nachricht-----
+> Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
+> Gesendet: 12.04.08 17:34:39
+> An: devzero@web.de
+> CC: linux-kernel@vger.kernel.org
+> Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [POSSIBLE SOLUTION]
+
+
+> 
+> Hello all,
+> 
+> Thanks to valuable help from roland, I was able to
+> boot with the following options:
+> 
+> ``nosmp ide=nodma libata.dma=0''
+> 
+> after what I ran an agressive stability test for a
+> while, with no problem whatsoever. Maybe it's too
+> soon to say, but I have a good feeling this time. It
+> seems roland figured it out.
+> 
+> If everything goes well, I'll reduce the command line
+> in order to narrow the problem further down.
+> 
+> (and indeed, this is a hyper-threading single core CPU)
+> 
+> Sincerely,
+> --
+> Luis Sousa
+> 
+> --- devzero@web.de escreveu:
+> 
+> > did you try UP-kernel or tried booting with "nosmp" and does that make any difference ?
+> > 
+> > >This is a 2-processor CPU:
+> > ># cat /proc/cpuinfo 
+> > >processor       : 0
+> > >vendor_id       : GenuineIntel
+> > >cpu family      : 15
+> > >model           : 4
+> > >model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+> > 
+> > most likely this just "appears" as 2-way processor , but i´m quite sure this is just a
+> > single-core CPU, but with HyperThreading enabled.
+> > 
+> > 
+> > regards
+> > roland
+> > 
+> > 
+> > 
+> > List:       linux-kernel
+> > Subject:    sata io freeze, 2.6.18 and also 2.6.24
+> > From:       Luis Sousa <ls.luis_sousa () yahoo ! com ! br>
+> > Date:       2008-03-28 22:24:48
+> > Message-ID: 739784.81690.qm () web46009 ! mail ! sp1 ! yahoo ! com
+> > [Download message RAW]
+> > 
+> > Hello,
+> > 
+> > I've been having consistent hard system freezes for a
+> > long time, every 2 days or so, and finally decided to
+> > move to the most recent stable kernel. Unfortunatelly
+> > that didn't fix it. The freezes seem to be io-related;
+> > they started since I moved my drive to sata. They seem
+> > to happen mostly when there's an io-intensive operation,
+> > like extracting a big archive; a reboot is needed.
+> > 
+> > Nothing ever shows up in the logs.
+> > 
+> > I'm using the following drive:
+> > 
+> > ATA device, with non-removable media
+> >         Model Number:       MAXTOR STM3160215AS                     
+> >         Serial Number:      6RA2TMJ4
+> >         Firmware Revision:  3.AAD   
+> > 
+> > Linux localhost 2.6.24.4 #4 SMP Fri Mar 28 14:51:50 BRT 2008 i686 GNU/Linux
+> > 
+> > This is a 2-processor CPU:
+> > 
+> > # cat /proc/cpuinfo 
+> > processor       : 0
+> > vendor_id       : GenuineIntel
+> > cpu family      : 15
+> > model           : 4
+> > model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+> > stepping        : 9
+> > cpu MHz         : 3013.697
+> > cache size      : 1024 KB
+> > 
+> > (same goes for processor : 1)
+> > 
+> > Sincerely,
+> > --
+> > Luis Sousa
+> > _____________________________________________________________________
+> > Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+> > http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+> > 
+> > 
+> 
+> 
+> 
+>       Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
+> http://br.mail.yahoo.com/
+> 
+> 
+
+
+_________________________________________________________________________
+Mit der Gruppen-SMS von WEB.DE FreeMail können Sie eine SMS an alle 
+Freunde gleichzeitig schicken: http://freemail.web.de/features/?mc=021179
+
+
+
