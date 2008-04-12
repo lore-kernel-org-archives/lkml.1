@@ -1,109 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYDLT0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbYDLT2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYDLT0d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 15:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYDLT0X
+	id S1758153AbYDLT2c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 15:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbYDLT2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 15:26:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40236 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755762AbYDLT0W (ORCPT
+	Sat, 12 Apr 2008 15:28:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60103 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754106AbYDLT2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 15:26:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 12 Apr 2008 21:26:14 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: work around generation bug in TI
- controllers (fix AV/C and more)
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sat, 12 Apr 2008 15:28:24 -0400
+Date: Sat, 12 Apr 2008 12:27:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [DOC PATCH] semaphore documentation
+Message-Id: <20080412122724.0897d881.akpm@linux-foundation.org>
+In-Reply-To: <20080412141250.GK11962@parisc-linux.org>
+References: <20080410143403.c03757e5.akpm@linux-foundation.org>
+	<20080410220816.GY11962@parisc-linux.org>
+	<20080410151907.91f11c74.akpm@linux-foundation.org>
+	<20080411192153.GH11962@parisc-linux.org>
+	<20080411132754.b1c1fd8f.randy.dunlap@oracle.com>
+	<20080411220911.3e7ab3e4.akpm@linux-foundation.org>
+	<20080412141250.GK11962@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unlike the ohci1394 driver, fw-ohci uses the selfIDGeneration field of
-bus reset packets to determine the generation of incoming requests as
-per OHCI 1.1 clause 8.4.2.3.  This is more precise --- provided that the
-controller inserts the correct generation.  Texas Instruments chips
-often don't.
+On Sat, 12 Apr 2008 08:12:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
 
-This prevented the transmission of response packets, which for example
-broke AV/C transactions as used when communicating with miniDV cameras
-and any other AV/C devices.
+> On Fri, Apr 11, 2008 at 10:09:11PM -0700, Andrew Morton wrote:
+> > On Fri, 11 Apr 2008 13:27:54 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > Looks good to me.  Thanks.
+> > 
+> > Yup, most excellent.
+> 
+> Thanks for the review.
+> 
+> > btw, down() and friends should have might_sleep() checks in them, shouldn't
+> > they?  They don't seem to be in there, nor in mainline
+> > lib/semaphore-sleepers.c.  Confused.
+> 
+> Mmm.  Ingo gets annoyed when I add additional checks to semaphores -- he
+> wants them to maintain their current semantics and to get better checking
+> by migrating more users to mutexes.  I've already exposed at least one
+> problem (in aacraid) by adding the __must_check to down_interruptible().
+> 
+> As I wrote in one of the comments, we have places in the kernel which
+> know that even though they're in a non-sleeping context, there is at
+> least one more token left in the semaphore.  One place this bit me was
+> in start_kernel().  We disable interrupts and then call lock_kernel()
+> which calls down().  Since we're in start_kernel(), we know there's
+> nothing else running and this is perfectly safe.  But a might_sleep()
+> would warn bogusly.
 
-There is apparently no way to detect and adjust incorrect generations.
-Therefore we ignore the generation of bus reset packets from TI chips
-and use the generation of the self ID buffer instead.  Alas this is
-received at a slightly wrong time.  In rare cases, this could cause us
-to not respond to legitimate requests in rare cases, or to respond to
-expired requests.  (The latter is less likely because the bus reset
-packet AR event is typically handled before the self ID complete event.)
+urgh, yes, I'd forgotten about that mess.
 
-Bug reported by Mladen Kuntner, who was extraordinarily patient while
-dealing with the driver maintainers.
-https://bugzilla.redhat.com/show_bug.cgi?id=243081
+I suppose that if might_sleep() checking in down() is useful (and surely it
+is) we could provide a separate down_im_stupid() (and
+lock_kernel_im_stupid()) which omits the check, and call that from the
+problematic sites.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+> I'd be open to putting a might_sleep() in __down().  We definitely are
+> going to sleep at that point, so getting a warning out of it would
+> be good.
 
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -571,14 +571,22 @@ static __le32 *handle_ar_packet(struct a
- 	 * generation.  We only need this for requests; for responses
- 	 * we use the unique tlabel for finding the matching
- 	 * request.
-+	 *
-+	 * Alas TI chips often emit bus reset packets with a wrong
-+	 * generation.  As a trade-off, we set the correct generation
-+	 * at a slightly incorrect time (in bus_reset_tasklet).
- 	 */
-+	if (evt == OHCI1394_evt_bus_reset) {
-+		struct pci_dev *dev = to_pci_dev(ohci->card.device);
-+
-+		if (dev->vendor != PCI_VENDOR_ID_TI)
-+			ohci->request_generation = (p.header[2] >> 16) & 0xff;
- 
--	if (evt == OHCI1394_evt_bus_reset)
--		ohci->request_generation = (p.header[2] >> 16) & 0xff;
--	else if (ctx == &ohci->ar_request_ctx)
-+	} else if (ctx == &ohci->ar_request_ctx) {
- 		fw_core_handle_request(&ohci->card, &p);
--	else
-+	} else {
- 		fw_core_handle_response(&ohci->card, &p);
-+	}
- 
- 	return buffer + length + 1;
- }
-@@ -1209,6 +1217,7 @@ at_context_transmit(struct context *ctx,
- static void bus_reset_tasklet(unsigned long data)
- {
- 	struct fw_ohci *ohci = (struct fw_ohci *)data;
-+	struct pci_dev *dev = to_pci_dev(ohci->card.device);
- 	int self_id_count, i, j, reg;
- 	int generation, new_generation;
- 	unsigned long flags;
-@@ -1285,6 +1294,9 @@ static void bus_reset_tasklet(unsigned l
- 	context_stop(&ohci->at_response_ctx);
- 	reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
- 
-+	if (dev->vendor == PCI_VENDOR_ID_TI)
-+		ohci->request_generation = generation;
-+
- 	/*
- 	 * This next bit is unrelated to the AT context stuff but we
- 	 * have to do it under the spinlock also.  If a new config rom
+I think it'd be worth playing with some time, but it's off-topic for this
+current work.
 
--- 
-Stefan Richter
--=====-==--- -=-- -==--
-http://arcgraph.de/sr/
+>  I thought that schedule() would warn itself in that case,
+> but I can't see the code that would do that now I check.
 
+schedule() will warn ("scheduling while atomic"), but only if we happened
+to hit contention.
