@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760943AbYDLJDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760982AbYDLJI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760943AbYDLJDM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 05:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758859AbYDLJCz
+	id S1760982AbYDLJI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 05:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758887AbYDLJIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 05:02:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59425 "EHLO mail.dvmed.net"
+	Sat, 12 Apr 2008 05:08:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38831 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756971AbYDLJCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 05:02:54 -0400
-Message-ID: <48007ABA.7030705@pobox.com>
-Date: Sat, 12 Apr 2008 05:02:50 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	id S1758880AbYDLJIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 05:08:18 -0400
+Message-ID: <48007C00.7070100@garzik.org>
+Date: Sat, 12 Apr 2008 05:08:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Dhananjay Phadke <dhananjay@netxen.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make netxen_workq static
-References: <20080330232218.GP28445@cs181133002.pp.htv.fi>
-In-Reply-To: <20080330232218.GP28445@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1000.c: stop inlining largish static functions
+References: <200803310102.43277.vda.linux@googlemail.com>
+In-Reply-To: <200803310102.43277.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
@@ -29,17 +28,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> netxen_workq can now become static.
+Denys Vlasenko wrote:
+> Hi Jeff,
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Can you take this patch into your net driver fixes tree?
 > 
-> ---
+> drivers/net/sb1000.c has lots of inlined static functions.
 > 
->  drivers/net/netxen/netxen_nic.h      |   17 -----------------
->  drivers/net/netxen/netxen_nic_main.c |   20 +++++++++++++++++++-
->  2 files changed, 19 insertions(+), 18 deletions(-)
+> Mst of them are used at initialization, wait for some
+> hardware register to change (wait using yield, sleep etc),
+> or do slow port-based I/O. Inlining thse "for speed" makes no sense.
+> 
+> This patch removes "inline" from biggest static function
+> (regardless of number of callsites - gcc nowadays auto-inlines
+> statics with one callsite).
+> 
+> Size difference for 32bit x86:
+> 
+>    text    data     bss     dec     hex filename
+>    6299     129       0    6428    191c linux-2.6-ALLYES/drivers/net/sb1000.o
+>    5418     129       0    5547    15ab linux-2.6.inline-ALLYES/drivers/net/sb1000.o
+> 
+> (I also see some other optimization opportunities,
+> will test and send a patch separately).
+> 
+> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 
-applied this and the other netxen cleanup
+applied both patches
 
 
