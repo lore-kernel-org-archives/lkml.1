@@ -1,80 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYDLT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYDLUNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYDLT6S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 15:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYDLT6J
+	id S1757653AbYDLUNN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 16:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbYDLUM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 15:58:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41560 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755970AbYDLT6H (ORCPT
+	Sat, 12 Apr 2008 16:12:57 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:53153 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756309AbYDLUM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 15:58:07 -0400
-Date: Sat, 12 Apr 2008 12:53:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Uladzislau Rezki" <urezki@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Oops within Linux Fedore Core 5
-Message-ID: <20080412125325.36bc029d@laptopd505.fenrus.org>
-In-Reply-To: <e4957ae10804110813y159019c1p84296058bcc769cf@mail.gmail.com>
-References: <e4957ae10804110813y159019c1p84296058bcc769cf@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Sat, 12 Apr 2008 16:12:56 -0400
+Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: Alan Mayer <ajm@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, mingo@elte.hu,
+       linux-kernel list <linux-kernel@vger.kernel.org>,
+       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+In-Reply-To: <Pine.SGI.3.96.1080326134915.7873204Z-100000@fergus.americas.sgi.com>
+References: <Pine.SGI.3.96.1080326134915.7873204Z-100000@fergus.americas.sgi.com>
+Content-Type: text/plain
+Date: Sat, 12 Apr 2008 13:12:42 -0700
+Message-Id: <1208031162.31434.15.camel@x61.ebiederm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on mgr1.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 18:13:59 +0300
-"Uladzislau Rezki" <urezki@gmail.com> wrote:
-
-> HI,
+On Wed, 2008-03-26 at 13:55 -0500, Alan Mayer wrote:
+> On Wed, 26 Mar 2008, Linus Torvalds wrote:
 > 
-> I am running linux Fedore Core 5 with 2.6.15 linux kernel.
+> > 
+> > 
+> > On Wed, 26 Mar 2008, Pavel Machek wrote:
+> > > 
+> > > This is very ugly. Why not include it unconditionally -- with guard in
+> > > apicdef.h?
+> > 
+> > I do agree that it's ugly, but I think the ugliness is more serious than 
+> > that.
+> > 
+> > What I think we should do is to make NR_IRQS no longer be a compile-time 
+> > constant, but instead just do something like
+> > 
+> > 	unsigned int NR_IRQS __read_mostly;
+> > 
+> > and then just set it early in the boot sequence depending on the real CPU 
+> > numbers etc.
+> > 
+> > I realize that this will require some changes to a few arrays that are 
+> > statically allocated and depend on NR_IRQ's (notably "irq_desc"), but 
+> > don't you guys think that this would be a cleaner thing?
+> > 
+> > [ I suspect that irq_desc[] itself could quite reasonably be a rather much 
+> >   smaller __read_mostly hash-table of dynamically allocated entries - the 
+> >   thing would be only modified at boot, so it should cache beautifully 
+> >   even across hundreds of CPU's ]
+> > 
+> > Whatever. I'm not opposed to this whole static thing, but I do wonder if 
+> > it's worth doing that way. There *may* be performance reasons for doing it 
+> > the way we're doing it, but quite frankly, I think the #define is mostly 
+> > purely historical, from when it was just a fixed number (originally 16!) 
+> > and it made sense to think of it as a small static array.
+> > 
+> > 			Linus
+> > 
 > 
-> So , the problem is that, while loading my own kernel module, kernel
-> gets Oops.
-> 
-> ---> usbfs
-> ---> tmpfs
-> ---> binfmt_misc
-> ---> rpc_pipefs
-> ---> autofs
-> Unable to handle kernel paging request at virtual address dead4ead
-> printing eip:
-> c7034018
-> *pde = 00000000
-> Oops: 0000 [#1]
-> last sysfs file: /class/net/sit0/address
-> Modules linked in: sb_show(U) ipv6 autofs4 hidp rfcomm l2cap bluetooth
-> sunrpc dm_mirror dm_mod video button battery ac lp parport_pc parport
-> floppy nvram sg i2c_piix4 pcnet32 mii i2c_core ext3 jbd mptspi
-> mptscsih sd_mod scsi_mod mptbase
-> CPU: 0
-> EIP: 0060:[<c7034018>] Not tainted VLI
-> EFLAGS: 00010282 (2.6.15-1.2054_FC5.root #1)
-> EIP is at sb_show_init+0x18/0x41 [sb_show]
-> eax: dead4ead ebx: c0344740 ecx: c5877d90 edx: c7006096
-> esi: c1304e00 edi: c57d2b68 ebp: c70065c8 esp: c3962e6c
-> ds: 007b es: 007b ss: 0068
-> Process insmod (pid: 1675, threadinfo=c3962000 task=c621d000)
-> Stack: <0>c57d2b58 c7006580 c0130506 0001027a 00000550 00000320
-> c7006580 00000000
-> 00000000 00000000 00000000 00000000 00000000 00000000 c72205fc
-> 00000000 c59e78c0 c721b8ec c721b5cc c721b914 c720b000 00000004
-> 0000000a 00000000 Call Trace:
-> [<c0130506>] sys_init_module+0x1382/0x1514 [<c015240f>]
+> Well, I was looking at it from that point of view.  But, when I found myself
+> looking at code, particularly in drivers, that indexed into the irq_desc array
+> and started modifying the descriptor in place and then calling setup_irq(),
+> I realized that what was needed was a redesign of the whole mess from first
+> principals.  I still think that's what needs to be done, but by some one with
+> more experience and credibility than me.  Maybe in a year I'd be willing
+> to attempt it, but not today.
+
+Well I will agree with Linus and go one farther and say that NR_IRQS
+needs to die.  I started on that once and x86 is just about ready to
+accomodate it.
+
+There is a size issue on small machines.  And there is very bad NUMA
+affinity on large machines.  So the current structure really is not
+optimal for anyone.  All of this gets especially bad for distro kernels
+that try and support everything.
+
+Also MAX_IOAPICS is very much the wrong factor to be using on large
+machines to size the irq array.  New machines are moving towards MSI and
+cards can have an unreasonable number of MSI irqs.  In practice the top
+end I have seen is 20-30 per card but it is still a lot.    So I think
+you may get a nasty surprise when you plug in a bunch of high
+performance cards with multiple queues into a big box.  The 32*NR_CPUS
+as a rule of thumb comes from IBM boxes that are a little better
+balanced when it comes to compute vs. I/O capablility.  
+
+For actual irq reception we have our per cpu array of vectors that point
+to the irq_desc so even if the global list of irqs was a linked list we
+should not have performance problems.
+
+I need to do some sorting out of sysfs first but I will certainly see if
+I can look at this again.  And I will very much be willing to work with
+someone else who wants to work on this and has more time then I do at
+the moment.
+
+The basic idea is moving the generic irq apis to a point where we can
+refer to irqs in the generic code with a struct irq * instead of by
+number.  We really only the need the number for talking about irqs to
+user space.
+
+Eric
 
 
-Hi,
-
-normally (read: 99% of the cases) this happens when your Makefile is buggy.
-Are you sure your Makefile is correct? Also, are you sure you're compiling
-against the right kernel headers ?
-
-Greetings,
-   Arjan van de Ven
