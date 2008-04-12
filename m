@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYDLQNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYDLQPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYDLQNc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 12:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYDLQNW
+	id S1755304AbYDLQPL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 12:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYDLQPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 12:13:22 -0400
-Received: from main.gmane.org ([80.91.229.2]:41013 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbYDLQNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 12:13:21 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: Audio skipping with 2.6.24.4 and 2.6.25-rc9
-Date: Sat, 12 Apr 2008 16:13:01 +0000 (UTC)
-Message-ID: <pan.2008.04.12.16.13.01@telenet.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 78-21-61-244.access.telenet.be
-User-Agent: Pan/0.132 (Waxed in Black)
+	Sat, 12 Apr 2008 12:15:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37155 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265AbYDLQO7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 12:14:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 12 Apr 2008 18:14:37 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: fw-ohci: fix debug logging of phy packets
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.f3c267b896f5d604@s5r6.in-berlin.de>
+Message-ID: <tkrat.d9db3519cd83e9ff@s5r6.in-berlin.de>
+References: <tkrat.f3c267b896f5d604@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm experiencing a lot of problems with audio skipping on my system. I am 
-using Rhythmbox as an audio player and have Compiz active. Whenever I 
-maximise or restore a maximised real transparent gnome-terminal, audio 
-skips. Compared to other normal applications, restoring the transparent 
-console is also slow (it takes a few seconds before the window appears).
+I wrote:
+> --- linux.orig/drivers/firewire/fw-ohci.c
+> +++ linux/drivers/firewire/fw-ohci.c
+> @@ -371,10 +371,10 @@ static void log_ar_at_event(char dir, in
+>  	if (unlikely(evt >= ARRAY_SIZE(evts)))
+>  			evt = 0x1f;
+>  
+> -	if (header[0] == ~header[1]) {
+> +	if (header[1] == ~header[2]) {
+>  		printk(KERN_DEBUG "A%c %s, %s, %08x\n",
+> -		       dir, evts[evt], phys[header[0] >> 30 & 0x3],
+> -		       header[0]);
+> +		       dir, evts[evt], phys[header[1] >> 30 & 0x3],
+> +		       header[1]);
 
-I ran cfs-debug-info-clear.sh, and the reproduced the problem 3 times by 
-restoring and minimising a gnome-terminal window. After that I ran cfs-
-debug-info.sh, and I uploaded the information here: 
-http://artipc10.vub.ac.be/cfs-debug-info-2008.04.12-18.00.20.gz
-
-This problem happens with both 2.6.24.4 as with 2.6.25-rc9 (the debugging 
-information is from the latter version).
-
+This patch is bogus.  The indices were right.
 -- 
-Frederik Himpe
+Stefan Richter
+-=====-==--- -=-- -==--
+http://arcgraph.de/sr/
 
