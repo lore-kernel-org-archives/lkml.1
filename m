@@ -1,68 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYDLVOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYDLVPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbYDLVOR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 17:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYDLVOD
+	id S1754564AbYDLVPJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 17:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYDLVO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 17:14:03 -0400
-Received: from keg.few.vu.nl ([130.37.24.4]:61885 "EHLO keg.few.vu.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbYDLVOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 17:14:01 -0400
-X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Apr 2008 17:14:01 EDT
-Date: Sat, 12 Apr 2008 23:05:44 +0200 (CEST)
-From: Erik Bosman <ejbosman@cs.vu.nl>
-X-X-Sender: ebn310@keg.few.vu.nl
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
-In-Reply-To: <48012002.8030701@zytor.com>
-Message-ID: <Pine.GSO.4.56.0804122252110.21756@keg.few.vu.nl>
-References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl>
- <20080412124947.146865e4@laptopd505.fenrus.org> <48012002.8030701@zytor.com>
+	Sat, 12 Apr 2008 17:14:58 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:20611 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbYDLVO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 17:14:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=BSr8XHyBSvRDca4c1yEsRlLuZWU3siOp56+v7C+eLbVUHTj4FF8CkRC08qXnw2KAFYKlYGlp+FddyYeLX8CHwbq3qdU85qawlhTil1euBQGiL+WpuMuUlaqbxsY7vX8IB6zYupGuc8mHVjwAQpwEPps20O7+raSr+heOtFVQBPY=
+Date: Sun, 13 Apr 2008 01:10:29 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: adaplas@gmail.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix /proc/fb oops after module removal
+Message-ID: <20080412211029.GG9151@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+/proc/fb is not removed during rmmod.
 
+Steps to reproduce:
 
-On Sat, 12 Apr 2008, H. Peter Anvin wrote:
+	modprobe fb
+	rmmod fb
+	ls /proc
 
-> Arjan van de Ven wrote:
-> >
-> > Hi,
-> >
-> > why did you make this a configuration option? In general it's not
-> > a good idea to make userspace visible ABI's (PR_* clearly is one of these)
-> > a CONFIG option unless there's some HUGE space saving going on.
-> > I don't see that here....
-> >
-> > So can you explain your rationale for making this a config option?
-> >
+BUG: unable to handle kernel paging request at ffffffffa0094370
+IP: [<ffffffff802b92a1>] proc_get_inode+0x101/0x130
+PGD 203067 PUD 207063 PMD 17e758067 PTE 0
+Oops: 0000 [1] SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:05:02.0/resource
+CPU 1 
+Modules linked in: nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables vfat fat usbhid ehci_hcd uhci_hcd usbcore sr_mod cdrom [last unloaded: fb]
+Pid: 21205, comm: ls Not tainted 2.6.25-rc8-mm2 #14
+RIP: 0010:[<ffffffff802b92a1>]  [<ffffffff802b92a1>] proc_get_inode+0x101/0x130
+RSP: 0018:ffff81017c4bfc78  EFLAGS: 00010246
+RAX: 0000000000008000 RBX: ffff8101787f5470 RCX: 0000000048011ccc
+RDX: ffffffffa0094320 RSI: ffff810006ad43b0 RDI: ffff81017fc2cc00
+RBP: ffff81017e450300 R08: 0000000000000002 R09: ffff81017c5d1000
+R10: 0000000000000000 R11: 0000000000000246 R12: ffff81016b903a28
+R13: ffff81017f822020 R14: ffff81017c4bfd58 R15: ffff81017f822020
+FS:  00007f08e71696f0(0000) GS:ffff81017fc06480(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: ffffffffa0094370 CR3: 000000017e54a000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process ls (pid: 21205, threadinfo ffff81017c4be000, task ffff81017de48770)
+Stack:  ffff81017c5d1000 00000000ffffffea ffff81017e450300 ffffffff802bdd1e
+ ffff81017f802258 ffff81017c4bfe48 ffff81016b903a28 ffff81017f822020
+ ffff81017c4bfd48 ffffffff802b9ba0 ffff81016b903a28 ffff81017f802258
+Call Trace:
+ [<ffffffff802bdd1e>] ? proc_lookup_de+0x8e/0x100
+ [<ffffffff802b9ba0>] ? proc_root_lookup+0x20/0x60
+ [<ffffffff802882a7>] ? do_lookup+0x1b7/0x210
+ [<ffffffff8028883d>] ? __link_path_walk+0x53d/0x7f0
+ [<ffffffff80295eb8>] ? mntput_no_expire+0x28/0x130
+ [<ffffffff80288b4a>] ? path_walk+0x5a/0xc0
+ [<ffffffff80288dd3>] ? do_path_lookup+0x83/0x1c0
+ [<ffffffff80287785>] ? getname+0xe5/0x210
+ [<ffffffff80289adb>] ? __user_walk_fd+0x4b/0x80
+ [<ffffffff8028236c>] ? vfs_lstat_fd+0x2c/0x70
+ [<ffffffff8028bf1e>] ? filldir+0xae/0xf0
+ [<ffffffff802b92e9>] ? de_put+0x9/0x50
+ [<ffffffff8029633d>] ? mnt_want_write+0x2d/0x80
+ [<ffffffff8029339f>] ? touch_atime+0x1f/0x170
+ [<ffffffff802b9b1d>] ? proc_root_readdir+0x7d/0xa0
+ [<ffffffff802825e7>] ? sys_newlstat+0x27/0x50
+ [<ffffffff8028bffb>] ? vfs_readdir+0x9b/0xd0
+ [<ffffffff8028c0fe>] ? sys_getdents+0xce/0xe0
+ [<ffffffff8020b39b>] ? system_call_after_swapgs+0x7b/0x80
 
-The ABI itself is not a config option (see patch 1/3.)
-If the x86 implementation patch isn't applied, prctl() will
-return -EINVAL, just like most other PR_* options, which are
-only implemented on specific architectures, take (PR_GET/PR_SET_ENDIAN)
-as an example.
+Code: b7 83 b2 00 00 00 25 00 f0 00 00 3d 00 80 00 00 74 19 48 89 93 f0 00 00 00 48 89 df e8 39 9a fd ff 48 89 d8 48 83 c4 08 5b 5d c3 <48> 83 7a 50 00 48 c7 c0 60 16 45 80 48 c7 c2 40 17 45 80 48 0f 
+RIP  [<ffffffff802b92a1>] proc_get_inode+0x101/0x130
+ RSP <ffff81017c4bfc78>
+CR2: ffffffffa0094370
+---[ end trace c71hiarjan8ab739 ]---
 
->
-> I also saw no mention about performance impact, which need to be
-> considered whenever *anything* is proposed to be inserted into a hot
-> path.  It may be (heck, *should be*) that the performance impact isn't
-> measurable, but that needs to be positively established.
->
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-This is why I made the implementation part configurable, although I don't
-think the overhead will be very high since it seems to me that the
-__switch_to_xtra function was designed explicitly to keep unusual options
-out of the hot path.
+ drivers/video/fbmem.c |    1 +
+ 1 file changed, 1 insertion(+)
 
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1551,6 +1576,7 @@ module_init(fbmem_init);
+ static void __exit
+ fbmem_exit(void)
+ {
++	remove_proc_entry("fb", NULL);
+ 	class_destroy(fb_class);
+ 	unregister_chrdev(FB_MAJOR, "fb");
+ }
 
