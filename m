@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYDLFPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYDLFPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbYDLFPO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 01:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYDLFO7
+	id S1759416AbYDLFPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 01:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYDLFP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 01:14:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35204 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752499AbYDLFO6 (ORCPT
+	Sat, 12 Apr 2008 01:15:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39968 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbYDLFP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 01:14:58 -0400
-Date: Fri, 11 Apr 2008 22:14:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-Message-Id: <20080411221448.22b69ff5.akpm@linux-foundation.org>
-In-Reply-To: <m37if4oz1g.fsf@maximus.localdomain>
-References: <m3prtzsszg.fsf@maximus.localdomain>
-	<m3tzj92xq6.fsf@maximus.localdomain>
-	<m33aqedg0a.fsf@maximus.localdomain>
-	<m37if4oz1g.fsf@maximus.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Apr 2008 01:15:28 -0400
+Date: Fri, 11 Apr 2008 21:29:18 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rachmel, Nir (Nir)" <rachmel@avaya.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel Oops on hot insertion of USB
+Message-ID: <20080412042918.GA13154@kroah.com>
+References: <11486DD9B957EA488E21C44BC8737EFC987F23@307622ANEX5.global.avaya.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11486DD9B957EA488E21C44BC8737EFC987F23@307622ANEX5.global.avaya.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 23:35:23 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
-
+On Thu, Apr 10, 2008 at 03:06:05PM +0200, Rachmel, Nir (Nir) wrote:
 > Hi,
 > 
-> I wrote:
-> 
-> > So are we leaving the generic-HDLC+PPP in broken state for 2.6.25,
-> > aren't we?
-> >
-> > If we do, perhaps a "|| BROKEN" in drivers/net/wan/Kconfig would make
-> > sense?
-> 
-> Linus just made 2.6.25-rclast (I hope), I understand 2.6.25 will have
-> broken drivers/net/wan/hdlc_ppp, any chance to apply the temporary
-> Kconfig ("depends on BROKEN") patch?
-> 
-> Would you like me to resend it?
+> 	I am running linux kernel version 2.6.14.7, and have a problem
+> when
+> 	inserting / removing a disk-on-key device from my system: I get
+> a
+> 	"kernel oops". Using some debugging tools I managed to trace the
+> 	problem down to an event of "double free" that occurs within the
+> hot
+> 	insertion module.
+> 	
+> 	googling didn't help much. Is this a known issue which is
+> resolved in
+> 	later kernel versions?
 
-It never hurts to resend.  It was 6000 patches ago and my mind is a blank.
+Yes it is, please upgrade :)
 
+thanks,
+
+greg k-h
