@@ -1,121 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYDLUcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbYDLUgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbYDLUcd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 16:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYDLUc0
+	id S1756844AbYDLUgS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 16:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYDLUgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 16:32:26 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41056 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbYDLUcZ (ORCPT
+	Sat, 12 Apr 2008 16:36:08 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40583 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750838AbYDLUgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 16:32:25 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 12 Apr 2008 22:31:25 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] firewire: fw-ohci: work around generation bug in TI
- controllers (fix AV/C and more)
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de>
-Message-ID: <tkrat.3e4f8089bffc4e81@s5r6.in-berlin.de>
-References: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de>
+	Sat, 12 Apr 2008 16:36:06 -0400
+X-Sasl-enc: 9xZuCUiZhHEtjNdmgDV6Y5hzE7RDnM4aNfoYVf55lJzH 1208032565
+Date: Sat, 12 Apr 2008 17:36:01 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
+Message-ID: <20080412203601.GA30014@khazad-dum.debian.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <20080412180219.GI3402@khazad-dum.debian.net> <200804122014.41583.IvDoorn@gmail.com> <200804122009.29968.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804122009.29968.carlos@strangeworlds.co.uk>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unlike the ohci1394 driver, fw-ohci uses the selfIDGeneration field of
-bus reset packets to determine the generation of incoming requests as
-per OHCI 1.1 clause 8.4.2.3.  This is more precise --- provided that the
-controller inserts the correct generation.  Texas Instruments chips
-often don't.
+On Sat, 12 Apr 2008, Carlos Corbacho wrote:
+> Although the current wireless driver implementations of rfkill/ input polling 
+> have been causing me a bit of a headache lately, with no nice solution in 
+> site, because of the following (b43 does this, but I suspect rt2x00 may also 
+> do the same, so it's a slightly more generic problem). Now, I have a patch 
+> locally to add rfkill support to acer-wmi, but still keep seeing the 
+> following:
+> 
+> 1) acer-wmi loads
+> 2) Press KEY_WLAN
+> 3) rfkill-input notifies all registered KEY_WLAN rfkill drivers that KEY_WLAN 
+> has been pressed.
 
-This prevented the transmission of response packets, which for example
-broke AV/C transactions as used when communicating with miniDV cameras
-and any other AV/C devices.
+No.  It changes the global state for WLAN rfkill switches, and then it
+causes rfkill to call the toggle_radio(new global state) hooks of all
+these switches.  I know that's what you meant, but we better be explicit
+about this.
 
-There is apparently no way to detect and adjust incorrect generations.
-Therefore we ignore the generation of bus reset packets from TI chips
-and use the generation of the self ID buffer instead.  Alas this is
-received at a slightly wrong time.  In rare cases, this could cause us
-to not respond to legitimate requests or to respond to expired requests.
-(The latter is less likely because the bus reset packet AR event is
-typically handled before the self ID complete event.)
+There is NO notification of a key press, there is an explicit command to
+change the radio switch state to an specific new state (it is not a
+toggle command, even if the name of the hook is toggle_radio).
 
-Bug reported by Mladen Kuntner, who was extraordinarily patient while
-dealing with the driver maintainers.
-https://bugzilla.redhat.com/show_bug.cgi?id=243081
+> 4) acer-wmi toggles the wireless radio state
+> 5) b43 notices this state change because of it's polling, then sends a 
+> KEY_WLAN event (even though b43 knows it can't control the radio on my 
+> laptop)
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+b43 should not be issuing KEY_WLAN events in this case.  It should be
+updating its rfkill->state (one of my patches add a proper way to do
+this), but that's it.  See below.
 
-update: use a quirk flag for simpler code
+> 6) Goto 3.
+>
+> And this continues in a loop. Removing the offending input_report_key() lines 
+> in the wireless driver stops this.
 
- drivers/firewire/fw-ohci.c |   21 ++++++++++++++++-----
- 1 file changed, 16 insertions(+), 5 deletions(-)
+No wonder it does, it is a Bug From Hell to use the input layer to
+*report* events that happened and were already handled.  You use it to
+*issue* events that *are still to be acted upon*, and that's only if you
+are NOT the only one that will act upon them!  Sometimes it is not
+trivial at all to know in which side of the fence you are.
 
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -181,6 +181,7 @@ struct fw_ohci {
- 	int request_generation;	/* for timestamping incoming requests */
- 	u32 bus_seconds;
- 	bool old_uninorth;
-+	bool bus_reset_packet_quirk;
- 
- 	/*
- 	 * Spinlock for accessing fw_ohci data.  Never call out of
-@@ -571,14 +572,19 @@ static __le32 *handle_ar_packet(struct a
- 	 * generation.  We only need this for requests; for responses
- 	 * we use the unique tlabel for finding the matching
- 	 * request.
-+	 *
-+	 * Alas some chips sometimes emit bus reset packets with a
-+	 * wrong generation.  We set the correct generation for these
-+	 * at a slightly incorrect time (in bus_reset_tasklet).
- 	 */
--
--	if (evt == OHCI1394_evt_bus_reset)
--		ohci->request_generation = (p.header[2] >> 16) & 0xff;
--	else if (ctx == &ohci->ar_request_ctx)
-+	if (evt == OHCI1394_evt_bus_reset) {
-+		if (!ohci->bus_reset_packet_quirk)
-+			ohci->request_generation = (p.header[2] >> 16) & 0xff;
-+	} else if (ctx == &ohci->ar_request_ctx) {
- 		fw_core_handle_request(&ohci->card, &p);
--	else
-+	} else {
- 		fw_core_handle_response(&ohci->card, &p);
-+	}
- 
- 	return buffer + length + 1;
- }
-@@ -1285,6 +1291,9 @@ static void bus_reset_tasklet(unsigned l
- 	context_stop(&ohci->at_response_ctx);
- 	reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
- 
-+	if (ohci->bus_reset_packet_quirk)
-+		ohci->request_generation = generation;
-+
- 	/*
- 	 * This next bit is unrelated to the AT context stuff but we
- 	 * have to do it under the spinlock also.  If a new config rom
-@@ -2360,6 +2369,8 @@ pci_probe(struct pci_dev *dev, const str
- 	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
- 			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
- #endif
-+	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
-+
- 	spin_lock_init(&ohci->lock);
- 
- 	tasklet_init(&ohci->bus_reset_tasklet,
+And here things get difficult.  ipw2200 (or b43, or iwl*, etc) would
+HAVE to know if its hardware rfkill input pin is supposed to be handled
+as the canon way to know if rfkill is active or not, for example, not to
+mention wheter it even makes sense for them to request that all other
+radios change state (THAT is what issuing an input event means).
+
+The simple, and IMHO any sane solution is to do the following:
+
+1. Add a kernel notifier chain for b43, ipw*, iwl*, and other such
+drivers to report any changes in their radio state (which is a product
+of ALL their rfkill lines, software and hardware), and also changes in
+their hardware rfkill input pins, using different events so that you
+KNOW which ones are informing the world about input pin state changes,
+and which one are just reports of a changed radio state.
+
+2. NEVER issue input events from these drivers. At all. Just update the
+rfkill switch state using rfkill_force_state, or let the pooling do it.
+
+Then, we leave for userspace (hal + hal-info?) or a kernel platform
+driver to decide if the kernel notification b43/ipw*/ilw*/etc issued
+when it noticed its rfkill input pin changed state is to be made an
+input event.
+
+> Ideally, I think we are going to need some way of saying that platform 
+> firmware level drivers (e.g. acer-wmi, thinkpad-acpi, etc) take priority over 
+> the wireless drivers, and that the drivers should _not_ send out these 
+> KEY_WLAN events if one of acer-wmi, etc are loaded (or find some other nice 
+> way of handling this).
+
+Better to have nothing but the platform firmware drivers issue such
+input events.  Have all other drivers issue notification events instead
+(which are not input events), and have something else that can be model
+specific decide which notification events are to be made input events.
 
 -- 
-Stefan Richter
--=====-==--- -=-- -==--
-http://arcgraph.de/sr/
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
