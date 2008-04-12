@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYDLEzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYDLFKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbYDLEzW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 00:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYDLEzJ
+	id S1754957AbYDLFKe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 01:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYDLFKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 00:55:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49178 "EHLO
+	Sat, 12 Apr 2008 01:10:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45612 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751444AbYDLEzI (ORCPT
+	by vger.kernel.org with ESMTP id S1751070AbYDLFKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 00:55:08 -0400
-Date: Fri, 11 Apr 2008 21:54:55 -0700
+	Sat, 12 Apr 2008 01:10:20 -0400
+Date: Fri, 11 Apr 2008 22:09:11 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Richard Purdie <rpurdie@rpsys.net>, lkml <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [patch 2.6.25-rc8] leds: fix platform driver hotplug/coldplug
-Message-Id: <20080411215455.8ccc609c.akpm@linux-foundation.org>
-In-Reply-To: <200804111038.34879.david-b@pacbell.net>
-References: <200804111038.34879.david-b@pacbell.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [DOC PATCH] semaphore documentation
+Message-Id: <20080411220911.3e7ab3e4.akpm@linux-foundation.org>
+In-Reply-To: <20080411132754.b1c1fd8f.randy.dunlap@oracle.com>
+References: <20080410143403.c03757e5.akpm@linux-foundation.org>
+	<20080410220816.GY11962@parisc-linux.org>
+	<20080410151907.91f11c74.akpm@linux-foundation.org>
+	<20080411192153.GH11962@parisc-linux.org>
+	<20080411132754.b1c1fd8f.randy.dunlap@oracle.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,17 +32,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 10:38:34 -0700 David Brownell <david-b@pacbell.net> wrote:
+On Fri, 11 Apr 2008 13:27:54 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> From: Kay Sievers <kay.sievers@vrfy.org>
+> On Fri, 11 Apr 2008 13:21:54 -0600 Matthew Wilcox wrote:
 > 
-> Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
-> modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
-> hotpluggable platform LED drivers, to re-enable auto loading.
+> > On Thu, Apr 10, 2008 at 03:19:07PM -0700, Andrew Morton wrote:
+> > > On Thu, 10 Apr 2008 16:08:16 -0600
+> > > Matthew Wilcox <matthew@wil.cx> wrote:
+> > > > It seems very strange to me to document the API with the implementation
+> > > > rather than with the declaration.  It's almost as if we expect people to
+> > > > have to read the implementation to figure out how stuff works.
+> > > 
+> > > That approach makes sense for C++.  But for C, the code is .c-centric.
+> > 
+> > I've never programmed in C++ ... I just expect to find API documentation
+> > in header files.
+> > 
+> > > That's particularly the case with the kernel, where we explicitly work to
+> > > make the .c files the things which people look at, while not caring about
+> > > the .h files.  Look at how much we say "get that ifdef out of there and
+> > > hide it in the header file".
+> > 
+> > I see that as being "move the complexity around" and "get the interfaces
+> > right", not "hide it in the header files where nobody ever looks".
+> > 
+> > > > How about a note in semaphore.c that says "refer to semaphore.h for
+> > > > usage information"?
+> > > 
+> > > No, please document it in the C file, where people expect to find it.
+> > 
+> > Fine, I've done it the other way round.
+> > 
+> > Please review this doc-patch.  Without comments, I'll commit it to the
+> > semaphore git tree tomorrow.
+> 
+> Looks good to me.  Thanks.
 
-Richard, I'm pushing as many of these into 2.6.25 as I reasonably can.  A
-swift ack would be good, please.
+Yup, most excellent.
 
-Of course, we can always go the backport-it-to-2.6.25.1 route as well. 
-Apparently these problems are also present in 2.6.24.
+btw, down() and friends should have might_sleep() checks in them, shouldn't
+they?  They don't seem to be in there, nor in mainline
+lib/semaphore-sleepers.c.  Confused.
 
