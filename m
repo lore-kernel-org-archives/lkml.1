@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYDLUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYDLUwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbYDLUsT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 16:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYDLUsJ
+	id S1755048AbYDLUwR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 16:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYDLUwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 16:48:09 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52535 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbYDLUsI (ORCPT
+	Sat, 12 Apr 2008 16:52:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57154 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbYDLUwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 16:48:08 -0400
-Date: Sat, 12 Apr 2008 14:47:49 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080412204748.GN11962@parisc-linux.org>
-References: <20080411210022.GJ11962@parisc-linux.org> <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org> <adaskxqrgsl.fsf@cisco.com>
+	Sat, 12 Apr 2008 16:52:05 -0400
+Message-ID: <48012002.8030701@zytor.com>
+Date: Sat, 12 Apr 2008 13:48:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adaskxqrgsl.fsf@cisco.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Erik Bosman <ebn310@few.vu.nl>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
+References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl> <20080412124947.146865e4@laptopd505.fenrus.org>
+In-Reply-To: <20080412124947.146865e4@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 12:53:30PM -0700, Roland Dreier wrote:
-> Just make sure you don't forget the history of completions...  As
-> Linus said long ago (http://lwn.net/2001/0802/a/lt-completions.php3):
+Arjan van de Ven wrote:
 > 
->   In case anybody cares, the race was that Linux semaphores only protect the
->   accesses _inside_ the semaphore, while the accesses by the semaphores
->   themselves can "race" in the internal implementation. That helps make an
->   efficient implementation, but it means that the race was:
+> Hi,
+> 
+> why did you make this a configuration option? In general it's not
+> a good idea to make userspace visible ABI's (PR_* clearly is one of these)
+> a CONFIG option unless there's some HUGE space saving going on.
+> I don't see that here....
+> 
+> So can you explain your rationale for making this a config option?
+> 
 
-Yes, that text appears in the URL I provided in the mail that started
-this thread ;-)
+I also saw no mention about performance impact, which need to be 
+considered whenever *anything* is proposed to be inserted into a hot 
+path.  It may be (heck, *should be*) that the performance impact isn't 
+measurable, but that needs to be positively established.
 
-The semaphore rewrite I did does not have this problem (it's less
-efficient than the hand-optimised assembler, but much more maintainable).
-You're supposed to be using mutexes if you want efficiency anyway.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	-hpa
