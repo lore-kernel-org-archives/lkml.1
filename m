@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYDLHLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbYDLH14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbYDLHLE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 03:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbYDLHKl
+	id S1759612AbYDLH14 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 03:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYDLH1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 03:10:41 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:16547
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757397AbYDLHKk (ORCPT
+	Sat, 12 Apr 2008 03:27:47 -0400
+Received: from nn7.de ([85.214.94.156]:58364 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753521AbYDLH1q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 03:10:40 -0400
-X-Trace: 93479050/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/83.67.11.44
-X-SBRS: None
-X-RemoteIP: 83.67.11.44
-X-IP-MAIL-FROM: tvrtko@ursulin.net
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlUFALT8/0dTQwss/2dsb2JhbACBXah7
-X-IP-Direction: IN
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-To: "Mike Snitzer" <snitzer@gmail.com>
-Subject: Re: Western Digital GreenPower drives and Linux
-Date: Sat, 12 Apr 2008 08:11:12 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: devzero@web.de, lkml@metanurb.dk, pernegger@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Andi Kleen" <andi@firstfloor.org>
-References: <234148243@web.de> <200804112200.28854.tvrtko@ursulin.net> <170fa0d20804112019h73928c99paadcc363539fea9c@mail.gmail.com>
-In-Reply-To: <170fa0d20804112019h73928c99paadcc363539fea9c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804120811.12468.tvrtko@ursulin.net>
+	Sat, 12 Apr 2008 03:27:46 -0400
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080411210400.GA1533@elf.ucw.cz>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
+	 <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost>
+	 <20080411210400.GA1533@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Date: Sat, 12 Apr 2008 09:27:42 +0200
+Message-Id: <1207985262.4372.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 April 2008 04:19:33 Mike Snitzer wrote:
-> Any chance you could make your iso available for the freedos w/
-> wdidle3.exe bootable cd?
->
-> I can't track down wdidle3.exe on wdc.com; they have "Data Lifeguard"
-> and such but I have no idea if the wdidle3.exe is buried in those
-> downloads.
+On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
+> On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
+> > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> > > The following report is on the current list of known regressions
+> > > from 2.6.24.  Please verify if the issue is still present in the
+> > > mainline.
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
+> > > Subject		: 2.6.25-rc6 regression - hang on resume
+> > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> > > Date		: 2008-03-25 04:44 (10 days old)
+> > 
+> > Yes. The machine resumes and display stays black using s2ram -f -p
+> > (blindly typing reboot etc on keyboard does what is expected). However
+> > display comes back on 2.6.24.
+> 
+> Could you get us any debugging output from s2ram? Or maybe even strace
+> it in both working and broken case, and comparing them? (You may want
+> to disable randomization so that results are comparable).
 
-According to the licence which comes with that thing distribution is not 
-allowed. Also it wouldn't be bad if more people contacted WD about it so that 
-they figure out they at least need to make it available as a download, if not 
-something better.
+I did on 2.6.24
 
-Tvrtko
+strace -ff s2ram >s2ram24.trace 2>&1
+
+and .25
+
+﻿strace -ff s2ram >s2ram25.trace 2>&1
+
+with the .24 bringing the display back and .25 not. Files are here
+
+http://nn7.de/debugging/s2ram24.trace.bz2
+﻿http://nn7.de/debugging/s2ram25.trace.bz2
+
+I have no idea how to 'disable randomization' and also not which
+debugging options I should have set ... tell me what things/options you
+need to be en/disabled and I redo the experiment.
+
+Soeren
