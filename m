@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbYDLIwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYDLI46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbYDLIwz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 04:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYDLIwr
+	id S1760790AbYDLI46 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 04:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbYDLI4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 04:52:47 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:46743 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757539AbYDLIwr (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 04:52:47 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.25-rc8-mm2 - CONFIG_PROFILE_LIKELY broke again...
-In-Reply-To: Your message of "Thu, 10 Apr 2008 20:33:54 PDT."
-             <20080410203354.f0a6f464.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	Sat, 12 Apr 2008 04:56:49 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:41302 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757073AbYDLI4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 04:56:48 -0400
+Subject: Re: [RFC 3/3] mac80211: annotate with __requires_rcu
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0804121050160.28120@vixen.sonytel.be>
+References: <20080410134810.629048000@sipsolutions.net>
+	 <20080410134829.412424000@sipsolutions.net>
+	 <Pine.LNX.4.64.0804121050160.28120@vixen.sonytel.be>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-eLdB7X2w7Ui/c5zhNN5e"
+Date: Sat, 12 Apr 2008 10:56:29 +0200
+Message-Id: <1207990589.13354.123.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1207990361_3279P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 12 Apr 2008 04:52:41 -0400
-Message-ID: <4045.1207990361@turing-police.cc.vt.edu>
+X-Mailer: Evolution 2.22.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1207990361_3279P
-Content-Type: text/plain; charset=us-ascii
 
-On Thu, 10 Apr 2008 20:33:54 PDT, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
+--=-eLdB7X2w7Ui/c5zhNN5e
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-OK, I found the issue I was chasing when I noticed the WARN from genapic_64.c.
+On Sat, 2008-04-12 at 10:50 +0200, Geert Uytterhoeven wrote:
+> On Thu, 10 Apr 2008, Johannes Berg wrote:
+> > --- everything.orig/net/mac80211/key.h	2008-04-10 15:36:20.000000000 +0=
+200
+> > +++ everything/net/mac80211/key.h	2008-04-10 15:36:45.000000000 +0200
+> > @@ -146,7 +146,7 @@ struct ieee80211_key *ieee80211_key_allo
+> >   */
+> >  void ieee80211_key_link(struct ieee80211_key *key,
+> >  			struct ieee80211_sub_if_data *sdata,
+> > -			struct sta_info *sta);
+> > +			struct sta_info *sta) __requires(RCU);
+>                                               ^^^^^^^^^^^^^^^
+> 					      __requires_rcu? (for consistency)
 
-After seeing that I'd gotten all the way to remove-div_long_long_rem.patch I
-took a close look at the remaining several dozen patches, and took a wild
-stab in the dark.. .and ta-da...
+Yeah, forgot to fix up this one, I had been playing with it locally
+without __requires_rcu first.
 
-PROFILE_LIKELY broke between -rc8-mm1 and -rc8-mm2.  Setting it to 'y'
-gets me an instant reboot similar to what I was seeing against -rc2-mm.
+Thanks,
+johannes
 
-And changed between -mm1 and -mm2 (datestamp of 04/08):
-
-patches/profile-likely-unlikely-macros.patch
-patches/profile-likely-unlikely-macros-fix.patch
-
-I found the profile-likely-unlikely-macros-fix-2.patch from last time around,
-but the code has changed a bunch since then so it isn't a clean apply (and in
-fact, it's so different it's not even easily hand-patchable - stuff like
-!!(foo) has appeared).  
-
-
-
-
---==_Exmh_1207990361_3279P
-Content-Type: application/pgp-signature
+--=-eLdB7X2w7Ui/c5zhNN5e
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Comment: Johannes Berg (powerbook)
 
-iD8DBQFIAHhZcC3lWbTT17ARAvEjAKCvHLnNXI9rRajaXmkQGP9FHMU8XQCgmytn
-D1QIuPFnOsihNOekUsu5200=
-=JxiI
+iQIVAwUASAB5PKVg1VMiehFYAQLMAw/+N7qQr2NIQ7Pq2n58zFhvPKFvyswwGy13
+PPh2Apm/0qg9eIDfoCUsghs/OkNyclzRitfEcBol/QJzm/8tBpnhhY9F1lF4DZr1
+SOeH8tdiM0Ncj+CE27CSVz/8yDbXUZRYPvpQB4z16IfEGW1gyQpQlmCpBy139VUl
+Sg48L8DBdX91g7V44UngZKlQmOI/zv99+47X+vXc7vEkQe74I5T+pLt8BHiQhjRg
+vmANxijyVFZO6C6WmeQgbZe8CkTyzldzsC+RBKnt51ldWqRMHZvzf9fFPicGUDI7
+6/Ugd0fEqW82Sheyvp74uloS+KsV+NoITcaPiS7MoYrdznfM7ggLEBhuxbz6aEeH
+a3brZWpTkIetV6OCMpsj/lZ6iXd/g4nWh/60YRwSv5CGZdkMhNR26TTghLK4OkEa
+c8OFGxRtvPajDXBnyCbUP9HN2+mZ0aMSTFDfUC/xkH9svZ96vSI64gxwxDXlZbq5
+3zyfsCml5YTzq1OYugVE4lSz1BgOr96Vizc6vTYoyvcWoIZPMBcc3xHc/lTyJij3
+SM+8KT3YeBsa0yWzAV29NjqOXfyLFNcrmB3BE3L7F4muDskdVu3SPGXOYfoqWaYG
+hK7EswuKckAKTDZBQ6tT3h+3kTmXED4zPVMhqvSsdYAVU+cnjbSF0HASsRTmcHZ0
+PayuD7eGgxQ=
+=wtII
 -----END PGP SIGNATURE-----
 
---==_Exmh_1207990361_3279P--
+--=-eLdB7X2w7Ui/c5zhNN5e--
+
