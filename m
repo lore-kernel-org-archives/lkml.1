@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYDLW6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYDLW6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbYDLW6K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 18:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYDLW56
+	id S1757357AbYDLW6i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 18:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYDLW60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 18:57:58 -0400
-Received: from nonada.if.usp.br ([143.107.131.169]:45792 "EHLO
+	Sat, 12 Apr 2008 18:58:26 -0400
+Received: from nonada.if.usp.br ([143.107.131.169]:45793 "EHLO
 	nonada.if.usp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbYDLW56 (ORCPT
+	with ESMTP id S1753518AbYDLW57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 18:57:58 -0400
-Message-ID: <49005.200.161.218.109.1208039676.squirrel@nonada.if.usp.br>
-Date: Sat, 12 Apr 2008 19:34:36 -0300 (BRT)
+	Sat, 12 Apr 2008 18:57:59 -0400
+Message-ID: <37684.200.161.218.109.1208039793.squirrel@nonada.if.usp.br>
+Date: Sat, 12 Apr 2008 19:36:33 -0300 (BRT)
 Subject: Root on partitionable raid.
 From: assirati@nonada.if.usp.br
 To: linux-kernel@vger.kernel.org
