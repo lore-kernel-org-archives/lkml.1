@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYDLPQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYDLPUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbYDLPQJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 11:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYDLPP4
+	id S1754490AbYDLPUj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 11:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYDLPUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 11:15:56 -0400
-Received: from qb-out-0506.google.com ([72.14.204.232]:6848 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbYDLPP4 (ORCPT
+	Sat, 12 Apr 2008 11:20:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:31202 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbYDLPU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 11:15:56 -0400
+	Sat, 12 Apr 2008 11:20:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=izKk+sn7VLNCz8BnjJL0Jn5c9XBuq7VYoRlg450ySiTxb2peS7nmo5i8hoJ/V5DrEUrK31sdhaiXbRnCEXTtLefnxkx5urll08hrIknabwEE2nFuqRui4QvMFE90LB6oIqmVb5ohO/i7kT6DBuc9/m8Aa8XrMTkcDcfMy6OmvIg=
-Date: Sat, 12 Apr 2008 23:12:12 +0800 (CST)
-Message-Id: <20080412.231212.103246256.xiyou.wangcong@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [Patch] UML: Remove a useless function
-From: WANG Cong <xiyou.wangcong@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=m17UcUHlLHB4WzHpATwPulkIybANv6IPMPGZ/BwhvdCp7AfCdoiizEUNbf7UA6HgFOtFCBkvLaWaKMH9ldFWfWzF7KdENT+bJMYl7+LQIIUnS7t76LcuP9f4qYf2yjOOlcR9FuavBpSG0cj0JRsKz2Y7xqx0bG0RCJWJ0FFwnwA=
+Message-ID: <170fa0d20804120820x1eced1ebl47b6a2f6593ea029@mail.gmail.com>
+Date: Sat, 12 Apr 2008 11:20:28 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: Western Digital GreenPower drives and Linux
+Cc: devzero@web.de, lkml@metanurb.dk, pernegger@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <200804120811.12468.tvrtko@ursulin.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <234148243@web.de> <200804112200.28854.tvrtko@ursulin.net>
+	 <170fa0d20804112019h73928c99paadcc363539fea9c@mail.gmail.com>
+	 <200804120811.12468.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 12, 2008 at 3:11 AM, Tvrtko A. Ursulin <tvrtko@ursulin.net> wrote:
+> On Saturday 12 April 2008 04:19:33 Mike Snitzer wrote:
+>  > Any chance you could make your iso available for the freedos w/
+>  > wdidle3.exe bootable cd?
+>  >
+>  > I can't track down wdidle3.exe on wdc.com; they have "Data Lifeguard"
+>  > and such but I have no idea if the wdidle3.exe is buried in those
+>  > downloads.
+>
+>  According to the licence which comes with that thing distribution is not
+>  allowed. Also it wouldn't be bad if more people contacted WD about it so that
+>  they figure out they at least need to make it available as a download, if not
+>  something better.
 
-arch/um/drivers/chan_kern.c::chan_out_fd() is not used by anyone.
-Remove it.
+Just an FYI, I had a look at my counters for a 1TB GP I've had in
+always-on service (expansion drive for my tivo; which runs Linux) for
+6 months.  I'm not seeing any issues, Load_Cycle_Count is quite low.
 
-Compile testing passed.
+Device Model:     WDC WD10EACS-32ZJB0
+Firmware Version: 01.01B01
 
-Cc: Jeff Dike <jdike@addtoit.com>
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
+   9 Power_On_Hours          0x0032   094   094   000    Old_age
+Always       -       4763
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age
+Always       -       7
+193 Load_Cycle_Count        0x0032   200   200   000    Old_age
+Always       -       9
 
----
- arch/um/drivers/chan_kern.c |   13 -------------
- arch/um/include/chan_kern.h |    1 -
- 2 files changed, 0 insertions(+), 14 deletions(-)
-
-diff --git a/arch/um/drivers/chan_kern.c b/arch/um/drivers/chan_kern.c
-index de22a10..6e51424 100644
---- a/arch/um/drivers/chan_kern.c
-+++ b/arch/um/drivers/chan_kern.c
-@@ -583,19 +583,6 @@ int parse_chan_pair(char *str, struct line *line, int device,
- 	return 0;
- }
- 
--int chan_out_fd(struct list_head *chans)
--{
--	struct list_head *ele;
--	struct chan *chan;
--
--	list_for_each(ele, chans) {
--		chan = list_entry(ele, struct chan, list);
--		if (chan->primary && chan->output)
--			return chan->fd;
--	}
--	return -1;
--}
--
- void chan_interrupt(struct list_head *chans, struct delayed_work *task,
- 		    struct tty_struct *tty, int irq)
- {
-diff --git a/arch/um/include/chan_kern.h b/arch/um/include/chan_kern.h
-index de5f697..1e65145 100644
---- a/arch/um/include/chan_kern.h
-+++ b/arch/um/include/chan_kern.h
-@@ -44,7 +44,6 @@ extern void close_chan(struct list_head *chans, int delay_free_irq);
- extern int chan_window_size(struct list_head *chans, 
- 			     unsigned short *rows_out, 
- 			     unsigned short *cols_out);
--extern int chan_out_fd(struct list_head *chans);
- extern int chan_config_string(struct list_head *chans, char *str, int size,
- 			      char **error_out);
- 
--- 
-1.5.2.4
-
+Given the Tivo is constantly doing IO it must've prevented the disk
+from ever spinning down.
