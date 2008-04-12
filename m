@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbYDLRzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYDLR6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbYDLRzA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 13:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbYDLRyu
+	id S1756480AbYDLR6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 13:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbYDLR6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 13:54:50 -0400
-Received: from h155.mvista.com ([63.81.120.155]:44892 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755032AbYDLRyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 13:54:49 -0400
-Message-ID: <4800F73E.3000802@ru.mvista.com>
-Date: Sat, 12 Apr 2008 21:54:06 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 12 Apr 2008 13:58:14 -0400
+Received: from smtp-out-45.synserver.de ([217.119.50.45]:1046 "HELO
+	smtp-out-45.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754956AbYDLR6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 13:58:13 -0400
+X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Apr 2008 13:58:13 EDT
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 23997
+Date: Sat, 12 Apr 2008 19:51:24 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Frederik Himpe <fhimpe@telenet.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Audio skipping with 2.6.24.4 and 2.6.25-rc9
+Message-ID: <20080412175124.GA4551@gentoox2.trippelsdorf.de>
+References: <pan.2008.04.12.16.13.01@telenet.be>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] ide: add struct ide_dma_ops
-References: <200803091700.46136.bzolnier@gmail.com> <200803181512.50134.bzolnier@gmail.com> <47FF636E.4070903@ru.mvista.com> <200804121432.03366.bzolnier@gmail.com>
-In-Reply-To: <200804121432.03366.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <pan.2008.04.12.16.13.01@telenet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, Apr 12, 2008 at 04:13:01PM +0000, Frederik Himpe wrote:
+> I'm experiencing a lot of problems with audio skipping on my system. I am 
+> using Rhythmbox as an audio player and have Compiz active. Whenever I 
+> maximise or restore a maximised real transparent gnome-terminal, audio 
+> skips. Compared to other normal applications, restoring the transparent 
+> console is also slow (it takes a few seconds before the window appears).
+> ...
+> This problem happens with both 2.6.24.4 as with 2.6.25-rc9 (the debugging 
+> information is from the latter version).
+> 
 
-Bartlomiej Zolnierkiewicz wrote:
-
->>>>   Now where is the code which selects the correct dma_ops for the 
-
->>>>>HPT36x/370/372/372N chip with device ID 4 I'm asking you?  :-) 
-
->>>fixed
-
->>    Not actually... :-/
-
-> Arghhh.  I see now that the HPT370/370A needs a special handling...
-
-    Yes, and a lot of. :-)
-
-> (HPT372/372N has already been handled by 'idx++')
-
-    Didn't grasp this at first - the init. code grew somewhat convoluted...
-
-> [...]
-
->>>@@ -1483,6 +1489,7 @@ static const struct ide_port_info hpt366
->>> 		.enablebits	= {{0x50,0x04,0x04}, {0x54,0x04,0x04}},
->>> 		.udma_mask	= ATA_UDMA5,
->>> 		.port_ops	= &hpt3xx_port_ops,
->>>+		.dma_ops	= &hpt370_dma_ops,
-
->>    Wrong -- HPT374 should have hpt37x_dma_ops...
-
-> Yep, thanks for catching it.
-
-> interdiff between v2->v3:
-
-> [...]
-> v3:
-> * Two bugs slipped in v2 (noticed by Sergei):
->   - use correct DMA ops for HPT374 (for real this time)
->   - handle HPT370/HPT370A properly
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+Try to disable the group scheduler in your kernel configuration. 
+It solved the audio skipping problem on my machine...
+-- 
+Markus
