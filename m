@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYDLBAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbYDLBDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbYDLBAP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 21:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbYDLBAB
+	id S1759408AbYDLBDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 21:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbYDLBDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 21:00:01 -0400
-Received: from n59.bullet.mail.sp1.yahoo.com ([98.136.44.43]:43804 "HELO
-	n59.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755975AbYDLBAA (ORCPT
+	Fri, 11 Apr 2008 21:03:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:8912 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756090AbYDLBDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 21:00:00 -0400
-X-Yahoo-Newman-Property: ymail-5
-X-Yahoo-Newman-Id: 770699.7911.bm@omp504.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=GHr2YXyjhPA4/D5VjWwdm7N6+pIZhUMpvHqa0RAZ8JizXK0hL8iiiRm00DwFvwjMR9AqD7fiw7j6qsDJhi22eAOPB3+eeI2PiGLKjNAjAyCcitJMQJBOYEd2OjOY0oW5H303O87DvMg5SCkuWnLWdCxfvK/x9aSRmTNnsrfwRMA=;
-X-YMail-OSG: _GAH5QgVM1miiig4aHtSQXQXU.0fWl_06RtK9DHplvxOQ.nvLgB2tfUgPToI5kOCrA--
-Date: Fri, 11 Apr 2008 21:59:59 -0300 (ART)
-From: Luis Sousa <ls.luis_sousa@yahoo.com.br>
-Subject: Re: sata io freeze, 2.6.18 and also 2.6.24
-To: Luis Sousa <ls.luis_sousa@yahoo.com.br>, Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 11 Apr 2008 21:03:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=B2s/Ik2XY1+n0GF29DF0DnnlYtORA5COanEdhrzGNliFY9GkTRuHbhYka5uxcy9VIJ1HgcqPN8IQbbnEqK2XguLhPTh9r0dN6XjcK4bl4KVPNOzAoejFSeUSo6EOvPXMG+CuHBzq8YD3m5wrbAntOA+f8+PNsg97BWCT8sXirWs=
+Date: Sat, 12 Apr 2008 04:59:17 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm2: CONFIG_ATA_SFF: panic involving
+	mount_block_root and down the road
+Message-ID: <20080412005917.GA4742@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080411234345.GA4742@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <611220.91904.qm@web46005.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080411234345.GA4742@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Luis Sousa <ls.luis_sousa@yahoo.com.br> escreveu:
-
-> --- Luis Sousa <ls.luis_sousa@yahoo.com.br> escreveu:
-> > 
-> > --- Luis Sousa <ls.luis_sousa@yahoo.com.br> escreveu:
-> > 
-> > > --- Jeff Garzik <jeff@garzik.org> escreveu:
-> > > 
-> > > > Luis Sousa wrote:
-> > > > > I've been having consistent hard system freezes for a
-> > > > > long time, every 2 days or so, and finally decided to
-> > > > > move to the most recent stable kernel. Unfortunatelly
-> > > > > that didn't fix it. The freezes seem to be io-related;
-> > > > > they started since I moved my drive to sata. They seem
-> > > > > to happen mostly when there's an io-intensive operation,
-> > > > > like extracting a big archive; a reboot is needed.
-> > > > 
-> > > > We need more info, namely full 'dmesg', 'lspci -v', and your kernel config.
-> > > > 
-> > > > Also, make /sure/ you are not running closed-source modules known to 
-> > > > crash the system, like ndiswrapper or nvidia graphics driver.
-> > > > 
-> > > > 	Jeff
-> > > 
-> > > I'm quite sure.
+On Sat, Apr 12, 2008 at 03:43:45AM +0400, Alexey Dobriyan wrote:
+> Pekka fixed SLUB for me, and now core2 box survives up and including to
+> not finding / :
 > 
-> It seems I have a failing RAM problem.
-
-
-> I'll try fixing that and if it still keeps crashing, I'll be in touch.
+> Setup is SATA disk with plain old partitions, nothing lvmancy:
 > 
-> --
-> Luis Sousa
+> 	/dev/sda2 on / type ext3 (rw,noatime)
+> 
+> CONFIG_ATA=y
+> CONFIG_ATA_ACPI=y
+> CONFIG_SATA_AHCI=y
+> CONFIG_ATA_PIIX=y
+> CONFIG_PATA_JMICRON=y
+> 
+> sda1 is for swap.
+> 
+> 
+> [    3.920000] NET: Registered protocol family 1
+> [    3.920000] VFS: Cannot open root device "sda2" or unknown-block(0,0)
 
-OK, it's definitely not the RAM; I tried three new RAM modules, and the
-crashes continue with all of them. Sometimes the sysrq keys work, usually
-only for rebooting. Not sure it's sata, but I'm clueless here. Still
-seems like a vm thing to me.
+The winner is partly me, partly git-libata-all.
 
---
-Luis Sousa
+The latter introduced CONFIG_ATA_SFF option and put more or less every
+SATA and PATA driver under it. The former honestly answered N to when
+ATA_SFF popped up and failed to check existence of ATA_PIIX and
+PATA_JMICRON in failing .config .
 
-
-      Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
-http://br.mail.yahoo.com/
+Now raise hands those who knew that your ATA controller is SFF
+compliant.
 
