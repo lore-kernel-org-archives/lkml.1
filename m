@@ -1,122 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYDLRP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYDLRXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYDLRP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 13:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbYDLRPN
+	id S1755818AbYDLRXL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 13:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYDLRW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 13:15:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44506 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbYDLRPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 13:15:11 -0400
-Date: Sat, 12 Apr 2008 14:18:20 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH RFC 1/5] vringfd syscall
-Message-ID: <20080412171820.GA29568@dmt>
-References: <200804052202.09157.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 12 Apr 2008 13:22:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:19527 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754326AbYDLRW4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 13:22:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iSucmEL4whxBocJEAu6QZuMu8IZI0tphx0c8+TwqIC4ZRLl6rwTjBiXHdYpjx8mqdShNN34X2YioNE0YxDjUwwE+1BbLqt0/3xrg0Zlh43z9yDUCQjrTtnqXKlRu3gR7wR5AKVk9rsm95+BlgDG4w+T6sQBNz2jN3IvlJo2+KdQ=
+Message-ID: <86802c440804121022x51ce5a90m110b22132d3a0cb9@mail.gmail.com>
+Date: Sat, 12 Apr 2008 10:22:52 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0804120329390.23255@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804052202.09157.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.1i
+References: <20080411074145.GA4944@elte.hu>
+	 <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
+	 <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
+	 <20080411085411.GA10181@elte.hu>
+	 <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
+	 <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
+	 <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
+	 <20080411092452.GE10801@elte.hu>
+	 <Pine.LNX.4.64.0804111228100.20334@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0804120329390.23255@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+On Sat, Apr 12, 2008 at 3:38 AM, Christoph Lameter <clameter@sgi.com> wrote:
+> Pekka pointed out the orig post that had the boot info.
+>
+> One commonality in the two failures inhouse and yours is that
+> both had more than 4G memory and had CONFIG_HIGHMEM4G set. Possibly
+> a wraparound of some limit?
 
-A couple comments below.
+Ingo,
 
-On Sat, Apr 05, 2008 at 10:02:08PM +1000, Rusty Russell wrote:
+does your old 8 socket system work with 64bit kernel?
 
-> +static unsigned int vring_poll(struct file *filp,
-> +			       struct poll_table_struct *poll)
-> +{
-> +	struct vring_info *vr = filp->private_data;
-> +	int err;
-> +	unsigned int mask;
-> +	u16 used, last_used;
-> +
-> +	/* Some uses of vrings require updating in user context.  This
-> +	 * is best done close to the caller, ie. here. */
-> +	if (vr->ops && vr->ops->pull) {
-> +		err = vr->ops->pull(vr->ops_data);
-> +		if (unlikely(err < 0))
-> +			return err;
-> +
-> +		if (err > 0) {
-> +			/* Buffers have been used, no need to check indices */
-> +			mask = POLLIN | POLLRDNORM;
-> +			goto poll_wait;
-> +		}
-> +	}
-> +
-> +	err = get_user(used, &vr->ring.used->idx);
-> +	if (unlikely(err))
-> +		return err;
-> +
-> +	err = get_user(last_used, vr->last_used);
-> +	if (unlikely(err))
-> +		return err;
-> +
-> +	/* More buffers have been used?  It's 'readable'. */
-> +	if (used != last_used)
-> +		mask = POLLIN | POLLRDNORM;
-> +	else
-> +		mask = 0;
-> +
-> +poll_wait:
-> +	poll_wait(filp, &vr->poll_wait, poll);
-> +
-> +	return mask;
-> +}
-
-I suppose you are doing data copy in ->poll instead of ->read to save
-a system call? This is weird, not conformant to what the interface is
-supposed to do.
-
-This way select/poll syscalls might block in userspace datacopy. The
-application might have a higher priority fd in the fdset to be informed
-of, for example.
-
-So why not change this to the common arrangement, with vring_poll adding
-the waitqueue with poll_wait() and vring_read doing the actual data copy ?
-
-> +struct vring_info *vring_attach(int fd, const struct vring_ops *ops,
-> +				void *data, bool atomic_use)
-> +{
-> +	struct file *filp;
-> +	struct vring_info *vr;
-> +
-> +	/* Must be a valid fd, and must be one of ours. */
-> +	filp = fget(fd);
-> +	if (!filp) {
-> +		vr = ERR_PTR(-EBADF);
-> +		goto out;
-> +	}
-> +
-> +	if (filp->f_op != &vring_fops) {
-> +		vr = ERR_PTR(-EBADF);
-> +		goto fput;
-> +	}
-> +
-> +	/* Mutex simply protects against parallel vring_attach. */
-> +	mutex_lock(&vring_lock);
-> +	vr = filp->private_data;
-> +	if (vr->ops) {
-> +		vr = ERR_PTR(-EBUSY);
-> +		goto unlock;
-> +	}
-> +
-> +	/* If they want to use atomically, we have to map the page. */
-> +	if (atomic_use) {
-> +		if (get_user_pages(current, current->mm,
-> +				   (unsigned long)vr->ring.used, 1, 1, 1,
-> +				   &vr->used_page, NULL) != 1) {
-
-Can't the same be achieved by the app mlocking the vring pages, which
-then goes through standard rlimit checking ?
+YH
