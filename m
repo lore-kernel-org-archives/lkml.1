@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYDMJk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYDMJop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYDMJk3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 05:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYDMJkW
+	id S1758236AbYDMJop (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 05:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYDMJoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 05:40:22 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:6148 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754543AbYDMJkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 05:40:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HlS/abEzEX0ugH+boW8Ll4c7rb2QCZ+uMdw4XcbFUWXeyBkhf4EADHz1Y9VggBZn6Nz8iwZRw3Etvup+hYBgQfXRpTyAOhpB8gizhRXgPYurwIGSFWBWQb3nBUBycUNQnfgxLwlt9j3XsWJ6gDT8GKixItYrPbxcL+E6Lix64qo=
-Message-ID: <e4957ae10804130240v119fb3d6l861490e25021bcf5@mail.gmail.com>
-Date: Sun, 13 Apr 2008 12:40:20 +0300
-From: "Uladzislau Rezki" <urezki@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: Kernel Oops within Linux Fedore Core 5
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080412125325.36bc029d@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Apr 2008 05:44:37 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3151 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754380AbYDMJoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 05:44:37 -0400
+Date: Sat, 12 Apr 2008 21:57:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH 7/8] rfkill: add an "any radio" switch type and functionality
+Message-ID: <20080412195716.GA4639@ucw.cz>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-8-git-send-email-hmh@hmh.eng.br>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e4957ae10804110813y159019c1p84296058bcc769cf@mail.gmail.com>
-	 <20080412125325.36bc029d@laptopd505.fenrus.org>
+In-Reply-To: <1207946244-14525-8-git-send-email-hmh@hmh.eng.br>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Hi,
->
->  normally (read: 99% of the cases) this happens when your Makefile is buggy.
->  Are you sure your Makefile is correct? Also, are you sure you're compiling
->  against the right kernel headers ?
->
->  Greetings,
->
->    Arjan van de Ven
->
-Yes I'm shure that makefile is right, and I'm compiling with right
-linux-headers. Bellow you can see Makefile which I use:
+On Fri 2008-04-11 17:37:23, Henrique de Moraes Holschuh wrote:
+> Add a RFKILL_TYPE_ANY switch.  This switch can control more than one type
+> of radio, and it is always subject to toggling by any type of rfkill-input
+> event.  It is suitable to implement kill-all-radios functionality when
+> coupled with input event EV_SW SW_RADIO.
 
-obj-m := sb_show.o
+Hmm, how does that work with pcmcia ethernet card plugged in?
 
-KDIR  := /lib/modules/$(shell uname -r)/build
-PWD   := $(shell pwd)
+How does userspace know which radios this controls?
 
-default:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
-
-clean:
-	rm -rf sb_show.ko .sb_show.ko.cmd .sb_show.mod.o.cmd .sb_show.o.cmd
-.tmp_versions
-
---
-Uladzislau Rezki
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
