@@ -1,83 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbYDLKfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbYDLKgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761450AbYDLKfw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 06:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759090AbYDLKfO
+	id S1761537AbYDLKgI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 06:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759562AbYDLKfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 06:35:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:59745 "EHLO
+	Sat, 12 Apr 2008 06:35:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:58634 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758846AbYDLKfM (ORCPT
+	with ESMTP id S1759096AbYDLKfP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 06:35:12 -0400
+	Sat, 12 Apr 2008 06:35:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=mdMw7AYVcyty8eDVM2QAZmEAP7uZorw1Ci5D47n0DI91tWsgF9weqET3vPYRcwcdG1ukTh7qzi4XYaLZdvzQR+OdfU5cTGu9c/qc0IVNGOqv50uAHdGdwfYmNUiy9SB1aVAyKiGH6qx8bpIXLCwJkh++gJYo8rI2xFRIURfBsrk=
+        b=U8pgRQID9ibuNpkD7taTI8WYElnSU5bA1iGqJE2pRW9JFh0ZRFDEtRC0ZophY7C1tJaTAEri8QnJ/6BrhT9H2rwFOz8nZqZZ3zwQOg7ADJAHWkMf+gIBPw2DEd13b0VkU4rQRH1IyEp24OaDzzsOebnoO6PrMO/HhVDiBnH2r6A=
 To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 4/8] rfkill: add read-write rfkill switch support
-Date: Sat, 12 Apr 2008 12:36:43 +0200
+Subject: Re: [PATCH 6/8] rfkill: add the WWAN radio type
+Date: Sat, 12 Apr 2008 12:36:45 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-5-git-send-email-hmh@hmh.eng.br>
-In-Reply-To: <1207946244-14525-5-git-send-email-hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+       =?utf-8?q?I=C3=B1aky_P=C3=A9rez-Gonz=C3=A1lez?= 
+	<inaky.perez-gonzalez@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-7-git-send-email-hmh@hmh.eng.br>
+In-Reply-To: <1207946244-14525-7-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200804121236.43547.IvDoorn@gmail.com>
+Message-Id: <200804121236.45670.IvDoorn@gmail.com>
 From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday 11 April 2008, Henrique de Moraes Holschuh wrote:
+> Unfortunately, instead of adding a generic Wireless WAN type, a technology-
+> specific type (WiMAX) was added.  That's useless for other WWAN devices,
+> such as EDGE, UMTS, X-RTT and other such radios.
 
-> Currently, rfkill supports only write-only rfkill switches.  There is no
-> provision for querying the current switch state from the hardware/firmware.
+Then perhaps we should replace WiMAX with the WWAN type?
 
-No that is by design, the input_polled_dev interface is there for polling.
+> Add a WWAN rfkill type for generic wireless WAN devices.  No keys are added
+> as most devices use KEY_RADIO for WWAN control and need no specific keycode
+> added.
 
-> This is bad on hardware where the switch state can change behind the
-> kernel's back (which is rather common).  There is no reason to keep kernel
-> state incorrect, when we have the possibility to match reality.
-> 
-> There is also the issue of read-only rfkill switches (support to be added
-> in a later patch), which absolutely requires support to read the current
-> state from the hardware in order to be implemented.
-
-See rt2x00 and b43 in driver-wireless for an example implementation
-of pollable input device and rfkill
-
-> In order to implement the read/write functionality:
-> 
-> Add a get_state() hook that is called by the class every time it needs to
-> fetch the current state of the switch.  Add a call to this hook every time
-> the *current* state of the radio plays a role in a decision.
-> 
-> Also add a force_state() method that can be used to forcefully syncronize
-> the class' idea of the current state of the switch.  This allows for a
-> faster implementation of the read/write functionality, as a driver which
-> get events on switch changes can avoid the need for a get_state() hook.
-> 
-> If the get_state() hook is left as NULL, current behaviour is maintained,
-> so this change is fully backwards compatible with the current rfkill
-> drivers.
-> 
-> If the firmware is event driven, leave get_state() NULL in the driver, set
-> the initial state properly before registering the rfkill class, and use the
-> force_state() method in the driver to keep the class up-to-date.
-> 
-> get_state() can be called by the class from atomic context. It must not
-> sleep.
-> 
-> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Cc: Ivo van Doorn <IvDoorn@gmail.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
-> Cc: Dmitry Torokhov <dtor@mail.ru>
-
-I'm going to NACK this patch.
+In the discussion around the WiMAX addition I do remember people wanted
+it to have a seperate key code because it was "different technology". Wouldn't that
+be the same for all WWAN technologies?
+Aka, should the WiMAX keycode be changed to a WWAN keycode in input.h
+and then be used for all WWAN rfkill switches?
 
 Ivo
+
+> Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+> Cc: Iñaky Pérez-González <inaky.perez-gonzalez@intel.com>
+> Cc: Ivo van Doorn <IvDoorn@gmail.com>
+> Cc: John W. Linville <linville@tuxdriver.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> ---
+>  include/linux/rfkill.h    |    2 ++
+>  net/rfkill/rfkill-input.c |    5 +++++
+>  net/rfkill/rfkill.c       |    3 +++
+>  3 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+> index 931d32b..7650517 100644
+> --- a/include/linux/rfkill.h
+> +++ b/include/linux/rfkill.h
+> @@ -34,12 +34,14 @@
+>   * RFKILL_TYPE_BLUETOOTH: switch is on a bluetooth device.
+>   * RFKILL_TYPE_UWB: switch is on a ultra wideband device.
+>   * RFKILL_TYPE_WIMAX: switch is on a WiMAX device.
+> + * RFKILL_TYPE_WWAN: switch is on a wireless WAN device.
+>   */
+>  enum rfkill_type {
+>  	RFKILL_TYPE_WLAN ,
+>  	RFKILL_TYPE_BLUETOOTH,
+>  	RFKILL_TYPE_UWB,
+>  	RFKILL_TYPE_WIMAX,
+> +	RFKILL_TYPE_WWAN,
+>  	RFKILL_TYPE_MAX,
+>  };
+>  
+> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+> index 7d1e520..675651b 100644
+> --- a/net/rfkill/rfkill-input.c
+> +++ b/net/rfkill/rfkill-input.c
+> @@ -101,6 +101,7 @@ static DEFINE_RFKILL_TASK(rfkill_wlan, RFKILL_TYPE_WLAN);
+>  static DEFINE_RFKILL_TASK(rfkill_bt, RFKILL_TYPE_BLUETOOTH);
+>  static DEFINE_RFKILL_TASK(rfkill_uwb, RFKILL_TYPE_UWB);
+>  static DEFINE_RFKILL_TASK(rfkill_wimax, RFKILL_TYPE_WIMAX);
+> +static DEFINE_RFKILL_TASK(rfkill_wwan, RFKILL_TYPE_WIMAX);
+>  
+>  static void rfkill_event(struct input_handle *handle, unsigned int type,
+>  			unsigned int code, int data)
+> @@ -121,6 +122,7 @@ static void rfkill_event(struct input_handle *handle, unsigned int type,
+>  			break;
+>  		case KEY_RADIO:
+>  			/* EVERY radio type */
+> +			rfkill_schedule_toggle(&rfkill_wwan);
+>  			rfkill_schedule_toggle(&rfkill_wimax);
+>  			rfkill_schedule_toggle(&rfkill_uwb);
+>  			rfkill_schedule_toggle(&rfkill_bt);
+> @@ -133,6 +135,9 @@ static void rfkill_event(struct input_handle *handle, unsigned int type,
+>  		switch (code) {
+>  		case SW_RADIO:
+>  			/* EVERY radio type. data != 0 means radios ON */
+> +			rfkill_schedule_set(&rfkill_wwan,
+> +					    (data)? RFKILL_STATE_ON:
+> +						    RFKILL_STATE_OFF);
+>  			rfkill_schedule_set(&rfkill_wimax,
+>  					    (data)? RFKILL_STATE_ON:
+>  						    RFKILL_STATE_OFF);
+> diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
+> index d149d94..56241a4 100644
+> --- a/net/rfkill/rfkill.c
+> +++ b/net/rfkill/rfkill.c
+> @@ -171,6 +171,9 @@ static ssize_t rfkill_type_show(struct device *dev,
+>  	case RFKILL_TYPE_WIMAX:
+>  		type = "wimax";
+>  		break;
+> +	case RFKILL_TYPE_WWAN:
+> +		type = "wwan";
+> +		break;
+>  	default:
+>  		BUG();
+>  	}
+
+
