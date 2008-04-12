@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbYDLAF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYDLA1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbYDLAF5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Apr 2008 20:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbYDLAFs
+	id S1759563AbYDLA1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Apr 2008 20:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbYDLA1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Apr 2008 20:05:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36484 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756527AbYDLAFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Apr 2008 20:05:48 -0400
-Date: Sat, 12 Apr 2008 10:05:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
-       i2c@lm-sensors.org
-Subject: Re: [PATCHv2 3/7] i2c: OF helpers for the i2c API
-Message-Id: <20080412100536.5f0589df.sfr@canb.auug.org.au>
-In-Reply-To: <47FFBA7B.8050900@scram.de>
-References: <47FFBA7B.8050900@scram.de>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Fri, 11 Apr 2008 20:27:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41842 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758246AbYDLA1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Apr 2008 20:27:35 -0400
+Date: Sat, 12 Apr 2008 01:26:52 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       SL Baur <steve@xemacs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [patch] checkpatch: relax spacing and line length
+Message-ID: <20080412002652.GM9785@ZenIV.linux.org.uk>
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <47FCB458.3070403@panasas.com> <20080409132548.GM17915@shadowen.org> <47FCF6AF.8010703@panasas.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47FCF6AF.8010703@panasas.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Apr 09, 2008 at 08:02:39PM +0300, Benny Halevy wrote:
 
-On Fri, 11 Apr 2008 21:22:35 +0200 Jochen Friedrich <jochen@scram.de> wrote:
->
-> This patch implements various helpers to support OF bindings for
-> the i2c API.
->=20
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> I'm not sure what "two space change" proposal this Steve referred to
+> and his rejection is based on not-to-sound aesthetic grounds.
+> 
+> The motivation behind our proposal is more than just aesthetic.
+> I believe that using tabs for indent and then spaces for alignment
+> is functionally better, works for everybody, and will eventually result
+> in a more readable code over time, hopefully leading to fewer bugs.
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH//zUTgG2atn1QN8RAjRvAJ4kzEMylk8uOFwwMIbuEpawKlMMQgCfXvSH
-YKY0iFd/fDtauTTaR8vb6TA=
-=ZgwY
------END PGP SIGNATURE-----
-
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7--
+Sorry.  I'm not going to change perfectly working editing habits *or* to patch
+nvi to satisfy an annoying wunch of bankers.  HAND, GAFL.
