@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYDLPgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYDLPiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbYDLPgk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 11:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYDLPgd
+	id S1754892AbYDLPiR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 11:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYDLPiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 11:36:33 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4106 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753181AbYDLPgd (ORCPT
+	Sat, 12 Apr 2008 11:38:08 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:42048 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444AbYDLPiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 11:36:33 -0400
-Date: Sat, 12 Apr 2008 11:36:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [linux-pm] s2ram: warn when interrupts should be disabled but
- are not
-In-Reply-To: <20080412095311.GA1729@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0804121135350.10697-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 12 Apr 2008 11:38:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=vBqj0J088fY9LQlPb8NLEqgwcS8AoEvuffh8m4kVzyGGiAHiDUCykTAnU6zi6JKh9a9H9WhqI0jbs7oFrg3+9a+hayV+eNQHG5AEWPq9YkPZj6MFd+7iDEaA75iW4n91FHs6XqVc6bLoLLfoilnU+PB1cU0sv51edb2Y2rZortc=
+Date: Sat, 12 Apr 2008 23:34:23 +0800 (CST)
+Message-Id: <20080412.233423.112727172.xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] UML: Make three functions static
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008, Pavel Machek wrote:
 
-> ---
-> commit fc3bccaf69e6c05464e7154369639bd5c96ccdc1
-> tree bf960093ddb840242a00b4ec456ec79472b1c2ad
-> parent 308e9d5309f378209e931f63f729806ec0a4d9f1
-> author Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
-> committer Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
-> 
->  drivers/ata/ahci.c |    2 +-
->  drivers/base/sys.c |    3 +++
->  2 files changed, 4 insertions(+), 1 deletions(-)
+Make the following three functions static, since they don't need to be
+global.
 
-What happened to the drivers/ata/ahci.c part of the patch?
+arch/um/drivers/mcast_kern.c::mcast_setup()
+arch/um/drivers/mconsole_user.c::mconsole_reply_v0()
+arch/um/drivers/port_user.c::port_pre_exec()
 
-> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-> index 8e13fd9..e214467 100644
-> --- a/drivers/base/sys.c
-> +++ b/drivers/base/sys.c
-> @@ -22,6 +22,7 @@ #include <linux/string.h>
->  #include <linux/pm.h>
->  #include <linux/device.h>
->  #include <linux/mutex.h>
-> +#include <linux/hardirq.h>
->  
->  #include "base.h"
->  
-> @@ -367,6 +368,7 @@ int sysdev_suspend(pm_message_t state)
->  			/* Call auxillary drivers first */
->  			list_for_each_entry(drv, &cls->drivers, entry) {
->  				if (drv->suspend) {
-> +					WARN_ON(!irqs_disabled());
->  					ret = drv->suspend(sysdev, state);
->  					if (ret)
->  						goto aux_driver;
-> @@ -442,6 +444,7 @@ int sysdev_resume(void)
->  		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
->  			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
->  
-> +			WARN_ON(!irqs_disabled());
->  			__sysdev_resume(sysdev);
->  		}
->  	}
+Compile testing passed.
 
-Alan Stern
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+
+---
+ arch/um/drivers/mcast_kern.c    |    2 +-
+ arch/um/drivers/mconsole_user.c |    2 +-
+ arch/um/drivers/port_user.c     |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/um/drivers/mcast_kern.c b/arch/um/drivers/mcast_kern.c
+index 822092f..8c4378a 100644
+--- a/arch/um/drivers/mcast_kern.c
++++ b/arch/um/drivers/mcast_kern.c
+@@ -58,7 +58,7 @@ static const struct net_kern_info mcast_kern_info = {
+ 	.write			= mcast_write,
+ };
+ 
+-int mcast_setup(char *str, char **mac_out, void *data)
++static int mcast_setup(char *str, char **mac_out, void *data)
+ {
+ 	struct mcast_init *init = data;
+ 	char *port_str = NULL, *ttl_str = NULL, *remain;
+diff --git a/arch/um/drivers/mconsole_user.c b/arch/um/drivers/mconsole_user.c
+index 13af2f0..f8cf4c8 100644
+--- a/arch/um/drivers/mconsole_user.c
++++ b/arch/um/drivers/mconsole_user.c
+@@ -39,7 +39,7 @@ static struct mconsole_command commands[] = {
+ /* Initialized in mconsole_init, which is an initcall */
+ char mconsole_socket_name[256];
+ 
+-int mconsole_reply_v0(struct mc_request *req, char *reply)
++static int mconsole_reply_v0(struct mc_request *req, char *reply)
+ {
+ 	struct iovec iov;
+ 	struct msghdr msg;
+diff --git a/arch/um/drivers/port_user.c b/arch/um/drivers/port_user.c
+index addd759..d269ca3 100644
+--- a/arch/um/drivers/port_user.c
++++ b/arch/um/drivers/port_user.c
+@@ -153,7 +153,7 @@ struct port_pre_exec_data {
+ 	int pipe_fd;
+ };
+ 
+-void port_pre_exec(void *arg)
++static void port_pre_exec(void *arg)
+ {
+ 	struct port_pre_exec_data *data = arg;
+ 
+-- 
+1.5.2.4
 
