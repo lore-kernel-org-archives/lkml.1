@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYDLQ4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYDLQ4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYDLQ4Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 12:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYDLQ4R
+	id S1755982AbYDLQ4v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 12:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYDLQ4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 12:56:17 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33311 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753986AbYDLQ4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 12:56:16 -0400
-Date: Sat, 12 Apr 2008 18:56:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jacek Luczak <difrost.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de
-Subject: Re: [PATCH] x86: setup_trampoline() - fix section mismatch warning
-Message-ID: <20080412165645.GA6717@uranus.ravnborg.org>
-References: <47FE6799.9030606@gmail.com> <20080411175006.GA31716@uranus.ravnborg.org> <48009650.5090306@gmail.com>
-Mime-Version: 1.0
+	Sat, 12 Apr 2008 12:56:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59627 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754217AbYDLQ4l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 12:56:41 -0400
+Date: Sat, 12 Apr 2008 09:59:19 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rachmel, Nir (Nir)" <rachmel@avaya.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel Oops on hot insertion of USB
+Message-ID: <20080412165919.GA30848@kroah.com>
+References: <11486DD9B957EA488E21C44BC8737EFC987F23@307622ANEX5.global.avaya.com> <20080412042918.GA13154@kroah.com> <11486DD9B957EA488E21C44BC8737EFC55F379@307622ANEX5.global.avaya.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48009650.5090306@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <11486DD9B957EA488E21C44BC8737EFC55F379@307622ANEX5.global.avaya.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 01:00:32PM +0200, Jacek Luczak wrote:
-> 
-> Hi Sam,
-> 
-> Sam Ravnborg pisze:
-> [!snip]
-> >> diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
-> >> index 4aedd0b..2a07e67 100644
-> >> --- a/arch/x86/kernel/trampoline_64.S
-> >> +++ b/arch/x86/kernel/trampoline_64.S
-> >> @@ -32,7 +32,7 @@
-> >>  
-> >>  /* We can free up trampoline after bootup if cpu hotplug is not supported. */
-> >>  #ifndef CONFIG_HOTPLUG_CPU
-> >> -.section .init.data, "aw", @progbits
-> >> +.section .cpuinit.data, "aw", @progbits
-> >>  #else
-> >>  .section .rodata, "a", @progbits
-> >>  #endif
-> > 
-> > The correct fix would be to drop the
-> > preprocessor directves and use __CPUINITDATA
-> 
-> Hmm...IMO this should stay in that form at least now.
-> I will make some tests with __CPUINITDATA (look into objects, etc.) and later on we can
-> switch. Is it OK for you?
+A: No.
+Q: Should I include quotations after my reply?
 
-I should maybe give you a little more background.
-The __cpuinitdata section is properly discarded after init
-has completed in case CPUHOTPLUG is not needed.
-But in case it is needed then the section is kept.
+On Sat, Apr 12, 2008 at 11:20:08AM +0200, Rachmel, Nir (Nir) wrote:
+> Hi greg,
+>  
+> Thanks for your reply. I am aware that I am "a bit" far behind in the
+> Linux revsions tree,
 
-So the only issue with introducing the patch as I suggest
-is that we loose the readonly. We need to introduce
-__CPUINITCONST to cover that case.
-But loosing readonly is not a big deal here.
+Just a "bit", if you consider almost 3 years and many hundreds of
+thousands of changes a "bit" :)
 
-If you insist on the readonly part then unconditionally
-use the section named .cpuinit.rodata
-But the preprocessor directive should in any case be dropped
-as it is of no real use today.
+> however it will be very difficult for me to upgrade.
 
-	Sam
+Why?  Userspace should work just fine.  If you are relying on custom
+kernel modules, well, I think you now know the reason the kernel
+developers are saying for people to get their code upstream to prevent
+this kind of issue...
+
+> I have done much work and testing with 2.6.14.7 and would
+> prefer to patch it over upgrading it to the current version.
+
+Hopefully you are able to patch all of the bugs and security issues that
+have been found in the past 3 years.
+
+> Was this problem fixed in a specific revision, or was the fix
+> introduced due to several fixes in different areas? Maybe I can look
+> at the specific fix and implement it on my own version.
+
+All of our changes are public, I would suggest going through them and
+trying to find it.  Because you are relying on such an old, outdated,
+and unsupported kernel version, you really are on your own.
+
+good luck,
+
+greg k-h
