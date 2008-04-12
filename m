@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYDLSNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbYDLSTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbYDLSNf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 14:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbYDLSNN
+	id S1756835AbYDLSTT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 14:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbYDLSTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 14:13:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:63749 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbYDLSNL (ORCPT
+	Sat, 12 Apr 2008 14:19:10 -0400
+Received: from smtp-out-46.synserver.de ([217.119.50.46]:1204 "HELO
+	smtp-out-45.synserver.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1755436AbYDLSTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 14:13:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=GTw/Pug+QUZXMoIdJBgHwoa6fs2hL85/lnaM66OUwGNVYTx5cSteoZs9IY9paCIzLu6B64JNR70bb1jWYZZYkfcAOGcitu1xzaNS9GV0K+vzpwhipJkGJeKUMzHX8MNjkaURB6GPrw4RhoklOhlL+BhQ+2AzmxFlVdENCGL+JSM=
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
-Date: Sat, 12 Apr 2008 20:14:41 +0200
-User-Agent: KMail/1.9.9
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <20080412154711.GA3221@anvil.corenet.prv> <20080412180219.GI3402@khazad-dum.debian.net>
-In-Reply-To: <20080412180219.GI3402@khazad-dum.debian.net>
+	Sat, 12 Apr 2008 14:19:09 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 28426
+Date: Sat, 12 Apr 2008 20:19:06 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Frederik Himpe <fhimpe@telenet.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Audio skipping with 2.6.24.4 and 2.6.25-rc9
+Message-ID: <20080412181906.GB4551@gentoox2.trippelsdorf.de>
+References: <pan.2008.04.12.16.13.01@telenet.be> <20080412175124.GA4551@gentoox2.trippelsdorf.de> <pan.2008.04.12.18.06.24@telenet.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804122014.41583.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+In-Reply-To: <pan.2008.04.12.18.06.24@telenet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 April 2008, Henrique de Moraes Holschuh wrote:
-> On Sat, 12 Apr 2008, Dmitry Torokhov wrote:
-> > On Fri, Apr 11, 2008 at 05:37:19PM -0300, Henrique de Moraes Holschuh wrote:
-> > > The *_RADIO input events are related to all radios in a system.  There are
-> > > two: KEY_RADIO and SW_RADIO.
-> > > 
-> > 
-> > KEY_RADIO is reserved for selecting radio input (as pooosed to TV, AUX,
-> > etc) with a remote control. Rfkill woudl need a separate keycode if it
-> > needs "all types of radios" event.
+On Sat, Apr 12, 2008 at 06:06:24PM +0000, Frederik Himpe wrote:
+> On Sat, 12 Apr 2008 19:51:24 +0200, Markus Trippelsdorf wrote:
 > 
-> Hmm, let me check where I got the wrong idea of using KEY_RADIO from,
-> because thinkpad-acpi already uses KEY_WLAN which means that at least in
-> the past I did know KEY_RADIO was not to be used for wireless data
-> communication devices like that...  jeez, looks like spontaneous brain
-> corruption on that topic hapenned to me sometime ago, and it came out in
-> a linux-thinkpad thread a few weeks ago.  The wrong semanthics for
-> KEY_RADIO seem to have stuck to my mind since then.  Drat, I *really*
-> apologise for this one.
+> > On Sat, Apr 12, 2008 at 04:13:01PM +0000, Frederik Himpe wrote:
+> >> I'm experiencing a lot of problems with audio skipping on my system. I
+> >> am using Rhythmbox as an audio player and have Compiz active. Whenever
+> >> I maximise or restore a maximised real transparent gnome-terminal,
+> >> audio skips. Compared to other normal applications, restoring the
+> >> transparent console is also slow (it takes a few seconds before the
+> >> window appears). ...
+> >> This problem happens with both 2.6.24.4 as with 2.6.25-rc9 (the
+> >> debugging information is from the latter version).
+> >> 
+> >> 
+> > Try to disable the group scheduler in your kernel configuration. It
+> > solved the audio skipping problem on my machine...
 > 
-> This, of course, is a major NAK for this patch.  And I am considering
-> dropping the handling of KEY_<whatever replaces RADIO> completely from
-> it.  SW_RADIO (after a rename, see below) still needs to be handled,
-> though.
+> I think I have it disabled already?
 > 
-> > Btw, is there any devices in the wild that actually have separate
-> > switches for different types of transmitters?
+> $ zcat /proc/config.gz | grep GROUP
+> # CONFIG_CGROUPS is not set
+> # CONFIG_GROUP_SCHED is not set
 > 
-> Separate switches?  I know of none.
-> 
-> Separate hot keys/buttons?  I haven't seen it, but check commit
-> 90da11514562020ea7d697982f912ac949adc317's comment.  That was the commit
-> which added KEY_WLAN and KEY_BLUETOOTH, back in 2.6.18-rc.  Maybe ask
-> Lennart Poettering about it?
+> Or am I missing something?
 
-My laptop (Acer Ferrari 3200) features 2 keys, 1 for 802.11 and 1 for Bluetooth.
-Both directly communicate to the hardware itself and only need rfkill for
-notification purposes to userspace.
+Yeah, I figured that out after I had send you my brilliant suggestion.
+Sorry.
 
-Ivo
+-- 
+Markus
