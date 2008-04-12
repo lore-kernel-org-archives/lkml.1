@@ -1,69 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbYDLKfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYDLKfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760870AbYDLKfX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 06:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbYDLKfK
+	id S1759350AbYDLKfh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 06:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758887AbYDLKfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 06:35:10 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:59745 "EHLO
+	Sat, 12 Apr 2008 06:35:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:58634 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757317AbYDLKfI (ORCPT
+	with ESMTP id S1757258AbYDLKfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 06:35:08 -0400
+	Sat, 12 Apr 2008 06:35:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=TaAin5diblLABHXhKO+RYALuWBIFDQaiIBoFMU47brQJ111ntBKtsxNuue2hHdunjdR+Uwf1iE4SdPT3VcC9u7bgqtdWCMVXCilAjpxhQ90RyGuYJWmBK1Tk1xX5OewoxaeRngTv+HY8LK+zscEKZ7vl47TSPLNDg0HIuMc3LOc=
+        b=ssOH4PAr+BqGQcpzsADseoZzoHVvqYC2SnKqJB4JsCCKk3Q0LYDgemRx1cXa4HiWU8vYxvLCe4S8/QlMCPBOCUsJFdLqotseQnnFvVXEJN8yeTdpgNzjuipXdLwG8KaIGJX03e6zEHuWhzXbfxDxXVuX70D8BWobO2m+eIkHrqI=
 To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [GIT PATCH] rfkill support for r/w and r/o rfkill switches
-Date: Sat, 12 Apr 2008 12:36:38 +0200
+Subject: Re: [PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
+Date: Sat, 12 Apr 2008 12:36:41 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
-In-Reply-To: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-4-git-send-email-hmh@hmh.eng.br>
+In-Reply-To: <1207946244-14525-4-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804121236.38737.IvDoorn@gmail.com>
+Message-Id: <200804121236.41635.IvDoorn@gmail.com>
 From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> This patch series (based on v2.6.25-rc8-mm2) has several improvements to
-> the rfkill class that I need for thinkpad-acpi, plus two fluff and
-> documentation fixes.
+On Friday 11 April 2008, Henrique de Moraes Holschuh wrote:
+> The *_RADIO input events are related to all radios in a system.  There are
+> two: KEY_RADIO and SW_RADIO.
 > 
-> I'd appreciate comments, and if the patches are acceptable, that they are
-> sent to mainline early during the 2.6.26 merge window.  That way, I could
-> try for a thinkpad-acpi rfkill submission for 2.6.26 as well.
+> Teach rfkill-input how to handle them.  In particular, SW_RADIO is not a
+> toggle, but an absolute enable-or-disable command.
+
+Not sure what you are trying to achieve here,
+who triggers the SW_RADIO and why?
+
+> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Cc: Ivo van Doorn <IvDoorn@gmail.com>
+> Cc: John W. Linville <linville@tuxdriver.com>
+> Cc: Dmitry Torokhov <dtor@mail.ru>
+> ---
+>  net/rfkill/rfkill-input.c |   57 +++++++++++++++++++++++++++++++++++++++++++-
+>  1 files changed, 55 insertions(+), 2 deletions(-)
 > 
-> The thinkpad-acpi work that needs these patches is ready, and can be
-> looked at on the thinkpad-acpi git tree (devel branch):
-> http://repo.or.cz/w/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git
-> 
-> Note: new thinkpads have a read-only "type any" radio switch, plus
-> read-write WWAN and Bluetooth radio switches.   The embedded WLAN cards
-> have WLAN read-write switches (that should be handled by the ipw* and iwl*
-> drivers).  Very old thinkpads had ACPI-based WLAN radio switches, but
-> thinkpad-acpi does not support those.
+> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+> index e4b051d..7d1e520 100644
+> --- a/net/rfkill/rfkill-input.c
+> +++ b/net/rfkill/rfkill-input.c
+> @@ -55,6 +55,22 @@ static void rfkill_task_handler(struct work_struct *work)
+>  	mutex_unlock(&task->mutex);
+>  }
+>  
+> +static void rfkill_schedule_set(struct rfkill_task *task,
+> +				enum rfkill_state desired_state)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&task->lock, flags);
+> +
+> +	if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> +		task->desired_state = desired_state;
+> +		task->last = jiffies;
+> +		schedule_work(&task->work);
+> +	}
+> +
+> +	spin_unlock_irqrestore(&task->lock, flags);
+> +}
+> +
+>  static void rfkill_schedule_toggle(struct rfkill_task *task)
+>  {
+>  	unsigned long flags;
+> @@ -87,9 +103,9 @@ static DEFINE_RFKILL_TASK(rfkill_uwb, RFKILL_TYPE_UWB);
+>  static DEFINE_RFKILL_TASK(rfkill_wimax, RFKILL_TYPE_WIMAX);
+>  
+>  static void rfkill_event(struct input_handle *handle, unsigned int type,
+> -			unsigned int code, int down)
+> +			unsigned int code, int data)
+>  {
+> -	if (type == EV_KEY && down == 1) {
+> +	if (type == EV_KEY && data == 1) {
+>  		switch (code) {
+>  		case KEY_WLAN:
+>  			rfkill_schedule_toggle(&rfkill_wlan);
+> @@ -103,6 +119,33 @@ static void rfkill_event(struct input_handle *handle, unsigned int type,
+>  		case KEY_WIMAX:
+>  			rfkill_schedule_toggle(&rfkill_wimax);
+>  			break;
+> +		case KEY_RADIO:
+> +			/* EVERY radio type */
+> +			rfkill_schedule_toggle(&rfkill_wimax);
+> +			rfkill_schedule_toggle(&rfkill_uwb);
+> +			rfkill_schedule_toggle(&rfkill_bt);
+> +			rfkill_schedule_toggle(&rfkill_wlan);
+> +			break;
+> +		default:
+> +			break;
+> +		}
+> +	} else if (type == EV_SW) {
+> +		switch (code) {
+> +		case SW_RADIO:
+> +			/* EVERY radio type. data != 0 means radios ON */
+> +			rfkill_schedule_set(&rfkill_wimax,
+> +					    (data)? RFKILL_STATE_ON:
+> +						    RFKILL_STATE_OFF);
+> +			rfkill_schedule_set(&rfkill_uwb,
+> +					    (data)? RFKILL_STATE_ON:
+> +						    RFKILL_STATE_OFF);
+> +			rfkill_schedule_set(&rfkill_bt,
+> +					    (data)? RFKILL_STATE_ON:
+> +						    RFKILL_STATE_OFF);
+> +			rfkill_schedule_set(&rfkill_wlan,
+> +					    (data)? RFKILL_STATE_ON:
+> +						    RFKILL_STATE_OFF);
+> +			break;
+>  		default:
+>  			break;
+>  		}
+> @@ -168,6 +211,16 @@ static const struct input_device_id rfkill_ids[] = {
+>  		.evbit = { BIT_MASK(EV_KEY) },
+>  		.keybit = { [BIT_WORD(KEY_WIMAX)] = BIT_MASK(KEY_WIMAX) },
+>  	},
+> +	{
+> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT,
+> +		.evbit = { BIT(EV_KEY) },
+> +		.keybit = { [BIT_WORD(KEY_RADIO)] = BIT_MASK(KEY_RADIO) },
+> +	},
+> +	{
+> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_SWBIT,
+> +		.evbit = { BIT(EV_SW) },
+> +		.swbit = { [BIT_WORD(SW_RADIO)] = BIT_MASK(SW_RADIO) },
+> +	},
+>  	{ }
+>  };
+>  
 
-The following patches are fine by me, without any additional comments:
-[PATCH 1/8] rfkill: clarify meaning of rfkill states
-[PATCH 2/8] rfkill: fix minor typo in kernel doc
-[PATCH 5/8] rfkill: add read-only rfkill switch support
-[PATCH 7/8] rfkill: add an "any radio" switch type and functionality
 
-The following patches are overall fine, but I have some additional comments:
-[PATCH 6/8] rfkill: add the WWAN radio type
-[PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
-
-The following patches are _not_ fine with me:
-[PATCH 4/8] rfkill: add read-write rfkill switch support
-[PATCH 8/8] rfkill: add parameter to disable radios by default
-
-Ivo
