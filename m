@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYDLSBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbYDLSCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYDLSBs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 14:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYDLSBk
+	id S1755639AbYDLSCd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 14:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYDLSCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 14:01:40 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26190 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754801AbYDLSBk (ORCPT
+	Sat, 12 Apr 2008 14:02:25 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:50164 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754973AbYDLSCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 14:01:40 -0400
-Subject: Re: [PATCH] Replace completions with semaphores
-From: Daniel Walker <dwalker@mvista.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Oeser <ioe-lkml@rameria.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <20080412172606.GL11962@parisc-linux.org>
-References: <20080411210022.GJ11962@parisc-linux.org>
-	 <1208003081.7427.7.camel@twins>  <20080412172606.GL11962@parisc-linux.org>
-Content-Type: text/plain
-Date: Sat, 12 Apr 2008 11:01:35 -0700
-Message-Id: <1208023296.21308.354.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Apr 2008 14:02:24 -0400
+X-Sasl-enc: Z3yy5xRL2Cj/WEf9aR6zrRxhQeNVx0LkaEloPQeMzlwv 1208023342
+Date: Sat, 12 Apr 2008 15:02:19 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 3/8] rfkill: handle KEY_RADIO and SW_RADIO events
+Message-ID: <20080412180219.GI3402@khazad-dum.debian.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-4-git-send-email-hmh@hmh.eng.br> <20080412154711.GA3221@anvil.corenet.prv>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080412154711.GA3221@anvil.corenet.prv>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-04-12 at 11:26 -0600, Matthew Wilcox wrote:
-
-> It would look bloody odd to write (code taken from megasas_mgmt_ioctl_fw() in
-> drivers/scsi/megaraid/megaraid_sas.c):
+On Sat, 12 Apr 2008, Dmitry Torokhov wrote:
+> On Fri, Apr 11, 2008 at 05:37:19PM -0300, Henrique de Moraes Holschuh wrote:
+> > The *_RADIO input events are related to all radios in a system.  There are
+> > two: KEY_RADIO and SW_RADIO.
+> > 
 > 
->         if (wait_for_completion_interruptible(&instance->ioctl_completion)) {
->                 error = -ERESTARTSYS;
->                 goto out_kfree_ioc;
->         }
->         error = megasas_mgmt_fw_ioctl(instance, user_ioc, ioc);
->         complete(&instance->ioctl_sem);
-> 
-> What I'm trying to get a feeling for is whether people find it similarly
-> odd to use semaphores where we currently use completions.  We *used*
-> to, but I don't find that a compelling reason.
+> KEY_RADIO is reserved for selecting radio input (as pooosed to TV, AUX,
+> etc) with a remote control. Rfkill woudl need a separate keycode if it
+> needs "all types of radios" event.
 
-The above doesn't look all that odd to me. It may be that you've seen
-semaphores in that position in the past and just expect to see them. 
+Hmm, let me check where I got the wrong idea of using KEY_RADIO from,
+because thinkpad-acpi already uses KEY_WLAN which means that at least in
+the past I did know KEY_RADIO was not to be used for wireless data
+communication devices like that...  jeez, looks like spontaneous brain
+corruption on that topic hapenned to me sometime ago, and it came out in
+a linux-thinkpad thread a few weeks ago.  The wrong semanthics for
+KEY_RADIO seem to have stuck to my mind since then.  Drat, I *really*
+apologise for this one.
 
-> Arnd contacted me off-list and made the very sensible suggestion of:
-> 
-> struct completion {
-> 	struct semaphore sem;
-> }
-> 
-> That lets us eliminate the duplicate code since all the completion
-> functions become very thin wrappers around semaphore operations.
-> 
-> I'll note that the semaphore code I hae queued for 2.6.26 is slightly
-> more efficient than the current implementation of completions because
-> completions use the generic waitqueue code and thus do an indirect
-> function call per wakeup.  Of course, there's no reason completions
-> couldn't use the same technique as my semaphore code ... but then they
-> would be identical to semaphores ;-)
+This, of course, is a major NAK for this patch.  And I am considering
+dropping the handling of KEY_<whatever replaces RADIO> completely from
+it.  SW_RADIO (after a rename, see below) still needs to be handled,
+though.
 
-I would just re-write completions keeping the name and API in tact, make
-them better and just leave semaphores alone..
+> Btw, is there any devices in the wild that actually have separate
+> switches for different types of transmitters?
 
-Daniel
+Separate switches?  I know of none.
 
+Separate hot keys/buttons?  I haven't seen it, but check commit
+90da11514562020ea7d697982f912ac949adc317's comment.  That was the commit
+which added KEY_WLAN and KEY_BLUETOOTH, back in 2.6.18-rc.  Maybe ask
+Lennart Poettering about it?
+
+What I have seen in laptops is:
+
+"Wireless Switch" (SW_RADIO -- this one has a bad name, might even be
+what caused me to screw up with the KEY_RADIO thing, and it hints that
+my brain corruption was deep rooted, since I was the one who came up
+with SW_RADIO).   These switches do their plain best to remove all RF
+output when in the "wireles off" position, and stop bothering RF output
+when in the "wireless on" position.  Transitions from off->on are often
+used as a hint to bring up wireless data communication services (such as
+firing up wirelesss settings GUI pannels, etc).
+
+"Wireless hot-key", which either brings up an GUI related to which
+wireless data communication radios are active and their configuration,
+or directly changes the set of active wireless data communication
+radios.
+
+One could easily argue that, should we make it possible for userspace to
+interact with the global rfkill state for each rfkill switch type, all
+handling of the "Wireless hot-key" should be done in userspace.  I will
+go with that for now, and think about it some more.
+
+New patches coming soon.  Please don't merge ANY of the patches in this
+set, I will respin the entire series.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
