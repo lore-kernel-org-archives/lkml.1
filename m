@@ -1,157 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYDLQTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYDLQTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755765AbYDLQTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 12:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYDLQTI
+	id S1756038AbYDLQTc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 12:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbYDLQTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 12:19:08 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:37257 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1753886AbYDLQTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 12:19:07 -0400
-X-Spam-Check-By: mail.local.tull.net
-From: Nick Andrew <nick@nick-andrew.net>
-Subject: [PATCH] printk: Remember the message level for multi-line output
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       joe@perches.com
-Date: Sun, 13 Apr 2008 02:18:54 +1000
-Message-ID: <20080412161733.24882.30930.stgit@marcab.local.tull.net>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Sat, 12 Apr 2008 12:19:18 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54627 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755608AbYDLQTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 12:19:17 -0400
+Subject: [PATCH] make alsa use corect patch for Realtek ALC889A
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 12 Apr 2008 18:17:23 +0200
+Message-Id: <1208017043.1514.50.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-printk: Remember the message level for multi-line output
+Hello..
+I have a gigabyte X48-DQ6 motherboard, specification url:
+http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ClassValue=Motherboard&ProductID=2763&ProductName=GA-X48-DQ6
+they clearly state it uses a realtek alc 889a.
 
-    printk(KERN_ALERT "Danger Will Robinson!\nAlien Approaching!\n");
+google around, it seems lots of people which has this chip gets it
+detected as alc885, including me.
 
-At present this will result in one message at ALERT level and one
-at the current default message loglevel (e.g. WARNING). This is
-non-intuitive.
+now, audio works (atleast analog out, havent tested the rest), allthough
+i couldnt get the supposed feature of separate channel to front panel to
+work(doesent matter much to me though)
 
-Modify vprintk() to remember the message loglevel each time it
-is specified and use it for subsequent lines of output which do
-not specify one, within the same call to printk.
+interrested in fixing this just for the sake of fixing, i ventured into
+patch_realtek.c, and found the structure that defined patches for hda
+audio.
 
-Restructure the logic so the processing of the leading 3 characters
-of each input line is in one place, regardless whether printk_time
-is enabled.
+i inspected my /proc/asound/card0/codec#2 file (only one except the id
+file), and found the following information:
+Codec: Realtek ALC885
+Address: 2
+Vendor Id: 0x10ec0885
+Subsystem Id: 0x1458a002
+Revision Id: 0x100103
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
+i then modified patch_realtek.c to detect mine as ALC889A, and assign
+the correct patch to it (well, the one used for 889).
 
- kernel/printk.c |   61 ++++++++++++++++++++++++-------------------------------
- 1 files changed, 27 insertions(+), 34 deletions(-)
+After rebuilding, it now uses patch 883 instead of 882 as it did before.
+i dont appear to have recieved any separate front panel channel,
+however, it still seems more correct now, and is probably wise to keep
+for when 883 is improved to support the hardware fully.
+
+the only thing i notice has changed, is the message i get from the
+kernel, before i changed, it said:
+hda_codec: Unknown model for ALC882, trying auto-probe from BIOS...
+now it says:
+hda_codec: Unknown model for ALC883, trying auto-probe from BIOS...
+but i guess if it has to spew out such a line, it now spews out the
+correct one.
+
+analog audio works, so thats fine..
+
+the patch(i apologize if my mailer messes up whitespace, but its so
+simple that it doesent matter):
+--- /usr/src/linux/sound/pci/hda/patch_realtek.c        2008-04-06
+02:31:52.840247789 +0200
++++ /chroot/kernelgentoo/usr/src/linux-2.6.24/sound/pci/hda/patch_realtek.c     2008-04-12 17:09:58.308101686 +0200
+@@ -13759,6 +13759,7 @@
+        { .id = 0x10ec0662, .rev = 0x100101, .name = "ALC662 rev1",
+          .patch = patch_alc662 },
+        { .id = 0x10ec0880, .name = "ALC880", .patch = patch_alc880 },
++       { .id = 0x10ec0885, .rev = 0x100103, .name = "ALC889A", .patch =
+patch_alc883 },
+        { .id = 0x10ec0882, .name = "ALC882", .patch = patch_alc882 },
+        { .id = 0x10ec0883, .name = "ALC883", .patch = patch_alc883 },
+        { .id = 0x10ec0885, .name = "ALC885", .patch = patch_alc882 },
 
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 6bc98f9..371a00a 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -656,11 +656,12 @@ static int printk_recursion_bug;
- 
- asmlinkage int vprintk(const char *fmt, va_list args)
- {
--	static int log_level_unknown = 1;
-+	static int new_text_line = 1;
- 	static char printk_buf[1024];
- 
--	unsigned long flags;
- 	int printed_len = 0;
-+	int current_log_level = default_message_loglevel;
-+	unsigned long flags;
- 	int this_cpu;
- 	char *p;
- 
-@@ -702,61 +703,53 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	printed_len += vscnprintf(printk_buf + printed_len,
- 				  sizeof(printk_buf) - printed_len, fmt, args);
- 
-+
- 	/*
- 	 * Copy the output into log_buf.  If the caller didn't provide
- 	 * appropriate log level tags, we insert them here
- 	 */
- 	for (p = printk_buf; *p; p++) {
--		if (log_level_unknown) {
--                        /* log_level_unknown signals the start of a new line */
-+		if (new_text_line) {
-+			/* If a token, set current_log_level and skip over */
-+			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
-+			    p[2] == '>') {
-+				current_log_level = p[1] - '0';
-+				p += 3;
-+				printed_len -= 3;
-+			}
-+
-+			/* Always output the token */
-+			emit_log_char('<');
-+			emit_log_char(current_log_level + '0');
-+			emit_log_char('>');
-+			printed_len += 3;
-+			new_text_line = 0;
-+
- 			if (printk_time) {
--				int loglev_char;
-+				/* Follow the token with the time */
- 				char tbuf[50], *tp;
- 				unsigned tlen;
- 				unsigned long long t;
- 				unsigned long nanosec_rem;
- 
--				/*
--				 * force the log level token to be
--				 * before the time output.
--				 */
--				if (p[0] == '<' && p[1] >='0' &&
--				   p[1] <= '7' && p[2] == '>') {
--					loglev_char = p[1];
--					p += 3;
--					printed_len -= 3;
--				} else {
--					loglev_char = default_message_loglevel
--						+ '0';
--				}
- 				t = cpu_clock(printk_cpu);
- 				nanosec_rem = do_div(t, 1000000000);
--				tlen = sprintf(tbuf,
--						"<%c>[%5lu.%06lu] ",
--						loglev_char,
--						(unsigned long)t,
--						nanosec_rem/1000);
-+				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
-+						(unsigned long) t,
-+						nanosec_rem / 1000);
- 
- 				for (tp = tbuf; tp < tbuf + tlen; tp++)
- 					emit_log_char(*tp);
- 				printed_len += tlen;
--			} else {
--				if (p[0] != '<' || p[1] < '0' ||
--				   p[1] > '7' || p[2] != '>') {
--					emit_log_char('<');
--					emit_log_char(default_message_loglevel
--						+ '0');
--					emit_log_char('>');
--					printed_len += 3;
--				}
- 			}
--			log_level_unknown = 0;
-+
- 			if (!*p)
- 				break;
- 		}
-+
- 		emit_log_char(*p);
- 		if (*p == '\n')
--			log_level_unknown = 1;
-+			new_text_line = 1;
- 	}
- 
- 	/*
+
+i guess some alsa people should be cc'ed, i couldnt find the relevant
+list though, is it alsa-devel@alsa-project.org ?
+
+
+mvh / regards
+Kasper Sandberg
 
