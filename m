@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYDLF3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYDLFid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759623AbYDLF3M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 01:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYDLF24
+	id S1758917AbYDLFid (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 01:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYDLFiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 01:28:56 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:48207 "EHLO havoc.gtf.org"
+	Sat, 12 Apr 2008 01:38:22 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:52329 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbYDLF2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 01:28:55 -0400
-Date: Sat, 12 Apr 2008 01:28:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20080412052855.GA16140@havoc.gtf.org>
-MIME-Version: 1.0
+	id S1752095AbYDLFiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 01:38:21 -0400
+Date: Sat, 12 Apr 2008 09:37:48 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Mark Lord <lkml@rtr.ca>,
+       Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, Jeff Garzik <jeff@garzik.org>, rjw@sisk.pl,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Message-ID: <20080412053748.GA8111@2ka.mipt.ru>
+References: <20080410.172453.44434205.davem@davemloft.net> <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <47FEBDAA.7010305@rtr.ca> <Pine.LNX.4.64.0804110849520.28360@wrl-59.cs.helsinki.fi> <47FF6555.50004@rtr.ca> <20080411143537.GA27874@2ka.mipt.ru> <47FFE33C.1000707@imap.cc> <20080411222536.GA25893@2ka.mipt.ru> <47FFF2E5.9040807@imap.cc>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <47FFF2E5.9040807@imap.cc>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 12, 2008 at 01:23:17AM +0200, Tilman Schmidt (tilman@imap.cc) wrote:
+> > If you can not proceed with what was suggested, then do
+> > not piss anyone off because you were told to do something to help.
+> 
+> If a polite "sorry, I don't have the time" already counts as pissing
+> off, the only choice left is to avoid the situation in which I'd have to
+> say that. IOW, don't report bugs if I don't have the time to follow
+> through. Again: if that is what you want, I have no problem with it.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+We want bug report, but we definitely do not want, when we ask for
+additionl help, to listen crap that reporter does not have to help and
+it is our roblem.
 
-to receive the following updates:
+> > If you go to the doctor because of aching throat and he asks you to
+> > open a mouth, you will not blame him for asking you to do that.
+> 
+> That analogy is wrong on so many accounts. It is not my throat that's
+> aching. A doctor would not insult me for not wanting to open my mouth
+> but rather ask if there was perhaps a valid reason for that. Not to
+> mention that opening my mouth takes substantially less time than a Linux
+> kernel bisection ...
 
- drivers/ata/pata_ali.c |    2 +-
- drivers/ata/sata_svw.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+It is your throat, since doctor's one is ok, and no one else came with
+the same problems. Doctor will not insult you if you will not piss him
+off. Read the thread from the beginning.
 
-Adrian Bunk (1):
-      [libata] make ali_atapi_dma static
+> A better analogy would be if I see an object lying on the highway, and I
+> stop at the next service area to call the police and alert them about
+> the possible danger. If they'd ask me to drive back to the place where I
+> saw it in order to describe precisely where it lay and what it looked
+> like, I think I might indeed become a bit upset.
 
-Jeff Garzik (1):
-      [libata] sata_svw: fix reversed port count
+Yeah, they first asked how it looked and where it was, then they asked
+to move here, and you told them, that it is they who have to do that,
+that it is exactly their problem, that you are not paid to do that.
 
-diff --git a/drivers/ata/pata_ali.c b/drivers/ata/pata_ali.c
-index ce830fe..511a830 100644
---- a/drivers/ata/pata_ali.c
-+++ b/drivers/ata/pata_ali.c
-@@ -36,7 +36,7 @@
- #define DRV_NAME "pata_ali"
- #define DRV_VERSION "0.7.5"
- 
--int ali_atapi_dma = 0;
-+static int ali_atapi_dma = 0;
- module_param_named(atapi_dma, ali_atapi_dma, int, 0644);
- MODULE_PARM_DESC(atapi_dma, "Enable ATAPI DMA (0=disable, 1=enable)");
- 
-diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
-index 840d1c4..019e367 100644
---- a/drivers/ata/sata_svw.c
-+++ b/drivers/ata/sata_svw.c
-@@ -531,8 +531,8 @@ static int k2_sata_init_one(struct pci_dev *pdev, const struct pci_device_id *en
-  * */
- static const struct pci_device_id k2_sata_pci_tbl[] = {
- 	{ PCI_VDEVICE(SERVERWORKS, 0x0240), chip_svw4 },
--	{ PCI_VDEVICE(SERVERWORKS, 0x0241), chip_svw4 },
--	{ PCI_VDEVICE(SERVERWORKS, 0x0242), chip_svw8 },
-+	{ PCI_VDEVICE(SERVERWORKS, 0x0241), chip_svw8 },
-+	{ PCI_VDEVICE(SERVERWORKS, 0x0242), chip_svw4 },
- 	{ PCI_VDEVICE(SERVERWORKS, 0x024a), chip_svw4 },
- 	{ PCI_VDEVICE(SERVERWORKS, 0x024b), chip_svw4 },
- 	{ PCI_VDEVICE(SERVERWORKS, 0x0410), chip_svw42 },
+Did I miss something, yeah, probably part, where you then tell, that you
+care about highways, so you moved there and did what was asked.
+Although, no, you first tell to police, that you spend your paid time
+and will teach them how to do thing or similar crap. Only few hours
+later, to some other people, you will tell that you care about highways,
+global warming, Uganda childs and adron collider danger.
+
+Ugh, just removing that object, when you were there 'takes
+substantially less time than a Linux kernel bisection'.
+Fortunately flooding developers with tons of urine during the whole day
+is much more comfortable and ego-boosting, since it allows to close eyes
+and do not see, that this took much more time than bisection.
+
+Hope you got it right: we want bug reports and help. If you do not want
+to provide some help, do not expect bug will be fixed, although bug
+eistence is significant sign. So, be cool, and everything will be ok.
+
+-- 
+	Evgeniy Polyakov
