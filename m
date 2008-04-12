@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760507AbYDLH2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbYDLHad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760507AbYDLH2h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 03:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbYDLH23
+	id S1760626AbYDLHad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 03:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYDLHaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 03:28:29 -0400
-Received: from 27.mail-out.ovh.net ([91.121.30.210]:49833 "HELO
-	27.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754316AbYDLH22 (ORCPT
+	Sat, 12 Apr 2008 03:30:25 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:35950 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316AbYDLHaY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 03:28:28 -0400
-Subject: Re: BUG: soft lockup detected on Phenom with Debian 2.6.24-4
-From: Laurent GUERBY <laurent@guerby.net>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Oruba <peter.oruba@amd.com>
-In-Reply-To: <1206123836.15075.699.camel@localhost>
-References: <1205013615.15075.409.camel@localhost>
-	 <1205678588.15075.563.camel@localhost>
-	 <1206015619.15075.666.camel@localhost>  <47E26A5D.40401@amd.com>
-	 <1206123836.15075.699.camel@localhost>
-Content-Type: text/plain
-Date: Sat, 12 Apr 2008 09:28:24 +0200
-Message-Id: <1207985304.15628.415.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-Ovh-Remote: 82.235.162.148 (gut75-4-82-235-162-148.fbx.proxad.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
-X-Ovh-Tracer-Id: 8915438413911432727
+	Sat, 12 Apr 2008 03:30:24 -0400
+Date: Sat, 12 Apr 2008 09:30:22 +0200
+Message-Id: <236054348@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: ls.luis_sousa@yahoo.com.br
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sata io freeze, 2.6.18 and also 2.6.24
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18yDVlfWeY0ztgIRjSybjpX2AZmBL4Uh43DH9HCmPmDd9vDh
+ 75KgjO7bqA6CemJ2Je1O9tm7931lzcD/PmCFMplprJBkU5rMk8=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+did you try UP-kernel or tried booting with "nosmp" and does that make any difference ?
 
-FYI with Peter off-list help we found a way to make the ASUS M2A-VM with
-1604 BIOS stable under my stress test: we just needed nmi_watchdog=1 in
-the kernel boot options (no other boot option necessary).
+>This is a 2-processor CPU:
+># cat /proc/cpuinfo 
+>processor       : 0
+>vendor_id       : GenuineIntel
+>cpu family      : 15
+>model           : 4
+>model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
 
-With nmi_watchdog=1 we see in kern.log "APIC error" but
-the machine stayed stable during 3 days of stress testing:
+most likely this just "appears" as 2-way processor , but i´m quite sure this is just a single-core CPU, but with HyperThreading enabled.
 
-...
-Apr  7 22:41:43 gcc04 kernel: APIC error on CPU2: 00(40)
-Apr  7 22:41:43 gcc04 kernel: APIC error on CPU1: 00(40)
-Apr  7 22:41:43 gcc04 kernel: APIC error on CPU3: 00(40)
-Apr  7 22:41:43 gcc04 kernel: APIC error on CPU0: 00(40)
-Apr  7 22:53:01 gcc04 kernel: APIC error on CPU3: 40(40)
-Apr  7 22:53:01 gcc04 kernel: APIC error on CPU0: 40(40)
-Apr  7 22:53:01 gcc04 kernel: APIC error on CPU1: 40(40)
-...
 
-guerby@gcc04:~$ cat /proc/cmdline 
-root=/dev/sda1 ro nmi_watchdog=1
+regards
+roland
 
-We are now stress testing the 1705 BIOS version which was released by
-ASUS on 20080331, with and without nmi_watchdog=1. Then we'll go
-back to testing the ASUS M3A32-MVP Deluxe/WiFi-AP with the newer 1002
-BIOS also released on 20080331.
 
-Note: for msr decoding xxd should be used since hexdump doesn't work:
 
-xxd -s 0xc0010015 -l 8 /dev/cpu/0/msr
+List:       linux-kernel
+Subject:    sata io freeze, 2.6.18 and also 2.6.24
+From:       Luis Sousa <ls.luis_sousa () yahoo ! com ! br>
+Date:       2008-03-28 22:24:48
+Message-ID: 739784.81690.qm () web46009 ! mail ! sp1 ! yahoo ! com
+[Download message RAW]
 
-So people having stability problems with Phenom 9x00 with Linux should
-try nmi_watchdog=1 as boot option.
+Hello,
+
+I've been having consistent hard system freezes for a
+long time, every 2 days or so, and finally decided to
+move to the most recent stable kernel. Unfortunatelly
+that didn't fix it. The freezes seem to be io-related;
+they started since I moved my drive to sata. They seem
+to happen mostly when there's an io-intensive operation,
+like extracting a big archive; a reboot is needed.
+
+Nothing ever shows up in the logs.
+
+I'm using the following drive:
+
+ATA device, with non-removable media
+        Model Number:       MAXTOR STM3160215AS                     
+        Serial Number:      6RA2TMJ4
+        Firmware Revision:  3.AAD   
+
+Linux localhost 2.6.24.4 #4 SMP Fri Mar 28 14:51:50 BRT 2008 i686 GNU/Linux
+
+This is a 2-processor CPU:
+
+# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 4
+model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+stepping        : 9
+cpu MHz         : 3013.697
+cache size      : 1024 KB
+
+(same goes for processor : 1)
 
 Sincerely,
-
-Laurent
-
+--
+Luis Sousa
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
 
