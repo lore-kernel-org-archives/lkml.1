@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYDLRXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbYDLR0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbYDLRXL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 13:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYDLRW5
+	id S1756039AbYDLR0c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 13:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYDLR0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 13:22:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:19527 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754326AbYDLRW4 (ORCPT
+	Sat, 12 Apr 2008 13:26:25 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57984 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754330AbYDLR0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 13:22:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iSucmEL4whxBocJEAu6QZuMu8IZI0tphx0c8+TwqIC4ZRLl6rwTjBiXHdYpjx8mqdShNN34X2YioNE0YxDjUwwE+1BbLqt0/3xrg0Zlh43z9yDUCQjrTtnqXKlRu3gR7wR5AKVk9rsm95+BlgDG4w+T6sQBNz2jN3IvlJo2+KdQ=
-Message-ID: <86802c440804121022x51ce5a90m110b22132d3a0cb9@mail.gmail.com>
-Date: Sat, 12 Apr 2008 10:22:52 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <Pine.LNX.4.64.0804120329390.23255@schroedinger.engr.sgi.com>
+	Sat, 12 Apr 2008 13:26:24 -0400
+Date: Sat, 12 Apr 2008 11:26:07 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Oeser <ioe-lkml@rameria.de>,
+       Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] Replace completions with semaphores
+Message-ID: <20080412172606.GL11962@parisc-linux.org>
+References: <20080411210022.GJ11962@parisc-linux.org> <1208003081.7427.7.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080411074145.GA4944@elte.hu>
-	 <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com>
-	 <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
-	 <20080411085411.GA10181@elte.hu>
-	 <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
-	 <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
-	 <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
-	 <20080411092452.GE10801@elte.hu>
-	 <Pine.LNX.4.64.0804111228100.20334@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0804120329390.23255@schroedinger.engr.sgi.com>
+In-Reply-To: <1208003081.7427.7.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 3:38 AM, Christoph Lameter <clameter@sgi.com> wrote:
-> Pekka pointed out the orig post that had the boot info.
->
-> One commonality in the two failures inhouse and yours is that
-> both had more than 4G memory and had CONFIG_HIGHMEM4G set. Possibly
-> a wraparound of some limit?
+On Sat, Apr 12, 2008 at 02:24:41PM +0200, Peter Zijlstra wrote:
+> On Fri, 2008-04-11 at 15:00 -0600, Matthew Wilcox wrote:
+> > So does it make sense to retain the completion as a primitive
+> > in Linux? 
+> 
+> My take on it is the opposite: kill off semaphores and leave the
+> completions around.
 
-Ingo,
+OK, so all three of you have got the wrong end of the stick.
 
-does your old 8 socket system work with 64bit kernel?
+My point is that the struct semaphore and the struct completion are
+essentially the same data structure, operated on in essentially the same
+way and having essentially the same purpose.
 
-YH
+It would look bloody odd to write (code taken from megasas_mgmt_ioctl_fw() in
+drivers/scsi/megaraid/megaraid_sas.c):
+
+        if (wait_for_completion_interruptible(&instance->ioctl_completion)) {
+                error = -ERESTARTSYS;
+                goto out_kfree_ioc;
+        }
+        error = megasas_mgmt_fw_ioctl(instance, user_ioc, ioc);
+        complete(&instance->ioctl_sem);
+
+What I'm trying to get a feeling for is whether people find it similarly
+odd to use semaphores where we currently use completions.  We *used*
+to, but I don't find that a compelling reason.
+
+
+Arnd contacted me off-list and made the very sensible suggestion of:
+
+struct completion {
+	struct semaphore sem;
+}
+
+That lets us eliminate the duplicate code since all the completion
+functions become very thin wrappers around semaphore operations.
+
+I'll note that the semaphore code I hae queued for 2.6.26 is slightly
+more efficient than the current implementation of completions because
+completions use the generic waitqueue code and thus do an indirect
+function call per wakeup.  Of course, there's no reason completions
+couldn't use the same technique as my semaphore code ... but then they
+would be identical to semaphores ;-)
+
+So I'm going to redo my patch using Arnd's idea because it allows us
+to eliminate code without changing the API at all.  We can continue the
+discussion about eliminating one or the other API, but my opinion is that
+eliminating either is a mistake.  The choice of API indicates how the
+author thinks about the code, which is crucial for those reading the code.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
