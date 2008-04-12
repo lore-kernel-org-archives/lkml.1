@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbYDLH14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760507AbYDLH2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbYDLH14 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 03:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYDLH1r
+	id S1760507AbYDLH2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 03:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbYDLH23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 03:27:47 -0400
-Received: from nn7.de ([85.214.94.156]:58364 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbYDLH1q convert rfc822-to-8bit (ORCPT
+	Sat, 12 Apr 2008 03:28:29 -0400
+Received: from 27.mail-out.ovh.net ([91.121.30.210]:49833 "HELO
+	27.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754316AbYDLH22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 03:27:46 -0400
-Subject: Re: 2.6.25-rc6 regression - hang on resume
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080411210400.GA1533@elf.ucw.cz>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
-	 <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost>
-	 <20080411210400.GA1533@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 12 Apr 2008 09:27:42 +0200
-Message-Id: <1207985262.4372.3.camel@localhost>
+	Sat, 12 Apr 2008 03:28:28 -0400
+Subject: Re: BUG: soft lockup detected on Phenom with Debian 2.6.24-4
+From: Laurent GUERBY <laurent@guerby.net>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Oruba <peter.oruba@amd.com>
+In-Reply-To: <1206123836.15075.699.camel@localhost>
+References: <1205013615.15075.409.camel@localhost>
+	 <1205678588.15075.563.camel@localhost>
+	 <1206015619.15075.666.camel@localhost>  <47E26A5D.40401@amd.com>
+	 <1206123836.15075.699.camel@localhost>
+Content-Type: text/plain
+Date: Sat, 12 Apr 2008 09:28:24 +0200
+Message-Id: <1207985304.15628.415.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-Ovh-Remote: 82.235.162.148 (gut75-4-82-235-162-148.fbx.proxad.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
+X-Ovh-Tracer-Id: 8915438413911432727
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
-> On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
-> > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
-> > > The following report is on the current list of known regressions
-> > > from 2.6.24.  Please verify if the issue is still present in the
-> > > mainline.
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
-> > > Subject		: 2.6.25-rc6 regression - hang on resume
-> > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> > > Date		: 2008-03-25 04:44 (10 days old)
-> > 
-> > Yes. The machine resumes and display stays black using s2ram -f -p
-> > (blindly typing reboot etc on keyboard does what is expected). However
-> > display comes back on 2.6.24.
-> 
-> Could you get us any debugging output from s2ram? Or maybe even strace
-> it in both working and broken case, and comparing them? (You may want
-> to disable randomization so that results are comparable).
+Hi,
 
-I did on 2.6.24
+FYI with Peter off-list help we found a way to make the ASUS M2A-VM with
+1604 BIOS stable under my stress test: we just needed nmi_watchdog=1 in
+the kernel boot options (no other boot option necessary).
 
-strace -ff s2ram >s2ram24.trace 2>&1
+With nmi_watchdog=1 we see in kern.log "APIC error" but
+the machine stayed stable during 3 days of stress testing:
 
-and .25
+...
+Apr  7 22:41:43 gcc04 kernel: APIC error on CPU2: 00(40)
+Apr  7 22:41:43 gcc04 kernel: APIC error on CPU1: 00(40)
+Apr  7 22:41:43 gcc04 kernel: APIC error on CPU3: 00(40)
+Apr  7 22:41:43 gcc04 kernel: APIC error on CPU0: 00(40)
+Apr  7 22:53:01 gcc04 kernel: APIC error on CPU3: 40(40)
+Apr  7 22:53:01 gcc04 kernel: APIC error on CPU0: 40(40)
+Apr  7 22:53:01 gcc04 kernel: APIC error on CPU1: 40(40)
+...
 
-﻿strace -ff s2ram >s2ram25.trace 2>&1
+guerby@gcc04:~$ cat /proc/cmdline 
+root=/dev/sda1 ro nmi_watchdog=1
 
-with the .24 bringing the display back and .25 not. Files are here
+We are now stress testing the 1705 BIOS version which was released by
+ASUS on 20080331, with and without nmi_watchdog=1. Then we'll go
+back to testing the ASUS M3A32-MVP Deluxe/WiFi-AP with the newer 1002
+BIOS also released on 20080331.
 
-http://nn7.de/debugging/s2ram24.trace.bz2
-﻿http://nn7.de/debugging/s2ram25.trace.bz2
+Note: for msr decoding xxd should be used since hexdump doesn't work:
 
-I have no idea how to 'disable randomization' and also not which
-debugging options I should have set ... tell me what things/options you
-need to be en/disabled and I redo the experiment.
+xxd -s 0xc0010015 -l 8 /dev/cpu/0/msr
 
-Soeren
+So people having stability problems with Phenom 9x00 with Linux should
+try nmi_watchdog=1 as boot option.
+
+Sincerely,
+
+Laurent
+
+
