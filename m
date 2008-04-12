@@ -1,151 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYDLRgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYDLRhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYDLRgG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 13:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYDLRfz
+	id S1756805AbYDLRhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 13:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYDLRhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 13:35:55 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:36110 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbYDLRfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 13:35:55 -0400
-Date: Sat, 12 Apr 2008 10:34:28 -0700
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>
-Cc: serue@us.ibm.com, matthltc@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4]: Enable multiple mounts of /dev/pts
-Message-ID: <20080412173428.GD19449@us.ibm.com>
-References: <20080412172933.GA19295@us.ibm.com>
-MIME-Version: 1.0
+	Sat, 12 Apr 2008 13:37:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37294 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754480AbYDLRhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 13:37:23 -0400
+Date: Sat, 12 Apr 2008 14:39:26 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH RFC 1/5] vringfd syscall
+Message-ID: <20080412173926.GA29904@dmt>
+References: <200804052202.09157.rusty@rustcorp.com.au> <20080412171820.GA29568@dmt>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080412172933.GA19295@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080412171820.GA29568@dmt>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject:[PATCH 4/4]: Enable multiple mounts of /dev/pts
+On Sat, Apr 12, 2008 at 02:18:20PM -0300, Marcelo Tosatti wrote:
 
-To support multiple PTY namespaces, allow multiple mounts of /dev/pts, once
-within each PTY namespace.
+> > +		mask = POLLIN | POLLRDNORM;
+> > +	else
+> > +		mask = 0;
+> > +
+> > +poll_wait:
+> > +	poll_wait(filp, &vr->poll_wait, poll);
+> > +
+> > +	return mask;
+> > +}
+> 
+> I suppose you are doing data copy in ->poll instead of ->read to save
+> a system call? This is weird, not conformant to what the interface is
+> supposed to do.
+> 
+> This way select/poll syscalls might block in userspace datacopy. The
+> application might have a higher priority fd in the fdset to be informed
+> of, for example.
+> 
+> So why not change this to the common arrangement, with vring_poll adding
+> the waitqueue with poll_wait() and vring_read doing the actual data copy ?
+> 
+> > +struct vring_info *vring_attach(int fd, const struct vring_ops *ops,
+> > +				void *data, bool atomic_use)
+> > +{
+> > +	struct file *filp;
+> > +	struct vring_info *vr;
+> > +
+> > +	/* Must be a valid fd, and must be one of ours. */
+> > +	filp = fget(fd);
+> > +	if (!filp) {
+> > +		vr = ERR_PTR(-EBADF);
+> > +		goto out;
+> > +	}
+> > +
+> > +	if (filp->f_op != &vring_fops) {
+> > +		vr = ERR_PTR(-EBADF);
+> > +		goto fput;
+> > +	}
+> > +
+> > +	/* Mutex simply protects against parallel vring_attach. */
+> > +	mutex_lock(&vring_lock);
+> > +	vr = filp->private_data;
+> > +	if (vr->ops) {
+> > +		vr = ERR_PTR(-EBUSY);
+> > +		goto unlock;
+> > +	}
+> > +
+> > +	/* If they want to use atomically, we have to map the page. */
+> > +	if (atomic_use) {
+> > +		if (get_user_pages(current, current->mm,
+> > +				   (unsigned long)vr->ring.used, 1, 1, 1,
+> > +				   &vr->used_page, NULL) != 1) {
+> 
+> Can't the same be achieved by the app mlocking the vring pages, which
+> then goes through standard rlimit checking ?
 
-This patch removes the get_sb_single() in devpts_get_sb() and uses test and
-set sb interfaces to allow remounting /dev/pts.
+Oh, this is a driver API to allow the copy to take place in atomic
+contexes. You might want to add some sort of limit enforcement.
 
-Changelog [v4]:
-	- Split-off the simpler changes of moving global=variables into
-	  'pts_namespace' to previous patch.
+Also forgot mmap_sem there.
 
-Changelog [v3]:
-	- Removed some unnecessary comments from devpts_set_sb()
-
-Changelog [v2]:
-
-	- (Pavel Emelianov/Serge Hallyn) Remove reference to pts_ns from
-	  sb->s_fs_info to fix the circular reference (/dev/pts is not
-	  unmounted unless the pts_ns is destroyed, so we don't need a
-	  reference to the pts_ns).
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
----
- fs/devpts/inode.c |   62 +++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 59 insertions(+), 3 deletions(-)
-
-Index: 2.6.25-rc8-mm1/fs/devpts/inode.c
-===================================================================
---- 2.6.25-rc8-mm1.orig/fs/devpts/inode.c	2008-04-12 10:10:33.000000000 -0700
-+++ 2.6.25-rc8-mm1/fs/devpts/inode.c	2008-04-12 10:10:38.000000000 -0700
-@@ -154,17 +154,73 @@ fail:
- 	return -ENOMEM;
- }
- 
-+/*
-+ * We use test and set super-block operations to help determine whether we
-+ * need a new super-block for this namespace. get_sb() walks the list of
-+ * existing devpts supers, comparing them with the @data ptr. Since we
-+ * passed 'current's namespace as the @data pointer we can compare the
-+ * namespace pointer in the super-block's 's_fs_info'.  If the test is
-+ * TRUE then get_sb() returns a new active reference to the super block.
-+ * Otherwise, it helps us build an active reference to a new one.
-+ */
-+
-+static int devpts_test_sb(struct super_block *sb, void *data)
-+{
-+	return sb->s_fs_info == data;
-+}
-+
-+static int devpts_set_sb(struct super_block *sb, void *data)
-+{
-+	sb->s_fs_info = data;
-+	return set_anon_super(sb, NULL);
-+}
-+
- static int devpts_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
--	return get_sb_single(fs_type, flags, data, devpts_fill_super, mnt);
-+	struct super_block *sb;
-+	struct pts_namespace *ns;
-+	int err;
-+
-+	/* hereafter we're very similar to proc_get_sb */
-+	if (flags & MS_KERNMOUNT)
-+		ns = data;
-+	else
-+		ns = &init_pts_ns;
-+
-+	/* hereafter we're very simlar to get_sb_nodev */
-+	sb = sget(fs_type, devpts_test_sb, devpts_set_sb, ns);
-+	if (IS_ERR(sb))
-+		return PTR_ERR(sb);
-+
-+	if (sb->s_root)
-+		return simple_set_mnt(mnt, sb);
-+
-+	sb->s_flags = flags;
-+	err = devpts_fill_super(sb, data, flags & MS_SILENT ? 1 : 0);
-+	if (err) {
-+		up_write(&sb->s_umount);
-+		deactivate_super(sb);
-+		return err;
-+	}
-+
-+	sb->s_flags |= MS_ACTIVE;
-+	ns->mnt = mnt;
-+
-+	return simple_set_mnt(mnt, sb);
-+}
-+
-+static void devpts_kill_sb(struct super_block *sb)
-+{
-+	sb->s_fs_info = NULL;
-+	kill_anon_super(sb);
- }
- 
- static struct file_system_type devpts_fs_type = {
- 	.owner		= THIS_MODULE,
- 	.name		= "devpts",
- 	.get_sb		= devpts_get_sb,
--	.kill_sb	= kill_anon_super,
-+	.kill_sb	= devpts_kill_sb,
- };
- 
- /*
-@@ -315,7 +371,7 @@ static int __init init_devpts_fs(void)
- 
- 	err = register_filesystem(&devpts_fs_type);
- 	if (!err) {
--		mnt = kern_mount(&devpts_fs_type);
-+		mnt = kern_mount_data(&devpts_fs_type, &init_pts_ns);
- 		if (IS_ERR(mnt))
- 			err = PTR_ERR(mnt);
- 		else
