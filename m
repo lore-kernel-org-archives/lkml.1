@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbYDLSUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYDLS0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbYDLSUU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 14:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYDLSUE
+	id S1756864AbYDLS0g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 14:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbYDLS01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 14:20:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:41004 "EHLO ozlabs.org"
+	Sat, 12 Apr 2008 14:26:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:34168 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755387AbYDLSUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 14:20:03 -0400
+	id S1755092AbYDLS00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 14:26:26 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH RFC 1/5] vringfd syscall
-Date: Sun, 13 Apr 2008 04:19:54 +1000
+To: Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [PATCH] anon_inodes.c cleanups.
+Date: Sun, 13 Apr 2008 04:26:09 +1000
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org
-References: <200804052202.09157.rusty@rustcorp.com.au> <20080412171820.GA29568@dmt>
-In-Reply-To: <20080412171820.GA29568@dmt>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>
+References: <200804110835.07989.rusty@rustcorp.com.au> <Pine.LNX.4.64.0804111807340.12407@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0804111807340.12407@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804130419.55083.rusty@rustcorp.com.au>
+Message-Id: <200804130426.09365.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 13 April 2008 03:18:20 Marcelo Tosatti wrote:
-> I suppose you are doing data copy in ->poll instead of ->read to save
-> a system call? This is weird, not conformant to what the interface is
-> supposed to do.
-
-Hi Marcelo,
-
-   Thanks for reading this.
-
-   Yeah, I dislike it too.  The main motivation was that not all rings need to 
-be "pulled" in this way, but it turns out that userspace can detect this 
-(poll, check ring, if nothing, try read, check ring).  So next version will 
-unscrew the poll callback.
-
-> > +	/* If they want to use atomically, we have to map the page. */
-> > +	if (atomic_use) {
-> > +		if (get_user_pages(current, current->mm,
-> > +				   (unsigned long)vr->ring.used, 1, 1, 1,
-> > +				   &vr->used_page, NULL) != 1) {
+On Saturday 12 April 2008 11:15:26 Davide Libenzi wrote:
+> On Fri, 11 Apr 2008, Rusty Russell wrote:
+> > Arnd pointed me at anon_inode_getfd(), and the code annoyed me enough
+> > to send this patch.
+> >
+> > Mainly because the init routine carefully checks for errors, then panics
+> > (because we shouldn't run out of memory at boot).  Unfortunately, it's
+> > actually worse than simply oopsing, where we'd know what had failed.
+> >
+> > 1) anon_inode_inode can be read_mostly, same as anon_inode_mnt.
 >
-> Can't the same be achieved by the app mlocking the vring pages, which
-> then goes through standard rlimit checking ?
+> Sure.
+>
+> > 3) anon_inode_mkinode has one caller, so it's a little confusing.
+>
+> Hmm? The function groups the code necessary to create the anonfds inode.
+> If every function that has one call site would be inlined, we'd have
+> monster long functions. Functions also have the purpose to group some code
+> that does some task, into a single unit (and the function name hopefully
+> gives an hint about what's doing). The compiler (not that in this case
+> really matter, since it's not even a slow-path, is a once-run path) may
+> take care of inlining, if sees that appropriate.
 
-Tun/tap writes to this from any context.  Fortunately, this too is changing, 
-as I came up with a sane way of queueing to userspace context for this case.
+If you'd called it, say, "setup_anon_inode()", it would be fine.  It seems 
+overly generic unless you planned on calling it elsewhere.
 
-Expect updated patches Monday.
+> > 2) The IS_ERR(anon_inode_inode) check is unneeded, since we panic on
+> >    boot if that were true.
+> > 4) Don't clean up before panic.
+> > 5) Panic gives less information than an oops would, plus is untested.
+>
+> I remember we changed the failure-path of anonfds a couple of times along
+> the way, but I can't find email traces about why we did it.
+> So, I prefer error-checked code instead of oopses, and given that the
+> anonfds subsystem is not a required one for most of the components of the
+> kernel/userspace, I'd rather prefer to drop the panic().
 
-Thanks!
+We've seen this debate before, and I'm firmly on the "don't turn oopses into  
+errors on boot paths" side.  I know others disagree.
+
+Given that it should never happen, I'd argue the highest priority minimal 
+amount of code, and second is ease of debugging if it ever did happen to 
+someone.  Oopsing has those features.
+
+> Anyway, I'll let this handle with Al (cc-ed now). The ananofds interface
+> has been changed to remove the inode** and file** parameters (noone but
+> KVM was using them), and Al already has those changes in his vfs tree
+> (plus fixes for KVM, I think).
+
+OK, fine.
+
+Thanks,
 Rusty.
