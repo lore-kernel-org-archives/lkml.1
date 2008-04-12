@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbYDLXB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYDLXBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbYDLXB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 19:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbYDLW7F
+	id S1757354AbYDLXBn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 19:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbYDLW6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 18:59:05 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:35379 "EHLO
+	Sat, 12 Apr 2008 18:58:55 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:35384 "EHLO
 	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754681AbYDLW6u (ORCPT
+	with ESMTP id S1753666AbYDLW6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 18:58:50 -0400
+	Sat, 12 Apr 2008 18:58:49 -0400
 From: Bob Copeland <me@bobcopeland.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
        Bob Copeland <me@bobcopeland.com>
-Subject: [PATCH 0/7] OMFS filesystem version 3
-Date: Sat, 12 Apr 2008 18:58:34 -0400
-Message-Id: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+Subject: [PATCH 6/7] omfs: add checksumming routines
+Date: Sat, 12 Apr 2008 18:58:40 -0400
+Message-Id: <1208041121-26787-7-git-send-email-me@bobcopeland.com>
 X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Andrew, perhaps this could bake in -mm for a cycle or two if 
-there are no objections?)
+    OMFS checksums the metadata of all filesystem objects.  This change adds
+    the necessary functions to do so.
 
-These patches 1-7 add the Optimized MPEG Filesystem, a proprietary
-filesystem used by the embedded devices Rio Karma and ReplayTV 
-which are no longer manufactured.
+    Signed-off-by: Bob Copeland <me@bobcopeland.com>
+---
+ fs/omfs/checksum.c |   31 +++++++++++++++++++++++++++++++
+ 1 files changed, 31 insertions(+), 0 deletions(-)
+ create mode 100644 fs/omfs/checksum.c
 
-I've been maintaining this reverse-engineered filesystem
-out-of-tree since around 2.6.12.  It has stabilized to the point
-that, while not quite feature-complete, it is close enough that
-I'm pretty much just applying VFS API updates to it these days.
-So, in the spirit of stable_api_nonsense, I request that it be
-considered for inclusion for .26 or later.  
+diff --git a/fs/omfs/checksum.c b/fs/omfs/checksum.c
+new file mode 100644
+index 0000000..cbd0471
+--- /dev/null
++++ b/fs/omfs/checksum.c
+@@ -0,0 +1,31 @@
++#include <linux/fs.h>
++#include <linux/buffer_head.h>
++#include <linux/crc-itu-t.h>
++#include "omfs.h"
++
++/*
++ * Update the header checksums for a dirty inode based on its contents.
++ * Caller is expected to hold the buffer head underlying oi and mark it
++ * dirty.
++ */
++int omfs_update_checksums(struct omfs_inode *oi)
++{
++	int ret = 0;
++	int xor, i, ofs = 0, count;
++	u16 crc = 0;
++	unsigned char *ptr = (unsigned char *) oi;
++
++	count = be32_to_cpu(oi->i_head.h_body_size);
++	ofs = sizeof(struct omfs_header);
++
++	crc = crc_itu_t(crc, ptr + ofs, count);
++	oi->i_head.h_crc = cpu_to_be16(crc);
++
++	xor = ptr[0];
++	for (i = 1; i < OMFS_XOR_COUNT; i++)
++		xor ^= ptr[i];
++
++	oi->i_head.h_check_xor = xor;
++
++	return ret;
++}
+-- 
+1.5.4.2
 
-There is a small user community (<20?) using the driver today.
-According to google, it has been packaged by others for Debian,
-Ubuntu, and Mandriva.
-
-I have also written an implementation in FUSE.  However, in
-its current unoptimized state, the FUSE version is about half the 
-speed of the kernel driver.  Either way, the kernel version could 
-use a review given some distros have apparently picked it up.
-
-version 3:
- - fixed sparse warnings
- - added more sanity checking in list traversals
-
-version 2:
- - removed private inode cache 
- - included GPL v2 notice
- - rewrote omfs_count_free to use hamming weight library functions 
- - removed duplicated crc-itu-t
-
-Version 1: initial post
 
