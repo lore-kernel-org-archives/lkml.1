@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYDMVOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYDMVQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYDMVOh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbYDMVO0
+	id S1755900AbYDMVQU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYDMVQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:14:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44123 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751190AbYDMVOZ (ORCPT
+	Sun, 13 Apr 2008 17:16:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35888 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbYDMVQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:14:25 -0400
-Date: Sun, 13 Apr 2008 14:13:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Daniel Barkalow <barkalow@iabervon.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-In-Reply-To: <47FFF7B5.3000609@garzik.org>
-Message-ID: <alpine.LFD.1.00.0804131410340.2982@woody.linux-foundation.org>
-References: <47FBDBE9.9040700@garzik.org> <20080409193850.GA11763@elte.hu> <47FD2325.2030705@intel.com> <47FE5C89.5060209@intel.com> <20080410192714.GA14055@elte.hu> <47FE8566.5040809@intel.com> <20080411112653.GC9205@elte.hu> <20080411113644.GA7767@infradead.org>
- <20080411121606.GA25661@elte.hu> <47FF9060.5040202@intel.com> <20080411164542.GA4066@infradead.org> <alpine.LFD.1.00.0804111028540.3143@woody.linux-foundation.org> <alpine.LNX.1.00.0804111700550.19665@iabervon.org> <alpine.LFD.1.00.0804111556200.3143@woody.linux-foundation.org>
- <47FFF7B5.3000609@garzik.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 13 Apr 2008 17:16:08 -0400
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, akpm@linux-foundation.org, me@bobcopeland.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+	 <20080412170304.54f139e2.akpm@linux-foundation.org>
+	 <20080413033344.GA27494@hash.localnet>
+	 <20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	 <20080413080130.GA9622@infradead.org>
+	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
+	 <20080413082815.GA20108@infradead.org>
+	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Sun, 13 Apr 2008 22:15:58 +0100
+Message-Id: <1208121358.2700.4.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-04-13 at 12:37 +0200, Miklos Szeredi wrote:
+> There's one thing which makes fuse a slightly better candidate for
+> applications where the number of users is low: stability.  Unless you
+> or your users test the hell out of your filesystem, there always a
+> chance that some bugs will remain.  These rarely bring down the whole
+> system, but it usually requires a reboot to let you continue using the
+> Oopsing fs.
 
+I think it's a slippery slope from that to rewriting Linux as a
+microkernel.
 
-On Fri, 11 Apr 2008, Jeff Garzik wrote:
-> Linus Torvalds wrote:
-> > .. but that said, I think your patch is certainly better than what we have
-> > now (or what Ingo was complaining about for the next merge window). I
-> > certainly could live with it. I would just suggest against ever then
-> > removing that "generic E1000" choice.
-> 
-> You mean never ever remove PCI-E support from e1000?
+Simple block filesystems like this belong in the kernel.
 
-No. I mean never ever remove the *configure* level thinking that "e1000 is 
-e1000".
+-- 
+dwmw2
 
-There is no sense in *ever* showing it as two drivers to users, because 
-users do not see them as separate chipsets. They look identical, down to 
-the part names.
-
-If it's a single family, and users can't even easily tell whether they 
-have version 1 or version 2 (PCI vs PCI-E), you shouldn't even ask them. 
-You should literally ask them: "do you want e1000 support".
-
-That's it.
-
-Once you have asked them that, you can then decide "ok, if you *really* 
-know what version of the chip you have, you can decide to only get limited 
-driver support".
-
-But that's a secondary thing from a user perspective.
-
-See the patch I already sent out.
-
-			Linus
