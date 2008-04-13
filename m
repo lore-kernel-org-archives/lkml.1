@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYDMSME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYDMSPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbYDMSME (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYDMSLy
+	id S1753360AbYDMSPN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYDMSO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:11:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42115 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYDMSLy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:11:54 -0400
-Date: Sun, 13 Apr 2008 20:16:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: always_inline wrapper for x86's test_bit
-Message-ID: <20080413181642.GA8641@one.firstfloor.org>
-References: <20080413112308.GA23426@mailshack.com> <87hce5wv2h.fsf@basil.nowhere.org> <1208109831.1489.1247631595@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 13 Apr 2008 14:14:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36491 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbYDMSO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 14:14:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Date: Sun, 13 Apr 2008 20:15:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: w@1wt.eu, johnpol@2ka.mipt.ru, lkml@rtr.ca, ilpo.jarvinen@helsinki.fi,
+       jesper.juhl@gmail.com, tilman@imap.cc, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080411151821.GA32398@2ka.mipt.ru> <20080412084400.GA30259@1wt.eu> <20080412.024952.151646629.davem@davemloft.net>
+In-Reply-To: <20080412.024952.151646629.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208109831.1489.1247631595@webmail.messagingengine.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200804132015.21742.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have googled, but the only problem I found was concerning dead code 
+On Saturday, 12 of April 2008, David Miller wrote:
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Sat, 12 Apr 2008 10:44:00 +0200
+> 
+> > While it is a powerful tool, we must accept that it cannot efficiently
+> > work in some circumstances, such as :
+> 
+> Everyone is well aware of all of this, that's why I specifically asked
+> for a bisect, because I knew it would be crucial to pinpointing this
+> particular bug.
+> 
+> And lo' and behold in 15 minutes after the bisect results were
+> available it got fixed.
 
-It might come as a surprise, but google is still not omniscient.
+I can't find the fix, btw.  Can you please point me to it?
 
-> elimination, and in particular references to unavailable object from
-> code that was expected to be discarded. The worst that can happen in 
-> this case is that gcc might produce a strange construction where a
-> runtime check will choose between the two alternative implementations of
-> test_bit. Another is that it will select the 'wrong' implementation. 
-> Both will result is some code-bloat, but at least the code should work
-> properly.
-
-Yes, but extreme code bloat can be fatal.
-
-> I have not checked with 3.2. The oldest compiler I have available here
-> is 3.3. That version compiles the functions as expected: I have found
-> instances of either type in the objdump and I have not found strange
-> constructions with both types there.
-
-It would be good to check on 3.2 too to avoid potential nasty surprises.
-
-> If you were thinking of another/bigger problem with gcc-3.2, could you 
-> please give me a pointer?
-
-Not sure what you mean here.
-
--Andi
+Thanks,
+Rafael
