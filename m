@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYDMWjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYDMWla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784AbYDMWjV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 18:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYDMWjK
+	id S1754725AbYDMWla (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 18:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYDMWlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 18:39:10 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37651 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752390AbYDMWjJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 18:39:09 -0400
-Date: Sun, 13 Apr 2008 23:35:03 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: sander@van-ginkel.eu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptmx: adding handshake support
-Message-ID: <20080413233503.22576c47@core>
-In-Reply-To: <480229CB.2080108@van-ginkel.eu>
-References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
-	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>
-	<20080330131652.7073589c@core>
-	<480229CB.2080108@van-ginkel.eu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Apr 2008 18:41:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37807 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbYDMWlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 18:41:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: sclark46@earthlink.net
+Subject: Re: Reporting bugs and bisection
+Date: Mon, 14 Apr 2008 00:41:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <47FEADCB.7070104@rtr.ca> <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
+In-Reply-To: <48028830.6020703@earthlink.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804140041.34843.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> + *  Added support for MCR/MSR, used for serial over ethernet
-> + *    -- Sander van Ginkel <sander@van-ginkel.eu>
+On Monday, 14 of April 2008, Stephen Clark wrote:
+> Evgeniy Polyakov wrote:
+> > On Sun, Apr 13, 2008 at 10:33:49PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> >> Things like this are very disappointing and have a very negative impact on bug
+> >> reporters.  We should do our best to avoid them.
+> > 
+> > Shit happens. This is a matter of either bug report or those who were in
+> > the copy list. There are different people and different situations, in
+> > which they do not reply.
+> > 
+> Well less shit would happen if developers would take the time to at least test 
+> their patches before they were submitted. It like we will just have the poor 
+> user do our testing for us. What kind of testing do developers do. I been a 
+> linux user and have followed the LKML for a number of years and have yet to see
+> any test plans for any submitted patches.
 
-We've been trying to get rid of these long lists in the code and put them
-in the git tree (git whatchanged/git blame show the info rather better)
+The (apparent) lack of test plans doesn't imply the patches not being tested,
+actually.
 
-> +
-> +    /* initialize the pointer in case something fails */
-> +   
-> +    tty->driver_data = NULL;                         
-> +    tty->link->driver_data = NULL;
+My experience indicates that they are tested in the majority of cases.  Still,
+sometimes they are not and that's when the most damage is done.
 
-Not needed
-
-  +    /* first time accessing this device, let's create it */
-> +
-> +    mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
-
-kzalloc will clear it for you...
-
-> +static int pty_tiocmset(struct tty_struct *tty, struct file 
-> *file,unsigned int set, unsigned int clear)
-> +{
-> +    unsigned int *mcrmsr;
-> +
-> +    mcrmsr = tty->driver_data;
-> +    *mcrmsr=set;
-> +    tty->driver_data=mcrmsr;
-
-Why this last assignment ?
-
-> +
-> +    case VMCRMSR: /* Set all of the handshake line, even the normally 
-> read only */
-> +        {
-> +        if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned 
-> int)))
-> +            return -EFAULT;
-> +
-> +        *mcrmsr=value;
-
-Ok - possibly we shouldn't allow people to set undefined bits but I'm not
-sure it matters
-
-> +        tty->driver_data=mcrmsr;
-
-Why ??
-
-
-I am curious how this is handled by other Unix systems and if there is an
-ioctl we can follow from other systems ?
-
-
-Looks basically ok, coding style is wrong, some odd extra assignments but
-I agree entirely with the idea of adding this functionality to keep
-remote serial drivers in user space.
-
-I'll try and find out if other Unixes have similar features we can use to
-keep API consistency tidy it up and fold it at some point in the next
-couple of weeks.
-
-Alan
+Thanks,
+Rafael
