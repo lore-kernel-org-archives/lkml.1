@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYDMVek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYDMVf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbYDMVek (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYDMVeb
+	id S1756702AbYDMVf6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYDMVfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:34:31 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:48580 "EHLO mail.atlantis.sk"
+	Sun, 13 Apr 2008 17:35:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32992 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbYDMVe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:34:29 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] e1000=y && e1000e=m regression fix
-Date: Sun, 13 Apr 2008 23:34:14 +0200
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, Daniel Barkalow <barkalow@iabervon.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       e1000-list <e1000-devel@lists.sourceforge.net>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <47FBDBE9.9040700@garzik.org> <47FFF7B5.3000609@garzik.org> <alpine.LFD.1.00.0804131410340.2982@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0804131410340.2982@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1752503AbYDMVfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 17:35:50 -0400
+Subject: Re: pci: add to global list before sysfs?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Greg KH <gregkh@suse.de>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080404210132.GA14418@suse.de>
+References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
+	 <20080404210132.GA14418@suse.de>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 07:35:38 +1000
+Message-Id: <1208122538.6958.57.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804132334.21654.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 13 April 2008 23:13:01 Linus Torvalds wrote:
-> On Fri, 11 Apr 2008, Jeff Garzik wrote:
-> > Linus Torvalds wrote:
-> > > .. but that said, I think your patch is certainly better than what we
-> > > have now (or what Ingo was complaining about for the next merge
-> > > window). I certainly could live with it. I would just suggest against
-> > > ever then removing that "generic E1000" choice.
-> >
-> > You mean never ever remove PCI-E support from e1000?
->
-> No. I mean never ever remove the *configure* level thinking that "e1000 is
-> e1000".
->
-> There is no sense in *ever* showing it as two drivers to users, because
-> users do not see them as separate chipsets. They look identical, down to
-> the part names.
->
-> If it's a single family, and users can't even easily tell whether they
-> have version 1 or version 2 (PCI vs PCI-E), you shouldn't even ask them.
-> You should literally ask them: "do you want e1000 support".
 
-It's something like RTL8139. There are two versions of the chips. They even 
-have the same PCI IDs. But there are two different drivers - 8139cp and 
-8139too. It's really bad for users
+On Fri, 2008-04-04 at 14:01 -0700, Greg KH wrote:
+> As I mention above, the "global list" is now gone, so it's going to be
+> a
+> bit harder to do this.  We now only keep one list of all PCI devices,
+> and that is with the driver core mechanisms as the duplicate list was
+> just sitting there doing nothing for the past 4 years.
+> 
+> So is the problem that your driver need to bind to multiple pci
+> devices
+> at the same time in order to work properly?
+> 
+> Or is this just really broken hardware?
 
->
-> That's it.
->
-> Once you have asked them that, you can then decide "ok, if you *really*
-> know what version of the chip you have, you can decide to only get limited
-> driver support".
->
-> But that's a secondary thing from a user perspective.
->
-> See the patch I already sent out.
->
-> 			Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Haven't had a chance to look at your changes yet, but I have memories of
+being pretty happy with having that 2 step mechanism in PCI where the
+driver core would only see the devices after fixup.
+
+The reason for that is powerpc, like many other archs, need to do all
+sorts of fixups before devices get used by drivers. Resources need to be
+fixed up, interrupts, etc...
+
+A lot of that happens in pcibios_fixup_bus() and we did rely on having
+no driver bound before that happens. The binding can only happen after
+the arch calls pci_bus_add_devices().
+
+Is that still the case ? If not, then there is some big potential
+breakage here and we need to look closely at re-organizing the way we do
+our fixups.
+
+Cheers,
+Ben.
 
 
-
--- 
-Ondrej Zary
