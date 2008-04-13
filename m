@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYDMXKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbYDMXLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYDMXKy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 19:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYDMXKp
+	id S1757715AbYDMXLU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 19:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbYDMXLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 19:10:45 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:51983 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYDMXKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 19:10:44 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 8)
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: benh@kernel.crashing.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1208126822.6958.63.camel@pasglop>
-References: <200804040111.15255.rjw@sisk.pl>
-	 <200804132339.45280.rjw@sisk.pl> <1208124646.6958.61.camel@pasglop>
-	 <200804140027.12161.rjw@sisk.pl>  <1208126822.6958.63.camel@pasglop>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Mon, 14 Apr 2008 09:11:29 +1000
-Message-Id: <1208128289.29577.25.camel@nigel-laptop>
+	Sun, 13 Apr 2008 19:11:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39339 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757267AbYDMXLC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 19:11:02 -0400
+Date: Sun, 13 Apr 2008 16:10:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       hch@infradead.org, me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-Id: <20080413161014.cb06964c.akpm@linux-foundation.org>
+In-Reply-To: <20080413234920.63711ca7@core>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+	<20080412170304.54f139e2.akpm@linux-foundation.org>
+	<20080413033344.GA27494@hash.localnet>
+	<20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	<20080413080130.GA9622@infradead.org>
+	<20080413012001.8d7967f4.akpm@linux-foundation.org>
+	<20080413082815.GA20108@infradead.org>
+	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	<1208121358.2700.4.camel@shinybook.infradead.org>
+	<20080413154459.4b2f125d.akpm@linux-foundation.org>
+	<20080413234920.63711ca7@core>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael etc.
+On Sun, 13 Apr 2008 23:49:20 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-On Mon, 2008-04-14 at 08:47 +1000, Benjamin Herrenschmidt wrote:
-> > Well, I'm not sure and I'm not going to introduce the change right now, after
-> > the paches have been included in -mm.
+> > I guess I can keep making this point in various ways until someone
+> > actually notices it:
 > > 
-> > That would require quite some changes in the core code that I'd prefer to
-> > avoid for now.  We can do something like this in a separate patch series after
-> > the present one settles down a bit.
+> > 	This filesystem has only 20 users.
 > 
-> I disagree.
+> At the moment. And that probably exceeds Amiga users, 386 users, some of
+> the serial port users, several network card users ...
 > 
-> Doing it later would introduce yet another major semantic change.
-> 
-> I think we should get it right now. There's no hurry in pushing things
-> especially if they aren't quite right.
-> 
-> The ability for prepare() callbacks to sync with userland,
-> request_firmware, etc... is an important feature that's been needed for
-> some time imho.
-> 
-> Ben.
+> In the past we've merged drivers for network cards where only two
+> existed in the world. Linus has repeatedly stated he wants to see stuff
+> people are using getting in.
 
-I agree. These calls have already been changing far too often in
-mainline. I know it's all been necessary but please, can we try to make
-one set of changes and just get it right this time?
+None of that means that merging this filesystem is the best decision.
 
-Regards,
+> Good clean code that doesn't affect the core
+> is good reference material.
 
-Nigel
+The reference block filesystem is ext2 (used to be minixfs) - there is no
+need for another.
 
+> I think you are (unusually) the one out of step here ?
+
+I appear to be the only one who is looking at the whole picture.
+
+Merging a new filesystem has costs - I don't need to enumerate them.  Do
+the benefits of OMFS exceed them?
