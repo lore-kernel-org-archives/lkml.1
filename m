@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYDMJop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYDMJp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYDMJop (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 05:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYDMJoh
+	id S1758534AbYDMJp3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 05:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbYDMJpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 05:44:37 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3151 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754380AbYDMJoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 05:44:37 -0400
-Date: Sat, 12 Apr 2008 21:57:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH 7/8] rfkill: add an "any radio" switch type and functionality
-Message-ID: <20080412195716.GA4639@ucw.cz>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-8-git-send-email-hmh@hmh.eng.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1207946244-14525-8-git-send-email-hmh@hmh.eng.br>
-User-Agent: Mutt/1.5.9i
+	Sun, 13 Apr 2008 05:45:21 -0400
+Received: from keg.few.vu.nl ([130.37.24.4]:32769 "EHLO keg.few.vu.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754543AbYDMJpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 05:45:21 -0400
+Date: Sun, 13 Apr 2008 11:44:46 +0200 (CEST)
+From: Erik Bosman <ejbosman@cs.vu.nl>
+X-X-Sender: ebn310@keg.few.vu.nl
+To: Andi Kleen <andi@firstfloor.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
+In-Reply-To: <87r6daw2ay.fsf@basil.nowhere.org>
+Message-ID: <Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl>
+References: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>
+ <87r6daw2ay.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-04-11 17:37:23, Henrique de Moraes Holschuh wrote:
-> Add a RFKILL_TYPE_ANY switch.  This switch can control more than one type
-> of radio, and it is always subject to toggling by any type of rfkill-input
-> event.  It is suitable to implement kill-all-radios functionality when
-> coupled with input event EV_SW SW_RADIO.
 
-Hmm, how does that work with pcmcia ethernet card plugged in?
 
-How does userspace know which radios this controls?
+On Sun, 13 Apr 2008, Andi Kleen wrote:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Erik Bosman <ebn310@few.vu.nl> writes:
+>
+> >     This patch adds prctl commands that make it possible
+> >     to deny the execution of timestamp counters in userspace.
+> >     If this is not implemented on a specific architecture,
+> >     prctl will return -EINVAL.
+>
+> You forgot to state why you need that?
+>
+> -Andi
+>
+
+I'm using it for deterministic replay. With this trap it is
+possible to emulate the instruction using ptrace and knowing
+the outcome. Deterministic replay can be useful, amongst other
+things, for debugging and security (instructing your debugger
+to undo instructions for example, to see what happened before
+a fault.)
+
+Not having this trap means emulation should be used to catch
+the instruction, leading to bad performance.
+
+Without the timestamp counter, the only instruction leading
+to non-determinism (that I'm aware of) is the CPUID instruction
+that returns on which core it runs, but that doesn't seem to
+be used that much.
+
+Erik Bosman
