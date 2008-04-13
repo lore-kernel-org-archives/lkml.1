@@ -1,167 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYDMAI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYDMAWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbYDMAI7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 20:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYDMAIs
+	id S1757493AbYDMAWw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 20:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYDMAWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 20:08:48 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41409 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754329AbYDMAIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 20:08:47 -0400
-Date: Sat, 12 Apr 2008 20:08:30 -0400
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: trond.myklebust@fys.uio.no, eshel@almaden.ibm.com, neilb@suse.de,
-       akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
-Message-ID: <20080413000830.GF31789@fieldses.org>
-References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org> <20080410215410.GF22324@fieldses.org> <E1JkOff-0000pS-A7@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JkOff-0000pS-A7@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Sat, 12 Apr 2008 20:22:43 -0400
+Received: from smtp.ono.com ([62.42.230.12]:42557 "EHLO resmaa05.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754635AbYDMAWm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 20:22:42 -0400
+Date: Sun, 13 Apr 2008 02:22:39 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: DRDY errors again
+Message-ID: <20080413022239.79fb3713@werewolf.home>
+In-Reply-To: <87d4ozpuc3.fsf@old-tantale.fifi.org>
+References: <E1JjLYm-0002d7-00@calista.eckenfels.net>
+	<87d4ozpuc3.fsf@old-tantale.fifi.org>
+X-Mailer: Claws Mail 3.3.1cvs55 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 09:12:23PM +0200, Miklos Szeredi wrote:
-> > > OK. So the correct fix here should really be applied to fcntl_setlk().
-> > > There is absolutely no reason why we should be looping at all if the
-> > > filesystem has a ->lock() method.
-> > > 
-> > > In fact, this looping behaviour was introduced recently in commit
-> > > 7723ec9777d9832849b76475b1a21a2872a40d20.
-> > 
-> > Apologies, that was indeed a behavioral change introduced in a commit
-> > that claimed just to be shuffling code around.
+On 08 Apr 2008 20:42:36 -0700, Philippe Troin <phil@fifi.org> wrote:
+
+> Bernd Eckenfels <ecki@lina.inka.de> writes:
 > 
-> Yeah, that patch looks totally wrong.  It's not generally a good idea
-> to do a loop where the exit condition depends on something you don't
-> control.  And error values from filesystem methods are typically like
-> that.  For example with fuse, the error code could come from an
-> unprivileged userspace process.
+> > Besides the disk it could also be a voltage problem (voltage control on
+> > mainboard or power supply). I asume you ruled out thermal problems...
 > 
-> I didn't realize this aspect of the bug previously, because I
-> concentrated on the lockd inconsistency.
+> I would completely second that.  In multiple instances, I've had
+> different disks behave very strangely when the power supply became
+> flaky (12V at 11.3V and/or 5V hovering around 4.5V).  And there seems
+> to be lots of flaky power supplies around these days.
+> 
 
-So, does this patch on its own fix the problem you saw?
+Acording to my sensors...:
 
-Any extra eyes welcome....
+werewolf:/etc# sensors
+w83627thf-isa-0290
+Adapter: ISA adapter
+VCore:       +1.48 V  (min =  +0.70 V, max =  +1.87 V)
++12V:       +12.22 V  (min = +10.82 V, max = +13.19 V)
++3.3V:       +3.34 V  (min =  +3.14 V, max =  +3.47 V)
++5V:         +5.04 V  (min =  +4.75 V, max =  +5.25 V)
+V5SB:        +5.08 V  (min =  +4.76 V, max =  +5.24 V)
+VBat:        +3.09 V  (min =  +2.40 V, max =  +3.60 V)
+CPU0 Fan:   2343 RPM  (min =  499 RPM, div = 16)
+CPU1 Fan:   2280 RPM  (min =  499 RPM, div = 16)
+Chas Fan:   2343 RPM  (min =  499 RPM, div = 16)
+VRM  Temp:   +50.0°C  (high = +60.0°C, hyst = +35.0°C)  sensor = thermistor
+CPU0 Temp:   +43.0°C  (high = +70.0°C, hyst = +40.0°C)  sensor = thermistor
+CPU1 Temp:   +41.5°C  (high = +70.0°C, hyst = +40.0°C)  sensor = thermistor
 
---b.
+so it all look correct.
 
-commit e56100676b9ea3b2d5f3e937c3ce8a5149cffb84
-Author: J. Bruce Fields <bfields@citi.umich.edu>
-Date:   Sat Apr 12 18:12:15 2008 -0400
-
-    locks: fix possible infinite loop in fcntl(F_SETLKW) over nfs
-    
-    Miklos Szeredi found the bug:
-    
-    	"Basically what happens is that on the server nlm_fopen() calls
-    	nfsd_open() which returns -EACCES, to which nlm_fopen() returns
-    	NLM_LCK_DENIED.
-    
-    	"On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
-    	which in will cause fcntl_setlk() to retry forever."
-    
-    So, for example, opening a file on an nfs filesystem, changing
-    permissions to forbid further access, then trying to lock the file,
-    could result in an infinite loop.
-    
-    And Trond Myklebust identified the culprit, from Marc Eshel and I:
-    
-    	7723ec9777d9832849b76475b1a21a2872a40d20 "locks: factor out
-    	generic/filesystem switch from setlock code"
-    
-    That commit claimed to just be reshuffling code, but actually introduced
-    a behavioral change by calling the lock method repeatedly as long as it
-    returned -EAGAIN.
-    
-    We assumed this would be safe, since we assumed a lock of type SETLKW
-    would only return with either success or an error other than -EAGAIN.
-    However, nfs does can in fact return -EAGAIN in this situation, and
-    independently of whether that behavior is correct or not, we don't
-    actually need this change, and it seems far safer not to depend on such
-    assumptions about the filesystem's ->lock method.
-    
-    Therefore, revert the problematic part of the original commit.  This
-    leaves vfs_lock_file() and its other callers unchanged, while returning
-    fcntl_setlk and fcntl_setlk64 to their former behavior.
-    
-    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-    Cc: Miklos Szeredi <mszeredi@suse.cz>
-    Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-    Cc: Marc Eshel <eshel@almaden.ibm.com>
-
-diff --git a/fs/locks.c b/fs/locks.c
-index d83fab1..43c0af2 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -1801,17 +1801,21 @@ again:
- 	if (error)
- 		goto out;
- 
--	for (;;) {
--		error = vfs_lock_file(filp, cmd, file_lock, NULL);
--		if (error != -EAGAIN || cmd == F_SETLK)
--			break;
--		error = wait_event_interruptible(file_lock->fl_wait,
--				!file_lock->fl_next);
--		if (!error)
--			continue;
-+	if (filp->f_op && filp->f_op->lock != NULL)
-+		error = filp->f_op->lock(filp, cmd, file_lock);
-+	else {
-+		for (;;) {
-+			error = posix_lock_file(filp, file_lock, NULL);
-+			if (error != -EAGAIN || cmd == F_SETLK)
-+				break;
-+			error = wait_event_interruptible(file_lock->fl_wait,
-+					!file_lock->fl_next);
-+			if (!error)
-+				continue;
- 
--		locks_delete_block(file_lock);
--		break;
-+			locks_delete_block(file_lock);
-+			break;
-+		}
- 	}
- 
- 	/*
-@@ -1925,17 +1929,21 @@ again:
- 	if (error)
- 		goto out;
- 
--	for (;;) {
--		error = vfs_lock_file(filp, cmd, file_lock, NULL);
--		if (error != -EAGAIN || cmd == F_SETLK64)
--			break;
--		error = wait_event_interruptible(file_lock->fl_wait,
--				!file_lock->fl_next);
--		if (!error)
--			continue;
-+	if (filp->f_op && filp->f_op->lock != NULL)
-+		error = filp->f_op->lock(filp, cmd, file_lock);
-+	else {
-+		for (;;) {
-+			error = posix_lock_file(filp, file_lock, NULL);
-+			if (error != -EAGAIN || cmd == F_SETLK64)
-+				break;
-+			error = wait_event_interruptible(file_lock->fl_wait,
-+					!file_lock->fl_next);
-+			if (!error)
-+				continue;
- 
--		locks_delete_block(file_lock);
--		break;
-+			locks_delete_block(file_lock);
-+			break;
-+		}
- 	}
- 
- 	/*
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
