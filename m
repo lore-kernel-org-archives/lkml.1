@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbYDMQsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbYDMQzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759157AbYDMQsM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYDMQsA
+	id S1758562AbYDMQzS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 12:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYDMQzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:48:00 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:11235 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755767AbYDMQr7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:47:59 -0400
-To: Erik Bosman <ejbosman@cs.vu.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
-From: Andi Kleen <andi@firstfloor.org>
-References: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>
-	<87r6daw2ay.fsf@basil.nowhere.org>
-	<Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl>
-Date: Sun, 13 Apr 2008 18:47:32 +0200
-In-Reply-To: <Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl> (Erik Bosman's message of "Sun, 13 Apr 2008 11:44:46 +0200 (CEST)")
-Message-ID: <87prstwvkr.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sun, 13 Apr 2008 12:55:04 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:65060 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751959AbYDMQzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 12:55:02 -0400
+X-Greylist: delayed 3166 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Apr 2008 12:55:01 EDT
+Date: Sun, 13 Apr 2008 16:27:05 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andy Whitcroft <apw@shadowen.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       pinskia@gcc.gnu.org
+Subject: Re: [PATCH] pop previous section in alternative.c
+In-Reply-To: <20080410150544.GI10019@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.55.0804131621100.12591@cliff.in.clinika.pl>
+References: <Pine.LNX.4.58.0804091859400.31879@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0804091906040.31970@gandalf.stny.rr.com> <47FD5D42.5000603@zytor.com>
+ <87wsn6m6zt.fsf@basil.nowhere.org> <20080410094637.GW17915@shadowen.org>
+ <Pine.LNX.4.58.0804101007510.5673@gandalf.stny.rr.com>
+ <20080410144114.GH10019@one.firstfloor.org>
+ <alpine.LFD.1.00.0804100741430.3143@woody.linux-foundation.org>
+ <20080410150544.GI10019@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Apr 2008 16:40:48.0127 (UTC) FILETIME=[207C08F0:01C89D85]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Erik Bosman <ejbosman@cs.vu.nl> writes:
->
-> I'm using it for deterministic replay.
+On Thu, 10 Apr 2008, Andi Kleen wrote:
 
-Ok that should be in the changelog.
+> A simple way to detect it on the assembler level would be checking
+> that the section is the same after #NO_APP as before #APP
 
-BTW x86 CPUs are not fully deterministic. e.g. there are a few errata that
-can lead to differing EFLAGS (generally for instructions with undefined flags 
-output) based on random internal pipe line conditions.
+ Not as simple as the section stack would have to be traversed to check
+whether there are any differences.  And in the end, either such a complete
+check or a simple one you have proposed may not be desirable, because I
+can imagine in some scenarios the change of a section in an asm may be
+deliberate.  Let's not limit the tools.
 
-In my experience even simulators claiming to be fully deterministic
-are not always. e.g. I remember trying to use instruction counts
-on Simics to reproduce an issue for a scripted boot setup (with no user input),
-but it never quite hit the same code at the same instruction count.
-
-> Without the timestamp counter, the only instruction leading
-> to non-determinism (that I'm aware of) is the CPUID instruction
-> that returns on which core it runs, but that doesn't seem to
-> be used that much.
-
-There's also RDPMC, but by default the kernel does not enable that
-for ring 3. And if you go for oddities there are the random number
-generator instructions on VIA CPUs which will obviously not 
-be repeatable.
-
--Andi
+  Maciej
