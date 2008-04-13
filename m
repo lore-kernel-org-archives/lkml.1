@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYDMM1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYDMM2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758512AbYDMM1U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 08:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYDMM1K
+	id S1758814AbYDMM2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 08:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbYDMM2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 08:27:10 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:56153 "HELO
+	Sun, 13 Apr 2008 08:28:09 -0400
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:56164 "HELO
 	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1753841AbYDMM1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 08:27:09 -0400
+	id S1754406AbYDMM2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 08:28:08 -0400
 X-Spam-Check-By: mail.local.tull.net
 From: Nick Andrew <nick@nick-andrew.net>
-Subject: [PATCH 1/2] printk: Refactor processing of line severity tokens
+Subject: [PATCH 2/2] printk: Remember the message level for multi-line output
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        joe@perches.com
-Date: Sun, 13 Apr 2008 22:26:54 +1000
-Message-ID: <20080413122342.31769.40091.stgit@marcab.local.tull.net>
+Date: Sun, 13 Apr 2008 22:27:57 +1000
+Message-ID: <20080413122735.31769.17716.stgit@marcab.local.tull.net>
 In-Reply-To: <20080413115152.29086.37845.stgit@marcab.local.tull.net>
 References: <20080413115152.29086.37845.stgit@marcab.local.tull.net>
 User-Agent: StGIT/0.14.1
@@ -29,130 +29,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-printk: Refactor processing of line severity tokens
+printk: Remember the message level for multi-line output
 
-Restructure the logic of vprintk() so the processing of the leading
-3 characters of each input line is in one place, regardless whether
-printk_time is enabled. This makes the code smaller and easier to
-understand.
+printk(KERN_ALERT "Danger Will Robinson!\nAlien Approaching!\n");
+
+At present this will result in one message at ALERT level and one
+at the current default message loglevel (e.g. WARNING). This is
+non-intuitive.
+
+Modify vprintk() to remember the message loglevel each time it
+is specified and use it for subsequent lines of output which do
+not specify one, within the same call to printk.
 
 Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 ---
 This is the third revision.
 
-  rev 1 - initial patch, refactor + remember current_log_level
-  rev 2 - split into 2 parts
-  rev 3 - I realised that rev 2 is inefficient; all I had to do was move
-          the declaration of current_log_level, to alter the memory
-	  behaviour.
-
- kernel/printk.c |   61 ++++++++++++++++++++++++-------------------------------
- 1 files changed, 27 insertions(+), 34 deletions(-)
+ kernel/printk.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
 diff --git a/kernel/printk.c b/kernel/printk.c
-index c46a20a..02ca845 100644
+index 02ca845..5c97eb1 100644
 --- a/kernel/printk.c
 +++ b/kernel/printk.c
-@@ -656,11 +656,11 @@ static int printk_recursion_bug;
- 
- asmlinkage int vprintk(const char *fmt, va_list args)
- {
--	static int log_level_unknown = 1;
-+	static int new_text_line = 1;
+@@ -660,6 +660,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
  	static char printk_buf[1024];
  
--	unsigned long flags;
  	int printed_len = 0;
-+	unsigned long flags;
++	int current_log_level = default_message_loglevel;
+ 	unsigned long flags;
  	int this_cpu;
  	char *p;
- 
-@@ -702,61 +702,54 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	printed_len += vscnprintf(printk_buf + printed_len,
- 				  sizeof(printk_buf) - printed_len, fmt, args);
- 
-+
- 	/*
- 	 * Copy the output into log_buf.  If the caller didn't provide
- 	 * appropriate log level tags, we insert them here
+@@ -709,7 +710,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
  	 */
  	for (p = printk_buf; *p; p++) {
--		if (log_level_unknown) {
--                        /* log_level_unknown signals the start of a new line */
-+		if (new_text_line) {
-+			int current_log_level = default_message_loglevel;
-+			/* If a token, set current_log_level and skip over */
-+			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
-+			    p[2] == '>') {
-+				current_log_level = p[1] - '0';
-+				p += 3;
-+				printed_len -= 3;
-+			}
-+
-+			/* Always output the token */
-+			emit_log_char('<');
-+			emit_log_char(current_log_level + '0');
-+			emit_log_char('>');
-+			printed_len += 3;
-+			new_text_line = 0;
-+
- 			if (printk_time) {
--				int loglev_char;
-+				/* Follow the token with the time */
- 				char tbuf[50], *tp;
- 				unsigned tlen;
- 				unsigned long long t;
- 				unsigned long nanosec_rem;
- 
--				/*
--				 * force the log level token to be
--				 * before the time output.
--				 */
--				if (p[0] == '<' && p[1] >='0' &&
--				   p[1] <= '7' && p[2] == '>') {
--					loglev_char = p[1];
--					p += 3;
--					printed_len -= 3;
--				} else {
--					loglev_char = default_message_loglevel
--						+ '0';
--				}
- 				t = cpu_clock(printk_cpu);
- 				nanosec_rem = do_div(t, 1000000000);
--				tlen = sprintf(tbuf,
--						"<%c>[%5lu.%06lu] ",
--						loglev_char,
--						(unsigned long)t,
--						nanosec_rem/1000);
-+				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
-+						(unsigned long) t,
-+						nanosec_rem / 1000);
- 
- 				for (tp = tbuf; tp < tbuf + tlen; tp++)
- 					emit_log_char(*tp);
- 				printed_len += tlen;
--			} else {
--				if (p[0] != '<' || p[1] < '0' ||
--				   p[1] > '7' || p[2] != '>') {
--					emit_log_char('<');
--					emit_log_char(default_message_loglevel
--						+ '0');
--					emit_log_char('>');
--					printed_len += 3;
--				}
- 			}
--			log_level_unknown = 0;
-+
- 			if (!*p)
- 				break;
- 		}
-+
- 		emit_log_char(*p);
- 		if (*p == '\n')
--			log_level_unknown = 1;
-+			new_text_line = 1;
- 	}
- 
- 	/*
+ 		if (new_text_line) {
+-			int current_log_level = default_message_loglevel;
+ 			/* If a token, set current_log_level and skip over */
+ 			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
+ 			    p[2] == '>') {
 
