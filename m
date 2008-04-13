@@ -1,75 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYDMADp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYDMAI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYDMADp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 20:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYDMADe
+	id S1757876AbYDMAI7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 20:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYDMAIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 20:03:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50265 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753798AbYDMADe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 20:03:34 -0400
-Date: Sat, 12 Apr 2008 17:03:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-Id: <20080412170304.54f139e2.akpm@linux-foundation.org>
-In-Reply-To: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Apr 2008 20:08:48 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41409 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754329AbYDMAIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 20:08:47 -0400
+Date: Sat, 12 Apr 2008 20:08:30 -0400
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: trond.myklebust@fys.uio.no, eshel@almaden.ibm.com, neilb@suse.de,
+       akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
+Message-ID: <20080413000830.GF31789@fieldses.org>
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org> <20080410215410.GF22324@fieldses.org> <E1JkOff-0000pS-A7@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JkOff-0000pS-A7@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008 18:58:34 -0400 Bob Copeland <me@bobcopeland.com> wrote:
+On Fri, Apr 11, 2008 at 09:12:23PM +0200, Miklos Szeredi wrote:
+> > > OK. So the correct fix here should really be applied to fcntl_setlk().
+> > > There is absolutely no reason why we should be looping at all if the
+> > > filesystem has a ->lock() method.
+> > > 
+> > > In fact, this looping behaviour was introduced recently in commit
+> > > 7723ec9777d9832849b76475b1a21a2872a40d20.
+> > 
+> > Apologies, that was indeed a behavioral change introduced in a commit
+> > that claimed just to be shuffling code around.
+> 
+> Yeah, that patch looks totally wrong.  It's not generally a good idea
+> to do a loop where the exit condition depends on something you don't
+> control.  And error values from filesystem methods are typically like
+> that.  For example with fuse, the error code could come from an
+> unprivileged userspace process.
+> 
+> I didn't realize this aspect of the bug previously, because I
+> concentrated on the lockd inconsistency.
 
-> (Andrew, perhaps this could bake in -mm for a cycle or two if 
-> there are no objections?)
+So, does this patch on its own fix the problem you saw?
 
-Sure, if it compiles I can stick in in there for some airtime.
+Any extra eyes welcome....
 
-> These patches 1-7 add the Optimized MPEG Filesystem, a proprietary
-> filesystem used by the embedded devices Rio Karma and ReplayTV 
-> which are no longer manufactured.
+--b.
 
-Adding a new FS to Linux is a pretty major thing.
+commit e56100676b9ea3b2d5f3e937c3ce8a5149cffb84
+Author: J. Bruce Fields <bfields@citi.umich.edu>
+Date:   Sat Apr 12 18:12:15 2008 -0400
 
-- A key question (which you don't seem to have addressed at all!) is: why
-  is this a useful addition to Linux?  What are the filesystem's strengths?
-  What is its application?  How does it improves Linux and by how much?
+    locks: fix possible infinite loop in fcntl(F_SETLKW) over nfs
+    
+    Miklos Szeredi found the bug:
+    
+    	"Basically what happens is that on the server nlm_fopen() calls
+    	nfsd_open() which returns -EACCES, to which nlm_fopen() returns
+    	NLM_LCK_DENIED.
+    
+    	"On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
+    	which in will cause fcntl_setlk() to retry forever."
+    
+    So, for example, opening a file on an nfs filesystem, changing
+    permissions to forbid further access, then trying to lock the file,
+    could result in an infinite loop.
+    
+    And Trond Myklebust identified the culprit, from Marc Eshel and I:
+    
+    	7723ec9777d9832849b76475b1a21a2872a40d20 "locks: factor out
+    	generic/filesystem switch from setlock code"
+    
+    That commit claimed to just be reshuffling code, but actually introduced
+    a behavioral change by calling the lock method repeatedly as long as it
+    returned -EAGAIN.
+    
+    We assumed this would be safe, since we assumed a lock of type SETLKW
+    would only return with either success or an error other than -EAGAIN.
+    However, nfs does can in fact return -EAGAIN in this situation, and
+    independently of whether that behavior is correct or not, we don't
+    actually need this change, and it seems far safer not to depend on such
+    assumptions about the filesystem's ->lock method.
+    
+    Therefore, revert the problematic part of the original commit.  This
+    leaves vfs_lock_file() and its other callers unchanged, while returning
+    fcntl_setlk and fcntl_setlk64 to their former behavior.
+    
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+    Cc: Miklos Szeredi <mszeredi@suse.cz>
+    Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+    Cc: Marc Eshel <eshel@almaden.ibm.com>
 
-  I'll go aehad and assume that its sweet-spot is streaming media files
-  (perhaps more than one at a time?).  If so, then comparative performance
-  measurements would be the key piece of information which we'll need when
-  making a merge decision.  Probably against ext3, ext4 and XFS.
-
-- What are the filesystem's features?  Does it journal changes, or is it
-  inherently crash-safe?  Or is fsck-style repair needed?
-
-- We'd like to see some documentation:
-
-  - Mount options
-
-  - Location of userspace support tools such as mkfs and fsck
-
-  - Documentation for those tools
-
-- A MAINTAINERS record, please?
-
-
-If I include this in -mm, some kind people will try it out.  It would be
-most helpful for the changelog (or even the Kconfig help) to include
-sufficient information for people to be able to create, mount and check an
-OMFS partition.
-
-> I've been maintaining this reverse-engineered filesystem
-> out-of-tree since around 2.6.12.
-
-Who did the reverse-engineering, and how was it done?
-
-Please make us confident that we won't get our butts sued off or something.
+diff --git a/fs/locks.c b/fs/locks.c
+index d83fab1..43c0af2 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -1801,17 +1801,21 @@ again:
+ 	if (error)
+ 		goto out;
+ 
+-	for (;;) {
+-		error = vfs_lock_file(filp, cmd, file_lock, NULL);
+-		if (error != -EAGAIN || cmd == F_SETLK)
+-			break;
+-		error = wait_event_interruptible(file_lock->fl_wait,
+-				!file_lock->fl_next);
+-		if (!error)
+-			continue;
++	if (filp->f_op && filp->f_op->lock != NULL)
++		error = filp->f_op->lock(filp, cmd, file_lock);
++	else {
++		for (;;) {
++			error = posix_lock_file(filp, file_lock, NULL);
++			if (error != -EAGAIN || cmd == F_SETLK)
++				break;
++			error = wait_event_interruptible(file_lock->fl_wait,
++					!file_lock->fl_next);
++			if (!error)
++				continue;
+ 
+-		locks_delete_block(file_lock);
+-		break;
++			locks_delete_block(file_lock);
++			break;
++		}
+ 	}
+ 
+ 	/*
+@@ -1925,17 +1929,21 @@ again:
+ 	if (error)
+ 		goto out;
+ 
+-	for (;;) {
+-		error = vfs_lock_file(filp, cmd, file_lock, NULL);
+-		if (error != -EAGAIN || cmd == F_SETLK64)
+-			break;
+-		error = wait_event_interruptible(file_lock->fl_wait,
+-				!file_lock->fl_next);
+-		if (!error)
+-			continue;
++	if (filp->f_op && filp->f_op->lock != NULL)
++		error = filp->f_op->lock(filp, cmd, file_lock);
++	else {
++		for (;;) {
++			error = posix_lock_file(filp, file_lock, NULL);
++			if (error != -EAGAIN || cmd == F_SETLK64)
++				break;
++			error = wait_event_interruptible(file_lock->fl_wait,
++					!file_lock->fl_next);
++			if (!error)
++				continue;
+ 
+-		locks_delete_block(file_lock);
+-		break;
++			locks_delete_block(file_lock);
++			break;
++		}
+ 	}
+ 
+ 	/*
