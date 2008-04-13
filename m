@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYDMRDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbYDMRGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbYDMRDS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYDMRDK
+	id S1759385AbYDMRGa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYDMRGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:03:10 -0400
-Received: from crypt.ethx.net ([82.165.27.140]:55124 "EHLO crypt.ethx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753415AbYDMRDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:03:09 -0400
-Subject: Re: Samsung Q45 hard freeze during boot
-From: Sam Morris <sam@robots.org.uk>
+	Sun, 13 Apr 2008 13:06:23 -0400
+Received: from server117.advancednetworkhosting.com ([69.65.27.17]:43115 "EHLO
+	server117.advancednetworkhosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753210AbYDMRGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 13:06:22 -0400
+X-Greylist: delayed 3599 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Apr 2008 13:06:22 EDT
+Message-ID: <48022F82.80704@eslashlonghorns.com>
+Date: Sun, 13 Apr 2008 10:06:26 -0600
+From: monte <monte@eslashlonghorns.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-In-Reply-To: <1207875044.4594.2.camel@xerces>
-References: <1207823931.8277.10.camel@tycho.robots.org.uk>
-	 <1207875044.4594.2.camel@xerces>
-Content-Type: text/plain
+Subject: kernel bug
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 13 Apr 2008 18:02:58 +0100
-Message-Id: <1208106178.4774.0.camel@durandal>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-Spam-Bars: /
-X-Spam-Report: hits=0.2: ALL_TRUSTED=-1.44, TVD_RCVD_IP=1.617 with SpamAssassin 3.2.3 (2007-08-08) on crypt.ethx.net
+X-Assp-Whitelisted: Yes
+X-Assp-Envelope-From: monte@eslashlonghorns.com
+X-Assp-Intended-For: linux-kernel@vger.kernel.org
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server117.advancednetworkhosting.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - eslashlonghorns.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-11 at 01:50 +0100, Sam Morris wrote:
-> On Thu, 2008-04-10 at 11:38 +0100, Sam Morris wrote:
-> > Hi there, I'm trying to get Linux working on a Samsung Q45 laptop.
-> > 2.6.22 works fine, but 2.6.24.3 and 2.6.25-rc8 both freeze hard during
-> > boot time after the following messages:
-> > 
-> >         Waiting for /dev to be fully populated...
-> >         agpgart: Detected an Intel 965GM Chipset.
-> >         agpgart: AGP aperture is 256M @ 0xd0000000
-> >         input: Power Button (FF) as /class/input/input2
-> >         ACPI: Power Button (FF) [PWSRF]
-> >         inputL Lid Switch as /class/input/input3
-> >         ACPI: Lid Switch [LID0]
-> >         input: Power Button (CM) as /class/input/input4
-> >         ACPI: Power Button (CM) [PWRB]
-> >         input: Sleep Button (CM) as /class/input/input5
-> >         ACPI: Sleep Button (CM) [SLPB]
-> >         ACPI: AC Adapter [ADP1] (on-line)
-> >         ACPI: Battery Slot [BAT1] (battery present)
-> 
-> Further to this--I found that if I blacklist the 'video' driver then I can boot up normally.
+Since I am new at this, this is the info you may need.
 
-I built a mainline kernel to test this out, and the freeze happens with
-2.6.24.4. I also filed a bug at
-<http://bugzilla.kernel.org/show_bug.cgi?id=10448>.
+I am trying to using Ubuntu hardy (development branch), Kernel 
+2.6.24-16, and get the following error
 
--- 
-Sam Morris <sam@robots.org.uk>
+error 18: selected cylinder exceeds maximum supported by BIOS.
+
+This started with kernel 2.6.24-15.  Currently I have to boot into 
+kernel 2.6.24-14.
+
+My BIOS are Award Modular Bios v4.51PC, with Award Plug and Play Bios 
+ext v1.0A
+
+Processor
+300 MHz Intel Pentium II
+32 kilobyte primary memory cache
+512 Kilobyte secondary memory cache
+
+Controllers
+Standard Floppy Disk Controller
+Intel 82371AB/EB PCI Bus Master IDE Controller
+Primary IDE controller (dual fifo)
+Secondary IDE controller (dual fifo)
+Standard IDE/ESDI hard Disk Controller
+
+
+Drives
+38.10 Gig Usable Hard Drive Capacity
+
+Main circuit Board
+Board: i440LX-W977TF
+Bus Clock:  66MHz
+
+Memory Modules 192 Megabytes Installed Memory
+
+Hope this is enough.
