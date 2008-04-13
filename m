@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759750AbYDMRM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYDMROM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759750AbYDMRM0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbYDMRMS
+	id S1759751AbYDMROM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbYDMRN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:12:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46923 "EHLO
+	Sun, 13 Apr 2008 13:13:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46926 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754588AbYDMRMR (ORCPT
+	with ESMTP id S1754594AbYDMRN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:12:17 -0400
-Date: Sun, 13 Apr 2008 18:08:18 +0100
+	Sun, 13 Apr 2008 13:13:57 -0400
+Date: Sun, 13 Apr 2008 18:09:57 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH] usb gadget: switch to put_char returning int
-Message-ID: <20080413180818.519e446c@core>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: [PATCH] amiserial: Switch put char to return success/fail
+Message-ID: <20080413180957.1100a711@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -28,46 +28,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c
---- linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:36:54.000000000 +0100
-+++ linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:41:09.000000000 +0100
-@@ -170,7 +170,7 @@
- static void gs_close(struct tty_struct *tty, struct file *file);
- static int gs_write(struct tty_struct *tty,
- 	const unsigned char *buf, int count);
--static void gs_put_char(struct tty_struct *tty, unsigned char ch);
-+static int gs_put_char(struct tty_struct *tty, unsigned char ch);
- static void gs_flush_chars(struct tty_struct *tty);
- static int gs_write_room(struct tty_struct *tty);
- static int gs_chars_in_buffer(struct tty_struct *tty);
-@@ -883,14 +883,15 @@
- /*
-  * gs_put_char
-  */
--static void gs_put_char(struct tty_struct *tty, unsigned char ch)
-+static int gs_put_char(struct tty_struct *tty, unsigned char ch)
- {
- 	unsigned long flags;
- 	struct gs_port *port = tty->driver_data;
-+	int ret = 0;
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/char/amiserial.c linux-2.6.25-rc8-mm2/drivers/char/amiserial.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/char/amiserial.c	2008-04-13 15:36:53.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/char/amiserial.c	2008-04-13 15:50:20.000000000 +0100
+@@ -832,33 +832,34 @@
+ 	local_irq_restore(flags);
+ }
  
- 	if (port == NULL) {
- 		pr_err("gs_put_char: NULL port pointer\n");
+-static void rs_put_char(struct tty_struct *tty, unsigned char ch)
++static int rs_put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	struct async_struct *info;
+ 	unsigned long flags;
+ 
+ 	if (!tty)
+-		return;
++		return 0;
+ 
+ 	info = tty->driver_data;
+ 
+ 	if (serial_paranoia_check(info, tty->name, "rs_put_char"))
+-		return;
++		return 0;
+ 
+ 	if (!info->xmit.buf)
+-		return;
++		return 0;
+ 
+ 	local_irq_save(flags);
+ 	if (CIRC_SPACE(info->xmit.head,
+ 		       info->xmit.tail,
+ 		       SERIAL_XMIT_SIZE) == 0) {
+ 		local_irq_restore(flags);
 -		return;
 +		return 0;
  	}
  
- 	gs_debug("gs_put_char: (%d,%p) char=0x%x, called from %p\n",
-@@ -910,10 +911,11 @@
- 		goto exit;
- 	}
- 
--	gs_buf_put(port->port_write_buf, &ch, 1);
-+	ret = gs_buf_put(port->port_write_buf, &ch, 1);
- 
- exit:
- 	spin_unlock_irqrestore(&port->port_lock, flags);
-+	return ret;
+ 	info->xmit.buf[info->xmit.head++] = ch;
+ 	info->xmit.head &= SERIAL_XMIT_SIZE-1;
+ 	local_irq_restore(flags);
++	return 1;
  }
  
- /*
+ static void rs_flush_chars(struct tty_struct *tty)
