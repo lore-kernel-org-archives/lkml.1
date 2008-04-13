@@ -1,37 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbYDMPlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759256AbYDMPoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758743AbYDMPlV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 11:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYDMPlJ
+	id S1759256AbYDMPoz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 11:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYDMPor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 11:41:09 -0400
-Received: from rtr.ca ([76.10.145.34]:1380 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753017AbYDMPlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 11:41:08 -0400
-Message-ID: <4802298F.7070708@rtr.ca>
-Date: Sun, 13 Apr 2008 11:41:03 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 13 Apr 2008 11:44:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:21454 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753982AbYDMPoq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 11:44:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=LTqWLlR9thovFANfq3ds9ouu2RNYKHJZV23iODgaXXjgEQlxWhtv0Od9DowI2RSkh3pWwXHYGV03ad3B/Xjph+LAOmTgoS1Z/gr19NQy/woaoElC9BJ63MmofrNZUFxTkinD0iAJkKugYrCHwSVfn6W0VTWmGbvd1E0U61qwlZQ=
+Message-ID: <48022990.3060104@gmail.com>
+Date: Sun, 13 Apr 2008 17:41:04 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Christian Pernegger <pernegger@gmail.com>,
-       "Tvrtko A. Ursulin" <tvrtko@ursulin.net>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Western Digital GreenPower drives and Linux
-References: <200804092118.35501.tvrtko@ursulin.net>  <200804100848.08442.tvrtko@ursulin.net>  <1207831481.1514.8.camel@localhost> <bb145bd20804100801y157b4a34m82f084d27f1e0586@mail.gmail.com> <alpine.LNX.1.10.0804121903200.8405@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0804121903200.8405@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] x86: pgtable_32.h - prototype and section mismatch fixes
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
->
-> WD is not the first to do this unload nonsense,
-..
+This patch adds extern to native_pagetable_setup_[start,done]() protypes and
+fixes following section mismatch warning:
 
-Indeed.  Seagate beat them to it by a decade or so.
-Hence the hdparm -Z flag for old Seagate drives.  :)
+WARNING: arch/x86/mm/built-in.o(.text+0xf2): Section mismatch in reference from
+the function paravirt_pagetable_setup_start()
+
+paravirt_pagetable_setup_[start,done]() is used by __init pagetable_init().
+Annotate both functions with __init.
+
+Signed-off-by: Jacek Luczak <luczak.jacek@gmail.com>
+
+---
+ pgtable_32.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index 6cbc520..248cfea 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -204,16 +204,16 @@ do {						\
+  */
+ #define update_mmu_cache(vma, address, pte) do { } while (0)
+
+-void native_pagetable_setup_start(pgd_t *base);
+-void native_pagetable_setup_done(pgd_t *base);
++extern void native_pagetable_setup_start(pgd_t *base);
++extern void native_pagetable_setup_done(pgd_t *base);
+
+ #ifndef CONFIG_PARAVIRT
+-static inline void paravirt_pagetable_setup_start(pgd_t *base)
++static inline void __init paravirt_pagetable_setup_start(pgd_t *base)
+ {
+ 	native_pagetable_setup_start(base);
+ }
+
+-static inline void paravirt_pagetable_setup_done(pgd_t *base)
++static inline void __init paravirt_pagetable_setup_done(pgd_t *base)
+ {
+ 	native_pagetable_setup_done(base);
+ }
