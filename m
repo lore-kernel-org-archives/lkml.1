@@ -1,136 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbYDMWAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYDMWBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbYDMWAh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 18:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYDMWA3
+	id S1753196AbYDMWBN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 18:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYDMWA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 18:00:29 -0400
-Received: from rv-out-0708.google.com ([209.85.198.241]:5298 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751673AbYDMWA2 (ORCPT
+	Sun, 13 Apr 2008 18:00:58 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:44571 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751806AbYDMWA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 18:00:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=uk21pjRnWNAZlDkFnA7nlvNWi6peWlkcWl3pRBvjYORcUlGd9Uz7SWdOsjSVThdEDYbuyowuqVOZRsU2K+9rp4+LE3FqLsCdNQj2BinkC8JHsUtk5G5FLTNU5JqxNjzpmVMbDszIu3n4Hl/pHU/Knu+PGPu6MsCU22CfDHn+rUM=
-Message-ID: <86802c440804131500q420f7442hd8512cc6f4a1a6fd@mail.gmail.com>
-Date: Sun, 13 Apr 2008 15:00:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86 git tree broken (bisected)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <200804131812.55684.rjw@sisk.pl>
+	Sun, 13 Apr 2008 18:00:57 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 13 Apr 2008 15:00:53 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: [patch] F_GETPATH for linux
+Message-ID: <Pine.LNX.4.64.0804131455030.12741@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_25399_1428928.1208124028495"
-References: <200804102159.14563.rjw@sisk.pl> <200804112251.09769.rjw@sisk.pl>
-	 <86802c440804130124l2b0cb199x4d75f2df68f93fa4@mail.gmail.com>
-	 <200804131812.55684.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_25399_1428928.1208124028495
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I was working on some bsd/linux compatibility code, and I noticed that we 
+do not have F_GETPATH. I know we can readlink /proc/PID/fd/FD (that is 
+what I'm doing now, under #ifdef), but I gave a patch a shot anyway.
+Here it is, building but untested ...
 
-On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-...
->  > can you try to apply the patch i sent to you about agp bridge order
->  > reading for buggy silicon?
->  >
->  > Please boot kernel with "debug"...
->  >
->  > I want to verify if you can get
->  >
->  > "
->  > Aperture conflicts with PCI mapping.
->  > "
->  >
->  > in your boot log...
->
->  It's not present in there:
->
->  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
->  Aperture too small (32 MB)
->  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
->  Aperture too small (0 MB)
->  agpgart: Aperture pointing to RAM
->  agpgart: Aperture from AGP @ de000000 size 4096 MB
->  agpgart: Aperture too small (0 MB)
->
->  Full dmesg output attached.
 
-please check attached debug patch. and check if you can change GART
-size in your BIOS setup to 64M instead of 32M
 
-Thanks
+- Davide
 
-YH
 
-------=_Part_25399_1428928.1208124028495
-Content-Type: text/x-patch; name=debug_gart_checking.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ff04xx9d1
-Content-Disposition: attachment; filename=debug_gart_checking.patch
+---
+ fs/fcntl.c                  |   27 +++++++++++++++++++++++++++
+ fs/proc/base.c              |   26 +-------------------------
+ include/asm-generic/fcntl.h |    1 +
+ include/linux/fs.h          |    1 +
+ 4 files changed, 30 insertions(+), 25 deletions(-)
 
-W1BBVENIXSB4ODZfNjQ6IGNoZWNraW5nIGFwZXJ0dXJlIHNpemUgb3JkZXIuLi4KCmRpZmYgLS1n
-aXQgYS9hcmNoL3g4Ni9rZXJuZWwvYXBlcnR1cmVfNjQuYyBiL2FyY2gveDg2L2tlcm5lbC9hcGVy
-dHVyZV82NC5jCmluZGV4IDJlOTNiMzEuLmU4NjY4OWEgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2tl
-cm5lbC9hcGVydHVyZV82NC5jCisrKyBiL2FyY2gveDg2L2tlcm5lbC9hcGVydHVyZV82NC5jCkBA
-IC05Niw3ICs5Niw3IEBAIHN0YXRpYyBpbnQgX19pbml0IGFwZXJ0dXJlX3ZhbGlkKHU2NCBhcGVy
-X2Jhc2UsIHUzMiBhcGVyX3NpemUpCiAJCXByaW50ayhLRVJOX0VSUiAiQXBlcnR1cmUgcG9pbnRp
-bmcgdG8gZTgyMCBSQU0uIElnbm9yaW5nLlxuIik7CiAJCXJldHVybiAwOwogCX0KLQlpZiAoYXBl
-cl9zaXplIDwgNjQqMTAyNCoxMDI0KSB7CisJaWYgKGFwZXJfc2l6ZSA8IDMyKjEwMjQqMTAyNCkg
-ewogCQlwcmludGsoS0VSTl9FUlIgIkFwZXJ0dXJlIHRvbyBzbWFsbCAoJWQgTUIpXG4iLCBhcGVy
-X3NpemU+PjIwKTsKIAkJcmV0dXJuIDA7CiAJfQpAQCAtMTY3LDcgKzE2Nyw5IEBAIHN0YXRpYyBf
-X3UzMiBfX2luaXQgcmVhZF9hZ3AoaW50IG51bSwgaW50IHNsb3QsIGludCBmdW5jLCBpbnQgY2Fw
-LCB1MzIgKm9yZGVyKQogCSAqIE9uIHNvbWUgc2ljayBjaGlwcywgQVBTSVpFIGlzIDAuIEl0IG1l
-YW5zIGl0IHdhbnRzIDRHCiAJICogc28gbGV0IGRvdWJsZSBjaGVjayB0aGF0IG9yZGVyLCBhbmQg
-bGV0cyB0cnVzdCBBTUQgTkIgc2V0dGluZ3M6CiAJICovCi0JaWYgKGFwZXIgKyAoMzJVTDw8KDIw
-ICsgKm9yZGVyKSkgPiAweDEwMDAwMDAwMFVMKSB7CisJcHJpbnRrKEtFUk5fSU5GTyAiQXBlcnR1
-cmUgZnJvbSBBR1AgQCAlTHggb2xkIHNpemUgJXUgTUJcbiIsCisJCQlhcGVyLCAzMiA8PCBvbGRf
-b3JkZXIpOworCWlmIChhcGVyICsgKDMyVUxMPDwoMjAgKyAqb3JkZXIpKSA+IDB4MTAwMDAwMDAw
-VUxMKSB7CiAJCXByaW50ayhLRVJOX0lORk8gIkFwZXJ0dXJlIHNpemUgJXUgTUIgKEFQU0laRSAl
-eCkgaXMgbm90IHJpZ2h0LCB1c2luZyBzZXR0aW5ncyBmcm9tIE5CXG4iLAogCQkJCTMyIDw8ICpv
-cmRlciwgYXBzaXplcmVnKTsKIAkJKm9yZGVyID0gb2xkX29yZGVyOwpAQCAtMzAyLDggKzMwNCw4
-IEBAIHZvaWQgX19pbml0IGVhcmx5X2dhcnRfaW9tbXVfY2hlY2sodm9pZCkKIAkJZml4ID0gMTsK
-IAogCWlmIChnYXJ0X2ZpeF9lODIwICYmICFmaXggJiYgYXBlcl9lbmFibGVkKSB7Ci0JCWlmIChl
-ODIwX2FueV9tYXBwZWQoYXBlcl9iYXNlLCBhcGVyX2Jhc2UgKyBhcGVyX3NpemUsCi0JCQkJICAg
-IEU4MjBfUkFNKSkgeworCQlpZiAoIWU4MjBfYWxsX21hcHBlZChhcGVyX2Jhc2UsIGFwZXJfYmFz
-ZSArIGFwZXJfc2l6ZSwKKwkJCQkgICAgRTgyMF9SRVNFUlZFRCkpIHsKIAkJCS8qIHJlc2VydmVk
-IGl0LCBzbyB3ZSBjYW4gcmVzdXNlIGl0IGluIHNlY29uZCBrZXJuZWwgKi8KIAkJCXByaW50ayhL
-RVJOX0lORk8gInVwZGF0ZSBlODIwIGZvciBHQVJUXG4iKTsKIAkJCWFkZF9tZW1vcnlfcmVnaW9u
-KGFwZXJfYmFzZSwgYXBlcl9zaXplLCBFODIwX1JFU0VSVkVEKTsKZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvY2hhci9hZ3AvYW1kNjQtYWdwLmMgYi9kcml2ZXJzL2NoYXIvYWdwL2FtZDY0LWFncC5jCmlu
-ZGV4IDhmYzA1YzguLjk3ZDQ4MjEgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY2hhci9hZ3AvYW1kNjQt
-YWdwLmMKKysrIGIvZHJpdmVycy9jaGFyL2FncC9hbWQ2NC1hZ3AuYwpAQCAtMjQ1LDExICsyNDUs
-NyBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBhcGVydHVyZV92YWxpZCh1NjQgYXBlciwgdTMyIHNp
-emUpCiAJCXByaW50ayhLRVJOX0VSUiBQRlggIk5vIGFwZXJ0dXJlXG4iKTsKIAkJcmV0dXJuIDA7
-CiAJfQotCWlmIChzaXplIDwgMzIqMTAyNCoxMDI0KSB7Ci0JCXByaW50ayhLRVJOX0VSUiBQRlgg
-IkFwZXJ0dXJlIHRvbyBzbWFsbCAoJWQgTUIpXG4iLCBzaXplPj4yMCk7Ci0JCXJldHVybiAwOwot
-CX0KLSAgICAgICBpZiAoKHU2NClhcGVyICsgc2l6ZSA+IDB4MTAwMDAwMDAwVUxMKSB7CisJaWYg
-KCh1NjQpYXBlciArIHNpemUgPiAweDEwMDAwMDAwMFVMTCkgewogCQlwcmludGsoS0VSTl9FUlIg
-UEZYICJBcGVydHVyZSBvdXQgb2YgYm91bmRzXG4iKTsKIAkJcmV0dXJuIDA7CiAJfQpAQCAtMjU3
-LDYgKzI1MywxMCBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBhcGVydHVyZV92YWxpZCh1NjQgYXBl
-ciwgdTMyIHNpemUpCiAJCXByaW50ayhLRVJOX0VSUiBQRlggIkFwZXJ0dXJlIHBvaW50aW5nIHRv
-IFJBTVxuIik7CiAJCXJldHVybiAwOwogCX0KKwlpZiAoc2l6ZSA8IDMyKjEwMjQqMTAyNCkgewor
-CQlwcmludGsoS0VSTl9FUlIgUEZYICJBcGVydHVyZSB0b28gc21hbGwgKCVkIE1CKVxuIiwgc2l6
-ZT4+MjApOworCQlyZXR1cm4gMDsKKwl9CiAKIAkvKiBSZXF1ZXN0IHRoZSBBcGVydHVyZS4gVGhp
-cyBjYXRjaGVzIGNhc2VzIHdoZW4gc29tZW9uZSBlbHNlCiAJICAgYWxyZWFkeSBwdXQgYSBtYXBw
-aW5nIGluIHRoZXJlIC0gaGFwcGVucyB3aXRoIHNvbWUgdmVyeSBicm9rZW4gQklPUwpAQCAtMzE3
-LDcgKzMxNyw3IEBAIHN0YXRpYyBfX2RldmluaXQgaW50IGZpeF9ub3J0aGJyaWRnZShzdHJ1Y3Qg
-cGNpX2RldiAqbmIsIHN0cnVjdCBwY2lfZGV2ICphZ3AsCiAJICogT24gc29tZSBzaWNrIGNoaXBz
-IEFQU0laRSBpcyAwLiBUaGlzIG1lYW5zIGl0IHdhbnRzIDRHCiAJICogc28gbGV0IGRvdWJsZSBj
-aGVjayB0aGF0IG9yZGVyLCBhbmQgbGV0cyB0cnVzdCB0aGUgQU1EIE5CIHNldHRpbmdzCiAJICov
-Ci0JaWYgKGFwZXIgKyAoMzJVTEw8PCgyMCArIG9yZGVyKSkgPiAweDEwMDAwMDAwMFVMTCkgewor
-CWlmIChvcmRlciA+PTAgJiYgYXBlciArICgzMlVMTDw8KDIwICsgb3JkZXIpKSA+IDB4MTAwMDAw
-MDAwVUxMKSB7CiAJCXByaW50ayhLRVJOX0lORk8gIkFwZXJ0dXJlIHNpemUgJXUgTUIgaXMgbm90
-IHJpZ2h0LCB1c2luZyBzZXR0aW5ncyBmcm9tIE5CXG4iLAogCQkJCSAgMzIgPDwgb3JkZXIpOwog
-CQlvcmRlciA9IG5iX29yZGVyOwo=
-------=_Part_25399_1428928.1208124028495--
+Index: linux-2.6.mod/fs/fcntl.c
+===================================================================
+--- linux-2.6.mod.orig/fs/fcntl.c	2008-04-13 14:17:39.000000000 -0700
++++ linux-2.6.mod/fs/fcntl.c	2008-04-13 14:54:00.000000000 -0700
+@@ -316,6 +316,29 @@
+ 	return pid;
+ }
+ 
++int fcntl_getpath(struct path *fpath, char __user *path, int maxsize)
++{
++	int size;
++	char *buf, *pathname;
++
++	buf = (char *) __get_free_page(GFP_TEMPORARY);
++	if (!buf)
++		return -ENOMEM;
++	pathname = d_path(fpath, buf, PAGE_SIZE);
++	size = PTR_ERR(pathname);
++	if (IS_ERR(pathname))
++		goto error;
++	size = buf + PAGE_SIZE - 1 - pathname;
++	if (size > maxsize)
++		size = maxsize;
++	if (copy_to_user(path, pathname, size))
++		size = -EFAULT;
++error:
++	free_page((unsigned long) buf);
++	return size;
++}
++EXPORT_SYMBOL(fcntl_getpath);
++
+ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+ 		struct file *filp)
+ {
+@@ -381,6 +404,10 @@
+ 	case F_NOTIFY:
+ 		err = fcntl_dirnotify(fd, filp, arg);
+ 		break;
++	case F_GETPATH:
++		err = fcntl_getpath(&filp->f_path, (char __user *) arg,
++				    PATH_MAX);
++		break;
+ 	default:
+ 		break;
+ 	}
+Index: linux-2.6.mod/include/asm-generic/fcntl.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-generic/fcntl.h	2008-04-13 14:17:33.000000000 -0700
++++ linux-2.6.mod/include/asm-generic/fcntl.h	2008-04-13 14:18:17.000000000 -0700
+@@ -73,6 +73,7 @@
+ #define F_SETSIG	10	/* for sockets. */
+ #define F_GETSIG	11	/* for sockets. */
+ #endif
++#define F_GETPATH	12
+ 
+ /* for F_[GET|SET]FL */
+ #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+Index: linux-2.6.mod/fs/proc/base.c
+===================================================================
+--- linux-2.6.mod.orig/fs/proc/base.c	2008-04-13 14:41:03.000000000 -0700
++++ linux-2.6.mod/fs/proc/base.c	2008-04-13 14:42:12.000000000 -0700
+@@ -1192,30 +1192,6 @@
+ 	return ERR_PTR(error);
+ }
+ 
+-static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
+-{
+-	char *tmp = (char*)__get_free_page(GFP_TEMPORARY);
+-	char *pathname;
+-	int len;
+-
+-	if (!tmp)
+-		return -ENOMEM;
+-
+-	pathname = d_path(path, tmp, PAGE_SIZE);
+-	len = PTR_ERR(pathname);
+-	if (IS_ERR(pathname))
+-		goto out;
+-	len = tmp + PAGE_SIZE - 1 - pathname;
+-
+-	if (len > buflen)
+-		len = buflen;
+-	if (copy_to_user(buffer, pathname, len))
+-		len = -EFAULT;
+- out:
+-	free_page((unsigned long)tmp);
+-	return len;
+-}
+-
+ static int proc_pid_readlink(struct dentry * dentry, char __user * buffer, int buflen)
+ {
+ 	int error = -EACCES;
+@@ -1230,7 +1206,7 @@
+ 	if (error)
+ 		goto out;
+ 
+-	error = do_proc_readlink(&path, buffer, buflen);
++	error = fcntl_getpath(&path, buffer, buflen);
+ 	path_put(&path);
+ out:
+ 	return error;
+Index: linux-2.6.mod/include/linux/fs.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/fs.h	2008-04-13 14:40:01.000000000 -0700
++++ linux-2.6.mod/include/linux/fs.h	2008-04-13 14:40:34.000000000 -0700
+@@ -960,6 +960,7 @@
+ /* only for net: no internal synchronization */
+ extern void __kill_fasync(struct fasync_struct *, int, int);
+ 
++extern int fcntl_getpath(struct path *fpath, char __user *path, int maxsize);
+ extern int __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
+ extern int f_setown(struct file *filp, unsigned long arg, int force);
+ extern void f_delown(struct file *filp);
