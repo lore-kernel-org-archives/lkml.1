@@ -1,724 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYDMQNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbYDMQTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbYDMQNv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYDMQNn
+	id S1758696AbYDMQTT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 12:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYDMQTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:13:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36070 "EHLO ogre.sisk.pl"
+	Sun, 13 Apr 2008 12:19:11 -0400
+Received: from nn7.de ([85.214.94.156]:41201 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbYDMQNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:13:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: x86 git tree broken (bisected)
-Date: Sun, 13 Apr 2008 18:14:12 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <86802c440804130124l2b0cb199x4d75f2df68f93fa4@mail.gmail.com> <86802c440804130141uf7d5553s2e1b9eb43877d399@mail.gmail.com>
-In-Reply-To: <86802c440804130141uf7d5553s2e1b9eb43877d399@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_VFjAIhjTBjWfhIB"
-Message-Id: <200804131814.13629.rjw@sisk.pl>
+	id S1754371AbYDMQTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 12:19:10 -0400
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200804131553.15573.rjw@sisk.pl>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
+	 <1207985262.4372.3.camel@localhost> <20080413085343.GD8949@elf.ucw.cz>
+	 <200804131553.15573.rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 13 Apr 2008 16:18:59 +0000
+Message-Id: <1208103539.4839.92.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_VFjAIhjTBjWfhIB
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Sunday, 13 of April 2008, Yinghai Lu wrote:
-> On Sun, Apr 13, 2008 at 1:24 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> > On Fri, Apr 11, 2008 at 1:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  >
-> >  > On Friday, 11 of April 2008, Yinghai Lu wrote:
-> >  >  > On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  >  > > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
-> >  >  > >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
-> >  >  > >  > >
-> >  >  > >  > > * Ingo Molnar <mingo@elte.hu> wrote:
-> >  >  > >  > >
-> >  >  > >  > > > > > > First, the X server doesn't want to start (it says it couldn't
-> >  >  > >  > > > > > > mmap the framebuffer).
-> >  >  > >  > > > > >
-> >  >  > >  > > > > > could you send your .config?
-> >  >  > >  > > > >
-> >  >  > >  > > > > Attached.
-> >  >  > >  > > >
-> >  >  > >  > > > could you disable this option:
-> >  >  > >  > > >
-> >  >  > >  > > >  CONFIG_NONPROMISC_DEVMEM=y
-> >  >  > >  > > >
-> >  >  > >  > > > does it help with the X problem?
-> >  >  > >  >
-> >  >  > >  > That didn't help.
-> >  >  > >  >
-> >  >  > >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
-> >  >  > >  > > rather new distro (Fedora 8) which has Xorg 7.2.
-> >  >  > >  >
-> >  >  > >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
-> >  >  > >  >
-> >  >  > >  > I think the problem is somehow related to the Radeon.
-> >  >  > >
-> >  >  > >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  >  > >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
-> >  >  > >  causing problems.
-> >  >  > >
-> >  >  > >  Unfortunately, I can't revert cleanly it, because there are two more commits
-> >  >  > >  depending on it in a highly nontrivial fashion, so I have reverted all three
-> >  >  > >  commits
-> >  >  > >
-> >  >  > >  a365998cd2cecfb827469dbd57c29602c106cb83
-> >  >  > >  44f7f90fbe7a3a99aab082f765346514b7b5c705
-> >  >  > >  ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  >  > >
-> >  >  > >  and X starts again.  Also, suspend to RAM works from under X.
-> >  >  >
-> >  >  > please keep the three patches and applied the two attached debug patches.
-> >  >  >
-> >  >  > i wonder if there is some io allocation overlapping with your system.
-> >  >
-> >  >  Attached is a boot dmesg output from the current x86 git tree with your two
-> >  >  patches applied.
-> >  >
-> >  can you try to apply the patch i sent to you about agp bridge order
-> >  reading for buggy silicon?
-> >
-> >  Please boot kernel with "debug"...
-> >
-> >  I want to verify if you can get
-> >
-> >  "
-> >  Aperture conflicts with PCI mapping.
-> >  "
-> >
-> >  in your boot log...
-> >
+On Sun, 2008-04-13 at 15:53 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 13 of April 2008, Pavel Machek wrote:
+> > On Sat 2008-04-12 09:27:42, Soeren Sonnenburg wrote:
+> > > On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
+> > > > On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
+> > > > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> > > > > > The following report is on the current list of known regressions
+> > > > > > from 2.6.24.  Please verify if the issue is still present in the
+> > > > > > mainline.
+> > > > > > 
+> > > > > > 
+> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
+> > > > > > Subject		: 2.6.25-rc6 regression - hang on resume
+> > > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> > > > > > Date		: 2008-03-25 04:44 (10 days old)
+> > > > > 
+> > > > > Yes. The machine resumes and display stays black using s2ram -f -p
+> > > > > (blindly typing reboot etc on keyboard does what is expected). However
+> > > > > display comes back on 2.6.24.
+> > > > 
+> > > > Could you get us any debugging output from s2ram? Or maybe even strace
+> > > > it in both working and broken case, and comparing them? (You may want
+> > > > to disable randomization so that results are comparable).
+> > > 
+> > > I did on 2.6.24
+> > > 
+> > > strace -ff s2ram >s2ram24.trace 2>&1
+> > > 
+> > > and .25
+> > > 
+> > > ???strace -ff s2ram >s2ram25.trace 2>&1
+> > > 
+> > > with the .24 bringing the display back and .25 not. Files are here
+> > > 
+> > > http://nn7.de/debugging/s2ram24.trace.bz2
+> > > ???http://nn7.de/debugging/s2ram25.trace.bz2
+> > 
+> > Hmm: 
+> > 
+> > /sys/bus/pci/devices/0000:00:1b.0/irq
+> > 
+> > contains 21 in one case and 22 in another... as do other
+> > interrupts. Is that expected? Can you post /proc/interrupts for both
+> > versions?
+> > 
+> > Hmm, big part of trace is:
+> > 
+> > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> > implemented)
+> > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> > implemented)
+> > 
+> > ...I wonder why we do it so many times?
+> > 
+> > And here's the difference. .25 says:
+> > 
+> > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> > implemented)
+> > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> > implemented)
+> > Error: something went wrong performing real mode call
+> > open("/sys/class/graphics",
+> > O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
+> > such file or directory)
+> > open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
+> > ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
+> > 
+> > ...can you perhaps add printf-s to s2ram to find out what changed?
 > 
-> then with this patch for io allocation overlapping...
+> Well, that looks suspiciously similar to
+> http://bugzilla.kernel.org/show_bug.cgi?id=10155 .
 
-The kernel works correctly with this patch applied.
+Hmmhh the only difference is that I don't have a core 2 duo but only a
+core 1 duo but hmmmhh the flag down there looks like it does nx, or
+should I see something like nx enabled in dmesg?
 
-dmesg output attached.
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 14
+model name	: Genuine Intel(R) CPU            1600  @ 2.16GHz
+stepping	: 8
+cpu MHz		: 1000.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 6
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc bts
+pni monitor vmx est tm2 xtpr
+bogomips	: 4333.82
+clflush size	: 64
 
-Thanks,
-Rafael
 
---Boundary-00=_VFjAIhjTBjWfhIB
-Content-Type: text/x-log;
-  charset="iso-8859-15";
-  name="patched-dmesg.log"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="patched-dmesg.log"
+Anyway I will try noexec=off ...
 
-Linux version 2.6.25-rc8-x86-latest.git (rafael@chimera) (gcc version 4.2.1 (SUSE Linux)) #24 SMP Sun Apr 13 18:27:52 CEST 2008
-Command line: root=/dev/md1 vga=0x31a resume=/dev/sda2 debug
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
- BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000007ffb0000 (usable)
- BIOS-e820: 000000007ffb0000 - 000000007ffc0000 (ACPI data)
- BIOS-e820: 000000007ffc0000 - 000000007fff0000 (ACPI NVS)
- BIOS-e820: 000000007fff0000 - 0000000080000000 (reserved)
- BIOS-e820: 00000000ff7c0000 - 0000000100000000 (reserved)
-Entering add_active_range(0, 0, 158) 0 entries of 256 used
-Entering add_active_range(0, 256, 524208) 1 entries of 256 used
-max_pfn_mapped = 1048576
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-init_memory_mapping
-DMI 2.3 present.
-ACPI: RSDP 000F9B60, 0014 (r0 ACPIAM)
-ACPI: RSDT 7FFB0000, 0030 (r1 A M I  OEMRSDT   8000526 MSFT       97)
-ACPI: FACP 7FFB0200, 0084 (r2 A M I  OEMFACP   8000526 MSFT       97)
-ACPI: DSDT 7FFB0400, 45A7 (r1  939M2 939M2120      120 INTL  2002026)
-ACPI: FACS 7FFC0000, 0040
-ACPI: APIC 7FFB0390, 0068 (r1 A M I  OEMAPIC   8000526 MSFT       97)
-ACPI: OEMB 7FFC0040, 0056 (r1 A M I  AMI_OEM   8000526 MSFT       97)
-Entering add_active_range(0, 0, 158) 0 entries of 256 used
-Entering add_active_range(0, 256, 524208) 1 entries of 256 used
-  early res: 0 [0-fff] BIOS data page
-  early res: 1 [6000-7fff] TRAMPOLINE
-  early res: 2 [200000-b36c6f] TEXT DATA BSS
-  early res: 3 [378e2000-37fefaa5] RAMDISK
-  early res: 4 [9ec00-fffff] BIOS reserved
-  early res: 5 [8000-bfff] PGTABLE
-Zone PFN ranges:
-  DMA             0 ->     4096
-  DMA32        4096 ->  1048576
-  Normal    1048576 ->  1048576
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0:        0 ->      158
-    0:      256 ->   524208
-On node 0 totalpages: 524110
-  DMA zone: 56 pages used for memmap
-  DMA zone: 2464 pages reserved
-  DMA zone: 1478 pages, LIFO batch:0
-  DMA32 zone: 7110 pages used for memmap
-  DMA32 zone: 513002 pages, LIFO batch:31
-  Normal zone: 0 pages used for memmap
-  Movable zone: 0 pages used for memmap
-ACPI: PM-Timer IO Port: 0x808
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 2, version 0, address 0xfec00000, GSI 0-23
-ACPI: IOAPIC (id[0x03] address[0xfec10000] gsi_base[24])
-IOAPIC[1]: apic_id 3, version 0, address 0xfec10000, GSI 24-39
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Setting APIC routing to flat
-Using ACPI (MADT) for SMP configuration information
-PM: Registered nosave memory: 000000000009e000 - 000000000009f000
-PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
-PM: Registered nosave memory: 00000000000a0000 - 00000000000e8000
-PM: Registered nosave memory: 00000000000e8000 - 0000000000100000
-Allocating PCI resources starting at 88000000 (gap: 80000000:7f7c0000)
-SMP: Allowing 2 CPUs, 0 hotplug CPUs
-PERCPU: Allocating 31152 bytes of per cpu data
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 514480
-Kernel command line: root=/dev/md1 vga=0x31a resume=/dev/sda2 debug
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-TSC calibrated against PM_TIMER
-Marking TSC unstable due to TSCs unsynchronized
-time.c: Detected 2200.069 MHz processor.
-Console: colour dummy device 80x25
-console [tty0] enabled
-Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-... MAX_LOCKDEP_SUBCLASSES:    8
-... MAX_LOCK_DEPTH:          48
-... MAX_LOCKDEP_KEYS:        2048
-... CLASSHASH_SIZE:           1024
-... MAX_LOCKDEP_ENTRIES:     8192
-... MAX_LOCKDEP_CHAINS:      16384
-... CHAINHASH_SIZE:          8192
- memory used by lock dependency info: 1648 kB
- per task-struct memory footprint: 2688 bytes
-Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-Checking aperture...
-Node 0: aperture @ de000000 size 32 MB
-Aperture too small (32 MB)
-AGP bridge at 00:04:00
-Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
-Aperture too small (0 MB)
-Your BIOS doesn't leave a aperture memory hole
-Please enable the IOMMU option in the BIOS setup
-This costs you 64 MB of RAM
-Mapping aperture over 65536 KB of RAM @ 4000000
-PM: Registered nosave memory: 0000000004000000 - 0000000008000000
-Memory: 1981536k/2096832k available (2987k kernel code, 114252k reserved, 1658k data, 288k init)
-CPA: page pool initialized 1 of 1 pages preallocated
-Calibrating delay using timer specific routine.. 4404.13 BogoMIPS (lpj=8808269)
-Security Framework initialized
-SELinux:  Initializing.
-SELinux:  Starting in permissive mode
-selinux_register_security:  Registering secondary module capability
-Capability LSM initialized as secondary
-Mount-cache hash table entries: 256
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-ACPI: Core revision 20070126
-CPU0: AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ stepping 01
-Using local APIC timer interrupts.
-APIC timer calibration result 12500394
-Detected 12.500 MHz APIC timer.
-lockdep: fixing up alternatives.
-Booting processor 1/1 ip 6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4400.17 BogoMIPS (lpj=8800358)
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ stepping 01
-Brought up 2 CPUs
-Total of 2 processors activated (8804.31 BogoMIPS).
-CPU0 attaching sched-domain:
- domain 0: span 3
-  groups: 1 2
-CPU1 attaching sched-domain:
- domain 0: span 3
-  groups: 2 1
-khelper used greatest stack depth: 5752 bytes left
-net_namespace: 1112 bytes
-Time: 16:29:53  Date: 04/13/08
-NET: Registered protocol family 16
-No dock devices found.
-node 0 link 0: io port [1000, ffffff]
-TOM: 0000000080000000 aka 2048M
-node 0 link 0: mmio [e0000000, efffffff]
-node 0 link 0: mmio [a0000, bffff]
-node 0 link 0: mmio [80000000, ffffffff]
-bus: [00,ff] on node 0 link 0
-bus: 00 index 0 io port: [0, ffff]
-bus: 00 index 1 mmio: [80000000, fcffffffff]
-bus: 00 index 2 mmio: [a0000, bffff]
-ACPI: bus type pci registered
-PCI: Using configuration type 1 for base access
-Overlap at 0x7ffc0000-0x7ffc1000
-ACPI: EC: Look up EC in DSDT
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: 0000:00:04.0 reg 10 32bit mmio: [de000000, dfffffff]
-pci 0000:00:07.1: quirk: region 0800-083f claimed by ali7101 ACPI
-PCI: 0000:00:08.0 reg 10 io port: [e800, e8ff]
-PCI: 0000:00:08.0 reg 14 32bit mmio: [ff6ff000, ff6fffff]
-PCI: 0000:00:11.0 reg 10 io port: [e400, e4ff]
-PCI: 0000:00:11.0 reg 14 32bit mmio: [ff6fec00, ff6fecff]
-PCI: 0000:00:12.0 reg 20 io port: [ff00, ff0f]
-PCI: 0000:00:12.1 reg 10 io port: [ec00, ec07]
-PCI: 0000:00:12.1 reg 14 io port: [e080, e083]
-PCI: 0000:00:12.1 reg 18 io port: [e000, e007]
-PCI: 0000:00:12.1 reg 1c io port: [dc00, dc03]
-PCI: 0000:00:12.1 reg 20 io port: [d880, d88f]
-PCI: 0000:00:13.0 reg 10 32bit mmio: [ff6fd000, ff6fdfff]
-PCI: 0000:00:13.1 reg 10 32bit mmio: [ff6fc000, ff6fcfff]
-PCI: 0000:00:13.2 reg 10 32bit mmio: [ff6fb000, ff6fbfff]
-PCI: 0000:00:13.3 reg 10 32bit mmio: [ff6fe800, ff6fe8ff]
-PCI: 0000:01:00.0 reg 10 32bit mmio: [d0000000, d7ffffff]
-PCI: 0000:01:00.0 reg 14 io port: [b000, b0ff]
-PCI: 0000:01:00.0 reg 18 32bit mmio: [ff2f0000, ff2fffff]
-PCI: 0000:01:00.1 reg 10 32bit mmio: [ff2e0000, ff2effff]
-PCI: bridge 0000:00:01.0 io port: [9000, bfff]
-PCI: bridge 0000:00:01.0 32bit mmio: [ff200000, ff2fffff]
-PCI: bridge 0000:00:01.0 32bit mmio pref: [cbf00000, dbefffff]
-PCI: bridge 0000:00:02.0 32bit mmio: [ff300000, ff3fffff]
-PCI: bridge 0000:00:05.0 32bit mmio: [ff400000, ff4fffff]
-PCI: 0000:04:06.0 reg 10 io port: [c800, c8ff]
-PCI: 0000:04:06.0 reg 14 32bit mmio: [ff5ffc00, ff5ffcff]
-PCI: Transparent bridge - 0000:00:06.0
-PCI: bridge 0000:00:06.0 io port: [c000, cfff]
-PCI: bridge 0000:00:06.0 32bit mmio: [ff500000, ff5fffff]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P4._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.HTT_._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEB1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEB2._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 11 12 14 *15), disabled.
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs *3 4 5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11 12 14 15) *9
-ACPI: PCI Interrupt Link [LNKP] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-Overlap at 0x7ffb0000-0x7ffb5000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffc0000-0x7ffc1000
-ACPI Warning (tbutils-0217): Incorrect checksum in table [OEMB] -  6A, should be 5D [20070126]
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 14 devices
-ACPI: ACPI bus type pnp unregistered
-SCSI subsystem initialized
-libata version 3.00 loaded.
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-DMAR:parse DMAR table failure.
-agpgart: Detected AGP bridge 20
-agpgart: Aperture pointing to RAM
-agpgart: Aperture from AGP @ de000000 size 4096 MB
-agpgart: Aperture too small (0 MB)
-agpgart: No usable aperture found.
-agpgart: Consider rebooting with iommu=memaper=2 to get a good aperture.
-system 00:07: ioport range 0x480-0x48f has been reserved
-system 00:07: ioport range 0x4d0-0x4d1 has been reserved
-system 00:07: ioport range 0x800-0x87f could not be reserved
-system 00:07: ioport range 0x400-0x40f has been reserved
-system 00:08: iomem range 0xfec00000-0xfec00fff has been reserved
-system 00:08: iomem range 0xfee00000-0xfee00fff has been reserved
-system 00:08: iomem range 0xe0000000-0xefffffff has been reserved
-system 00:08: iomem range 0xfec10000-0xfec10fff has been reserved
-system 00:08: iomem range 0xffb80000-0xffffffff could not be reserved
-system 00:0c: ioport range 0x290-0x29f has been reserved
-system 00:0d: iomem range 0x0-0x9ffff could not be reserved
-system 00:0d: iomem range 0xc0000-0xcffff has been reserved
-system 00:0d: iomem range 0xe0000-0xfffff could not be reserved
-system 00:0d: iomem range 0x100000-0x7fffffff could not be reserved
-system 00:0d: iomem range 0x0-0x0 could not be reserved
-PCI: Bridge: 0000:00:01.0
-  IO window: 9000-bfff
-  MEM window: 0xff200000-0xff2fffff
-  PREFETCH window: 0x00000000cbf00000-0x00000000dbefffff
-PCI: Bridge: 0000:00:02.0
-  IO window: disabled.
-  MEM window: 0xff300000-0xff3fffff
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:05.0
-  IO window: disabled.
-  MEM window: 0xff400000-0xff4fffff
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:06.0
-  IO window: c000-cfff
-  MEM window: 0xff500000-0xff5fffff
-  PREFETCH window: 0x0000000080000000-0x00000000800fffff
-ACPI: PCI Interrupt 0000:00:01.0[A] -> GSI 29 (level, low) -> IRQ 29
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 34 (level, low) -> IRQ 34
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-PCI: Setting latency timer of device 0000:00:05.0 to 64
-PCI: Setting latency timer of device 0000:00:06.0 to 64
-bus: 00 index 0 io port: [0, ffff]
-bus: 00 index 1 mmio: [80000000, fcffffffff]
-bus: 00 index 2 mmio: [a0000, bffff]
-bus: 01 index 0 io port: [9000, bfff]
-bus: 01 index 1 mmio: [ff200000, ff2fffff]
-bus: 01 index 2 mmio: [cbf00000, dbefffff]
-bus: 01 index 3 mmio: [0, 0]
-bus: 02 index 0 mmio: [0, 0]
-bus: 02 index 1 mmio: [ff300000, ff3fffff]
-bus: 02 index 2 mmio: [0, 0]
-bus: 02 index 3 mmio: [0, 0]
-bus: 03 index 0 mmio: [0, 0]
-bus: 03 index 1 mmio: [ff400000, ff4fffff]
-bus: 03 index 2 mmio: [0, 0]
-bus: 03 index 3 mmio: [0, 0]
-bus: 04 index 0 io port: [c000, cfff]
-bus: 04 index 1 mmio: [ff500000, ff5fffff]
-bus: 04 index 2 mmio: [80000000, 800fffff]
-bus: 04 index 3 io port: [0, ffff]
-bus: 04 index 4 mmio: [80000000, fcffffffff]
-bus: 04 index 5 mmio: [a0000, bffff]
-NET: Registered protocol family 2
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-IP route cache hash table entries: 65536 (order: 7, 524288 bytes)
-TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
-TCP bind hash table entries: 65536 (order: 9, 3670016 bytes)
-TCP: Hash tables configured (established 262144 bind 65536)
-TCP reno registered
-checking if image is initramfs... it is
-Freeing initrd memory: 7222k freed
-audit: initializing netlink socket (disabled)
-type=2000 audit(1208104192.992:1): initialized
-Total HugeTLB memory allocated, 0
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-SELinux:  Registering netfilter hooks
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-pci 0000:01:00.0: Boot video device
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:01.0:pcie00]
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-assign_interrupt_mode Found MSI capability
-Allocate Port Service[0000:00:02.0:pcie00]
-vesafb: framebuffer at 0xd0000000, mapped to 0xffffc20000080000, using 5120k, total 16384k
-vesafb: mode is 1280x1024x16, linelength=2560, pages=5
-vesafb: scrolling: redraw
-vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Console: switching to colour frame buffer device 160x64
-fb0: VESA VGA frame buffer device
-Real Time Clock Driver v1.12ac
-Linux agpgart interface v0.103
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:0b: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-brd: module loaded
-loop: module loaded
-PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input0
-input: PC Speaker as /class/input/input1
-logips2pp: Detected unknown logitech mouse model 127
-input: ImExPS/2 Logitech Explorer Mouse as /class/input/input2
-md: multipath personality registered for level -4
-cpuidle: using governor ladder
-cpuidle: using governor menu
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 33
-PM: Resume from partition /dev/sda2
-PM: Checking hibernation image.
-PM: Error -6 checking image file
-PM: Resume from disk failed.
-  Magic number: 4:586:489
-Freeing unused kernel memory: 288k freed
-Write protecting the kernel read-only data: 4360k
-mount used greatest stack depth: 5592 bytes left
-ACPI: ACPI0007:00 is registered as cooling_device0
-ACPI: ACPI0007:01 is registered as cooling_device1
-ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 19 (level, low) -> IRQ 19
-scsi0 : pata_ali
-scsi1 : pata_ali
-ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xff00 irq 14
-ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xff08 irq 15
-ata1.00: ATAPI: TSSTcorpCD/DVDW SH-S182M, SB03, max UDMA/33
-ata1.00: WARNING: ATAPI DMA disabled for reliablity issues.  It can be enabled
-ata1.00: WARNING: via pata_ali.atapi_dma modparam or corresponding sysfs node.
-ata1.00: configured for UDMA/33
-scsi 0:0:0:0: CD-ROM            TSSTcorp CD/DVDW SH-S182M SB03 PQ: 0 ANSI: 5
-modprobe used greatest stack depth: 4664 bytes left
-sata_uli 0000:00:12.1: version 1.3
-ACPI: PCI Interrupt 0000:00:12.1[A] -> GSI 19 (level, low) -> IRQ 19
-scsi2 : sata_uli
-scsi3 : sata_uli
-ata3: SATA max UDMA/133 cmd 0xec00 ctl 0xe080 bmdma 0xd880 irq 19
-ata4: SATA max UDMA/133 cmd 0xe000 ctl 0xdc00 bmdma 0xd888 irq 19
-ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata3.00: ATA-7: SAMSUNG HD160JJ, WU100-33, max UDMA7
-ata3.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata3.00: configured for UDMA/133
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata4.00: ATA-7: SAMSUNG SP2004C, VM100-50, max UDMA7
-ata4.00: 390721968 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata4.00: configured for UDMA/133
-scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HD160JJ  WU10 PQ: 0 ANSI: 5
-scsi 3:0:0:0: Direct-Access     ATA      SAMSUNG SP2004C  VM10 PQ: 0 ANSI: 5
-md: raid1 personality registered for level 1
-BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
-Driver 'sd' needs updating - please use bus_type methods
-ACPI: PCI Interrupt 0000:00:13.3[D] -> <5>sd 2:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 2:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3 sda4 < sda5GSI 23 (level, low) -> IRQ 23
- sda6<6>ehci_hcd 0000:00:13.3: EHCI Host Controller
-ehci_hcd 0000:00:13.3: new USB bus registered, assigned bus number 1
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-ehci_hcd 0000:00:13.3: debug port 1
-ehci_hcd 0000:00:13.3: irq 23, io mem 0xff6fe800
- sda7 sda8<6>ehci_hcd 0000:00:13.3: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: configuration #1 chosen from 1 choice
- sda9 >
-hub 1-0:1.0: USB hub found
-sd 2:0:0:0: [sda] Attached SCSI disk
-sd 3:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-sd 3:0:0:0: [sdb] Write Protect is off
-sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 3:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-sd 3:0:0:0: [sdb] Write Protect is off
-sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sdb: sdb1 sdb2 sdb3 sdb4 < sdb5 sdb6 sdb7 sdb8<6>hub 1-0:1.0: 8 ports detected
- sdb9 sdb10 >
-sd 3:0:0:0: [sdb] Attached SCSI disk
-modprobe used greatest stack depth: 4512 bytes left
-usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: EHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ehci_hcd
-usb usb1: SerialNumber: 0000:00:13.3
-ACPI: PCI Interrupt 0000:00:13.0[A] -> GSI 20 (level, low) -> IRQ 20
-ohci_hcd 0000:00:13.0: OHCI Host Controller
-ohci_hcd 0000:00:13.0: new USB bus registered, assigned bus number 2
-ohci_hcd 0000:00:13.0: irq 20, io mem 0xff6fd000
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 3 ports detected
-usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: OHCI Host Controller
-usb usb2: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
-usb usb2: SerialNumber: 0000:00:13.0
-ACPI: PCI Interrupt 0000:00:13.1[B] -> GSI 21 (level, low) -> IRQ 21
-ohci_hcd 0000:00:13.1: OHCI Host Controller
-ohci_hcd 0000:00:13.1: new USB bus registered, assigned bus number 3
-ohci_hcd 0000:00:13.1: irq 21, io mem 0xff6fc000
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 3 ports detected
-usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb3: Product: OHCI Host Controller
-usb usb3: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
-usb usb3: SerialNumber: 0000:00:13.1
-ACPI: PCI Interrupt 0000:00:13.2[C] -> GSI 22 (level, low) -> IRQ 22
-ohci_hcd 0000:00:13.2: OHCI Host Controller
-ohci_hcd 0000:00:13.2: new USB bus registered, assigned bus number 4
-ohci_hcd 0000:00:13.2: irq 22, io mem 0xff6fb000
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 3 ports detected
-usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb4: Product: OHCI Host Controller
-usb usb4: Manufacturer: Linux 2.6.25-rc8-x86-latest.git ohci_hcd
-usb usb4: SerialNumber: 0000:00:13.2
-md: raid0 personality registered for level 0
-xor: automatically using best checksumming function: generic_sse
-   generic_sse:  7028.000 MB/sec
-xor: using function: generic_sse (7028.000 MB/sec)
-async_tx: api initialized (sync-only)
-raid6: int64x1   2127 MB/s
-raid6: int64x2   2734 MB/s
-raid6: int64x4   2361 MB/s
-raid6: int64x8   2189 MB/s
-raid6: sse2x1    2702 MB/s
-raid6: sse2x2    3176 MB/s
-raid6: sse2x4    3731 MB/s
-raid6: using algorithm sse2x4 (3731 MB/s)
-md: raid6 personality registered for level 6
-md: raid5 personality registered for level 5
-md: raid4 personality registered for level 4
-md: md1 stopped.
-md: bind<sda3>
-md: bind<sdb3>
-raid1: raid set md1 active with 2 out of 2 mirrors
-PM: Marking nosave pages: 000000000009e000 - 0000000000100000
-PM: Marking nosave pages: 0000000004000000 - 0000000008000000
-PM: Basic memory bitmaps created
-PM: Basic memory bitmaps freed
-PM: Starting manual resume from disk
-PM: Resume from partition 8:2
-PM: Checking hibernation image.
-PM: Resume from disk failed.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md1, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-mount used greatest stack depth: 3712 bytes left
-scsi 0:0:0:0: Attached scsi generic sg0 type 5
-sd 2:0:0:0: Attached scsi generic sg1 type 0
-sd 3:0:0:0: Attached scsi generic sg2 type 0
-input: Power Button (FF) as /class/input/input3
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /class/input/input4
-ACPI: Power Button (CM) [PWRB]
-uli526x: ULi M5261/M5263 net driver, version 0.9.3 (2005-7-29)
-ACPI: PCI Interrupt 0000:00:11.0[A] -> GSI 17 (level, low) -> IRQ 17
-eth0: ULi M5263 at pci0000:00:11.0, 00:13:8f:3a:0b:96, irq 17.
-8139too Fast Ethernet driver 0.9.28
-ACPI: PCI Interrupt 0000:04:06.0[A] -> GSI 21 (level, low) -> IRQ 21
-eth1: RealTek RTL8139 at 0xc800, 00:48:54:4b:5c:38, IRQ 21
-eth1:  Identified 8139 chip type 'RTL-8139A'
-Floppy drive(s): fd0 is 1.44M
-FDC 0 is a post-1991 82077
-Driver 'sr' needs updating - please use bus_type methods
-sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 0:0:0:0: Attached scsi CD-ROM sr0
-udev: renamed network interface eth1 to eth0
-ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
-parport_pc 00:06: reported by Plug and Play ACPI
-udev: renamed network interface eth0_rename to eth1
-parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,EPP,ECP,DMA]
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/ac97/ac97_codec.c:2053: AC'97 1 does not respond - RESET
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/ac97/ac97_codec.c:2062: AC'97 1 access is not valid [0xffffffff], removing mixer.
-ALSA /home/rafael/src/linux-2.6-x86/sound/pci/intel8x0.c:2157: Unable to initialize codec #1
-intel8x0_measure_ac97_clock: measured 51954 usecs
-intel8x0: clocking to 48000
-md: md2 stopped.
-device-mapper: uevent: version 1.0.3
-device-mapper: ioctl: 4.13.0-ioctl (2007-10-18) initialised: dm-devel@redhat.com
-md: bind<sda5>
-md: bind<sdb5>
-raid1: raid set md2 active with 2 out of 2 mirrors
-md: md3 stopped.
-md: bind<sda6>
-md: bind<sdb6>
-raid1: raid set md3 active with 2 out of 2 mirrors
-md: md4 stopped.
-md: bind<sda8>
-md: bind<sdb8>
-raid1: raid set md4 active with 2 out of 2 mirrors
-md: md5 stopped.
-md: bind<sda9>
-md: bind<sdb9>
-raid1: raid set md5 active with 2 out of 2 mirrors
-md: md0 stopped.
-md: bind<sda1>
-md: bind<sdb1>
-raid1: raid set md0 active with 2 out of 2 mirrors
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md0, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-ReiserFS: md4: found reiserfs format "3.6" with standard journal
-ReiserFS: md4: using ordered data mode
-ReiserFS: md4: journal params: device md4, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-ReiserFS: md4: checking transaction log (md4)
-ReiserFS: md4: Using r5 hash to sort names
-ReiserFS: md5: found reiserfs format "3.6" with standard journal
-ReiserFS: md5: using ordered data mode
-ReiserFS: md5: journal params: device md5, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-ReiserFS: md5: checking transaction log (md5)
-ReiserFS: md5: Using r5 hash to sort names
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md2, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on md3, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-Adding 2104504k swap on /dev/sda2.  Priority:42 extents:1 across:2104504k
-Adding 2104504k swap on /dev/sdb2.  Priority:42 extents:1 across:2104504k
-chkconfig used greatest stack depth: 3456 bytes left
-powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ processors (2 cpu cores) (version 2.20.00)
-powernow-k8:    0 : fid 0xe (2200 MHz), vid 0xa
-powernow-k8:    1 : fid 0xc (2000 MHz), vid 0xa
-powernow-k8:    2 : fid 0xa (1800 MHz), vid 0xa
-powernow-k8:    3 : fid 0x2 (1000 MHz), vid 0xa
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffc0000-0x7ffc1000
-Overlap at 0x7ffc0000-0x7ffc1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffb0000-0x7ffb1000
-Overlap at 0x7ffc0000-0x7ffc1000
-Overlap at 0x7ffc0000-0x7ffc1000
-lspci used greatest stack depth: 3432 bytes left
-Overlap at 0xd0000000-0xd0500000
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-ADDRCONF(NETDEV_UP): eth1: link is not ready
-ip6_tables: (C) 2000-2006 Netfilter Core Team
-Overlap at 0xd0000000-0xd8000000
-Overlap at 0xff2f0000-0xff300000
-ip_tables: (C) 2000-2006 Netfilter Core Team
-uli526x: eth1 NIC Link is Up 100 Mbps Full duplex
-ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-warning: `named' uses 32-bit capabilities (legacy support in use)
-Overlap at 0xd0000000-0xd8000000
-Overlap at 0xff2f0000-0xff300000
-Clocksource tsc unstable (delta = -274904273 ns)
-eth1: no IPv6 routers present
-Overlap at 0xd0000000-0xd8000000
-Overlap at 0xff2f0000-0xff300000
-Overlap at 0xd0000000-0xd8000000
-Overlap at 0xff2f0000-0xff300000
-Overlap at 0xd0000000-0xd8000000
-Overlap at 0xff2f0000-0xff300000
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
- domain 0: span 3
-  groups: 1 2
-CPU1 attaching sched-domain:
- domain 0: span 3
-  groups: 2 1
-
---Boundary-00=_VFjAIhjTBjWfhIB--
+Soeren
