@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbYDMQ7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYDMRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759497AbYDMQ7x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYDMQ7q
+	id S1759506AbYDMRDS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYDMRDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:59:46 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:25289 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbYDMQ7p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:59:45 -0400
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       heukelum@fastmail.fm
-Subject: Re: [PATCH] x86: always_inline wrapper for x86's test_bit
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080413112308.GA23426@mailshack.com>
-Date: Sun, 13 Apr 2008 18:58:30 +0200
-In-Reply-To: <20080413112308.GA23426@mailshack.com> (Alexander van Heukelum's message of "Sun, 13 Apr 2008 13:23:08 +0200")
-Message-ID: <87hce5wv2h.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Apr 2008 16:51:46.0124 (UTC) FILETIME=[A8AE68C0:01C89D86]
+	Sun, 13 Apr 2008 13:03:10 -0400
+Received: from crypt.ethx.net ([82.165.27.140]:55124 "EHLO crypt.ethx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbYDMRDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 13:03:09 -0400
+Subject: Re: Samsung Q45 hard freeze during boot
+From: Sam Morris <sam@robots.org.uk>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1207875044.4594.2.camel@xerces>
+References: <1207823931.8277.10.camel@tycho.robots.org.uk>
+	 <1207875044.4594.2.camel@xerces>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 13 Apr 2008 18:02:58 +0100
+Message-Id: <1208106178.4774.0.camel@durandal>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-Spam-Bars: /
+X-Spam-Report: hits=0.2: ALL_TRUSTED=-1.44, TVD_RCVD_IP=1.617 with SpamAssassin 3.2.3 (2007-08-08) on crypt.ethx.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum <heukelum@mailshack.com> writes:
+On Fri, 2008-04-11 at 01:50 +0100, Sam Morris wrote:
+> On Thu, 2008-04-10 at 11:38 +0100, Sam Morris wrote:
+> > Hi there, I'm trying to get Linux working on a Samsung Q45 laptop.
+> > 2.6.22 works fine, but 2.6.24.3 and 2.6.25-rc8 both freeze hard during
+> > boot time after the following messages:
+> > 
+> >         Waiting for /dev to be fully populated...
+> >         agpgart: Detected an Intel 965GM Chipset.
+> >         agpgart: AGP aperture is 256M @ 0xd0000000
+> >         input: Power Button (FF) as /class/input/input2
+> >         ACPI: Power Button (FF) [PWSRF]
+> >         inputL Lid Switch as /class/input/input3
+> >         ACPI: Lid Switch [LID0]
+> >         input: Power Button (CM) as /class/input/input4
+> >         ACPI: Power Button (CM) [PWRB]
+> >         input: Sleep Button (CM) as /class/input/input5
+> >         ACPI: Sleep Button (CM) [SLPB]
+> >         ACPI: AC Adapter [ADP1] (on-line)
+> >         ACPI: Battery Slot [BAT1] (battery present)
+> 
+> Further to this--I found that if I blacklist the 'video' driver then I can boot up normally.
 
-> On x86, test_bit is currently implemented as a preprocessor macro. It
-> uses gcc's __builtin_constant_p to determine if the bit position is 
-> known at compile time and defers to one of two functions depending
-> on that. This changes the same logic to an __always_inline wrapper
-> instead.
+I built a mainline kernel to test this out, and the freeze happens with
+2.6.24.4. I also filed a bug at
+<http://bugzilla.kernel.org/show_bug.cgi?id=10448>.
 
-Some old gccs didn't support __builtin_constant_p in inline properly,
-that is why it was always written in macros.
-
-Please double check with the oldest still supported gcc (3.2) if it 
-really generates the expected code for the constant/non constant case.
-
--Andi
+-- 
+Sam Morris <sam@robots.org.uk>
