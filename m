@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbYDMRay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbYDMRbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962AbYDMRay (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYDMRar
+	id S1753777AbYDMRbj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYDMRbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:30:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40751 "EHLO
+	Sun, 13 Apr 2008 13:31:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40754 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751646AbYDMRaq (ORCPT
+	with ESMTP id S1751494AbYDMRbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:30:46 -0400
-Date: Sun, 13 Apr 2008 18:26:21 +0100
+	Sun, 13 Apr 2008 13:31:31 -0400
+Date: Sun, 13 Apr 2008 18:27:32 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] pc300: Update to tty_set_operations
-Message-ID: <20080413182621.73a4e2a2@core>
+Subject: [PATCH] serial: switch the serial core to int put_char methods
+Message-ID: <20080413182732.6536d8d8@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -26,49 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver somehow escaped the tty operations changes way back when.
-Update it so that we can switch to tty->ops shortly.
-
 Signed-off-by: Alan Cox <alan@redhat.com>
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/net/wan/pc300_tty.c linux-2.6.25-rc8-mm2/drivers/net/wan/pc300_tty.c
---- linux.vanilla-2.6.25-rc8-mm2/drivers/net/wan/pc300_tty.c	2008-04-13 12:55:52.000000000 +0100
-+++ linux-2.6.25-rc8-mm2/drivers/net/wan/pc300_tty.c	2008-04-13 15:41:35.000000000 +0100
-@@ -178,6 +178,20 @@
- 	CPC_TTY_UNLOCK(card,flags); 
+
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/serial/serial_core.c linux-2.6.25-rc8-mm2/drivers/serial/serial_core.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/serial/serial_core.c	2008-04-13 15:36:54.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/serial/serial_core.c	2008-04-13 16:00:06.000000000 +0100
+@@ -422,6 +422,7 @@
+ 
+ EXPORT_SYMBOL(uart_get_divisor);
+ 
++/* FIXME: Consistent locking policy */
+ static void
+ uart_change_speed(struct uart_state *state, struct ktermios *old_termios)
+ {
+@@ -454,27 +455,30 @@
+ 	port->ops->set_termios(port, termios, old_termios);
  }
  
-+
-+static const struct tty_operations pc300_ops = {
-+	.open = cpc_tty_open,
-+	.close = cpc_tty_close,
-+	.write = cpc_tty_write, 
-+	.write_room = cpc_tty_write_room, 
-+	.chars_in_buffer = cpc_tty_chars_in_buffer, 
-+	.tiocmset = pc300_tiocmset,
-+	.tiocmget = pc300_tiocmget,
-+	.flush_buffer = cpc_tty_flush_buffer, 
-+	.hangup = cpc_tty_hangup,
-+};
-+
-+
- /*
-  * PC300 TTY initialization routine
-  *
-@@ -225,15 +239,7 @@
- 		serial_drv.flags = TTY_DRIVER_REAL_RAW;
+-static inline void
++static inline int
+ __uart_put_char(struct uart_port *port, struct circ_buf *circ, unsigned char c)
+ {
+ 	unsigned long flags;
++	int ret = 0;
  
- 		/* interface routines from the upper tty layer to the tty driver */
--		serial_drv.open = cpc_tty_open;
--		serial_drv.close = cpc_tty_close;
--		serial_drv.write = cpc_tty_write; 
--		serial_drv.write_room = cpc_tty_write_room; 
--		serial_drv.chars_in_buffer = cpc_tty_chars_in_buffer; 
--		serial_drv.tiocmset = pc300_tiocmset;
--		serial_drv.tiocmget = pc300_tiocmget;
--		serial_drv.flush_buffer = cpc_tty_flush_buffer; 
--		serial_drv.hangup = cpc_tty_hangup;
-+		tty_set_operations(&serial_drv, &pc300_ops);
+ 	if (!circ->buf)
+-		return;
++		return 0;
  
- 		/* register the TTY driver */
- 		if (tty_register_driver(&serial_drv)) { 
-
+ 	spin_lock_irqsave(&port->lock, flags);
+ 	if (uart_circ_chars_free(circ) != 0) {
+ 		circ->buf[circ->head] = c;
+ 		circ->head = (circ->head + 1) & (UART_XMIT_SIZE - 1);
++		ret = 1;
+ 	}
+ 	spin_unlock_irqrestore(&port->lock, flags);
++	return ret;
+ }
+ 
+-static void uart_put_char(struct tty_struct *tty, unsigned char ch)
++static int uart_put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	struct uart_state *state = tty->driver_data;
+ 
+-	__uart_put_char(state->port, &state->info->xmit, ch);
++	return __uart_put_char(state->port, &state->info->xmit, ch);
+ }
+ 
+ static void uart_flush_chars(struct tty_struct *tty)
