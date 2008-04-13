@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbYDMHFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbYDMHJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbYDMHFg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 03:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYDMHF1
+	id S1753121AbYDMHJR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 03:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYDMHJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 03:05:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40213 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Apr 2008 03:09:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58211 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbYDMHF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 03:05:26 -0400
-Date: Sun, 13 Apr 2008 09:05:13 +0200
+	id S1751417AbYDMHJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 03:09:03 -0400
+Date: Sun, 13 Apr 2008 09:08:33 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Roland Dreier <rdreier@cisco.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080413070513.GB19773@elte.hu>
-References: <20080411210022.GJ11962@parisc-linux.org> <1208003081.7427.7.camel@twins>
+Message-ID: <20080413070833.GC19773@elte.hu>
+References: <20080411210022.GJ11962@parisc-linux.org> <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org> <adaskxqrgsl.fsf@cisco.com> <20080412204748.GN11962@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1208003081.7427.7.camel@twins>
+In-Reply-To: <20080412204748.GN11962@parisc-linux.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,27 +36,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-> On Fri, 2008-04-11 at 15:00 -0600, Matthew Wilcox wrote:
+> Yes, that text appears in the URL I provided in the mail that started 
+> this thread ;-)
 > 
-> > So does it make sense to retain the completion as a primitive in 
-> > Linux?
-> 
-> My take on it is the opposite: kill off semaphores and leave the 
-> completions around.
+> The semaphore rewrite I did does not have this problem (it's less 
+> efficient than the hand-optimised assembler, but much more 
+> maintainable). You're supposed to be using mutexes if you want 
+> efficiency anyway.
 
-exactly. I first misread the subject line because i parsed it as 
-"replace semaphores with completions" and i thought "cool", then did i 
-realize that the patch does it the other way around. Converting 
-completions to semaphores just makes no sense.
+but semaphores will be _removed_, _completely_. Rewriting them in 
+generic C code is just the first step towards that - it consolidates all 
+the myriads of semaphore implementations that Linux has spread out.
 
-Besides all your arguments later in this thread about how problematic 
-locking primitives semaphores are because they are so vague (which are 
-all correct), there's also another aspect: completions are faster a bit 
-in theory, because they know that they will schedule most of the time - 
-while semaphores assume that they will _not_ schedule. (And that's 
-exactly because the intent of the developer when using a completion is 
-crystal clear.)
+your proposed change to change completions to semaphores is totally 
+backwards and prolongs an API we want to get rid of. Did you miss this 
+aspect of the mutex rewrite, of the semaphore-to-mutex, 
+semaphore-to-completions and semaphore-to-rwsem conversions?
 
 	Ingo
