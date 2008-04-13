@@ -1,103 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYDMIY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbYDMI22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYDMIY4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 04:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYDMIYr
+	id S1756618AbYDMI22 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 04:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYDMI2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 04:24:47 -0400
-Received: from rv-out-0708.google.com ([209.85.198.247]:38659 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752444AbYDMIYq (ORCPT
+	Sun, 13 Apr 2008 04:28:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58939 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYDMI2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 04:24:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WTiQHqwYONFMptFhGRRjbEtH2okMuUxGi7O1zaQtyVrvrm3G33ashR28KQE+1YM4ZoLMB/66Je2oA55u2LY7UDjXoTqWoS+au3c65BwxNyCHaC45ugAsx0jj+unPhm7nyUrAuqxeH9p89XlHqV+9jB7WyTP5Mdu0+8I5HMQwdp0=
-Message-ID: <86802c440804130124l2b0cb199x4d75f2df68f93fa4@mail.gmail.com>
-Date: Sun, 13 Apr 2008 01:24:46 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86 git tree broken (bisected)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <200804112251.09769.rjw@sisk.pl>
+	Sun, 13 Apr 2008 04:28:18 -0400
+Date: Sun, 13 Apr 2008 04:28:15 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Bob Copeland <me@bobcopeland.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-ID: <20080413082815.GA20108@infradead.org>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200804102159.14563.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl>
-	 <86802c440804111326t4c3ff4b6od33a128560b58aec@mail.gmail.com>
-	 <200804112251.09769.rjw@sisk.pl>
+In-Reply-To: <20080413012001.8d7967f4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 1:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> On Friday, 11 of April 2008, Yinghai Lu wrote:
->  > On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
->  > >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
->  > >  > >
->  > >  > > * Ingo Molnar <mingo@elte.hu> wrote:
->  > >  > >
->  > >  > > > > > > First, the X server doesn't want to start (it says it couldn't
->  > >  > > > > > > mmap the framebuffer).
->  > >  > > > > >
->  > >  > > > > > could you send your .config?
->  > >  > > > >
->  > >  > > > > Attached.
->  > >  > > >
->  > >  > > > could you disable this option:
->  > >  > > >
->  > >  > > >  CONFIG_NONPROMISC_DEVMEM=y
->  > >  > > >
->  > >  > > > does it help with the X problem?
->  > >  >
->  > >  > That didn't help.
->  > >  >
->  > >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
->  > >  > > rather new distro (Fedora 8) which has Xorg 7.2.
->  > >  >
->  > >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
->  > >  >
->  > >  > I think the problem is somehow related to the Radeon.
->  > >
->  > >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
->  > >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
->  > >  causing problems.
->  > >
->  > >  Unfortunately, I can't revert cleanly it, because there are two more commits
->  > >  depending on it in a highly nontrivial fashion, so I have reverted all three
->  > >  commits
->  > >
->  > >  a365998cd2cecfb827469dbd57c29602c106cb83
->  > >  44f7f90fbe7a3a99aab082f765346514b7b5c705
->  > >  ea1441bdf53692c3dc1fd2658addcf1205629661
->  > >
->  > >  and X starts again.  Also, suspend to RAM works from under X.
->  >
->  > please keep the three patches and applied the two attached debug patches.
->  >
->  > i wonder if there is some io allocation overlapping with your system.
->
->  Attached is a boot dmesg output from the current x86 git tree with your two
->  patches applied.
->
-can you try to apply the patch i sent to you about agp bridge order
-reading for buggy silicon?
+> I'm not complaining about anything.  Who has?
+> 
+> As the filesystem is for occasional, non-performance-sensitive use
+> by a very small number of people, doing it via FUSE sounds like an
+> all-round more practical approach.  This has nothing to do with quality of
+> implementation at all.
 
-Please boot kernel with "debug"...
+It's a stupid idea.  Moving a simple block based filesystem means it's
+more complicated, less efficient because of the additional context
+switches and harder to use because you need additional userspace
+packages and need to setup fuse.
 
-I want to verify if you can get
-
-"
-Aperture conflicts with PCI mapping.
-"
-
-in your boot log...
-
-YH
+We made writing block based filesystems trivial in the kernel to grow
+more support for filesystems like this one.
