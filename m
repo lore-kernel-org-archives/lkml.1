@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYDMVjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYDMVw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYDMVjl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYDMVjd
+	id S1754571AbYDMVw0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYDMVwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:39:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37562 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbYDMVjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:39:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
-Date: Sun, 13 Apr 2008 23:39:43 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200804040111.15255.rjw@sisk.pl> <200804131533.03150.rjw@sisk.pl> <1208120711.6958.52.camel@pasglop>
-In-Reply-To: <1208120711.6958.52.camel@pasglop>
+	Sun, 13 Apr 2008 17:52:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:64872 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbYDMVwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 17:52:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=mnDjbR3lTU3ckrv/bZmW2gbgMlO4e92pkFoEI6jstL+KrwjzABvTZYOWeOooVON0a9cntUdCwyvxOP2AjyhQ01R4B9SVqSP0nSVpApGZLRpfa/TmIwwvRx6a2+9cxIn3b7LbgkKj30WZnNc1fjNxW4OmBnHWGg+OvhMULfqqFAs=
+Message-ID: <4802808F.9020209@gmail.com>
+Date: Mon, 14 Apr 2008 01:52:15 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804132339.45280.rjw@sisk.pl>
+To: David Erickson <halcyon1981@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Kernel module unable to find an exported symbol
+References: <740b8bba0804131418q4a210d44k77f95714002b92a@mail.gmail.com>
+In-Reply-To: <740b8bba0804131418q4a210d44k77f95714002b92a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 of April 2008, Benjamin Herrenschmidt wrote:
+David Erickson пишет:
+> Hi everyone, I have two kernel modules I am developing, both use the
+> call_rcu exported function. The core module finds it no problem,
+> installs, and uses it.  The second module however when I try to insmod
+> it complains:
 > 
-> On Sun, 2008-04-13 at 15:33 +0200, Rafael J. Wysocki wrote:
-> > + *     The PM core executes @prepare() for all devices before starting to
-> > + *     execute suspend callbacks for any of them, so drivers may assume all of
-> > + *     the other devices to be present and functional while @prepare() is being
-> > + *     executed.  In particular, it is safe to make GFP_KERNEL memory
-> > + *     allocations from within @prepare().  However, drivers may NOT assume
-> > + *     anything about the availability of the user space at that time and it
-> > + *     is not correct to request firmware from within @prepare() (it's too
-> > + *     late to do that).  [To work around this limitation, drivers may
-> > + *     register suspend and hibernation notifiers that are executed before the
-> > + *     freezing of tasks.]
+> Unknown symbol call_rcu
 > 
-> Can you tell me why you kept that limitation with user space ?
+> I have verified that it is exported via /proc/kallsyms:
+> c04348c8 T call_rcu
 > 
-> I don't see the point... On the contrary, prepare() is the pefect place
-> to implement handshaking with userspace for drivers that need to do so,
-> such as the DRM.
+> I am at a loss as to how to proceed, can anyone shed some light on how
+> this could be happening? Or how to diagnose and debug the problem?
 
-This _comment_ reflects the current situation, which is that we freeze tasks
-before a suspend.  When it's no longer necessary to do that, I'll be happy to
-change this comment.  For now, however, that's not the case.
+It is very much possible that adding the following line to the source
+code of your module will help:
 
-Thanks,
-Rafael
+MODULE_LICENSE("GPL");
+
+HTH,
+Dmitri
+
+> 
+> Thanks,
+> David
+> 
+> ps please CC me on a reply, thank you!
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
