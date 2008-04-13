@@ -1,121 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYDMSqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYDMSuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYDMSqv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYDMSqm
+	id S1753873AbYDMSuS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYDMSuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:46:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36663 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbYDMSql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:46:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: x86 git tree broken (bisected)
-Date: Sun, 13 Apr 2008 20:47:09 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <200804131812.55684.rjw@sisk.pl> <86802c440804131107s7c132bc6j10ba713e50589353@mail.gmail.com>
-In-Reply-To: <86802c440804131107s7c132bc6j10ba713e50589353@mail.gmail.com>
+	Sun, 13 Apr 2008 14:50:06 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:60651 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752037AbYDMSuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 14:50:05 -0400
+Message-ID: <4802560D.3020308@seznam.cz>
+Date: Sun, 13 Apr 2008 20:50:53 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+CC: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Williams <john.williams@petalogix.com>, benh@kernel.crashing.org,
+       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
+       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       paulus@samba.org
+Subject: Re: Microblaze Linux release
+References: <48020A21.4000404@seznam.cz> <20080413101304.308f6c1a@zod.rchland.ibm.com>
+In-Reply-To: <20080413101304.308f6c1a@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804132047.10221.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 of April 2008, Yinghai Lu wrote:
-> On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > On Sunday, 13 of April 2008, Yinghai Lu wrote:
-> >  > On Fri, Apr 11, 2008 at 1:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  > >
-> >  > > On Friday, 11 of April 2008, Yinghai Lu wrote:
-> >  > >  > On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  > >  > > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
-> >  > >  > >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
-> >  > >  > >  > >
-> >  > >  > >  > > * Ingo Molnar <mingo@elte.hu> wrote:
-> >  > >  > >  > >
-> >  > >  > >  > > > > > > First, the X server doesn't want to start (it says it couldn't
-> >  > >  > >  > > > > > > mmap the framebuffer).
-> >  > >  > >  > > > > >
-> >  > >  > >  > > > > > could you send your .config?
-> >  > >  > >  > > > >
-> >  > >  > >  > > > > Attached.
-> >  > >  > >  > > >
-> >  > >  > >  > > > could you disable this option:
-> >  > >  > >  > > >
-> >  > >  > >  > > >  CONFIG_NONPROMISC_DEVMEM=y
-> >  > >  > >  > > >
-> >  > >  > >  > > > does it help with the X problem?
-> >  > >  > >  >
-> >  > >  > >  > That didn't help.
-> >  > >  > >  >
-> >  > >  > >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
-> >  > >  > >  > > rather new distro (Fedora 8) which has Xorg 7.2.
-> >  > >  > >  >
-> >  > >  > >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
-> >  > >  > >  >
-> >  > >  > >  > I think the problem is somehow related to the Radeon.
-> >  > >  > >
-> >  > >  > >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  > >  > >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
-> >  > >  > >  causing problems.
-> >  > >  > >
-> >  > >  > >  Unfortunately, I can't revert cleanly it, because there are two more commits
-> >  > >  > >  depending on it in a highly nontrivial fashion, so I have reverted all three
-> >  > >  > >  commits
-> >  > >  > >
-> >  > >  > >  a365998cd2cecfb827469dbd57c29602c106cb83
-> >  > >  > >  44f7f90fbe7a3a99aab082f765346514b7b5c705
-> >  > >  > >  ea1441bdf53692c3dc1fd2658addcf1205629661
-> >  > >  > >
-> >  > >  > >  and X starts again.  Also, suspend to RAM works from under X.
-> >  > >  >
-> >  > >  > please keep the three patches and applied the two attached debug patches.
-> >  > >  >
-> >  > >  > i wonder if there is some io allocation overlapping with your system.
-> >  > >
-> >  > >  Attached is a boot dmesg output from the current x86 git tree with your two
-> >  > >  patches applied.
-> >  > >
-> >  > can you try to apply the patch i sent to you about agp bridge order
-> >  > reading for buggy silicon?
-> >  >
-> >  > Please boot kernel with "debug"...
-> >  >
-> >  > I want to verify if you can get
-> >  >
-> >  > "
-> >  > Aperture conflicts with PCI mapping.
-> >  > "
-> >  >
-> >  > in your boot log...
-> >
-> >  It's not present in there:
-> >
-> >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
-> >  Aperture too small (32 MB)
-> >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
-> >  Aperture too small (0 MB)
-> >  agpgart: Aperture pointing to RAM
-> >  agpgart: Aperture from AGP @ de000000 size 4096 MB
-> >  agpgart: Aperture too small (0 MB)
-> >
+Hi Josh,
+
+>> Hi Everybody,
+>>
+>> I fixed all reported bugs which I got from LKML and from you.
+>> Latest version of Microblaze Linux kernel is available at git.monstr.eu.
+>> There is git repository called linux-microblaze.git
+>> Microblaze port is based on 2.6.24-rc5. I'll create the new repo with clean pack
+>> of changes based on latest kernel version for easier pull.
+>>
+>> Merge windows will be open hopefully next week and I would like to send pull
+>> request to Paul.
 > 
-> did you apply the patch like the attached that i sent you in another mail?
+> Why Paul?  If microblaze is a new architecture (which it seems to be),
+> then you should really work through Linus directly.
 
-This dmesg is from a kernel without the patch.
+I don't know who start with it. For me is not this point important.
+I think that was Steve's idea, wasn't it?
 
-The dmesg with the patch applied was sent in a separate message:
-http://lkml.org/lkml/2008/4/13/122
+> Also, which version of gcc/binutils are needed to actually build this?
 
-Thanks,
-Rafael
+I personally use gcc from Petalogix distribution. For non-MMU kernel v3.4.1. for
+MMU kernel I think 4.1.1. (MMU port for Microblaze FDT kernel will come later).
+You can download whole distribution from developer.petalogix.com.
+
+Michal Simek
+www.monstr.eu
