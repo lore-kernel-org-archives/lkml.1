@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbYDMI22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbYDMI2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756618AbYDMI22 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 04:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYDMI2T
+	id S1754393AbYDMI2q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 04:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbYDMI2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 04:28:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58939 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYDMI2S (ORCPT
+	Sun, 13 Apr 2008 04:28:31 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41429 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756612AbYDMI22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 04:28:18 -0400
-Date: Sun, 13 Apr 2008 04:28:15 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Bob Copeland <me@bobcopeland.com>,
+	Sun, 13 Apr 2008 04:28:28 -0400
+To: bfields@fieldses.org
+CC: trond.myklebust@fys.uio.no, miklos@szeredi.hu, eshel@almaden.ibm.com,
+       neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080413082815.GA20108@infradead.org>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080413012001.8d7967f4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-reply-to: <20080410215410.GF22324@fieldses.org> (bfields@fieldses.org)
+Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org> <20080410215410.GF22324@fieldses.org>
+Message-Id: <E1JkxZI-0003Bc-9C@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 13 Apr 2008 10:28:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not complaining about anything.  Who has?
-> 
-> As the filesystem is for occasional, non-performance-sensitive use
-> by a very small number of people, doing it via FUSE sounds like an
-> all-round more practical approach.  This has nothing to do with quality of
-> implementation at all.
+> Apologies, that was indeed a behavioral change introduced in a commit
+> that claimed just to be shuffling code around.
 
-It's a stupid idea.  Moving a simple block based filesystem means it's
-more complicated, less efficient because of the additional context
-switches and harder to use because you need additional userspace
-packages and need to setup fuse.
+Another complaint about this series: using EINPROGRESS to signal
+asynchronous locking looks really fishy.  How does the filesystem
+know, that the caller wants to do async locking?  How do we make sure,
+that the filesystem (like fuse or 9p, which "blindly" return the error
+from the server) doesn't return EINPROGRESS even when it's _not_ doing
+an asynchronous lock?
 
-We made writing block based filesystems trivial in the kernel to grow
-more support for filesystems like this one.
+I think it would have been much cleaner to have a completely separate
+interface for async locking, instead of trying to cram that into
+f_op->lock().
+
+Would that be possible to fix now?  Or at least make EINPROGRESS a
+kernel-internal error value (>512), to make it that it has a special
+meaning for the _kernel only_?
+
+Thanks,
+Miklos
