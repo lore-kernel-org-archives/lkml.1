@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbYDMTxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbYDMTxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbYDMTxM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYDMTpF
+	id S1759899AbYDMTxg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYDMTr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:45:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36969 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754965AbYDMToo convert rfc822-to-8bit (ORCPT
+	Sun, 13 Apr 2008 15:47:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57358
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756599AbYDMTrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 15:44:44 -0400
-Cc: "Marcus Better" <marcus@better.se>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
-In-Reply-To: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <oq66hWjeF4N.A.Zx.U4lAIB@albercik>
-Subject: [Bug #10320] rt2x00 does not associate or give scan results
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
+	Sun, 13 Apr 2008 15:47:25 -0400
+Date: Sun, 13 Apr 2008 12:47:26 -0700 (PDT)
+Message-Id: <20080413.124726.122432429.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: w@1wt.eu, rjw@sisk.pl, tilman@imap.cc, Valdis.Kletnieks@vt.edu,
+       lkml@rtr.ca, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080413121831.d89dd424.akpm@linux-foundation.org>
+References: <200804132040.12138.rjw@sisk.pl>
+	<20080413184730.GD8474@1wt.eu>
+	<20080413121831.d89dd424.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Sun, 13 Apr 2008 12:18:31 -0700
 
-The following bug entry is on the current list of known regressions
-from 2.6.24.  Please verify if it still should be listed.
+> That being said..  four or five years ago, developers would often work
+> closely with the reporter working out why the reporter's failure was
+> occurring.  Several days of back-and-forth.
 
+The ratio of bug reports to developers was significantly different
+back then.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10320
-Subject		: rt2x00 does not associate or give scan results
-Submitter	: Marcus Better <marcus@better.se>
-Date		: 2008-03-25 06:04 (20 days old)
-
-
+I pine for the "good ole' days" of kernel development sometimes too,
+but I try to be realistic and understand why things are different now.
