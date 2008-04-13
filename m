@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYDMQW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYDMQXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbYDMQW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbYDMQWs
+	id S1759444AbYDMQXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 12:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYDMQXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:22:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:19262 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754529AbYDMQWr (ORCPT
+	Sun, 13 Apr 2008 12:23:46 -0400
+Received: from web36606.mail.mud.yahoo.com ([209.191.85.23]:43188 "HELO
+	web36606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754792AbYDMQXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=jRJ/tmTMAz9iOKY4tzuk58G6e+IajaotEBCCs7tUtcdbz8HwV+W1NUqaPgarJ3l3B4SfGlbxBj3O2vLwsL94dENw2CRn6qSn38VV5LngWaqpom1odOd82+WJhZusD0YF0xYEuPw0WA2RLaodSP2MQGZTR7CdY0GbvCT/KBnSqBM=
-Date: Sun, 13 Apr 2008 20:18:12 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: static char *buf; (was Re: +
-	v4l-fix-concurrent-read-from-proc-videocodecs.patch added to -mm
-	tree)
-Message-ID: <20080413161812.GA21575@martell.zuzino.mipt.ru>
-References: <200804130902.m3D92W4u012757@imap1.linux-foundation.org>
+	Sun, 13 Apr 2008 12:23:45 -0400
+X-YMail-OSG: qoagXH4VM1lv5pcNALgKs8Myu4YL3Vs_MEZ6sygMnPrWJ.iTAPFn54pkRnln2ix9MiOryRxgbA--
+X-RocketYMMF: rancidfat
+Date: Sun, 13 Apr 2008 09:23:44 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Implementing a Linux Security Module
+To: "d.capitella@tin.it" <d.capitella@tin.it>, linux-kernel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <11947e44e7e.d.capitella@tin.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804130902.m3D92W4u012757@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <947311.34222.qm@web36606.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -static char *videocodec_buf = NULL;
-> -static int videocodec_bufsize;
 
-> -	kfree(videocodec_buf);
-> -	videocodec_buf = kmalloc(size, GFP_KERNEL);
+--- "d.capitella@tin.it" <d.capitella@tin.it> wrote:
 
-Speaking of this failure mode... cfi_staa_writev() does the same trick
-allocating and freeing global pointer to data.
-Is this a bug too?
+> Hi there! I'm studying the Linux Security Module Framework, and I'm
+> experiencing some issues while trying to register the modules I create.
+> 
+> I created a basic test module that just registers itself as a lsm. I
+> tried to load it on many distros, Ubuntu, Fedora, RedHat but it is not
+> allowed to register. 
+> 
+> May this be due to other LSMs that doesn't 
+> support stacking and that are
+> already loaded on those distros? If 
+> that's the problem, can't we just
+> create a security module that does 
+> nothing but managing the stacking of
+> other security modules?
 
+Yes, that is an option.
+
+There was work on a stacking module early on, but the
+lack of available modules and some of the stickier interaction
+issues lead to it being set aside.
+
+It certainly makes sense to stack a time-clock access
+module and a physical location module. It would not
+make sense to stack SELinux and ... well, anything.
+
+What you need to do in the current environment is build your
+own kernel, not just the module. It takes more time, disk,
+and cpu, but that's about it.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
