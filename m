@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYDMJWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYDMJfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYDMJWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 05:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYDMJWG
+	id S1757980AbYDMJfg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 05:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYDMJf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 05:22:06 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51693 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754814AbYDMJWF (ORCPT
+	Sun, 13 Apr 2008 05:35:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:37182 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754814AbYDMJf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 05:22:05 -0400
-Date: Sun, 13 Apr 2008 10:17:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, Bob Copeland <me@bobcopeland.com>
-Subject: Re: [PATCH 2/7] omfs: add inode routines
-Message-ID: <20080413101743.7d762e58@core>
-In-Reply-To: <1208041121-26787-3-git-send-email-me@bobcopeland.com>
-References: <1208041121-26787-3-git-send-email-me@bobcopeland.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Apr 2008 05:35:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=cVuc4eT13xCMRw8rut+KW0f2HOHdTCpWMywLRXIBH5EcbZ0xsChDOmzwo0q6SUdeydlTcx9hawSEvRzzhfdR3JDcXw+YH7DiosCA7alfEzL5pOKNORPKUUWSkknW6fOMMSKvDwCu+1iUCIIXfNcm/IhuKSRM7yVoFJbUlyFnXxw=
+Message-ID: <4801D302.8070005@gmail.com>
+Date: Sun, 13 Apr 2008 11:31:46 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: ijc@hellion.org.uk, tglx@linutronix.de,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: *_pagetable_setup_[start,done] crap ?
+References: <4800E134.8040602@gmail.com> <20080413074225.GF20332@elte.hu>
+In-Reply-To: <20080413074225.GF20332@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar pisze:
+> * Jacek Luczak <difrost.kernel@gmail.com> wrote:
+> 
+>> Ohh... and prototypes are wrong:
+>> diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+>> index 6cbc520..2167879 100644
+>> --- a/include/asm-x86/pgtable_32.h
+>> +++ b/include/asm-x86/pgtable_32.h
+>> @@ -204,8 +204,8 @@ do {                                                \
+>>   */
+>>  #define update_mmu_cache(vma, address, pte) do { } while (0)
+>>
+>> -void native_pagetable_setup_start(pgd_t *base);
+>> -void native_pagetable_setup_done(pgd_t *base);
+>> +extern void native_pagetable_setup_start(pgd_t *base) __init;
+>> +extern void native_pagetable_setup_done(pgd_t *base) __init;
+> 
+> while generally it's nice to add 'extern' to prototypes, it's not an 
+> outright bug to not have it. Also, __init is a must-have in the 
+> definition only - it should not be added to the prototype.
+> 
 
-> + * so we have to walk the tree.  Both inodes and file data are allocated
-> + * from the same map.  This array can be big (300k) so we allocate
-> + * in units of the blocksize.
+Sounds reasonably. Sorry for calling something crap. When I slept well it looks fine and clear for me.
 
-sbi->s_num_blocks doesn't appear to be validated at the time of mount ?
-
-> +static int omfs_fill_super(struct super_block *sb, void *data, int silent)
-> +{
-
-> +	sbi->s_num_blocks = be64_to_cpu(omfs_sb->s_num_blocks);
-> +	sbi->s_blocksize = be32_to_cpu(omfs_sb->s_blocksize);
-> +	sbi->s_mirrors = be32_to_cpu(omfs_sb->s_mirrors);
-> +	sbi->s_root_ino = be64_to_cpu(omfs_sb->s_root_block);
-> +	sbi->s_sys_blocksize = be32_to_cpu(omfs_sb->s_sys_blocksize);
-
-Several of these look like they should be checked before use elsewhere in
-the code (eg blocksize is fed into shifts later)
-
+-Jacek
