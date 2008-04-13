@@ -1,54 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYDMVcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYDMVcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbYDMVcQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYDMVb7
+	id S1756224AbYDMVcm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYDMVcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:31:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:56115 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYDMVb6 (ORCPT
+	Sun, 13 Apr 2008 17:32:33 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58629 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbYDMVcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:31:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=SDArWp1AFX9R5x5dHCQp98UK05sm8MeCxuWMkwMUktL1EL6WjENPfs8Rv9dohO1SY8BiTKFHEcGlBJCB/gR4xo+DWARbxWbUTGckSwxqc6piVdb3dXUdqZf6yCFqbrtcrfBJwPnw/9+V0YczS4pLiu+OxTWB7h+NpjjbcBiLr6g=
-From: Alexia Death <alexiadeath@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
-Date: Mon, 14 Apr 2008 00:32:21 +0300
-User-Agent: KMail/1.9.9
-References: <200804132326.07713.alexiadeath@gmail.com> <20080413214211.3730e977@core>
-In-Reply-To: <20080413214211.3730e977@core>
+	Sun, 13 Apr 2008 17:32:33 -0400
+Date: Sun, 13 Apr 2008 23:33:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+Message-ID: <20080413213310.GB29396@elf.ucw.cz>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost> <20080411210400.GA1533@elf.ucw.cz> <1207985262.4372.3.camel@localhost> <20080413085343.GD8949@elf.ucw.cz> <1208088344.4839.60.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804140032.22110.alexiadeath@gmail.com>
+In-Reply-To: <1208088344.4839.60.camel@localhost>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 13 April 2008 23:42:11 Alan Cox wrote:
-> > http://en.wikipedia.org/wiki/Secure_Digital_card#Compatibility_issues_wit
-> >h_2_GB_and_larger_cards tells me that this is the result of a hack due to
-> > the nature of 2GB cards.
-> >
-> > Are there any plans to make 2GB SD cards work? I doubt I'm the only one
-> > with such 2GB SD cards(and a camera) and Id be royally screwed right
-> > about now if I did not have my photobank and an option to use it as a
-> > copy over point...
->
-> Mounting it with -o loop ought to work around this if the problem is
-> purely media block size. That is probably the right answer anyway but the
-> solution ought to be managed more elegantly for the user.
+Hi!
 
-It seems the issue is a bit more complicated. Tried it with -o loop. It did 
-mount but the contents was binary garbage... Strangely different binary 
-garbage at each mount...  
+> > /sys/bus/pci/devices/0000:00:1b.0/irq
+> > 
+> > contains 21 in one case and 22 in another... as do other
+> > interrupts. Is that expected? Can you post /proc/interrupts for both
+> > versions?
+> 
+> It might be that configs are slightly different - if you think this
+> gives a clue I will post them, but your discovery below looks
+> promising:
 
---
-Best,
-Alexia
+Yep... any chance to do git bisect to see where it broke?
+
+> > Error: something went wrong performing real mode call
+> > open("/sys/class/graphics",
+> > O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
+> > such file or directory)
+> > open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
+> > ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
+> > 
+> > ...can you perhaps add printf-s to s2ram to find out what changed?
+> 
+> OK, I searched for ???"something went wrong performing real mode call" in
+> the s2ram source and found this function:
+> 
+> int do_real_post(unsigned pci_device)
+> {
+>     int error = 0;
+>     struct LRMI_regs r;
+>     memset(&r, 0, sizeof(r));
+> 
+>     /* Several machines seem to want the device that they're POSTing in
+>        here */
+>     r.eax = pci_device;
+> 
+>     /* 0xc000 is the video option ROM.  The init code for each
+>        option ROM is at 0x0003 - so jump to c000:0003 and start running
+> */
+>     r.cs = 0xc000;
+>     r.ip = 0x0003;
+> 
+>     /* This is all heavily cargo culted but seems to work */
+>     r.edx = 0x80;
+>     r.ds = 0x0040;
+> 
+>     if (!LRMI_call(&r)) {
+>         fprintf(stderr,
+>             "Error: something went wrong performing real mode call\n");
+>         error = 1;
+
+Sweet, so the problem is inside X86EMU_exec(), right? ...and that's
+bytecode interpretter. You could add printfs() all over it, to see
+where the execution differs.
+
+> so either the graphics adapter is somehow not ready yet or a wrong
+> address is used for posting?
+
+Or something goes wrong in the interpretter...
+
+> Do you already now have an idea? Or which things should I print out?
+
+It starts to look like git bisect is the easier way to get some
+results...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
