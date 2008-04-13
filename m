@@ -1,90 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYDMSUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYDMSVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbYDMSUx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYDMSUp
+	id S1754806AbYDMSVp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDMSVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:20:45 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:25440 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbYDMSUo (ORCPT
+	Sun, 13 Apr 2008 14:21:36 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:32404 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752009AbYDMSVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:20:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZrYLR8dsecR0zn+kPKTp9fM1+YPySlSs3bAtUxfhkttk+Cf3CBCeaY8u6nPxJ8vRFs5JxU3DFyBymNiD5yUJULlxBfBcWOUJ+3tiVcr81wUng1ApOx4pbdhpfY/X8yU/Jh0ePauKLYkNB5/c1PAdS6ZgtFUtyPwr2QtC4LdgxFE=
-Message-ID: <9a8748490804131120p4dfa2af1j4ead4f28ada45d4f@mail.gmail.com>
-Date: Sun, 13 Apr 2008 20:20:41 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: monte <monte@eslashlonghorns.com>
-Subject: Re: kernel bug
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48022F82.80704@eslashlonghorns.com>
+	Sun, 13 Apr 2008 14:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=x/4+oHJolLr/g29RpVB6SaoS/OfgjQY3VHi5/7qUY+HjVGXQ/7ngyf29SHhXbYegtVb4cwO48GV0dlp9BMci/mHpqauQPM595+uxyCer8VeXaXl+FiewqsN/WUSzf2p0XbWO/A7jBsJnI3m1yXk4t7+wRWeT/55vIrzHQ3qZ7A0=  ;
+X-YMail-OSG: HJmaNcoVM1k8uKxyOTosaA9XnIJJkSpdoNxvMhhAdbE8K_aAnuKyBgx0Sl4P0bNL7U2HX8ZaDpFkpzbSJjuGcW7y7JHPK7eiIhy07.euCqA1W9WtcA--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
+       lkml <linux-kernel@vger.kernel.org>, liam.girdwood@wolfsonmicro.com,
+       broonie@opensource.wolfsonmicro.com
+Subject: [patch 2.6.25-rc9] sound: fix platform driver hotplug/coldplug
+Date: Sun, 13 Apr 2008 11:20:40 -0700
+User-Agent: KMail/1.9.6
+Cc: kay.sievers@vrfy.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48022F82.80704@eslashlonghorns.com>
+Message-Id: <200804131120.41027.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/04/2008, monte <monte@eslashlonghorns.com> wrote:
-> Since I am new at this, this is the info you may need.
->
-There's a very good document describing information kernel developers
-may need when reporting kernel bugs. It's called 'REPORTING-BUGS' and
-can be found in the root of the kernel source tree - here's a link to
-an online copy: http://lxr.linux.no/linux+v2.6.24.4/REPORTING-BUGS
+From: Kay Sievers <kay.sievers@vrfy.org>
 
->  I am trying to using Ubuntu hardy (development branch), Kernel 2.6.24-16,
+Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
+modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
+hotpluggable sound platform drivers, to re-enable auto loading.
 
-That's a distribution kernel, not a stock kernel.org kernel. As a
-general rule, kernel developers at kernel.org have a hard time
-providing help with distribution kernels since almost all
-distributions take the kernel.org kernel and then add patches of their
-own to it. This makes it hard for kernel.org people to know if the bug
-you have hit is due to a distribution specific patch or not.
-For this reason it's generally a good idea to verify the problem with
-a kernel.org kernel - usually testing the latest released kernel as
-well as the latest pre-release kernel and providing information on
-whether or not the problem occurs with them is very valuable info (in
-this case, the kernels to test would then be 2.6.24.4 and 2.6.25-rc9,
-sources for both are available at http://kernel.org/ ).
+[ dbrownell@users.sourceforge.net: more drivers, registration fixes ]
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+NOTE:  not sent to subscribers-only list: alsa-devel@alsa-project.org
 
-> and get the following error
->
->  error 18: selected cylinder exceeds maximum supported by BIOS.
->
+ sound/arm/pxa2xx-ac97.c      |    2 ++
+ sound/drivers/ml403-ac97cr.c |    4 ++++
+ sound/soc/soc-core.c         |    2 ++
+ 3 files changed, 8 insertions(+)
 
-That's not a kernel problem. It's a problem with your bootloader.
-For details on this specific error and what to do about it, take a
-look at http://wiki.linuxquestions.org/wiki/GRUB#Error_18
-
->  This started with kernel 2.6.24-15.  Currently I have to boot into kernel
-> 2.6.24-14.
->
-I'd guess that you do not have a sepperate /boot partitions where you
-keep your kernels (or if you do it's not at the start of your disk).
-The fact that your 2.6.24-14 kernel boots and your 2.6.24-15 does not
-probably has to do with the -14 one being placed within the first 1024
-cyl of the disk (probably purely by luck) and the -15 was placed
-elsewhere. The way to ensure that they always end up within the first
-1024cyl that your BIOS can handle is by having a /boot partition at
-the start of the disk that is <=512MB and then always place your
-kernels there.
-
->  My BIOS are Award Modular Bios v4.51PC, with Award Plug and Play Bios ext
-> v1.0A
->
-If a BIOS update is available it's possible it could resolve the issue
-by allowing the BIOS to see more than the first 1024 cylinders of the
-disk, but with a system as old as this I doubt it very much.
-
-Hope that helps you.
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+--- g26.orig/sound/arm/pxa2xx-ac97.c	2008-04-13 10:30:20.000000000 -0700
++++ g26/sound/arm/pxa2xx-ac97.c	2008-04-13 10:33:22.000000000 -0700
+@@ -391,6 +391,7 @@ static struct platform_driver pxa2xx_ac9
+ 	.resume		= pxa2xx_ac97_resume,
+ 	.driver		= {
+ 		.name	= "pxa2xx-ac97",
++		.owner	= THIS_MODULE,
+ 	},
+ };
+ 
+@@ -410,3 +411,4 @@ module_exit(pxa2xx_ac97_exit);
+ MODULE_AUTHOR("Nicolas Pitre");
+ MODULE_DESCRIPTION("AC97 driver for the Intel PXA2xx chip");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pxa2xx-ac97");
+--- g26.orig/sound/drivers/ml403-ac97cr.c	2008-04-13 10:32:22.000000000 -0700
++++ g26/sound/drivers/ml403-ac97cr.c	2008-04-13 10:36:29.000000000 -0700
+@@ -1330,11 +1330,15 @@ static int snd_ml403_ac97cr_remove(struc
+ 	return 0;
+ }
+ 
++/* work with hotplug and coldplug */
++MODULE_ALIAS("platform:" SND_ML403_AC97CR_DRIVER);
++
+ static struct platform_driver snd_ml403_ac97cr_driver = {
+ 	.probe = snd_ml403_ac97cr_probe,
+ 	.remove = snd_ml403_ac97cr_remove,
+ 	.driver = {
+ 		.name = SND_ML403_AC97CR_DRIVER,
++		.owner = THIS_MODULE,
+ 	},
+ };
+ 
+--- g26.orig/sound/soc/soc-core.c	2008-04-13 10:30:20.000000000 -0700
++++ g26/sound/soc/soc-core.c	2008-04-13 10:34:04.000000000 -0700
+@@ -839,6 +839,7 @@ static int soc_remove(struct platform_de
+ static struct platform_driver soc_driver = {
+ 	.driver		= {
+ 		.name		= "soc-audio",
++		.owner		= THIS_MODULE,
+ 	},
+ 	.probe		= soc_probe,
+ 	.remove		= soc_remove,
+@@ -1601,3 +1602,4 @@ module_exit(snd_soc_exit);
+ MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
+ MODULE_DESCRIPTION("ALSA SoC Core");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:soc-audio");
