@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYDMIOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbYDMISu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbYDMIOu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 04:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYDMIOf
+	id S1755634AbYDMISu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 04:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYDMISg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 04:14:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49686 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbYDMIOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 04:14:34 -0400
-Date: Sun, 13 Apr 2008 10:14:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] x86: fix exec mappings comments
-Message-ID: <20080413081421.GL20332@elte.hu>
-References: <1207988905-17806-1-git-send-email-jirislaby@gmail.com>
+	Sun, 13 Apr 2008 04:18:36 -0400
+Received: from rv-out-0708.google.com ([209.85.198.247]:36039 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751444AbYDMISb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 04:18:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B9BEk/ReIsFXaM4Uap98lGBOjRbw8goxHiK4eV0w4uYaEZnjUPzJMv1XBs8VxGmA1OUQEul7CgMa+k6e0cDSXRROZLZe5K8v9M4NjmRDWcpmCNOexjW8jiFZ5nVi0FyHvQCm3+3ooaaaR7s2QZzaRsgMKzJYkTmXWxGhxr51kVM=
+Message-ID: <86802c440804130118n669db8d1rf37551550955a084@mail.gmail.com>
+Date: Sun, 13 Apr 2008 01:18:30 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [rfc] hw resource debugging checks (was: Re: x86 git tree broken (bisected))
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+In-Reply-To: <20080413075845.GJ20332@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1207988905-17806-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0142]
+References: <200804102159.14563.rjw@sisk.pl> <20080410203800.GA14560@elte.hu>
+	 <200804110028.22290.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl>
+	 <20080413075845.GJ20332@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 13, 2008 at 12:58 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+>  > > > btw., Xorg works fine here on a comparable AMD system - but i use
+>  > > > a rather new distro (Fedora 8) which has Xorg 7.2.
+>  > >
+>  > > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
+>  > >
+>  > > I think the problem is somehow related to the Radeon.
+>  >
+>  > The bisection turned up commit
+>  > ea1441bdf53692c3dc1fd2658addcf1205629661 "x86: use bus conf in NB conf
+>  > fun1 to get bus range on, on 64-bit" as the one causing problems.
+>
+>  thanks Rafael for bisecting this!
+>
+>  This was a rather nasty problem - and i'm wondering what else we could
+>  do to harden our hw resource management code. I'm wondering, is there
+>  any particular reason why clearly broken resource setup is not detected
+>  somewhere, automatically, and WARN_ON()-ed about?
+>
+>  for example, in the scheduler code we used to have similar bug patterns
+>  again and again: architecture code set up scheduler domains incorrectly
+>  and broke the system in subtle ways. So we added sched_domain_debug()
+>  which is active under CONFIG_SCHED_DEBUG=y and does a few sanity checks
+>  and complains if something is wrong. This caught quite a few bugs
+>  whenever the sched-domains code was modified.
+>
+>         Ingo
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+there is silicon abut about agp bridge aperture order reading...
+=====> just sent out one patch to work around that
 
-> - noexec32 is on by default for years already
-> - add noexec32 to kernel-parameters and fix noexec type in there
+also BIOS is sick to allocate overlapping MMIO to the same link..
 
-thanks Jiri, applied.
+node 0 link 0: io port [1000, ffffff]
+TOM: 0000000080000000 aka 2048M
+node 0 link 0: mmio [e0000000, efffffff]
+node 0 link 0: mmio [a0000, bffff]
+node 0 link 0: mmio [80000000, ffffffff]
+bus: [00,ff] on node 0 link 0
 
-	Ingo
+never thought that BIOS could be so sick.
+ ===> already have one work around, need more test next week.
+
+YH
