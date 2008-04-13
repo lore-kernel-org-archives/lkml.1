@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYDMUZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbYDMU0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYDMUZx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYDMUZp
+	id S1757123AbYDMU0w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDMU0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:25:45 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:55401 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYDMUZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=WvM7821bB0W7OOqX5VKrdJGai6A8Srd04+7yOdFIJMJNIn9cCZ17SjYmAOC9eK3tn4XM2tI1yOc/gNdwD4o+Pp0sVV8wYfjvL1+3GDcm64/MWNd6yiTZB6Q1xRRJrWvvq82w9kiSdnnN0q/g6WXAd0MtcMj7+B1bOGAH9Q2+5nA=
-From: Alexia Death <alexiadeath@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Problem: non-SDHC 2GB SD cards are unreadable
-Date: Sun, 13 Apr 2008 23:26:07 +0300
-User-Agent: KMail/1.9.9
+	Sun, 13 Apr 2008 16:26:45 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:45164 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752881AbYDMU0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 16:26:44 -0400
+Date: Sun, 13 Apr 2008 17:25:45 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot -
+	dual-core Sony Vaio
+Message-ID: <20080413202545.GA7111@localhost.ift.unesp.br>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Soeren Sonnenburg <kernel@nn7.de>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.WZB.Z6lAIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804132326.07713.alexiadeath@gmail.com>
+In-Reply-To: <oq66hWjeF4N.A.WZB.Z6lAIB@albercik>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello. 
+On Sun 13.Apr'08 at 20:56:41 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.24.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
+> Subject		: 2.6.25-current-git sometimes hangs on boot - dual-core Sony Vaio
+> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> Date		: 2008-02-23 18:55 (51 days old)
+> References	: http://lkml.org/lkml/2008/2/23/263
+> 		  http://lkml.org/lkml/2008/4/4/41
+> 		  http://lkml.org/lkml/2008/4/9/69
 
-Ive come across a very annoying problem with these cards and the fat 
-filesystem driver.
+Soeren said it no longer happens to him in http://lkml.org/lkml/2008/4/9/53
+but unfortunately it still happens with me using -rc9. So I kidnapped his 
+bugzilla report :-)
 
-I recently bought 2 2GB Silicon Power SD cards for my camera(they were the 
-smallest available in the store and had reasonable price). Camera was quite 
-happy with them but I ran unexpectedly into trouble when trying to put the 
-images to my Linux PC. 
+In the bugzilla entry I said earlier today that "hpet=disable" apparently
+makes the problem go away (42 boots OK so far, whereas without this
+boot option it hangs ~90% using vga=6 and ~10% using vga=0x0364)
 
-It failed to read the cards and seemed to assume that my 2GB cards are 
-actually 4GB O_o. I put one card back in to the camera and it was fine. I put 
-the card in my photobank and it had no problem coping the images to its 
-internal disk. 
+I tried to bisect it, but sometimes in pre 2.6.25-rc1 kernels it takes
+30 boots before the first hang to occur. So bisection is not reliable...
 
-Well, that was lame. Simple dumb devices can read the cards but not Linux. So 
-I looked into dmesg to see whats up.
+If someone proposes a patch I will be glad to test it!
 
-Heres what I saw:
-
-[1193601.137141] sd 2:0:0:0: [sdb] Attached SCSI disk
-[1193601.137256] sd 2:0:0:0: Attached scsi generic sg2 type 0
-[1193601.156992] sd 2:0:0:1: [sdc] Attached SCSI removable disk
-[1193601.157115] sd 2:0:0:1: Attached scsi generic sg3 type 0
-[1193601.198450] sd 2:0:0:2: [sdd] 1992704 1024-byte hardware sectors (2041 
-MB)
-[1193601.206767] sd 2:0:0:2: [sdd] Write Protect is off
-[1193601.206785] sd 2:0:0:2: [sdd] Mode Sense: 03 00 00 00
-[1193601.206793] sd 2:0:0:2: [sdd] Assuming drive cache: write through
-[1193601.227218] sd 2:0:0:2: [sdd] 1992704 1024-byte hardware sectors (2041 
-MB)
-[1193601.236730] sd 2:0:0:2: [sdd] Write Protect is off
-[1193601.236745] sd 2:0:0:2: [sdd] Mode Sense: 03 00 00 00
-[1193601.236752] sd 2:0:0:2: [sdd] Assuming drive cache: write through
-[1193601.236768]  sdd: sdd1
-[1193601.248543]  sdd: p1 exceeds device capacity
-[1193601.248740] sd 2:0:0:2: [sdd] Attached SCSI removable disk
-[1193601.248853] sd 2:0:0:2: Attached scsi generic sg4 type 0
-[1193601.258517] sd 2:0:0:3: [sde] Attached SCSI removable disk
-[1193601.258639] sd 2:0:0:3: Attached scsi generic sg5 type 0
-[1193602.633223] attempt to access beyond end of device
-[1193602.633239] sdd: rw=0, want=7970672, limit=3985408
-[1193602.633248] Buffer I/O error on device sdd1, logical block 3985088
-[1193602.633260] attempt to access beyond end of device
-[1193602.633266] sdd: rw=0, want=7970674, limit=3985408
-[1193602.633272] Buffer I/O error on device sdd1, logical block 3985089
-
-,,, and so on.
-
-Trying to mount it results in:
-[1194411.241063] FAT: logical sector size too small for device (logical sector 
-size = 512)
-
-As I understand the above, my cards report hardware sector size 1024-bytes and 
-FAT logical block size of 512 but the FAT driver insists on using the 
-hardware block size over the logical one... witch obviously results in 
-failure.
-
-http://en.wikipedia.org/wiki/Secure_Digital_card#Compatibility_issues_with_2_GB_and_larger_cards
-tells me that this is the result of a hack due to the nature of 2GB cards.
-
-Are there any plans to make 2GB SD cards work? I doubt I'm the only one with 
-such 2GB SD cards(and a camera) and Id be royally screwed right about now if 
-I did not have my photobank and an option to use it as a copy over point...
-
---
-Best, Alexia
-
-PS. Please CC me, I am not subscribed... 
+PS: The similar bug in buzilla 10377 also appears to be "fixed"
+by using hpet=disable, see comment #17 in that bug.
