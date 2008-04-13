@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYDLXzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYDMADp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYDLXzo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 19:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbYDLXzd
+	id S1757529AbYDMADp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 20:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYDMADe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 19:55:33 -0400
-Received: from fmmailgate09.web.de ([217.72.192.184]:57451 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbYDLXzc convert rfc822-to-8bit (ORCPT
+	Sat, 12 Apr 2008 20:03:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50265 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753798AbYDMADe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 19:55:32 -0400
-Date: Sun, 13 Apr 2008 01:51:23 +0200
-Message-Id: <236729512@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: =?iso-8859-15?Q?Device_'virtio-pci'_does_not_have_a_release()_function?=
- =?iso-8859-15?Q?,_it_is_broken_and_must_be_fixed.?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/kuI3g5G6KPEKPL4oEYCkc7T5OUeQMJ9U1/AwwnKXUhmJUh
- I833CrWGQn0cROD52r7nsr61Eu6jipi++cZBTPT2gbEjnyKTh4=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Sat, 12 Apr 2008 20:03:34 -0400
+Date: Sat, 12 Apr 2008 17:03:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-Id: <20080412170304.54f139e2.akpm@linux-foundation.org>
+In-Reply-To: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with 2.6.25-rc8 - modprobe -r virtio-pci gives:
+On Sat, 12 Apr 2008 18:58:34 -0400 Bob Copeland <me@bobcopeland.com> wrote:
+
+> (Andrew, perhaps this could bake in -mm for a cycle or two if 
+> there are no objections?)
+
+Sure, if it compiles I can stick in in there for some airtime.
+
+> These patches 1-7 add the Optimized MPEG Filesystem, a proprietary
+> filesystem used by the embedded devices Rio Karma and ReplayTV 
+> which are no longer manufactured.
+
+Adding a new FS to Linux is a pretty major thing.
+
+- A key question (which you don't seem to have addressed at all!) is: why
+  is this a useful addition to Linux?  What are the filesystem's strengths?
+  What is its application?  How does it improves Linux and by how much?
+
+  I'll go aehad and assume that its sweet-spot is streaming media files
+  (perhaps more than one at a time?).  If so, then comparative performance
+  measurements would be the key piece of information which we'll need when
+  making a merge decision.  Probably against ext3, ext4 and XFS.
+
+- What are the filesystem's features?  Does it journal changes, or is it
+  inherently crash-safe?  Or is fsck-style repair needed?
+
+- We'd like to see some documentation:
+
+  - Mount options
+
+  - Location of userspace support tools such as mkfs and fsck
+
+  - Documentation for those tools
+
+- A MAINTAINERS record, please?
 
 
-Apr 13 01:30:57 neo klogd: Device 'virtio-pci' does not have a release() function, it is broken and must be fixed.
-Apr 13 01:30:57 neo klogd: ------------[ cut here ]------------
-Apr 13 01:30:57 neo klogd: WARNING: at drivers/base/core.c:119 device_release+0x58/0x5c()
-Apr 13 01:30:57 neo klogd: Modules linked in: virtio_pci(-) eni suni zatm uPD98402 atm sha1_generic michael_mic tgr192 seed arc4 xts lrw gf128mul aes_i586 aes_generic twofish_i586 twofish_common cbc ecb nls_koi8_u nls_cp932 sunrpc sctp libcrc32c decnet 9pnet_fd 9pnet crypto_blkcipher dccp_ipv6 dccp_ipv4 dccp ipv6 savage drm snd_pcm_oss snd_mixer_oss snd_seq fuse loop dm_mod snd_via82xx gameport snd_ac97_codec ac97_bus snd_pcm snd_timer snd_page_alloc snd_mpu401_uart 8139cp snd_rawmidi snd_seq_device 8139too snd button via_agp mii soundcore agpgart via686a sg sd_mod edd ext3 mbcache jbd fan pata_via libata dock mptspi mptscsih mptbase scsi_transport_spi scsi_mod thermal processor [last unloaded: virtio_balloon]
-Apr 13 01:30:57 neo klogd: Pid: 23045, comm: modprobe Tainted: G        N 2.6.25-rc8-12-default #1
-Apr 13 01:30:57 neo klogd:  [<c01072d9>] dump_trace+0x63/0x227
-Apr 13 01:30:57 neo klogd:  [<c0107d8a>] show_trace+0x15/0x29
-Apr 13 01:30:57 neo klogd:  [<c02e56c4>] _etext+0x5b/0x65
-Apr 13 01:30:57 neo klogd:  [<c0124f65>] warn_on_slowpath+0x41/0x67
-Apr 13 01:30:57 neo klogd:  [<c02495da>] device_release+0x58/0x5c
-Apr 13 01:30:57 neo klogd:  [<c01dd1bc>] kobject_release+0x40/0x50
-Apr 13 01:30:57 neo klogd:  [<c01ddc8d>] kref_put+0x39/0x44
-Apr 13 01:30:57 neo klogd:  [<c01dd0ff>] kobject_put+0x14/0x16
-Apr 13 01:30:57 neo klogd:  [<c0249099>] put_device+0xf/0x11
-Apr 13 01:30:57 neo klogd:  [<c0249b0c>] device_unregister+0x12/0x15
-Apr 13 01:30:57 neo klogd:  [<d004e3b1>] virtio_pci_exit+0xd/0x19 [virtio_pci]
-Apr 13 01:30:57 neo klogd:  [<c014441e>] sys_delete_module+0x1a8/0x1e6
-Apr 13 01:30:57 neo klogd:  [<c0105b62>] syscall_call+0x7/0xb
-Apr 13 01:30:57 neo klogd:  [<ffffe422>] 0xffffe422
-Apr 13 01:30:57 neo klogd:  =======================
-Apr 13 01:30:57 neo klogd: ---[ end trace 83e80abb363f13f7 ]--
+If I include this in -mm, some kind people will try it out.  It would be
+most helpful for the changelog (or even the Kconfig help) to include
+sufficient information for people to be able to create, mount and check an
+OMFS partition.
 
+> I've been maintaining this reverse-engineered filesystem
+> out-of-tree since around 2.6.12.
 
-_______________________________________________________________
-Schon gehört? Der neue WEB.DE MultiMessenger kann`s mit allen: 
-http://www.produkte.web.de/messenger/?did=3016
+Who did the reverse-engineering, and how was it done?
 
+Please make us confident that we won't get our butts sued off or something.
