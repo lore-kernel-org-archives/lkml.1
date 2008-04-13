@@ -1,101 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYDMIxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYDMIxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbYDMIxS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 04:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYDMIxG
+	id S1757901AbYDMIxo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 04:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbYDMIxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 04:53:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58708 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753944AbYDMIxF (ORCPT
+	Sun, 13 Apr 2008 04:53:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:15150 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754796AbYDMIxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 04:53:05 -0400
-Date: Sun, 13 Apr 2008 10:53:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc6 regression - hang on resume
-Message-ID: <20080413085343.GD8949@elf.ucw.cz>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost> <20080411210400.GA1533@elf.ucw.cz> <1207985262.4372.3.camel@localhost>
+	Sun, 13 Apr 2008 04:53:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=RqcloIdABdkUQxYWE8+K5WVVY91Uxb5Uku9sZ7evdhUjYc3RR8myqJzEtiU1WssZlNoyzJ+c2ndYEvB9km67+0TRA4eVS+s4k894Qk9HIXZilwK9Mcxal8ddfkWaNU/JzGpkMp+kWEhw1ZYwZ3cmYQJ4TiTp24JHYeefQxcon1U=
+Date: Sun, 13 Apr 2008 12:48:43 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, mchehab@infradead.org
+Cc: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org
+Subject: [PATCH] Fix concurrent read from /proc/videocodecs
+Message-ID: <20080413084843.GA7227@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207985262.4372.3.camel@localhost>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-04-12 09:27:42, Soeren Sonnenburg wrote:
-> On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
-> > On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
-> > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
-> > > > The following report is on the current list of known regressions
-> > > > from 2.6.24.  Please verify if the issue is still present in the
-> > > > mainline.
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
-> > > > Subject		: 2.6.25-rc6 regression - hang on resume
-> > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> > > > Date		: 2008-03-25 04:44 (10 days old)
-> > > 
-> > > Yes. The machine resumes and display stays black using s2ram -f -p
-> > > (blindly typing reboot etc on keyboard does what is expected). However
-> > > display comes back on 2.6.24.
-> > 
-> > Could you get us any debugging output from s2ram? Or maybe even strace
-> > it in both working and broken case, and comparing them? (You may want
-> > to disable randomization so that results are comparable).
-> 
-> I did on 2.6.24
-> 
-> strace -ff s2ram >s2ram24.trace 2>&1
-> 
-> and .25
-> 
-> ???strace -ff s2ram >s2ram25.trace 2>&1
-> 
-> with the .24 bringing the display back and .25 not. Files are here
-> 
-> http://nn7.de/debugging/s2ram24.trace.bz2
-> ???http://nn7.de/debugging/s2ram25.trace.bz2
+Observation one: ->write_proc and ->data assignments aren't needed. Removed.
+Observation two: codecs lists are unprotected. Patch doesn't fix this.
+Observation three:
+	/proc/videocodecs printout is done to temporary _global_ buffer which
+	is freed in between. Consequently, two users hitting this file can
+	screwup each other.
 
-Hmm: 
+Steps to reproduce:
 
-/sys/bus/pci/devices/0000:00:1b.0/irq
+	modprobe videocodec
+	while true; do cat /proc/videocodecs &>/dev/null; done &
+	while true; do cat /proc/videocodecs &>/dev/null; done &
 
-contains 21 in one case and 22 in another... as do other
-interrupts. Is that expected? Can you post /proc/interrupts for both
-versions?
+The fix is switching to seq_files, this removes code, especially some
+line-length "logic".
 
-Hmm, big part of trace is:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
-implemented)
-vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
-implemented)
+ Tested on empty file, I don't have hardware.
 
-...I wonder why we do it so many times?
+ drivers/media/video/videocodec.c |  113 ++++++---------------------------------
+ 1 file changed, 19 insertions(+), 94 deletions(-)
 
-And here's the difference. .25 says:
+--- a/drivers/media/video/videocodec.c
++++ b/drivers/media/video/videocodec.c
+@@ -39,6 +39,7 @@
+ 
+ #ifdef CONFIG_PROC_FS
+ #include <linux/proc_fs.h>
++#include <linux/seq_file.h>
+ #include <asm/uaccess.h>
+ #endif
+ 
+@@ -320,56 +321,22 @@ videocodec_unregister (const struct videocodec *codec)
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+-/* ============ */
+-/* procfs stuff */
+-/* ============ */
+-
+-static char *videocodec_buf = NULL;
+-static int videocodec_bufsize;
+-
+-static int
+-videocodec_build_table (void)
++static int proc_videocodecs_show(struct seq_file *m, void *v)
+ {
+ 	struct codec_list *h = codeclist_top;
+ 	struct attached_list *a;
+-	int i = 0, size;
+-
+-	// sum up amount of slaves plus their attached masters
+-	while (h) {
+-		i += h->attached + 1;
+-		h = h->next;
+-	}
+-#define LINESIZE 100
+-	size = LINESIZE * (i + 1);
+ 
+-	dprintk(3, "videocodec_build table: %d entries, %d bytes\n", i,
+-		size);
+-
+-	kfree(videocodec_buf);
+-	videocodec_buf = kmalloc(size, GFP_KERNEL);
+-
+-	if (!videocodec_buf)
+-		return 0;
+-
+-	i = 0;
+-	i += scnprintf(videocodec_buf + i, size - 1,
+-		      "<S>lave or attached <M>aster name  type flags    magic    ");
+-	i += scnprintf(videocodec_buf + i, size -i - 1, "(connected as)\n");
++	seq_printf(m, "<S>lave or attached <M>aster name  type flags    magic    ");
++	seq_printf(m, "(connected as)\n");
+ 
+ 	h = codeclist_top;
+ 	while (h) {
+-		if (i > (size - LINESIZE))
+-			break;	// security check
+-		i += scnprintf(videocodec_buf + i, size -i -1,
+-			      "S %32s %04x %08lx %08lx (TEMPLATE)\n",
++		seq_printf(m, "S %32s %04x %08lx %08lx (TEMPLATE)\n",
+ 			      h->codec->name, h->codec->type,
+ 			      h->codec->flags, h->codec->magic);
+ 		a = h->list;
+ 		while (a) {
+-			if (i > (size - LINESIZE))
+-				break;	// security check
+-			i += scnprintf(videocodec_buf + i, size -i -1,
+-				      "M %32s %04x %08lx %08lx (%s)\n",
++			seq_printf(m, "M %32s %04x %08lx %08lx (%s)\n",
+ 				      a->codec->master_data->name,
+ 				      a->codec->master_data->type,
+ 				      a->codec->master_data->flags,
+@@ -380,54 +347,21 @@ videocodec_build_table (void)
+ 		h = h->next;
+ 	}
+ 
+-	return i;
++	return 0;
+ }
+ 
+-//The definition:
+-//typedef int (read_proc_t)(char *page, char **start, off_t off,
+-//                          int count, int *eof, void *data);
+-
+-static int
+-videocodec_info (char  *buffer,
+-		 char **buffer_location,
+-		 off_t  offset,
+-		 int    buffer_length,
+-		 int   *eof,
+-		 void  *data)
++static int proc_videocodecs_open(struct inode *inode, struct file *file)
+ {
+-	int size;
+-
+-	dprintk(3, "videocodec_info: offset: %ld, len %d / size %d\n",
+-		offset, buffer_length, videocodec_bufsize);
+-
+-	if (offset == 0) {
+-		videocodec_bufsize = videocodec_build_table();
+-	}
+-	if ((offset < 0) || (offset >= videocodec_bufsize)) {
+-		dprintk(4,
+-			"videocodec_info: call delivers no result, return 0\n");
+-		*eof = 1;
+-		return 0;
+-	}
+-
+-	if (buffer_length < (videocodec_bufsize - offset)) {
+-		dprintk(4, "videocodec_info: %ld needed, %d got\n",
+-			videocodec_bufsize - offset, buffer_length);
+-		size = buffer_length;
+-	} else {
+-		dprintk(4, "videocodec_info: last reading of %ld bytes\n",
+-			videocodec_bufsize - offset);
+-		size = videocodec_bufsize - offset;
+-		*eof = 1;
+-	}
+-
+-	memcpy(buffer, videocodec_buf + offset, size);
+-	/* doesn't work...                           */
+-	/* copy_to_user(buffer, videocodec_buf+offset, size); */
+-	/* *buffer_location = videocodec_buf+offset; */
+-
+-	return size;
++	return single_open(file, proc_videocodecs_show, NULL);
+ }
++
++static const struct file_operations videocodecs_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= proc_videocodecs_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
+ #endif
+ 
+ /* ===================== */
+@@ -444,16 +378,8 @@ videocodec_init (void)
+ 	       VIDEOCODEC_VERSION);
+ 
+ #ifdef CONFIG_PROC_FS
+-	videocodec_buf = NULL;
+-	videocodec_bufsize = 0;
+-
+-	videocodec_proc_entry = create_proc_entry("videocodecs", 0, NULL);
+-	if (videocodec_proc_entry) {
+-		videocodec_proc_entry->read_proc = videocodec_info;
+-		videocodec_proc_entry->write_proc = NULL;
+-		videocodec_proc_entry->data = NULL;
+-		videocodec_proc_entry->owner = THIS_MODULE;
+-	} else {
++	videocodec_proc_entry = proc_create("videocodecs", 0, NULL, &videocodecs_proc_fops);
++	if (!videocodec_proc_entry) {
+ 		dprintk(1, KERN_ERR "videocodec: can't init procfs.\n");
+ 	}
+ #endif
+@@ -465,7 +391,6 @@ videocodec_exit (void)
+ {
+ #ifdef CONFIG_PROC_FS
+ 	remove_proc_entry("videocodecs", NULL);
+-	kfree(videocodec_buf);
+ #endif
+ }
+ 
 
-vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
-implemented)
-vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
-implemented)
-Error: something went wrong performing real mode call
-open("/sys/class/graphics",
-O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
-such file or directory)
-open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
-ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
-
-...can you perhaps add printf-s to s2ram to find out what changed?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
