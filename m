@@ -1,78 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYDMO5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYDMPHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbYDMO5z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 10:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYDMO5s
+	id S1758877AbYDMPHG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 11:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYDMPGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 10:57:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:54045 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbYDMO5r (ORCPT
+	Sun, 13 Apr 2008 11:06:54 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:35032 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752286AbYDMPGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 10:57:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=BETex2kLtAWXUZEWJUN+WG63k/Prw1vkjQIzz8EmV5U7d1zlUBk2/UowmB2nosdXBJGR1WA2WdRKTOLesTyd9DhO0byWPonoW3vs0J8Syz6hKiVMuue6RKzNKTdS6VWz2GbBmfwLgodkYRDZg5TNSafSD4TVjPsBE4LhPeFoYqI=
-Date: Sun, 13 Apr 2008 18:57:05 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] UDF - use UDF_MAX_WRITE_VERSION instead of numbers
-Message-ID: <20080413145705.GB7670@cvg>
-References: <20080412194008.GB8388@cvg> <20080413115025.GA6488@joi> <20080413120622.GA7670@cvg> <20080413135606.GA6935@joi>
+	Sun, 13 Apr 2008 11:06:52 -0400
+Date: Sun, 13 Apr 2008 17:27:02 +0200
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Bernd Petrovitsch <bernd@firmix.at>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kbuild devel list <linux-kbuild@vger.kernel.org>
+Subject: lide: linux ide, just concept idea (Re: coloring stdout && stderr, small kbuild example)
+Message-ID: <20080413152702.GJ24008@flower.upol.cz>
+References: <E1Jjbol-0002zS-4P@flower> <1207754040.6860.7.camel@tara.firmix.at> <20080412183218.GD4492@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080413135606.GA6935@joi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080412183218.GD4492@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Marcin Slusarz - Sun, Apr 13, 2008 at 03:56:10PM +0200]
-| On Sun, Apr 13, 2008 at 04:06:22PM +0400, Cyrill Gorcunov wrote:
-| > [Marcin Slusarz - Sun, Apr 13, 2008 at 01:50:29PM +0200]
-| > | On Sat, Apr 12, 2008 at 11:40:08PM +0400, Cyrill Gorcunov wrote:
-| > | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| > | > ---
-| > | > 
-| > | > Jan, the patch is over current yours for_mm branch
-| > | > 
-| > | > Yep, i know it exceeds 80 column *but* it looks much better
-| > | > in this way ;)
-| > | > 
-| > | > Index: linux-2.6.git/fs/udf/inode.c
-| > | > ===================================================================
-| > | > --- linux-2.6.git.orig/fs/udf/inode.c	2008-04-12 22:53:15.000000000 +0400
-| > | > +++ linux-2.6.git/fs/udf/inode.c	2008-04-12 23:34:28.000000000 +0400
-| > | > @@ -1732,7 +1732,7 @@ int8_t udf_add_aext(struct inode *inode,
-| > | >  		}
-| > | >  		if (epos->bh) {
-| > | >  			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
-| > | > -			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
-| > | > +			    UDF_SB(inode->i_sb)->s_udfrev >= UDF_MAX_WRITE_VERSION)
-| > | >  				udf_update_tag(epos->bh->b_data, loffset);
-| > | >  			else
-| > | >  				udf_update_tag(epos->bh->b_data,
-| > | I think this patch is wrong. Right now it doesn't change anything, but in future
-| > | when someone will add support for writing UDF > 2.01 (and bump UDF_MAX_WRITE_VERSION)
-| > | it will break for filesystems written with udfrev >= 2.01 && udfrev < UDF_MAX_WRITE_VERSION.
-| > | 
-| > | Marcin
-| > | 
-| > 
-| > well, if someone add support the writting UDF > 2.01 it will require
-| > additional switches/analisys anyway and saving these hard-coded-numbers
-| > would not help.
-| 
-| Yes, but these values don't correlate with UDF_MAX_WRITE_VERSION - it's
-| simple coincidence. If you really don't like these numbers add another
-| constant.
-| 
-| Marcin
-| 
+Hallo.
 
-Ugh! You're right, thanks ;) Jan, drop them, sorry
+Pavel Machek @ Sat, Apr 12, 2008 at 7:32 PM:
+>  icecc seems to do the coloring, too...
 
-		- Cyrill -
+This one? http://en.opensuse.org/Icecream
+,--
+|0.7.3 (r552930):
+|[..]
+|        - builtin colorgcc
+`--
+Now i'm being pointed to C++ one. Alright!
+
+== Check this out then. ==
+
+Linus says, make it working somehow and release, so...
+I'd like to have it in menuconfig window running gcc on every */M
+(i want alot more, without ncurses, perl, C++ using kernel, sh, sed)
+
+extract$         sed '1,/^__/d' >/tmp/lide.sh
+use (in OBJDIR)$ clear ; sh /tmp/lide.sh kdefc
+
+kdefc   is a user friendly thing for `make defconfig`
+ksecmis is one for funny `make CONFIG_DEBUG_SECTION_MISMATCH=y`
+any ordinary command will work, no command -- interactive mode.
+
+Coloring and painting is for children, big daddies usually don't get it,
+as well as most basic userspace possible(: /bin/sh ).
+
+(any tty braindamage is a cool tty design from 70s, not sh + sed)
+--
+Text processing(for newbies): http://kernelnewbies.org/olecom
+Tech VA: http://kerneltrap.org/blog/9104
+-o--=O`C
+ #oo'L O
+<___=E M
+________
+#!/bin/sh
+# linux integrated development environment (without text editor/pager)
+
+# Time-stamp: Sun Apr 13 16:79:15 CEST 2008 olecom@flower.upol.cRAzY
+
+[ "$lideRELOAD" ] || {
+	[ -t 1 ] || exec dd count=1 # notty
+#sed(){
+# busybox -- cryptic errors from internal `sed`
+# sed -- dash crashes
+#}
+	stty -tostop
+	rm -rf /tmp/stderr.pipe /tmp/stdout.pipe
+	mkfifo /tmp/stderr.pipe /tmp/stdout.pipe
+# /tmp/stderr.txt is for `tee ` and off-line pager
+}
+set +i -e
+
+# own syntax:
+# $E   is  'ESC[' = '\233'
+# fork tty service
+sed "s-[$]E-`printf '\233'`-g" << '# here' | /bin/sh -s &
+# ${E} is   ESC   ; Ignored symbol for stderr prefix
+E=`printf '\033'` ; I=`printf '\177'`
+
+# default fg;bg rendering ; reset attributes
+D="7" ; RESET="$E0m"
+# basic attributes (reset bg color and bold, set fg color)
+V="$E40;22;3"
+
+# wrap regex, multiple times per line
+T=\''\"s-$1-$V$2m&$V${3-'$D'}m-$4;\"'\'
+eval '
+color_lide() {
+# wrap regex with color
+	# $1 -- regex ; $2 -- color code ; $3 -- next color code (default is $D)
+	# $4 -- s///flags
+	printf %s "`eval echo '"$T"'`"
+}
+scolor_lide() {
+# color() with speed optimizing jump, thus, one match in line
+	printf %s "{`eval echo '"$T"'` ; b_$REGION}"
+}
+'
+T=color_lide
+
+
+## setup of regions
+
+# main load:  stdout region, content is cut on width = $W
+
+# small load: stderr, no cut; stderr out is rare, thus full lines
+
+# parameters: all have content line limits (*LINES - 1)
+#             *ORIGIN is a row placing (FIXME: add colons)
+
+# console output concurrency: whole region is out with cursor move
+#		 (no save/restore of it)
+
+outLINES=10  ; outORIGIN=1 ; W=77
+errLINES=14  ; errORIGIN=$(($outLINES + 5))
+PMT="$E$(($outLINES + 3));1Hprompt:"
+
+sed_GET_CHUNK=':addnl ; $!{ s $ '$EK' ; N ; baddnl }'
+
+[ "$lideRELOAD" ] || {
+	sed "# sed does final new lines here
+$sed_GET_CHUNK
+s ,-- $E$outORIGIN;1H& ;
+s/ . -/$E30m&/g
+s 0 1 ; s 0 2 ; s 0 3 ; s 0 4 ; s 0 5 ; s 0 6 ;
+
+s-___-$E$errORIGIN;1H$E1;34;40m&$E31m-1
+s-___-$E34m&$E31m-2
+s/ _ /$E37m&$E31m/g
+" << "---"
+,-- kbuild: s - t - d - o - u - t --
+|
+|
+`--
+___ kbuild: s _ t _ d _ e _ r _ r ___
+---
+	printf "$PMT\n"
+}
+
+# shift title string
+
+outORIGIN=$(($outORIGIN + 1))
+errORIGIN=$(($errORIGIN + 1))
+
+
+## handling of content
+
+region(){
+# buffered output with no more than LINES in continuously running `sed`
+    # $1 -- type (out, stderr etc.) ; $2 -- region''s final line decoration
+    eval 'printf %s "
+# get prev. buffer; append current line
+x ; G
+
+# remove overflowed head (this sed''s something:)
+$'"$1"'LINES,19810702s-^[^\\n]*\\n--
+
+#$'"$1"'LINES,\$s-[^\\n]*\\n--
+# last line  --^^ address yields debbug#475464: lost cycle
+
+# save buffer; move to ${1}ORIGIN and print whole region
+h ; s .* $E$'"$1"'ORIGIN;1H&\\n'"$2"' ;
+"'
+}
+
+lideSYNTAX="
+/[.,%/;:]/s [.,%/;:] $E1;36m&$E22;3${D}m g
+/'/s-'\([^']*\)'-$E35m'$E36m\1$E35m'$E3${D}m-g"'
+/"/s-"\([^"]*\)"-$E1;32;40m"$E22;39;44m\1$E1;32;40m"$E22;3'$D'm-g'"
+/(/s-(\([^)]*\))-$E1;33m($E22;3${D}m\1$E1;33m)$E22;3${D}m-g
+"
+REGION=err
+sed_STDERR="
+$lideSYNTAX
+
+# hard error
+/^$I/s-.*-$E1;5;41;37m&${V}1;25;m$EK-
+# ordinary
+/^$I/!s-.*-&$EK-
+
+# example of being freindly to kernel developers and kbuild users
+/make /{s~make CONFIG_DEBUG_SECTION_MISMATCH=y~ksecmis~;b_$REGION}
+
+# UPPER symbols:
+`$T '[[:upper:]_]\{3,\}' '2' '1' g`
+/[Ww][Aa][Rr]/`$T '[Ww][Aa][Rr][Nn][Ii][Nn][Gg]' '7;41;1' '1;40;22'`
+/:/`$T '^[^:]*:' '2;1' $D`
+
+:_$REGION
+`region $REGION '$PMT'`
+"
+
+REGION=out
+sed_OUT="
+s-\(.\{0,$W\}\).*-|\1$EK-
+/^|#/`s$T '#.*' '3'`
+$lideSYNTAX
+/:/`$T '^[^:]*:' '2;1' $D`
+/ CC/`s$T CC  '6;1'`
+/ LD/`s$T LD  '2;1'`
+/ AS/`s$T AS  '5;1'`
+/ GE/`s$T GEN '2;1'`
+/ UP/`s$T UPD '2;1'`
+/ CH/`s$T CHK '3;1'`
+/ CA/`s$T CALL  '6'`
+s-^-${V}${D}m-
+:_$REGION
+`region $REGION '\\\`--$PMT'`
+"
+unset lideSYNTAX
+
+trap '
+    printf "$RESET$E$(($errORIGIN + $errLINES))H"
+    kill -1 $JJ ; kill -KILL $JJ
+' EXIT HUP INT TERM QUIT
+
+# close script's input, remove own stderr
+
+exec 0<&- 2>/dev/null
+tee -a /tmp/stderr.txt </tmp/stderr.pipe |
+sed -u "$sed_STDERR" & JJ=$!' '$JJ
+sed "$sed_OUT"    </tmp/stdout.pipe #>out.pipe & JJ=$!' '$JJ
+
+exit
+
+# stdout/stderr coloring daemon ends
+# here
+
+JJ=$! # save its pid
+unset lideRELOAD
+HISTLINE=:
+
+lideCHECK_EXIT_STATUS='
+S=$? ; Ex=Ex ; [ 0 -ne "$S" ] && Ex="\177"$Ex
+sleep 1  # fix braindamage due to cuncurrency, buffers, other tty crap
+printf  1>&2 "${Ex}it status: $S\n"'
+trap "$lideCHECK_EXIT_STATUS"'"user interface is over\n"
+	kill -1 $JJ
+
+	rm -rf /tmp/stderr.pipe /tmp/stdout.pipe
+	exit
+' EXIT HUP QUIT
+
+trap 'echo got SIGINT or SIGTERM 1>&2' INT TERM
+
+exec 1>/tmp/stdout.pipe 2>/tmp/stderr.pipe
+
+set +e
+
+echo '# examples of being freindly to kernel developers and kbuild users:
+commands: ksecmis ; kdefc ; (add yours) ; `make` crap ; any other
+leave:    hell (`exit` is ignored)
+'
+lideBUILTINS="
+ksecmis) LINE='make CONFIG_DEBUG_SECTION_MISMATCH=y' ;;
+kdefc)   LINE='make defconfig' ;;
+# add yours here
+"
+
+eval '
+
+batch() {
+case $1 in
+'"$lideBUILTINS"'
+*) LINE=\"\$@\" ;;
+esac
+eval "echo \"$LINE\" ; $LINE ; "'"$lideCHECK_EXIT_STATUS"'
+}
+
+interactive() {
+while read LINE
+do echo "$LINE"
+   case $LINE in
+'"$lideBUILTINS"'
+hell)    LINE=break ;;
+exit)    LINE=""   ;;
+
+#reload) kill -1 $JJ ; export lideRELOAD=y ; exec /bin/sh $0 ;;
+esac
+
+eval "${LINE:-$HISTLINE} ; "'"$lideCHECK_EXIT_STATUS"'
+[ "$LINE" ] && HISTLINE=$LINE
+done
+}
+'
+# `eval` must complete itself, no infinite loops inside
+unset lideCHECK_EXIT_STATUS lideBUILTINS
+
+[ -z "$1" ] && interactive || batch "$@"
+
+sed 'sed && sh + olecom = love' << '' >&2
+
+WTFPLed-by:  olecom
+see license: http://sam.zoy.org/wtfpl/
