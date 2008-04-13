@@ -1,65 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYDMSvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbYDMSxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbYDMSvf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDMSvQ
+	id S1754334AbYDMSxo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYDMSxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:51:16 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:27946 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbYDMSvP (ORCPT
+	Sun, 13 Apr 2008 14:53:36 -0400
+Received: from rv-out-0708.google.com ([209.85.198.243]:53602 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752212AbYDMSxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:51:15 -0400
+	Sun, 13 Apr 2008 14:53:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=K2RMRqAaYKMnr/ujqHaxbHOXzh4Brq/In/AsCZG/MbPzj1Rbv+/Wnau9Vn/0amTI8CiNJv2jC2zSgn9fyv1pGCSKljKqMSlGXzviXByZJPtJVMzuEJeFSOenI9gQXEBkEa60TUsnYSyPpb7W06/QCmoytv9BHv35Le0qABRy9AE=
-Message-ID: <ce0170d90804131151ia99147bv9ad12e625191be5e@mail.gmail.com>
-Date: Sun, 13 Apr 2008 15:51:13 -0300
-From: "Sergio Luis" <sergio@uece.br>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HCCSmDDKMLQ6gzn0JcMaCjtZsDyE1PPh3Td7r/sQT4Pm1z9OCr95bq2gbGbbtn0mgA3Jk1YjkW3oHlX4knOjgfK3jsbFV60oZFLXkCT5IhF2SGGU84jM1VuR+leN+rtwyRY3UxixA2O2VPjYJMNBnJUyZlMxk+GHlZDsH4KpHNo=
+Message-ID: <86802c440804131153r393c3a17mbff2a8abf3f572d3@mail.gmail.com>
+Date: Sun, 13 Apr 2008 11:53:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc8: FTP transfer errors
-Cc: "David Miller" <davem@davemloft.net>, w@1wt.eu, johnpol@2ka.mipt.ru,
-       lkml@rtr.ca, ilpo.jarvinen@helsinki.fi, jesper.juhl@gmail.com,
-       tilman@imap.cc, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <200804132015.21742.rjw@sisk.pl>
+Subject: Re: x86 git tree broken (bisected)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <200804132047.10221.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080411151821.GA32398@2ka.mipt.ru>
-	 <20080412084400.GA30259@1wt.eu>
-	 <20080412.024952.151646629.davem@davemloft.net>
-	 <200804132015.21742.rjw@sisk.pl>
-X-Google-Sender-Auth: b257e0cadcc78248
+References: <200804102159.14563.rjw@sisk.pl> <200804131812.55684.rjw@sisk.pl>
+	 <86802c440804131107s7c132bc6j10ba713e50589353@mail.gmail.com>
+	 <200804132047.10221.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 3:15 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, 12 of April 2008, David Miller wrote:
->  > From: Willy Tarreau <w@1wt.eu>
->  > Date: Sat, 12 Apr 2008 10:44:00 +0200
->  >
->  > > While it is a powerful tool, we must accept that it cannot efficiently
->  > > work in some circumstances, such as :
->  >
->  > Everyone is well aware of all of this, that's why I specifically asked
->  > for a bisect, because I knew it would be crucial to pinpointing this
->  > particular bug.
->  >
->  > And lo' and behold in 15 minutes after the bisect results were
->  > available it got fixed.
+On Sun, Apr 13, 2008 at 11:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >
->  I can't find the fix, btw.  Can you please point me to it?
-
-there you go
-http://lkml.org/lkml/2008/4/10/409
-http://lkml.org/lkml/2008/4/10/410
-
+> On Sunday, 13 of April 2008, Yinghai Lu wrote:
+>  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >
+>  > > On Sunday, 13 of April 2008, Yinghai Lu wrote:
+>  > >  > On Fri, Apr 11, 2008 at 1:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >  > >
+>  > >  > > On Friday, 11 of April 2008, Yinghai Lu wrote:
+>  > >  > >  > On Fri, Apr 11, 2008 at 12:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >  > >  > > On Friday, 11 of April 2008, Rafael J. Wysocki wrote:
+>  > >  > >  > >  > On Thursday, 10 of April 2008, Ingo Molnar wrote:
+>  > >  > >  > >  > >
+>  > >  > >  > >  > > * Ingo Molnar <mingo@elte.hu> wrote:
+>  > >  > >  > >  > >
+>  > >  > >  > >  > > > > > > First, the X server doesn't want to start (it says it couldn't
+>  > >  > >  > >  > > > > > > mmap the framebuffer).
+>  > >  > >  > >  > > > > >
+>  > >  > >  > >  > > > > > could you send your .config?
+>  > >  > >  > >  > > > >
+>  > >  > >  > >  > > > > Attached.
+>  > >  > >  > >  > > >
+>  > >  > >  > >  > > > could you disable this option:
+>  > >  > >  > >  > > >
+>  > >  > >  > >  > > >  CONFIG_NONPROMISC_DEVMEM=y
+>  > >  > >  > >  > > >
+>  > >  > >  > >  > > > does it help with the X problem?
+>  > >  > >  > >  >
+>  > >  > >  > >  > That didn't help.
+>  > >  > >  > >  >
+>  > >  > >  > >  > > btw., Xorg works fine here on a comparable AMD system - but i use a
+>  > >  > >  > >  > > rather new distro (Fedora 8) which has Xorg 7.2.
+>  > >  > >  > >  >
+>  > >  > >  > >  > My system is an OpenSUSE 10.3 and it has Xorg 7.2 as well.
+>  > >  > >  > >  >
+>  > >  > >  > >  > I think the problem is somehow related to the Radeon.
+>  > >  > >  > >
+>  > >  > >  > >  The bisection turned up commit ea1441bdf53692c3dc1fd2658addcf1205629661
+>  > >  > >  > >  "x86: use bus conf in NB conf fun1 to get bus range on, on 64-bit"  as the one
+>  > >  > >  > >  causing problems.
+>  > >  > >  > >
+>  > >  > >  > >  Unfortunately, I can't revert cleanly it, because there are two more commits
+>  > >  > >  > >  depending on it in a highly nontrivial fashion, so I have reverted all three
+>  > >  > >  > >  commits
+>  > >  > >  > >
+>  > >  > >  > >  a365998cd2cecfb827469dbd57c29602c106cb83
+>  > >  > >  > >  44f7f90fbe7a3a99aab082f765346514b7b5c705
+>  > >  > >  > >  ea1441bdf53692c3dc1fd2658addcf1205629661
+>  > >  > >  > >
+>  > >  > >  > >  and X starts again.  Also, suspend to RAM works from under X.
+>  > >  > >  >
+>  > >  > >  > please keep the three patches and applied the two attached debug patches.
+>  > >  > >  >
+>  > >  > >  > i wonder if there is some io allocation overlapping with your system.
+>  > >  > >
+>  > >  > >  Attached is a boot dmesg output from the current x86 git tree with your two
+>  > >  > >  patches applied.
+>  > >  > >
+>  > >  > can you try to apply the patch i sent to you about agp bridge order
+>  > >  > reading for buggy silicon?
+>  > >  >
+>  > >  > Please boot kernel with "debug"...
+>  > >  >
+>  > >  > I want to verify if you can get
+>  > >  >
+>  > >  > "
+>  > >  > Aperture conflicts with PCI mapping.
+>  > >  > "
+>  > >  >
+>  > >  > in your boot log...
+>  > >
+>  > >  It's not present in there:
+>  > >
+>  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
+>  > >  Aperture too small (32 MB)
+>  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
+>  > >  Aperture too small (0 MB)
+>  > >  agpgart: Aperture pointing to RAM
+>  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
+>  > >  agpgart: Aperture too small (0 MB)
+>  > >
+>  >
+>  > did you apply the patch like the attached that i sent you in another mail?
 >
->  Thanks,
->  Rafael
+>  This dmesg is from a kernel without the patch.
+>
+>  The dmesg with the patch applied was sent in a separate message:
+>  http://lkml.org/lkml/2008/4/13/122
 
-  -sergio
+thanks. let me double check that patch...
+
+YH
