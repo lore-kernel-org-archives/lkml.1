@@ -1,112 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYDMQiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbYDMQsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbYDMQiZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYDMQiP
+	id S1759157AbYDMQsM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 12:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYDMQsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:38:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36154 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755539AbYDMQiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:38:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-rc6 regression - hang on resume
-Date: Sun, 13 Apr 2008 18:38:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <200804131553.15573.rjw@sisk.pl> <1208104212.4541.1.camel@localhost>
-In-Reply-To: <1208104212.4541.1.camel@localhost>
+	Sun, 13 Apr 2008 12:48:00 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:11235 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755767AbYDMQr7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 12:47:59 -0400
+To: Erik Bosman <ejbosman@cs.vu.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
+From: Andi Kleen <andi@firstfloor.org>
+References: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>
+	<87r6daw2ay.fsf@basil.nowhere.org>
+	<Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl>
+Date: Sun, 13 Apr 2008 18:47:32 +0200
+In-Reply-To: <Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl> (Erik Bosman's message of "Sun, 13 Apr 2008 11:44:46 +0200 (CEST)")
+Message-ID: <87prstwvkr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804131838.35345.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Apr 2008 16:40:48.0127 (UTC) FILETIME=[207C08F0:01C89D85]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 of April 2008, Soeren Sonnenburg wrote:
-> On Sun, 2008-04-13 at 15:53 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 13 of April 2008, Pavel Machek wrote:
-> > > On Sat 2008-04-12 09:27:42, Soeren Sonnenburg wrote:
-> > > > On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
-> > > > > On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
-> > > > > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
-> > > > > > > The following report is on the current list of known regressions
-> > > > > > > from 2.6.24.  Please verify if the issue is still present in the
-> > > > > > > mainline.
-> > > > > > > 
-> > > > > > > 
-> > > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
-> > > > > > > Subject		: 2.6.25-rc6 regression - hang on resume
-> > > > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> > > > > > > Date		: 2008-03-25 04:44 (10 days old)
-> > > > > > 
-> > > > > > Yes. The machine resumes and display stays black using s2ram -f -p
-> > > > > > (blindly typing reboot etc on keyboard does what is expected). However
-> > > > > > display comes back on 2.6.24.
-> > > > > 
-> > > > > Could you get us any debugging output from s2ram? Or maybe even strace
-> > > > > it in both working and broken case, and comparing them? (You may want
-> > > > > to disable randomization so that results are comparable).
-> > > > 
-> > > > I did on 2.6.24
-> > > > 
-> > > > strace -ff s2ram >s2ram24.trace 2>&1
-> > > > 
-> > > > and .25
-> > > > 
-> > > > ???strace -ff s2ram >s2ram25.trace 2>&1
-> > > > 
-> > > > with the .24 bringing the display back and .25 not. Files are here
-> > > > 
-> > > > http://nn7.de/debugging/s2ram24.trace.bz2
-> > > > ???http://nn7.de/debugging/s2ram25.trace.bz2
-> > > 
-> > > Hmm: 
-> > > 
-> > > /sys/bus/pci/devices/0000:00:1b.0/irq
-> > > 
-> > > contains 21 in one case and 22 in another... as do other
-> > > interrupts. Is that expected? Can you post /proc/interrupts for both
-> > > versions?
-> > > 
-> > > Hmm, big part of trace is:
-> > > 
-> > > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
-> > > implemented)
-> > > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
-> > > implemented)
-> > > 
-> > > ...I wonder why we do it so many times?
-> > > 
-> > > And here's the difference. .25 says:
-> > > 
-> > > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
-> > > implemented)
-> > > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
-> > > implemented)
-> > > Error: something went wrong performing real mode call
-> > > open("/sys/class/graphics",
-> > > O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
-> > > such file or directory)
-> > > open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
-> > > ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
-> > > 
-> > > ...can you perhaps add printf-s to s2ram to find out what changed?
-> > 
-> > Well, that looks suspiciously similar to
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10155 .
-> 
-> OK I tried noexec=off now... same error in s2ram ... so I guess my CPU
-> does not support NX ...
+Erik Bosman <ejbosman@cs.vu.nl> writes:
+>
+> I'm using it for deterministic replay.
 
-s2ram segfaulted in that bug, but your one desn't.  Still, we could have done
-another thing that prevents s2ram from doing its job on your system.
+Ok that should be in the changelog.
 
-Thanks,
-Rafael
+BTW x86 CPUs are not fully deterministic. e.g. there are a few errata that
+can lead to differing EFLAGS (generally for instructions with undefined flags 
+output) based on random internal pipe line conditions.
+
+In my experience even simulators claiming to be fully deterministic
+are not always. e.g. I remember trying to use instruction counts
+on Simics to reproduce an issue for a scripted boot setup (with no user input),
+but it never quite hit the same code at the same instruction count.
+
+> Without the timestamp counter, the only instruction leading
+> to non-determinism (that I'm aware of) is the CPUID instruction
+> that returns on which core it runs, but that doesn't seem to
+> be used that much.
+
+There's also RDPMC, but by default the kernel does not enable that
+for ring 3. And if you go for oddities there are the random number
+generator instructions on VIA CPUs which will obviously not 
+be repeatable.
+
+-Andi
