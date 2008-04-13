@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbYDMRjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYDMRkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbYDMRjM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYDMRi5
+	id S1753401AbYDMRkZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYDMRkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:38:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36344 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbYDMRi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:38:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: Suspend and hibernation patchset against -rc9
-Date: Sun, 13 Apr 2008 19:39:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Shaohua Li <shaohua.li@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>
-References: <200803120129.25585.rjw@sisk.pl> <200803270051.31778.rjw@sisk.pl> <200804020227.12943.rjw@sisk.pl>
-In-Reply-To: <200804020227.12943.rjw@sisk.pl>
+	Sun, 13 Apr 2008 13:40:13 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53786 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751591AbYDMRkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 13:40:12 -0400
+X-Sasl-enc: tN65eKijyA/SZZVdllaVopFo7wq6/WX7KKTXuZhrYEvd 1208108410
+Date: Sun, 13 Apr 2008 14:40:05 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH 7/8] rfkill: add an "any radio" switch type and
+	functionality
+Message-ID: <20080413174005.GB31364@khazad-dum.debian.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <1207946244-14525-8-git-send-email-hmh@hmh.eng.br> <20080412195716.GA4639@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804131939.14965.rjw@sisk.pl>
+In-Reply-To: <20080412195716.GA4639@ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 12 Apr 2008, Pavel Machek wrote:
+> On Fri 2008-04-11 17:37:23, Henrique de Moraes Holschuh wrote:
+> > Add a RFKILL_TYPE_ANY switch.  This switch can control more than one type
+> > of radio, and it is always subject to toggling by any type of rfkill-input
+> > event.  It is suitable to implement kill-all-radios functionality when
+> > coupled with input event EV_SW SW_RADIO.
+> 
+> Hmm, how does that work with pcmcia ethernet card plugged in?
 
-For everyone interested, there's a new suspend/hibernation patchset against
-2.6.25-rc8 at:
-  
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc9/patches/
- 
-It contains one new patch picked up from -mm,
-gregkh-driver-power_state-remove-it-from-driver-core.patch , that patch 16 is
-based on.
+I assume you mean PCMCIA WLAN card.
 
-I still have not decided what to do with patches 01-03.  Patch 03 will probably 
-be sent upstream.
+1. The hardware switch can't kill the WLAN card directly (so, unless
+software does something, the radio in the PCMCIA card ignores the
+switch).
 
-A new version of patch 04 has recently been included into the x86 git tree and
-before it had been tested in -mm and linux-next for quite some time.
+2. But the hardware switch it is a master switch, so it will issue an
+input event, which, IF THE USER WANTS IT TO WORK will be either acted
+upon by rfkill-input or userspace.
 
-Patches 05-11 and 13 are in the Greg's tree and have been tested in -mm and
-linux-next.
-  
-Patch 12 is in the ACPI test tree and has been tested in -mm and linux-next.
+3. rfkill-input or userspace will tell rfkill to switch all WLAN cards
+on or off, because of that input event.
 
-Patches 16-18 are the 5th revision of the patchset introducing new suspend and
-hibernation callbacks for drivers.  They are in -mm and have just been resent to
-Greg.
+4. The WLAN driver bound to the pcmcia WLAN device gets that command and
+changes the radio state.
 
-Thanks,
-Rafael
+So, from the user PoV, the PCMCIA WLAN card ends up responding to the
+hardware switch, which is better behaviour even than what Windows could
+do :p
+
+> How does userspace know which radios this controls?
+
+It doesn't.  Not even the hardware knows :) let alone the drivers...
+
+Which is why we shall try to make all master switches of a given type
+control all radios of the same type, so you can at least have some idea
+of what happens... and then the answer becomes "all radios of the same
+type/class", except for those whose drivers didn't implement an rfkill
+interface.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
