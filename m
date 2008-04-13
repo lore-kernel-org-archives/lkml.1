@@ -1,65 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYDMPTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbYDMPlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbYDMPTN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 11:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYDMPS7
+	id S1758743AbYDMPlV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 11:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYDMPlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 11:18:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58993 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbYDMPS6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 11:18:58 -0400
-Date: Sun, 13 Apr 2008 16:18:45 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Andy Whitcroft <apw@shadowen.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       SL Baur <steve@xemacs.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [patch] checkpatch: relax spacing and line length
-Message-ID: <20080413151845.GP9785@ZenIV.linux.org.uk>
-References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <47FCB458.3070403@panasas.com> <20080409132548.GM17915@shadowen.org> <47FCF6AF.8010703@panasas.com> <20080412002652.GM9785@ZenIV.linux.org.uk> <4801D82C.7000901@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4801D82C.7000901@panasas.com>
-User-Agent: Mutt/1.4.2.3i
+	Sun, 13 Apr 2008 11:41:09 -0400
+Received: from rtr.ca ([76.10.145.34]:1380 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753017AbYDMPlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 11:41:08 -0400
+Message-ID: <4802298F.7070708@rtr.ca>
+Date: Sun, 13 Apr 2008 11:41:03 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Christian Pernegger <pernegger@gmail.com>,
+       "Tvrtko A. Ursulin" <tvrtko@ursulin.net>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Western Digital GreenPower drives and Linux
+References: <200804092118.35501.tvrtko@ursulin.net>  <200804100848.08442.tvrtko@ursulin.net>  <1207831481.1514.8.camel@localhost> <bb145bd20804100801y157b4a34m82f084d27f1e0586@mail.gmail.com> <alpine.LNX.1.10.0804121903200.8405@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0804121903200.8405@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 12:53:48PM +0300, Benny Halevy wrote:
+Jan Engelhardt wrote:
+>
+> WD is not the first to do this unload nonsense,
+..
 
-> > Sorry.  I'm not going to change perfectly working editing habits *or* to patch
-> 
-> That's working well for you but apparently not so well for everybody else.
-
-Nice turn of a phrase, that.
-
-> > nvi to satisfy an annoying wunch of bankers.  HAND, GAFL.
-> > --
-> 
-> Thanks for the insightful and mature comment, Al.
-
-Oh, for the...
-
-> I really hate to spend more time on this topic but folks did find merits in it.
-> There's no need to change anybody's editing habits if we allow this indentation
-> style in the CodingStyle document and in checkpatch.pl in addition to the
-> existing convention.
-
-"Allow" is such a nice word, isn't it?  Let's take a closer look:
-	* nobody prohibits lines satisfying your constraints ("tabs only for
-indent level"), so "allowing" that is meaningless
-	* "indentation style" in the above refers to editor settings.
-To "allow" that, you advocate prohibiting the lines _NOT_ satisfying your
-constraints.  Which, by definition, means extra work for people submitting
-patches, no matter how you spin it.
-
-BTW, while we are talking about conventions, would you mind keeping lines
-in your mail shorter than 79 columns to avoid wraparounds in quoted text?
-Unlike your proposal, that one actually _is_ a common convention...
+Indeed.  Seagate beat them to it by a decade or so.
+Hence the hdparm -Z flag for old Seagate drives.  :)
