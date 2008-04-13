@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYDMTZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYDMT1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbYDMTZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYDMTZV
+	id S1754084AbYDMT1g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYDMT10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:25:21 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:45941 "EHLO smtp6.pp.htv.fi"
+	Sun, 13 Apr 2008 15:27:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36830 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752337AbYDMTZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 15:25:21 -0400
-Date: Sun, 13 Apr 2008 22:24:20 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mfd/sm501.c: #if 0 unused functions
-Message-ID: <20080413192420.GC21204@cs181133002.pp.htv.fi>
-References: <20080413181531.GD2182@cs181133002.pp.htv.fi> <9a8748490804131155g3df93ba7s9c2131a957391ee3@mail.gmail.com> <20080413190326.GB21204@cs181133002.pp.htv.fi> <9a8748490804131208o220cd763k33b74d547911a8f0@mail.gmail.com>
+	id S1752479AbYDMT1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 15:27:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Reporting bugs and bisection (was: Re: 2.6.25-rc8: FTP transfer errors)
+Date: Sun, 13 Apr 2008 21:27:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Willy Tarreau <w@1wt.eu>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <47FEADCB.7070104@rtr.ca> <20080413184730.GD8474@1wt.eu> <20080413121831.d89dd424.akpm@linux-foundation.org>
+In-Reply-To: <20080413121831.d89dd424.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9a8748490804131208o220cd763k33b74d547911a8f0@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804132127.58067.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 09:08:31PM +0200, Jesper Juhl wrote:
-> On 13/04/2008, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Sun, Apr 13, 2008 at 08:55:21PM +0200, Jesper Juhl wrote:
-> >  > On 13/04/2008, Adrian Bunk <bunk@kernel.org> wrote:
-> >  > > This patch #if 0's the following unused functions:
-> >  > >  - sm501_find_clock()
-> >  > >  - sm501_gpio_get()
-> >  > >  - sm501_gpio_set()
-> >  > >
-> >  >
-> >  > Hi Adrian,
-> >  >
-> >  > I know we've discussed this before, but I have to comment on this once more.
-> >  >
-> >  > Why is it that you seem to prefer adding '#if 0' around blocks of
-> >  > unused code instead of removing it outright?
-> >
-> > >...
-> >
-> >  When I removed unused code outright some people complained that they
-> >  plan to use it tomorrow or in the next millenium or whenever.
-> >
-> >  When I #if 0 it other people complain that I should remove it outright.
-> >
-> >  So whatever I do, there's always someone complaining.  ;-)
-> >
-> >  In this case the code looks as if it might get used at some point in the
-> >  future.
-> >
-> >  But if a maintainer tells me to resend a patch with the code removed
-> >  instead of #if 0'ed I'm always glad to do this.
-> >
-> But, you are completely ignoring the case of "the code is unused, but
-> will probably be used soon, so I'll just leave it alone and avoid the
-> churn".  Why? What's the point of commenting it out now and then
-> enabling it again in a month or two - isn't that just pointless churn?
->...
+On Sunday, 13 of April 2008, Andrew Morton wrote:
+> On Sun, 13 Apr 2008 20:47:30 +0200 Willy Tarreau <w@1wt.eu> wrote:
+> 
+> >  One other thing which might get confusing/frustrating on the
+> > user side is that currently, Linux is the *only* product which requires
+> > the bug reporter to find the fault change
+> 
+> That's because many (probably most) Linux bugs are dependent upon the
+> hardware which they run on, and developers cannot reproduce the failure on
+> their hardware.  Other software products don't have that problem.
+> 
+> 
+> That being said..  four or five years ago, developers would often work
+> closely with the reporter working out why the reporter's failure was
+> occurring.  Several days of back-and-forth.
+> 
+> We dont' do that as much nowadays - there's a tendency to
+> 
+> a) throw the problem back at the reporter, often asking them to bisect. 
+>    If the reporter is running a distro kernel (eg: Fedora) then that's
+>    quite hard, and often isn't a think they have knowledge to do.  So
+>    they'll just disappear.  Or
+> 
+> b) just ignore the report altogether.
 
-It's unused since more than one year, so chances are it won't get used 
-in a month or two.
-
-As I said, if a maintainer wants me to remove it outright I'll be glad 
-to do so.
-
-And as I said, no matter whatever I do, there's always someone 
-complaining...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+IMHO we should try to make that difficult.
