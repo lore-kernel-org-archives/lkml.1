@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbYDMU0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYDMUaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbYDMU0w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDMU0p
+	id S1755989AbYDMUaw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYDMUap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:26:45 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:45164 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbYDMU0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:26:44 -0400
-Date: Sun, 13 Apr 2008 17:25:45 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot -
-	dual-core Sony Vaio
-Message-ID: <20080413202545.GA7111@localhost.ift.unesp.br>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Soeren Sonnenburg <kernel@nn7.de>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.WZB.Z6lAIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <oq66hWjeF4N.A.WZB.Z6lAIB@albercik>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 13 Apr 2008 16:30:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38621
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752317AbYDMUao (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 16:30:44 -0400
+Date: Sun, 13 Apr 2008 13:30:45 -0700 (PDT)
+Message-Id: <20080413.133045.123268955.davem@davemloft.net>
+To: rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru,
+       ilpo.jarvinen@helsinki.fi, jeff@garzik.org, lkml@rtr.ca,
+       xemul@openvz.org, yoshfuji@linux-ipv6.org
+Subject: Re: [Bug #10434] 2.6.25-rc8: FTP transfer errors
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200804132202.55395.rjw@sisk.pl>
+References: <oq66hWjeF4N.A.yJ.L3lAIB@albercik>
+	<20080413.124823.173625519.davem@davemloft.net>
+	<200804132202.55395.rjw@sisk.pl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 13.Apr'08 at 20:56:41 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sun, 13 Apr 2008 22:02:54 +0200
+
+> On Sunday, 13 of April 2008, David Miller wrote:
+> > From: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
+> > 
+> > This patch is in Linus's tree and thus the bug is fixed.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.24.  Please verify if it still should be listed.
+> Hm, "git whatchanged net/ipv4/inet_timewait_sock.c" returns
 > 
+> commit 7951f0b03a63d657c72c7d54d306ef3357e7e604
+> Author: Daniel Lezcano <dlezcano@fr.ibm.com>
+> Date:   Thu Apr 10 20:53:10 2008 -0700
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
-> Subject		: 2.6.25-current-git sometimes hangs on boot - dual-core Sony Vaio
-> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> Date		: 2008-02-23 18:55 (51 days old)
-> References	: http://lkml.org/lkml/2008/2/23/263
-> 		  http://lkml.org/lkml/2008/4/4/41
-> 		  http://lkml.org/lkml/2008/4/9/69
+>     [NETNS][IPV6] tcp - assign the netns for timewait sockets
+> 
+> as the most recent commit changing that file ...
+> 
+> It doesn't look like the patch has been merged yet.
 
-Soeren said it no longer happens to him in http://lkml.org/lkml/2008/4/9/53
-but unfortunately it still happens with me using -rc9. So I kidnapped his 
-bugzilla report :-)
-
-In the bugzilla entry I said earlier today that "hpet=disable" apparently
-makes the problem go away (42 boots OK so far, whereas without this
-boot option it hangs ~90% using vga=6 and ~10% using vga=0x0364)
-
-I tried to bisect it, but sometimes in pre 2.6.25-rc1 kernels it takes
-30 boots before the first hang to occur. So bisection is not reliable...
-
-If someone proposes a patch I will be glad to test it!
-
-PS: The similar bug in buzilla 10377 also appears to be "fixed"
-by using hpet=disable, see comment #17 in that bug.
+That's exactly the fix, what are you talking about?
