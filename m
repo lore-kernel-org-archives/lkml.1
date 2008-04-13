@@ -1,127 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYDMSvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYDMSvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbYDMSvV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYDMSvK
+	id S1752442AbYDMSvf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDMSvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:51:10 -0400
-Received: from hs-out-0708.google.com ([64.233.178.249]:15798 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbYDMSvJ (ORCPT
+	Sun, 13 Apr 2008 14:51:16 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:27946 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbYDMSvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:51:09 -0400
+	Sun, 13 Apr 2008 14:51:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=TAQ1NembC+mLLqcBkcdZJXXKYcfSo8VzVNnEnrzZgFszkON1tdIMMPfu23uMBXikIWSClpvMWGU0SOx3rmWM4FDpF9J0vkUCn7sGyiJTnx1JEmhfjVF2gExNPQ9uBZLNJsJ18N7ETlkjllnlIu3TBGayxTC3k11JbW7tqI1F1cE=
-Message-ID: <86802c440804131151j7b38c1b3lf278acf72bd9c9e@mail.gmail.com>
-Date: Sun, 13 Apr 2008 11:51:06 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: replace patch about memmap
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=K2RMRqAaYKMnr/ujqHaxbHOXzh4Brq/In/AsCZG/MbPzj1Rbv+/Wnau9Vn/0amTI8CiNJv2jC2zSgn9fyv1pGCSKljKqMSlGXzviXByZJPtJVMzuEJeFSOenI9gQXEBkEa60TUsnYSyPpb7W06/QCmoytv9BHv35Le0qABRy9AE=
+Message-ID: <ce0170d90804131151ia99147bv9ad12e625191be5e@mail.gmail.com>
+Date: Sun, 13 Apr 2008 15:51:13 -0300
+From: "Sergio Luis" <sergio@uece.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc8: FTP transfer errors
+Cc: "David Miller" <davem@davemloft.net>, w@1wt.eu, johnpol@2ka.mipt.ru,
+       lkml@rtr.ca, ilpo.jarvinen@helsinki.fi, jesper.juhl@gmail.com,
+       tilman@imap.cc, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <200804132015.21742.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_25092_5074263.1208112666683"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080411151821.GA32398@2ka.mipt.ru>
+	 <20080412084400.GA30259@1wt.eu>
+	 <20080412.024952.151646629.davem@davemloft.net>
+	 <200804132015.21742.rjw@sisk.pl>
+X-Google-Sender-Auth: b257e0cadcc78248
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_25092_5074263.1208112666683
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, Apr 13, 2008 at 3:15 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, 12 of April 2008, David Miller wrote:
+>  > From: Willy Tarreau <w@1wt.eu>
+>  > Date: Sat, 12 Apr 2008 10:44:00 +0200
+>  >
+>  > > While it is a powerful tool, we must accept that it cannot efficiently
+>  > > work in some circumstances, such as :
+>  >
+>  > Everyone is well aware of all of this, that's why I specifically asked
+>  > for a bisect, because I knew it would be crucial to pinpointing this
+>  > particular bug.
+>  >
+>  > And lo' and behold in 15 minutes after the bisect results were
+>  > available it got fixed.
+>
+>  I can't find the fix, btw.  Can you please point me to it?
 
-Ingo,
+there you go
+http://lkml.org/lkml/2008/4/10/409
+http://lkml.org/lkml/2008/4/10/410
 
-please use attached one to replace the two in x86.git/testing.
+>
+>  Thanks,
+>  Rafael
 
-commit 68d0f2167481190d02947d35cb9693a76545eb28
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Mon Mar 10 23:22:47 2008 -0700
-
-    mm: make mem_map allocation continuous.
-
-commit 8871127b4a54a480f172de39deb5e29c482956be
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Tue Mar 18 12:47:59 2008 -0700
-
-    mm: allocate section_map for sparse_init
-
-Andrew already put the updated one in -mm
-
-YH
-
-------=_Part_25092_5074263.1208112666683
-Content-Type: text/x-patch; name=mm_sparse_final.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fezywvdl0
-Content-Disposition: attachment; filename=mm_sparse_final.patch
-
-W1BBVENIXSBtbTogbWFrZSBtZW1fbWFwIGFsbG9jYXRpb24gY29udGludW91cyB2Mi4KCnZtZW1t
-YXAgYWxsb2NhdGlvbiBjdXJyZW50IGdvdAogW2ZmZmZlMjAwMDAwMDAwMDAtZmZmZmUyMDAwMDFm
-ZmZmZl0gUE1EIC0+ZmZmZjgxMDAwMTQwMDAwMCBvbiBub2RlIDAKIFtmZmZmZTIwMDAwMjAwMDAw
-LWZmZmZlMjAwMDAzZmZmZmZdIFBNRCAtPmZmZmY4MTAwMDE4MDAwMDAgb24gbm9kZSAwCiBbZmZm
-ZmUyMDAwMDQwMDAwMC1mZmZmZTIwMDAwNWZmZmZmXSBQTUQgLT5mZmZmODEwMDAxYzAwMDAwIG9u
-IG5vZGUgMAogW2ZmZmZlMjAwMDA2MDAwMDAtZmZmZmUyMDAwMDdmZmZmZl0gUE1EIC0+ZmZmZjgx
-MDAwMjAwMDAwMCBvbiBub2RlIDAKIFtmZmZmZTIwMDAwODAwMDAwLWZmZmZlMjAwMDA5ZmZmZmZd
-IFBNRCAtPmZmZmY4MTAwMDI0MDAwMDAgb24gbm9kZSAwCi4uLgoKdGhlcmUgaXMgMk0gaG9sZSBi
-ZXR3ZWVuIHRoZW0uCgp0aGUgcm9vdGNhdXNlIGlzIHRoYXQgdXNlbWFwICgyNCBieXRlcykgd2ls
-bCBiZSBhbGxvY2F0ZWQgYWZ0ZXIgZXZlcnkgMk0KbWVtX21hcC4gYW5kIGl0IHdpbGwgcHVzaCBu
-ZXh0IHZtZW1tYXAgKDJNKSB0byBuZXh0IGFsaWduICgyTSkuCgpzb2x1dGlvbjoKdHJ5IHRvIGFs
-bG9jYXRlIG1lbV9tYXAgY29udGlub3VzbHkuCgphZnRlciBwYXRjaCwgd2lsbCBnZXQKIFtmZmZm
-ZTIwMDAwMDAwMDAwLWZmZmZlMjAwMDAxZmZmZmZdIFBNRCAtPmZmZmY4MTAwMDE0MDAwMDAgb24g
-bm9kZSAwCiBbZmZmZmUyMDAwMDIwMDAwMC1mZmZmZTIwMDAwM2ZmZmZmXSBQTUQgLT5mZmZmODEw
-MDAxNjAwMDAwIG9uIG5vZGUgMAogW2ZmZmZlMjAwMDA0MDAwMDAtZmZmZmUyMDAwMDVmZmZmZl0g
-UE1EIC0+ZmZmZjgxMDAwMTgwMDAwMCBvbiBub2RlIDAKIFtmZmZmZTIwMDAwNjAwMDAwLWZmZmZl
-MjAwMDA3ZmZmZmZdIFBNRCAtPmZmZmY4MTAwMDFhMDAwMDAgb24gbm9kZSAwCiBbZmZmZmUyMDAw
-MDgwMDAwMC1mZmZmZTIwMDAwOWZmZmZmXSBQTUQgLT5mZmZmODEwMDAxYzAwMDAwIG9uIG5vZGUg
-MAouLi4KYW5kIHVzZW1hcCB3aWxsIHNoYXJlIGluIHBhZ2UgYmVjYXVzZSBvZiB0aGV5IGFyZSBh
-bGxvY2F0ZWQgY29udGludW91c2x5IHRvby4Kc3BhcnNlX2Vhcmx5X3VzZW1hcF9hbGxvYzogdXNl
-bWFwID0gZmZmZjgxMDAyNGUwMDAwMCBzaXplID0gMjQKc3BhcnNlX2Vhcmx5X3VzZW1hcF9hbGxv
-YzogdXNlbWFwID0gZmZmZjgxMDAyNGUwMDA4MCBzaXplID0gMjQKc3BhcnNlX2Vhcmx5X3VzZW1h
-cF9hbGxvYzogdXNlbWFwID0gZmZmZjgxMDAyNGUwMDEwMCBzaXplID0gMjQKc3BhcnNlX2Vhcmx5
-X3VzZW1hcF9hbGxvYzogdXNlbWFwID0gZmZmZjgxMDAyNGUwMDE4MCBzaXplID0gMjQKLi4uCgpz
-byB3ZSBtYWtlIHRoZSBib290bWVtIGFsbG9jYXRpb24gbW9yZSBjb21wYWN0IGFuZCB1c2UgbGVz
-cyBtZW1vcnkgZm9yIHVzZW1hcC4KCmZvciBwb3dlciBwYwpCYWRhcmkgUHVsYXZhcnR5IDxwYmFk
-YXJpQHVzLmlibS5jb20+IHdyb3RlOgoKPiAgWW91IGhhdmUgdG8gY2FsbCBzcGFyc2VfaW5pdF9v
-bmVfc2VjdGlvbigpIG9uIGVhY2ggcG1hcCBhbmQgdXNlbWFwCj4gIGFzIHdlIGFsbG9jYXRlIC0g
-c2luY2UgdmFsaWRfc2VjdGlvbigpIGRlcGVuZHMgb24gaXQgKHdoaWNoIGlzIG5lZWRlZAo+ICBi
-eSB2bWVtbWFwX3BvcHVsYXRlKCkgdG8gY2hlY2sgaWYgdGhlIHNlY3Rpb24gaXMgcG9wdWxhdGVk
-IG9yIG5vdCkuCj4gIE9uIHBwYywgd2UgbmVlZCB0byBjYWxsIGh0YWJfYm9sdGVkX21hcHBpbmco
-KSBvbiBlYWNoIHNlY3Rpb24gYW5kCj4gIHdlIG5lZWQgdG8gc2tpcCBleGlzdGluZyBzZWN0aW9u
-cy4KCnNvIHRyeSB0byBhbGxvY2F0ZSB1c2VtYXAgYXQgZmlyc3QgYWx0b2dldGhlci4KCnYyIHJl
-cGxhY2U6CglbUEFUQ0hdIG1tOiBtYWtlIG1lbV9tYXAgYWxsb2NhdGlvbiBjb250aW51b3VzLgoJ
-W1BBVENIXSBtbTogYWxsb2NhdGUgc2VjdGlvbl9tYXAgZm9yIHNwYXJzZV9pbml0CglbUEFUQ0hd
-IG1tOiBhbGxvY2F0ZSB1c2VtYXAgYXQgZmlyc3QgaW5zdGVhZCBvZiBtZW1fbWFwIGluIHNwYXJz
-ZV9pbml0CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+
-CgpkaWZmIC0tZ2l0IGEvbW0vc3BhcnNlLmMgYi9tbS9zcGFyc2UuYwppbmRleCBmNmE0M2MwLi4y
-ODgxMjIyIDEwMDY0NAotLS0gYS9tbS9zcGFyc2UuYworKysgYi9tbS9zcGFyc2UuYwpAQCAtMjk0
-LDIyICsyOTQsNDggQEAgdm9pZCBfX2luaXQgc3BhcnNlX2luaXQodm9pZCkKIAl1bnNpZ25lZCBs
-b25nIHBudW07CiAJc3RydWN0IHBhZ2UgKm1hcDsKIAl1bnNpZ25lZCBsb25nICp1c2VtYXA7CisJ
-dW5zaWduZWQgbG9uZyAqKnVzZW1hcF9tYXA7CisJaW50IHNpemU7CisKKwkvKgorCSAqIG1hcCBp
-cyB1c2luZyBiaWcgcGFnZSAoYWthIDJNIGluIHg4NiA2NCBiaXQpCisJICogdXNlbWFwIGlzIGxl
-c3Mgb25lIHBhZ2UgKGFrYSAyNCBieXRlcykKKwkgKiBzbyBhbGxvYyAyTSAod2l0aCAyTSBhbGln
-bikgYW5kIDI0IGJ5dGVzIGluIHR1cm4gd2lsbAorCSAqIG1ha2UgbmV4dCAyTSBzbGlwIHRvIG9u
-ZSBtb3JlIDJNIGxhdGVyLgorCSAqIHRoZW4gaW4gYmlnIHN5c3RlbSwgdGhlIG1lbW9yeSB3aWxs
-IGhhdmUgYSBsb3Qgb2YgaG9sZXMuLi4KKwkgKiBoZXJlIHRyeSB0byBhbGxvY2F0ZSAyTSBwYWdl
-cyBjb250aW5vdXNseS4KKwkgKgorCSAqIHBvd2VycGMgbmVlZCB0byBjYWxsIHNwYXJzZV9pbml0
-X29uZV9zZWN0aW9uIHJpZ2h0IGFmdGVyIGVhY2gKKwkgKiBzcGFyc2VfZWFybHlfbWVtX21hcF9h
-bGxvYywgc28gYWxsb2NhdGUgdXNlbWFwX21hcCBhdCBmaXJzdC4KKwkgKi8KKwlzaXplID0gc2l6
-ZW9mKHVuc2lnbmVkIGxvbmcgKikgKiBOUl9NRU1fU0VDVElPTlM7CisJdXNlbWFwX21hcCA9IGFs
-bG9jX2Jvb3RtZW0oc2l6ZSk7CisJaWYgKCF1c2VtYXBfbWFwKQorCQlwYW5pYygiY2FuIG5vdCBh
-bGxvY2F0ZSB1c2VtYXBfbWFwXG4iKTsKIAogCWZvciAocG51bSA9IDA7IHBudW0gPCBOUl9NRU1f
-U0VDVElPTlM7IHBudW0rKykgewogCQlpZiAoIXByZXNlbnRfc2VjdGlvbl9ucihwbnVtKSkKIAkJ
-CWNvbnRpbnVlOworCQl1c2VtYXBfbWFwW3BudW1dID0gc3BhcnNlX2Vhcmx5X3VzZW1hcF9hbGxv
-YyhwbnVtKTsKKwl9CiAKLQkJbWFwID0gc3BhcnNlX2Vhcmx5X21lbV9tYXBfYWxsb2MocG51bSk7
-Ci0JCWlmICghbWFwKQorCWZvciAocG51bSA9IDA7IHBudW0gPCBOUl9NRU1fU0VDVElPTlM7IHBu
-dW0rKykgeworCQlpZiAoIXByZXNlbnRfc2VjdGlvbl9ucihwbnVtKSkKIAkJCWNvbnRpbnVlOwog
-Ci0JCXVzZW1hcCA9IHNwYXJzZV9lYXJseV91c2VtYXBfYWxsb2MocG51bSk7CisJCXVzZW1hcCA9
-IHVzZW1hcF9tYXBbcG51bV07CiAJCWlmICghdXNlbWFwKQogCQkJY29udGludWU7CiAKKwkJbWFw
-ID0gc3BhcnNlX2Vhcmx5X21lbV9tYXBfYWxsb2MocG51bSk7CisJCWlmICghbWFwKQorCQkJY29u
-dGludWU7CisKIAkJc3BhcnNlX2luaXRfb25lX3NlY3Rpb24oX19ucl90b19zZWN0aW9uKHBudW0p
-LCBwbnVtLCBtYXAsCiAJCQkJCQkJCXVzZW1hcCk7CiAJfQorCisJZnJlZV9ib290bWVtKF9fcGEo
-dXNlbWFwX21hcCksIHNpemUpOwogfQogCiAjaWZkZWYgQ09ORklHX01FTU9SWV9IT1RQTFVHCg==
-
-------=_Part_25092_5074263.1208112666683--
+  -sergio
