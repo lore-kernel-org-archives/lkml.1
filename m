@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYDMUfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYDMUh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbYDMUfz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbYDMUfq
+	id S1756946AbYDMUh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYDMUhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:35:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48520
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752637AbYDMUfp (ORCPT
+	Sun, 13 Apr 2008 16:37:20 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:38235 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbYDMUhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:35:45 -0400
-Date: Sun, 13 Apr 2008 13:35:46 -0700 (PDT)
-Message-Id: <20080413.133546.43018013.davem@davemloft.net>
-To: johnpol@2ka.mipt.ru
-Cc: akpm@linux-foundation.org, w@1wt.eu, rjw@sisk.pl, tilman@imap.cc,
-       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080413202118.GA29658@2ka.mipt.ru>
-References: <20080413184730.GD8474@1wt.eu>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 13 Apr 2008 16:37:19 -0400
+From: Chr <chunkeey@web.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #10369] The never ending BEEEEP/__smp_call_function_mask with 2.6.25-rc7
+Date: Sun, 13 Apr 2008 22:37:10 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.ch.w3lAIB@albercik> <alpine.LFD.1.10.0804132156570.3261@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0804132156570.3261@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804132237.10401.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1+3fMyrt9FxW/9iYGr+prt2hBW2Dw17LZKzfuXE
+	YWg/3JtGIx50nX7U51A88CNutJUSwzbqaF1W3XjJbvvWr+y0Hl
+	ju1aAG8Ys=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Date: Mon, 14 Apr 2008 00:21:18 +0400
+On Sunday 13 April 2008 22:02:08 Thomas Gleixner wrote:
+>
+> The problem still persists and I have no clue at all what's the root
+> cause. The symptom is a stuck local apic timer interrupt as we have
+> seen it on those AMD X2 systems with C1E enabled. This box does not
+> advertise C1E, but the behaviour is the same.
+>
+> Christian, it would be great if you could bisect the git tree so we
+> get an idea which patch is exposing this problem. My feeling is that
+> the problem itself is there with 2.6.24 as well but not
+> exposed. That's just a gut feeling and I could be wrong as usual.
 
-> If the same would be done on developers machine and huge patches would
-> be sent to jump between changesets, that would be a real 'work closely
-> with the reporter working out why the reporter's failure was occurring'?
+Ok! The biggest problem however is: I can only run bisects on weekends. :-(
+And even then: it takes up to 2 hours until the timer gets stuck... and the 
+system freezes...
+But, on the other hand... does ANYBODY know a way how I can see if the 
+apictimer drifts/(getting slower and slower)?
 
-In fact, this is what Andrew's so-called "back and forth with the bug
-reporter" used to mainly consist of.  Asking the user to try this patch or
-that patch, which most of the time were reverts of suspect changes.
-
-Which, surprise surprise, means we were spending lots of time
-bisecting things by hand.
-
-We're able to automate this now and it's not a bad thing.
+Regards,
+	Chr.
