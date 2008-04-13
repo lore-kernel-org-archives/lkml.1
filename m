@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbYDMXw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYDMX4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbYDMXw6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 19:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYDMXwu
+	id S1758081AbYDMX4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 19:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYDMX4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 19:52:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44839 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbYDMXwu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 19:52:50 -0400
-Message-ID: <48029B04.9010108@zytor.com>
-Date: Sun, 13 Apr 2008 16:45:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 13 Apr 2008 19:56:09 -0400
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:55912 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1753015AbYDMX4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 19:56:08 -0400
+X-Spam-Check-By: mail.local.tull.net
+Date: Mon, 14 Apr 2008 09:55:53 +1000
+From: Nick Andrew <nick@nick-andrew.net>
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
+Message-ID: <20080413235553.GG29599@tull.net>
+References: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com> <20080413151020.bfa62f58.randy.dunlap@oracle.com> <48028841.900@gmail.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: x86 git tree broken (bisected)
-References: <200804102159.14563.rjw@sisk.pl> <200804140010.01034.rjw@sisk.pl> <86802c440804131532g4626233br82a425d6a96a6e11@mail.gmail.com> <200804140141.45830.rjw@sisk.pl>
-In-Reply-To: <200804140141.45830.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48028841.900@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> 
-> Well, unfortunately current x86.git doesn't even boot on the affected box.
-> It 'cannot open root device "md1" or unknown-block (0,0)' (Ingo, any ideas?).
-> 
-> Today I have to take some sleep, so I'll try to debug it tomorrow, unless
-> someone else does it earlier.
-> 
+On Mon, Apr 14, 2008 at 02:25:05AM +0400, Dmitri Vorobiev wrote:
+> Actually, I was doubting whether the "2 spaces" thing was
+> intentional or not. The overwhelming majority of the sentences in
+> this document use only one space after a period, however, and this
+> made me decide that the "2 spaces" thing had not been deliberate
+> but just a typo.
 
-Sounds like you didn't compile in the appropriate RAID support...
+The 2-spaces ones were probably reformatted using 'fmt'. If fmt joins
+a line ending in a period, it will use 2 spaces. It does not change the
+spacing in non-joined lines, despite what the manpage says.
 
-	-hpa
-
+Nick.
