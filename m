@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYDMUzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYDMU54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYDMUzN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYDMUy5
+	id S1753667AbYDMU54 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYDMU5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:54:57 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38788 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752127AbYDMUy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:54:56 -0400
-Date: Mon, 14 Apr 2008 00:54:06 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection (was: Re: 2.6.25-rc8: FTP transfer errors)
-Message-ID: <20080413205406.GA9190@2ka.mipt.ru>
-References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org> <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804132233.50491.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+	Sun, 13 Apr 2008 16:57:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50505 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYDMU5s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 16:57:48 -0400
+Message-ID: <480272BD.9010404@zytor.com>
+Date: Sun, 13 Apr 2008 13:53:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Erik Bosman <ejbosman@cs.vu.nl>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
+References: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>	<87r6daw2ay.fsf@basil.nowhere.org>	<Pine.GSO.4.56.0804131126080.28138@keg.few.vu.nl> <87prstwvkr.fsf@basil.nowhere.org> <48025F1B.10701@zytor.com> <48027225.6000609@firstfloor.org>
+In-Reply-To: <48027225.6000609@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 10:33:49PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> Things like this are very disappointing and have a very negative impact on bug
-> reporters.  We should do our best to avoid them.
+Andi Kleen wrote:
+>> I think what Erik is trying to do is to make it possible to disable as
+>> many of these in the kernel as possible; I/O is easy, it's off by
+>> default; RDTSC and RDPMC can be disabled in the kernel, and I think
+>> even XSTORE can be disabled.
+> 
+> I'm a little sceptical it will work reliably, but we'll see.
+> 
+> There's also LSL (forgot that earlier). It is used by the vgetcpu()
+> because it's faster than CPUID or RDTSCP. Kernel
+> sets a magic segment up which has different limits for different CPUs.
+> 
 
-Shit happens. This is a matter of either bug report or those who were in
-the copy list. There are different people and different situations, in
-which they do not reply.
+Yeah, that's unlikely to be found in code that isn't actively looking 
+for it, though.
 
--- 
-	Evgeniy Polyakov
+	-hpa
