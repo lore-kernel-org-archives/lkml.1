@@ -1,99 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYDMVcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYDMVek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbYDMVcm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYDMVcd
+	id S1755791AbYDMVek (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYDMVeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:32:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58629 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbYDMVcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:32:33 -0400
-Date: Sun, 13 Apr 2008 23:33:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 13 Apr 2008 17:34:31 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:48580 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYDMVe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 17:34:29 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] e1000=y && e1000e=m regression fix
+Date: Sun, 13 Apr 2008 23:34:14 +0200
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jeff@garzik.org>, Daniel Barkalow <barkalow@iabervon.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc6 regression - hang on resume
-Message-ID: <20080413213310.GB29396@elf.ucw.cz>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost> <20080411210400.GA1533@elf.ucw.cz> <1207985262.4372.3.camel@localhost> <20080413085343.GD8949@elf.ucw.cz> <1208088344.4839.60.camel@localhost>
+       NetDev <netdev@vger.kernel.org>,
+       e1000-list <e1000-devel@lists.sourceforge.net>,
+       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>, Greg KH <greg@kroah.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <47FBDBE9.9040700@garzik.org> <47FFF7B5.3000609@garzik.org> <alpine.LFD.1.00.0804131410340.2982@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0804131410340.2982@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208088344.4839.60.camel@localhost>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804132334.21654.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sunday 13 April 2008 23:13:01 Linus Torvalds wrote:
+> On Fri, 11 Apr 2008, Jeff Garzik wrote:
+> > Linus Torvalds wrote:
+> > > .. but that said, I think your patch is certainly better than what we
+> > > have now (or what Ingo was complaining about for the next merge
+> > > window). I certainly could live with it. I would just suggest against
+> > > ever then removing that "generic E1000" choice.
+> >
+> > You mean never ever remove PCI-E support from e1000?
+>
+> No. I mean never ever remove the *configure* level thinking that "e1000 is
+> e1000".
+>
+> There is no sense in *ever* showing it as two drivers to users, because
+> users do not see them as separate chipsets. They look identical, down to
+> the part names.
+>
+> If it's a single family, and users can't even easily tell whether they
+> have version 1 or version 2 (PCI vs PCI-E), you shouldn't even ask them.
+> You should literally ask them: "do you want e1000 support".
 
-> > /sys/bus/pci/devices/0000:00:1b.0/irq
-> > 
-> > contains 21 in one case and 22 in another... as do other
-> > interrupts. Is that expected? Can you post /proc/interrupts for both
-> > versions?
-> 
-> It might be that configs are slightly different - if you think this
-> gives a clue I will post them, but your discovery below looks
-> promising:
+It's something like RTL8139. There are two versions of the chips. They even 
+have the same PCI IDs. But there are two different drivers - 8139cp and 
+8139too. It's really bad for users
 
-Yep... any chance to do git bisect to see where it broke?
+>
+> That's it.
+>
+> Once you have asked them that, you can then decide "ok, if you *really*
+> know what version of the chip you have, you can decide to only get limited
+> driver support".
+>
+> But that's a secondary thing from a user perspective.
+>
+> See the patch I already sent out.
+>
+> 			Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> > Error: something went wrong performing real mode call
-> > open("/sys/class/graphics",
-> > O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
-> > such file or directory)
-> > open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
-> > ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
-> > 
-> > ...can you perhaps add printf-s to s2ram to find out what changed?
-> 
-> OK, I searched for ???"something went wrong performing real mode call" in
-> the s2ram source and found this function:
-> 
-> int do_real_post(unsigned pci_device)
-> {
->     int error = 0;
->     struct LRMI_regs r;
->     memset(&r, 0, sizeof(r));
-> 
->     /* Several machines seem to want the device that they're POSTing in
->        here */
->     r.eax = pci_device;
-> 
->     /* 0xc000 is the video option ROM.  The init code for each
->        option ROM is at 0x0003 - so jump to c000:0003 and start running
-> */
->     r.cs = 0xc000;
->     r.ip = 0x0003;
-> 
->     /* This is all heavily cargo culted but seems to work */
->     r.edx = 0x80;
->     r.ds = 0x0040;
-> 
->     if (!LRMI_call(&r)) {
->         fprintf(stderr,
->             "Error: something went wrong performing real mode call\n");
->         error = 1;
 
-Sweet, so the problem is inside X86EMU_exec(), right? ...and that's
-bytecode interpretter. You could add printfs() all over it, to see
-where the execution differs.
 
-> so either the graphics adapter is somehow not ready yet or a wrong
-> address is used for posting?
-
-Or something goes wrong in the interpretter...
-
-> Do you already now have an idea? Or which things should I print out?
-
-It starts to look like git bisect is the easier way to get some
-results...
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ondrej Zary
