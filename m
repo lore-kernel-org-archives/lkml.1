@@ -1,155 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYDMNpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbYDMNxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbYDMNpS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 09:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbYDMNpF
+	id S1758978AbYDMNxh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 09:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbYDMNx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 09:45:05 -0400
-Received: from smtp50.hccnet.nl ([62.251.0.47]:48416 "EHLO smtp50.hccnet.nl"
+	Sun, 13 Apr 2008 09:53:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35650 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757015AbYDMNpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 09:45:03 -0400
-Message-ID: <480229CB.2080108@van-ginkel.eu>
-Date: Sun, 13 Apr 2008 17:42:03 +0200
-From: sander van ginkel <sander@van-ginkel.eu>
-Reply-To: sander@van-ginkel.eu
-User-Agent: Thunderbird 1.5.0.9 (X11/20070507)
+	id S1756880AbYDMNx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 09:53:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+Date: Sun, 13 Apr 2008 15:53:14 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <1207985262.4372.3.camel@localhost> <20080413085343.GD8949@elf.ucw.cz>
+In-Reply-To: <20080413085343.GD8949@elf.ucw.cz>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptmx: adding handshake support
-References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>	<20080330140948.0cqmtqb9us880cw8@62.129.139.44> <20080330131652.7073589c@core>
-In-Reply-To: <20080330131652.7073589c@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804131553.15573.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've created a new patch, build against linux-2.6.25-rc8.
+On Sunday, 13 of April 2008, Pavel Machek wrote:
+> On Sat 2008-04-12 09:27:42, Soeren Sonnenburg wrote:
+> > On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
+> > > On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
+> > > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> > > > > The following report is on the current list of known regressions
+> > > > > from 2.6.24.  Please verify if the issue is still present in the
+> > > > > mainline.
+> > > > > 
+> > > > > 
+> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
+> > > > > Subject		: 2.6.25-rc6 regression - hang on resume
+> > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> > > > > Date		: 2008-03-25 04:44 (10 days old)
+> > > > 
+> > > > Yes. The machine resumes and display stays black using s2ram -f -p
+> > > > (blindly typing reboot etc on keyboard does what is expected). However
+> > > > display comes back on 2.6.24.
+> > > 
+> > > Could you get us any debugging output from s2ram? Or maybe even strace
+> > > it in both working and broken case, and comparing them? (You may want
+> > > to disable randomization so that results are comparable).
+> > 
+> > I did on 2.6.24
+> > 
+> > strace -ff s2ram >s2ram24.trace 2>&1
+> > 
+> > and .25
+> > 
+> > ???strace -ff s2ram >s2ram25.trace 2>&1
+> > 
+> > with the .24 bringing the display back and .25 not. Files are here
+> > 
+> > http://nn7.de/debugging/s2ram24.trace.bz2
+> > ???http://nn7.de/debugging/s2ram25.trace.bz2
+> 
+> Hmm: 
+> 
+> /sys/bus/pci/devices/0000:00:1b.0/irq
+> 
+> contains 21 in one case and 22 in another... as do other
+> interrupts. Is that expected? Can you post /proc/interrupts for both
+> versions?
+> 
+> Hmm, big part of trace is:
+> 
+> vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> implemented)
+> vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> implemented)
+> 
+> ...I wonder why we do it so many times?
+> 
+> And here's the difference. .25 says:
+> 
+> vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> implemented)
+> vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> implemented)
+> Error: something went wrong performing real mode call
+> open("/sys/class/graphics",
+> O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
+> such file or directory)
+> open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
+> ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
+> 
+> ...can you perhaps add printf-s to s2ram to find out what changed?
 
-Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+Well, that looks suspiciously similar to
+http://bugzilla.kernel.org/show_bug.cgi?id=10155 .
 
-===================================================================
-
-diff -pru linux-2.6.25-rc8.orig/drivers/char/pty.c 
-linux-2.6.25-rc8/drivers/char/pty.c
---- linux-2.6.25-rc8.orig/drivers/char/pty.c    2008-04-01 
-21:44:26.000000000 +0200
-+++ linux-2.6.25-rc8/drivers/char/pty.c    2008-04-13 16:40:03.000000000 
-+0200
-@@ -7,6 +7,8 @@
-  *    -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
-  *  Added TTY_DO_WRITE_WAKEUP to enable n_tty to send POLL_OUT to
-  *      waiting writers -- Sapan Bhatia <sapan@corewars.org>
-+ *  Added support for MCR/MSR, used for serial over ethernet
-+ *    -- Sander van Ginkel <sander@van-ginkel.eu>
-  *
-  *
-  */
-@@ -196,6 +198,7 @@ static void pty_flush_buffer(struct tty_
- 
- static int pty_open(struct tty_struct *tty, struct file * filp)
- {
-+    unsigned int    *mcrmsr;
-     int    retval = -ENODEV;
- 
-     if (!tty || !tty->link)
-@@ -212,11 +215,56 @@ static int pty_open(struct tty_struct *t
-     clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
-     set_bit(TTY_THROTTLED, &tty->flags);
-     set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-+
-+    /* initialize the pointer in case something fails */
-+   
-+    tty->driver_data = NULL;                         
-+    tty->link->driver_data = NULL;
-+
-+    /* first time accessing this device, let's create it */
-+
-+    mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
-+
-+    if (mcrmsr != NULL) {
-+
-+        /* save our data within the tty structure */
-+
-+        *mcrmsr=0;
-+
-+        tty->driver_data = mcrmsr;
-+        tty->link->driver_data = mcrmsr;
-+    }
-+    else
-+    {
-+        goto out;
-+    }       
-+
-     retval = 0;
-+
- out:
-     return retval;
- }
- 
-+static int pty_tiocmget(struct tty_struct *tty, struct file *file)
-+{
-+    unsigned int *mcrmsr;
-+
-+    mcrmsr = tty->driver_data;
-+
-+    return *mcrmsr;
-+}
-+
-+static int pty_tiocmset(struct tty_struct *tty, struct file 
-*file,unsigned int set, unsigned int clear)
-+{
-+    unsigned int *mcrmsr;
-+
-+    mcrmsr = tty->driver_data;
-+    *mcrmsr=set;
-+    tty->driver_data=mcrmsr;
-+
-+    return 0;
-+}
-+
- static void pty_set_termios(struct tty_struct *tty, struct ktermios 
-*old_termios)
- {
-         tty->termios->c_cflag &= ~(CSIZE | PARENB);
-@@ -232,6 +280,8 @@ static const struct tty_operations pty_o
-     .chars_in_buffer = pty_chars_in_buffer,
-     .unthrottle = pty_unthrottle,
-     .set_termios = pty_set_termios,
-+    .tiocmget = pty_tiocmget,
-+    .tiocmset = pty_tiocmset,
- };
- 
- /* Traditional BSD devices */
-@@ -364,11 +414,27 @@ static struct ctl_table pty_root_table[]
- static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
-                 unsigned int cmd, unsigned long arg)
- {
-+    unsigned int value;
-+    unsigned int *mcrmsr;
-+
-+        mcrmsr=tty->driver_data;
-+
-     switch (cmd) {
-     case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
-         return pty_set_lock(tty, (int __user *)arg);
-     case TIOCGPTN: /* Get PT Number */
-         return put_user(tty->index, (unsigned int __user *)arg);
-+
-+    case VMCRMSR: /* Set all of the handshake line, even the normally 
-read only */
-+        {
-+        if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned 
-int)))
-+            return -EFAULT;
-+
-+        *mcrmsr=value;
-+        tty->driver_data=mcrmsr;
-+
-+        return 0;
-+        }         
-     }
- 
-     return -ENOIOCTLCMD;
-
+Thanks,
+Rafael
