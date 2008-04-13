@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYDMH7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYDMIBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYDMH7h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 03:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYDMH7Y
+	id S1755343AbYDMIBq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 04:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYDMIBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 03:59:24 -0400
-Received: from rv-out-0708.google.com ([209.85.198.244]:27964 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755096AbYDMH7X (ORCPT
+	Sun, 13 Apr 2008 04:01:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43745 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbYDMIBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 03:59:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RU2/kQ4YYFGTntJxNB5RM/Zfe11lCVHcvpC04e3mBXNU/7thbNkt75OqjQxXwlCmkWfk6BYyijDxvjtWuuOylPm8sXA2trI+8AUnB6U4B/rTWHgtu6Gz0Zi7y1SJmjTBG3g4KQDeYzOwQN5D3O0alTAteuQoTuaeWuWtTjNoQ4E=
-Message-ID: <86802c440804130059u52a61a82t39a6b1f788e78102@mail.gmail.com>
-Date: Sun, 13 Apr 2008 00:59:23 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: x86 git tree broken (bisected)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-In-Reply-To: <20080413075144.GI20332@elte.hu>
+	Sun, 13 Apr 2008 04:01:36 -0400
+Date: Sun, 13 Apr 2008 04:01:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-ID: <20080413080130.GA9622@infradead.org>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200804102159.14563.rjw@sisk.pl> <20080410203800.GA14560@elte.hu>
-	 <200804110028.22290.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl>
-	 <86802c440804111326t4c3ff4b6od33a128560b58aec@mail.gmail.com>
-	 <20080413075144.GI20332@elte.hu>
+In-Reply-To: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 12:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->  > >  and X starts again.  Also, suspend to RAM works from under X.
->  >
->  > please keep the three patches and applied the two attached debug
->  > patches.
->  >
->  > i wonder if there is some io allocation overlapping with your system.
->
->  hm, would be nice to have these two debugging patches upstream. Perhaps
->  the printouts should be dependent on some boot parameter?
+On Sat, Apr 12, 2008 at 08:55:44PM -0700, Andrew Morton wrote:
+> > it's a dead filesystem that a very few people still have a reason to
+> > use.  If FUSE is where this should live, then I'll just simply focus my
+> > time on that instead (since I already have it in FUSE).
+> 
+> Yes, pursuing the FUSE implementation sounds a better approach - it avoids
+> burdening the kernel with a filesysstem which few will be interested in and
+> is more practical for use by those who _are_ interested in it.
 
-I am using them to print out the io/mmio allocation (from BIOS) before
-kernel modifying them.
+No way.  For a normal foreign block filesystem a proper kernel
+implementation is much better.  And this one is particularly
+well-written.  Lately I really start wondering why we keep adding crap
+all over the core, but if we have a modular new filesystem that's quite
+nice people start complaining.
 
-YH
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---end quoted text---
