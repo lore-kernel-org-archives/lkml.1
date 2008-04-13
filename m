@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYDMKgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYDMKiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758710AbYDMKgw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 06:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYDMKgm
+	id S1758401AbYDMKiW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 06:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYDMKiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 06:36:42 -0400
-Received: from saeurebad.de ([85.214.36.134]:50633 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755626AbYDMKgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 06:36:41 -0400
-X-Mailbox-Line: From hannes@symbol.fehenstaub.lan Sun Apr 13 00:58:50 2008
-Message-Id: <20080412225850.704752615@symbol.fehenstaub.lan>
-References: <20080412223319.372887160@symbol.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Sun, 13 Apr 2008 00:33:21 +0200
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
-Content-Disposition: inline; filename=node-agnostic-free_bootmem.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Sun, 13 Apr 2008 06:38:13 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34910 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755618AbYDMKiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 06:38:12 -0400
+To: hch@infradead.org
+CC: akpm@linux-foundation.org, hch@infradead.org, me@bobcopeland.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080413082815.GA20108@infradead.org> (message from Christoph
+	Hellwig on Sun, 13 Apr 2008 04:28:15 -0400)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org>
+Message-Id: <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 13 Apr 2008 12:37:31 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make free_bootmem() look up the node holding the specified address
-range which lets it work transparently on single-node and multi-node
-configurations.
+> > I'm not complaining about anything.  Who has?
+> > 
+> > As the filesystem is for occasional, non-performance-sensitive use
+> > by a very small number of people, doing it via FUSE sounds like an
+> > all-round more practical approach.  This has nothing to do with quality of
+> > implementation at all.
+> 
+> It's a stupid idea.  Moving a simple block based filesystem means it's
+> more complicated, less efficient because of the additional context
+> switches and harder to use because you need additional userspace
+> packages and need to setup fuse.
+> 
+> We made writing block based filesystems trivial in the kernel to grow
+> more support for filesystems like this one.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andi Kleen <ak@suse.de>
-CC: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
----
+I don't feel strongly either way, and Christoph's arguments against
+fuse are mostly valid (although neither of them are serious).
 
-Patch tested on x86_32 uma.
+There's one thing which makes fuse a slightly better candidate for
+applications where the number of users is low: stability.  Unless you
+or your users test the hell out of your filesystem, there always a
+chance that some bugs will remain.  These rarely bring down the whole
+system, but it usually requires a reboot to let you continue using the
+Oopsing fs.
 
-Index: linux-2.6/mm/bootmem.c
-===================================================================
---- linux-2.6.orig/mm/bootmem.c
-+++ linux-2.6/mm/bootmem.c
-@@ -421,7 +421,15 @@ int __init reserve_bootmem(unsigned long
- 
- void __init free_bootmem(unsigned long addr, unsigned long size)
- {
--	free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
-+	bootmem_data_t *bdata;
-+
-+	list_for_each_entry (bdata, &bdata_list, list) {
-+		if (addr < bdata->node_boot_start)
-+			continue;
-+		free_bootmem_core(bdata, addr, size);
-+		return;
-+	}
-+	BUG();
- }
- 
- unsigned long __init free_all_bootmem(void)
+Miklos
