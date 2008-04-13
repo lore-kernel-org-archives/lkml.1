@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYDMULj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbYDMUMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbYDMULj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYDMULa
+	id S1756434AbYDMUMV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYDMUMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:11:30 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60993 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752635AbYDMUL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:11:29 -0400
-Date: Sun, 13 Apr 2008 23:10:28 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Reporting bugs and bisection (was: Re: 2.6.25-rc8: FTP
-	transfer errors)
-Message-ID: <20080413201028.GE13920@cs181133002.pp.htv.fi>
-References: <47FEADCB.7070104@rtr.ca> <22880.1207943922@turing-police.cc.vt.edu> <47FFE5DA.8000709@imap.cc> <200804132040.12138.rjw@sisk.pl> <20080413184730.GD8474@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080413184730.GD8474@1wt.eu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 13 Apr 2008 16:12:13 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51409 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752373AbYDMUMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 16:12:12 -0400
+X-Sasl-enc: 3YiGwmoPtSqOeo1GK9tGeghlLjB9I9XySiL99So0EChn 1208117530
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: linux-kernel@vger.kernel.org
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Dmitry Torokhov <dtor@mail.ru>, Ivo van Doorn <IvDoorn@gmail.com>
+Subject: Input: rename SW_RADIO to SW_RFKILL_ALL
+Date: Sun, 13 Apr 2008 17:12:06 -0300
+Message-Id: <1208117526-14483-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 08:47:30PM +0200, Willy Tarreau wrote:
->...
-> Very true. One other thing which might get confusing/frustrating on the
-> user side is that currently, Linux is the *only* product which requires
-> the bug reporter to find the fault change (yes, I know, it's scalable).
->...
+The SW_RADIO code for EV_SW events has a name that is not descriptive
+enough of its intended function, and could induce someone to think
+KEY_RADIO is its EV_KEY counterpart, which is false.
 
-That's not true, for several regressions I reported to the Wine Bugzilla 
-I had been asked to git bisect for the commit that broke it.
+Rename it to SW_RFKILL_ALL, and document what this event is for.
 
-And I'd actually assume that it's quite common for git using open source 
-projects to ask the user to bisect regressions.
+The SW_RFKILL_ALL event is meant to be used by rfkill master switches.  It
+is not bound to a particular radio switch type, and usually applies to all
+types.  It is semantically tied to master rfkill switches that enable or
+disable every radio in a system.
 
-> Regards,
-> Willy
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Dmitry Torokhov <dtor@mail.ru>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>
+---
+ Documentation/laptops/thinkpad-acpi.txt |    2 +-
+ drivers/misc/thinkpad_acpi.c            |    4 ++--
+ include/linux/input.h                   |    3 ++-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-cu
-Adrian
-
+diff --git a/Documentation/laptops/thinkpad-acpi.txt b/Documentation/laptops/thinkpad-acpi.txt
+index 76cb428..3c65b05 100644
+--- a/Documentation/laptops/thinkpad-acpi.txt
++++ b/Documentation/laptops/thinkpad-acpi.txt
+@@ -498,7 +498,7 @@ generate input device EV_KEY events.
+ In addition to the EV_KEY events, thinkpad-acpi may also issue EV_SW
+ events for switches:
+ 
+-SW_RADIO	T60 and later hardare rfkill rocker switch
++SW_RFKILL_ALL	T60 and later hardare rfkill rocker switch
+ SW_TABLET_MODE	Tablet ThinkPads HKEY events 0x5009 and 0x500A
+ 
+ Non hot-key ACPI HKEY event map:
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 6cb7812..84b2db3 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -1180,7 +1180,7 @@ static void tpacpi_input_send_radiosw(void)
+ 		mutex_lock(&tpacpi_inputdev_send_mutex);
+ 
+ 		input_report_switch(tpacpi_inputdev,
+-				    SW_RADIO, !!wlsw);
++				    SW_RFKILL_ALL, !!wlsw);
+ 		input_sync(tpacpi_inputdev);
+ 
+ 		mutex_unlock(&tpacpi_inputdev_send_mutex);
+@@ -2084,7 +2084,7 @@ static int __init hotkey_init(struct ibm_init_struct *iibm)
+ 
+ 		if (tp_features.hotkey_wlsw) {
+ 			set_bit(EV_SW, tpacpi_inputdev->evbit);
+-			set_bit(SW_RADIO, tpacpi_inputdev->swbit);
++			set_bit(SW_RFKILL_ALL, tpacpi_inputdev->swbit);
+ 		}
+ 		if (tp_features.hotkey_tablet) {
+ 			set_bit(EV_SW, tpacpi_inputdev->evbit);
+diff --git a/include/linux/input.h b/include/linux/input.h
+index cae2c35..c3ff6b1 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -637,7 +637,8 @@ struct input_absinfo {
+ #define SW_LID			0x00  /* set = lid shut */
+ #define SW_TABLET_MODE		0x01  /* set = tablet mode */
+ #define SW_HEADPHONE_INSERT	0x02  /* set = inserted */
+-#define SW_RADIO		0x03  /* set = radio enabled */
++#define SW_RFKILL_ALL		0x03  /* rfkill master switch, type "any"
++					 set = radio enabled */
+ #define SW_MAX			0x0f
+ #define SW_CNT			(SW_MAX+1)
+ 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+1.5.4.4
 
