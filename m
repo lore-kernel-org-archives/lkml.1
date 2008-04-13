@@ -1,91 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYDMRXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbYDMRYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYDMRXd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDMRXN
+	id S1753103AbYDMRYx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYDMRYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:23:13 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:26715 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751851AbYDMRXL (ORCPT
+	Sun, 13 Apr 2008 13:24:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54837 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751539AbYDMRYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:23:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PDIskKHl4bLI3jwnHa0oM4hhX1JLzim8rSkSljD/BXcpHRZZANbfPvpmFhT0QrtiCAZ5YCB5ae0T91jFyHr1+u8DG0l2lGKAHnV3voM3Clup4LmYreEjjz2blLsLZQCMNs/5RqsmXTOKCZSrU+l8gSqaOeYOqf1dp3Uhr8/O194=  ;
-X-YMail-OSG: g.qxh1kVM1l3I3zgxUfcG6FdqcOO27rZIOsS81Ws4j3i6yluKikglqZeAnDzgR9dVxVsKjHcb2VawtcqZiobqEEabiEgjYTbxlD3kYQwQ4Zpkvfg99GkDFBGTPFRbg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] usb gadget: switch to put_char returning int
-Date: Sun, 13 Apr 2008 10:21:42 -0700
-User-Agent: KMail/1.9.6
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <20080413180818.519e446c@core>
-In-Reply-To: <20080413180818.519e446c@core>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 13 Apr 2008 13:24:45 -0400
+Date: Sun, 13 Apr 2008 18:20:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, paulkf@microgate.com
+Subject: [PATCH] synclink series: switch to int put_char method
+Message-ID: <20080413182007.283b98b9@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804131021.42340.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 13 April 2008, Alan Cox wrote:
-> Signed-off-by: Alan Cox <alan@redhat.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-ACK.
-
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c
-> --- linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:36:54.000000000 +0100
-> +++ linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:41:09.000000000 +0100
-> @@ -170,7 +170,7 @@
->  static void gs_close(struct tty_struct *tty, struct file *file);
->  static int gs_write(struct tty_struct *tty,
->  	const unsigned char *buf, int count);
-> -static void gs_put_char(struct tty_struct *tty, unsigned char ch);
-> +static int gs_put_char(struct tty_struct *tty, unsigned char ch);
->  static void gs_flush_chars(struct tty_struct *tty);
->  static int gs_write_room(struct tty_struct *tty);
->  static int gs_chars_in_buffer(struct tty_struct *tty);
-> @@ -883,14 +883,15 @@
->  /*
->   * gs_put_char
->   */
-> -static void gs_put_char(struct tty_struct *tty, unsigned char ch)
-> +static int gs_put_char(struct tty_struct *tty, unsigned char ch)
->  {
->  	unsigned long flags;
->  	struct gs_port *port = tty->driver_data;
-> +	int ret = 0;
->  
->  	if (port == NULL) {
->  		pr_err("gs_put_char: NULL port pointer\n");
-> -		return;
-> +		return 0;
->  	}
->  
->  	gs_debug("gs_put_char: (%d,%p) char=0x%x, called from %p\n",
-> @@ -910,10 +911,11 @@
->  		goto exit;
->  	}
->  
-> -	gs_buf_put(port->port_write_buf, &ch, 1);
-> +	ret = gs_buf_put(port->port_write_buf, &ch, 1);
->  
->  exit:
->  	spin_unlock_irqrestore(&port->port_lock, flags);
-> +	return ret;
->  }
->  
->  /*
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
-
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclink.c linux-2.6.25-rc8-mm2/drivers/char/synclink.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclink.c	2008-04-13 15:36:53.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/char/synclink.c	2008-04-13 15:41:05.000000000 +0100
+@@ -2029,10 +2029,11 @@
+  * 		
+  * Return Value:	None
+  */
+-static void mgsl_put_char(struct tty_struct *tty, unsigned char ch)
++static int mgsl_put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	struct mgsl_struct *info = (struct mgsl_struct *)tty->driver_data;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if ( debug_level >= DEBUG_LEVEL_INFO ) {
+ 		printk( "%s(%d):mgsl_put_char(%d) on %s\n",
+@@ -2040,23 +2041,23 @@
+ 	}		
+ 	
+ 	if (mgsl_paranoia_check(info, tty->name, "mgsl_put_char"))
+-		return;
++		return 0;
+ 
+ 	if (!tty || !info->xmit_buf)
+-		return;
++		return 0;
+ 
+ 	spin_lock_irqsave(&info->irq_spinlock,flags);
+ 	
+ 	if ( (info->params.mode == MGSL_MODE_ASYNC ) || !info->tx_active ) {
+-	
+ 		if (info->xmit_cnt < SERIAL_XMIT_SIZE - 1) {
+ 			info->xmit_buf[info->xmit_head++] = ch;
+ 			info->xmit_head &= SERIAL_XMIT_SIZE-1;
+ 			info->xmit_cnt++;
++			ret = 1;
+ 		}
+ 	}
+-	
+ 	spin_unlock_irqrestore(&info->irq_spinlock,flags);
++	return ret;
+ 	
+ }	/* end of mgsl_put_char() */
+ 
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclink_gt.c linux-2.6.25-rc8-mm2/drivers/char/synclink_gt.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclink_gt.c	2008-04-13 15:36:53.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/char/synclink_gt.c	2008-04-13 15:40:58.000000000 +0100
+@@ -151,7 +151,7 @@
+ static void set_termios(struct tty_struct *tty, struct ktermios *old_termios);
+ 
+ static int  write(struct tty_struct *tty, const unsigned char *buf, int count);
+-static void put_char(struct tty_struct *tty, unsigned char ch);
++static int put_char(struct tty_struct *tty, unsigned char ch);
+ static void send_xchar(struct tty_struct *tty, char ch);
+ static void wait_until_sent(struct tty_struct *tty, int timeout);
+ static int  write_room(struct tty_struct *tty);
+@@ -913,20 +913,24 @@
+ 	return ret;
+ }
+ 
+-static void put_char(struct tty_struct *tty, unsigned char ch)
++static int put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	struct slgt_info *info = tty->driver_data;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if (sanity_check(info, tty->name, "put_char"))
+-		return;
++		return 0;
+ 	DBGINFO(("%s put_char(%d)\n", info->device_name, ch));
+ 	if (!info->tx_buf)
+-		return;
++		return 0;
+ 	spin_lock_irqsave(&info->lock,flags);
+-	if (!info->tx_active && (info->tx_count < info->max_frame_size))
++	if (!info->tx_active && (info->tx_count < info->max_frame_size)) {
+ 		info->tx_buf[info->tx_count++] = ch;
++		ret = 1;
++	}
+ 	spin_unlock_irqrestore(&info->lock,flags);
++	return ret;
+ }
+ 
+ static void send_xchar(struct tty_struct *tty, char ch)
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclinkmp.c linux-2.6.25-rc8-mm2/drivers/char/synclinkmp.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/char/synclinkmp.c	2008-04-13 15:36:53.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/char/synclinkmp.c	2008-04-13 15:40:58.000000000 +0100
+@@ -519,7 +519,7 @@
+ static void set_termios(struct tty_struct *tty, struct ktermios *old_termios);
+ 
+ static int  write(struct tty_struct *tty, const unsigned char *buf, int count);
+-static void put_char(struct tty_struct *tty, unsigned char ch);
++static int put_char(struct tty_struct *tty, unsigned char ch);
+ static void send_xchar(struct tty_struct *tty, char ch);
+ static void wait_until_sent(struct tty_struct *tty, int timeout);
+ static int  write_room(struct tty_struct *tty);
+@@ -1045,10 +1045,11 @@
+ 
+ /* Add a character to the transmit buffer.
+  */
+-static void put_char(struct tty_struct *tty, unsigned char ch)
++static int put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	SLMP_INFO *info = (SLMP_INFO *)tty->driver_data;
+ 	unsigned long flags;
++	int ret = 0;
+ 
+ 	if ( debug_level >= DEBUG_LEVEL_INFO ) {
+ 		printk( "%s(%d):%s put_char(%d)\n",
+@@ -1056,10 +1057,10 @@
+ 	}
+ 
+ 	if (sanity_check(info, tty->name, "put_char"))
+-		return;
++		return 0;
+ 
+ 	if (!info->tx_buf)
+-		return;
++		return 0;
+ 
+ 	spin_lock_irqsave(&info->lock,flags);
+ 
+@@ -1071,10 +1072,12 @@
+ 			if (info->tx_put >= info->max_frame_size)
+ 				info->tx_put -= info->max_frame_size;
+ 			info->tx_count++;
++			ret = 1;
+ 		}
+ 	}
+ 
+ 	spin_unlock_irqrestore(&info->lock,flags);
++	return ret;
+ }
+ 
+ /* Send a high-priority XON/XOFF character
