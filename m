@@ -1,101 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYDMSVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYDMSY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYDMSVp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDMSVg
+	id S1754012AbYDMSY2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYDMSYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:21:36 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:32404 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752009AbYDMSVf (ORCPT
+	Sun, 13 Apr 2008 14:24:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34825 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750700AbYDMSYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=x/4+oHJolLr/g29RpVB6SaoS/OfgjQY3VHi5/7qUY+HjVGXQ/7ngyf29SHhXbYegtVb4cwO48GV0dlp9BMci/mHpqauQPM595+uxyCer8VeXaXl+FiewqsN/WUSzf2p0XbWO/A7jBsJnI3m1yXk4t7+wRWeT/55vIrzHQ3qZ7A0=  ;
-X-YMail-OSG: HJmaNcoVM1k8uKxyOTosaA9XnIJJkSpdoNxvMhhAdbE8K_aAnuKyBgx0Sl4P0bNL7U2HX8ZaDpFkpzbSJjuGcW7y7JHPK7eiIhy07.euCqA1W9WtcA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
-       lkml <linux-kernel@vger.kernel.org>, liam.girdwood@wolfsonmicro.com,
-       broonie@opensource.wolfsonmicro.com
-Subject: [patch 2.6.25-rc9] sound: fix platform driver hotplug/coldplug
-Date: Sun, 13 Apr 2008 11:20:40 -0700
-User-Agent: KMail/1.9.6
-Cc: kay.sievers@vrfy.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Apr 2008 14:24:19 -0400
+Date: Sun, 13 Apr 2008 20:29:10 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [rfc] hw resource debugging checks
+Message-ID: <20080413182910.GB8641@one.firstfloor.org>
+References: <200804102159.14563.rjw@sisk.pl> <20080410203800.GA14560@elte.hu> <200804110028.22290.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl> <20080413075845.GJ20332@elte.hu> <87d4ouw0u9.fsf@basil.nowhere.org> <86802c440804131119m1c43497bg1864ce9751438e85@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804131120.41027.david-b@pacbell.net>
+In-Reply-To: <86802c440804131119m1c43497bg1864ce9751438e85@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+> even I could talk to BIOS
+> engineers everyday and tell them how to fix the problem in BIOS,  some
+> still can not be fixed because of the legacy BIOS framework or big
+> mess.
 
-Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
-modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
-hotpluggable sound platform drivers, to re-enable auto loading.
+... so you opt to create the big mess in the kernel. Great.
 
-[ dbrownell@users.sourceforge.net: more drivers, registration fixes ]
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-NOTE:  not sent to subscribers-only list: alsa-devel@alsa-project.org
+And it does not even fixes a real problem, but getting
+mmconfig or the numa bus discovery to work is not really a too serious 
+issue anyways. At best it is the icing on the cake to enable
+some relatively obscure functionality and be a little more
+efficient, but nothing really fundamental.
 
- sound/arm/pxa2xx-ac97.c      |    2 ++
- sound/drivers/ml403-ac97cr.c |    4 ++++
- sound/soc/soc-core.c         |    2 ++
- 3 files changed, 8 insertions(+)
+But for those things just expecting a working modern BIOS is quite
+reasonable.
 
---- g26.orig/sound/arm/pxa2xx-ac97.c	2008-04-13 10:30:20.000000000 -0700
-+++ g26/sound/arm/pxa2xx-ac97.c	2008-04-13 10:33:22.000000000 -0700
-@@ -391,6 +391,7 @@ static struct platform_driver pxa2xx_ac9
- 	.resume		= pxa2xx_ac97_resume,
- 	.driver		= {
- 		.name	= "pxa2xx-ac97",
-+		.owner	= THIS_MODULE,
- 	},
- };
- 
-@@ -410,3 +411,4 @@ module_exit(pxa2xx_ac97_exit);
- MODULE_AUTHOR("Nicolas Pitre");
- MODULE_DESCRIPTION("AC97 driver for the Intel PXA2xx chip");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pxa2xx-ac97");
---- g26.orig/sound/drivers/ml403-ac97cr.c	2008-04-13 10:32:22.000000000 -0700
-+++ g26/sound/drivers/ml403-ac97cr.c	2008-04-13 10:36:29.000000000 -0700
-@@ -1330,11 +1330,15 @@ static int snd_ml403_ac97cr_remove(struc
- 	return 0;
- }
- 
-+/* work with hotplug and coldplug */
-+MODULE_ALIAS("platform:" SND_ML403_AC97CR_DRIVER);
-+
- static struct platform_driver snd_ml403_ac97cr_driver = {
- 	.probe = snd_ml403_ac97cr_probe,
- 	.remove = snd_ml403_ac97cr_remove,
- 	.driver = {
- 		.name = SND_ML403_AC97CR_DRIVER,
-+		.owner = THIS_MODULE,
- 	},
- };
- 
---- g26.orig/sound/soc/soc-core.c	2008-04-13 10:30:20.000000000 -0700
-+++ g26/sound/soc/soc-core.c	2008-04-13 10:34:04.000000000 -0700
-@@ -839,6 +839,7 @@ static int soc_remove(struct platform_de
- static struct platform_driver soc_driver = {
- 	.driver		= {
- 		.name		= "soc-audio",
-+		.owner		= THIS_MODULE,
- 	},
- 	.probe		= soc_probe,
- 	.remove		= soc_remove,
-@@ -1601,3 +1602,4 @@ module_exit(snd_soc_exit);
- MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
- MODULE_DESCRIPTION("ALSA SoC Core");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:soc-audio");
+-Andi
