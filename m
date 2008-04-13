@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbYDMTqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYDMTqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbYDMTqB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYDMToq
+	id S1754217AbYDMTqW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYDMTor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:44:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36970 "EHLO ogre.sisk.pl"
+	Sun, 13 Apr 2008 15:44:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36968 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754883AbYDMTon convert rfc822-to-8bit (ORCPT
+	id S1754904AbYDMTon convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 13 Apr 2008 15:44:43 -0400
-Cc: "Romano Giannetti" <romano.giannetti@gmail.com>
+Cc: "Andy Gospodarek" <andy@greyhouse.net>
 References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 In-Reply-To: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +18,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <oq66hWjeF4N.A.V9.p4lAIB@albercik>
-Subject: [Bug #10300] volume wheel does not work in 2.6.25-rc6
+Message-ID: <oq66hWjeF4N.A.7v.O4lAIB@albercik>
+Subject: [Bug #10323] panic using bridging on linus kernel 2.6.25-rc6
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 13 Apr 2008 20:56:41 +0200 (CEST)
+Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,10 +33,9 @@ The following bug entry is on the current list of known regressions
 from 2.6.24.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10300
-Subject		: volume wheel does not work in 2.6.25-rc6
-Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-Date		: 2008-03-21 11:42 (24 days old)
-References	: http://lkml.org/lkml/2008/4/9/94
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10323
+Subject		: panic using bridging on linus kernel 2.6.25-rc6
+Submitter	: Andy Gospodarek <andy@greyhouse.net>
+Date		: 2008-03-25 11:40 (20 days old)
 
 
