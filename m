@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYDMOnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYDMOnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbYDMOnd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 10:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYDMOnZ
+	id S1753544AbYDMOnt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 10:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbYDMOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 10:43:25 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:50119 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYDMOnY (ORCPT
+	Sun, 13 Apr 2008 10:43:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:23379 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754743AbYDMOnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 10:43:24 -0400
+	Sun, 13 Apr 2008 10:43:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=nhKpKNFHDEeZjLPcUZf30GK9ciaQo8SKRmVgT9TG+QKgR/xo/m/g7el58N0l8jKlsBPSXEbqiBM4eH0hx6eMLFR1MiQ8C9tw82yD29YS7FjnBjMU2TO3c8LQEudZrpTZHgpasZ85ShaeWoesd1uI9bZRqAP3ScwwsLGEiyAer74=
-Date: Sun, 13 Apr 2008 18:43:12 +0400
+        b=JMDuCxeTrxaPMW2CvBmEA9e4ARrQCK7IVWAVo8zKZv6bx2Ffe63ERnfKgRnsxikYb3Uxxl/+x5PJfFwPz4OMP2rqBnwAk8QWDX7RtVJ3hekVMbY4HAufpB9Y82kRJ8UnF0cR9X3NT6MUca0/3jevS9UvTVojC1KsVOA6rAjPTbc=
+Date: Sun, 13 Apr 2008 18:43:20 +0400
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org,
@@ -23,8 +23,8 @@ Cc: akpm@linux-foundation.org,
        Paul Mundt <lethal@linux-sh.org>,
        pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
        tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>
-Subject: [PATCH 1/5] Clocklib: add generic framework for managing clocks.
-Message-ID: <20080413144312.GA1943@doriath.ww600.siemens.net>
+Subject: [PATCH 2/5] Clocklib: debugfs support
+Message-ID: <20080413144320.GA1958@doriath.ww600.siemens.net>
 References: <20080413144138.GA31665@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,559 +35,173 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a generic framework that platform may choose
-to support clocks api. In particular this provides
-platform-independant struct clk definition, a full
-implementation of clocks api and a set of functions
-for registering and unregistering clocks in a safe way.
+Provide /sys/kernel/debug/clock to ease debugging.
 
 Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
- MAINTAINERS            |    5 +
- include/linux/clklib.h |  144 +++++++++++++++++++++
- init/Kconfig           |    7 +
- kernel/Makefile        |    1 +
- kernel/clklib.c        |  334 ++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 491 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/clklib.h
- create mode 100644 kernel/clklib.c
+ Documentation/ABI/testing/debugfs-clock |   49 ++++++++++++++++++++
+ include/linux/clklib.h                  |    2 +
+ kernel/clklib.c                         |   74 +++++++++++++++++++++++++++++++
+ 3 files changed, 125 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/testing/debugfs-clock
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index aaca5cc..a8fbac3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1083,6 +1083,11 @@ P:	Joel Schopp
- M:	jschopp@austin.ibm.com
- S:	Supported
- 
-+CLOCKLIB INFRASTRUCTURE
-+P:	Dmitry Baryshkov
-+M:	dbaryshkov@gmail.com
-+S:	Maintained
+diff --git a/Documentation/ABI/testing/debugfs-clock b/Documentation/ABI/testing/debugfs-clock
+new file mode 100644
+index 0000000..79196e9
+--- /dev/null
++++ b/Documentation/ABI/testing/debugfs-clock
+@@ -0,0 +1,49 @@
++What:           /debug/clock
++Date:           Apr. 2008
++KernelVersion:  2.6.26
++Contact:        Dmitry Baryshkov <dbaryshkov@gmail.com>
++Description:
 +
- COMMON INTERNET FILE SYSTEM (CIFS)
- P:	Steve French
- M:	sfrench@samba.org
++debugfs interface
++-----------------
++		The /debug/clock file displays information about registered
++		clocks, their rates, usage counters, etc.
++
++Example:
++-------
++cat /sys/kernel/debug/clock
++
++GPIO11_CLK            use=4 rate=   3686400 Hz
++  3_6MHz_CLK          use=4 rate=   3686400 Hz
++    32K_CLK           use=1 rate=     32768 Hz
++      MMCCLK          use=1 rate=     32768 Hz for cell tmio-mmc
++    TMIOUSBCLK        use=1 rate=         0 Hz
++      USBCLK          use=1 rate=         0 Hz for cell tmio-ohci
++    TMIOMCLK          use=1 rate=  48000000 Hz
++      FBCLK           use=1 rate=  48000000 Hz for cell tmio-fb
++HWUARTCLK             use=0 rate=  14745600 Hz
++  UARTCLK             use=0 rate=  14745600 Hz for device pxa2xx-uart.3
++LCDCLK                use=0 rate=  99530000 Hz
++FFUARTCLK             use=1 rate=  14745600 Hz
++  UARTCLK             use=1 rate=  14745600 Hz for device pxa2xx-uart.0
++BTUARTCLK             use=0 rate=  14745600 Hz
++  UARTCLK             use=0 rate=  14745600 Hz for device pxa2xx-uart.1
++STUARTCLK             use=0 rate=  14745600 Hz
++  UARTCLK             use=0 rate=  14745600 Hz for device pxa2xx-uart.2
++  SIRCLK              use=0 rate=  14745600 Hz
++UDCCLK                use=0 rate=  47923000 Hz
++PXAMMCCLK             use=0 rate=  19169000 Hz
++  MMCCLK              use=0 rate=  19169000 Hz for device pxa2xx-mci.0
++I2CCLK                use=1 rate=  31949000 Hz
++SSP_CLK               use=0 rate=   3686400 Hz
++  SSPCLK              use=0 rate=   3686400 Hz for device pxa25x-ssp.0
++NSSPCLK               use=1 rate=   3686400 Hz
++  SSPCLK              use=1 rate=   3686400 Hz for device pxa25x-nssp.1
++ASSPCLK               use=0 rate=   3686400 Hz
++  SSPCLK              use=0 rate=   3686400 Hz for device pxa25x-nssp.2
++PWM0CLK               use=0 rate=   3686400 Hz
++  PWMCLK              use=0 rate=   3686400 Hz for device pxa25x-pwm.0
++PWM1CLK               use=0 rate=   3686400 Hz
++  PWMCLK              use=0 rate=   3686400 Hz for device pxa25x-pwm.1
++AC97CLK               use=0 rate=  24576000 Hz
++FICPCLK               use=0 rate=  47923000 Hz
 diff --git a/include/linux/clklib.h b/include/linux/clklib.h
-new file mode 100644
-index 0000000..9545159
---- /dev/null
+index 9545159..46c6977 100644
+--- a/include/linux/clklib.h
 +++ b/include/linux/clklib.h
-@@ -0,0 +1,144 @@
-+/*
-+ * Copyright (C) 2008 Dmitry Baryshkov
-+ *
-+ * This file is released under the GPL v2.
-+ */
-+
-+#ifndef CLKLIB_H
-+#define CLKLIB_H
-+
-+#include <linux/list.h>
-+
-+struct seq_file;
-+
-+/**
-+ * struct clk_ops - generic clock management operations
-+ * @can_get: checks whether passed device can get this clock
-+ * @set_parent: reconfigures the clock to use specified parent
-+ * @set_mode: enable or disable specified clock
-+ * @get_rate: obtain the current clock rate of a specified clock
-+ * @set_rate: set the clock rate for a specified clock
-+ * @round_rate: adjust a reate to the exact rate a clock can provide
-+ *
-+ * This structure specifies clock operations that are used to configure
-+ * specific clock.
-+ */
-+struct clk_ops {
-+	int (*can_get)(struct clk *clk, struct device *dev);
-+	int (*set_parent)(struct clk *clk, struct clk *parent);
-+	int (*set_mode)(struct clk *clk, bool enable);
-+	unsigned long (*get_rate)(struct clk *clk);
-+	int (*set_rate)(struct clk *, unsigned long);
-+	long (*round_rate)(struct clk *, unsigned long);
-+};
-+
-+/**
-+ * struct clk - generic struct clk implementation used in the clocklib
-+ * @node: used to place all clocks in a list
-+ * @parent: the parent clock
-+ * @owner: module holding all the functions
-+ * @name: the name of this clock
-+ * @users: count how many users have enabled this clock
-+ * @ops: a pointer to clock management operations
-+ */
-+struct clk {
-+	struct list_head node;
-+	struct clk	*parent;
-+	struct module *owner;
-+
-+	const char	*name;
-+	int		users;
-+
-+	const struct clk_ops *ops;
-+};
-+
-+int __must_check clk_register(struct clk *clk);
-+void clk_unregister(struct clk *clk);
-+
-+static inline void clks_unregister(struct clk **clks, size_t num)
-+{
-+	int i;
-+	for (i = num - 1; i >= 0;  i++)
-+		clk_unregister(clks[i]);
-+}
-+
-+static inline int __must_check clks_register(struct clk **clks, size_t num)
-+{
-+	int i;
-+	int ret;
-+	for (i = 0; i < num; i++) {
-+		ret = clk_register(clks[i]);
-+		if (ret != 0)
-+			goto cleanup;
-+	}
-+
-+	return 0;
-+
-+cleanup:
-+	clks_unregister(clks, i);
-+
-+	return ret;
-+}
-+
-+int __must_check clk_alloc_function(const char *parent, struct clk *clk);
-+
-+/*
-+ * struct clk_function - helper that allows easy registration of clock "functions"
-+ * @parent: the name of the parent clock
-+ * @clk: the clock that will be set up and installed
-+ *
-+ * Sometimes single clock will have multiple users or several clocks
-+ * will be bound to similar devices. This allows one to register
-+ * simple wrapper clocks that serve only naming purposes.
-+ */
-+struct clk_function {
-+	const char *parent;
-+	void *priv;
-+	struct clk clk;
-+};
-+
-+#define CLK_FUNC(_clock, _function, _ops, _data)	\
-+	{						\
-+		.parent = _clock,			\
-+		.priv	= _data,			\
-+		.clk = {				\
-+			.name = _function,		\
-+			.owner = THIS_MODULE,		\
-+			.ops = _ops,			\
-+		},					\
-+	}
-+#define FUNC_TO_CLK(func)	&(&(struct clk_function) func)->clk
-+
-+static inline void clk_free_functions(
-+		struct clk_function *funcs,
-+		int num)
-+{
-+	int i;
-+
-+	for (i = num - 1; i >= 0; i--)
-+		clk_unregister(&funcs[i].clk);
-+}
-+
-+static inline int __must_check clk_alloc_functions(
-+		struct clk_function *funcs,
-+		int num)
-+{
-+	int i;
-+	int rc;
-+
-+	for (i = 0; i < num; i++) {
-+		rc = clk_alloc_function(funcs[i].parent, &funcs[i].clk);
-+
-+		if (rc) {
-+			printk(KERN_ERR "Error allocating %s.%s function.\n",
-+					funcs[i].parent,
-+					funcs[i].clk.name);
-+			clk_free_functions(funcs, i);
-+			return rc;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+#endif
-diff --git a/init/Kconfig b/init/Kconfig
-index a97924b..1dd9ce2 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -504,6 +504,13 @@ config CC_OPTIMIZE_FOR_SIZE
- config SYSCTL
- 	bool
+@@ -19,6 +19,7 @@ struct seq_file;
+  * @get_rate: obtain the current clock rate of a specified clock
+  * @set_rate: set the clock rate for a specified clock
+  * @round_rate: adjust a reate to the exact rate a clock can provide
++ * @format: output any additional information for a clock
+  *
+  * This structure specifies clock operations that are used to configure
+  * specific clock.
+@@ -30,6 +31,7 @@ struct clk_ops {
+ 	unsigned long (*get_rate)(struct clk *clk);
+ 	int (*set_rate)(struct clk *, unsigned long);
+ 	long (*round_rate)(struct clk *, unsigned long);
++	int (*format)(struct clk *, struct seq_file *);
+ };
  
-+config HAVE_CLOCK_LIB
-+	bool
-+	help
-+	  Platforms select clocklib if they use this infrastructure
-+	  for managing their clocks both built into SoC and provided
-+	  by external devices.
-+
- menuconfig EMBEDDED
- 	bool "Configure standard kernel features (for small systems)"
- 	help
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 6c584c5..afaed51 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -68,6 +68,7 @@ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
- obj-$(CONFIG_MARKERS) += marker.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
-+obj-$(CONFIG_HAVE_CLOCK_LIB) += clklib.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+ /**
 diff --git a/kernel/clklib.c b/kernel/clklib.c
-new file mode 100644
-index 0000000..024a232
---- /dev/null
+index 024a232..29174c9 100644
+--- a/kernel/clklib.c
 +++ b/kernel/clklib.c
-@@ -0,0 +1,334 @@
-+/*
-+ * kernel/clklib.c
-+ *
-+ * Copyright (C) 2008 Dmitry Baryshkov
-+ *
-+ * Generic clocks API implementation
-+ *
-+ * This file is released under the GPL v2.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/clk.h>
-+#include <linux/clklib.h>
-+#include <linux/spinlock.h>
-+#include <linux/err.h>
-+#include <linux/delay.h>
+@@ -332,3 +332,77 @@ out:
+ 	return rc;
+ }
+ EXPORT_SYMBOL(clk_alloc_function);
 +
-+static LIST_HEAD(clocks);
-+static DEFINE_SPINLOCK(clocks_lock);
++#ifdef CONFIG_DEBUG_FS
 +
-+static int __clk_register(struct clk *clk)
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++
++#define NAME_FIELD_LEN	20
++
++static void dump_clocks(struct seq_file *s, struct clk *parent, int nest)
 +{
-+	if (clk->parent &&
-+	    !try_module_get(clk->parent->owner))
-+		return -EINVAL;
++	struct clk *clk;
++	int i;
 +
-+	list_add_tail(&clk->node, &clocks);
++	list_for_each_entry(clk, &clocks, node) {
++		if (clk->parent == parent) {
++			for (i = 0; i < nest; i++) {
++				seq_putc(s, ' ');
++				seq_putc(s, ' ');
++			}
++			seq_puts(s, clk->name);
++
++			i = 2 * nest + strlen(clk->name);
++			if (i >= NAME_FIELD_LEN)
++				i = NAME_FIELD_LEN - 1;
++			for (; i < NAME_FIELD_LEN; i++) {
++				seq_putc(s, ' ');
++			}
++			seq_printf(s, "%c use=%d rate=%10lu Hz",
++				clk->ops && clk->ops->set_parent ? '*' : ' ',
++				clk->users,
++				__clk_get_rate(clk));
++			if (clk->ops && clk->ops->format)
++				clk->ops->format(clk, s);
++			seq_putc(s, '\n');
++
++			dump_clocks(s, clk, nest + 1);
++		}
++	}
++}
++
++static int clocklib_show(struct seq_file *s, void *unused)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	dump_clocks(s, NULL, 0);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
 +
 +	return 0;
 +}
 +
-+int __must_check clk_register(struct clk *clk)
++static int clocklib_open(struct inode *inode, struct file *file)
 +{
-+	unsigned long flags;
-+	int rc;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	rc = __clk_register(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_register);
-+
-+void clk_unregister(struct clk *clk)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+	list_del(&clk->node);
-+	if (clk->parent)
-+		module_put(clk->parent->owner);
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+}
-+EXPORT_SYMBOL(clk_unregister);
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	struct clk *p, *clk = ERR_PTR(-ENOENT);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	list_for_each_entry(p, &clocks, node) {
-+		if (strcmp(id, p->name) == 0 &&
-+		    (p->ops && p->ops->can_get && p->ops->can_get(p, dev)) &&
-+		    try_module_get(p->owner)) {
-+			clk = p;
-+			break;
-+		}
-+	}
-+
-+	list_for_each_entry(p, &clocks, node) {
-+		if (strcmp(id, p->name) == 0 &&
-+		    (!p->ops || !p->ops->can_get) &&
-+		    try_module_get(p->owner)) {
-+			clk = p;
-+			break;
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return clk;
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+void clk_put(struct clk *clk)
-+{
-+	unsigned long flags;
-+
-+	if (!clk || IS_ERR(clk))
-+		return;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	module_put(clk->owner);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_set_parent(struct clk *clk, struct clk *parent)
-+{
-+	int rc;
-+	unsigned long flags;
-+
-+	if (!clk || IS_ERR(clk) || !clk->ops || !clk->ops->set_parent)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	rc = clk->ops->set_parent(clk, parent);
-+	if (!rc)
-+		clk->parent = parent;
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_set_parent);
-+
-+struct clk *clk_get_parent(struct clk *clk)
-+{
-+	struct clk *parent;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	parent = clk->parent;
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return parent;
-+
++	return single_open(file, clocklib_show, NULL);
 +}
 +
-+static void __clk_disable(struct clk *clk)
++static struct file_operations clocklib_operations = {
++	.open		= clocklib_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int __init clocklib_debugfs_init(void)
 +{
-+	if (clk->users <= 0) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	if (--clk->users == 0)
-+		if (clk->ops && clk->ops->set_mode)
-+			clk->ops->set_mode(clk, false);
-+
-+	if (clk->parent)
-+		__clk_disable(clk->parent);
++	debugfs_create_file("clock", S_IFREG | S_IRUGO,
++				NULL, NULL, &clocklib_operations);
++	return 0;
 +}
++subsys_initcall(clocklib_debugfs_init);
 +
-+void clk_disable(struct clk *clk)
-+{
-+	unsigned long flags;
-+
-+	if (!clk || IS_ERR(clk))
-+		return;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	__clk_disable(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+static int __clk_enable(struct clk *clk)
-+{
-+	int rc = 0;
-+
-+	if (clk->parent) {
-+		rc = __clk_enable(clk->parent);
-+
-+		if (rc)
-+			return rc;
-+	}
-+
-+	if (clk->users++ != 0)
-+		return 0;
-+
-+	if (clk->ops && clk->ops->set_mode) {
-+		rc = clk->ops->set_mode(clk, true);
-+		if (rc) {
-+			if (clk->parent)
-+				__clk_disable(clk->parent);
-+
-+			return rc;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
-+int clk_enable(struct clk *clk)
-+{
-+	unsigned long flags;
-+	int rc;
-+
-+	if (!clk || IS_ERR(clk))
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	rc = __clk_enable(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+static unsigned long __clk_get_rate(struct clk *clk)
-+{
-+	unsigned long rate = 0;
-+
-+	while (clk) {
-+		if (clk->ops && clk->ops->get_rate) {
-+			rate = clk->ops->get_rate(clk);
-+			break;
-+		} else
-+			clk = clk->parent;
-+	}
-+
-+	return rate;
-+}
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	unsigned long rate = 0;
-+	unsigned long flags;
-+
-+	if (!clk || IS_ERR(clk))
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	rate = __clk_get_rate(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rate;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	long res = 0;
-+	unsigned long flags;
-+	struct clk *pclk;
-+
-+	if (!clk || IS_ERR(clk))
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	for (pclk = clk; !res && pclk ; pclk = pclk->parent) {
-+		if (pclk->ops && pclk->ops->round_rate)
-+			res = pclk->ops->round_rate(clk, rate);
-+	}
-+
-+	if (!res)
-+		res = __clk_get_rate(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return res;
-+}
-+EXPORT_SYMBOL(clk_round_rate);
-+
-+int clk_set_rate(struct clk *clk, unsigned long rate)
-+{
-+	int rc = -EINVAL;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	while (clk && !IS_ERR(clk)) {
-+		if (clk->ops && clk->ops->set_rate) {
-+			rc = clk->ops->set_rate(clk, rate);
-+			break;
-+		}
-+
-+		clk = clk->parent;
-+	}
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_set_rate);
-+
-+int clk_alloc_function(const char *parent, struct clk *clk)
-+{
-+	int rc = 0;
-+	unsigned long flags;
-+	struct clk *pclk;
-+	bool found = false;
-+
-+	spin_lock_irqsave(&clocks_lock, flags);
-+
-+	list_for_each_entry(pclk, &clocks, node) {
-+		if (strcmp(parent, pclk->name) == 0 &&
-+		    try_module_get(pclk->owner)) {
-+			found = true;
-+			break;
-+		}
-+	}
-+
-+	if (!found) {
-+		rc = -ENODEV;
-+		goto out;
-+	}
-+
-+	clk->parent = pclk;
-+
-+	__clk_register(clk);
-+	/*
-+	 * We locked parent owner during search
-+	 * and also in __clk_register. Free one reference
-+	 */
-+	module_put(pclk->owner);
-+
-+out:
-+	if (rc)
-+		kfree(clk);
-+
-+	spin_unlock_irqrestore(&clocks_lock, flags);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(clk_alloc_function);
++#endif /* DEBUG_FS */
 -- 
 1.5.4.4
 
