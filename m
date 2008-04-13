@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYDMAWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYDMA0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYDMAWw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 20:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYDMAWn
+	id S1756250AbYDMA0b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 20:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYDMA0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 20:22:43 -0400
-Received: from smtp.ono.com ([62.42.230.12]:42557 "EHLO resmaa05.ono.com"
+	Sat, 12 Apr 2008 20:26:23 -0400
+Received: from smtp.ono.com ([62.42.230.12]:62098 "EHLO resmaa02.ono.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754635AbYDMAWm convert rfc822-to-8bit (ORCPT
+	id S1753544AbYDMA0W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 20:22:42 -0400
-Date: Sun, 13 Apr 2008 02:22:39 +0200
+	Sat, 12 Apr 2008 20:26:22 -0400
+Date: Sun, 13 Apr 2008 02:26:19 +0200
 From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
 To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
 Subject: Re: DRDY errors again
-Message-ID: <20080413022239.79fb3713@werewolf.home>
-In-Reply-To: <87d4ozpuc3.fsf@old-tantale.fifi.org>
-References: <E1JjLYm-0002d7-00@calista.eckenfels.net>
-	<87d4ozpuc3.fsf@old-tantale.fifi.org>
+Message-ID: <20080413022619.2890f6f3@werewolf.home>
+In-Reply-To: <47FB9677.30109@garzik.org>
+References: <20080408171311.69441c8b@werewolf>
+	<47FB9677.30109@garzik.org>
 X-Mailer: Claws Mail 3.3.1cvs55 (GTK+ 2.12.9; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -26,38 +26,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08 Apr 2008 20:42:36 -0700, Philippe Troin <phil@fifi.org> wrote:
+On Tue, 08 Apr 2008 11:59:51 -0400, Jeff Garzik <jeff@garzik.org> wrote:
 
-> Bernd Eckenfels <ecki@lina.inka.de> writes:
+> J.A. Magallón wrote:
+> > scsi4 : ata_piix
+> > scsi5 : ata_piix
+> > ata3: SATA max UDMA/133 cmd 0xc000 ctl 0xc400 bmdma 0xd000 irq 18
+> > ata4: SATA max UDMA/133 cmd 0xc800 ctl 0xcc00 bmdma 0xd008 irq 18
 > 
-> > Besides the disk it could also be a voltage problem (voltage control on
-> > mainboard or power supply). I asume you ruled out thermal problems...
+> > ata4.00: ATA-8: ST3500820AS, SD25, max UDMA/133
+> > ata4.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> > ata4.00: configured for UDMA/133
 > 
-> I would completely second that.  In multiple instances, I've had
-> different disks behave very strangely when the power supply became
-> flaky (12V at 11.3V and/or 5V hovering around 4.5V).  And there seems
-> to be lots of flaky power supplies around these days.
+> > ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> > ata4.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> >          res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> > ata4.00: status: { DRDY }
+> 
+> Can you bisect to see when this problem starts?  I'm pretty sure it's 
+> software, either interrupt-related or the libata driver itself.
+> 
+> See http://ata.wiki.kernel.org/index.php/Libata_error_messages for a 
+> full explanation of that error message.
+> 
+> Most notable:  "DRDY" == device ready == device says everything is OK, 
+> from it's perspective.  "timeout" usually means an interrupt wasn't 
+> delivered from your ATA controller, when we were expecting one.
 > 
 
-Acording to my sensors...:
+I'm trying to get a good starting point for bisection, but at 2.6.22
+it still begins to give errors at a few seconds of start copying:
 
-werewolf:/etc# sensors
-w83627thf-isa-0290
-Adapter: ISA adapter
-VCore:       +1.48 V  (min =  +0.70 V, max =  +1.87 V)
-+12V:       +12.22 V  (min = +10.82 V, max = +13.19 V)
-+3.3V:       +3.34 V  (min =  +3.14 V, max =  +3.47 V)
-+5V:         +5.04 V  (min =  +4.75 V, max =  +5.25 V)
-V5SB:        +5.08 V  (min =  +4.76 V, max =  +5.24 V)
-VBat:        +3.09 V  (min =  +2.40 V, max =  +3.60 V)
-CPU0 Fan:   2343 RPM  (min =  499 RPM, div = 16)
-CPU1 Fan:   2280 RPM  (min =  499 RPM, div = 16)
-Chas Fan:   2343 RPM  (min =  499 RPM, div = 16)
-VRM  Temp:   +50.0°C  (high = +60.0°C, hyst = +35.0°C)  sensor = thermistor
-CPU0 Temp:   +43.0°C  (high = +70.0°C, hyst = +40.0°C)  sensor = thermistor
-CPU1 Temp:   +41.5°C  (high = +70.0°C, hyst = +40.0°C)  sensor = thermistor
+ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata4.00: cmd 35/00:00:77:0a:c2/00:04:1c:00:00/e0 tag 0 cdb 0x0 data 524288 out
+         res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata4: soft resetting port
+ata4.00: configured for UDMA/133
+ata4: EH complete
+sd 5:0:0:0: [sde] 976773168 512-byte hardware sectors (500108 MB)
+sd 5:0:0:0: [sde] Write Protect is off
+sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata4.00: cmd 35/00:00:47:71:11/00:04:1d:00:00/e0 tag 0 cdb 0x0 data 524288 out
+         res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata4: soft resetting port
+ata4.00: configured for UDMA/133
+ata4: EH complete
+sd 5:0:0:0: [sde] 976773168 512-byte hardware sectors (500108 MB)
+sd 5:0:0:0: [sde] Write Protect is off
+sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
 
-so it all look correct.
+I will have to go backwards more and more...
 
 -- 
 J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
