@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbYDMTxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYDMTxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759899AbYDMTxg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYDMTr1
+	id S1759951AbYDMTxy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYDMTsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:47:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57358
+	Sun, 13 Apr 2008 15:48:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57366
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756599AbYDMTrZ (ORCPT
+	by vger.kernel.org with ESMTP id S1756993AbYDMTsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 15:47:25 -0400
-Date: Sun, 13 Apr 2008 12:47:26 -0700 (PDT)
-Message-Id: <20080413.124726.122432429.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: w@1wt.eu, rjw@sisk.pl, tilman@imap.cc, Valdis.Kletnieks@vt.edu,
-       lkml@rtr.ca, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
+	Sun, 13 Apr 2008 15:48:22 -0400
+Date: Sun, 13 Apr 2008 12:48:23 -0700 (PDT)
+Message-Id: <20080413.124823.173625519.davem@davemloft.net>
+To: rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru,
+       ilpo.jarvinen@helsinki.fi, jeff@garzik.org, lkml@rtr.ca,
+       xemul@openvz.org, yoshfuji@linux-ipv6.org
+Subject: Re: [Bug #10434] 2.6.25-rc8: FTP transfer errors
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080413121831.d89dd424.akpm@linux-foundation.org>
-References: <200804132040.12138.rjw@sisk.pl>
-	<20080413184730.GD8474@1wt.eu>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
+In-Reply-To: <oq66hWjeF4N.A.yJ.L3lAIB@albercik>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
+	<oq66hWjeF4N.A.yJ.L3lAIB@albercik>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3DJmSEB032691
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Sun, 13 Apr 2008 12:18:31 -0700
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
 
-> That being said..  four or five years ago, developers would often work
-> closely with the reporter working out why the reporter's failure was
-> occurring.  Several days of back-and-forth.
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.24.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10434
+> Subject		: 2.6.25-rc8: FTP transfer errors
+> Submitter	: Mark Lord <lkml@rtr.ca>
+> Date		: 2008-04-09 00:56 (5 days old)
+> References	: http://lkml.org/lkml/2008/4/9/4
+> Handled-By	: Jeff Garzik <jeff@garzik.org>
+> 		  YOSHIFUJI Hideaki / å‰è—¤è‹±æ˜ <yoshfuji@linux-ipv6.org>
+> 		  Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>
+> 		  David S. Miller <davem@davemloft.net>
+> 		  Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> Patch		: http://lkml.org/lkml/2008/4/10/409
+> 
 
-The ratio of bug reports to developers was significantly different
-back then.
-
-I pine for the "good ole' days" of kernel development sometimes too,
-but I try to be realistic and understand why things are different now.
+This patch is in Linus's tree and thus the bug is fixed.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
