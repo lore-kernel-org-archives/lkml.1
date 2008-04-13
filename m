@@ -1,187 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbYDMLgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYDMLv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbYDMLgi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 07:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbYDMLga
+	id S1757648AbYDMLv1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 07:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYDMLvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 07:36:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:28149 "EHLO
+	Sun, 13 Apr 2008 07:51:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:57933 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755842AbYDMLg3 (ORCPT
+	with ESMTP id S1751223AbYDMLvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 07:36:29 -0400
-Message-ID: <4801F038.8020003@colorfullife.com>
-Date: Sun, 13 Apr 2008 13:36:24 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 13 Apr 2008 07:51:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CpjNLmtPdRRiFHEoagRqGkuvTmPoRLO6FzX7TEFXB6JcJAbgqAFNe2LMWaAOvkE4TfES2xpeRNsIbhDpDrTtG4HAoAimYwSogql4lXE17c8qSthYzFtHtQJ0xkeOh+SOk8Sp42g4cb9D0GVv2htPH4yGy6C0qcmx/TtXqDgqQws=
+Date: Sun, 13 Apr 2008 13:50:29 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF - use UDF_MAX_WRITE_VERSION instead of numbers
+Message-ID: <20080413115025.GA6488@joi>
+References: <20080412194008.GB8388@cvg>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [PATCH 1/2] fix sys_unshare()+SEM_UNDO: add support for CLONE_SYSVSEM
-References: <200804130848.m3D8mU7D007104@mail.q-ag.de> <20080413015936.580bf7fe.akpm@linux-foundation.org>
-In-Reply-To: <20080413015936.580bf7fe.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------000104040702050309090800"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080412194008.GB8388@cvg>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000104040702050309090800
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sat, Apr 12, 2008 at 11:40:08PM +0400, Cyrill Gorcunov wrote:
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> 
+> Jan, the patch is over current yours for_mm branch
+> 
+> Yep, i know it exceeds 80 column *but* it looks much better
+> in this way ;)
+> 
+> Index: linux-2.6.git/fs/udf/inode.c
+> ===================================================================
+> --- linux-2.6.git.orig/fs/udf/inode.c	2008-04-12 22:53:15.000000000 +0400
+> +++ linux-2.6.git/fs/udf/inode.c	2008-04-12 23:34:28.000000000 +0400
+> @@ -1732,7 +1732,7 @@ int8_t udf_add_aext(struct inode *inode,
+>  		}
+>  		if (epos->bh) {
+>  			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
+> -			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
+> +			    UDF_SB(inode->i_sb)->s_udfrev >= UDF_MAX_WRITE_VERSION)
+>  				udf_update_tag(epos->bh->b_data, loffset);
+>  			else
+>  				udf_update_tag(epos->bh->b_data,
+I think this patch is wrong. Right now it doesn't change anything, but in future
+when someone will add support for writing UDF > 2.01 (and bump UDF_MAX_WRITE_VERSION)
+it will break for filesystems written with udfrev >= 2.01 && udfrev < UDF_MAX_WRITE_VERSION.
 
-Andrew Morton wrote:
-> On Sun, 13 Apr 2008 10:04:17 +0200 Manfred Spraul <manfred@colorfullife.com> wrote:
->
->   
->> sys_unshare(CLONE_NEWIPC) doesn't handle the undo lists properly, this can
->> cause a kernel memory corruption. CLONE_NEWIPC must detach from the existing
->> undo lists.
->> Fix, part 1: add support for sys_unshare(CLONE_SYSVSEM)
->>
->>     
->
-> Is this a non-back-compatible change?
->
->   
-It adds a new feature - previously sys_unshare(CLONE_SYSVSEM) returned 
--EINVAL.
-
->> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
->> ---
->>  ipc/sem.c     |    1 +
->>  kernel/fork.c |   18 ++++++++++++++----
->>  2 files changed, 15 insertions(+), 4 deletions(-)
->>
->> diff --git a/ipc/sem.c b/ipc/sem.c
->> index 0b45a4d..35841bd 100644
->> --- a/ipc/sem.c
->> +++ b/ipc/sem.c
->> @@ -1298,6 +1298,7 @@ void exit_sem(struct task_struct *tsk)
->>  	undo_list = tsk->sysvsem.undo_list;
->>  	if (!undo_list)
->>  		return;
->> +	tsk->sysvsem.undo_list = NULL;
->>  
->>  	if (!atomic_dec_and_test(&undo_list->refcnt))
->>  		return;
->> diff --git a/kernel/fork.c b/kernel/fork.c
->> index 9c042f9..7f242b0 100644
->> --- a/kernel/fork.c
->> +++ b/kernel/fork.c
->> @@ -1675,13 +1675,17 @@ static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp
->>  }
->>  
->>  /*
->> - * Unsharing of semundo for tasks created with CLONE_SYSVSEM is not
->> - * supported yet
->> + * Unsharing of semundo for tasks created with CLONE_SYSVSEM doesn't require
->> + * any allocations: it means that the task leaves the existing undo lists,
->> + * just like sys_exit(). The new undo lists are allocated on demand in the
->> + * ipc syscalls.
->> + * new_ulistp is set to a non-NULL value, the caller expects that on success.
->>   */
->>  static int unshare_semundo(unsigned long unshare_flags, struct sem_undo_list **new_ulistp)
->>  {
->> -	if (unshare_flags & CLONE_SYSVSEM)
->> -		return -EINVAL;
->> +	if (unshare_flags & CLONE_SYSVSEM) {
->> +		*new_ulistp = (void*)1;
->> +	}
->>     
->
-> And can we do anything nicer than this?
->
->   
-Attached is an alternative. If you prefer it, I'll send another patch set.
-
---
-    Manfred
-
---------------000104040702050309090800
-Content-Type: text/plain;
- name="patch-step1-alternative"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-step1-alternative"
-
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 0b45a4d..35841bd 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -1298,6 +1298,7 @@ void exit_sem(struct task_struct *tsk)
- 	undo_list = tsk->sysvsem.undo_list;
- 	if (!undo_list)
- 		return;
-+	tsk->sysvsem.undo_list = NULL;
- 
- 	if (!atomic_dec_and_test(&undo_list->refcnt))
- 		return;
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 9c042f9..535aa92 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1675,18 +1675,6 @@ static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp
- }
- 
- /*
-- * Unsharing of semundo for tasks created with CLONE_SYSVSEM is not
-- * supported yet
-- */
--static int unshare_semundo(unsigned long unshare_flags, struct sem_undo_list **new_ulistp)
--{
--	if (unshare_flags & CLONE_SYSVSEM)
--		return -EINVAL;
--
--	return 0;
--}
--
--/*
-  * unshare allows a process to 'unshare' part of the process
-  * context which was originally shared using clone.  copy_*
-  * functions used by do_fork() cannot be used here directly
-@@ -1701,7 +1689,6 @@ asmlinkage long sys_unshare(unsigned long unshare_flags)
- 	struct sighand_struct *new_sigh = NULL;
- 	struct mm_struct *mm, *new_mm = NULL, *active_mm = NULL;
- 	struct files_struct *fd, *new_fd = NULL;
--	struct sem_undo_list *new_ulist = NULL;
- 	struct nsproxy *new_nsproxy = NULL;
- 
- 	check_unshare_flags(&unshare_flags);
-@@ -1724,13 +1711,17 @@ asmlinkage long sys_unshare(unsigned long unshare_flags)
- 		goto bad_unshare_cleanup_sigh;
- 	if ((err = unshare_fd(unshare_flags, &new_fd)))
- 		goto bad_unshare_cleanup_vm;
--	if ((err = unshare_semundo(unshare_flags, &new_ulist)))
--		goto bad_unshare_cleanup_fd;
- 	if ((err = unshare_nsproxy_namespaces(unshare_flags, &new_nsproxy,
- 			new_fs)))
--		goto bad_unshare_cleanup_semundo;
-+		goto bad_unshare_cleanup_fd;
- 
--	if (new_fs ||  new_mm || new_fd || new_ulist || new_nsproxy) {
-+	if (new_fs ||  new_mm || new_fd || (unshare_flags & CLONE_SYSVSEM) || new_nsproxy) {
-+		if (unshare_flags & CLONE_SYSVSEM) {
-+			/*
-+			 * CLONE_SYSVSEM is equivalent to sys_exit().
-+			 */
-+			exit_sem(current);
-+		}
- 
- 		if (new_nsproxy) {
- 			switch_task_namespaces(current, new_nsproxy);
-@@ -1766,7 +1757,6 @@ asmlinkage long sys_unshare(unsigned long unshare_flags)
- 	if (new_nsproxy)
- 		put_nsproxy(new_nsproxy);
- 
--bad_unshare_cleanup_semundo:
- bad_unshare_cleanup_fd:
- 	if (new_fd)
- 		put_files_struct(new_fd);
-
---------------000104040702050309090800--
+Marcin
