@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbYDMXlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYDMXrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbYDMXlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 19:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYDMXlo
+	id S1755324AbYDMXrl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 19:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYDMXr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 19:41:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38072 "EHLO ogre.sisk.pl"
+	Sun, 13 Apr 2008 19:47:29 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47291 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752968AbYDMXln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 19:41:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: x86 git tree broken (bisected)
-Date: Mon, 14 Apr 2008 01:41:44 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <200804102159.14563.rjw@sisk.pl> <200804140010.01034.rjw@sisk.pl> <86802c440804131532g4626233br82a425d6a96a6e11@mail.gmail.com>
-In-Reply-To: <86802c440804131532g4626233br82a425d6a96a6e11@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753001AbYDMXr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 19:47:28 -0400
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200804140108.05447.rjw@sisk.pl>
+References: <200804040111.15255.rjw@sisk.pl>
+	 <200804140027.12161.rjw@sisk.pl> <1208126822.6958.63.camel@pasglop>
+	 <200804140108.05447.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 09:46:30 +1000
+Message-Id: <1208130390.6958.71.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804140141.45830.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 14 of April 2008, Yinghai Lu wrote:
-> On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > On Monday, 14 of April 2008, Yinghai Lu wrote:
-> >  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >  > ...
-> >  > >  > can you try to apply the patch i sent to you about agp bridge order
-> >  > >  > reading for buggy silicon?
-> >  > >  >
-> >  > >  > Please boot kernel with "debug"...
-> >  > >  >
-> >  > >  > I want to verify if you can get
-> >  > >  >
-> >  > >  > "
-> >  > >  > Aperture conflicts with PCI mapping.
-> >  > >  > "
-> >  > >  >
-> >  > >  > in your boot log...
-> >  > >
-> >  > >  It's not present in there:
-> >  > >
-> >  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
-> >  > >  Aperture too small (32 MB)
-> >  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
-> >  > >  Aperture too small (0 MB)
-> >  > >  agpgart: Aperture pointing to RAM
-> >  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
-> >  > >  agpgart: Aperture too small (0 MB)
-> >  > >
-> >  > >  Full dmesg output attached.
-> >  >
-> >  > please check attached debug patch. and check if you can change GART
-> >  > size in your BIOS setup to 64M instead of 32M
-> >
-> >  Hm, what tree am I supposed to apply it too:
-> >  (1) current x86 git
-> >  (2) current x86 git w/ some of your previous patches (which ones in this case)
-> >  (3) failing (old) x86 git
-> >  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
-> >     case)?
+
+On Mon, 2008-04-14 at 01:08 +0200, Rafael J. Wysocki wrote:
 > 
-> (1) current x86.git
+> Well, if we put ->prepare() before the freezer, what can it actually do?
+> Certainly nothing that will block any (user space) task, because the freezer
+> won't work after that.  So, all of the significant suspend work, like blocking
+> tasks using the device etc., will have to be done by ->suspend().  Will that be
+> convenient?  I'm not sure.  I'm not even sure that would be _doable_ at all.
 
-Well, unfortunately current x86.git doesn't even boot on the affected box.
-It 'cannot open root device "md1" or unknown-block (0,0)' (Ingo, any ideas?).
+Most of the actual suspending of requests queues etc... has to be done
+in suspend. Nothing changed here. I don't see why it would change.
+prepare() is a way to preallocate things when needed, cache things when
+needed, etc... and possibly interact user space. At least that how I see
+it.
 
-Today I have to take some sleep, so I'll try to debug it tomorrow, unless
-someone else does it earlier.
+It -is- acceptable to stop servicing user space after prepare() in some
+well defined cases such as the DRM, as long as in-kernel users aren't
+affected. But that's not necessarily what I have in mind. In the case us
+userspace for example, the idea here is to perform the migration of all
+the dirty data in the VRAM (that will be lost during suspend) out to
+main memory (or AGP memory). That doesn't mean necessarily that the DRM
+will stop servicing anything from there, it can still perform things. It
+might mean that user space would have to disable some accelerations that
+rely on dirty data in VRAM though until complete() is called.
 
-Thanks,
-Rafael
+> The point of view depends on what you think ->prepare() should be used for
+> and I'm sure you have some specific cases in mind.  However, are they generic
+> enough?
+
+request_firmware() & caching the resulting firmware so that the driver
+can resume & start operating right away is an example (think about NFS
+over wireless here for example, or iSCSI). the DRM example above. In
+general, any driver that needs to interact with user space, perform
+large allocations, muck around with the VM, etc...
+
+prepare() isn't intended to stop operations, but to
+preload/cache/prepare and have userspace available for drivers where
+this is needed. In some case, that might need the driver will continue
+operating in some degraded mode (for example, a multiqueue driver can
+degrade to a single queue with one pre-allocated request to avoid
+relying on allocations).
+
+I would expect most simple drivers not to need it of course.
+
+Cheers,
+Ben.
+
+
+
