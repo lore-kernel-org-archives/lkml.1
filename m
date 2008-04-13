@@ -1,139 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbYDMOuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbYDMOzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759177AbYDMOuZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 10:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbYDMOuP
+	id S1759008AbYDMOzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 10:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYDMOz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 10:50:15 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:32268 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbYDMOuO (ORCPT
+	Sun, 13 Apr 2008 10:55:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:50449 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbYDMOz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 10:50:14 -0400
+	Sun, 13 Apr 2008 10:55:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=U4l1ndU0IItqjV5C5ufdcNiLhaP+sTHFcINq/8WRJDUWmJjPfPiQ1fj+Yqw2ui8JUh1BvpLft6P2kG8kSeY/j80wNe/0Kt25SA/VtmijxARDUaxiD0PPBhgHGmJLr2u5VtVxBge5zsq9lr6Z8e7k/fTnoQGKWqZSgtMxvw0PptM=
-From: Thiago Galesi <thiagogalesi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fb: Remove use of lock_kernel / unlock_kernel in fbmem
-Date: Sun, 13 Apr 2008 11:50:07 -0300
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-fbdev-devel@lists.sourceforge.net
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gJwhfJR6iJOxCzx+bnRSl1T52hEUgWMzk0Syclq7BvrFGgV4DmeSElDu3rmtUOK/9Ktk6hzXYJ9aA6F6jvHORTY5TXFz6tlZeMNJfgVtdz9rzh2Y20aHAWQ3qg/64YIB2QcqMV/pXBQQjDnxU/GOj5SXyYetf2v61HPzeRscCk8=
+Message-ID: <e2e108260804130755r3c2cac0fnaa0c570707f2b53b@mail.gmail.com>
+Date: Sun, 13 Apr 2008 16:55:25 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] Replace completions with semaphores
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Roland Dreier" <rdreier@cisco.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Ingo Oeser" <ioe-lkml@rameria.de>,
+       "Daniel Walker" <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@osdl.org>
+In-Reply-To: <20080413070833.GC19773@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804131150.07601.thiagogalesi@gmail.com>
+References: <20080411210022.GJ11962@parisc-linux.org>
+	 <1208003081.7427.7.camel@twins>
+	 <20080412172606.GL11962@parisc-linux.org> <adaskxqrgsl.fsf@cisco.com>
+	 <20080412204748.GN11962@parisc-linux.org>
+	 <20080413070833.GC19773@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Sun, Apr 13, 2008 at 9:08 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  but semaphores will be _removed_, _completely_. Rewriting them in
+>  generic C code is just the first step towards that - it consolidates all
+>  the myriads of semaphore implementations that Linux has spread out.
+>
+>  your proposed change to change completions to semaphores is totally
+>  backwards and prolongs an API we want to get rid of. Did you miss this
+>  aspect of the mutex rewrite, of the semaphore-to-mutex,
+>  semaphore-to-completions and semaphore-to-rwsem conversions?
 
-This patch removes lock_kernel(), unlock_kernel() usage in fbmem.c and replaces it with a mutex
+I know the semaphore-to-mutex rewrites were essential a.o. to make
+further merging of the real-time tree into the mainstream Linux kernel
+possible. But the semaphore concept is more powerful than the mutex
+concept: semaphores can be used to let one thread wait for a state
+change reported by another thread. Should all state-change-waiting be
+implemented via wait_event*() functions ?
 
-Signed-off-by: Thiago Galesi <thiagogalesi@gmail.com>
+One of the strengths of the Linux kernel is that the barrier for new
+developers is low: in theory anyone familiar with the C programming
+language can start writing kernel drivers. Most people still learn
+kernel development via the third edition of the "Linux Device Drivers"
+book, and with some luck or some help, they come across an overview of
+the 2.6 kernel API changes (http://lwn.net/Articles/2.6-kernel-api/).
+The LWN book is getting outdated after all the 2.6 kernel API changes,
+and the page with 2.6 kernel API changes was last updated six months
+ago. Where can a kernel developer find up to date information about
+kernel programming ?
 
----
-
-Index: linux-2.6.23.1/drivers/video/fbmem.c
-===================================================================
---- linux-2.6.23.1.orig/drivers/video/fbmem.c	2007-10-12 13:43:44.000000000 -0300
-+++ linux-2.6.23.1/drivers/video/fbmem.c	2008-04-12 15:08:04.000000000 -0300
-@@ -1208,7 +1208,7 @@
- 	struct fb_ops *fb = info->fbops;
- 	long ret = -ENOIOCTLCMD;
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	switch(cmd) {
- 	case FBIOGET_VSCREENINFO:
- 	case FBIOPUT_VSCREENINFO:
-@@ -1234,7 +1234,7 @@
- 			ret = fb->fb_compat_ioctl(info, cmd, arg);
- 		break;
- 	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return ret;
- }
- #endif
-@@ -1256,13 +1256,13 @@
- 		return -ENODEV;
- 	if (fb->fb_mmap) {
- 		int res;
--		lock_kernel();
-+		mutex_lock(&info->hwlock);
- 		res = fb->fb_mmap(info, vma);
--		unlock_kernel();
-+		mutex_unlock(&info->hwlock);
- 		return res;
- 	}
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 
- 	/* frame buffer memory */
- 	start = info->fix.smem_start;
-@@ -1271,13 +1271,13 @@
- 		/* memory mapped io */
- 		off -= len;
- 		if (info->var.accel_flags) {
--			unlock_kernel();
-+			mutex_unlock(&info->hwlock);
- 			return -EINVAL;
- 		}
- 		start = info->fix.mmio_start;
- 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
- 	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	start &= PAGE_MASK;
- 	if ((vma->vm_end - vma->vm_start + off) > len)
- 		return -EINVAL;
-@@ -1323,11 +1323,11 @@
- {
- 	struct fb_info * const info = file->private_data;
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	if (info->fbops->fb_release)
- 		info->fbops->fb_release(info,1);
- 	module_put(info->fbops->owner);
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return 0;
- }
- 
-@@ -1413,6 +1413,8 @@
- 
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
-+
-+	mutex_init(&fb_info->hwlock);
- 	return 0;
- }
- 
-@@ -1464,6 +1466,7 @@
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
-+	mutex_destroy(&fb_info.hwlock);
- done:
- 	return ret;
- }
-Index: linux-2.6.23.1/include/linux/fb.h
-===================================================================
---- linux-2.6.23.1.orig/include/linux/fb.h	2007-10-12 13:43:44.000000000 -0300
-+++ linux-2.6.23.1/include/linux/fb.h	2008-04-12 15:06:41.000000000 -0300
-@@ -802,6 +802,7 @@
- 	struct list_head modelist;      /* mode list */
- 	struct fb_videomode *mode;	/* current mode */
- 
-+	struct mutex hwlock;		/* mutex for protecting hw ops */
- #ifdef CONFIG_FB_BACKLIGHT
- 	/* assigned backlight device */
- 	/* set before framebuffer registration, 
-
+Bart.
