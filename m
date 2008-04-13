@@ -1,61 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbYDMQhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYDMQiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbYDMQhV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 12:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYDMQhI
+	id S1759490AbYDMQiZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 12:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYDMQiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 12:37:08 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53894 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754680AbYDMQhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 12:37:06 -0400
-Date: Sun, 13 Apr 2008 11:36:58 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       crispin@crispincowan.com
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080413163658.GC7010@sergelap.austin.ibm.com>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp> <20080411143013.GB11962@parisc-linux.org>
+	Sun, 13 Apr 2008 12:38:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36154 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755539AbYDMQiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 12:38:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-rc6 regression - hang on resume
+Date: Sun, 13 Apr 2008 18:38:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <pdj7pZVURbL.A.42H.kDW9HB@albercik> <200804131553.15573.rjw@sisk.pl> <1208104212.4541.1.camel@localhost>
+In-Reply-To: <1208104212.4541.1.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080411143013.GB11962@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200804131838.35345.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Matthew Wilcox (matthew@wil.cx):
-> On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
-> > Matthew Wilcox wrote:
-> > > When the rule is put in place, say "No modifications to /etc/passwd",
-> > > look up the inode and major:minor of /etc/passwd.  If there's a rename,
-> > > look up the new inode number.  If it's mounted elsewhere, it doesn't
-> > > matter, they still can't modify it because it has the same
-> > > major:minor:inode.
+On Sunday, 13 of April 2008, Soeren Sonnenburg wrote:
+> On Sun, 2008-04-13 at 15:53 +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 13 of April 2008, Pavel Machek wrote:
+> > > On Sat 2008-04-12 09:27:42, Soeren Sonnenburg wrote:
+> > > > On Fri, 2008-04-11 at 23:04 +0200, Pavel Machek wrote:
+> > > > > On Fri 2008-04-04 08:31:29, Soeren Sonnenburg wrote:
+> > > > > > On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
+> > > > > > > The following report is on the current list of known regressions
+> > > > > > > from 2.6.24.  Please verify if the issue is still present in the
+> > > > > > > mainline.
+> > > > > > > 
+> > > > > > > 
+> > > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
+> > > > > > > Subject		: 2.6.25-rc6 regression - hang on resume
+> > > > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> > > > > > > Date		: 2008-03-25 04:44 (10 days old)
+> > > > > > 
+> > > > > > Yes. The machine resumes and display stays black using s2ram -f -p
+> > > > > > (blindly typing reboot etc on keyboard does what is expected). However
+> > > > > > display comes back on 2.6.24.
+> > > > > 
+> > > > > Could you get us any debugging output from s2ram? Or maybe even strace
+> > > > > it in both working and broken case, and comparing them? (You may want
+> > > > > to disable randomization so that results are comparable).
+> > > > 
+> > > > I did on 2.6.24
+> > > > 
+> > > > strace -ff s2ram >s2ram24.trace 2>&1
+> > > > 
+> > > > and .25
+> > > > 
+> > > > ???strace -ff s2ram >s2ram25.trace 2>&1
+> > > > 
+> > > > with the .24 bringing the display back and .25 not. Files are here
+> > > > 
+> > > > http://nn7.de/debugging/s2ram24.trace.bz2
+> > > > ???http://nn7.de/debugging/s2ram25.trace.bz2
+> > > 
+> > > Hmm: 
+> > > 
+> > > /sys/bus/pci/devices/0000:00:1b.0/irq
+> > > 
+> > > contains 21 in one case and 22 in another... as do other
+> > > interrupts. Is that expected? Can you post /proc/interrupts for both
+> > > versions?
+> > > 
+> > > Hmm, big part of trace is:
+> > > 
+> > > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> > > implemented)
+> > > vm86old(0xb7f76c8c)                     = -1 ENOSYS (Function not
+> > > implemented)
+> > > 
+> > > ...I wonder why we do it so many times?
+> > > 
+> > > And here's the difference. .25 says:
+> > > 
+> > > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> > > implemented)
+> > > vm86old(0xb809ac8c)                     = -1 ENOSYS (Function not
+> > > implemented)
+> > > Error: something went wrong performing real mode call
+> > > open("/sys/class/graphics",
+> > > O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = -1 ENOENT (No
+> > > such file or directory)
+> > > open("/dev/tty", O_RDWR|O_LARGEFILE)    = 6
+> > > ioctl(6, KDGKBTYPE, 0xbfae8887)         = 0
+> > > 
+> > > ...can you perhaps add printf-s to s2ram to find out what changed?
 > > 
-> > If write access is denied because of a rule "No modifications to /etc/passwd",
-> > a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
-> > "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
-> > "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
+> > Well, that looks suspiciously similar to
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10155 .
 > 
-> That's a fundamental limitation of pathname-based security though.
-> If the same file exists in two places, you have to resolve the question
-> of which rule overrides the other.
+> OK I tried noexec=off now... same error in s2ram ... so I guess my CPU
+> does not support NX ...
 
-In the past, Crispin has given clear, concise explanations of a few of
-the things pathname based access control in fact excels at.  Crispin,
-can you recite those again so we can think constructively about which
-(if any) of the currently considered options are or are not sufficient?
+s2ram segfaulted in that bug, but your one desn't.  Still, we could have done
+another thing that prevents s2ram from doing its job on your system.
 
-I.e. what would be a motivation for a rule like 'no modifications to
-/etc/passwd', and what precisely would and would not be accepted ways to
-get around it (and why)?
-
-thanks,
--serge
+Thanks,
+Rafael
