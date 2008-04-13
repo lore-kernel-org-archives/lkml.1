@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbYDMSRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYDMSRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752380AbYDMSRQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 14:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbYDMSQc
+	id S1754636AbYDMSRd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYDMSQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 14:16:32 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42087 "EHLO smtp6.pp.htv.fi"
+	Sun, 13 Apr 2008 14:16:40 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54157 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbYDMSQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 14:16:31 -0400
-Date: Sun, 13 Apr 2008 21:15:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mfd/sm501.c: #if 0 unused functions
-Message-ID: <20080413181531.GD2182@cs181133002.pp.htv.fi>
+	id S1753792AbYDMSQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 14:16:39 -0400
+Date: Sun, 13 Apr 2008 21:15:38 +0300
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: Takuo Koguchi <takuo.koguchi.sw@hitachi.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6.25 patch] sh64: add missing #include <asm/fpu.h>'s
+Message-ID: <20080413181538.GE2182@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,93 +24,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch #if 0's the following unused functions:
-- sm501_find_clock()
-- sm501_gpio_get()
-- sm501_gpio_set()
+This patch fixes some compile errors due to missing save_fpu() 
+prototypes on sh64 caused by
+commit 9bbafce2eec190ef7e44b0eb1095ba17ce6ad3af
+(sh: Fix occasional FPU register corruption under preempt).
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
 
 ---
 
- drivers/mfd/sm501.c   |    5 +++++
- include/linux/sm501.h |   21 ---------------------
- 2 files changed, 5 insertions(+), 21 deletions(-)
+ arch/sh/kernel/process_64.c |    1 +
+ arch/sh/kernel/ptrace_64.c  |    1 +
+ arch/sh/kernel/signal_64.c  |    1 +
+ arch/sh/kernel/traps_64.c   |    1 +
+ 4 files changed, 4 insertions(+)
 
-24190c50efec1862c20bba55a31677879fae1de3 diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-index 13bac53..54de0ff 100644
---- a/drivers/mfd/sm501.c
-+++ b/drivers/mfd/sm501.c
-@@ -275,6 +275,8 @@ unsigned long sm501_modify_reg(struct device *dev,
+f98fec7956bd7156a11c42acdcf49dc41c5df61e diff --git a/arch/sh/kernel/process_64.c b/arch/sh/kernel/process_64.c
+index 046999b..0283d81 100644
+--- a/arch/sh/kernel/process_64.c
++++ b/arch/sh/kernel/process_64.c
+@@ -28,6 +28,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/mmu_context.h>
++#include <asm/fpu.h>
  
- EXPORT_SYMBOL_GPL(sm501_modify_reg);
+ struct task_struct *last_task_used_math = NULL;
  
-+#if 0
-+
- unsigned long sm501_gpio_get(struct device *dev,
- 			     unsigned long gpio)
- {
-@@ -326,6 +328,7 @@ void sm501_gpio_set(struct device *dev,
+diff --git a/arch/sh/kernel/ptrace_64.c b/arch/sh/kernel/ptrace_64.c
+index f6fbdfa..d453c47 100644
+--- a/arch/sh/kernel/ptrace_64.c
++++ b/arch/sh/kernel/ptrace_64.c
+@@ -33,6 +33,7 @@
+ #include <asm/system.h>
+ #include <asm/processor.h>
+ #include <asm/mmu_context.h>
++#include <asm/fpu.h>
  
- EXPORT_SYMBOL_GPL(sm501_gpio_set);
+ /* This mask defines the bits of the SR which the user is not allowed to
+    change, which are everything except S, Q, M, PR, SZ, FR. */
+diff --git a/arch/sh/kernel/signal_64.c b/arch/sh/kernel/signal_64.c
+index 80bde19..552eb81 100644
+--- a/arch/sh/kernel/signal_64.c
++++ b/arch/sh/kernel/signal_64.c
+@@ -26,6 +26,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/cacheflush.h>
++#include <asm/fpu.h>
  
-+#endif  /*  0  */
+ #define REG_RET 9
+ #define REG_ARG1 2
+diff --git a/arch/sh/kernel/traps_64.c b/arch/sh/kernel/traps_64.c
+index 1b58a74..a85831c 100644
+--- a/arch/sh/kernel/traps_64.c
++++ b/arch/sh/kernel/traps_64.c
+@@ -30,6 +30,7 @@
+ #include <asm/atomic.h>
+ #include <asm/processor.h>
+ #include <asm/pgtable.h>
++#include <asm/fpu.h>
  
- /* sm501_unit_power
-  *
-@@ -657,6 +660,7 @@ unsigned long sm501_set_clock(struct device *dev,
- 
- EXPORT_SYMBOL_GPL(sm501_set_clock);
- 
-+#if 0
- /* sm501_find_clock
-  *
-  * finds the closest available frequency for a given clock
-@@ -699,6 +703,7 @@ unsigned long sm501_find_clock(struct device *dev,
- }
- 
- EXPORT_SYMBOL_GPL(sm501_find_clock);
-+#endif  /*  0  */
- 
- static struct sm501_device *to_sm_device(struct platform_device *pdev)
- {
-diff --git a/include/linux/sm501.h b/include/linux/sm501.h
-index bca1345..f416505 100644
---- a/include/linux/sm501.h
-+++ b/include/linux/sm501.h
-@@ -24,9 +24,6 @@ extern int sm501_unit_power(struct device *dev,
- extern unsigned long sm501_set_clock(struct device *dev,
- 				     int clksrc, unsigned long freq);
- 
--extern unsigned long sm501_find_clock(struct device *dev,
--				      int clksrc, unsigned long req_freq);
--
- /* sm501_misc_control
-  *
-  * Modify the SM501's MISC_CONTROL register
-@@ -46,24 +43,6 @@ extern unsigned long sm501_modify_reg(struct device *dev,
- 				      unsigned long set,
- 				      unsigned long clear);
- 
--/* sm501_gpio_set
-- *
-- * set the state of the given GPIO line
--*/
--
--extern void sm501_gpio_set(struct device *dev,
--			   unsigned long gpio,
--			   unsigned int to,
--			   unsigned int dir);
--
--/* sm501_gpio_get
-- *
-- * get the state of the given GPIO line
--*/
--
--extern unsigned long sm501_gpio_get(struct device *dev,
--				    unsigned long gpio);
--
- 
- /* Platform data definitions */
- 
+ #undef DEBUG_EXCEPTION
+ #ifdef DEBUG_EXCEPTION
 
