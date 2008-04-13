@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYDMTxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbYDMTyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759951AbYDMTxy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYDMTsX
+	id S1759991AbYDMTyR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYDMTso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:48:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57366
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756993AbYDMTsW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 15:48:22 -0400
-Date: Sun, 13 Apr 2008 12:48:23 -0700 (PDT)
-Message-Id: <20080413.124823.173625519.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru,
-       ilpo.jarvinen@helsinki.fi, jeff@garzik.org, lkml@rtr.ca,
-       xemul@openvz.org, yoshfuji@linux-ipv6.org
-Subject: Re: [Bug #10434] 2.6.25-rc8: FTP transfer errors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <oq66hWjeF4N.A.yJ.L3lAIB@albercik>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
-	<oq66hWjeF4N.A.yJ.L3lAIB@albercik>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Sun, 13 Apr 2008 15:48:44 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40286 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757220AbYDMTsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 15:48:43 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18Qw8suVzIQ8wdYFcW9Y0MII/rmCKRRaX5QSdH8vc
+	2RSbGSUZ6wPei1
+Date: Sun, 13 Apr 2008 21:48:37 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bob Tracy <rct@frus.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10366] 2.6.25-rc7: warn_on_slowpath triggered
+Message-ID: <20080413194837.GA6518@atjola.homenet>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.Tm.13lAIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <oq66hWjeF4N.A.Tm.13lAIB@albercik>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3DJmSEB032691
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
-
+On 2008.04.13 20:56:42 +0200, Rafael J. Wysocki wrote:
 > This message has been generated automatically as a part of a report
 > of recent regressions.
 > 
@@ -40,18 +39,16 @@ Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
 > from 2.6.24.  Please verify if it still should be listed.
 > 
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10434
-> Subject		: 2.6.25-rc8: FTP transfer errors
-> Submitter	: Mark Lord <lkml@rtr.ca>
-> Date		: 2008-04-09 00:56 (5 days old)
-> References	: http://lkml.org/lkml/2008/4/9/4
-> Handled-By	: Jeff Garzik <jeff@garzik.org>
-> 		  YOSHIFUJI Hideaki / å‰è—¤è‹±æ˜ <yoshfuji@linux-ipv6.org>
-> 		  Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>
-> 		  David S. Miller <davem@davemloft.net>
-> 		  Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> Patch		: http://lkml.org/lkml/2008/4/10/409
-> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10366
+> Subject		: 2.6.25-rc7: warn_on_slowpath triggered
+> Submitter	: Bob Tracy <rct@frus.com>
+> Date		: 2008-03-29 17:29 (16 days old)
+> References	: http://lkml.org/lkml/2008/3/29/125
+> Handled-By	: Björn Steinbrink <B.Steinbrink@gmx.de>
+> Patch		: http://lkml.org/lkml/2008/3/30/245
 
-This patch is in Linus's tree and thus the bug is fixed.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Ingo, you have that patch in your tree, are you going to push that to
+Linus any time soon (ie. before 2.6.25)?
+
+Thanks,
+Björn
