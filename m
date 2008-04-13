@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYDMOhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYDMOly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbYDMOhh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 10:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYDMOh1
+	id S1757943AbYDMOly (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 10:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYDMOlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 10:37:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:60805 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbYDMOh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 10:37:27 -0400
-Date: Sun, 13 Apr 2008 16:37:09 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Laurent GUERBY <laurent@guerby.net>
-cc: linux-kernel@vger.kernel.org, Peter Oruba <peter.oruba@amd.com>
-Subject: Re: BUG: soft lockup detected on Phenom with Debian 2.6.24-4
-In-Reply-To: <1207985304.15628.415.camel@localhost>
-Message-ID: <alpine.LFD.1.10.0804131635500.3261@apollo.tec.linutronix.de>
-References: <1205013615.15075.409.camel@localhost>  <1205678588.15075.563.camel@localhost>  <1206015619.15075.666.camel@localhost>  <47E26A5D.40401@amd.com>  <1206123836.15075.699.camel@localhost> <1207985304.15628.415.camel@localhost>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 13 Apr 2008 10:41:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:21595 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYDMOlq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 10:41:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pSxzTQq+rufZ18t7ucwY9I3vGUGLJRQFn1CMOQ7TqHFcixkV1Xc1r2iFYeLA7PjQ5sCSVtR5lxabOiL7Hqr8K9GI7tP1vG39gKgzE79751zQhOw+pyPXUcivdt6PGL8CS1iY0ATqvpRLdn3XSU7YLgijScBkkuFt9u6quVY+VYs=
+Date: Sun, 13 Apr 2008 18:41:38 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>
+Subject: [PATCH 0/5] Clocklib: generic clocks framework
+Message-ID: <20080413144138.GA31665@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Apr 2008, Laurent GUERBY wrote:
-> Hi,
-> 
-> FYI with Peter off-list help we found a way to make the ASUS M2A-VM with
-> 1604 BIOS stable under my stress test: we just needed nmi_watchdog=1 in
-> the kernel boot options (no other boot option necessary).
+Hi,
 
-hmm, nmi_watchdog=1 disables the local apic timer. Can you add
-"noapictimer" to the kernel command line instead ?
+Here is my current version of the patchset.
+Changes since last repost:
 
-Thanks,
-	tglx
+ * Clean up stuff noted by akpm.
+ * Provide debugfs file description
+ * Drop SIRCLK name, bind pxaficp driver to the STUARTCLK
+ * Drop 3.6MHz clock renames
+ * Rebase pxa part to latest Russel's arm:devel patchset
+
+-- 
+With best wishes
+Dmitry
+
