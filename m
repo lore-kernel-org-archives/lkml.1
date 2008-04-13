@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYDMRXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYDMRXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbYDMRXS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYDMRXH
+	id S1753211AbYDMRXd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDMRXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:23:07 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:26623 "HELO
+	Sun, 13 Apr 2008 13:23:13 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:26715 "HELO
 	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750953AbYDMRXG (ORCPT
+	by vger.kernel.org with SMTP id S1751851AbYDMRXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:23:06 -0400
+	Sun, 13 Apr 2008 13:23:11 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6VnEGj8SLLpGr1Iu7k3Z76ZOEHUBiMw/sllp3nkbZBcyZmjz4iMFRRfUeYjv5MsPM23XWZHET+ubhs3HUIm4pAPAep5Iu4AfZ2e0OEeq2CE70fLLHdr9jhJRPUyUDB3yS93WU8uPUt7dyLpFuiRH4QoDLbCcR5c/EBK+xMdT71U=  ;
-X-YMail-OSG: gdjXdRsVM1mQfyrFToS6QOQcroaJNcXilie1Jv5Q7rwXtHF3lMX5JAA9II2m5psCxJZMAfg85w--
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PDIskKHl4bLI3jwnHa0oM4hhX1JLzim8rSkSljD/BXcpHRZZANbfPvpmFhT0QrtiCAZ5YCB5ae0T91jFyHr1+u8DG0l2lGKAHnV3voM3Clup4LmYreEjjz2blLsLZQCMNs/5RqsmXTOKCZSrU+l8gSqaOeYOqf1dp3Uhr8/O194=  ;
+X-YMail-OSG: g.qxh1kVM1l3I3zgxUfcG6FdqcOO27rZIOsS81Ws4j3i6yluKikglqZeAnDzgR9dVxVsKjHcb2VawtcqZiobqEEabiEgjYTbxlD3kYQwQ4Zpkvfg99GkDFBGTPFRbg--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.25-rc9] misc: fix platform driver hotplug/coldplug
-Date: Sun, 13 Apr 2008 10:06:52 -0700
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] usb gadget: switch to put_char returning int
+Date: Sun, 13 Apr 2008 10:21:42 -0700
 User-Agent: KMail/1.9.6
-Cc: kay.sievers@vrfy.org, lkml <linux-kernel@vger.kernel.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <20080413180818.519e446c@core>
+In-Reply-To: <20080413180818.519e446c@core>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804131006.52988.david-b@pacbell.net>
+Message-Id: <200804131021.42340.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+On Sunday 13 April 2008, Alan Cox wrote:
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
-modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
-hotpluggable 'misc' platform drivers, to re-enable auto loading.
+ACK.
 
-[ dbrownell@users.sourceforge.net:  bugfix, registration fixes ]
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/misc/atmel-ssc.c              |    2 ++
- drivers/misc/atmel_pwm.c              |    1 +
- drivers/misc/hdpuftrs/hdpu_cpustate.c |    2 ++
- drivers/misc/hdpuftrs/hdpu_nexus.c    |    2 ++
- 4 files changed, 7 insertions(+)
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c
+> --- linux.vanilla-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:36:54.000000000 +0100
+> +++ linux-2.6.25-rc8-mm2/drivers/usb/gadget/serial.c	2008-04-13 15:41:09.000000000 +0100
+> @@ -170,7 +170,7 @@
+>  static void gs_close(struct tty_struct *tty, struct file *file);
+>  static int gs_write(struct tty_struct *tty,
+>  	const unsigned char *buf, int count);
+> -static void gs_put_char(struct tty_struct *tty, unsigned char ch);
+> +static int gs_put_char(struct tty_struct *tty, unsigned char ch);
+>  static void gs_flush_chars(struct tty_struct *tty);
+>  static int gs_write_room(struct tty_struct *tty);
+>  static int gs_chars_in_buffer(struct tty_struct *tty);
+> @@ -883,14 +883,15 @@
+>  /*
+>   * gs_put_char
+>   */
+> -static void gs_put_char(struct tty_struct *tty, unsigned char ch)
+> +static int gs_put_char(struct tty_struct *tty, unsigned char ch)
+>  {
+>  	unsigned long flags;
+>  	struct gs_port *port = tty->driver_data;
+> +	int ret = 0;
+>  
+>  	if (port == NULL) {
+>  		pr_err("gs_put_char: NULL port pointer\n");
+> -		return;
+> +		return 0;
+>  	}
+>  
+>  	gs_debug("gs_put_char: (%d,%p) char=0x%x, called from %p\n",
+> @@ -910,10 +911,11 @@
+>  		goto exit;
+>  	}
+>  
+> -	gs_buf_put(port->port_write_buf, &ch, 1);
+> +	ret = gs_buf_put(port->port_write_buf, &ch, 1);
+>  
+>  exit:
+>  	spin_unlock_irqrestore(&port->port_lock, flags);
+> +	return ret;
+>  }
+>  
+>  /*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
---- g26.orig/drivers/misc/atmel-ssc.c	2008-04-12 21:25:41.000000000 -0700
-+++ g26/drivers/misc/atmel-ssc.c	2008-04-12 21:27:37.000000000 -0700
-@@ -154,6 +154,7 @@ static struct platform_driver ssc_driver
- 	.remove		= __devexit_p(ssc_remove),
- 	.driver		= {
- 		.name		= "ssc",
-+		.owner		= THIS_MODULE,
- 	},
- };
- 
-@@ -172,3 +173,4 @@ module_exit(ssc_exit);
- MODULE_AUTHOR("Hans-Christian Egtvedt <hcegtvedt@atmel.com>");
- MODULE_DESCRIPTION("SSC driver for Atmel AVR32 and AT91");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:ssc");
---- g26.orig/drivers/misc/atmel_pwm.c	2008-04-12 21:25:41.000000000 -0700
-+++ g26/drivers/misc/atmel_pwm.c	2008-04-12 21:26:11.000000000 -0700
-@@ -407,3 +407,4 @@ module_exit(pwm_exit);
- 
- MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:atmel_pwm");
---- g26.orig/drivers/misc/hdpuftrs/hdpu_cpustate.c	2008-04-12 21:25:41.000000000 -0700
-+++ g26/drivers/misc/hdpuftrs/hdpu_cpustate.c	2008-04-12 21:49:25.000000000 -0700
-@@ -164,6 +164,7 @@ static struct platform_driver hdpu_cpust
- 	.remove = hdpu_cpustate_remove,
- 	.driver = {
- 		.name = HDPU_CPUSTATE_NAME,
-+		.owner = THIS_MODULE,
- 	},
- };
- 
-@@ -248,3 +249,4 @@ module_exit(cpustate_exit);
- 
- MODULE_AUTHOR("Brian Waite");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:" HDPU_CPUSTATE_NAME);
---- g26.orig/drivers/misc/hdpuftrs/hdpu_nexus.c	2008-04-12 21:25:41.000000000 -0700
-+++ g26/drivers/misc/hdpuftrs/hdpu_nexus.c	2008-04-12 21:34:19.000000000 -0700
-@@ -55,6 +55,7 @@ static struct platform_driver hdpu_nexus
- 	.remove = hdpu_nexus_remove,
- 	.driver = {
- 		.name = HDPU_NEXUS_NAME,
-+		.owner = THIS_MODULE,
- 	},
- };
- 
-@@ -151,3 +152,4 @@ module_exit(nexus_exit);
- 
- MODULE_AUTHOR("Brian Waite");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:" HDPU_NEXUS_NAME);
+
