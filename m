@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYDMCAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbYDMCTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbYDMCAK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Apr 2008 22:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYDMB76
+	id S1755979AbYDMCTL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Apr 2008 22:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYDMCS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Apr 2008 21:59:58 -0400
-Received: from rv-out-0708.google.com ([209.85.198.243]:8900 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750733AbYDMB75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Apr 2008 21:59:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=q29W48wolwD0SJ9fP9449VDRtvquObkLiQhRq8BnfC0BBHkUQGElAlDQaGLFC+mJkeOLWNGMQkt/gjC3sZ3ec76ujORpZSq1Cjon8fvSvpnOGq7gnbtggtEAJfMIBL+0CfNo23jyBpaNsgX5G1Xi+SzSjPlVP+/6bTo07iMU4AA=
-Message-ID: <86802c440804121859x42847c2cx37b8cd909b14c6b5@mail.gmail.com>
-Date: Sat, 12 Apr 2008 18:59:56 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
-Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <20080412225850.704752615@symbol.fehenstaub.lan>
+	Sat, 12 Apr 2008 22:18:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37868 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752456AbYDMCS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Apr 2008 22:18:56 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] firewire: fw-ohci: extend logging of bus generations and node ID
+Date: Sat, 12 Apr 2008 22:18:41 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.f3c267b896f5d604@s5r6.in-berlin.de> <tkrat.af66976aaf531c2f@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.af66976aaf531c2f@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080412223319.372887160@symbol.fehenstaub.lan>
-	 <20080412225850.704752615@symbol.fehenstaub.lan>
+Message-Id: <200804122218.41123.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 3:33 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Make free_bootmem() look up the node holding the specified address
->  range which lets it work transparently on single-node and multi-node
->  configurations.
+On Thursday 10 April 2008 06:51:15 pm Stefan Richter wrote:
+> Extend the logging of "AR evt_bus_reset, link internal" to "AR
+> evt_bus_reset, generation ${selfIDGeneration}".  That way we can check
+> whether this generation matches the one seen in self ID complete event
+> logging.  See OHCI 1.1 clause 8.4.2.3.
 >
->  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->  CC: Yinghai Lu <yhlu.kernel@gmail.com>
->  CC: Andi Kleen <ak@suse.de>
->  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
->  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->  CC: Ingo Molnar <mingo@elte.hu>
->  CC: Christoph Lameter <clameter@sgi.com>
->  CC: Andrew Morton <akpm@linux-foundation.org>
->  ---
+> Also extend logging of "firewire_ohci: * selfIDs, generation *" by
+> "local node ID ffc*" in self ID logging to make the local node in AT/AR
+> event logs more obvious.
 >
->  Patch tested on x86_32 uma.
->
->  Index: linux-2.6/mm/bootmem.c
->  ===================================================================
->  --- linux-2.6.orig/mm/bootmem.c
->  +++ linux-2.6/mm/bootmem.c
->  @@ -421,7 +421,15 @@ int __init reserve_bootmem(unsigned long
->
->   void __init free_bootmem(unsigned long addr, unsigned long size)
->   {
->  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->  +       bootmem_data_t *bdata;
->  +
->  +       list_for_each_entry (bdata, &bdata_list, list) {
->  +               if (addr < bdata->node_boot_start)
->  +                       continue;
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
 
-could have chance that bootmem with reserved_early that is crossing the nodes.
+Good addition for debugging purposes.
 
-YH
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-
-YH
+-- 
+Jarod Wilson
+jwilson@redhat.com
