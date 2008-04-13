@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYDMVQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYDMVSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYDMVQU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 17:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYDMVQJ
+	id S1755163AbYDMVSY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 17:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYDMVSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 17:16:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35888 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbYDMVQI (ORCPT
+	Sun, 13 Apr 2008 17:18:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:21243 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYDMVSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 17:16:08 -0400
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, akpm@linux-foundation.org, me@bobcopeland.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-	 <20080412170304.54f139e2.akpm@linux-foundation.org>
-	 <20080413033344.GA27494@hash.localnet>
-	 <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	 <20080413080130.GA9622@infradead.org>
-	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
-	 <20080413082815.GA20108@infradead.org>
-	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Sun, 13 Apr 2008 22:15:58 +0100
-Message-Id: <1208121358.2700.4.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+	Sun, 13 Apr 2008 17:18:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=SZNmemMUB4Xspb+bC0VWFnooW5bo3A2eXS1afQNJ5eVcTmwJs8tMBDXzS3VHQTGNj+UpBG1mIBZsH1GXDaq98jcKAZw1zNEKjhD9mE+THWAwUS85Cw4cIC5Gg956lIm9q8bzNaZiecVz9jKjk4qFy0LrCBFGkqlur5vUbeY8xpk=
+Message-ID: <740b8bba0804131418q4a210d44k77f95714002b92a@mail.gmail.com>
+Date: Sun, 13 Apr 2008 14:18:15 -0700
+From: "David Erickson" <halcyon1981@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel module unable to find an exported symbol
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-13 at 12:37 +0200, Miklos Szeredi wrote:
-> There's one thing which makes fuse a slightly better candidate for
-> applications where the number of users is low: stability.  Unless you
-> or your users test the hell out of your filesystem, there always a
-> chance that some bugs will remain.  These rarely bring down the whole
-> system, but it usually requires a reboot to let you continue using the
-> Oopsing fs.
+Hi everyone, I have two kernel modules I am developing, both use the
+call_rcu exported function. The core module finds it no problem,
+installs, and uses it.  The second module however when I try to insmod
+it complains:
 
-I think it's a slippery slope from that to rewriting Linux as a
-microkernel.
+Unknown symbol call_rcu
 
-Simple block filesystems like this belong in the kernel.
+I have verified that it is exported via /proc/kallsyms:
+c04348c8 T call_rcu
 
--- 
-dwmw2
+I am at a loss as to how to proceed, can anyone shed some light on how
+this could be happening? Or how to diagnose and debug the problem?
 
+Thanks,
+David
+
+ps please CC me on a reply, thank you!
