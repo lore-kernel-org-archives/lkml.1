@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYDMWKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbYDMWLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbYDMWKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 18:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYDMWK0
+	id S1755706AbYDMWLV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 18:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYDMWLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 18:10:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55973 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755030AbYDMWKV (ORCPT
+	Sun, 13 Apr 2008 18:11:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24503 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbYDMWLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 18:10:21 -0400
-Message-ID: <48028305.8040104@zytor.com>
-Date: Sun, 13 Apr 2008 15:02:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Erik Bosman <ejbosman@cs.vu.nl>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
-References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl> <20080412124947.146865e4@laptopd505.fenrus.org> <48012002.8030701@zytor.com> <Pine.GSO.4.56.0804132320260.6537@keg.few.vu.nl>
-In-Reply-To: <Pine.GSO.4.56.0804132320260.6537@keg.few.vu.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 13 Apr 2008 18:11:08 -0400
+Date: Sun, 13 Apr 2008 15:10:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Cc: akpm@linux-foundation.org, corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
+Message-Id: <20080413151020.bfa62f58.randy.dunlap@oracle.com>
+In-Reply-To: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com>
+References: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Erik Bosman wrote:
-> 
-> It took me a while, but I have done some tests om my system with and
-> without my patch applied.
-> 
-> All deamons but klogd/syslogd were shut down andI used the following
-> command:
-> 
-> LMBENCH_SCHED="SINGLE" \
-> /usr/lib/lmbench/bin/{i686-pc,x86_64}-linux-gnu/lat_ctx -s 0 2
-> 
-> The variation was quite high so I ran it a 1000 times for each
-> configuration.
-> 
-> x86_32, patch applied,     1000x repeated, avg: 1.319, rmse: 0.081
-> x86_32, patch not applied, 1000x repeated, avg: 1.335, rmse: 0.107
-> 
-> x86_64, patch applied,     1000x repeated, avg: 1.417, rmse: 0.0716
-> x86_64, patch not applied, 1000x repeated, avg: 1.423, rmse: 0.0745
-> 
-> This is on a core 2 duo E6300.
-> 
+On Sun, 13 Apr 2008 22:26:41 +0400 Dmitri Vorobiev wrote:
 
-OK, so it sounds like there is no measurable difference.  Good.
+> A couple of typos crept into the newly added document
+> about the seq_file interface. This patch corrects those
+> typos and simultaneously deletes a few superfluous blanks.
 
-	-hpa
+The "2 spaces after a period at the end of a sentence" was done
+on purpose, I feel sure.  It's not a mistake.
+
+The other typo corrections & elimination of trailing whitespace
+look good.  Thanks.
+
+> Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+> ---
+>  Documentation/filesystems/seq_file.txt |   18 +++++++++---------
+>  1 files changed, 9 insertions(+), 9 deletions(-)
+
+---
+~Randy
