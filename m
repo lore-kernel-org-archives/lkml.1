@@ -1,105 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbYDMI74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYDMJH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbYDMI74 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 04:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYDMI7p
+	id S1756667AbYDMJH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 05:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYDMJHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 04:59:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37129 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751444AbYDMI7o (ORCPT
+	Sun, 13 Apr 2008 05:07:48 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:31264 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754077AbYDMJHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 04:59:44 -0400
-Date: Sun, 13 Apr 2008 01:59:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [PATCH 1/2] fix sys_unshare()+SEM_UNDO: add support for
- CLONE_SYSVSEM
-Message-Id: <20080413015936.580bf7fe.akpm@linux-foundation.org>
-In-Reply-To: <200804130848.m3D8mU7D007104@mail.q-ag.de>
-References: <200804130848.m3D8mU7D007104@mail.q-ag.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Apr 2008 05:07:47 -0400
+To: Erik Bosman <ebn310@few.vu.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add prctl commands PR_GET_TSC and PR_SET_TSC
+From: Andi Kleen <andi@firstfloor.org>
+References: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl>
+Date: Sun, 13 Apr 2008 11:07:33 +0200
+In-Reply-To: <Pine.GSO.4.56.0804111850060.16609@keg.few.vu.nl> (Erik Bosman's message of "Fri, 11 Apr 2008 18:54:17 +0200 (CEST)")
+Message-ID: <87r6daw2ay.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Apr 2008 09:00:48.0799 (UTC) FILETIME=[DE00CAF0:01C89D44]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Apr 2008 10:04:17 +0200 Manfred Spraul <manfred@colorfullife.com> wrote:
+Erik Bosman <ebn310@few.vu.nl> writes:
 
-> sys_unshare(CLONE_NEWIPC) doesn't handle the undo lists properly, this can
-> cause a kernel memory corruption. CLONE_NEWIPC must detach from the existing
-> undo lists.
-> Fix, part 1: add support for sys_unshare(CLONE_SYSVSEM)
-> 
+>     This patch adds prctl commands that make it possible
+>     to deny the execution of timestamp counters in userspace.
+>     If this is not implemented on a specific architecture,
+>     prctl will return -EINVAL.
 
-Is this a non-back-compatible change?
+You forgot to state why you need that? 
 
-> 
-> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-> ---
->  ipc/sem.c     |    1 +
->  kernel/fork.c |   18 ++++++++++++++----
->  2 files changed, 15 insertions(+), 4 deletions(-)
-> 
-> diff --git a/ipc/sem.c b/ipc/sem.c
-> index 0b45a4d..35841bd 100644
-> --- a/ipc/sem.c
-> +++ b/ipc/sem.c
-> @@ -1298,6 +1298,7 @@ void exit_sem(struct task_struct *tsk)
->  	undo_list = tsk->sysvsem.undo_list;
->  	if (!undo_list)
->  		return;
-> +	tsk->sysvsem.undo_list = NULL;
->  
->  	if (!atomic_dec_and_test(&undo_list->refcnt))
->  		return;
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 9c042f9..7f242b0 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1675,13 +1675,17 @@ static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp
->  }
->  
->  /*
-> - * Unsharing of semundo for tasks created with CLONE_SYSVSEM is not
-> - * supported yet
-> + * Unsharing of semundo for tasks created with CLONE_SYSVSEM doesn't require
-> + * any allocations: it means that the task leaves the existing undo lists,
-> + * just like sys_exit(). The new undo lists are allocated on demand in the
-> + * ipc syscalls.
-> + * new_ulistp is set to a non-NULL value, the caller expects that on success.
->   */
->  static int unshare_semundo(unsigned long unshare_flags, struct sem_undo_list **new_ulistp)
->  {
-> -	if (unshare_flags & CLONE_SYSVSEM)
-> -		return -EINVAL;
-> +	if (unshare_flags & CLONE_SYSVSEM) {
-> +		*new_ulistp = (void*)1;
-> +	}
-
-And can we do anything nicer than this?
-
->  	return 0;
->  }
-> @@ -1731,6 +1735,12 @@ asmlinkage long sys_unshare(unsigned long unshare_flags)
->  		goto bad_unshare_cleanup_semundo;
->  
->  	if (new_fs ||  new_mm || new_fd || new_ulist || new_nsproxy) {
-> +		if (unshare_flags & CLONE_SYSVSEM) {
-> +			/*
-> +			 * CLONE_SYSVSEM is equivalent to sys_exit().
-> +			 */
-> +			exit_sem(current);
-> +		}
->  
->  		if (new_nsproxy) {
->  			switch_task_namespaces(current, new_nsproxy);
-> -- 
-> 1.5.4.1
+-Andi
