@@ -1,22 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDMTuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYDMTu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYDMTuB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYDMTo4
+	id S1757330AbYDMTu2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYDMTo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 13 Apr 2008 15:44:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36980 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([217.79.144.158]:36981 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755188AbYDMToq convert rfc822-to-8bit (ORCPT
+	id S1755182AbYDMToq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 13 Apr 2008 15:44:46 -0400
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       =?utf-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "Jeff Garzik" <jeff@garzik.org>, "Mark Lord" <lkml@rtr.ca>,
-       "Pavel Emelyanov" <xemul@openvz.org>,
-       =?utf-8?q?YOSHIFUJI=20Hideaki=20/=20=E5=90=89=E8=97=A4=E8=8B=B1=E6=98=8E?= 
-	<yoshfuji@linux-ipv6.org>
+Cc: "Christoph Lameter" <clameter@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
 References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 In-Reply-To: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -24,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <oq66hWjeF4N.A.yJ.L3lAIB@albercik>
-Subject: [Bug #10434] 2.6.25-rc8: FTP transfer errors
+Message-ID: <oq66hWjeF4N.A.-8H.I3lAIB@albercik>
+Subject: [Bug #10449] mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,16 +35,13 @@ The following bug entry is on the current list of known regressions
 from 2.6.24.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10434
-Subject		: 2.6.25-rc8: FTP transfer errors
-Submitter	: Mark Lord <lkml@rtr.ca>
-Date		: 2008-04-09 00:56 (5 days old)
-References	: http://lkml.org/lkml/2008/4/9/4
-Handled-By	: Jeff Garzik <jeff@garzik.org>
-		  YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-		  Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-		  David S. Miller <davem@davemloft.net>
-		  Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Patch		: http://lkml.org/lkml/2008/4/10/409
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10449
+Subject		: mm/slab.c boot crash in -git, "kernel BUG at mm/slab.c:2103!"
+Submitter	: Ingo Molnar <mingo@elte.hu>
+Date		: 2008-04-11 03:42 (3 days old)
+References	: http://www.ussg.iu.edu/hypermail/linux/kernel/0804.1/1209.html
+Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
+		  Nick Piggin <npiggin@suse.de>
+		  Christoph Lameter <clameter@sgi.com>
 
 
