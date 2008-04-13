@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYDMUaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYDMUdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbYDMUaw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 16:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYDMUap
+	id S1756273AbYDMUdj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 16:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYDMUd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 16:30:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38621
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752317AbYDMUao (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 16:30:44 -0400
-Date: Sun, 13 Apr 2008 13:30:45 -0700 (PDT)
-Message-Id: <20080413.133045.123268955.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru,
-       ilpo.jarvinen@helsinki.fi, jeff@garzik.org, lkml@rtr.ca,
-       xemul@openvz.org, yoshfuji@linux-ipv6.org
-Subject: Re: [Bug #10434] 2.6.25-rc8: FTP transfer errors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200804132202.55395.rjw@sisk.pl>
-References: <oq66hWjeF4N.A.yJ.L3lAIB@albercik>
-	<20080413.124823.173625519.davem@davemloft.net>
-	<200804132202.55395.rjw@sisk.pl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 13 Apr 2008 16:33:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37257 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752575AbYDMUd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 16:33:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Reporting bugs and bisection (was: Re: 2.6.25-rc8: FTP transfer errors)
+Date: Sun, 13 Apr 2008 22:33:49 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org> <20080413202118.GA29658@2ka.mipt.ru>
+In-Reply-To: <20080413202118.GA29658@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804132233.50491.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sun, 13 Apr 2008 22:02:54 +0200
-
-> On Sunday, 13 of April 2008, David Miller wrote:
-> > From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Date: Sun, 13 Apr 2008 20:56:42 +0200 (CEST)
+On Sunday, 13 of April 2008, Evgeniy Polyakov wrote:
+> Hi.
+> 
+> On Sun, Apr 13, 2008 at 12:18:31PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > >  One other thing which might get confusing/frustrating on the
+> > > user side is that currently, Linux is the *only* product which requires
+> > > the bug reporter to find the fault change
 > > 
-> > This patch is in Linus's tree and thus the bug is fixed.
+> > That's because many (probably most) Linux bugs are dependent upon the
+> > hardware which they run on, and developers cannot reproduce the failure on
+> > their hardware.  Other software products don't have that problem.
 > 
-> Hm, "git whatchanged net/ipv4/inet_timewait_sock.c" returns
+> Bugs are bugs, they either depend on hardware or do not. 
+> There is no perfect world where after reporting subtle bug it will be
+> fixed. It is not Linux, it is everywhere. Bugs are only fixed when
+> they have major impact. Only. Either by having exploit, or crash,
+> or good testcase. Or bisect result.
 > 
-> commit 7951f0b03a63d657c72c7d54d306ef3357e7e604
-> Author: Daniel Lezcano <dlezcano@fr.ibm.com>
-> Date:   Thu Apr 10 20:53:10 2008 -0700
+> This just a tool to help both parties. And a huge help for regressions.
+> If bug would exist for years, bisection unlikely to help.
+>  
+> > That being said..  four or five years ago, developers would often work
+> > closely with the reporter working out why the reporter's failure was
+> > occurring.  Several days of back-and-forth.
 > 
->     [NETNS][IPV6] tcp - assign the netns for timewait sockets
+> Yeah, spent two weeks kicking all possible stuff around and eventually
+> drop that namespace patch at all to find where the problem was. We
+> started to move further.
 > 
-> as the most recent commit changing that file ...
+> Bisect is just a tool. It is not something developers throw into user
+> when they do not want to work. This _is_ a help, which allows both to
+> solve problem in the fastest way.
 > 
-> It doesn't look like the patch has been merged yet.
+> If the same would be done on developers machine and huge patches would
+> be sent to jump between changesets, that would be a real 'work closely
+> with the reporter working out why the reporter's failure was occurring'?
+> 
+> You pointed it yourself: several days of back-and-forth.
+> With this helping automation tool called bisect bug was resolved in 15
+> minutes after completion. Completion itself took couple of hours.
+> 
+> > We dont' do that as much nowadays - there's a tendency to
+> > 
+> > a) throw the problem back at the reporter, often asking them to bisect. 
+> >    If the reporter is running a distro kernel (eg: Fedora) then that's
+> >    quite hard, and often isn't a think they have knowledge to do.  So
+> >    they'll just disappear.  Or
+> > 
+> > b) just ignore the report altogether.
+> 
+> There is also global warming tendency. IIRC.
+> 
+> Bugs _are_ fixed, Andrew. And developers did not change suddenly to
+> selfish bastards who do not care for users. They just developed a tool,
+> which greatly helps to both and saves lots of users time, since
+> regression gets fixed with this tool really quickly. Bisect is not asked
+> to be performed without a reason.
 
-That's exactly the fix, what are you talking about?
+To be honest, at least in one case no one reacted to my report(s) until I ran
+a bisection and then it turned up an obviously broken patch.  The breakage
+was so obvious that if anyone had actually looked at the code in question, he
+would have see it immediately.
+
+Things like this are very disappointing and have a very negative impact on bug
+reporters.  We should do our best to avoid them.
+
+Thanks,
+Rafael
