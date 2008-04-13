@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYDMWcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYDMWjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbYDMWcf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 18:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYDMWc1
+	id S1753784AbYDMWjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 18:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYDMWjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 18:32:27 -0400
-Received: from rv-out-0708.google.com ([209.85.198.245]:18881 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752267AbYDMWc0 (ORCPT
+	Sun, 13 Apr 2008 18:39:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37651 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752390AbYDMWjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 18:32:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oyacEJSNFFTiio94CsUipQodYPV9dLDjKqpXtyUSZq1KE3mTXyRlirYLd8pBvnF4jYbXmFq8vfaxTw4KalVIgwf70/SJloalcuZmWcSp9D/z5MGMLeUtUUbXzrSVnh8QpXleO/3jbFaYSxLb2ugKi6iNOylpi1743oGIfimQOW4=
-Message-ID: <86802c440804131532g4626233br82a425d6a96a6e11@mail.gmail.com>
-Date: Sun, 13 Apr 2008 15:32:26 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86 git tree broken (bisected)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <200804140010.01034.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 13 Apr 2008 18:39:09 -0400
+Date: Sun, 13 Apr 2008 23:35:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: sander@van-ginkel.eu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptmx: adding handshake support
+Message-ID: <20080413233503.22576c47@core>
+In-Reply-To: <480229CB.2080108@van-ginkel.eu>
+References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
+	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>
+	<20080330131652.7073589c@core>
+	<480229CB.2080108@van-ginkel.eu>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804102159.14563.rjw@sisk.pl> <200804131812.55684.rjw@sisk.pl>
-	 <86802c440804131500q420f7442hd8512cc6f4a1a6fd@mail.gmail.com>
-	 <200804140010.01034.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> On Monday, 14 of April 2008, Yinghai Lu wrote:
->  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > ...
->  > >  > can you try to apply the patch i sent to you about agp bridge order
->  > >  > reading for buggy silicon?
->  > >  >
->  > >  > Please boot kernel with "debug"...
->  > >  >
->  > >  > I want to verify if you can get
->  > >  >
->  > >  > "
->  > >  > Aperture conflicts with PCI mapping.
->  > >  > "
->  > >  >
->  > >  > in your boot log...
->  > >
->  > >  It's not present in there:
->  > >
->  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
->  > >  Aperture too small (32 MB)
->  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
->  > >  Aperture too small (0 MB)
->  > >  agpgart: Aperture pointing to RAM
->  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
->  > >  agpgart: Aperture too small (0 MB)
->  > >
->  > >  Full dmesg output attached.
->  >
->  > please check attached debug patch. and check if you can change GART
->  > size in your BIOS setup to 64M instead of 32M
->
->  Hm, what tree am I supposed to apply it too:
->  (1) current x86 git
->  (2) current x86 git w/ some of your previous patches (which ones in this case)
->  (3) failing (old) x86 git
->  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
->     case)?
+> + *  Added support for MCR/MSR, used for serial over ethernet
+> + *    -- Sander van Ginkel <sander@van-ginkel.eu>
 
-(1) current x86.git
+We've been trying to get rid of these long lists in the code and put them
+in the git tree (git whatchanged/git blame show the info rather better)
 
-Thanks
+> +
+> +    /* initialize the pointer in case something fails */
+> +   
+> +    tty->driver_data = NULL;                         
+> +    tty->link->driver_data = NULL;
 
-Yinghai Lu
+Not needed
+
+  +    /* first time accessing this device, let's create it */
+> +
+> +    mcrmsr = kmalloc(sizeof(*mcrmsr), GFP_KERNEL);
+
+kzalloc will clear it for you...
+
+> +static int pty_tiocmset(struct tty_struct *tty, struct file 
+> *file,unsigned int set, unsigned int clear)
+> +{
+> +    unsigned int *mcrmsr;
+> +
+> +    mcrmsr = tty->driver_data;
+> +    *mcrmsr=set;
+> +    tty->driver_data=mcrmsr;
+
+Why this last assignment ?
+
+> +
+> +    case VMCRMSR: /* Set all of the handshake line, even the normally 
+> read only */
+> +        {
+> +        if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned 
+> int)))
+> +            return -EFAULT;
+> +
+> +        *mcrmsr=value;
+
+Ok - possibly we shouldn't allow people to set undefined bits but I'm not
+sure it matters
+
+> +        tty->driver_data=mcrmsr;
+
+Why ??
+
+
+I am curious how this is handled by other Unix systems and if there is an
+ioctl we can follow from other systems ?
+
+
+Looks basically ok, coding style is wrong, some odd extra assignments but
+I agree entirely with the idea of adding this functionality to keep
+remote serial drivers in user space.
+
+I'll try and find out if other Unixes have similar features we can use to
+keep API consistency tidy it up and fold it at some point in the next
+couple of weeks.
+
+Alan
