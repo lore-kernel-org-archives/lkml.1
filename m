@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbYDMR7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYDMSEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbYDMR7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYDMR7A
+	id S1752948AbYDMSEA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 14:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYDMSDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:59:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51226 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbYDMR7A (ORCPT
+	Sun, 13 Apr 2008 14:03:53 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54574 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751842AbYDMSDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:59:00 -0400
-Date: Sun, 13 Apr 2008 10:53:48 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Yinghai Lu <yinghai.lu@sun.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [rfc] hw resource debugging checks
-Message-ID: <20080413105348.22e55ea5@laptopd505.fenrus.org>
-In-Reply-To: <87d4ouw0u9.fsf@basil.nowhere.org>
-References: <200804102159.14563.rjw@sisk.pl>
-	<20080410203800.GA14560@elte.hu>
-	<200804110028.22290.rjw@sisk.pl>
-	<200804112126.29455.rjw@sisk.pl>
-	<20080413075845.GJ20332@elte.hu>
-	<87d4ouw0u9.fsf@basil.nowhere.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Apr 2008 14:03:52 -0400
+Message-Id: <1208109831.1489.1247631595@webmail.messagingengine.com>
+X-Sasl-Enc: JlnYBVSTK/wbSGp+2zRjULuVRdRjAAQkO10Rfbuc0+/q 1208109831
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Andi Kleen" <andi@firstfloor.org>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080413112308.GA23426@mailshack.com>
+   <87hce5wv2h.fsf@basil.nowhere.org>
+Subject: Re: [PATCH] x86: always_inline wrapper for x86's test_bit
+In-Reply-To: <87hce5wv2h.fsf@basil.nowhere.org>
+Date: Sun, 13 Apr 2008 20:03:51 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Apr 2008 11:39:10 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+On Sun, 13 Apr 2008 18:58:30 +0200, "Andi Kleen" <andi@firstfloor.org>
+said:
+> Alexander van Heukelum <heukelum@mailshack.com> writes:
 > 
-> This whole problem just shows that it was a mistake in the first place
-> to try to redo the BIOS work in Linux. If BIOS doesn't supply MCFG
-> Linux trying to create one (or in general having generalized resource
-> allocation) is just a big mess and will cause endless problems.  The
-> standard resource code is just not up to the task and it needs very
-> intimate knowledge of the hardware that the kernel shouldn't have.
+> > On x86, test_bit is currently implemented as a preprocessor macro. It
+> > uses gcc's __builtin_constant_p to determine if the bit position is 
+> > known at compile time and defers to one of two functions depending
+> > on that. This changes the same logic to an __always_inline wrapper
+> > instead.
 > 
-> Again the real fix I think is to just drop all that code in git-x86
-> again and finally fix LinuxBIOS to do its job properly and pass a
-> proper MCFG (or just forget about using mmconfig with LinuxBIOS - it
-> is not that Type1 suddently doesn't work anymore). Then this code
-> wouldn't be needed at all
+> Some old gccs didn't support __builtin_constant_p in inline properly,
+> that is why it was always written in macros.
+> 
+> Please double check with the oldest still supported gcc (3.2) if it 
+> really generates the expected code for the constant/non constant case.
 
-I totally agree with this. MCFG has been EXTREMELY fragile for the last years,
-and I don't see that changing anytime soon.
-The only thing that works for Linux so far is "if it even smells funny, don't use it".
-Smelling funny is things like
-1a) Bios table and e820 not matching up, or
-1b) Bios table and hardware data not matching up
-2) The content not matching content gotten via the traditional method
-3) ... (bunch of other sanity checks)
+Hi Andi,
 
-I guess we really need to have
-0) If it's not present in the BIOS do not touch
-as rule as well.
+I have googled, but the only problem I found was concerning dead code 
+elimination, and in particular references to unavailable object from
+code that was expected to be discarded. The worst that can happen in 
+this case is that gcc might produce a strange construction where a
+runtime check will choose between the two alternative implementations of
+test_bit. Another is that it will select the 'wrong' implementation. 
+Both will result is some code-bloat, but at least the code should work
+properly.
 
+I have not checked with 3.2. The oldest compiler I have available here
+is 3.3. That version compiles the functions as expected: I have found
+instances of either type in the objdump and I have not found strange
+constructions with both types there.
+
+If you were thinking of another/bigger problem with gcc-3.2, could you 
+please give me a pointer?
+
+Greetings,
+        Alexander
+
+> -Andi
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+http://www.fastmail.fm - Or how I learned to stop worrying and
+                          love email again
+
