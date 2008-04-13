@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYDMJjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYDMJk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbYDMJjc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 05:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYDMJjX
+	id S1758224AbYDMJk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 05:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYDMJkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 05:39:23 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:47966 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbYDMJjX (ORCPT
+	Sun, 13 Apr 2008 05:40:22 -0400
+Received: from rv-out-0708.google.com ([209.85.198.240]:6148 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754543AbYDMJkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 05:39:23 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai Lu <yinghai.lu@sun.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [rfc] hw resource debugging checks
-From: Andi Kleen <andi@firstfloor.org>
-References: <200804102159.14563.rjw@sisk.pl> <20080410203800.GA14560@elte.hu>
-	<200804110028.22290.rjw@sisk.pl> <200804112126.29455.rjw@sisk.pl>
-	<20080413075845.GJ20332@elte.hu>
-Date: Sun, 13 Apr 2008 11:39:10 +0200
-In-Reply-To: <20080413075845.GJ20332@elte.hu> (Ingo Molnar's message of "Sun, 13 Apr 2008 09:58:45 +0200")
-Message-ID: <87d4ouw0u9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sun, 13 Apr 2008 05:40:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HlS/abEzEX0ugH+boW8Ll4c7rb2QCZ+uMdw4XcbFUWXeyBkhf4EADHz1Y9VggBZn6Nz8iwZRw3Etvup+hYBgQfXRpTyAOhpB8gizhRXgPYurwIGSFWBWQb3nBUBycUNQnfgxLwlt9j3XsWJ6gDT8GKixItYrPbxcL+E6Lix64qo=
+Message-ID: <e4957ae10804130240v119fb3d6l861490e25021bcf5@mail.gmail.com>
+Date: Sun, 13 Apr 2008 12:40:20 +0300
+From: "Uladzislau Rezki" <urezki@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: Kernel Oops within Linux Fedore Core 5
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080412125325.36bc029d@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Apr 2008 09:32:25.0736 (UTC) FILETIME=[48AA6880:01C89D49]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e4957ae10804110813y159019c1p84296058bcc769cf@mail.gmail.com>
+	 <20080412125325.36bc029d@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+>
+> Hi,
+>
+>  normally (read: 99% of the cases) this happens when your Makefile is buggy.
+>  Are you sure your Makefile is correct? Also, are you sure you're compiling
+>  against the right kernel headers ?
+>
+>  Greetings,
+>
+>    Arjan van de Ven
+>
+Yes I'm shure that makefile is right, and I'm compiling with right
+linux-headers. Bellow you can see Makefile which I use:
 
-This whole problem just shows that it was a mistake in the first place
-to try to redo the BIOS work in Linux. If BIOS doesn't supply MCFG
-Linux trying to create one (or in general having generalized resource
-allocation) is just a big mess and will cause endless problems.  The
-standard resource code is just not up to the task and it needs very
-intimate knowledge of the hardware that the kernel shouldn't have.
+obj-m := sb_show.o
 
-Again the real fix I think is to just drop all that code in git-x86
-again and finally fix LinuxBIOS to do its job properly and pass a
-proper MCFG (or just forget about using mmconfig with LinuxBIOS - it
-is not that Type1 suddently doesn't work anymore). Then this code
-wouldn't be needed at all
+KDIR  := /lib/modules/$(shell uname -r)/build
+PWD   := $(shell pwd)
 
--Andi
+default:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+	rm -rf sb_show.ko .sb_show.ko.cmd .sb_show.mod.o.cmd .sb_show.o.cmd
+.tmp_versions
+
+--
+Uladzislau Rezki
