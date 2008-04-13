@@ -1,16 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYDMTom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbYDMTpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbYDMTom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 15:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYDMToe
+	id S1752545AbYDMTpA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 15:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYDMTof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 15:44:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36930 "EHLO ogre.sisk.pl"
+	Sun, 13 Apr 2008 15:44:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36933 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYDMTod convert rfc822-to-8bit (ORCPT
+	id S1751999AbYDMToe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 15:44:33 -0400
-Cc: "Soeren Sonnenburg" <kernel@nn7.de>
+	Sun, 13 Apr 2008 15:44:34 -0400
+Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Nish Aravamudan" <nish.aravamudan@gmail.com>,
+       "Paul Mackerras" <paulus@samba.org>
 References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 In-Reply-To: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <oq66hWjeF4N.A.WZB.Z6lAIB@albercik>
-Subject: [Bug #10117] 2.6.25-current-git sometimes hangs on boot - dual-core Sony Vaio
+Message-ID: <oq66hWjeF4N.A.8gB.96lAIB@albercik>
+Subject: [Bug #10082] 2.6.25-rc2-git4 - Kernel oops  while running kernbench and tbench on powerpc
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 13 Apr 2008 20:56:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,12 +35,14 @@ The following bug entry is on the current list of known regressions
 from 2.6.24.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
-Subject		: 2.6.25-current-git sometimes hangs on boot - dual-core Sony Vaio
-Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-Date		: 2008-02-23 18:55 (51 days old)
-References	: http://lkml.org/lkml/2008/2/23/263
-		  http://lkml.org/lkml/2008/4/4/41
-		  http://lkml.org/lkml/2008/4/9/69
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10082
+Subject		: 2.6.25-rc2-git4 - Kernel oops while running kernbench and tbench on powerpc
+Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date		: 2008-02-20 16:01 (54 days old)
+References	: http://lkml.org/lkml/2008/2/20/218
+		  http://lkml.org/lkml/2008/1/18/71
+		  http://lkml.org/lkml/2008/4/9/25
+Handled-By	: Paul Mackerras <paulus@samba.org>
+		  Nish Aravamudan <nish.aravamudan@gmail.com>
 
 
