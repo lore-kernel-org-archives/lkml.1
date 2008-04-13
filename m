@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbYDMMeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757762AbYDMMsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758952AbYDMMeS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 08:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbYDMMeG
+	id S1757762AbYDMMsg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 08:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYDMMs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 08:34:06 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:55670 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756526AbYDMMeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 08:34:05 -0400
-Date: Sun, 13 Apr 2008 14:33:11 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pci: add to global list before sysfs?
-Message-ID: <20080413143311.77fd4b44@mjolnir.drzeus.cx>
-In-Reply-To: <20080408034126.GA15563@suse.de>
-References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
-	<20080404210132.GA14418@suse.de>
-	<20080405115727.1265e8a9@mjolnir.drzeus.cx>
-	<20080405155323.GA27252@suse.de>
-	<20080405185501.41ec42a7@mjolnir.drzeus.cx>
-	<20080405171209.GA28388@suse.de>
-	<20080405202709.2cd03212@mjolnir.drzeus.cx>
-	<20080408034126.GA15563@suse.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Apr 2008 08:48:27 -0400
+Received: from fmmailgate09.web.de ([217.72.192.184]:54247 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbYDMMs0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 08:48:26 -0400
+Date: Sun, 13 Apr 2008 14:45:18 +0200
+Message-Id: <237143435@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: cebbert@redhat.com, hidave.darkstar@gmail.com, jeremy@goop.org
+Subject: netsc520 - skeleton in the closet ?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18SlDvGxdkx3roUjvrVCo9qdv60ZultC09BX8wcqnXM9KwKI
+ OlcnQHOxqqfsZv6RKOJlgwrlmqaUdD9GenomwBd3jXGxyGHmkQ=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Apr 2008 20:41:26 -0700
-Greg KH <gregkh@suse.de> wrote:
+i'm doing some module testing from time to time and i'm somewhat sure, that there is an issue with netsc520 module, as i have seen more than one occasion that after load/unloading of that module (w/o presence of the appropriate hw), other modules had issues.
 
-> On Sat, Apr 05, 2008 at 08:27:09PM +0200, Pierre Ossman wrote:
-> > 
-> > No, it's primarily desktop. But these chips are available as
-> > ExpressCards, so I'm trying to get them to work when hot-plugged as
-> > opposed to when permantently wired into the machine.
-> 
-> Then I suggest a thread/timer, it shouldn't be that difficult.
-> 
+see http://marc.info/?l=linux-kernel&m=120664963508105&w=2 for example.
 
-I have another idea. Is it guaranteed that the PCI subsystem will add
-devices in order? I.e. will 1f.0 be added before 1f.1, 1f.2 and so on?
-If so, then I can restructure things and get it to work properly
-without any timers.
+now,by chance i came across this one: http://marc.info/?l=linux-kernel&m=118274309325836&w=2
 
-Btw, is your @kroah address working? I have a kernel bugzilla entry I
-was hoping to get your input on.
+>> > >> netsc520 is doing iounmap() of an area it did
+>> > >> ioremap_nocache() on earlier, because it has now failed to
+>> > >> find a device. Why it went BUG() I have no idea.
+>> > >>
+>> > >
+>> > > Hi, maybe some config option cause this issue, here is my current
+>> > > working-ok config file:
+>> >
+>> > What are the differences from the non-working config?
+>> >
+>> >     J
+>> >
+>> The diffrences is net520c item.
+>>
+>sorry it is netsc520, I will post the patch after a while.
 
-Rgds
--- 
-     -- Pierre Ossman
+so, it sounds there is a known issue with netsc520, but i'm not sure if it's the related and if that mentioned patch has been posted, at least i don't find it in git due to x86/64 unification.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+maybe someone has a clue.... ?
+
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+
