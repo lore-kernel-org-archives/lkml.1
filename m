@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbYDMHkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYDMHms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564AbYDMHkl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 03:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYDMHkc
+	id S1754148AbYDMHms (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 03:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYDMHml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 03:40:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49734 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Apr 2008 03:42:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40961 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbYDMHkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 03:40:31 -0400
-Date: Sun, 13 Apr 2008 09:40:07 +0200
+	id S1751601AbYDMHml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 03:42:41 -0400
+Date: Sun, 13 Apr 2008 09:42:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Andrew <nick@nick-andrew.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, joe@perches.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] printk: Remember the message level for multi-line
-	output
-Message-ID: <20080413074007.GE20332@elte.hu>
-References: <20080412161733.24882.30930.stgit@marcab.local.tull.net>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: ijc@hellion.org.uk, tglx@linutronix.de,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: *_pagetable_setup_[start,done] crap ?
+Message-ID: <20080413074225.GF20332@elte.hu>
+References: <4800E134.8040602@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080412161733.24882.30930.stgit@marcab.local.tull.net>
+In-Reply-To: <4800E134.8040602@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -31,31 +29,30 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	[score: 0.0011]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Andrew <nick@nick-andrew.net> wrote:
+* Jacek Luczak <difrost.kernel@gmail.com> wrote:
 
-> Modify vprintk() to remember the message loglevel each time it is 
-> specified and use it for subsequent lines of output which do not 
-> specify one, within the same call to printk.
+> Ohh... and prototypes are wrong:
+> diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+> index 6cbc520..2167879 100644
+> --- a/include/asm-x86/pgtable_32.h
+> +++ b/include/asm-x86/pgtable_32.h
+> @@ -204,8 +204,8 @@ do {                                                \
+>   */
+>  #define update_mmu_cache(vma, address, pte) do { } while (0)
 > 
-> Restructure the logic so the processing of the leading 3 characters of 
-> each input line is in one place, regardless whether printk_time is 
-> enabled.
+> -void native_pagetable_setup_start(pgd_t *base);
+> -void native_pagetable_setup_done(pgd_t *base);
+> +extern void native_pagetable_setup_start(pgd_t *base) __init;
+> +extern void native_pagetable_setup_done(pgd_t *base) __init;
 
-hm, i'm not sure about the change itself (printks are often random, so 
-the output to the console would depend on printk ordering), but the 
-combined effect seems to be a nice cleanup that reduces the linecount:
-
->  1 files changed, 27 insertions(+), 34 deletions(-)
-
-so how about splitting it into two, first the code restructuring then a 
-small add-on that does your feature? Does this make sense to you? This 
-way, even if the feature ends up not being applied, we'll have your nice 
-cleanup :-)
+while generally it's nice to add 'extern' to prototypes, it's not an 
+outright bug to not have it. Also, __init is a must-have in the 
+definition only - it should not be added to the prototype.
 
 	Ingo
