@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbYDMR0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYDMR1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbYDMR0z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 13:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYDMR0r
+	id S1753706AbYDMR1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 13:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYDMR12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 13:26:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54843 "EHLO
+	Sun, 13 Apr 2008 13:27:28 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54846 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751423AbYDMR0q (ORCPT
+	with ESMTP id S1751563AbYDMR11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 13:26:46 -0400
-Date: Sun, 13 Apr 2008 18:22:17 +0100
+	Sun, 13 Apr 2008 13:27:27 -0400
+Date: Sun, 13 Apr 2008 18:17:56 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH] isdn: switch to int put_char method
-Message-ID: <20080413182217.1c3e1670@core>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, R.E.Wolff@BitWizard.nl
+Subject: [PATCH] specialix: Switch to int put_char method
+Message-ID: <20080413181756.5463f265@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -28,49 +28,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/isdn/capi/capi.c linux-2.6.25-rc8-mm2/drivers/isdn/capi/capi.c
---- linux.vanilla-2.6.25-rc8-mm2/drivers/isdn/capi/capi.c	2008-04-13 15:36:53.000000000 +0100
-+++ linux-2.6.25-rc8-mm2/drivers/isdn/capi/capi.c	2008-04-13 15:40:50.000000000 +0100
-@@ -1111,11 +1111,12 @@
- 	return count;
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc8-mm2/drivers/char/specialix.c linux-2.6.25-rc8-mm2/drivers/char/specialix.c
+--- linux.vanilla-2.6.25-rc8-mm2/drivers/char/specialix.c	2008-04-13 15:36:53.000000000 +0100
++++ linux-2.6.25-rc8-mm2/drivers/char/specialix.c	2008-04-13 15:41:03.000000000 +0100
+@@ -1692,7 +1692,7 @@
  }
  
--static void capinc_tty_put_char(struct tty_struct *tty, unsigned char ch)
-+static int capinc_tty_put_char(struct tty_struct *tty, unsigned char ch)
- {
- 	struct capiminor *mp = (struct capiminor *)tty->driver_data;
- 	struct sk_buff *skb;
- 	unsigned long flags;
-+	int ret = 1;
  
- #ifdef _DEBUG_TTYFUNCS
- 	printk(KERN_DEBUG "capinc_put_char(%u)\n", ch);
-@@ -1125,7 +1126,7 @@
- #ifdef _DEBUG_TTYFUNCS
- 		printk(KERN_DEBUG "capinc_tty_put_char: mp or mp->ncci NULL\n");
- #endif
+-static void sx_put_char(struct tty_struct * tty, unsigned char ch)
++static int sx_put_char(struct tty_struct * tty, unsigned char ch)
+ {
+ 	struct specialix_port *port = (struct specialix_port *)tty->driver_data;
+ 	unsigned long flags;
+@@ -1702,12 +1702,12 @@
+ 
+ 	if (sx_paranoia_check(port, tty->name, "sx_put_char")) {
+ 		func_exit();
 -		return;
 +		return 0;
  	}
- 
- 	spin_lock_irqsave(&workaround_lock, flags);
-@@ -1134,7 +1135,7 @@
- 		if (skb_tailroom(skb) > 0) {
- 			*(skb_put(skb, 1)) = ch;
- 			spin_unlock_irqrestore(&workaround_lock, flags);
--			return;
-+			return 1;
- 		}
- 		mp->ttyskb = NULL;
- 		skb_queue_tail(&mp->outqueue, skb);
-@@ -1148,8 +1149,10 @@
- 		mp->ttyskb = skb;
- 	} else {
- 		printk(KERN_ERR "capinc_put_char: char %u lost\n", ch);
-+		ret = 0;
+ 	dprintk (SX_DEBUG_TX, "check tty: %p %p\n", tty, port->xmit_buf);
+ 	if (!port->xmit_buf) {
+ 		func_exit();
+-		return;
++		return 0;
  	}
- 	spin_unlock_irqrestore(&workaround_lock, flags);
-+	return ret;
+ 	bp = port_Board(port);
+ 	spin_lock_irqsave(&port->lock, flags);
+@@ -1717,7 +1717,7 @@
+ 		spin_unlock_irqrestore(&port->lock, flags);
+ 		dprintk (SX_DEBUG_TX, "Exit size\n");
+ 		func_exit();
+-		return;
++		return 0;
+ 	}
+ 	dprintk (SX_DEBUG_TX, "Handle xmit: %p %p\n", port, port->xmit_buf);
+ 	port->xmit_buf[port->xmit_head++] = ch;
+@@ -1726,6 +1726,7 @@
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ 
+ 	func_exit();
++	return 1;
  }
  
- static void capinc_tty_flush_chars(struct tty_struct *tty)
+ 
