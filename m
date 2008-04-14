@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYDNJq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbYDNJwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbYDNJq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYDNJqg
+	id S1752802AbYDNJwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 05:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYDNJwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:46:36 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:19215 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYDNJqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:46:34 -0400
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk, w@1wt.eu,
-       david@lang.hm, sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<20080414010412.c42dc560.akpm@linux-foundation.org>
-	<20080414.013058.149905948.davem@davemloft.net>
-Date: Mon, 14 Apr 2008 11:46:31 +0200
-In-Reply-To: <20080414.013058.149905948.davem@davemloft.net> (David Miller's message of "Mon, 14 Apr 2008 01:30:58 -0700 (PDT)")
-Message-ID: <878wzgwyyw.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 14 Apr 2008 05:52:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46183 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbYDNJw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 05:52:29 -0400
+Date: Mon, 14 Apr 2008 11:52:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch fixes
+Message-ID: <20080414095259.GA11966@uranus.ravnborg.org>
+References: <48022990.3060104@gmail.com> <20080414072645.GG16163@elte.hu> <20080414084127.GA11372@uranus.ravnborg.org> <20080414085307.GG19865@elte.hu> <20080414085927.GC11372@uranus.ravnborg.org> <48031FA7.9050803@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Apr 2008 09:39:46.0731 (UTC) FILETIME=[79EEA7B0:01C89E13]
+Content-Disposition: inline
+In-Reply-To: <48031FA7.9050803@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
->
-> It's still largely free form, loose, and flexible. 
+On Mon, Apr 14, 2008 at 11:11:03AM +0200, Jacek Luczak wrote:
+> Sam Ravnborg pisze:
+> > On Mon, Apr 14, 2008 at 10:53:07AM +0200, Ingo Molnar wrote:
+> >> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> >>
+> >>>> hm, that's an interesting case: we need those annotations probably 
+> >>>> because gcc decided to not inline those functions. (this is possible 
+> >>>> via the new CONFIG_OPTIMIZE_INLINING=y option) Sam, what's your take 
+> >>>> on that?
+> >>> gcc uses different heuristics for inlining between the different 
+> >>> versions. Therefore to achieve somehow predictable results I added 
+> >>> -fno-inline-functions-called-once when CONFIG_DEBUG_SECTION_MISMATCH 
+> >>> is enabled.
+> >>>
+> >>> So in the above case for any normal kernel build we would see that gcc 
+> >>> inlined the above and everything is fine. But for the 
+> >>> CONFIG_DEBUG_SECTION_MISMTCH cases we do not inline and thus we see 
+> >>> that we have a section mismatch.
+> >> ah, ok. So i guess this will result in a few isolated cases of __init 
+> >> annotations added to inline functions - Jacek fixed one such case - but 
+> >> it should not result in the general spreading of __init annotations to 
+> >> inline functions, correct? (which i was worried about)
+> > I do not think so. The need for small isolated inline functions
+> > in the init paths are minimal and last I did a section mismatch free
+> > sweep on the kernel it was only few if any inline functions(*) I had
+> > to annotate.
+> > 
+> > (*) Considering only the minimal amount of function that ought
+> > to be annotated inlined.
+> 
+> There's a lot of inline __init functions already - which, on the other hand
+> should not result in more of such. Attached you can find grep on tree which
+> shows all inline __init functions (you won't find my paravirt_pagetable_setup_*
+> functions in output as I removed __init for test).
 
-I think Al's point was that we need far more "free form, loose and
-flexible" work for reviewing code. As in people going over trees and
-just checking it for anything suspicious and going over existing code
-and checking it for anything suspicious and going also over mailing
-list patch posts. And also maintainers who appreciate such review.
+Most of the functionas listed should never have been annotated inline.
+If you filter aways the functions that are in one one of their
+incarnations longer than 8 lines or are located in a .c file the list
+is much shorter. This is the real candidates (the figure '8' is just bad way
+to filter away 'complex' functions).
+Your paravirt_pagetable_setup_done is a real one btw.
 
-And checking it for anything suspicious does not mean running
-only checkpatch.pl or even just sparse, but actually reading it
-and trying to make sense of it.
+> Sam, do -fno-inline-functions-called-once could affect
+> paravirt_pagetable_setup_done? In general there was no section mismatch warning
+> for this function, but I've annotated it also.
+Most liekly yes - but I did not check.
 
-I don't see that really as conflicting with your goals.
-
-It would be some more work for the maintainers to handle more such
-feedback because they would need to process comments from such "free
-form reviewers".  Some of them will undoutedly be wrong and that will
-take some time away from processing features (and bugs) but I suspect
-it would be still worth it.
-
-On the other hand it would also take some work away from
-processing bugs, but as Andrew mentions earlier it looks
-like significant parts of the boring areas of bug reports 
-(like getting basic information from reporter etc.) 
-could be "out-sourced" to bug masters. 
-
-And I think being a bug master is an excellent way for someone who isn't
-a great coder to contribute in excellent ways to Linux
-(far more than someone e.g. running checkpatch.pl ever could) 
-
-The challenging thing is also to make sure that the quality of
-comments stays high. That means more focus on logic and functionality
-than on form. If the reviewer just goes over the coding style or
-trivialities I don't think that will improve Linux really. I think the
-problem is often that people think kernel code must be very
-complicated and they don't even dare try to understand it.  But
-frankly a lot of the kernel code is not really that complicated logic
-wise and also doesn't need too specialized knowledge to understand.
-So I am optimistic that there are a lot of people out there who would
-be qualified to do some logic review.
-
-Really Linux needs a better "reviewing culture" and also
-a better "bug processing culture"
-
-> We can ask more subsystem tree maintainers to run their trees more
-> strictly, review patches more closely, etc.  But, be honest, good luck
-> getting that from the guys who do subsystem maintainence in their
-> spare time on the weekends.  The remaining cases should know better,
-> or simply don't care.
-
-In my experience weekend maintainers tend to be better at sharing
-out work. As in they usually (ok there are exceptions) more work
-including review work on the mailing lists, while my impression
-is that paid for maintainers tend to have tendency for more 
-centralized "cathedral" tree maintenance. That is with them trying to 
-keep everything under control and effectively much more stuff going on the 
-background out of public view. But the sharing out of work and less
-centralization is what we really want here I think.
-
-Anyways I'm not saying all paid-for maintainers are like this, but
-there is certainly a trend I think.
-
-I admit I personally went through both phases in several projects.
-
-When you're really focussed on something it is tempting to do 
-the "keep things under control" central model, but in the end
-it is the wrong way to go.
-
--Andi
+	Sam
