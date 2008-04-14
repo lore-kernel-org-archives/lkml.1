@@ -1,142 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbYDNQCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758222AbYDNQCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761367AbYDNQCH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbYDNQB4
+	id S1758222AbYDNQCY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760973AbYDNQCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:01:56 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:40705 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755013AbYDNQBy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:01:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=khx7ePIylhHAFhM7pGe5/M4BKp7UoTZMuxlEtnNJdeVGaddGGsnADzweCd0Sp4kIfydt11oz4oov7C8hVMs31lSItWX6FdVVO5YbkaTGGdWvInyjS8w4Te7anb7edeFA8ZA5KGIL1yVBaK+Jt9YCuuKjLrB89oyEIjruOX6ZfEQ=
-Message-ID: <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
-Date: Mon, 14 Apr 2008 19:01:53 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: 2.6.25-rc8-mm2: IP: [<ffffffff802868f9>] __kmalloc+0x69/0x110
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       clameter@sgi.com
-In-Reply-To: <20080413204422.GA5136@martell.zuzino.mipt.ru>
+	Mon, 14 Apr 2008 12:02:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60066 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760178AbYDNQCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 12:02:03 -0400
+Date: Mon, 14 Apr 2008 12:01:46 -0400
+From: Neil Horman <nhorman@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nickpiggin@yahoo.com.au,
+       k-miyoshi@cb.jp.nec.com, greg@kroah.com,
+       Bernhard Walle <bwalle@suse.de>, kdb@oss.sgi.com,
+       kexec@lists.infradead.org, Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Keith Owens <kaos@ocs.com.au>
+Subject: Re: [PATCH 0/2] add new notifier function ,take3
+Message-ID: <20080414160146.GE1193@hmsendeavour.rdu.redhat.com>
+References: <47FF190B.6030406@ah.jp.nec.com> <20080411210751.e4a468b2.akpm@linux-foundation.org> <20080414134622.GB6941@redhat.com> <20080414144228.GD1193@hmsendeavour.rdu.redhat.com> <20080414145323.GE6941@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-	 <20080413204422.GA5136@martell.zuzino.mipt.ru>
-X-Google-Sender-Auth: 80876d5d728674b7
+In-Reply-To: <20080414145323.GE6941@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 11:44 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> Grrr, I was hunting for oopses in dup_fd and near that were plaguing one
->  box here for far too long, and hit below.
->
->  What happened if freshly booted box (probably not all init scripts finished),
->  X already started. ssh from another box and reboot from session.
->
->  (gdb) p __kmalloc
->  $1 = {void *(size_t, gfp_t)} 0xffffffff80286890 <__kmalloc>
->  (gdb) l *(0xffffffff80286890 + 0x69)
->  0xffffffff802868f9 is in __kmalloc (mm/slub.c:1663).
->  1658
->  1659                    object = __slab_alloc(s, gfpflags, node, addr, c);
->  1660
->  1661            else {
->  1662                    object = c->freelist;
->  1663      ===>          c->freelist = object[c->offset];   <===
->  1664                    stat(c, ALLOC_FASTPATH);
->  1665            }
->  1666            local_irq_restore(flags);
->
->
->
->  BUG: unable to handle kernel paging request at 0000000500000500
->  IP: [<ffffffff802868f9>] __kmalloc+0x69/0x110
->  PGD 17e04a067 PUD 0
->  Oops: 0000 [1] SMP DEBUG_PAGEALLOC
->  last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:05:02.0/resource
->  CPU 1
->  Modules linked in: nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
->  Pid: 4966, comm: depscan.sh Not tainted 2.6.25-rc8-mm2 #20
->  RIP: 0010:[<ffffffff802868f9>]  [<ffffffff802868f9>] __kmalloc+0x69/0x110
->  RSP: 0018:ffff81017cba9c68  EFLAGS: 00010006
->  RAX: 0000000000000000 RBX: ffffffff805c3950 RCX: ffff81017e7bb278
->  RDX: ffff81017c868000 RSI: 0000000000000001 RDI: ffffffff802868db
->  RBP: ffff81017cba9c98 R08: 0000000000000000 R09: 0000000000000001
->  R10: 0000000005050561 R11: 00000000036c00b1 R12: 0000000500000500
->  R13: 0000000000000282 R14: 00000000000080d0 R15: ffff810001070360
->  FS:  00007fc9d17276f0(0000) GS:ffff81017fc44600(0000) knlGS:0000000000000000
->  CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->  CR2: 0000000500000500 CR3: 000000017c9c2000 CR4: 00000000000006e0
->  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  Process depscan.sh (pid: 4966, threadinfo ffff81017cba8000, task ffff81017c868000)
->  Stack:  ffffffff802d4a42 ffff81017e7bb278 ffff81017e7bb278 00000000fe5c5c7c
->   000000000cb4c2b8 ffff81017efdc8c0 ffff81017cba9cd8 ffffffff802d4a42
->   ffff81017cba9cd8 ffff81017e7bb278 ffff81017f82e2a0 ffff81017cba9da8
->  Call Trace:
->   [<ffffffff802d4a42>] ? ext3_htree_store_dirent+0x32/0x120
->   [<ffffffff802d4a42>] ext3_htree_store_dirent+0x32/0x120
->   [<ffffffff802dba25>] htree_dirblock_to_tree+0x105/0x170
->   [<ffffffff802de30d>] ext3_htree_fill_tree+0x7d/0x220
->   [<ffffffff80252d59>] ? trace_hardirqs_on_caller+0xc9/0x150
->   [<ffffffff802d50f4>] ? ext3_readdir+0x5c4/0x630
->   [<ffffffff802d4c74>] ext3_readdir+0x144/0x630
->   [<ffffffff802975f0>] ? filldir+0x0/0xe0
->   [<ffffffff8045475a>] ? __mutex_lock_common+0x22a/0x330
->   [<ffffffff80297741>] ? vfs_readdir+0x71/0xc0
->   [<ffffffff802975f0>] ? filldir+0x0/0xe0
->   [<ffffffff802975f0>] ? filldir+0x0/0xe0
->   [<ffffffff80297773>] vfs_readdir+0xa3/0xc0
->   [<ffffffff80297822>] sys_getdents+0x92/0xd0
->   [<ffffffff8020b4cb>] system_call_after_swapgs+0x7b/0x80
->
->
->  Code: 48 89 45 d0 9c 41 5d fa e8 f5 a5 fc ff 65 8b 04 25 24 00 00 00 48 98 4c 8b bc c3 c8 00 00 00 4d 8b 27 4d 85 e4 74 7a 41 8b 47 14 <49> 8b 04 c4 49 89 07 41 f7 c5 00 02 00 00 75 37 41 55 9d e8 bf
->  RIP  [<ffffffff802868f9>] __kmalloc+0x69/0x110
->   RSP <ffff81017cba9c68>
->  CR2: 0000000500000500
+On Mon, Apr 14, 2008 at 10:53:23AM -0400, Vivek Goyal wrote:
+> On Mon, Apr 14, 2008 at 10:42:28AM -0400, Neil Horman wrote:
+> > On Mon, Apr 14, 2008 at 09:46:22AM -0400, Vivek Goyal wrote:
+> > > On Fri, Apr 11, 2008 at 09:07:51PM -0700, Andrew Morton wrote:
+> > > 
+> > > [..]
+> > > > > Kernel panic - not syncing: Panic by panic_module.
+> > > > > __tunable_atomic_notifier_call_chain enter
+> > > > > msg_handler:panic_event was called.
+> > > > > ipmi_wdog:wdog_panic_handler was called.
+> > > > > notifier_test: notifier_test_panic() is called.
+> > > > > notifier_test: notifier_test_panic2() is called.
+> > > > 
+> > > > OK.  But I don't see anywhere in here the most important piece of
+> > > > information: why do we need this feature in Linux?
+> > > > 
+> > > > What are the use-cases?  What is the value?  etc.
+> > > > 
+> > > > Often I can guess (but I like the originator to remove the guesswork).  In
+> > > > this case I'm stumped - I can't see any reason why anyone would want this.
+> > > > 
+> > > 
+> > > Hi Andrew,
+> > > 
+> > > To begin with, he wants kdb, kgdb etc to co-exist with kdump. He wants
+> > > to put all the RAS tools (who are interested in panic event) on a list
+> > > and export it to user space and let user decide in what order do the tool get
+> > > executed at panic time (based on priority).
+> > > 
+> > > This brings in little bit reliability concerns for kdump due to notifier
+> > > code being run after panic.
+> > > 
+> > > I think people want to use this infrastrutucure beyond RAS tools. I
+> > > remember somebody wanting to send a message to remote node after a
+> > > panic (before kdump kicks in)  so that remote node can initiate failover
+> > > etc.
+> > > 
+> > I know it doesn't particularly relate to this patch, but FWIW, for cases like
+> > failover, I've inserted infrastrucutre in the userspace part of kdump for
+> > Fedora/RHEL to support this sort of thing.  We can run arbitrary scripts righte
+> > before and after a capture so that notifications can be sent to remote nodes in
+> > a much safer fashion than using the notifier chain after a panic.
+> > Neil
+> > 
+> 
+> That's great. I did not know about these. So user can write custom
+> scripts/binaries which can be packed into kdump initrd and executed either
+> before or after dump capture? Any idea, if somebody has started using it
+> already?
+> 
+Thats exactly right.  I'm not sure if there is any serious use as of yet, but
+I've had some interrogatories about it.  Specific cases that I recall include:
 
-Looks like freelist corruption where c->freelist is 0x0000000500000500
-and c->offset is zero... Christoph?
+1) A set of users in japan that are using the pre-dump script to block execution
+until a scsi controller detects all its drives (it apparently takes up to three
+minues to scan its bus)
 
->  # CONFIG_DEBUG_DRIVER is not set
->  # CONFIG_DEBUG_DEVRES is not set
->  # CONFIG_DEBUG_FS is not set
->  CONFIG_DEBUG_KERNEL=y
->  # CONFIG_DEBUG_SHIRQ is not set
->  CONFIG_DEBUG_OBJECTS=y
->  # CONFIG_DEBUG_OBJECTS_SELFTEST is not set
->  CONFIG_DEBUG_OBJECTS_FREE=y
->  CONFIG_DEBUG_OBJECTS_TIMERS=y
->  CONFIG_DEBUG_RT_MUTEXES=y
->  CONFIG_DEBUG_PI_LIST=y
->  CONFIG_DEBUG_SPINLOCK=y
->  CONFIG_DEBUG_MUTEXES=y
->  CONFIG_DEBUG_LOCK_ALLOC=y
->  # CONFIG_DEBUG_LOCKDEP is not set
->  CONFIG_DEBUG_SPINLOCK_SLEEP=y
->  # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
->  # CONFIG_DEBUG_KOBJECT is not set
->  CONFIG_DEBUG_BUGVERBOSE=y
->  CONFIG_DEBUG_INFO=y
->  CONFIG_DEBUG_VM=y
->  CONFIG_DEBUG_WRITECOUNT=y
->  CONFIG_DEBUG_LIST=y
->  CONFIG_DEBUG_SG=y
->  # CONFIG_DEBUG_SYNCHRO_TEST is not set
->  # CONFIG_DEBUG_STACKOVERFLOW is not set
->  # CONFIG_DEBUG_STACK_USAGE is not set
->  CONFIG_DEBUG_PAGEALLOC=y
->  CONFIG_DEBUG_PER_CPU_MAPS=y
->  CONFIG_DEBUG_RODATA=y
->  CONFIG_DEBUG_RODATA_TEST=y
->  # CONFIG_DEBUG_NX_TEST is not set
+2) I think some people using clustering services were using the pre-script to
+notify cluster peers of the failure to avoid power fencing while a node
+completed the crash dump
 
-I assume you have CONFIG_SLUB_DEBUG enabled but it was left out by the grep?
+3) A national lab had an interest in using the pre script to send an email to an
+administrative address to log the failure in a cluster 
+
+Neil
+
+> If that's the case then only other serious user at this point of time
+> is kernel debugger (kdb, kgdb), which needs to run before kdump, in case
+> of panic. And Eric suggested for those cases debugger can just insert a 
+> break point at panic(), instead of introducing the tunable notifier list
+> infrastructure.
+> 
+> Thanks
+> Vivek
+
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
