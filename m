@@ -1,119 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbYDNWwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763015AbYDNWxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762718AbYDNWwt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYDNWsS
+	id S1763015AbYDNWxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761810AbYDNWuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:48:18 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:1379 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762388AbYDNWsR (ORCPT
+	Mon, 14 Apr 2008 18:50:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38795 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763010AbYDNWuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:48:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Gugi+MoJ6dC1yPnpbbLZbz0MEvlz6HGPH2rJhZ2GkpU12m6ZRBTrBhdkKrZ96/rTEEeL3hzI/Zj8VNymwmCfQGo508ryMzyXWBjV360ZW/kRFXQG/dwTaurDvBfUaEfCMQF3to7fa2rCHGV723nHfHoLd1hfYtmd1inEvR5MFTU=
-Subject: [PATCH-mm 15/15] ncpfs: Use get/put_unaligned_* helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 14 Apr 2008 15:48:03 -0700
-Message-Id: <1208213283.11920.46.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 18:50:08 -0400
+Date: Mon, 14 Apr 2008 15:48:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch] F_GETPATH implementation
+In-Reply-To: <Pine.LNX.4.64.0804141227490.7954@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.1.00.0804141545530.2879@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0804141227490.7954@alien.or.mcafeemobile.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/ncpfs/ncplib_kernel.c |   39 +++++++++++++++++++--------------------
- 1 files changed, 19 insertions(+), 20 deletions(-)
 
-diff --git a/fs/ncpfs/ncplib_kernel.c b/fs/ncpfs/ncplib_kernel.c
-index df6d60b..1567860 100644
---- a/fs/ncpfs/ncplib_kernel.c
-+++ b/fs/ncpfs/ncplib_kernel.c
-@@ -102,48 +102,47 @@ static inline void ncp_init_request_s(struct ncp_server *server, int subfunction
- }
- 
- static inline char *
-- ncp_reply_data(struct ncp_server *server, int offset)
-+ncp_reply_data(struct ncp_server *server, int offset)
- {
- 	return &(server->packet[sizeof(struct ncp_reply_header) + offset]);
- }
- 
--static inline __u8 BVAL(void* data)
-+static inline u8 BVAL(void *data)
- {
--	return get_unaligned((__u8*)data);
-+	return *(u8 *)data;
- }
- 
--static __u8
-- ncp_reply_byte(struct ncp_server *server, int offset)
-+static u8 ncp_reply_byte(struct ncp_server *server, int offset)
- {
--	return get_unaligned((__u8 *) ncp_reply_data(server, offset));
-+	return *(u8 *)ncp_reply_data(server, offset);
- }
- 
--static inline __u16 WVAL_LH(void* data)
-+static inline u16 WVAL_LH(void* data)
- {
--	return le16_to_cpu(get_unaligned((__le16*)data));
-+	return le16_to_cpu(get_unaligned_le16(data);
- }
- 
--static __u16
-- ncp_reply_le16(struct ncp_server *server, int offset)
-+static u16
-+ncp_reply_le16(struct ncp_server *server, int offset)
- {
--	return le16_to_cpu(get_unaligned((__le16 *) ncp_reply_data(server, offset)));
-+	return get_unaligned_le16(ncp_reply_data(server, offset));
- }
- 
--static __u16
-- ncp_reply_be16(struct ncp_server *server, int offset)
-+static u16
-+ncp_reply_be16(struct ncp_server *server, int offset)
- {
--	return be16_to_cpu(get_unaligned((__be16 *) ncp_reply_data(server, offset)));
-+	return get_unaligned_be16(ncp_reply_data(server, offset));
- }
- 
--static inline __u32 DVAL_LH(void* data)
-+static inline u32 DVAL_LH(void *data)
- {
--	return le32_to_cpu(get_unaligned((__le32*)data));
-+	return get_unaligned_le32(data);
- }
- 
- static __le32
-- ncp_reply_dword(struct ncp_server *server, int offset)
-+ncp_reply_dword(struct ncp_server *server, int offset)
- {
--	return get_unaligned((__le32 *) ncp_reply_data(server, offset));
-+	return get_unaligned((__le32 *)ncp_reply_data(server, offset));
- }
- 
- static inline __u32 ncp_reply_dword_lh(struct ncp_server* server, int offset) {
-@@ -1006,8 +1005,8 @@ ncp_read_bounce(struct ncp_server *server, const char *file_id,
- 	result = ncp_request2(server, 72, bounce, bufsize);
- 	ncp_unlock_server(server);
- 	if (!result) {
--		int len = be16_to_cpu(get_unaligned((__be16*)((char*)bounce + 
--			  sizeof(struct ncp_reply_header))));
-+		int len = get_unaligned_be16((char *)bounce +
-+			  sizeof(struct ncp_reply_header));
- 		result = -EIO;
- 		if (len <= to_read) {
- 			char* source;
--- 
-1.5.5.144.g3e42
 
+On Mon, 14 Apr 2008, Davide Libenzi wrote:
+> Index: linux-2.6.mod/include/asm-generic/fcntl.h
+> ===================================================================
+> --- linux-2.6.mod.orig/include/asm-generic/fcntl.h	2008-04-13 15:01:09.000000000 -0700
+> +++ linux-2.6.mod/include/asm-generic/fcntl.h	2008-04-13 18:37:35.000000000 -0700
+> @@ -73,6 +73,7 @@
+>  #define F_SETSIG	10	/* for sockets. */
+>  #define F_GETSIG	11	/* for sockets. */
+>  #endif
+> +#define F_GETPATH	12
+
+This won't work.
+
+Different architectures have different F_xyzzy numbers, and 12 is already 
+used by various ones (it's F_SETOWN in asm-parisc/fcntl.h, for example).
+
+I think you'd have to do it in terms of F_LINUX_SPECIFIC_BASE, like 
+F_NOTIFY is done, for example. That way you avoid these issues.
+
+		Linus
