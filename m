@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763284AbYDNRhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbYDNRiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763284AbYDNRhf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYDNRh2
+	id S1762230AbYDNRiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbYDNRio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:37:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1721 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbYDNRh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:37:27 -0400
-Date: Mon, 14 Apr 2008 19:37:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com,
-       mikem@beardog.cca.cpqcorp.net
-Subject: Re: [patch] cciss: Fix race between disk-adding code and interrupt handler
-Message-ID: <20080414173720.GQ12774@kernel.dk>
-References: <20080414142019.GG16584@beardog.cca.cpqcorp.net> <20080414170505.GO12774@kernel.dk> <20080414172716.GM16584@beardog.cca.cpqcorp.net>
+	Mon, 14 Apr 2008 13:38:44 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34937 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753361AbYDNRin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 13:38:43 -0400
+Date: Mon, 14 Apr 2008 18:38:41 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Dmitry Torokhov <dtor@mail.ru>,
+       Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: WM97xx touchscreen updates
+Message-ID: <20080414173841.GA2213@rakim.wolfsonmicro.main>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414172716.GM16584@beardog.cca.cpqcorp.net>
+X-Cookie: Positively no smoking.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> 
-> 
-> > On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> > > 
-> > > 
-> > > Fix race condition between cciss_init_one(), cciss_update_drive_info(),
-> > > and cciss_check_queues().  cciss_softirq_done would try to start
-> > > queues which were not quite ready to be started, as its checks for
-> > > readiness were not sufficiently synchronized with the queue initializing
-> > > code in cciss_init_one and cciss_update_drive_info.  Slow cpu and
-> > > large numbers of logical drives seem to make the race more likely 
-> > > to cause a problem.
-> > 
-> > Hmm, this seems backwards to me.  cciss_softirq_done() isn't going to
-> > start the queues, until an irq has triggered for instance. Why isn't the
-> > init properly ordered instead of band-aiding around this with a
-> > 'queue_ready' variable?
-> >
-> 
-> Each call to add_disk() will trigger some interrupts, 
-> and earlier added disks may cause the queues of later,
-> not-yet-completely added disks to be started.
-> 
-> I suppose the init routine might be reorganized to initialize all
-> the queues, then have second loop call add_disk() for all
-> of them.  Is that what you had in mind by "properly ordered?"
+This patch series updates the WM97xx touchscreen drivers with a couple
+of small cleanups and the addition of support for use of the WM97xx
+touchpanels to wake up from suspend.
 
-Yep precisely, don't call add_disk() until everything is set up.
+It is also available in the git repository at:
 
-> Disks may be added at run time though, and I think this tears
-> down all but the first disk, and re-adds them all, if I remember
-> right, so there is some complication there to think about.
+  git://opensource.wolfsonmicro.com/linux-2.6-touch upstream
 
-Well, other drivers manage quite fine without resorting to work-arounds
-:-)
+Mark Brown (3):
+      wm97xx-core: Only schedule interrupt handler if not already scheduled
+      wm97xx-core: Use IRQF_SAMPLE_RANDOM
+      wm97xx-core: Support use as a wakeup source
 
--- 
-Jens Axboe
-
+ drivers/input/touchscreen/wm97xx-core.c |   39 ++++++++++++++++++++++++------
+ include/linux/wm97xx.h                  |    3 ++
+ 2 files changed, 34 insertions(+), 8 deletions(-)
