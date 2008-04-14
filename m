@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbYDNPs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbYDNPtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761005AbYDNPs6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYDNPst
+	id S1761638AbYDNPtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYDNPto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:48:49 -0400
-Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:40689 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754235AbYDNPss (ORCPT
+	Mon, 14 Apr 2008 11:49:44 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:46629 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753892AbYDNPtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:48:48 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Date: Mon, 14 Apr 2008 17:48:43 +0200
-User-Agent: KMail/1.9.9
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <200804021524.27222.elendil@planet.nl> <200804131559.21664.elendil@planet.nl> <20080414135214.GC7385@csclub.uwaterloo.ca>
-In-Reply-To: <20080414135214.GC7385@csclub.uwaterloo.ca>
+	Mon, 14 Apr 2008 11:49:43 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [ANNOUNCE] seekwatcher v0.11
+Date: Mon, 14 Apr 2008 11:49:34 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804141748.44306.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Apr 2008 15:48:46.0571 (UTC) FILETIME=[064E23B0:01C89E47]
+Message-Id: <200804141149.34556.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 April 2008, you wrote:
-> > I also think the way I've implemented in the Debian installer should be
-> > relatively safe:
-> > 1) ide-generic is only loaded _after_ any otherwise detected modules
-> > 2) it is only loaded if an ISA bus is present
-> > 3) it is only included in the initrd for the installed system if
-> > loading it in the installer resulted in additional block devices
-> > appearing
->
-> OK, great for x86 perhaps, what about other systems?
+Hello everyone,
 
-As I've said before, that needs testing.
+seekwatcher uses blktrace data to create IO graphs and movies.  I mainly use 
+it to compare and tune filesystems under different workloads.
 
-> In the past debian would load ide-generic last.  It worked great.  Keep
-> doing that.  I am not aware of loading ide-generic after all the other
-> drivers ever causing any harm in the older debian installers.
+The main update in v0.11 is the ability to run blktrace for multiple block 
+devices.  I'm using this for the btrfs multi-device code, but it can also 
+help figure out what lvm/md are doing to the underling block devices.
 
-Maybe not, but having it loaded in _every_ installed Debian system even when 
-it was completely unused is definitely something we want to get rid of.
+Example:
 
-Note that the old behavior relied on the fact that initramfs-tools also 
-loaded ide-generic by default, which it now no longer does.
+seekwatcher -t dd.trace -d /dev/sda1 -d /dev/sdb1 -o dd.png \
+	-p 'dd if=/dev/zero of=/mnt/file bs=1M count=4000'
 
-Cheers,
-FJP
+Leads to something like this (the png below was 4 devices):
+
+http://oss.oracle.com/~mason/seekwatcher/btrfs-raid0.png
+
+It does a simple concatenation of the block numbers it finds in the blktrace 
+output, and sorts the traces from all the devices by time.
+
+Other examples and download information are available here:
+
+http://oss.oracle.com/~mason/seekwatcher/
+
+-chris
