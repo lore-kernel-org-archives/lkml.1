@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYDNMvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYDNMwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbYDNMvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 08:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYDNMvE
+	id S1758224AbYDNMwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 08:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYDNMwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 08:51:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55043 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbYDNMvD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 08:51:03 -0400
-To: dwmw2@infradead.org
-CC: miklos@szeredi.hu, jamie@shareable.org, hch@infradead.org,
-       akpm@linux-foundation.org, me@bobcopeland.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <1208171143.31695.54.camel@pmac.infradead.org> (message from
-	David Woodhouse on Mon, 14 Apr 2008 12:05:43 +0100)
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-	 <20080412170304.54f139e2.akpm@linux-foundation.org>
-	 <20080413033344.GA27494@hash.localnet>
-	 <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	 <20080413080130.GA9622@infradead.org>
-	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
-	 <20080413082815.GA20108@infradead.org>
-	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-	 <1208121358.2700.4.camel@shinybook.infradead.org>
-	 <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu>
-	 <20080414094215.GD2076@shareable.org>
-	 <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu> <1208171143.31695.54.camel@pmac.infradead.org>
-Message-Id: <E1JlO90-0005gJ-MH@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 14 Apr 2008 14:50:46 +0200
+	Mon, 14 Apr 2008 08:52:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:55731 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbYDNMv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 08:51:59 -0400
+Date: Mon, 14 Apr 2008 14:51:50 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chr <chunkeey@web.de>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10369] The never ending BEEEEP/__smp_call_function_mask
+ with 2.6.25-rc7
+In-Reply-To: <200804132237.10401.chunkeey@web.de>
+Message-ID: <alpine.LFD.1.10.0804140940200.3261@apollo.tec.linutronix.de>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.ch.w3lAIB@albercik> <alpine.LFD.1.10.0804132156570.3261@apollo.tec.linutronix.de> <200804132237.10401.chunkeey@web.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 2008-04-14 at 11:58 +0200, Miklos Szeredi wrote:
-> > Oh, you mean without having to run the whole kernel around the
-> > filesystem?  Well, that's a bit more tricky: filesystems use not just
-> > the VFS API, but the block, VM, SLAB, etc. APIs as well.  Porting all
-> > of these to userspace and keeping them in sync with the kernel changes
-> > doesn't sound much fun.
+On Sun, 13 Apr 2008, Chr wrote:
+> On Sunday 13 April 2008 22:02:08 Thomas Gleixner wrote:
+> >
+> > The problem still persists and I have no clue at all what's the root
+> > cause. The symptom is a stuck local apic timer interrupt as we have
+> > seen it on those AMD X2 systems with C1E enabled. This box does not
+> > advertise C1E, but the behaviour is the same.
+> >
+> > Christian, it would be great if you could bisect the git tree so we
+> > get an idea which patch is exposing this problem. My feeling is that
+> > the problem itself is there with 2.6.24 as well but not
+> > exposed. That's just a gut feeling and I could be wrong as usual.
 > 
-> That would be UML :)
-> 
-> But seriously -- wouldn't our time be better spent on improving error
-> handling in the kernel,
+> Ok! The biggest problem however is: I can only run bisects on weekends. :-(
+> And even then: it takes up to 2 hours until the timer gets stuck... and the 
+> system freezes...
 
-Sure, but that needs reviewer time, tester time and developer time.
-All of those is limited, and for a piece of code with <100 users and
->1kloc it may not be worth it.
+Oh well, that's a bad idea then.
 
-But if people do it for fun, or for having a simple example code to
-look at, I have no problem with that :)
+> But, on the other hand... does ANYBODY know a way how I can see if the 
+> apictimer drifts/(getting slower and slower)?
 
-Miklos
+Well, it does not drift. It's stopped by some magic, but I do not
+understand why we do not see that behaviour in 2.6.24. The code logic
+in this area is really unchanged.
+
+Can you disable CPUIDLE for a test please ?
+
+Thanks,
+	tglx
+
+
