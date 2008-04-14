@@ -1,127 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761842AbYDNVo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762299AbYDNVqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761842AbYDNVo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYDNVoT
+	id S1762299AbYDNVqZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 17:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYDNVqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:44:19 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35093 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025AbYDNVoS (ORCPT
+	Mon, 14 Apr 2008 17:46:18 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56244 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbYDNVqR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:44:18 -0400
-Date: Mon, 14 Apr 2008 16:44:17 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Manfred Spraul <manfred@colorfullife.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Pierre PEIFFER <pierre.peiffer@bull.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [PATCH 1/2] fix sys_unshare()+SEM_UNDO: add support for
-	CLONE_SYSVSEM
-Message-ID: <20080414214417.GA1761@sergelap.austin.ibm.com>
-References: <200804130848.m3D8mU7D007104@mail.q-ag.de> <20080413015936.580bf7fe.akpm@linux-foundation.org> <4801F038.8020003@colorfullife.com> <20080414145840.GA15667@sergelap.austin.ibm.com>
+	Mon, 14 Apr 2008 17:46:17 -0400
+Date: Mon, 14 Apr 2008 23:46:15 +0200
+From: Jan Kara <jack@suse.cz>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext3 jbd_handle/xattr_sem lockdep trace.
+Message-ID: <20080414214615.GC7097@atrey.karlin.mff.cuni.cz>
+References: <20080412163359.GA23674@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414145840.GA15667@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080412163359.GA23674@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Serge E. Hallyn (serue@us.ibm.com):
-> Quoting Manfred Spraul (manfred@colorfullife.com):
-> > Andrew Morton wrote:
-> >> On Sun, 13 Apr 2008 10:04:17 +0200 Manfred Spraul 
-> >> <manfred@colorfullife.com> wrote:
-> >>
-> >>   
-> >>> sys_unshare(CLONE_NEWIPC) doesn't handle the undo lists properly, this 
-> >>> can
-> >>> cause a kernel memory corruption. CLONE_NEWIPC must detach from the 
-> >>> existing
-> >>> undo lists.
-> >>> Fix, part 1: add support for sys_unshare(CLONE_SYSVSEM)
-> >>>
-> >>>     
-> >>
-> >> Is this a non-back-compatible change?
-> >>
-> >>   
-> > It adds a new feature - previously sys_unshare(CLONE_SYSVSEM) returned 
-> > -EINVAL.
-> >
-> >>> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-> >>> ---
-> >>>  ipc/sem.c     |    1 +
-> >>>  kernel/fork.c |   18 ++++++++++++++----
-> >>>  2 files changed, 15 insertions(+), 4 deletions(-)
-> >>>
-> >>> diff --git a/ipc/sem.c b/ipc/sem.c
-> >>> index 0b45a4d..35841bd 100644
-> >>> --- a/ipc/sem.c
-> >>> +++ b/ipc/sem.c
-> >>> @@ -1298,6 +1298,7 @@ void exit_sem(struct task_struct *tsk)
-> >>>  	undo_list = tsk->sysvsem.undo_list;
-> >>>  	if (!undo_list)
-> >>>  		return;
-> >>> +	tsk->sysvsem.undo_list = NULL;
-> >>>   	if (!atomic_dec_and_test(&undo_list->refcnt))
-> >>>  		return;
-> >>> diff --git a/kernel/fork.c b/kernel/fork.c
-> >>> index 9c042f9..7f242b0 100644
-> >>> --- a/kernel/fork.c
-> >>> +++ b/kernel/fork.c
-> >>> @@ -1675,13 +1675,17 @@ static int unshare_fd(unsigned long 
-> >>> unshare_flags, struct files_struct **new_fdp
-> >>>  }
-> >>>   /*
-> >>> - * Unsharing of semundo for tasks created with CLONE_SYSVSEM is not
-> >>> - * supported yet
-> >>> + * Unsharing of semundo for tasks created with CLONE_SYSVSEM doesn't 
-> >>> require
-> >>> + * any allocations: it means that the task leaves the existing undo 
-> >>> lists,
-> >>> + * just like sys_exit(). The new undo lists are allocated on demand in 
-> >>> the
-> >>> + * ipc syscalls.
-> >>> + * new_ulistp is set to a non-NULL value, the caller expects that on 
-> >>> success.
-> >>>   */
-> >>>  static int unshare_semundo(unsigned long unshare_flags, struct 
-> >>> sem_undo_list **new_ulistp)
-> >>>  {
-> >>> -	if (unshare_flags & CLONE_SYSVSEM)
-> >>> -		return -EINVAL;
-> >>> +	if (unshare_flags & CLONE_SYSVSEM) {
-> >>> +		*new_ulistp = (void*)1;
-> >>> +	}
-> >>>     
-> >>
-> >> And can we do anything nicer than this?
-> >>
-> >>   
-> > Attached is an alternative. If you prefer it, I'll send another patch set.
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.25-0.195.rc8.git1.fc9.i686 #1
+> -------------------------------------------------------
+> yum/12720 is trying to acquire lock:
+>  (jbd_handle){--..}, at: [<e085d8ff>] journal_start+0xcf/0xf0 [jbd]
 > 
-> FWIW I definately far far prefer this version  :)
+> but task is already holding lock:
+>  (&ei->xattr_sem){----}, at: [<e0899c1f>] ext3_xattr_get+0x2a/0x23b [ext3]
 > 
-> As for 'maintainers', in the end wrt this code I'd defer to any two of
-> Pavel, Nadia, and Pierre, each of who I've seen do a great deal of
-> digging around this code.
-> 
-> (I think I saw some set of these go into -mm so I guess I'll just grab
-> mmotm and test with that a bit later today)
-> 
-> thanks,
-> -serge
+> which lock already depends on the new lock.
+  Thanks for sending the trace. This is a genuine bug :). Actually in
+mb_cache_entry_alloc() which allocates memory with GFP_KERNEL although we
+are quite deep into the filesystem. I'll write a fix tomorrow.
 
-Of course if we do go this route, then the unshare(2) manpage will need
-an update (so Michael Kerrisk cc:d).
+								Honza
 
-thanks,
--serge
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&ei->xattr_sem){----}:
+>        [__lock_acquire+2713/3089] __lock_acquire+0xa99/0xc11
+>        [lock_acquire+106/144] lock_acquire+0x6a/0x90
+>        [down_read+48/106] down_read+0x30/0x6a
+>        [<e0899c1f>] ext3_xattr_get+0x2a/0x23b [ext3]
+>        [<e089a577>] ext3_get_acl+0xd2/0x2f2 [ext3]
+>        [<e089a9f0>] ext3_init_acl+0x40/0x140 [ext3]
+>        [<e088cbb8>] ext3_new_inode+0x8d2/0x8eb [ext3]
+>        [<e08927b1>] ext3_create+0x85/0xeb [ext3]
+>        [vfs_create+189/300] vfs_create+0xbd/0x12c
+>        [open_namei+351/1455] open_namei+0x15f/0x5af
+>        [do_filp_open+31/53] do_filp_open+0x1f/0x35
+>        [do_sys_open+64/181] do_sys_open+0x40/0xb5
+>        [sys_open+22/24] sys_open+0x16/0x18
+>        [syscall_call+7/11] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+> 
+> -> #0 (jbd_handle){--..}:
+>        [__lock_acquire+2488/3089] __lock_acquire+0x9b8/0xc11
+>        [lock_acquire+106/144] lock_acquire+0x6a/0x90
+>        [<e085d913>] journal_start+0xe3/0xf0 [jbd]
+>        [<e0896774>] ext3_journal_start_sb+0x40/0x42 [ext3]
+>        [<e088e2af>] ext3_ordered_writepage+0x45/0x116 [ext3]
+>        [shrink_page_list+840/1415] shrink_page_list+0x348/0x587
+>        [shrink_inactive_list+292/779] shrink_inactive_list+0x124/0x30b
+>        [shrink_zone+187/218] shrink_zone+0xbb/0xda
+>        [try_to_free_pages+337/563] try_to_free_pages+0x151/0x233
+>        [__alloc_pages+494/815] __alloc_pages+0x1ee/0x32f
+>        [__slab_alloc+430/1355] __slab_alloc+0x1ae/0x54b
+>        [kmem_cache_alloc+98/196] kmem_cache_alloc+0x62/0xc4
+>        [<e082464c>] mb_cache_entry_alloc+0x13/0x3f [mbcache]
+>        [<e0898e07>] ext3_xattr_cache_insert+0x1d/0x55 [ext3]
+>        [<e0899df7>] ext3_xattr_get+0x202/0x23b [ext3]
+>        [<e089abcc>] ext3_xattr_security_get+0x33/0x41 [ext3]
+>        [generic_getxattr+101/104] generic_getxattr+0x65/0x68
+>        [inode_doinit_with_dentry+344/1277] inode_doinit_with_dentry+0x158/0x4fd
+>        [selinux_d_instantiate+18/20] selinux_d_instantiate+0x12/0x14
+>        [security_d_instantiate+28/30] security_d_instantiate+0x1c/0x1e
+>        [d_splice_alias+169/203] d_splice_alias+0xa9/0xcb
+>        [<e0892a36>] ext3_lookup+0x7b/0xa2 [ext3]
+>        [do_lookup+167/326] do_lookup+0xa7/0x146
+>        [__link_path_walk+2250/3378] __link_path_walk+0x8ca/0xd32
+>        [path_walk+76/155] path_walk+0x4c/0x9b
+>        [do_path_lookup+408/481] do_path_lookup+0x198/0x1e1
+>        [__user_walk_fd+47/67] __user_walk_fd+0x2f/0x43
+>        [vfs_stat_fd+25/64] vfs_stat_fd+0x19/0x40
+>        [vfs_stat+17/19] vfs_stat+0x11/0x13
+>        [sys_stat64+20/43] sys_stat64+0x14/0x2b
+>        [syscall_call+7/11] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+> 
+> other info that might help us debug this:
+> 
+> 3 locks held by yum/12720:
+>  #0:  (&type->i_mutex_dir_key#4){--..}, at: [do_lookup+114/326] do_lookup+0x72/0x146
+>  #1:  (&isec->lock){--..}, at: [inode_doinit_with_dentry+56/1277] inode_doinit_with_dentry+0x38/0x4fd
+>  #2:  (&ei->xattr_sem){----}, at: [<e0899c1f>] ext3_xattr_get+0x2a/0x23b [ext3]
+> 
+> stack backtrace:
+> Pid: 12720, comm: yum Not tainted 2.6.25-0.195.rc8.git1.fc9.i686 #1
+>  [print_circular_bug_tail+91/102] print_circular_bug_tail+0x5b/0x66
+>  [print_circular_bug_header+166/177] ? print_circular_bug_header+0xa6/0xb1
+>  [__lock_acquire+2488/3089] __lock_acquire+0x9b8/0xc11
+>  [<e085d75a>] ? start_this_handle+0x2d1/0x2f0 [jbd]
+>  [lock_acquire+106/144] lock_acquire+0x6a/0x90
+>  [<e085d8ff>] ? journal_start+0xcf/0xf0 [jbd]
+>  [<e085d913>] journal_start+0xe3/0xf0 [jbd]
+>  [<e085d8ff>] ? journal_start+0xcf/0xf0 [jbd]
+>  [<e0896774>] ext3_journal_start_sb+0x40/0x42 [ext3]
+>  [<e088e2af>] ext3_ordered_writepage+0x45/0x116 [ext3]
+>  [shrink_page_list+840/1415] shrink_page_list+0x348/0x587
+>  [list_add+10/15] ? list_add+0xa/0xf
+>  [isolate_lru_pages+132/370] ? isolate_lru_pages+0x84/0x172
+>  [native_sched_clock+181/209] ? native_sched_clock+0xb5/0xd1
+>  [shrink_inactive_list+292/779] shrink_inactive_list+0x124/0x30b
+>  [shrink_zone+187/218] shrink_zone+0xbb/0xda
+>  [try_to_free_pages+337/563] try_to_free_pages+0x151/0x233
+>  [get_page_from_freelist+151/1010] ? get_page_from_freelist+0x97/0x3f2
+>  [isolate_pages_global+0/62] ? isolate_pages_global+0x0/0x3e
+>  [__alloc_pages+494/815] __alloc_pages+0x1ee/0x32f
+>  [__slab_alloc+430/1355] __slab_alloc+0x1ae/0x54b
+>  [kmem_cache_alloc+98/196] kmem_cache_alloc+0x62/0xc4
+>  [<e082464c>] ? mb_cache_entry_alloc+0x13/0x3f [mbcache]
+>  [<e082464c>] ? mb_cache_entry_alloc+0x13/0x3f [mbcache]
+>  [<e082464c>] mb_cache_entry_alloc+0x13/0x3f [mbcache]
+>  [<e0898e07>] ext3_xattr_cache_insert+0x1d/0x55 [ext3]
+>  [<e0899df7>] ext3_xattr_get+0x202/0x23b [ext3]
+>  [__slab_alloc+1222/1355] ? __slab_alloc+0x4c6/0x54b
+>  [<e089abcc>] ext3_xattr_security_get+0x33/0x41 [ext3]
+>  [generic_getxattr+101/104] generic_getxattr+0x65/0x68
+>  [inode_doinit_with_dentry+344/1277] inode_doinit_with_dentry+0x158/0x4fd
+>  [d_splice_alias+160/203] ? d_splice_alias+0xa0/0xcb
+>  [selinux_d_instantiate+18/20] selinux_d_instantiate+0x12/0x14
+>  [security_d_instantiate+28/30] security_d_instantiate+0x1c/0x1e
+>  [d_splice_alias+169/203] d_splice_alias+0xa9/0xcb
+>  [<e0892a36>] ext3_lookup+0x7b/0xa2 [ext3]
+>  [do_lookup+167/326] do_lookup+0xa7/0x146
+>  [__link_path_walk+2250/3378] __link_path_walk+0x8ca/0xd32
+>  [native_sched_clock+181/209] ? native_sched_clock+0xb5/0xd1
+>  [lock_release_holdtime+26/277] ? lock_release_holdtime+0x1a/0x115
+>  [path_walk+76/155] path_walk+0x4c/0x9b
+>  [do_path_lookup+408/481] do_path_lookup+0x198/0x1e1
+>  [__user_walk_fd+47/67] __user_walk_fd+0x2f/0x43
+>  [vfs_stat_fd+25/64] vfs_stat_fd+0x19/0x40
+>  [vfs_stat+17/19] vfs_stat+0x11/0x13
+>  [sys_stat64+20/43] sys_stat64+0x14/0x2b
+>  [restore_nocheck+18/21] ? restore_nocheck+0x12/0x15
+>  [trace_hardirqs_on+233/266] ? trace_hardirqs_on+0xe9/0x10a
+>  [restore_nocheck+18/21] ? restore_nocheck+0x12/0x15
+>  [syscall_call+7/11] syscall_call+0x7/0xb
+>  =======================
+> 
+> 
+> -- 
+> http://www.codemonkey.org.uk
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
