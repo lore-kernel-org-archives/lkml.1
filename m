@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764399AbYDNRzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764520AbYDNR4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764399AbYDNRzU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932249AbYDNRy4
+	id S1764520AbYDNR4s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYDNR4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:54:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51314 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932239AbYDNRyy (ORCPT
+	Mon, 14 Apr 2008 13:56:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:26640 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754119AbYDNR4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:54:54 -0400
-Subject: Re: [PATCH] Replace completions with semaphores
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <87d4osuy6r.fsf@basil.nowhere.org>
-References: <20080411210022.GJ11962@parisc-linux.org>
-	 <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org>
-	 <adaskxqrgsl.fsf@cisco.com> <20080412204748.GN11962@parisc-linux.org>
-	 <20080413070833.GC19773@elte.hu> <20080413125758.GQ11962@parisc-linux.org>
-	 <20080414153928.GA22259@elte.hu> <adafxtoqvgh.fsf@cisco.com>
-	 <1208190749.7375.10.camel@twins>  <87d4osuy6r.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Mon, 14 Apr 2008 19:54:33 +0200
-Message-Id: <1208195673.7164.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Mon, 14 Apr 2008 13:56:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WV4kiGnjw4f4Y01uxQ4GEe9SfUSiemuY6kvOmX4w59eIJbGezc+nETR/5DXmLxkugmCaNk2EVLT2Jlw9yFw85OHme1b3dFyRNQQ6mdHzcFXEJjt9u2OgNth1zcsYFuYVOfvbgNhAMpoMHmYvV5QKu/PXB1o8rGcZMuFN51L0RBs=
+Message-ID: <6101e8c40804141056rff5a160jcabb3deebf9b7b6f@mail.gmail.com>
+Date: Mon, 14 Apr 2008 19:56:35 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch] eventfd/kaio integration fix
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "Jeff Roberson" <jroberson@chesapeake.net>
+In-Reply-To: <Pine.LNX.4.64.0804131555550.12741@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0804091138050.7000@alien.or.mcafeemobile.com>
+	 <6101e8c40804130529k353a46a9h8ed1b5fbf6451297@mail.gmail.com>
+	 <Pine.LNX.4.64.0804131555550.12741@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-14 at 19:46 +0200, Andi Kleen wrote:
-> Peter Zijlstra <peterz@infradead.org> writes:
-> >
-> > Yeah, I would open code it.  But this is indeed a sane usage of the
-> > counting semaphore because there is no priority inversion.
-> 
-> But when you open code that, how is it different from just having
-> semaphores? 
+this race presented in forigen kernels or only in 2.6.25-rcX?
 
-Because we can then eventually get rid of semaphores, so those people
-cannot mistakenly use them. Its just too easy to create prio inversion
-with them around.
+I added this patch for "queue-2.6.22.y"
+http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
 
+On 4/14/08, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Sun, 13 Apr 2008, Oliver Pinter wrote:
+>
+> > for 2.6.22.y ?
+>
+> You may want to talk to either Greg KH or Chris Wright for that.
+>
+>
+>
+> - Davide
+>
+>
+>
+
+
+-- 
+Thanks,
+Oliver
