@@ -1,199 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYDNMId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYDNMJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757774AbYDNMId (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 08:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYDNMI0
+	id S1758100AbYDNMJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 08:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYDNMJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 08:08:26 -0400
-Received: from minx.mdc-dayton.com ([70.62.41.4]:40139 "EHLO daetwyler-rd.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753802AbYDNMI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 08:08:26 -0400
-From: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Talking to parallel port in 2.6 kernel without using parport
-Date: Mon, 14 Apr 2008 08:08:24 -0400
-Organization: Max Daetwyler Corp - Dayton Division
-Message-ID: <009501c89e28$3d7530f0$b85f92d0$@com>
+	Mon, 14 Apr 2008 08:09:27 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:33727 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbYDNMJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 08:09:26 -0400
+Date: Mon, 14 Apr 2008 15:08:21 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Willy Tarreau <w@1wt.eu>, david@lang.hm,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080414120821.GA4625@cs181133002.pp.htv.fi>
+References: <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl> <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <20080414010412.c42dc560.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcieKD0CJqZljGOPSi6lYrFtPKyC3A==
-Content-Language: en-us
-X-MyHeader: SpamAssassin Check skipped due to Authenication or Internal MDC-Dayton Address
-X-MyHeader: Clam AV Check skipped due to Authenication or Internal MDC-Dayton Address
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080414010412.c42dc560.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+On Mon, Apr 14, 2008 at 01:04:12AM -0700, Andrew Morton wrote:
+>...
+> (And I don't think developers and maintainers _should_ spend time mucking
+> in bug-tracking systems.  They should have helpers who do all the
+> triaging/tracking/routing/closing work for them, and then provide other
+> developers with the results, letting them know what they should be spending
+> time on.  But there's a manpower problem).
+>...
 
-I have an existing 2.4 linux driver which talks directly to a parallel port
-to send commands to some propriatary
-hardware.  I am attemping to convert this to a 2.6 driver (kernel version
-2.6.18), but am experiencing problems.
+Speaking as the one who was for a few years going again and again 
+through all open bugs in the kernel Bugzilla:
 
-My 2.4 driver's init routine looked something like what is below.  Our
-proprietary application uses this driver to talk
-to our proprietary hardware across the parallel port without using the
-parport layers.
+The manpower problem isn't in handling the bugs in Bugzilla.
 
+I'd claim that even if all bugs in the kernel would be reported in the 
+kernel Bugzilla I alone would be able to do all the handling of incoming 
+bugs, bug forwarding and doing all the cleanup stuff like asking 
+submitters whether a bug is still present in the latest kernel.
 
-int __init pp_init()
-{
-    mdcmajor = register_chrdev(mdcmajor,"pp", &pp_fops);
-    if (mdcmajor < 0)
-    {
-       printk(KERN_ERR "pp:  unable to get major %d\n", mdcmajor);
-       return - EIO;
-    }
-    else
-       printk(KERN_INFO "pp:  major number= %d\n", mdcmajor);
+The manpower problem is at the developers and maintainers who could 
+actually debug the problems.
 
-// Set the pins on the parallel port
-                outb(0x04, CONTROL);
-                  outb(0xFF, STATUS);
-                x = inb(STATUS);
-                  outb(0x04, CONTROL);
-                outb(0xFF, STATUS);
+One problem are unmaintained areas.
+Do we have anyone who would debug e.g. APM bugs?
+And if I want to be really nasty, I'll ask whether we have anyone who 
+understands our floppy driver...  ;)
 
-return 0;
-}
+And who would debug problems with old and unmaintained drivers, e.g. 
+some old net or SCSI driver?
 
+Note that I do not blame James or Jeff or whoever else for the latter - 
+they might simply not have the time to spend a day or two for debugging 
+some obscure problem on some obscure hardware.
 
-I modified my init routine for 2.6 as below.  The driver loads correctly and
-I see evidence of it in 
-/proc/modules and /proc/devices.  However, I can not open it.  
+And it could happen everywhere that maintainers simply don't have 
+the time to cope with all incoming bug reports.
 
-static int __init pp_init(void)
-{
-   int status;
-   dev_t dev;
+We have many people who write new bugs^Wcode.
+But too few people who review code.
+And too few people willing to maintain the existing code.
 
-    dev = MKDEV(mdcmajor, 0);
-    status = register_chrdev_region(dev, 1, "pp");
-    if (status < 0)
-    {
-       printk(KERN_ERR "pp:  unable to get major %d\n", mdcmajor);
-       return - EIO;
-    }
-    else
-       printk(KERN_INFO "pp:  major number= %d\n", mdcmajor);
-   cdev_init(&chrdev, &pp_fops);
-   chrdev.owner = THIS_MODULE;
-   chrdev.ops = &pp_fops;
-   status = cdev_add (&chrdev, dev, 1);
-   if (status < 0)
-   {
-      printk(KERN_ERR "pp:  unable to add device %d to system.  status =
-%d\n", mdcmajor, status);
-      return -ENODEV;
-   }
+cu
+Adrian
 
-                  // Set the pins on the parallel port
-                outb(0x04, CONTROL);
-                  outb(0xFF, STATUS);
-                x = inb(STATUS);
-                  outb(0x04, CONTROL);
-                outb(0xFF, STATUS);
+-- 
 
-****************
-
-I have some other 2.6 PCI drivers that work correctly.  It's init module
-does a pci_register_driver followed by 
-a register_chrdev_region, cdev_init and cdev_add.  I've been reading the
-Documentation directories included 
-with the kernel concerning the Driver Model.  I am assuming there is some
-"glue" I am missing because I am not
-going through a "bus" layer like I am with my PCI drivers.  It seemed that I
-should use the Platform devices, so I
-tried what you see below.  
-
-static struct platform_device *pp_platform_device;
-static struct platform_driver drv = {
-   .probe = pp_probe,
-   .remove = pp_remove,
-   .driver = {
-      .name = "pp",
-      .owner = THIS_MODULE,
-   },
-};
-
-static int __init pp_init(void)
-{
-   int status;
-   dev_t dev;
-
-    status = platform_driver_register(&drv);
-    if (status < 0)
-    {
-       printk(KERN_ERR "pp:  unable to register with platform, error = %d",
-status);
-//       platform_device_unregister(pp_platform_device);
-       status = -ENODEV;
-       return status;
-    }
-    printk(KERN_INFO "pp: registerd with platform\n");
-    // I read on LKML that platform_device_register_simple is going away.
-    // Instead, implement probe and remove so manual binding and unbinding
-    // will work.
-    pp_platform_device = platform_device_register_simple("pp", -1, NULL, 0);
-    if (pp_platform_device < 0)
-    {
-       printk(KERN_ERR "pp: unable to register device, error = %d\n",
-pp_platform_device);
-       platform_driver_unregister(&drv);
-       status = -ENODEV;
-       return status;
-    }
-    
-    dev = MKDEV(MDC_MAJOR, 0);
-    status = register_chrdev_region(dev, 1, "pp");
-    if (status < 0)
-    {
-       printk(KERN_ERR "pp:  unable to get major %d\n", mdcmajor);
-       return - EIO;
-    }
-    else
-       printk(KERN_INFO "pp:  major number= %d\n", mdcmajor);
-
-
-   cdev_init(&chrdev, &pp_fops);
-   chrdev.owner = THIS_MODULE;
-   chrdev.ops = &pp_fops;
-   status = cdev_add (&chrdev, dev, 1);
-   if (status < 0)
-   {
-      printk(KERN_ERR "pp:  unable to add device %d to system.  status =
-%d\n", mdcmajor, status);
-      return -ENODEV;
-   }
-
-
-
-                  // Set the pins on the parallel port
-                outb(0x04, CONTROL);
-                  outb(0xFF, STATUS);
-                x = inb(STATUS);
-                  outb(0x04, CONTROL);
-                outb(0xFF, STATUS);
-
-   for (i=0; i<256; i++)
-      memory_array[i] = 0;
-
-
-   printk (KERN_INFO "pp: Initialized OK.\n");
-   return 0;
-}
-
-***** However, I am still unable to open my device.  Can someone tell me
-what I am missing?  
-What do I need to do to talk to the parallel port myself and NOT go through
-parport?
-
-Thanks in advance for your help!
-
-Kathy Frazier
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
