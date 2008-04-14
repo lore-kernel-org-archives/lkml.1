@@ -1,92 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYDNIFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYDNIGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbYDNIFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYDNIFP
+	id S1755701AbYDNIGI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbYDNIFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:05:15 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:48424 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756695AbYDNIFM (ORCPT
+	Mon, 14 Apr 2008 04:05:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45314 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756717AbYDNIFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:05:12 -0400
-Message-ID: <48030F69.7040801@linux.vnet.ibm.com>
-Date: Mon, 14 Apr 2008 13:31:45 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: kernel warning: tried to kill an mm-less task!
-References: <4803030D.3070906@cn.fujitsu.com>
-In-Reply-To: <4803030D.3070906@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 14 Apr 2008 04:05:43 -0400
+Date: Mon, 14 Apr 2008 01:04:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Willy Tarreau <w@1wt.eu>, david@lang.hm,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-Id: <20080414010412.c42dc560.akpm@linux-foundation.org>
+In-Reply-To: <20080414072328.GW9785@ZenIV.linux.org.uk>
+References: <47FEADCB.7070104@rtr.ca>
+	<20080413121831.d89dd424.akpm@linux-foundation.org>
+	<20080413202118.GA29658@2ka.mipt.ru>
+	<200804132233.50491.rjw@sisk.pl>
+	<20080413205406.GA9190@2ka.mipt.ru>
+	<48028830.6020703@earthlink.net>
+	<alpine.DEB.1.10.0804131546370.9318@asgard>
+	<20080414043939.GA6862@1wt.eu>
+	<20080414053943.GU9785@ZenIV.linux.org.uk>
+	<20080413232441.e216a02c.akpm@linux-foundation.org>
+	<20080414072328.GW9785@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> When I ran the same test program I described in a previous patch,
-> I got the following warning:
+On Mon, 14 Apr 2008 08:23:28 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+
+> On Sun, Apr 13, 2008 at 11:24:41PM -0700, Andrew Morton wrote:
 > 
-> WARNING: at mm/oom_kill.c:320 __oom_kill_task+0x6d/0x101()
-> Modules linked in: 
+> > No.  The problem we're discussing here is the apparently-large number of
+> > bugs which are in the kernel, the apparently-large number of new bugs which
+> > we're adding to the kernel, and our apparent tardiness in addressing them.
+> > 
+> > Do you agree with these impressions, or not?
+> > 
+> > If you do agree, what would you propose we do about it?
 > 
-> Pid: 3856, comm: a.out Not tainted 2.6.25-rc8-mm2 #37
->  [<ffffffff80243941>] warn_on_slowpath+0x64/0xa2
->  [<ffffffff80244e16>] printk+0x5e/0x7b
->  [<ffffffff8022b096>] page_count+0x25/0x49
->  [<ffffffff8022b2cd>] show_mem+0x125/0x15a
->  [<ffffffff8028f00f>] __oom_kill_task+0x6d/0x101
->  [<ffffffff8028f319>] oom_kill_process+0x16c/0x22e
->  [<ffffffff8028f72c>] select_bad_process+0xb0/0x122
->  [<ffffffff8028f8d3>] mem_cgroup_out_of_memory+0x65/0x8a
->  [<ffffffff802bee84>] mem_cgroup_charge_common+0xf8/0x215
->  [<ffffffff802a14ac>] handle_mm_fault+0x216/0x6c8
->  [<ffffffff8029ebca>] follow_page+0x191/0x27d
->  [<ffffffff80234155>] need_resched+0x31/0x4f
->  [<ffffffff802a1c53>] get_user_pages+0x2f5/0x3eb
->  [<ffffffff802a1f64>] make_pages_present+0x9e/0xca
->  [<ffffffff802a51fc>] mmap_region+0x38c/0x452
->  [<ffffffff802119c4>] arch_get_unmapped_area_topdown+0x1bf/0x2a7
->  [<ffffffff802a5971>] do_mmap_pgoff+0x321/0x39b
->  [<ffffffff805037ee>] _cond_resched+0x1c/0x5f
->  [<ffffffff80211715>] sys_mmap+0xf5/0x138
->  [<ffffffff8020c6d2>] tracesys+0xd5/0xda
-> ---[ end trace fe959fb2f0473e7c ]---
-> tried to kill an mm-less task!
+> In addition to obvious "we need testing and something better than bugzilla
+> to keep track of bugs"?
+
+Swapping out bugzilla for something else wouldn't help.  We'd end up with
+lots of people ignoring a good bug tracking system just like they were
+ignoring a bad one.
+
+(And I don't think developers and maintainers _should_ spend time mucking
+in bug-tracking systems.  They should have helpers who do all the
+triaging/tracking/routing/closing work for them, and then provide other
+developers with the results, letting them know what they should be spending
+time on.  But there's a manpower problem).
+
+>  Real review of code in tree and patches getting into
+> the tree.
 > 
-> This showed up several times in some seconds, but then didn't appear
-> any more. And it's reproducable in a x86_64 box, but doesn't happen
-> in a x86_32 one.
+> And the latter part _must_ be done on each entry point.  Any git tree
+> that acts as injection point really needs a working mechanism of some
+> sort that would do that; afterwards it's too late, since review of
+> the stuff getting into mainline on a massive merge is sadly impractical.
 > 
-> And this happens both with and without the oops fixing.
+> I don't know any formal mechanism that could take care of that; no more
+> than making sure that no backdoors are injected into the tree.  It really
+> has to be a matter of trust for tree maintainers and community around
+> the subsystem.
 > 
+> Git is damn good at killing the merge bottleneck.  Too good, since it
+> hides the review bottleneck.  And we get equivalents of self-selected
+> communities that had been problem for "here's our CVS, here's monthly
+> dump from it, apply" kind of setups.  It _is_ better, since one can
+> get to commit history (modulo interesting issues with merge nodes and
+> conflict resolution).  But in practice it's not good enough - the patches
+> going in during a merge (especially for a tree that collects from
+> secondaries) are not visible enough.  And it's too late at that point,
+> since one has to do something monumentally ugly to get Linus revert
+> a large merge.  On the scale of Great IDE Mess in 2.5...
+> 
+> linux-next might help with the last part, but I don't think it really
+> deals with the first one.  It certainly helps to some extent, but...
+> 
+> We need higher S/N on l-k.  We need people looking into the subsystem
+> trees as those grow and causing a stench when bad things are found,
+> with design issues getting brought to l-k if nothing else helps.  We
+> need tree maintainers understanding that review, including out-of-community
+> one, is needed (the need of testing is generally better understood - I
+> _hope_).
+> 
+> We need more people reading the fscking source.  Subsystem by subsystem.
+> Without assumption that code is not broken.  With mechanism collating
+> the questions asked and answers given.  Ideally we need growing documentation
+> of core subsystems and data structures, with explicit goal of helping
+> reviewers new to an area to find their way around it.  And yes, I'm
+> guilty of procrastinating on that - several half-finished pieces on
+> VFS-related stuff are sitting locally ;-/
+> 
+> We need gregkh to get real and stop assuming that two Signed-off-by are
+> equivalent to "reviewed at least twice", while we are at it ;-)
+> 
+> We need people to realize that warnings are useful as triage tools -
+> not as "Ug see warning.  Warning bad.  Ug fix that line.  Warning go away.
+> Ug changeset count grow.  Ug happy.", but as machine-assisted part of
+> finding confused areas of code.  With human combining signals from
+> different warnings to get statistically useful triage strategies (note
+> that aforementioned making gcc/sparse/whatnot to STFU by local change
+> has a lovely potential of distorting those signals and actually _hiding_
+> crap code).
+> 
+> Maybe we need a list a-la linux-arch for tree maintainers to coordinate
+> stuff - obviously open not only for those.
+> 
+> We really need to get around to doing triage of remaining stuff in -mm,
+> BTW - again, guilty for not getting through such on VFS-related stuff
+> in there.  Hopefully linux-next trees will eventually vacuum most of the
+> pile in...
 
-Could we get some more details on which task was chosen to be killed? It will be
-nice to see the task flags as well to see if PF_EXITING is set.
+That all sounds good and I expect few would disagree.  But if it is to
+happen, it clearly won't happen by itself, automatically.  We will need to
+force it upon ourselves and the means by which we will do that is process
+changes.  The thing which is being disparaged as "bureaucracy".
 
-oom_kill_task() has a big WARNING in the comment
+The steps to be taken are:
 
-        /* WARNING: mm may not be dereferenced since we did not obtain its
-         * value from get_task_mm(p).  This is OK since all we need to do is
-         * compare mm to q->mm below.
+a) agree that we have a problem
 
+b) agree that we need to address it
 
-I want to see the flags to see if
+c) identify the day-to-day work practices which will help address it (as
+   you have done)
 
-PF_BORROWED_MM or PF_EXIT* is set.
+d) identify the process changes which will force us to adopt those practices
 
+e) implement those process changes.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+I have thus far failed to get us past step a).
+
