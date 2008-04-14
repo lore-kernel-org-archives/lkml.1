@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYDNWBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbYDNWCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbYDNWBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760536AbYDNWBH
+	id S1761838AbYDNWCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYDNWCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:01:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36103
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760177AbYDNWBE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:01:04 -0400
-Date: Mon, 14 Apr 2008 15:01:05 -0700 (PDT)
-Message-Id: <20080414.150105.101568769.davem@davemloft.net>
-To: jmorris@namei.org
-Cc: viro@ZenIV.linux.org.uk, akpm@linux-foundation.org, w@1wt.eu,
-       david@lang.hm, sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-References: <20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 18:02:37 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:33004 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbYDNWCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 18:02:36 -0400
+Date: Tue, 15 Apr 2008 01:01:29 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: hskinnemoen@atmel.com, herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       shannon.nelson@intel.com, dan.j.williams@intel.com
+Subject: Re: [2.6 patch] add include/asm-avr32/xor.h
+Message-ID: <20080414220129.GH26885@cs181133002.pp.htv.fi>
+References: <20080414141632.GA6695@cs181133002.pp.htv.fi> <20080414181140.GA813@Chamillionaire.breakpoint.cc> <20080414181536.GZ6695@cs181133002.pp.htv.fi> <20080414214640.GA2282@Chamillionaire.breakpoint.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080414214640.GA2282@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Morris <jmorris@namei.org>
-Date: Tue, 15 Apr 2008 01:54:00 +1000 (EST)
+On Mon, Apr 14, 2008 at 11:46:40PM +0200, Sebastian Siewior wrote:
+> * Adrian Bunk | 2008-04-14 21:15:36 [+0300]:
+> 
+> >> >601f75e99c076c16e2648f4860cac4fc6ce187ea diff --git a/include/asm-avr32/xor.h b/include/asm-avr32/xor.h
+> >> >new file mode 100644
+> >> >index 0000000..99c87aa
+> >> >--- /dev/null
+> >> >+++ b/include/asm-avr32/xor.h
+> >> >@@ -0,0 +1,6 @@
+> >> >+#ifndef _ASM_XOR_H
+> >> >+#define _ASM_XOR_H
+> >> >+
+> >> >+#include <asm-generic/xor.h>
+> >> >+
+> >> >+#endif
+> >> 
+> >> What about providing <linux/xor.h> which includes the right file from
+> >> asm/ or asm-generic/ depending on HAVE_.* ?
+> >
+> >Where's the advantage?
+> 
+> This week you are going through avr32. The same fixup is required for
+> blackfin or cris if my ls isn't lying.
 
-> - Things like "who made the kernel" statistics and related articles ignore 
->   code review.
+Could be, these arre the two archs I did for different reasons not 
+include when I tried allmodconfig on all archs.
 
-Note the apparent irony in that the person who ends up often on the
-top of those lists, Al Viro, is also someone who also does a
-significant amount of code review.
+> So either you fix every arch
+> with this missing include or you provide a generic include and every
+> arch that provides a private xor.h includes it. From what I can see
+> almost every arch includes the generic except for x86 & sparc
 
-I think this is no accident.
+You didn't see that the following architectures also have their own 
+versions:
+- alpha
+- arm
+- ia64
+- sparc64
+
+> so most
+> xor.h files are identical copies and this is probably as bad as a
+> trailing white space :)
+
+I'm not sure whether it's worth spending my time discussing whether 
+adding a config variable to 6 architectures is really better than
+adding trivial headers to 3 architectures...
+
+> Sebastian
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
