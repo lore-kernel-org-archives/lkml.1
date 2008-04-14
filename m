@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762128AbYDNR1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYDNRcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762128AbYDNR1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760471AbYDNR1f
+	id S1761386AbYDNRcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbYDNRcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:27:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54434 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759565AbYDNR11 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:27:27 -0400
-Date: Mon, 14 Apr 2008 18:22:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Bob Copeland" <me@bobcopeland.com>
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080414182241.35546025@core>
-In-Reply-To: <b6c5339f0804141018k100b6f68ob57b35a67c669e9c@mail.gmail.com>
-References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	<20080414091639.4bd3879d@core>
-	<20080414084141.GA29113@infradead.org>
-	<200804141020.37271.chris.mason@oracle.com>
-	<b6c5339f0804140936s3dcce48en59a270dc86bf7dc8@mail.gmail.com>
-	<20080414175158.5db84dcd@core>
-	<b6c5339f0804141018k100b6f68ob57b35a67c669e9c@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 13:32:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51310 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754020AbYDNRcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 13:32:35 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH update] firewire: fw-ohci: work around generation bug in TI controllers (fix AV/C and more)
+Date: Mon, 14 Apr 2008 13:30:22 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de> <tkrat.3e4f8089bffc4e81@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.3e4f8089bffc4e81@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804141330.22131.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 13:18:53 -0400
-"Bob Copeland" <me@bobcopeland.com> wrote:
+On Saturday 12 April 2008 04:31:25 pm Stefan Richter wrote:
+> Unlike the ohci1394 driver, fw-ohci uses the selfIDGeneration field of
+> bus reset packets to determine the generation of incoming requests as
+> per OHCI 1.1 clause 8.4.2.3.  This is more precise --- provided that the
+> controller inserts the correct generation.  Texas Instruments chips
+> often don't.
+>
+> This prevented the transmission of response packets, which for example
+> broke AV/C transactions as used when communicating with miniDV cameras
+> and any other AV/C devices.
+>
+> There is apparently no way to detect and adjust incorrect generations.
+> Therefore we ignore the generation of bus reset packets from TI chips
+> and use the generation of the self ID buffer instead.  Alas this is
+> received at a slightly wrong time.  In rare cases, this could cause us
+> to not respond to legitimate requests or to respond to expired requests.
+> (The latter is less likely because the bus reset packet AR event is
+> typically handled before the self ID complete event.)
+>
+> Bug reported by Mladen Kuntner, who was extraordinarily patient while
+> dealing with the driver maintainers.
+> https://bugzilla.redhat.com/show_bug.cgi?id=243081
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>
+> update: use a quirk flag for simpler code
 
-> On Mon, Apr 14, 2008 at 12:51 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >
-> >  What does the replaytv byteswap - the entire blocks or some fields ?
-> 
-> Entire blocks (both meta- and normal data).  E.g. the filename 'Filename'
-> would look like 'eliFeman' on disk.  I have a dm target that can do this
-> gathering dust somewhere.
+The work-around looks good to me, just one question.
 
-Thats what I was wondering. The dm target would be useful and is also
-needed for certain old 68K boxes with libata
+> @@ -2360,6 +2369,8 @@ pci_probe(struct pci_dev *dev, const str
+>  	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
+>  			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
+>  #endif
+> +	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
+> +
+
+I have a few cards with PCI_VENDOR_ID_CREATIVE with a TI TSB41AB2 chip on 'em 
+(SoundBlaster Audigy w/FireWire port). I've not had any issues on any of the 
+cards I've got, but do we want to add them to the work-around list just to be 
+safe?
+
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
