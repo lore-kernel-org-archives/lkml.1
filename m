@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762599AbYDNO0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbYDNO0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762599AbYDNO0j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761699AbYDNOVs
+	id S1762674AbYDNO0y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbYDNOV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:21:48 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41418 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761683AbYDNOVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:21:47 -0400
-Date: Mon, 14 Apr 2008 17:20:42 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make parport_cs_release() static
-Message-ID: <20080414142042.GX6695@cs181133002.pp.htv.fi>
+	Mon, 14 Apr 2008 10:21:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:47316 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761707AbYDNOV6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:21:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=lmZtBQcQyFpqPWA7y/8WicmTgN3lELv47O5ysLEKPXaiUFambjSiY5W6la6gwRvRg8gltwoYs+Y2GuaifB2PSF0fchUaPHJK/5VnMp18FyzT9CrukMlbyNN6VWpFL95/KU3bwKPjVjZ2XWl517ukVcQ9FsSE6438WDHoESxDorA=
+Message-ID: <4803687A.2060404@gmail.com>
+Date: Mon, 14 Apr 2008 18:21:46 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jonathan Corbet <corbet@lwn.net>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
+References: <28421.1208181120@vena.lwn.net>
+In-Reply-To: <28421.1208181120@vena.lwn.net>
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global parport_cs_release() static.
+Jonathan Corbet пишет:
+> Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+> 
+>> Offhand, it seems that the double spacing convention is being currently used
+>> in a more or less consistent manner throughout Linux docs. It also seems to
+>> me that this can be made a requirement and documented somewhere.
+> 
+> Double spacing is my preference, and I appreciate your sending a new
+> patch which doesn't take that out.
+> 
+> But *please* let's not try to make "requirements" along those lines.  If
+> somebody's going to go to the trouble to write some documentation, I
+> don't think we really want people bouncing it back to them with 100
+> "single space after period" errors from checkpatch.pl...
+> 
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+OK, clear enough. Thanks.
 
----
-5b7ec7ccc6ba2d62a2e68a2211049cbdfa2b5dea diff --git a/drivers/parport/parport_cs.c b/drivers/parport/parport_cs.c
-index 802a81d..00e1d96 100644
---- a/drivers/parport/parport_cs.c
-+++ b/drivers/parport/parport_cs.c
-@@ -235,7 +235,7 @@ failed:
-     
- ======================================================================*/
- 
--void parport_cs_release(struct pcmcia_device *link)
-+static void parport_cs_release(struct pcmcia_device *link)
- {
- 	parport_info_t *info = link->priv;
- 
+Dmitri
+
+> Thanks,
+> 
+> jon
+> 
 
