@@ -1,1230 +1,473 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbYDNNUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYDNN2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759460AbYDNNUo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 09:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYDNNUf
+	id S1757901AbYDNN2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 09:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYDNN2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 09:20:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:17470 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbYDNNUa (ORCPT
+	Mon, 14 Apr 2008 09:28:11 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:50748 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbYDNN2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 09:20:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:to:subject:cc:message-id:date:from;
-	b=IHTXoJ8kYroP0EFyQn9rKeLLsNwWwsRHp2O4WrmpKuHhOf16YGeAG/fxrjqJhTtia
-	lZgYmOWPOfXyEJGEruw5Q==
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rossb@google.com,
-       akpm@linux-foundation.org
-Subject: [PATCH 2/2] MM: Make Page Tables Relcatable -- relocation code
-Cc: rossb@google.com
-Message-Id: <20080414132017.C4624DCA48@localhost>
-Date: Mon, 14 Apr 2008 06:20:17 -0700 (PDT)
-From: rossb@google.com (Ross Biro)
+	Mon, 14 Apr 2008 09:28:09 -0400
+Date: Mon, 14 Apr 2008 18:58:10 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc9 -- INFO: possible circular locking dependency
+	detected
+Message-ID: <20080414132810.GB20671@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <a44ae5cd0804132004v2bef54fek6e9634f8bce087ab@mail.gmail.com> <1208156045.7427.16.camel@twins> <1208174767.7427.60.camel@twins> <20080414122741.GB7416@in.ibm.com> <1208176947.7427.68.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208176947.7427.68.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/arch/powerpc/mm/fault.c 2.6.25-rc8/arch/powerpc/mm/fault.c
---- /home/rossb/local/linux-2.6.25-rc8/arch/powerpc/mm/fault.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/arch/powerpc/mm/fault.c	2008-04-10 08:32:23.000000000 -0700
-@@ -299,6 +299,8 @@ good_area:
- 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
- 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
- 			spin_lock(ptl);
-+			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
-+
- 			if (pte_present(*ptep)) {
- 				struct page *page = pte_page(*ptep);
- 
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/arch/powerpc/mm/hugetlbpage.c 2.6.25-rc8/arch/powerpc/mm/hugetlbpage.c
---- /home/rossb/local/linux-2.6.25-rc8/arch/powerpc/mm/hugetlbpage.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/arch/powerpc/mm/hugetlbpage.c	2008-04-10 08:32:23.000000000 -0700
-@@ -73,6 +73,7 @@ static int __hugepte_alloc(struct mm_str
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_hpd(&hpdp, mm, address);
- 	if (!hugepd_none(*hpdp))
- 		kmem_cache_free(huge_pgtable_cache, new);
- 	else
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/arch/ppc/mm/fault.c 2.6.25-rc8/arch/ppc/mm/fault.c
---- /home/rossb/local/linux-2.6.25-rc8/arch/ppc/mm/fault.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/arch/ppc/mm/fault.c	2008-04-10 08:32:23.000000000 -0700
-@@ -219,6 +219,7 @@ good_area:
- 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
- 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
- 			spin_lock(ptl);
-+			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
- 			if (pte_present(*ptep)) {
- 				struct page *page = pte_page(*ptep);
- 
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/arch/x86/mm/hugetlbpage.c 2.6.25-rc8/arch/x86/mm/hugetlbpage.c
---- /home/rossb/local/linux-2.6.25-rc8/arch/x86/mm/hugetlbpage.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/arch/x86/mm/hugetlbpage.c	2008-04-10 08:32:31.000000000 -0700
-@@ -88,6 +88,7 @@ static void huge_pmd_share(struct mm_str
- 		goto out;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pud(&pud, mm, addr);
- 	if (pud_none(*pud))
- 		pud_populate(mm, pud, (pmd_t *)((unsigned long)spte & PAGE_MASK));
- 	else
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/asm-generic/pgalloc.h 2.6.25-rc8/include/asm-generic/pgalloc.h
---- /home/rossb/local/linux-2.6.25-rc8/include/asm-generic/pgalloc.h	1969-12-31 16:00:00.000000000 -0800
-+++ 2.6.25-rc8/include/asm-generic/pgalloc.h	2008-04-10 08:32:36.000000000 -0700
-@@ -0,0 +1,37 @@
-+#ifndef _ASM_GENERIC_PGALLOC_H
-+#define _ASM_GENERIC_PGALLOC_H
-+
-+
-+
-+/* Page Table Levels used for alloc_page_table. */
-+#define PAGE_TABLE_PGD 0
-+#define PAGE_TABLE_PUD 1
-+#define PAGE_TABLE_PMD 2
-+#define PAGE_TABLE_PTE 3
-+
-+static inline struct page *alloc_page_table_node(struct mm_struct *mm,
-+						 unsigned long addr,
-+						 int node,
-+						 int page_table_level)
-+{
-+	switch (page_table_level) {
-+	case PAGE_TABLE_PGD:
-+		return virt_to_page(pgd_alloc_node(mm, node));
-+
-+	case PAGE_TABLE_PUD:
-+		return virt_to_page(pud_alloc_one_node(mm, addr, node));
-+
-+	case PAGE_TABLE_PMD:
-+		return virt_to_page(pmd_alloc_one_node(mm, addr, node));
-+
-+	case PAGE_TABLE_PTE:
-+		return pte_alloc_one_node(mm, addr, node);
-+
-+	default:
-+		BUG();
-+		return NULL;
-+	}
-+}
-+
-+
-+#endif /* _ASM_GENERIC_PGALLOC_H */
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/asm-generic/pgtable.h 2.6.25-rc8/include/asm-generic/pgtable.h
---- /home/rossb/local/linux-2.6.25-rc8/include/asm-generic/pgtable.h	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/include/asm-generic/pgtable.h	2008-04-10 08:32:36.000000000 -0700
-@@ -4,6 +4,8 @@
- #ifndef __ASSEMBLY__
- #ifdef CONFIG_MMU
- 
-+#include <linux/sched.h>
-+
- #ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
- /*
-  * Largely same as above, but only sets the access flags (dirty,
-@@ -195,6 +197,48 @@ static inline int pmd_none_or_clear_bad(
- 	}
- 	return 0;
- }
-+
-+
-+/* Used to rewalk the page tables if after we grab the appropriate lock,
-+   we end up with a page that's just waiting to go away. */
-+static inline pgd_t *walk_page_table_pgd(struct mm_struct *mm,
-+					  unsigned long addr)
-+{
-+	return pgd_offset(mm, addr);
-+}
-+
-+static inline pud_t *walk_page_table_pud(struct mm_struct *mm,
-+					 unsigned long addr) {
-+	pgd_t *pgd;
-+	pgd = walk_page_table_pgd(mm, addr);
-+	BUG_ON(!pgd);
-+	return pud_offset(pgd, addr);
-+}
-+
-+static inline pmd_t *walk_page_table_pmd(struct mm_struct *mm,
-+					 unsigned long addr)
-+{
-+	pud_t *pud;
-+	pud = walk_page_table_pud(mm, addr);
-+	BUG_ON(!pud);
-+	return  pmd_offset(pud, addr);
-+}
-+
-+static inline pte_t *walk_page_table_pte(struct mm_struct *mm,
-+					 unsigned long addr)
-+{
-+	pmd_t *pmd;
-+	pmd = walk_page_table_pmd(mm, addr);
-+	BUG_ON(!pmd);
-+	return pte_offset_map(pmd, addr);
-+}
-+
-+static inline pte_t *walk_page_table_huge_pte(struct mm_struct *mm,
-+					      unsigned long addr)
-+{
-+	return (pte_t *)walk_page_table_pmd(mm, addr);
-+}
-+
- #endif /* CONFIG_MMU */
- 
- /*
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/asm-x86/pgalloc_64.h 2.6.25-rc8/include/asm-x86/pgalloc_64.h
---- /home/rossb/local/linux-2.6.25-rc8/include/asm-x86/pgalloc_64.h	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/include/asm-x86/pgalloc_64.h	2008-04-10 09:20:44.000000000 -0700
-@@ -25,16 +25,6 @@ static inline void pmd_free(struct mm_st
- 	free_page((unsigned long)pmd);
- }
- 
--static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
--{
--	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
--}
--
--static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
--{
--	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
--}
--
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- {
- 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
-@@ -61,12 +51,75 @@ static inline void pgd_list_del(pgd_t *p
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
- 
--static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
-+	pgd_list_del(pgd);
-+	free_page((unsigned long)pgd);
-+}
-+
-+
-+/* Should really implement gc for free page table pages. This could be
-+   done with a reference count in struct page. */
-+
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
-+	free_page((unsigned long)pte);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
-+{
-+	pgtable_page_dtor(pte);
-+	__free_page(pte);
-+}
-+
-+#define __pte_free_tlb(tlb,pte)				\
-+do {							\
-+	pgtable_page_dtor((pte));				\
-+	tlb_remove_page((tlb), (pte));			\
-+} while (0)
-+
-+#define __pmd_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
-+#define __pud_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
-+
-+#ifdef CONFIG_NUMA
-+static inline pud_t *pud_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr,
-+					int node)
-+{
-+	struct page *page;
-+
-+	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
-+	if (page)
-+		return (pud_t *)page_address(page);
-+	return NULL;
-+}
-+
-+static inline pmd_t *pmd_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr,
-+					int node)
-+{
-+	struct page *page;
-+
-+	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
-+	if (page)
-+		return (pmd_t *)page_address(page);
-+	return NULL;
-+}
-+
-+static inline pgd_t *pgd_alloc_node(struct mm_struct *mm, int node)
- {
- 	unsigned boundary;
--	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
--	if (!pgd)
-+	struct page *page;
-+	pgd_t *pgd;
-+
-+	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT, 0);
-+	if (!page)
- 		return NULL;
-+
-+	pgd = (pgd_t *)page_address(page);
-+
- 	pgd_list_add(pgd);
- 	/*
- 	 * Copy kernel pointers in from init.
-@@ -81,11 +134,72 @@ static inline pgd_t *pgd_alloc(struct mm
- 	return pgd;
- }
- 
--static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-+static inline pte_t *pte_alloc_one_kernel_node(struct mm_struct *mm,
-+					       unsigned long address,
-+					       int node)
- {
--	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
--	pgd_list_del(pgd);
--	free_page((unsigned long)pgd);
-+	struct page *page;
-+
-+	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
-+	if (page)
-+		return (pte_t *)page_address(page);
-+	return NULL;
-+}
-+
-+static inline struct page *pte_alloc_one_node(struct mm_struct *mm,
-+					      unsigned long address,
-+					      int node)
-+{
-+	struct page *page;
-+	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
-+	return page;
-+}
-+
-+static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+{
-+	return pgd_alloc_node(mm, -1);
-+}
-+
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	return (pte_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+}
-+
-+static inline pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr)
-+{
-+	return pte_alloc_one_node(mm, addr, -1);
-+}
-+
-+static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
-+{
-+	return pmd_alloc_one_node(mm, addr, -1);
-+}
-+
-+static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
-+{
-+	return pud_alloc_one_node(mm, addr, -1);
-+}
-+
-+#else /* !CONFIG_NUMA */
-+static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+{
-+	unsigned boundary;
-+	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
-+	if (!pgd)
-+		return NULL;
-+	pgd_list_add(pgd);
-+	/*
-+	 * Copy kernel pointers in from init.
-+	 * Could keep a freelist or slab cache of those because the kernel
-+	 * part never changes.
-+	 */
-+	boundary = pgd_index(__PAGE_OFFSET);
-+	memset(pgd, 0, boundary * sizeof(pgd_t));
-+	memcpy(pgd + boundary,
-+	       init_level4_pgt + boundary,
-+	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
-+	return pgd;
- }
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-@@ -106,28 +220,19 @@ static inline pgtable_t pte_alloc_one(st
- 	return page;
- }
- 
--/* Should really implement gc for free page table pages. This could be
--   done with a reference count in struct page. */
--
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
--	free_page((unsigned long)pte); 
-+	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
- }
- 
--static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
-+static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	pgtable_page_dtor(pte);
--	__free_page(pte);
-+	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
- } 
- 
--#define __pte_free_tlb(tlb,pte)				\
--do {							\
--	pgtable_page_dtor((pte));				\
--	tlb_remove_page((tlb), (pte));			\
--} while (0)
-+#endif
-+
-+#include <asm-generic/pgalloc.h>
- 
--#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
--#define __pud_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
- 
- #endif /* _X86_64_PGALLOC_H */
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/linux/migrate.h 2.6.25-rc8/include/linux/migrate.h
---- /home/rossb/local/linux-2.6.25-rc8/include/linux/migrate.h	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/include/linux/migrate.h	2008-04-10 08:32:36.000000000 -0700
-@@ -6,6 +6,10 @@
- #include <linux/pagemap.h>
- 
- typedef struct page *new_page_t(struct page *, unsigned long private, int **);
-+typedef struct page *new_page_table_t(struct mm_struct *,
-+				      unsigned long addr,
-+				      unsigned long private,
-+				      int **, int page_table_level);
- 
- #ifdef CONFIG_MIGRATION
- /* Check if a vma is migratable */
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/linux/mm.h 2.6.25-rc8/include/linux/mm.h
---- /home/rossb/local/linux-2.6.25-rc8/include/linux/mm.h	2008-04-10 08:09:09.000000000 -0700
-+++ 2.6.25-rc8/include/linux/mm.h	2008-04-10 09:17:30.000000000 -0700
-@@ -12,6 +12,7 @@
- #include <linux/prio_tree.h>
- #include <linux/debug_locks.h>
- #include <linux/mm_types.h>
-+#include <asm/pgtable.h>
- 
- struct mempolicy;
- struct anon_vma;
-@@ -924,6 +925,7 @@ static inline void pgtable_page_dtor(str
- 	pte_t *__pte = pte_offset_map(pmd, address);	\
- 	*(ptlp) = __ptl;				\
- 	spin_lock(__ptl);				\
-+	delimbo_pte(&__pte, ptlp, &pmd, mm, address);	\
- 	__pte;						\
- })
- 
-@@ -948,6 +950,99 @@ extern void free_area_init(unsigned long
- extern void free_area_init_node(int nid, pg_data_t *pgdat,
- 	unsigned long * zones_size, unsigned long zone_start_pfn, 
- 	unsigned long *zholes_size);
-+
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+
-+static inline void delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
-+			  struct mm_struct *mm,
-+			  unsigned long addr)
-+{
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-+	spin_unlock(*ptl);
-+	spin_lock(&mm->page_table_lock);
-+#endif
-+	pte_unmap(*pte);
-+	*pmd = walk_page_table_pmd(mm, addr);
-+	*pte = pte_offset_map(*pmd, addr);
-+	*ptl = pte_lockptr(mm, *pmd);
-+#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-+	spin_lock(*ptl);
-+	spin_unlock(&mm->page_table_lock);
-+#endif
-+}
-+
-+static inline void delimbo_pte_nested(pte_t **pte, spinlock_t **ptl,
-+				pmd_t **pmd,
-+				struct mm_struct *mm,
-+				unsigned long addr, int subclass)
-+{
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-+	spin_unlock(*ptl);
-+	spin_lock(&mm->page_table_lock);
-+#endif
-+	*pmd = walk_page_table_pmd(mm, addr);
-+	*pte = pte_offset_map(*pmd, addr);
-+	*ptl = pte_lockptr(mm, *pmd);
-+
-+#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-+	spin_lock_nested(*ptl, subclass);
-+	spin_unlock(&mm->page_table_lock);
-+#endif
-+}
-+
-+static inline void delimbo_pud(pud_t **pud,  struct mm_struct *mm,
-+			  unsigned long addr)
-+{
-+
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+	*pud = walk_page_table_pud(mm, addr);
-+}
-+
-+static inline void delimbo_pmd(pmd_t **pmd,  struct mm_struct *mm,
-+			       unsigned long addr)
-+{
-+
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+	*pmd = walk_page_table_pmd(mm, addr);
-+}
-+
-+static inline void delimbo_pgd(pgd_t **pgd,  struct mm_struct *mm,
-+			       unsigned long addr)
-+{
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+	*pgd = walk_page_table_pgd(mm, addr);
-+}
-+
-+static inline void delimbo_huge_pte(pte_t **pte,  struct mm_struct *mm,
-+				    unsigned long addr)
-+{
-+	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
-+		return;
-+
-+	*pte = walk_page_table_huge_pte(mm, addr);
-+}
-+
-+#else /* CONFIG_RELOCATE_PAGE_TABLES */
-+#define delimbo_pte(pte, ptl,  pmd, mm, addr)
-+#define delimbo_pte_nested(pte, ptl, pmd, mm, addr, subclass)
-+#define delimbo_pud(pud, mm, addr)
-+#define delimbo_pmd(pmd, mm, addr)
-+#define delimbo_pgd(pgd, mm, addr)
-+#define delimbo_huge_pte(pte, mm, addr)
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-+
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
- /*
-  * With CONFIG_ARCH_POPULATES_NODE_MAP set, an architecture may initialise its
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/include/linux/mm_types.h 2.6.25-rc8/include/linux/mm_types.h
---- /home/rossb/local/linux-2.6.25-rc8/include/linux/mm_types.h	2008-04-10 08:09:09.000000000 -0700
-+++ 2.6.25-rc8/include/linux/mm_types.h	2008-04-10 09:17:44.000000000 -0700
-@@ -10,6 +10,9 @@
- #include <linux/rbtree.h>
- #include <linux/rwsem.h>
- #include <linux/completion.h>
-+#include <linux/rcupdate.h>
-+#include <linux/semaphore.h>
-+#include <linux/workqueue.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- 
-@@ -74,9 +77,18 @@ struct page {
- 		pgoff_t index;		/* Our offset within mapping. */
- 		void *freelist;		/* SLUB: freelist req. slab lock */
- 	};
-+
-+	union {
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
- 					 */
-+		struct rcu_head rcu;	/* Used by page table relocation code
-+					 * to remember page for later freeing,
-+					 * after we are sure anyone
-+					 * poking at the page tables is no
-+					 * longer looking at this page.
-+					 */
-+	};
- 	/*
- 	 * On machines where all RAM is mapped into kernel address space,
- 	 * we can simply calculate the virtual address. On machines with
-@@ -182,6 +194,8 @@ struct mm_struct {
- 	int map_count;				/* number of VMAs */
- 	int core_waiters;
- 	struct rw_semaphore mmap_sem;
-+	unsigned long flags; /* Must use atomic bitops to access the bits */
-+
- 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
- 
- 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung
-@@ -222,8 +236,6 @@ struct mm_struct {
- 	unsigned int token_priority;
- 	unsigned int last_interval;
- 
--	unsigned long flags; /* Must use atomic bitops to access the bits */
--
- 	/* coredumping support */
- 	struct completion *core_startup_done, core_done;
- 
-@@ -239,6 +251,11 @@ struct mm_struct {
- 	struct file *exe_file;
- 	unsigned long num_exe_file_vmas;
- #endif
-+
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	/* Page table relocation support. */
-+	struct semaphore	page_table_relocation_lock;
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/kernel/fork.c 2.6.25-rc8/kernel/fork.c
---- /home/rossb/local/linux-2.6.25-rc8/kernel/fork.c	2008-04-10 08:09:10.000000000 -0700
-+++ 2.6.25-rc8/kernel/fork.c	2008-04-10 08:32:36.000000000 -0700
-@@ -360,6 +360,10 @@ static struct mm_struct * mm_init(struct
- 	mm->cached_hole_size = ~0UL;
- 	mm_init_cgroup(mm, p);
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	init_MUTEX(&mm->page_table_relocation_lock);
-+#endif
-+
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
- 		return mm;
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/Kconfig 2.6.25-rc8/mm/Kconfig
---- /home/rossb/local/linux-2.6.25-rc8/mm/Kconfig	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/mm/Kconfig	2008-04-11 17:01:44.000000000 -0700
-@@ -143,6 +143,10 @@ config MEMORY_HOTREMOVE
- 	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
- 	depends on MIGRATION
- 
-+config RELOCATE_PAGE_TABLES 
-+	def_bool y
-+	depends on X86_64 && MIGRATION
-+
- # Heavily threaded applications may benefit from splitting the mm-wide
- # page_table_lock, so that faults on different parts of the user address
- # space can be handled with less contention: split it at this NR_CPUS.
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/hugetlb.c 2.6.25-rc8/mm/hugetlb.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/hugetlb.c	2008-04-10 08:09:10.000000000 -0700
-+++ 2.6.25-rc8/mm/hugetlb.c	2008-04-10 08:33:43.000000000 -0700
-@@ -784,6 +784,8 @@ int copy_hugetlb_page_range(struct mm_st
- 
- 		spin_lock(&dst->page_table_lock);
- 		spin_lock(&src->page_table_lock);
-+		delimbo_huge_pte(&src_pte, src, addr);
-+		delimbo_huge_pte(&dst_pte, dst, addr);
- 		if (!huge_pte_none(huge_ptep_get(src_pte))) {
- 			if (cow)
- 				huge_ptep_set_wrprotect(src, addr, src_pte);
-@@ -960,6 +962,7 @@ retry:
- 	}
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_huge_pte(&ptep, mm, address);
- 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
- 	if (idx >= size)
- 		goto backout;
-@@ -1017,6 +1020,7 @@ int hugetlb_fault(struct mm_struct *mm, 
- 	ret = 0;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_huge_pte(&ptep, mm, address);
- 	/* Check for a racing update before calling hugetlb_cow */
- 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
- 		if (write_access && !pte_write(entry))
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/memory.c 2.6.25-rc8/mm/memory.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/memory.c	2008-04-10 08:09:10.000000000 -0700
-+++ 2.6.25-rc8/mm/memory.c	2008-04-10 08:32:36.000000000 -0700
-@@ -312,6 +312,7 @@ int __pte_alloc(struct mm_struct *mm, pm
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pmd(&pmd, mm, address);
- 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
- 		mm->nr_ptes++;
- 		pmd_populate(mm, pmd, new);
-@@ -330,6 +331,7 @@ int __pte_alloc_kernel(pmd_t *pmd, unsig
- 		return -ENOMEM;
- 
- 	spin_lock(&init_mm.page_table_lock);
-+	delimbo_pmd(&pmd, &init_mm, address);
- 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
- 		pmd_populate_kernel(&init_mm, pmd, new);
- 		new = NULL;
-@@ -549,6 +551,8 @@ again:
- 	src_pte = pte_offset_map_nested(src_pmd, addr);
- 	src_ptl = pte_lockptr(src_mm, src_pmd);
- 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-+
-+	delimbo_pte(&src_pte, &src_ptl, &src_pmd, src_mm, addr);
- 	arch_enter_lazy_mmu_mode();
- 
- 	do {
-@@ -1566,13 +1570,15 @@ EXPORT_SYMBOL_GPL(apply_to_page_range);
-  * and do_anonymous_page and do_no_page can safely check later on).
-  */
- static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
--				pte_t *page_table, pte_t orig_pte)
-+				pte_t *page_table, pte_t orig_pte,
-+				unsigned long address)
- {
- 	int same = 1;
- #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
- 	if (sizeof(pte_t) > sizeof(unsigned long)) {
- 		spinlock_t *ptl = pte_lockptr(mm, pmd);
- 		spin_lock(ptl);
-+		delimbo_pte(&page_table, &ptl, &pmd, mm, address);
- 		same = pte_same(*page_table, orig_pte);
- 		spin_unlock(ptl);
- 	}
-@@ -2099,7 +2105,7 @@ static int do_swap_page(struct mm_struct
- 	pte_t pte;
- 	int ret = 0;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-+	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
- 		goto out;
- 
- 	entry = pte_to_swp_entry(orig_pte);
-@@ -2178,6 +2184,10 @@ static int do_swap_page(struct mm_struct
- 	}
- 
- 	/* No need to invalidate - it was non-present before */
-+	/* Unless of course the cpu might be looking at an old
-+	   copy of the pte. */
-+	maybe_reload_tlb_mm(mm);
-+
- 	update_mmu_cache(vma, address, pte);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
-@@ -2229,6 +2239,10 @@ static int do_anonymous_page(struct mm_s
- 	set_pte_at(mm, address, page_table, entry);
- 
- 	/* No need to invalidate - it was non-present before */
-+	/* Unless of course the cpu might be looking at an old
-+	   copy of the pte. */
-+	maybe_reload_tlb_mm(mm);
-+
- 	update_mmu_cache(vma, address, entry);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
-@@ -2379,6 +2393,10 @@ static int __do_fault(struct mm_struct *
- 		}
- 
- 		/* no need to invalidate: a not-present page won't be cached */
-+		/* Unless of course the cpu could be looking at an old page
-+		   table entry. */
-+		maybe_reload_tlb_mm(mm);
-+
- 		update_mmu_cache(vma, address, entry);
- 	} else {
- 		mem_cgroup_uncharge_page(page);
-@@ -2488,7 +2506,7 @@ static int do_nonlinear_fault(struct mm_
- 				(write_access ? FAULT_FLAG_WRITE : 0);
- 	pgoff_t pgoff;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-+	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
- 		return 0;
- 
- 	if (unlikely(!(vma->vm_flags & VM_NONLINEAR) ||
-@@ -2547,6 +2565,7 @@ static inline int handle_pte_fault(struc
- 
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
-+	delimbo_pte(&pte, &ptl, &pmd, mm, address);
- 	if (unlikely(!pte_same(*pte, entry)))
- 		goto unlock;
- 	if (write_access) {
-@@ -2568,6 +2587,12 @@ static inline int handle_pte_fault(struc
- 		if (write_access)
- 			flush_tlb_page(vma, address);
- 	}
-+
-+	/* if the cpu could be looking at an old page table, we need to
-+	   flush out everything. */
-+	maybe_reload_tlb_mm(mm);
-+
-+
- unlock:
- 	pte_unmap_unlock(pte, ptl);
- 	return 0;
-@@ -2617,6 +2642,7 @@ int __pud_alloc(struct mm_struct *mm, pg
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pgd(&pgd, mm, address);
- 	if (pgd_present(*pgd))		/* Another has populated it */
- 		pud_free(mm, new);
- 	else
-@@ -2638,6 +2664,7 @@ int __pmd_alloc(struct mm_struct *mm, pu
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pud(&pud, mm, address);
- #ifndef __ARCH_HAS_4LEVEL_HACK
- 	if (pud_present(*pud))		/* Another has populated it */
- 		pmd_free(mm, new);
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/mempolicy.c 2.6.25-rc8/mm/mempolicy.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/mempolicy.c	2008-04-10 08:09:10.000000000 -0700
-+++ 2.6.25-rc8/mm/mempolicy.c	2008-04-10 09:18:32.000000000 -0700
-@@ -100,6 +100,12 @@
- static struct kmem_cache *policy_cache;
- static struct kmem_cache *sn_cache;
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+int migrate_page_tables_mm(struct mm_struct *mm,  int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private);
-+#endif
-+
- /* Highest zone. An specific allocation for a zone below that is not
-    policied. */
- enum zone_type policy_zone = 0;
-@@ -730,6 +736,20 @@ static struct page *new_node_page(struct
- 	return alloc_pages_node(node, GFP_HIGHUSER_MOVABLE, 0);
- }
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+static struct page *new_node_page_page_tables(struct mm_struct *mm,
-+					      unsigned long addr,
-+					      unsigned long node,
-+					      int **x,
-+					      int level)
-+{
-+	struct page *p;
-+	p = alloc_page_table_node(mm, addr, node, level);
-+	return p;
-+}
-+
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES  */
-+
- /*
-  * Migrate pages from one node to a target node.
-  * Returns error or the number of pages not migrated.
-@@ -750,6 +770,12 @@ static int migrate_to_node(struct mm_str
- 	if (!list_empty(&pagelist))
- 		err = migrate_pages(&pagelist, new_node_page, dest);
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	if (!err)
-+		err = migrate_page_tables_mm(mm, source,
-+					     new_node_page_page_tables, dest);
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-+
- 	return err;
- }
- 
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/migrate.c 2.6.25-rc8/mm/migrate.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/migrate.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/mm/migrate.c	2008-04-11 17:06:23.000000000 -0700
-@@ -30,9 +30,18 @@
- #include <linux/vmalloc.h>
- #include <linux/security.h>
- #include <linux/memcontrol.h>
-+#include <linux/mm.h>
-+#include <asm/tlb.h>
-+#include <asm/tlbflush.h>
-+#include <asm/pgalloc.h>
- 
- #include "internal.h"
- 
-+int migrate_page_tables_mm(struct mm_struct *mm, int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private);
-+
-+
- #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
- 
- /*
-@@ -155,6 +164,7 @@ static void remove_migration_pte(struct 
- 
-  	ptl = pte_lockptr(mm, pmd);
-  	spin_lock(ptl);
-+	delimbo_pte(&ptep, &ptl, &pmd, mm, addr);
- 	pte = *ptep;
- 	if (!is_swap_pte(pte))
- 		goto out;
-@@ -895,9 +905,10 @@ set_status:
- 		err = migrate_pages(&pagelist, new_page_node,
- 				(unsigned long)pm);
- 	else
--		err = -ENOENT;
-+		err = 0;
- 
- 	up_read(&mm->mmap_sem);
-+
- 	return err;
- }
- 
-@@ -1075,3 +1086,344 @@ int migrate_vmas(struct mm_struct *mm, c
-  	}
-  	return err;
- }
-+
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+static void rcu_free_pt(struct rcu_head *head)
-+{
-+	/* Need to know that the mm has been flushed before
-+	 * we get here.  Otherwise we need a way to find
-+	 * the appropriate mm to flush.
-+	 */
-+	struct page *page = container_of(head, struct page, rcu);
-+	INIT_LIST_HEAD(&page->lru);
-+	__free_page(page);
-+}
-+
-+int migrate_pgd(pgd_t *pgd, struct mm_struct *mm,
-+		unsigned long addr, struct page *dest,
-+		struct list_head *old_pages)
-+{
-+	unsigned long flags;
-+	void *dest_ptr;
-+	pud_t *pud;
-+
-+	spin_lock_irqsave(&mm->page_table_lock, flags);
-+
-+	delimbo_pgd(&pgd, mm, addr);
-+
-+	pud = pud_offset(pgd, addr);
-+	dest_ptr = page_address(dest);
-+	memcpy(dest_ptr, pud, PAGE_SIZE);
-+
-+	list_add_tail(&(pgd_page(*pgd)->lru), old_pages);
-+	pgd_populate(mm, pgd, dest_ptr);
-+
-+	maybe_need_flush_mm(mm);
-+
-+	spin_unlock_irqrestore(&mm->page_table_lock, flags);
-+
-+	return 0;
-+
-+}
-+
-+int migrate_pud(pud_t *pud, struct mm_struct *mm, unsigned long addr,
-+		struct page *dest, struct list_head *old_pages)
-+{
-+	unsigned long flags;
-+	void *dest_ptr;
-+	pmd_t *pmd;
-+
-+	spin_lock_irqsave(&mm->page_table_lock, flags);
-+
-+	delimbo_pud(&pud, mm, addr);
-+	pmd = pmd_offset(pud, addr);
-+
-+	dest_ptr = page_address(dest);
-+	memcpy(dest_ptr, pmd, PAGE_SIZE);
-+
-+	list_add_tail(&(pud_page(*pud)->lru), old_pages);
-+
-+	pud_populate(mm, pud, dest_ptr);
-+	maybe_need_flush_mm(mm);
-+
-+	spin_unlock_irqrestore(&mm->page_table_lock, flags);
-+
-+	return 0;
-+}
-+
-+
-+int migrate_pmd(pmd_t *pmd, struct mm_struct *mm, unsigned long addr,
-+		struct page *dest, struct list_head *old_pages)
-+{
-+	unsigned long flags;
-+	void *dest_ptr;
-+	spinlock_t *ptl;
-+	pte_t *pte;
-+
-+	spin_lock_irqsave(&mm->page_table_lock, flags);
-+
-+	delimbo_pmd(&pmd, mm, addr);
-+
-+	/* this could happen if the page table has been swapped out and we
-+	   were looking at the old one. */
-+	if (unlikely(!pmd_present(*pmd))) {
-+		spin_unlock_irqrestore(&mm->page_table_lock, flags);
-+		return 1;
-+	}
-+
-+	ptl = pte_lockptr(mm, pmd);
-+
-+	/* We need the page lock as well. */
-+	if (ptl != &mm->page_table_lock)
-+		spin_lock(ptl);
-+
-+	pte = pte_offset_map(pmd, addr);
-+
-+	dest_ptr = kmap_atomic(dest, KM_USER0);
-+	memcpy(dest_ptr, pte, PAGE_SIZE);
-+	list_add_tail(&(pmd_page(*pmd)->lru), old_pages);
-+
-+	kunmap_atomic(dest, KM_USER0);
-+	pte_unmap(pte);
-+	pte_lock_init(dest);
-+	pmd_populate(mm, pmd, dest);
-+
-+	maybe_need_flush_mm(mm);
-+
-+	if (ptl != &mm->page_table_lock)
-+		spin_unlock(ptl);
-+
-+	spin_unlock_irqrestore(&mm->page_table_lock, flags);
-+
-+	return 0;
-+}
-+
-+static int migrate_page_tables_pmd(pmd_t *pmd, struct mm_struct *mm,
-+				   unsigned long *address, int source,
-+				   new_page_table_t get_new_page,
-+				   unsigned long private,
-+				   struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pmd);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pmd_present(*pmd)) {
-+		*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address, private, &result,
-+					PAGE_TABLE_PTE);
-+		if (!new_page)
-+			return -ENOMEM;
-+		not_migrated = migrate_pmd(pmd, mm, *address, new_page,
-+					   old_pages);
-+		if (not_migrated)
-+			__free_page(new_page);
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+
-+	*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+
-+	return pages_not_migrated;
-+}
-+
-+static int migrate_page_tables_pud(pud_t *pud, struct mm_struct *mm,
-+				   unsigned long *address, int source,
-+				   new_page_table_t get_new_page,
-+				   unsigned long private,
-+				   struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pud);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pud_present(*pud)) {
-+		*address += (unsigned long)PTRS_PER_PMD *
-+				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address, private, &result,
-+					PAGE_TABLE_PMD);
-+		if (!new_page)
-+			return -ENOMEM;
-+
-+		not_migrated = migrate_pud(pud, mm, *address, new_page,
-+					   old_pages);
-+
-+		if (not_migrated)
-+			__free_page(new_page);
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++) {
-+		int ret;
-+		ret = migrate_page_tables_pmd(pmd_offset(pud, *address), mm,
-+					      address, source,
-+					      get_new_page, private,
-+					      old_pages);
-+		if (ret < 0)
-+			return ret;
-+		pages_not_migrated += ret;
-+	}
-+
-+	return pages_not_migrated;
-+}
-+
-+static int migrate_page_tables_pgd(pgd_t *pgd, struct mm_struct *mm,
-+				   unsigned long *address, int source,
-+				   new_page_table_t get_new_page,
-+				   unsigned long private,
-+				   struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pgd);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pgd_present(*pgd)) {
-+		*address +=  (unsigned long)PTRS_PER_PUD *
-+				(unsigned long)PTRS_PER_PMD *
-+				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address,  private, &result,
-+					PAGE_TABLE_PUD);
-+		if (!new_page)
-+			return -ENOMEM;
-+
-+		not_migrated = migrate_pgd(pgd, mm,  *address, new_page,
-+					   old_pages);
-+		if (not_migrated)
-+			__free_page(new_page);
-+
-+		pages_not_migrated += not_migrated;
-+
-+	}
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++) {
-+		int ret;
-+		ret = migrate_page_tables_pud(pud_offset(pgd, *address), mm,
-+					      address, source,
-+					      get_new_page, private,
-+					      old_pages);
-+		if (ret < 0)
-+			return ret;
-+		pages_not_migrated += ret;
-+	}
-+
-+	return pages_not_migrated;
-+}
-+
-+static int enter_page_table_relocation_mode(struct mm_struct *mm)
-+{
-+	if (down_interruptible(&mm->page_table_relocation_lock))
-+		return -EINTR;
-+	set_bit(MMF_NEED_REWALK, &mm->flags);
-+	return 0;
-+}
-+
-+static void leave_page_table_relocation_mode(struct mm_struct *mm)
-+{
-+	synchronize_rcu();
-+	clear_bit(MMF_NEED_REWALK, &mm->flags);
-+	up(&mm->page_table_relocation_lock);
-+}
-+
-+/* similiar to migrate pages, but migrates the page tables. */
-+int migrate_page_tables_mm(struct mm_struct *mm, int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(mm->pgd);
-+	struct page *new_page;
-+	unsigned long address = 0UL;
-+	int not_migrated;
-+	int ret = 0;
-+	LIST_HEAD(old_pages);
-+
-+	if (mm->pgd == NULL)
-+		return 0;
-+
-+	ret = enter_page_table_relocation_mode(mm);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < PTRS_PER_PGD && address < mm->task_size; i++) {
-+		ret = migrate_page_tables_pgd(pgd_offset(mm, address), mm,
-+					      &address, source,
-+					      get_new_page, private,
-+					      &old_pages);
-+		if (ret < 0)
-+			goto out_exit;
-+
-+		pages_not_migrated += ret;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, address, private, &result,
-+					PAGE_TABLE_PGD);
-+		if (!new_page) {
-+			ret = -ENOMEM;
-+			goto out_exit;
-+		}
-+
-+		not_migrated = migrate_top_level_page_table(mm, new_page,
-+							&old_pages);
-+		if (not_migrated) {
-+			pgd_list_del(page_address(new_page));
-+			__free_page(new_page);
-+		}
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+	/* reload or flush the tlbs if necessary. */
-+	maybe_reload_tlb_mm(mm);
-+
-+	/* Add the pages freed up to the rcu list to be freed later.
-+	 * We need to do this after we flush the mm to prevent
-+	 * a possible race where the page is freed while one of
-+	 * the cpus is still looking at it.
-+	 */
-+
-+	while (!list_empty(&old_pages)) {
-+		old_page = list_first_entry(&old_pages, struct page, lru);
-+		list_del(&old_page->lru);
-+		/* This is the same memory as the list
-+		 * head we are using to maintain the list.
-+		 * so we have to make sure the list_del
-+		 * comes first.
-+		 */
-+		INIT_RCU_HEAD(&old_page->rcu);
-+		call_rcu(&old_page->rcu, rcu_free_pt);
-+	}
-+
-+ out_exit:
-+	leave_page_table_relocation_mode(mm);
-+
-+	if (ret < 0)
-+		return ret;
-+	return pages_not_migrated;
-+}
-+
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/mremap.c 2.6.25-rc8/mm/mremap.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/mremap.c	2008-04-01 12:44:26.000000000 -0700
-+++ 2.6.25-rc8/mm/mremap.c	2008-04-10 08:32:36.000000000 -0700
-@@ -98,6 +98,7 @@ static void move_ptes(struct vm_area_str
- 	new_ptl = pte_lockptr(mm, new_pmd);
- 	if (new_ptl != old_ptl)
- 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-+	delimbo_pte(&new_pte, &new_ptl, &new_pmd, mm, new_addr);
- 	arch_enter_lazy_mmu_mode();
- 
- 	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE,
-diff -uprwNBb -X 2.6.25-rc8/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc8/mm/rmap.c 2.6.25-rc8/mm/rmap.c
---- /home/rossb/local/linux-2.6.25-rc8/mm/rmap.c	2008-04-10 08:09:10.000000000 -0700
-+++ 2.6.25-rc8/mm/rmap.c	2008-04-10 08:32:36.000000000 -0700
-@@ -255,6 +255,7 @@ pte_t *page_check_address(struct page *p
- 
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
-+	delimbo_pte(&pte, &ptl, &pmd, mm, address);
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
+On Mon, Apr 14, 2008 at 02:42:27PM +0200, Peter Zijlstra wrote:
+> On Mon, 2008-04-14 at 17:57 +0530, Gautham R Shenoy wrote:
+> 
+> > > Ok, so cpu_hotplug has a few issues imho:
+> > > 
+> > >  - access to active_writer isn't serialized and thus racey
+> > >  - holding the lock over the 'write' section generates the stuff above
+> > > 
+> > > So basically we want a reader/writer lock, where get/put_online_cpu is
+> > > the read side and cpu_hotplug_begin/done the write side.
+> > > 
+> > > We want:
+> > >  - readers to recurse in readers (code excluding cpu-hotplug can
+> > >    call code needing the same).
+> > > 
+> > >  - readers to recurse in the writer (the code changing the state can
+> > >    call code needing a stable state)
+> > > 
+> > > rwlock_t isn't quite suitable because it doesn't allow reader in writer
+> > > recursion and doesn't allow sleeping.
+> > > 
+> > > No lockdep annotation _yet_, because current lockdep recursive reader
+> > > support is:
+> > >  - broken (have a patch for that)
+> > >  - doesn't support reader in writer recursion (will have to do something
+> > >    about that)
+> > > 
+> > > Ok, so aside from the obviuos disclaimers, I've only compiled this and
+> > > might have made things way too complicated - but a slightly feverish
+> > > brain does that at times. What do people think?
+> > 
+> > You beat me to it! 
+> > 
+> > I just whipped up a similar patch, with slight differences, and lockdep
+> > annotations :)
+> 
+> lockdep doesn't quite acecpt reader in writer recursion without a little
+> patch like so:
+
+For the recursive reads, one could use the rwlock semantics.
+That coupled with the lockdep fix you provided
+http://lkml.org/lkml/2008/3/12/110
+should suffice.
+
+For read after write, we're anyway performing an explicit check to see
+if the active_writer is current, in which case, we just return without
+troubling the lockdep.
+
+Besides, I was not sure if we had any other scenario where we had a
+similar requirement to warrant for the addition within lockdep.
+
+> 
+> (fold of two patches - one fixing the recursion another adding
+> reader-writer recursion)
+> 
+> cpu_hotplug should use 3.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> Index: linux-2.6-2/kernel/lockdep.c
+> ===================================================================
+> --- linux-2.6-2.orig/kernel/lockdep.c
+> +++ linux-2.6-2/kernel/lockdep.c
+> @@ -1281,6 +1281,13 @@ check_deadlock(struct task_struct *curr,
+>  		 */
+>  		if ((read == 2) && prev->read)
+>  			return 2;
+> +		/*
+> +		 * Allow read-after-write recursion of the same
+> +		 * lock class (i.e. write_lock(lock)+read_lock(lock)):
+> +		 */
+> +		if (read == 3)
+> +			return 2;
+> +
+>  		return print_deadlock_bug(curr, prev, next);
+>  	}
+>  	return 1;
+> @@ -1557,12 +1564,11 @@ static int validate_chain(struct task_st
+>  		if (!ret)
+>  			return 0;
+>  		/*
+> -		 * Mark recursive read, as we jump over it when
+> -		 * building dependencies (just like we jump over
+> -		 * trylock entries):
+> +		 * If we are the first recursive read, don't jump over our
+> +		 * dependency.
+>  		 */
+> -		if (ret == 2)
+> -			hlock->read = 2;
+> +		if (hlock->read >= 2 && ret != 2)
+> +			hlock->read = 1;
+>  		/*
+>  		 * Add dependency only if this lock is not the head
+>  		 * of the chain, and if it's not a secondary read-lock:
+> Index: linux-2.6-2/lib/locking-selftest.c
+> ===================================================================
+> --- linux-2.6-2.orig/lib/locking-selftest.c
+> +++ linux-2.6-2/lib/locking-selftest.c
+> @@ -1135,12 +1135,12 @@ void locking_selftest(void)
+>  	debug_locks_silent = !debug_locks_verbose;
+> 
+>  	DO_TESTCASE_6R("A-A deadlock", AA);
+> -	DO_TESTCASE_6R("A-B-B-A deadlock", ABBA);
+> -	DO_TESTCASE_6R("A-B-B-C-C-A deadlock", ABBCCA);
+> -	DO_TESTCASE_6R("A-B-C-A-B-C deadlock", ABCABC);
+> -	DO_TESTCASE_6R("A-B-B-C-C-D-D-A deadlock", ABBCCDDA);
+> -	DO_TESTCASE_6R("A-B-C-D-B-D-D-A deadlock", ABCDBDDA);
+> -	DO_TESTCASE_6R("A-B-C-D-B-C-D-A deadlock", ABCDBCDA);
+> +	DO_TESTCASE_6("A-B-B-A deadlock", ABBA);
+> +	DO_TESTCASE_6("A-B-B-C-C-A deadlock", ABBCCA);
+> +	DO_TESTCASE_6("A-B-C-A-B-C deadlock", ABCABC);
+> +	DO_TESTCASE_6("A-B-B-C-C-D-D-A deadlock", ABBCCDDA);
+> +	DO_TESTCASE_6("A-B-C-D-B-D-D-A deadlock", ABCDBDDA);
+> +	DO_TESTCASE_6("A-B-C-D-B-C-D-A deadlock", ABCDBCDA);
+>  	DO_TESTCASE_6("double unlock", double_unlock);
+>  	DO_TESTCASE_6("initialize held", init_held);
+>  	DO_TESTCASE_6_SUCCESS("bad unlock order", bad_unlock_order);
+> Index: linux-2.6-2/include/linux/lockdep.h
+> ===================================================================
+> --- linux-2.6-2.orig/include/linux/lockdep.h
+> +++ linux-2.6-2/include/linux/lockdep.h
+> @@ -291,6 +291,7 @@ extern void lockdep_init_map(struct lock
+>   *   0: exclusive (write) acquire
+>   *   1: read-acquire (no recursion allowed)
+>   *   2: read-acquire with same-instance recursion allowed
+> + *   3: 2 + reader in writer recursion
+>   *
+>   * Values for check:
+>   *
+> 
+> > comments below
+> > 
+> > > 
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > ---
+> > > diff --git a/kernel/cpu.c b/kernel/cpu.c
+> > > index 2011ad8..119d837 100644
+> > > --- a/kernel/cpu.c
+> > > +++ b/kernel/cpu.c
+> > > @@ -27,12 +27,13 @@ static int cpu_hotplug_disabled;
+> > > 
+> > >  static struct {
+> > >  	struct task_struct *active_writer;
+> > > -	struct mutex lock; /* Synchronizes accesses to refcount, */
+> > > +	spinlock_t lock; /* Synchronizes accesses to refcount, */
+> > >  	/*
+> > >  	 * Also blocks the new readers during
+> > >  	 * an ongoing cpu hotplug operation.
+> > >  	 */
+> > >  	int refcount;
+> > > +	wait_queue_head_t reader_queue;
+> > >  	wait_queue_head_t writer_queue;
+> > >  } cpu_hotplug;
+> > > 
+> > > @@ -41,8 +42,9 @@ static struct {
+> > >  void __init cpu_hotplug_init(void)
+> > >  {
+> > >  	cpu_hotplug.active_writer = NULL;
+> > > -	mutex_init(&cpu_hotplug.lock);
+> > > +	spin_lock_init(&cpu_hotplug.lock);
+> > >  	cpu_hotplug.refcount = 0;
+> > > +	init_waitqueue_head(&cpu_hotplug.reader_queue);
+> > >  	init_waitqueue_head(&cpu_hotplug.writer_queue);
+> > >  }
+> > > 
+> > > @@ -51,27 +53,42 @@ void __init cpu_hotplug_init(void)
+> > >  void get_online_cpus(void)
+> > >  {
+> > >  	might_sleep();
+> > > +
+> > > +	spin_lock(&cpu_hotplug.lock);
+> > >  	if (cpu_hotplug.active_writer == current)
+> > > -		return;
+> > We don't need to perform this check holding the spinlock.
+> > The reason being, this check should succeed only for get_online_cpus()
+> > invoked from the CPU-hotplug callback path. and by that time,
+> > the writer thread would have set active_writer to it's task struct
+> > value.
+> > 
+> > For every other thread, when it's trying to check if it is the
+> > active_writer, the value is either NULL, or the value of the currently
+> > active writer's task_struct, but never current.
+> > 
+> > Am I missing something ?
+> 
+> I guess you're right - inside makes me feel better though :-) And its
+> not like its a fast path or something like that.
+
+I guess yes. But as of now, I don't see any point why we should take the
+spinlock to perform that particular check.
+
+> 
+> > > -	mutex_lock(&cpu_hotplug.lock);
+> > > +		goto unlock;
+> > > +
+> > > +	if (cpu_hotplug.active_writer) {
+> > > +		DEFINE_WAIT(wait);
+> > > +
+> > > +		for (;;) {
+> > > +			prepare_to_wait(&cpu_hotplug.reader_queue, &wait,
+> > > +					TASK_UNINTERRUPTIBLE);
+> > > +			if (!cpu_hotplug.active_writer)
+> > > +				break;
+> > > +			spin_unlock(&cpu_hotplug.lock);
+> > > +			schedule();
+> > > +			spin_lock(&cpu_hotplug.lock);
+> > > +		}
+> > > +		finish_wait(&cpu_hotplug.reader_queue, &wait);
+> > > +	}
+> > >  	cpu_hotplug.refcount++;
+> > > -	mutex_unlock(&cpu_hotplug.lock);
+> > > -
+> > > + unlock:
+> > > +	spin_unlock(&cpu_hotplug.lock);
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(get_online_cpus);
+> > > 
+> > >  void put_online_cpus(void)
+> > >  {
+> > > +	spin_lock(&cpu_hotplug.lock);
+> > >  	if (cpu_hotplug.active_writer == current)
+> > > -		return;
+> > 
+> > ditto!
+> > 
+> > > -	mutex_lock(&cpu_hotplug.lock);
+> > > -	cpu_hotplug.refcount--;
+> > > +		goto unlock;
+> > > 
+> > > -	if (unlikely(writer_exists()) && !cpu_hotplug.refcount)
+> > > +	cpu_hotplug.refcount--;
+> > > +	if (!cpu_hotplug.refcount)
+> > >  		wake_up(&cpu_hotplug.writer_queue);
+> > 	hmm.. when there is no active writer, can't we avoid this
+> > 	additional wake up ??
+> > > -
+> > > -	mutex_unlock(&cpu_hotplug.lock);
+> > > -
+> > > + unlock:
+> > > +	spin_unlock(&cpu_hotplug.lock);
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(put_online_cpus);
+> > > 
+> > > @@ -95,45 +112,41 @@ void cpu_maps_update_done(void)
+> > >   * This ensures that the hotplug operation can begin only when the
+> > >   * refcount goes to zero.
+> > >   *
+> > > - * Note that during a cpu-hotplug operation, the new readers, if any,
+> > > - * will be blocked by the cpu_hotplug.lock
+> > > - *
+> > > - * Since cpu_maps_update_begin is always called after invoking
+> > > - * cpu_maps_update_begin, we can be sure that only one writer is active.
+> > > - *
+> > > - * Note that theoretically, there is a possibility of a livelock:
+> > > - * - Refcount goes to zero, last reader wakes up the sleeping
+> > > - *   writer.
+> > > - * - Last reader unlocks the cpu_hotplug.lock.
+> > > - * - A new reader arrives at this moment, bumps up the refcount.
+> > > - * - The writer acquires the cpu_hotplug.lock finds the refcount
+> > > - *   non zero and goes to sleep again.
+> > > - *
+> > > - * However, this is very difficult to achieve in practice since
+> > > - * get_online_cpus() not an api which is called all that often.
+> > > - *
+> > > + * cpu_hotplug is basically an unfair recursive reader/writer lock that
+> > > + * allows reader in writer recursion.
+> > >   */
+> > >  static void cpu_hotplug_begin(void)
+> > >  {
+> > > -	DECLARE_WAITQUEUE(wait, current);
+> > > -
+> > > -	mutex_lock(&cpu_hotplug.lock);
+> > > +	might_sleep();
+> > > 
+> > > -	cpu_hotplug.active_writer = current;
+> > > -	add_wait_queue_exclusive(&cpu_hotplug.writer_queue, &wait);
+> > > -	while (cpu_hotplug.refcount) {
+> > > -		set_current_state(TASK_UNINTERRUPTIBLE);
+> > > -		mutex_unlock(&cpu_hotplug.lock);
+> > > -		schedule();
+> > > -		mutex_lock(&cpu_hotplug.lock);
+> > > +	spin_lock(&cpu_hotplug.lock);
+> > > +	if (cpu_hotplug.refcount || cpu_hotplug.active_writer) {
+> > 	if we reach this point, there can be only one writer, i.e.
+> > 	ourselves!
+> > 
+> > 	Because, the other writers are serialized by the
+> > 	cpu_add_remove_lock in cpu_up()/cpu_down().
+> > 
+> > 	Hence we can safely assign cpu_hotplug.active_writer to current.
+> 
+> Ah, missed that. Does it make sense to keep it like this, in case this
+> outer lock goes away?
+
+I wouldn't want to see the outer lock go away.
+It serializes the access to the cpu_present_map, which is
+updated on addition of logical cpus, in the Dynamic LPAR scenario.
+
+> 
+> > > +		DEFINE_WAIT(wait);
+> > > +
+> > > +		for (;;) {
+> > > +			prepare_to_wait(&cpu_hotplug.writer_queue, &wait,
+> > > +					TASK_UNINTERRUPTIBLE);
+> > > +			if (!cpu_hotplug.refcount && !cpu_hotplug.active_writer)
+> > > +				break;
+> > > +			spin_unlock(&cpu_hotplug.lock);
+> > > +			schedule();
+> > > +			spin_lock(&cpu_hotplug.lock);
+> > > +		}
+> > > +		finish_wait(&cpu_hotplug.writer_queue, &wait);
+> > >  	}
+> > > -	remove_wait_queue_locked(&cpu_hotplug.writer_queue, &wait);
+> > > +	cpu_hotplug.active_writer = current;
+> > 
+> > 
+> > > +	spin_unlock(&cpu_hotplug.lock);
+> > >  }
+> > > 
+> > >  static void cpu_hotplug_done(void)
+> > >  {
+> > > +	spin_lock(&cpu_hotplug.lock);
+> > >  	cpu_hotplug.active_writer = NULL;
+> > > -	mutex_unlock(&cpu_hotplug.lock);
+> > > +	if (!list_empty(&cpu_hotplug.writer_queue.task_list))
+> > > +		wake_up(&cpu_hotplug.writer_queue);
+> > > +	else
+> > > +		wake_up_all(&cpu_hotplug.reader_queue);
+> > > +	spin_unlock(&cpu_hotplug.lock);
+> > >  }
+> > >  /* Need to know about CPUs going up/down? */
+> > >  int __cpuinit register_cpu_notifier(struct notifier_block *nb)
+> > >
+> > 
+> > Looks good otherwise!
+> 
+> Thanks..
+> 
+> lockdep annotations:
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> Index: linux-2.6-2/include/linux/lockdep.h
+> ===================================================================
+> --- linux-2.6-2.orig/include/linux/lockdep.h
+> +++ linux-2.6-2/include/linux/lockdep.h
+> @@ -458,4 +458,19 @@ static inline void print_irqtrace_events
+>  # define rwsem_release(l, n, i)			do { } while (0)
+>  #endif
+> 
+> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> +# ifdef CONFIG_PROVE_LOCKING
+> +#  define cpu_hotplug_acquire(l, s, t, i)	lock_acquire(l, s, t, 0, 2,
+> i)
+> +#  define cpu_hotplug_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 3,
+> 2, i)
+> +# else
+> +#  define cpu_hotplug_acquire(l, s, t, i)	lock_acquire(l, s, t, 0, 1,
+> i)
+> +#  define cpu_hotplug_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 3,
+> 1, i)
+> +# endif
+> +# define cpu_hotplug_release(l, n, i)		lock_release(l, n, i)
+> +#else
+> +# define cpu_hotplug_acquire(l, s, t, i)	do { } while (0)
+> +# define cpu_hotplug_acquire_read(l, s, t, i)	do { } while (0)
+> +# define cpu_hotplug_release(l, n, i)		do { } while (0)
+> +#endif
+> +
+>  #endif /* __LINUX_LOCKDEP_H */
+> Index: linux-2.6-2/kernel/cpu.c
+> ===================================================================
+> --- linux-2.6-2.orig/kernel/cpu.c
+> +++ linux-2.6-2/kernel/cpu.c
+> @@ -35,12 +35,20 @@ static struct {
+>  	int refcount;
+>  	wait_queue_head_t reader_queue;
+>  	wait_queue_head_t writer_queue;
+> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> +	struct lockdep_map	dep_map;
+> +#endif
+>  } cpu_hotplug;
+> 
+>  #define writer_exists() (cpu_hotplug.active_writer != NULL)
+> 
+>  void __init cpu_hotplug_init(void)
+>  {
+> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> +	static struct lockdep_class_key __key;
+> +
+> +	lockdep_init_map(&cpu_hotplug.dep_map, "cpu_hotplug", &__key, 0);
+> +#endif
+>  	cpu_hotplug.active_writer = NULL;
+>  	spin_lock_init(&cpu_hotplug.lock);
+>  	cpu_hotplug.refcount = 0;
+> @@ -54,6 +62,8 @@ void get_online_cpus(void)
+>  {
+>  	might_sleep();
+> 
+> +	cpu_hotplug_acquire_read(&cpu_hotplug.dep_map, 0, 0, _THIS_IP_);
+> +
+>  	spin_lock(&cpu_hotplug.lock);
+>  	if (cpu_hotplug.active_writer == current)
+>  		goto unlock;
+> @@ -80,6 +90,8 @@ EXPORT_SYMBOL_GPL(get_online_cpus);
+> 
+>  void put_online_cpus(void)
+>  {
+> +	cpu_hotplug_release(&cpu_hotplug.lock, 1, _THIS_IP_);
+> +
+>  	spin_lock(&cpu_hotplug.lock);
+>  	if (cpu_hotplug.active_writer == current)
+>  		goto unlock;
+> @@ -119,6 +131,8 @@ static void cpu_hotplug_begin(void)
+>  {
+>  	might_sleep();
+> 
+> +	cpu_hotplug_acquire(&cpu_hotplug.dep_map, 0, 0, _THIS_IP_);
+> +
+>  	spin_lock(&cpu_hotplug.lock);
+>  	if (cpu_hotplug.refcount || cpu_hotplug.active_writer) {
+>  		DEFINE_WAIT(wait);
+> @@ -140,6 +154,8 @@ static void cpu_hotplug_begin(void)
+> 
+>  static void cpu_hotplug_done(void)
+>  {
+> +	cpu_hotplug_release(&cpu_hotplug.lock, 1, _THIS_IP_);
+> +
+>  	spin_lock(&cpu_hotplug.lock);
+>  	cpu_hotplug.active_writer = NULL;
+>  	if (!list_empty(&cpu_hotplug.writer_queue.task_list))
+> 
+
+Looks good. Will test the series and report back.
+
+But w.r.t the problem at hand, I susupect
+some more changes are required in the
+cpufreq-cpuhotplug interations.
+
+-- 
+Thanks and Regards
+gautham
