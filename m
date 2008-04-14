@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYDNT0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbYDNT3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762562AbYDNT0j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbYDNT0c
+	id S1761765AbYDNT3j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYDNT33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:26:32 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57964 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752576AbYDNT0b (ORCPT
+	Mon, 14 Apr 2008 15:29:29 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58490 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752667AbYDNT33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:26:31 -0400
-Date: Mon, 14 Apr 2008 20:16:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080414201639.799770f4@core>
-In-Reply-To: <1208195673.7164.2.camel@twins>
-References: <20080411210022.GJ11962@parisc-linux.org>
-	<1208003081.7427.7.camel@twins>
-	<20080412172606.GL11962@parisc-linux.org>
-	<adaskxqrgsl.fsf@cisco.com>
-	<20080412204748.GN11962@parisc-linux.org>
-	<20080413070833.GC19773@elte.hu>
-	<20080413125758.GQ11962@parisc-linux.org>
-	<20080414153928.GA22259@elte.hu>
-	<adafxtoqvgh.fsf@cisco.com>
-	<1208190749.7375.10.camel@twins>
-	<87d4osuy6r.fsf@basil.nowhere.org>
-	<1208195673.7164.2.camel@twins>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 15:29:29 -0400
+Date: Mon, 14 Apr 2008 15:29:28 -0400
+To: Jan Kara <jack@suse.cz>
+Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
+       Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080414192928.GM7385@csclub.uwaterloo.ca>
+References: <ah5X5-4tl-13@gated-at.bofh.it> <ah66A-4Nk-7@gated-at.bofh.it> <ah7vN-7Wz-9@gated-at.bofh.it> <E1JkIJ0-0000tG-LV@be1.7eggert.dyndns.org> <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca> <20080414190308.GJ15824@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414190308.GJ15824@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 14, 2008 at 09:03:09PM +0200, Jan Kara wrote:
+>   Why would it be doing locking? If some nasty user runs the process, he
+> *wants* his two threads to race as much as possible and trigger the race.
+> And then use corrupted f_pos.
 
-> Because we can then eventually get rid of semaphores, so those people
-> cannot mistakenly use them. Its just too easy to create prio inversion
-> with them around.
+Why would you want to?  You can already set the filepointer explicitly
+to any value you want if you have the filehandle.
 
-And it'll be far harder to even find the priority inversion problems in
-the open coded alternatives.
+If you had a file with some security checks for whether the user could
+read from it implemented based on locations then you would check it when
+you read/write not when you seek, since after all you could just keep
+reading until you get to the desired position.
+
+-- 
+Len Sorensen
