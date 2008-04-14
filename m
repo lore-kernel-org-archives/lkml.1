@@ -1,111 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYDNMLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYDNMLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbYDNMLT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 08:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYDNMLJ
+	id S1758602AbYDNMLr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 08:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYDNMLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 08:11:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41273 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753571AbYDNMLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 08:11:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 14:11:17 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200804040111.15255.rjw@sisk.pl> <200804140309.22057.rjw@sisk.pl> <1208143380.6958.105.camel@pasglop>
-In-Reply-To: <1208143380.6958.105.camel@pasglop>
+	Mon, 14 Apr 2008 08:11:37 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50735 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753734AbYDNMLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 08:11:36 -0400
+Message-ID: <480349EB.8040708@linux.vnet.ibm.com>
+Date: Mon, 14 Apr 2008 17:41:23 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       ", pbadari@us.ibm.com, michael@ellerman.id.au, Andy Whitcroft <apw@shadowen.org>"@d23av01.au.ibm.com
+Subject: [BUG] linux-next: Tree for April 14 - kernel BUG at arch/powerpc/mm/init_64.c:240!
+ (fixed in -mm)
+References: <20080414203423.22bf99d1.sfr@canb.auug.org.au>
+In-Reply-To: <20080414203423.22bf99d1.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804141411.19385.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
-> 
-> > To avoid breaking things (from the functional point of view) unnecessarily.
-> > 
-> > In short, I don't really see the difference between moving ->prepare() before
-> > the freezer and droppig the freezer, which I'm not going to do right now.
-> 
-> I believe the use of prepare for things like request_firmware etc... is
-> worth the effort of fixing the known breakage of not having the freezer
-> while preventing insertion of new devices (mostly USB). In fact, it
-> won't be such a big issue as the core should/will return an error from
-> attempting to add the device in that case.
+Hi Stephen,
 
-Okay, this was a shortcut.  [If we're discussing things when there's 2 am here,
-I'm at a big disadvantage. :-)]
+The next-20080414 kernel panic's while booting up on the ppc machines.
+The same was seen in the 2.6.25-rc8-mm1 kernel and was fixed by
+the patch at http://lkml.org/lkml/2008/4/2/650 
 
-I think we agree that finally there should be no freezer and the things should
-go like this:
+------------[ cut here ]------------
+kernel BUG at arch/powerpc/mm/init_64.c:240!
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=128 NUMA pSeries
+Modules linked in:
+NIP: c0000000006ca18c LR: c0000000006ca184 CTR: 0000000000000000
+REGS: c00000000081f950 TRAP: 0700   Not tainted  (2.6.25-rc9-next-20080414-x86-latest.git-autotest)
+MSR: 8000000000021032 <ME,IR,DR>  CR: 24000088  XER: 20000001
+TASK = c0000000007334d0[0] 'swapper' THREAD: c00000000081c000 CPU: 0
+GPR00: c0000000006ca184 c00000000081fbd0 c00000000081c778 0000000000000001 
+GPR04: c0000000006def90 000000000000016e 0000000000000170 0000000000001090 
+GPR08: 0000000207038208 0000000000000000 0000000000000001 800000000ed93080 
+GPR12: c00000000081fae0 c000000000733e80 0000000000000000 c0000000005f4788 
+GPR16: 4000000002100000 c0000000005f3010 0000000000000000 000000000023f000 
+GPR20: 00000000027d07d8 c0000000006d07d8 00000000027d0a48 c0000000006d0a48 
+GPR24: c0000000005f41c8 0000000002b00000 0000000000000000 0000000000000000 
+GPR28: cf000000001f8000 cf00000001000000 0000000001000000 cf00000000000000 
+NIP [c0000000006ca18c] .vmemmap_populate+0xbc/0x100
+LR [c0000000006ca184] .vmemmap_populate+0xb4/0x100
+Call Trace:
+[c00000000081fbd0] [c0000000006ca184] .vmemmap_populate+0xb4/0x100 (unreliable)
+[c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
+[c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
+[c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
+[c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
+[c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
+[c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
+Instruction dump:
+7fe3fb78 7ca02a14 4082000c 3860fff4 48000040 e9228980 e9628988 e8e90002 
+e90b0002 4b961ab1 60000000 78630fe0 <0b030000> 7ffff214 7fbdf214 7fbfe040 
+---[ end trace 8640abe69a316dee ]---
+Kernel panic - not syncing: Attempted to kill the idle task!
+Call Trace:
+[c00000000081f470] [c00000000000f970] .show_stack+0x70/0x1bc (unreliable)
+[c00000000081f520] [c0000000000540fc] .panic+0x80/0x1b8
+[c00000000081f5c0] [c000000000058ca4] .do_exit+0x8c/0x758
+[c00000000081f680] [c0000000000235cc] .die+0x24c/0x27c
+[c00000000081f720] [c0000000000238fc] ._exception+0x88/0x204
+[c00000000081f8e0] [c000000000004a84] program_check_common+0x104/0x180
+--- Exception: 700 at .vmemmap_populate+0xbc/0x100
+    LR = .vmemmap_populate+0xb4/0x100
+[c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
+[c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
+[c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
+[c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
+[c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
+[c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
 
-(1) notifiers
-(2) platform ->begin()
-(3) ->prepare()
-(4) ->suspend()
-(5) platform ->prepare()
-(6) ->suspend_noirq()
-(7) platform ->enter()
-(8) (we are in the sleep state)
-(9) ->resume_noirq()
-(10) platform ->finish()
-(11) ->resume()
-(12) ->complete()
-(13) platform ->end()
-(14) notifiers
 
-Now, the question arises how to reach that status from what we have at the
-moment and IMO there are two ways to go.
 
-The first one is what I've implemented in the $subject patch:
-(1) make ->prepare() be executed after the freezer with the current semantics
-    (ie. you can assume the user space do be there when ->prepare() is running
-    and use a notifier for things depending on that assumption)
-(2) after we've dropped the freezer, change the semantics of ->prepare() (now
-    you can assume that the user space is there)
-(3) move code from notifiers to ->prepare() - this is entirely optional from
-    the functionality point of view, the code can stay in the notifiers.
-The advantage of this is that it doesn't require nontrivial modifications of
-the core suspend/hibernation code.
-
-The second one is a bit more complicated:
-(1) make ->prepare() be executed before the freezer with the semantics like
-    "you can assume that the user space is there while ->prepare() is running,
-    but you are supposed to prevent new children of the device from being
-    registered from that point on _and_ you have to make sure that freezable
-    tasks will be able to freeze after ->prepare() has run" (but why on Earth a
-    driver writer is now required to know what's a freezable task etc.?)
-(2) after we've dropped the freezer, change the semantics of ->prepare() (now
-    there are no freezable tasks to care for)
-(3) remove the code necessary to make the freezer happy from ->prepare()
-    (if any) - this need not be totally optional, IMO
-Also, to implement this we'd have to change the core code (ie. add two
-additional routines, device_prepare() and device_complete() to be called by it,
-rework the error paths, move the platform ->begin()/->end() invocations
-before/after the freezer etc.).  In the end, we'll end up with a more
-complicated core in this case (we can simplify it afterwards, but that means
-one patchset more).
-
-[See how the semantics of ->prepare() changes in both cases, BTW.  We can't
-avoid changing it in the future, we can only choose _how_ to change it.]
-
-I prefer the first one quite a lot.
-
-Thanks,
-Rafael
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
