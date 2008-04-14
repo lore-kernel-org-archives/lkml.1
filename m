@@ -1,59 +1,383 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYDNKzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYDNK5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbYDNKzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYDNKzb
+	id S1755865AbYDNK5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYDNK5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:55:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2987 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751618AbYDNKza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:55:30 -0400
-Date: Mon, 14 Apr 2008 12:55:22 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
-Message-ID: <20080414105522.GA4716@ucw.cz>
-References: <200804040111.15255.rjw@sisk.pl> <200804132339.45280.rjw@sisk.pl> <1208124646.6958.61.camel@pasglop> <200804140027.12161.rjw@sisk.pl> <1208126822.6958.63.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Apr 2008 06:57:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:10946 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbYDNK5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 06:57:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=niskHt/tUbkyyZFpJmsDQ2d4TxqAlqUtoy7QYfxNY/XycH/BgVu3Q6lX1Bvn4x54Mag59BEJFhqzcCeXK2y3xgaETdOHUXVWENzqHM0iXsbo5ZW8KZSatikHxXlAyVR3bxAFsyCooC5qivxW5hMwYkmrgGIecj0vNiJHUT0Of7o=
+Message-ID: <517f3f820804140357k62b3bff4p555ba6a5b9438c35@mail.gmail.com>
+Date: Mon, 14 Apr 2008 12:57:08 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Erik Bosman" <ebn310@few.vu.nl>
+Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrea Arcangeli" <andrea@cpushare.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208126822.6958.63.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl>
+X-Google-Sender-Auth: 3af18d81ad01a172
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
-> 
-> > Well, I'm not sure and I'm not going to introduce the change right now, after
-> > the paches have been included in -mm.
-> > 
-> > That would require quite some changes in the core code that I'd prefer to
-> > avoid for now.  We can do something like this in a separate patch series after
-> > the present one settles down a bit.
-> 
-> I disagree.
-> 
-> Doing it later would introduce yet another major semantic change.
+Erik,
 
-'allow load_firmware from prepare that was not allowed before' is not 'major'.
+Could you CC me please on kernel-userland API changes.
 
-If you feel strongly about that, please prepare patch at the top of
-Rafael's and we can discuss it.
+Also it would be helpful if you could provide a short paragraph
+(plaintext is fine) that describes the new commands and would be
+suitable for inclusion in the prctl.2 (
+http://www.kernel.org/doc/man-pages/online/pages/man2/prctl.2.html )
+man page -- would that be possible?
 
-But it really should be separate patch.
-							Pavel
+Cheers,
+
+Michael
+
+On 4/11/08, Erik Bosman <ebn310@few.vu.nl> wrote:
+>
+>     x86: Implement prctl PR_GET_TSC and PR_SET_TSC
+>
+>     This patch adds a configure option CONFIG_DISABLE_TSC
+>     (off by default) for the x86 platform to enable the
+>     PR_GET_TSC and PR_SET_TSC commands. These control the
+>     ability to use the timestamp counter from userspace
+>     (the RDTSC instruction.)
+>
+>     This patch uses code earlier used to disable the
+>     timestamp counter for the SECCOMP framework. It used
+>     to disable the RDTSC on 32 bit kernels, but allow it
+>     on x86_64. This patch makes SECCOMP disable the
+>     timestamp counter whenever CONFIG_DISABLE_TSC is
+>     enabled.
+>
+>         Signed-off-by: Erik Bosman <ejbosman@cs.vu.nl>
+>  ---
+>   arch/x86/Kconfig                 |   15 ++++++++
+>   arch/x86/kernel/process_32.c     |   46 ++++++++++++++++++++++--
+>   arch/x86/kernel/process_64.c     |   72 ++++++++++++++++++++++++++++++++++++++
+>   include/asm-x86/processor.h      |   11 ++++++
+>   include/asm-x86/thread_info_64.h |    4 ++-
+>   include/asm-x86/tsc.h            |    3 ++
+>   kernel/seccomp.c                 |    2 +-
+>   7 files changed, 148 insertions(+), 5 deletions(-)
+>
+>  diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>  index 56bef39..8b79203 100644
+>  --- a/arch/x86/Kconfig
+>  +++ b/arch/x86/Kconfig
+>  @@ -1122,6 +1122,21 @@ config IRQBALANCE
+>           The default yes will allow the kernel to do irq load balancing.
+>           Saying no will keep the kernel from doing irq load balancing.
+>
+>  +config DISABLE_TSC
+>  +       def_bool n
+>  +       prompt "Make availability of the RDTSC instruction configurable"
+>  +       depends on (X86_32 || X86_64) && EXPERIMENTAL
+>  +       help
+>  +         While the RDTSC instruction allows for very precise time
+>  +         measurements, it is also a source for non-determinism
+>  +         during the execution of a process which can be a problem in some
+>  +         security contexts. This option adds prctl commands to configure
+>  +         and test the availability of the RDTSC instruction on a
+>  +         per-process basis. Choosing this option may cause a small
+>  +         performance hit during context switching.
+>  +
+>  +         If unsure, say N.
+>  +
+>   config SECCOMP
+>         def_bool y
+>         prompt "Enable seccomp to safely compute untrusted bytecode"
+>  diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+>  index 6496344..e6a861f 100644
+>  --- a/arch/x86/kernel/process_32.c
+>  +++ b/arch/x86/kernel/process_32.c
+>  @@ -36,6 +36,7 @@
+>   #include <linux/personality.h>
+>   #include <linux/tick.h>
+>   #include <linux/percpu.h>
+>  +#include <linux/prctl.h>
+>
+>   #include <asm/uaccess.h>
+>   #include <asm/pgtable.h>
+>  @@ -528,11 +529,12 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
+>   }
+>   EXPORT_SYMBOL_GPL(start_thread);
+>
+>  -#ifdef CONFIG_SECCOMP
+>  +#ifdef CONFIG_DISABLE_TSC
+>   static void hard_disable_TSC(void)
+>   {
+>         write_cr4(read_cr4() | X86_CR4_TSD);
+>   }
+>  +
+>   void disable_TSC(void)
+>   {
+>         preempt_disable();
+>  @@ -544,11 +546,48 @@ void disable_TSC(void)
+>                 hard_disable_TSC();
+>         preempt_enable();
+>   }
+>  +
+>   static void hard_enable_TSC(void)
+>   {
+>         write_cr4(read_cr4() & ~X86_CR4_TSD);
+>   }
+>  -#endif /* CONFIG_SECCOMP */
+>  +
+>  +void enable_TSC(void)
+>  +{
+>  +       preempt_disable();
+>  +       if (test_and_clear_thread_flag(TIF_NOTSC))
+>  +               /*
+>  +                * Must flip the CPU state synchronously with
+>  +                * TIF_NOTSC in the current running context.
+>  +                */
+>  +               hard_enable_TSC();
+>  +       preempt_enable();
+>  +}
+>  +
+>  +int get_tsc_mode(unsigned long adr)
+>  +{
+>  +       unsigned int val;
+>  +
+>  +       if (test_thread_flag(TIF_NOTSC))
+>  +               val = PR_TSC_SIGSEGV;
+>  +       else
+>  +               val = PR_TSC_ENABLE;
+>  +
+>  +       return put_user(val, (unsigned int __user *)adr);
+>  +}
+>  +
+>  +int set_tsc_mode(unsigned int val)
+>  +{
+>  +       if (val == PR_TSC_SIGSEGV)
+>  +               disable_TSC();
+>  +       else if (val == PR_TSC_ENABLE)
+>  +               enable_TSC();
+>  +       else
+>  +               return -EINVAL;
+>  +
+>  +       return 0;
+>  +}
+>  +#endif /* CONFIG_DISABLE_TSC */
+>
+>   static noinline void
+>   __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+>  @@ -582,7 +621,7 @@ __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+>                 set_debugreg(next->debugreg7, 7);
+>         }
+>
+>  -#ifdef CONFIG_SECCOMP
+>  +#ifdef CONFIG_DISABLE_TSC
+>         if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
+>             test_tsk_thread_flag(next_p, TIF_NOTSC)) {
+>                 /* prev and next are different */
+>  @@ -839,3 +878,4 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
+>         unsigned long range_end = mm->brk + 0x02000000;
+>         return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
+>   }
+>  +
+>  diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+>  index 043a0c8..8ef8a2f 100644
+>  --- a/arch/x86/kernel/process_64.c
+>  +++ b/arch/x86/kernel/process_64.c
+>  @@ -37,6 +37,7 @@
+>   #include <linux/kprobes.h>
+>   #include <linux/kdebug.h>
+>   #include <linux/tick.h>
+>  +#include <linux/prctl.h>
+>
+>   #include <asm/uaccess.h>
+>   #include <asm/pgtable.h>
+>  @@ -555,6 +556,66 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
+>   }
+>   EXPORT_SYMBOL_GPL(start_thread);
+>
+>  +#ifdef CONFIG_DISABLE_TSC
+>  +static void hard_disable_TSC(void)
+>  +{
+>  +       write_cr4(read_cr4() | X86_CR4_TSD);
+>  +}
+>  +
+>  +void disable_TSC(void)
+>  +{
+>  +       preempt_disable();
+>  +       if (!test_and_set_thread_flag(TIF_NOTSC))
+>  +               /*
+>  +                * Must flip the CPU state synchronously with
+>  +                * TIF_NOTSC in the current running context.
+>  +                */
+>  +               hard_disable_TSC();
+>  +       preempt_enable();
+>  +}
+>  +
+>  +static void hard_enable_TSC(void)
+>  +{
+>  +       write_cr4(read_cr4() & ~X86_CR4_TSD);
+>  +}
+>  +
+>  +void enable_TSC(void)
+>  +{
+>  +       preempt_disable();
+>  +       if (test_and_clear_thread_flag(TIF_NOTSC))
+>  +               /*
+>  +                * Must flip the CPU state synchronously with
+>  +                * TIF_NOTSC in the current running context.
+>  +                */
+>  +               hard_enable_TSC();
+>  +       preempt_enable();
+>  +}
+>  +
+>  +int get_tsc_mode(unsigned long adr)
+>  +{
+>  +       unsigned int val;
+>  +
+>  +       if (test_thread_flag(TIF_NOTSC))
+>  +               val = PR_TSC_SIGSEGV;
+>  +       else
+>  +               val = PR_TSC_ENABLE;
+>  +
+>  +       return put_user(val, (unsigned int __user *)adr);
+>  +}
+>  +
+>  +int set_tsc_mode(unsigned int val)
+>  +{
+>  +       if (val == PR_TSC_SIGSEGV)
+>  +               disable_TSC();
+>  +       else if (val == PR_TSC_ENABLE)
+>  +               enable_TSC();
+>  +       else
+>  +               return -EINVAL;
+>  +
+>  +       return 0;
+>  +}
+>  +#endif /* CONFIG_DISABLE_TSC */
+>  +
+>   /*
+>   * This special macro can be used to load a debugging register
+>   */
+>  @@ -592,6 +653,17 @@ static inline void __switch_to_xtra(struct task_struct *prev_p,
+>                 loaddebug(next, 7);
+>         }
+>
+>  +#ifdef CONFIG_DISABLE_TSC
+>  +       if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
+>  +           test_tsk_thread_flag(next_p, TIF_NOTSC)) {
+>  +               /* prev and next are different */
+>  +               if (test_tsk_thread_flag(next_p, TIF_NOTSC))
+>  +                       hard_disable_TSC();
+>  +               else
+>  +                       hard_enable_TSC();
+>  +       }
+>  +#endif
+>  +
+>         if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP)) {
+>                 /*
+>                  * Copy the relevant range of the IO bitmap.
+>  diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+>  index 7b1e3a8..64eea62 100644
+>  --- a/include/asm-x86/processor.h
+>  +++ b/include/asm-x86/processor.h
+>  @@ -921,4 +921,15 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
+>
+>   #define KSTK_EIP(task)         (task_pt_regs(task)->ip)
+>
+>  +#ifdef CONFIG_DISABLE_TSC
+>  +
+>  +/* Get/set a process' ability to use the timestamp counter instruction */
+>  +#define GET_TSC_CTL(adr)       get_tsc_mode((adr))
+>  +#define SET_TSC_CTL(val)       set_tsc_mode((val))
+>  +
+>  +extern int get_tsc_mode(unsigned long adr);
+>  +extern int set_tsc_mode(unsigned int val);
+>  +
+>  +#endif
+>  +
+>   #endif
+>  diff --git a/include/asm-x86/thread_info_64.h b/include/asm-x86/thread_info_64.h
+>  index f23fefc..ed664e8 100644
+>  --- a/include/asm-x86/thread_info_64.h
+>  +++ b/include/asm-x86/thread_info_64.h
+>  @@ -124,6 +124,7 @@ static inline struct thread_info *stack_thread_info(void)
+>   #define TIF_DEBUGCTLMSR                25      /* uses thread_struct.debugctlmsr */
+>   #define TIF_DS_AREA_MSR                26      /* uses thread_struct.ds_area_msr */
+>   #define TIF_BTS_TRACE_TS       27      /* record scheduling event timestamps */
+>  +#define TIF_NOTSC              28      /* TSC is not accessible in userland */
+>
+>   #define _TIF_SYSCALL_TRACE     (1 << TIF_SYSCALL_TRACE)
+>   #define _TIF_SIGPENDING                (1 << TIF_SIGPENDING)
+>  @@ -145,6 +146,7 @@ static inline struct thread_info *stack_thread_info(void)
+>   #define _TIF_DEBUGCTLMSR       (1 << TIF_DEBUGCTLMSR)
+>   #define _TIF_DS_AREA_MSR       (1 << TIF_DS_AREA_MSR)
+>   #define _TIF_BTS_TRACE_TS      (1 << TIF_BTS_TRACE_TS)
+>  +#define _TIF_NOTSC             (1 << TIF_NOTSC)
+>
+>   /* work to do on interrupt/exception return */
+>   #define _TIF_WORK_MASK                                                 \
+>  @@ -158,7 +160,7 @@ static inline struct thread_info *stack_thread_info(void)
+>
+>   /* flags to check in __switch_to() */
+>   #define _TIF_WORK_CTXSW                                                        \
+>  -       (_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS)
+>  +       (_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS|_TIF_NOTSC)
+>   #define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
+>   #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
+>
+>  diff --git a/include/asm-x86/tsc.h b/include/asm-x86/tsc.h
+>  index d2d8eb5..3281e21 100644
+>  --- a/include/asm-x86/tsc.h
+>  +++ b/include/asm-x86/tsc.h
+>  @@ -17,7 +17,10 @@ typedef unsigned long long cycles_t;
+>   extern unsigned int cpu_khz;
+>   extern unsigned int tsc_khz;
+>
+>  +#ifdef CONFIG_DISABLE_TSC
+>   extern void disable_TSC(void);
+>  +extern void enable_TSC(void);
+>  +#endif
+>
+>   static inline cycles_t get_cycles(void)
+>   {
+>  diff --git a/kernel/seccomp.c b/kernel/seccomp.c
+>  index ad64fcb..0e0c7f0 100644
+>  --- a/kernel/seccomp.c
+>  +++ b/kernel/seccomp.c
+>  @@ -74,7 +74,7 @@ long prctl_set_seccomp(unsigned long seccomp_mode)
+>         if (seccomp_mode && seccomp_mode <= NR_SECCOMP_MODES) {
+>                 current->seccomp.mode = seccomp_mode;
+>                 set_thread_flag(TIF_SECCOMP);
+>  -#ifdef TIF_NOTSC
+>  +#ifdef CONFIG_DISABLE_TSC
+>                 disable_TSC();
+>   #endif
+>                 ret = 0;
+>
+> --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
