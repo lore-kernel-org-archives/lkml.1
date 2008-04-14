@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbYDNH1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbYDNH1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760091AbYDNH1D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbYDNH0y
+	id S1760178AbYDNH1X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760005AbYDNH07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:26:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49485 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbYDNH0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:26:53 -0400
-Message-ID: <480306A4.8080700@cn.fujitsu.com>
-Date: Mon, 14 Apr 2008 15:24:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 14 Apr 2008 03:26:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41388 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759681AbYDNH06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:26:58 -0400
+Date: Mon, 14 Apr 2008 09:26:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch
+	fixes
+Message-ID: <20080414072645.GG16163@elte.hu>
+References: <48022990.3060104@gmail.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] memcg: fix oops in oom handling
-References: <4802FF10.6030905@cn.fujitsu.com> <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48022990.3060104@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0016]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Mon, 14 Apr 2008 14:52:00 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
->> It's reproducable in a x86_64 box, but doesn't happen in x86_32.
->>
->> This is because tsk->sighand is not guarded by RCU, so we have to
->> hold tasklist_lock, just as what out_of_memory() does.
->>
-> 
-> Good catch! and patch seems good.
-> 
-> Paul, I have one confirmation. Lock hierarchy of
-> 	cgroup_lock()
-> 	->	read_lock(&tasklist_lock)
-> 
-> is ok ? (I think this is ok.)
-> 
 
-I think so, because we used to have this in cgroup:
+* Jacek Luczak <difrost.kernel@gmail.com> wrote:
 
-mutex_lock(&cgroup_mutex);
-  -> attach_task_by_pid()
-       -> read_lock(&tasklist_lock)
+> paravirt_pagetable_setup_[start,done]() is used by __init 
+> pagetable_init(). Annotate both functions with __init.
 
-But afte some time, some uses of tasklist_lock is replaced by rcu.
+>  #ifndef CONFIG_PARAVIRT
+> -static inline void paravirt_pagetable_setup_start(pgd_t *base)
+> +static inline void __init paravirt_pagetable_setup_start(pgd_t *base)
+>  {
+>  	native_pagetable_setup_start(base);
+>  }
 
-> Thanks,
-> -Kame
-> 
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu>
->> ---
->>  mm/oom_kill.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
->> index f255eda..beb592f 100644
->> --- a/mm/oom_kill.c
->> +++ b/mm/oom_kill.c
->> @@ -423,7 +423,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
->>  	struct task_struct *p;
->>  
->>  	cgroup_lock();
->> -	rcu_read_lock();
->> +	read_lock(&tasklist_lock);
->>  retry:
->>  	p = select_bad_process(&points, mem);
->>  	if (PTR_ERR(p) == -1UL)
->> @@ -436,7 +436,7 @@ retry:
->>  				"Memory cgroup out of memory"))
->>  		goto retry;
->>  out:
->> -	rcu_read_unlock();
->> +	read_unlock(&tasklist_lock);
->>  	cgroup_unlock();
->>  }
->>  #endif
->> -- 1.5.4.rc3 
->>
->>
->>
->>
-> 
+hm, that's an interesting case: we need those annotations probably 
+because gcc decided to not inline those functions. (this is possible via 
+the new CONFIG_OPTIMIZE_INLINING=y option) Sam, what's your take on 
+that?
+
+	Ingo
