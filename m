@@ -1,113 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYDNEsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYDNEta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbYDNEsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 00:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYDNEsI
+	id S1756782AbYDNEta (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 00:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYDNEtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 00:48:08 -0400
-Received: from 1wt.eu ([62.212.114.60]:3076 "EHLO 1wt.eu"
+	Mon, 14 Apr 2008 00:49:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41090 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbYDNEsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 00:48:06 -0400
-Date: Mon, 14 Apr 2008 06:39:39 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: david@lang.hm
-Cc: Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080414043939.GA6862@1wt.eu>
-References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org> <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl> <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard>
+	id S1751218AbYDNEtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 00:49:21 -0400
+Date: Mon, 14 Apr 2008 14:49:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: linux-next: Tree for April 10: generic pci_enable_resources()
+ strikes again
+Message-Id: <20080414144913.f4e1e215.sfr@canb.auug.org.au>
+In-Reply-To: <20080414042847.GB24269@kroah.com>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+	<200804102134.00997.m.kozlowski@tuxland.pl>
+	<20080414114823.b20802fe.sfr@canb.auug.org.au>
+	<20080414042847.GB24269@kroah.com>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0804131546370.9318@asgard>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Apr_2008_14_49_13_+1000_QlTXR.=oHMsHXiqE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 04:51:34PM -0700, david@lang.hm wrote:
-> cross-posted to git for the suggestion at the bottom
-> 
-> On Sun, 13 Apr 2008, Stephen Clark wrote:
-> 
-> >Evgeniy Polyakov wrote:
-> >>On Sun, Apr 13, 2008 at 10:33:49PM +0200, Rafael J. Wysocki (rjw@sisk.pl) 
-> >>wrote:
-> >>>Things like this are very disappointing and have a very negative impact 
-> >>>on bug
-> >>>reporters.  We should do our best to avoid them.
-> >>
-> >>Shit happens. This is a matter of either bug report or those who were in
-> >>the copy list. There are different people and different situations, in
-> >>which they do not reply.
-> >>
-> >Well less shit would happen if developers would take the time to at least 
-> >test their patches before they were submitted. It like we will just have 
-> >the poor user do our testing for us. What kind of testing do developers 
-> >do. I been a linux user and have followed the LKML for a number of years 
-> >and have yet to see
-> >any test plans for any submitted patches.
-> 
-> I've been reading LKML for 11 years now, I've tested kernels and reported 
-> a few bugs along the way.
-> 
-> the expectation is that the submitter should have tested the patches 
-> before submitting them (where hardware allows). but that "where hardware 
-> allows" is a big problem. so many issues are dependant on hardwre that 
-> it's not possible to test everything.
-> 
-> there are people who download, compile and test the tree nightly (with 
-> farms of machines to test different configs), but they can't catch 
-> everything.
-> 
-> expecting the patches to be tested to the point where there are no bugs is 
-> unreasonable.
-[...]
+--Signature=_Mon__14_Apr_2008_14_49_13_+1000_QlTXR.=oHMsHXiqE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Agreed. The difficulty is that only the developer knows how confident
-he is in his code. Even the subsystem maintainer does not know, which
-is the real issue since as long as the code is not identified, he does
-not know whom to ping.
+Hi Greg,
 
-And I think that it might help if we could add a "Trust" rating to the
-patches we submit, similarly to "Tested-By" or "Signed-off-by". We could
-use 1 to 5. Basically, when the patch was completed at 3am and just builds,
-it's more likely 1/5. When it has been stressed for 1 week, it would be
-4/5. 5/5 would only be used in backports of known working code, for some
-wide-used external patches, or for trivial patches (eg: doc/whitespace
-fixes). The goal would clearly not be to just trust patches with a high
-rate (since they might break when associated with others), but for the
-subsystem maintainer to quickly check if there are some of them the
-author does not 100% trust, in which case he could ping the author to
-check if his patch *may* cause the reported problem.
+On Sun, 13 Apr 2008 21:28:47 -0700 Greg KH <greg@kroah.com> wrote:
+>
+> Yes, I haven't caught up with my emails, but yes, this will not go
+> upstream for those arches that have had problems with it (like sparc64).
+> I'll fix my tree up first thing Monday morning for this issue.
 
-What makes this rating system delicate is that the rate cannot be changed
-afterwards. But after all, that's not much of a problem. A bug may very
-well reveal itself one year after the code was merged, so it's really the
-developer's estimation which matters.
+Thanks.  I will look for it tomorrow.
 
-For this to be efficiently used, we would need git-commit to accept a
-new "-T <rating>" argument with the following possible values :
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-   0: untested (default)
-   1: builds
-   2: seems to be working
-   3: passed basic non-regression tests
-   4: survived stress testing at the developer's
-   5: known to be working for a long time somewhere else
+--Signature=_Mon__14_Apr_2008_14_49_13_+1000_QlTXR.=oHMsHXiqE
+Content-Type: application/pgp-signature
 
-I'm sure many people would find this useless (or in fact reject the
-idea because it would show that most code will be rated 1 or 2),
-but I really think it can help subsystem maintainers make the relation
-between a reported bug and a possible submitter.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Willy
+iD8DBQFIAuJNTgG2atn1QN8RAn3eAJoCwZbIhmiZmehoSpU/EY/RF4lcqgCfR/jQ
+IaDbtvuDf1vUi7B1hUc2Qk4=
+=bU4P
+-----END PGP SIGNATURE-----
 
+--Signature=_Mon__14_Apr_2008_14_49_13_+1000_QlTXR.=oHMsHXiqE--
