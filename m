@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYDNT5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761698AbYDNT5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbYDNT5A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYDNT4h
+	id S1761698AbYDNT5e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbYDNT4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:56:37 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:38680 "EHLO smtp6.pp.htv.fi"
+	Mon, 14 Apr 2008 15:56:42 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:55838 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755402AbYDNT4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:56:36 -0400
-Date: Mon, 14 Apr 2008 22:55:30 +0300
+	id S1756280AbYDNT4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:56:41 -0400
+Date: Mon, 14 Apr 2008 22:55:34 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: chris@zankel.net, p_gortmaker@yahoo.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xtensa: don't offer CONFIG_RTC
-Message-ID: <20080414195530.GC26885@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] xtensa: don't offer CONFIG_GEN_RTC
+Message-ID: <20080414195534.GD26885@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -28,27 +28,26 @@ This patch fixes the following compile error:
 <--  snip  -->
 
 ...
-  CC [M]  drivers/char/rtc.o
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/rtc.c:70:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mc146818rtc.h:16:59: error: asm/mc146818rtc.h: No such file or directory
+  CC [M]  drivers/char/genrtc.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/genrtc.c:58:21: error: asm/rtc.h: No such file or directory
 ...
-make[3]: *** [drivers/char/rtc.o] Error 1
+make[3]: *** [drivers/char/genrtc.o] Error 1
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-58a9730328adf21f2b76b8ab3a586da2d7e8bcfa diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index a87b89d..5dc5794 100644
+8efde38c14112370e1a2cdbe64a99c0c50f18f4f diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 5dc5794..da98c9a 100644
 --- a/drivers/char/Kconfig
 +++ b/drivers/char/Kconfig
-@@ -706,7 +706,7 @@ config NVRAM
+@@ -776,7 +776,7 @@ config SGI_IP27_RTC
  
- config RTC
- 	tristate "Enhanced Real Time Clock Support"
--	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390
-+	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390 && !XTENSA
+ config GEN_RTC
+ 	tristate "Generic /dev/rtc emulation"
+-	depends on RTC!=y && !IA64 && !ARM && !M32R && !MIPS && !SPARC && !FRV && !S390 && !SUPERH
++	depends on RTC!=y && !IA64 && !ARM && !M32R && !MIPS && !SPARC && !FRV && !S390 && !SUPERH && !XTENSA
  	---help---
  	  If you say Y here and create a character special file /dev/rtc with
  	  major number 10 and minor number 135 using mknod ("man mknod"), you
