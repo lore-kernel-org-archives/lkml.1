@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbYDNOng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYDNOnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbYDNOng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761095AbYDNOnI
+	id S1761240AbYDNOnU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758964AbYDNOmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:43:08 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:37191 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761021AbYDNOnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:43:07 -0400
-Message-ID: <48036CF4.7050008@linux.vnet.ibm.com>
-Date: Mon, 14 Apr 2008 20:10:52 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 14 Apr 2008 10:42:51 -0400
+Received: from ns2.mvista.com ([63.81.120.155]:62209 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758797AbYDNOmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:42:50 -0400
+Message-ID: <48036D43.6070307@ru.mvista.com>
+Date: Mon, 14 Apr 2008 18:42:11 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       dhaval@linux.vnet.ibm.com
-Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
-References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com>
-In-Reply-To: <48036CB4.5050700@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] mtd/cmdlinepart.c: don't compare pointers with 0
+References: <20080414142004.GR6695@cs181133002.pp.htv.fi>
+In-Reply-To: <20080414142004.GR6695@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Balaji Rao wrote:
->> This patch implements trivial statistics for the memory resource controller.
->>
->> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
->> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
->> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
->>
->> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
->> index a860765..ca98b21 100644
->> --- a/mm/memcontrol.c
->> +++ b/mm/memcontrol.c
->> @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
->>  	 */
->>  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
->>  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
->> +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
->> +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
->>
->>  	MEM_CGROUP_STAT_NSTATS,
->>  };
->> @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
->>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
->>  	else
->>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
->> +
->> +	if (charge)
->> +		__mem_cgroup_stat_add_safe(stat,
->> +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
->> +	else
->> +		__mem_cgroup_stat_add_safe(stat,
->> +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
->>  }
->>
->>  static struct mem_cgroup_per_zone *
->> @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
->>  } mem_cgroup_stat_desc[] = {
->>  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
->>  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
->> +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
->> +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
->>  };
->>
->>  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
->>
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Hi, Andrew,
-> 
-> Could you please include these statistics in -mm.
-> 
-> Balbir
-> 
-> 
+Hello.
 
-Andrew,
+Adrian Bunk wrote:
 
-This should have been addressed to you in the first place. Resending.
+> Sparse spotted that 0 was compared to pointers.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> While I was at it, I also moved the assignments out of the if's.
+
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+> 32de76e83f37322dd85eaecf126e7b17327f606f diff --git a/drivers/mtd/cmdlinepart.c b/drivers/mtd/cmdlinepart.c
+> index b44292a..3e09043 100644
+> --- a/drivers/mtd/cmdlinepart.c
+> +++ b/drivers/mtd/cmdlinepart.c
+> @@ -119,7 +119,8 @@ static struct mtd_partition * newpart(char *s,
+>  		char *p;
+>  
+>  	    	name = ++s;
+> -		if ((p = strchr(name, delim)) == 0)
+> +		p = strchr(name, delim);
+> +		if (!p)
+>  		{
+
+    Wouldn't it be nice to join the standalone brace to if () while it?
+
+>  			printk(KERN_ERR ERRP "no closing %c found in partition name\n", delim);
+>  			return NULL;
+
+WBR, Sergei
