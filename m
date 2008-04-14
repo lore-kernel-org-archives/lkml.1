@@ -1,80 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYDNA2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYDNAbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbYDNA2z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDNA2o
+	id S1758062AbYDNAbU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDNAbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:28:44 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51081 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753444AbYDNA2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:28:43 -0400
-X-Sasl-enc: c30zwca3VZgEmXM0xKSaCI+6k/cXX050ZCvdKVDPqkMI 1208132922
-Message-ID: <4802A538.9040107@imap.cc>
-Date: Mon, 14 Apr 2008 02:28:40 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Sun, 13 Apr 2008 20:31:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38255 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753401AbYDNAbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 20:31:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 02:31:30 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804040111.15255.rjw@sisk.pl> <200804140108.05447.rjw@sisk.pl> <1208130390.6958.71.camel@pasglop>
+In-Reply-To: <1208130390.6958.71.camel@pasglop>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: Re: 2.6.25-rc8-mm1: Intel SATA boot failure
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>	<47F56363.4090002@imap.cc> <20080403161733.c05dac53.akpm@linux-foundation.org>
-In-Reply-To: <20080403161733.c05dac53.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD0D290390308BF7439E8D25D"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804140231.32245.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD0D290390308BF7439E8D25D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
+> 
+> On Mon, 2008-04-14 at 01:08 +0200, Rafael J. Wysocki wrote:
+> > 
+> > Well, if we put ->prepare() before the freezer, what can it actually do?
+> > Certainly nothing that will block any (user space) task, because the freezer
+> > won't work after that.  So, all of the significant suspend work, like blocking
+> > tasks using the device etc., will have to be done by ->suspend().  Will that be
+> > convenient?  I'm not sure.  I'm not even sure that would be _doable_ at all.
+> 
+> Most of the actual suspending of requests queues etc... has to be done
+> in suspend. Nothing changed here. I don't see why it would change.
+> prepare() is a way to preallocate things when needed, cache things when
+> needed, etc... and possibly interact user space. At least that how I see
+> it.
+> 
+> It -is- acceptable to stop servicing user space after prepare() in some
+> well defined cases such as the DRM, as long as in-kernel users aren't
+> affected. But that's not necessarily what I have in mind. In the case us
+> userspace for example, the idea here is to perform the migration of all
+> the dirty data in the VRAM (that will be lost during suspend) out to
+> main memory (or AGP memory). That doesn't mean necessarily that the DRM
+> will stop servicing anything from there, it can still perform things. It
+> might mean that user space would have to disable some accelerations that
+> rely on dirty data in VRAM though until complete() is called.
+> 
+> > The point of view depends on what you think ->prepare() should be used for
+> > and I'm sure you have some specific cases in mind.  However, are they generic
+> > enough?
+> 
+> request_firmware() & caching the resulting firmware so that the driver
+> can resume & start operating right away is an example (think about NFS
+> over wireless here for example, or iSCSI). the DRM example above. In
+> general, any driver that needs to interact with user space, perform
+> large allocations, muck around with the VM, etc...
+> 
+> prepare() isn't intended to stop operations, but to
+> preload/cache/prepare and have userspace available for drivers where
+> this is needed. In some case, that might need the driver will continue
+> operating in some degraded mode (for example, a multiqueue driver can
+> degrade to a single queue with one pre-allocated request to avoid
+> relying on allocations).
+> 
+> I would expect most simple drivers not to need it of course.
 
-Final report, seeing -mm2 is out:
+Well, in our discussions with Alan Stern ->prepare() turned out to be necessary
+for exactly one reason, preventing new children of the device from being
+registered (by threads concurrent wrt the suspend thread).  For this reason,
+it doesn't really seem a good idea to run it before the freezer (seemingly, it
+would be difficult to avoid situations in which the freezer would fail as a
+result of ->prepare()).
 
-- Netconsole works. (grumblestupidsusefirewallgrumble)
+It looks like you'd like to have a third callback executed before the freezer,
+but OTOH I don't see the reason not to use a notifier for such things.
 
-- The hang during boot only happens with kernels compiled with
-  CONFIG_CIFS_EXPERIMENTAL=3Dy
-  It also doesn't always happen at the same point in the boot sequence.
-  I'm suspecting it might be triggered by some network packet.
-  Anyway, it's obviously *not* a SATA problem.
-  (That was just me jumping to conclusions, because ...)
+I have imagined that while we have the freezer, the operations that need to
+be carried out with the user space available will be done using notifiers
+and the rest will be done by ->prepare() and ->suspend().  Next, when we
+finally drop the freezer, it will be possible to move the code from the
+notifiers into ->prepare() and drop the notifiers altogether.
 
-- That leaves only the messages
-
-  ata1: port is slow to respond, please be patient (Status 0x80)
-  ata1: COMRESET failed (errno=3D-16)
-
-  and accompanying delays during boot, for each installed SATA disk.
-  I'll try to find the time to retest this with 2.6.25-rc8-mm2.
+Since, as you said, there aren't too many drivers that will need anything like
+that, it seems perfectly doable to me.
 
 Thanks,
-Tilman
-
---=20
-Tilman Schmidt                                  E-Mail: tilman@imap.cc
-Wehrhausweg 66                                  Fax: +49 228 4299019
-53227 Bonn, Germany
+Rafael
 
 
---------------enigD0D290390308BF7439E8D25D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> 
+> 
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFIAqU4MdB4Whm86/kRAkuQAJ996P0box0gl+95xNfjWurYzUUimQCZAZIk
-edjS6UJ0YthQHL1YMZRIO5I=
-=gjNn
------END PGP SIGNATURE-----
 
---------------enigD0D290390308BF7439E8D25D--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
