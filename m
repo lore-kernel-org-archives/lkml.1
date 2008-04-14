@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbYDNNs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYDNNsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760195AbYDNNs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 09:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYDNNsQ
+	id S1755317AbYDNNsB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 09:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbYDNNrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 09:48:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:42705 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755443AbYDNNsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 09:48:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=EyTRiOaWXLXBGCIC2s4qNSZbbuGJC9BC8XUM335Qrff9MmAyaHBMhUtAtd6wtIKCpzVvuWvaRz4zBaeV0JXE6djC1A3Di+cFXs0ObZf76XC8zCj6B+AJ6GfA7bWxy3xNgahqfpd4ROsbG6SK+kuB+MQuayqQaRFuGS8FTRHj3z8=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Does process need to have a kernel-side stack all the time?
-Date: Mon, 14 Apr 2008 15:47:57 +0200
-User-Agent: KMail/1.8.2
-Cc: linux-kernel@vger.kernel.org
+	Mon, 14 Apr 2008 09:47:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33400 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759670AbYDNNro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 09:47:44 -0400
+Date: Mon, 14 Apr 2008 09:46:22 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Takenori Nagano <t-nagano@ah.jp.nec.com>, nickpiggin@yahoo.com.au,
+       k-miyoshi@cb.jp.nec.com, greg@kroah.com,
+       Bernhard Walle <bwalle@suse.de>, kdb@oss.sgi.com,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Keith Owens <kaos@ocs.com.au>
+Subject: Re: [PATCH 0/2] add new notifier function ,take3
+Message-ID: <20080414134622.GB6941@redhat.com>
+References: <47FF190B.6030406@ah.jp.nec.com> <20080411210751.e4a468b2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804141547.57719.vda.linux@googlemail.com>
+In-Reply-To: <20080411210751.e4a468b2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Fri, Apr 11, 2008 at 09:07:51PM -0700, Andrew Morton wrote:
 
-You are one of the experts in processes/threads and scheduling
-in Linux kernel, I hope you can answer this question.
+[..]
+> > Kernel panic - not syncing: Panic by panic_module.
+> > __tunable_atomic_notifier_call_chain enter
+> > msg_handler:panic_event was called.
+> > ipmi_wdog:wdog_panic_handler was called.
+> > notifier_test: notifier_test_panic() is called.
+> > notifier_test: notifier_test_panic2() is called.
+> 
+> OK.  But I don't see anywhere in here the most important piece of
+> information: why do we need this feature in Linux?
+> 
+> What are the use-cases?  What is the value?  etc.
+> 
+> Often I can guess (but I like the originator to remove the guesswork).  In
+> this case I'm stumped - I can't see any reason why anyone would want this.
+> 
 
-A lot of effort went into minimizing of stack usage.
-If I understand it correctly, one of the reasons for this
-was to be efficient and not have lots of pages
-used for stacks when we have a lot of threads
-(tens of thousands).
+Hi Andrew,
 
-A random thought occurred to me: in a system with so many
-threads most of them are not executing anyway, even on
-that gigantic Altix machines. Do they all need to have
-kernel stack, all the time? I mean: the process which
-is running in user space is not using kernel stack at all.
-Process which is not running on a CPU right now
-is not using it either. But they do still consume
-at least 4k (or 8k on 64bits) of RAM.
+To begin with, he wants kdb, kgdb etc to co-exist with kdump. He wants
+to put all the RAS tools (who are interested in panic event) on a list
+and export it to user space and let user decide in what order do the tool get
+executed at panic time (based on priority).
 
-Process absolutely must have kernel stack only when
-it is actively running in kernel code (not sleeping),
-right?
+This brings in little bit reliability concerns for kdump due to notifier
+code being run after panic.
 
-Can we have per-CPU kernel stacks instead, so that process
-gets a kernel stack only every time it enters the kernel;
-and make it so that the process which is scheduled away
-from a CPU does not need to have kernel stack?
+I think people want to use this infrastrutucure beyond RAS tools. I
+remember somebody wanting to send a message to remote node after a
+panic (before kdump kicks in)  so that remote node can initiate failover
+etc.
 
-Currently, when process sleeps, we save some
-state in stack, and such a change may require
-some substantial surgery.
+Ideally, doing any operation after panic is not safe and one should avoid
+such things and any action required should be done in next kernel (like
+sending messages to remote nodes etc). Having said that, it makes the
+job harder as one needs to pass all the required data to second kernel.
 
-Can you tell me whether this is possible at all,
-and how difficult you estimate it to be?
---
-vda
+So it will not left to user whether he should execute the code after
+panic in first kernel or create required bits to execute code in second
+kernel. Things should be more reliable in second kernel. 
+
+I am not very sure how paranoid one should be about this additional bit of
+notifier code being executed after panic. Probably we can take this in
+to make user's life easier.
+
+Thanks
+Vivek
