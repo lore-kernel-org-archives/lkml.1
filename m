@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbYDNCOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbYDNCdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759378AbYDNCOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 22:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYDNCO2
+	id S1758461AbYDNCdU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 22:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYDNCdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 22:14:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59230 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753617AbYDNCO1 (ORCPT
+	Sun, 13 Apr 2008 22:33:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:40301 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbYDNCdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 22:14:27 -0400
-Date: Sun, 13 Apr 2008 19:13:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, takata@linux-m32r.org,
-       linux-m32r@ml.linux-m32r.org, Linux-Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080413191338.9776ebd0.akpm@linux-foundation.org>
-In-Reply-To: <1208133506.6958.82.camel@pasglop>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Apr 2008 22:33:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=WBbQdQlCw11yvSDngPlOuRQun+e2QSOzGqDhtitWvXptLE0DxD1Z87ShUKitOwPxTtvHTHgOiFry4FLtd1kmcURi1yiKhTCZCSMcy7hRA+wQ803a8Z408oVSPqhbnJy4EGgv+b6WAqbS9MPeNF6uzy0iamNolhv3mwIu6EwQ9tY=
+Message-ID: <4802C265.8060802@gmail.com>
+Date: Mon, 14 Apr 2008 06:33:09 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, akpm@linux-foundation.org,
+       corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
+References: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com>	<20080413151020.bfa62f58.randy.dunlap@oracle.com>	<48028841.900@gmail.com>	<20080413224547.GS9785@ZenIV.linux.org.uk> <20080413190916.57cede66.randy.dunlap@oracle.com>
+In-Reply-To: <20080413190916.57cede66.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 10:38:26 +1000 Benjamin Herrenschmidt <benh@ozlabs.org> wrote:
+Randy Dunlap пишет:
+> On Sun, 13 Apr 2008 23:45:47 +0100 Al Viro wrote:
+> 
+>> On Mon, Apr 14, 2008 at 02:25:05AM +0400, Dmitri Vorobiev wrote:
+>>
+>>> Actually, I was doubting whether the "2 spaces" thing was
+>>> intentional or not. The overwhelming majority of the sentences in
+>>> this document use only one space after a period, however, and this
+>>> made me decide that the "2 spaces" thing had not been deliberate
+>>> but just a typo.
+>>>
+>>> Are there any rules about using spaces after a period at the end
+>>> of a sentence?
+>> See Knuth (TeXbook) for the story on that...
+> 
+> I googled that but I don't see the history there.
+> 
+> AFAIK, 2 spaces at the end of sentences is a typewriter-ism, for easier
+> visual separation of sentences.
+> Probably (just guessing here) has to do with monospace fonts vs.
+> (not having) proportional ones there (usually).
 
-> > > +#ifndef thread_info_cache_init
-> > > +#define thread_info_cache_init	do { } while(0)
-> > > +#endif
-> > 
-> > This trick does cause a bit of a problem: it is undefined which arch header
-> > file is to provide the alternative definition of thread_info_cache_init.
-> 
-> I this case it's well defined: thread_info.h. Maybe I should add a
-> comment ?
-> 
-> > So we can (and have) ended up in the situation where the override appears
-> > in different files on different architectures and various screwups ensue.
-> 
-> Yup.
-> 
-> > So I'd suggest that we have a bigfatcomment telling implementors which file
-> > the override should be implemented in.  And make sure that this arch file is
-> > directly included from within sched.h.
-> 
-> Will do.
-> 
-> > I have a suspicion that we can still get in a mess if .c files include the
-> > per-arch file and don't include sched.h, but I forget where this happened
-> > and why it broke stuff.
-> 
-> In this case, there's only one call site and will only every be one, so
-> that shouldn't be a problem. I don't see init/main.c not including
-> sched.h
+The following Wikipedia article is the most complete and exhaustive source
+I could find while researching the double spacing rules:
 
-As long as init.c directly includes sched.h, and as long as sched.h
-directly includes thread_info.h and as long as all architectures which
-provide the override put it in their thread_info.h, and as long as the same
-applies to all future .c users, we're good.  That's a lot of "as long as"'s ;)
+http://en.wikipedia.org/wiki/French_spacing
 
-> > Sigh.  A nice, coded-in-C implementation within each and every architecture
-> > remains the best implementation, and all the little tricks-to-save-typing
-> > have failure modes.
+To put it briefly, there are three main conventions about inter-sentence
+spacing:
+
+o English spacing a.k.a. American typewriter spacing: two spaces after full stop;
+
+o French spacing, i.e. one space;
+
+o traditional typography, which uses proportional fonts and is therefore not
+very much interesting here.
+
+Offhand, it seems that the double spacing convention is being currently used
+in a more or less consistent manner throughout Linux docs. It also seems to
+me that this can be made a requirement and documented somewhere.
+
+Thanks,
+Dmitri
+
 > 
-> Well, I started doing it in all arch, and people around here told me
-> that was not a good idea , that it would be trouble if the prototype
-> ever had to change (adding an arg, etc... though very unlikely to happen
-> in that case, granted).
-
-Bah.  Use of grep and basic typing skills: not so hard.
-
-> > otoh, if only one .c file will ever call this function then I think that
-> > all problems are solved by
-> > 
-> > a) moving the above ifdeffery into the .c file
-> > b) adding a comment explaining which arch file must provide the override
-> > c) directly including that file from within the .c file.
+> ---
+> ~Randy
+> [Yes, I learned to type on a manual typewriter.]
 > 
-> I can definitely do that. I have no problem either way. I can add to all
-> archs too, it's just that whatever way I choose, some people won't be
-> happy with it :-)
-> 
-> Anyway, I'll move the ifdeferry to init/main.c then.
 
-Thanks ;)
-
-I'm still wounded by my recent encounter with set_softirq_pending()
-and or_softirq_pending().
