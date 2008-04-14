@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYDNT4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYDNT5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbYDNT4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYDNT43
+	id S1760877AbYDNT5A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYDNT4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:56:29 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:38664 "EHLO smtp6.pp.htv.fi"
+	Mon, 14 Apr 2008 15:56:37 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38680 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbYDNT41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:56:27 -0400
-Date: Mon, 14 Apr 2008 22:55:21 +0300
+	id S1755402AbYDNT4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:56:36 -0400
+Date: Mon, 14 Apr 2008 22:55:30 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: chris@zankel.net, jgarzik@pobox.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xtensa: don't offer ATA
-Message-ID: <20080414195521.GB26885@cs181133002.pp.htv.fi>
+To: chris@zankel.net, p_gortmaker@yahoo.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] xtensa: don't offer CONFIG_RTC
+Message-ID: <20080414195530.GC26885@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,40 +23,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to build libata for xtensa fails with the following error:
+This patch fixes the following compile error:
 
 <--  snip  -->
 
 ...
-  CC [M]  drivers/ata/libata-core.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_devchk':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1034: error: implicit declaration of function 'iowrite8'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1043: error: implicit declaration of function 'ioread8'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_data_xfer':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5027: error: implicit declaration of function 'ioread16_rep'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5029: error: implicit declaration of function 'iowrite16_rep'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5037: error: implicit declaration of function 'ioread16'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5041: error: implicit declaration of function 'iowrite16'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_wait_register':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:7700: error: implicit declaration of function 'ioread32'
-make[3]: *** [drivers/ata/libata-core.o] Error 1
+  CC [M]  drivers/char/rtc.o
+In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/rtc.c:70:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mc146818rtc.h:16:59: error: asm/mc146818rtc.h: No such file or directory
+...
+make[3]: *** [drivers/char/rtc.o] Error 1
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-aa579e7ab065e41a9d1e27e1f4b7af6b0508018c diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 25aba69..f34e9d1 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -6,7 +6,7 @@ menuconfig ATA
- 	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
- 	depends on HAS_IOMEM
- 	depends on BLOCK
--	depends on !(M32R || M68K) || BROKEN
-+	depends on !(M32R || M68K || XTENSA) || BROKEN
- 	depends on !SUN4 || BROKEN
- 	select SCSI
+58a9730328adf21f2b76b8ab3a586da2d7e8bcfa diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index a87b89d..5dc5794 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -706,7 +706,7 @@ config NVRAM
+ 
+ config RTC
+ 	tristate "Enhanced Real Time Clock Support"
+-	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390
++	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390 && !XTENSA
  	---help---
+ 	  If you say Y here and create a character special file /dev/rtc with
+ 	  major number 10 and minor number 135 using mknod ("man mknod"), you
 
