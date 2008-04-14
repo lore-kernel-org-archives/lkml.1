@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbYDNAqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbYDNAsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbYDNAqv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYDNAqm
+	id S1755755AbYDNAsq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYDNAsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:46:42 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:57973 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753360AbYDNAqm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:46:42 -0400
-Date: Sun, 13 Apr 2008 20:45:21 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080414004521.GA30489@hash.localnet>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 13 Apr 2008 20:48:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59352 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752918AbYDNAsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 20:48:36 -0400
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200804140231.32245.rjw@sisk.pl>
+References: <200804040111.15255.rjw@sisk.pl>
+	 <200804140108.05447.rjw@sisk.pl> <1208130390.6958.71.camel@pasglop>
+	 <200804140231.32245.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 10:46:57 +1000
+Message-Id: <1208134017.6958.94.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 12:37:31PM +0200, Miklos Szeredi wrote:
-> I don't feel strongly either way, and Christoph's arguments against
-> fuse are mostly valid (although neither of them are serious).
 
-I don't have hard numbers, but anecdotally my FUSE version is quite 
-a bit less performant.  That's no criticism of FUSE - I just haven't
-put the time into optimizing and adding various caches.
+On Mon, 2008-04-14 at 02:31 +0200, Rafael J. Wysocki wrote:
+> 
+> Well, in our discussions with Alan Stern ->prepare() turned out to be necessary
+> for exactly one reason, preventing new children of the device from being
+> registered (by threads concurrent wrt the suspend thread).  For this reason,
+> it doesn't really seem a good idea to run it before the freezer (seemingly, it
+> would be difficult to avoid situations in which the freezer would fail as a
+> result of ->prepare()).
 
-> There's one thing which makes fuse a slightly better candidate for
-> applications where the number of users is low: stability.  Unless you
-> or your users test the hell out of your filesystem, there always a
-> chance that some bugs will remain.  
+I'm opposed to designing something around the freezer since we know it
+will ultimately go away.
 
-Sure, though this FS won't see the same kind of use as ext2.  Most users
-would just mount it, copy a bunch of files, then unmount it, and if that
-works then great.
+If things like USB have issues with userland doing nasty things after
+prepare(), then those things need to be fixed. The freezer will only
+hide bugs and not even always or properly and not on all archs.
 
-It has at least seen some testing with fsx, though I had to turn off most 
-of the checks since growing truncate is still unimplemented.  
+> It looks like you'd like to have a third callback executed before the freezer,
+> but OTOH I don't see the reason not to use a notifier for such things.
 
--- 
-Bob Copeland %% www.bobcopeland.com 
+That's just gratuituous complication imho. We can add callbacks every
+week and no driver will every find out what to use and when.
+
+prepare() has quite well defined and nice semantics if you ignore your
+freezer trickery. It matches well with the needs of things like
+request_firmware or the DRM, and possibly a few others, in addition to
+matching well the need to block bus discovery.
+
+If some drivers have issue because of what userland might do after
+prepare(), then those drivers need to be fixed. We all know the freezer
+is not a proper solution. It just hides problems and not always
+correctly.
+
+> I have imagined that while we have the freezer, the operations that need to
+> be carried out with the user space available will be done using notifiers
+> and the rest will be done by ->prepare() and ->suspend().  Next, when we
+> finally drop the freezer, it will be possible to move the code from the
+> notifiers into ->prepare() and drop the notifiers altogether.
+
+Why do this two steps ? What is the point ?
+
+> Since, as you said, there aren't too many drivers that will need anything like
+> that, it seems perfectly doable to me.
+
+Ben.
+
 
