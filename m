@@ -1,219 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbYDNEts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYDNEvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbYDNEts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 00:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbYDNEte
+	id S1757212AbYDNEvv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 00:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYDNEvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 00:49:34 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:64321 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757801AbYDNEtd (ORCPT
+	Mon, 14 Apr 2008 00:51:39 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58399 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751386AbYDNEvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 00:49:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IuBiPKBYg3IOmMjoBuaS821RPVl+TZIRfYpj/GKewoRLDXoIeh3ldKGROzIjMVDjwdlxKhZBbIWbiYyQlsybG5kEEqZxO8nw1Qqim7xaN3ESCFSx0pVCwc8iMfZfhiqGa5Q3hbnxzOq/aItEcHDIExZcQtNfN3AevwH7ZFzNpwA=
-From: Alexia Death <alexiadeath@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
-Date: Mon, 14 Apr 2008 07:49:56 +0300
-User-Agent: KMail/1.9.9
-References: <200804132326.07713.alexiadeath@gmail.com> <200804140245.33171.arnd@arndb.de>
-In-Reply-To: <200804140245.33171.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 14 Apr 2008 00:51:37 -0400
+X-Sasl-enc: PBYCsOBbgVdXbJVs1/QHe1KuF2kZEWy7EUDM6thAm3El 1208148694
+Subject: Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       Thomas Graf <tgraf@redhat.com>, netdev@vger.kernel.org
+In-Reply-To: <20080411210316.6e385236.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
+	 <Pine.LNX.4.64.0802261218230.8490@raven.themaw.net>
+	 <20080227211723.d5d27c09.akpm@linux-foundation.org>
+	 <1204302250.19890.22.camel@raven.themaw.net>
+	 <Pine.LNX.4.64.0804111425290.32624@raven.themaw.net>
+	 <20080411210316.6e385236.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 12:45:27 +0800
+Message-Id: <1208148327.3505.65.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804140749.57049.alexiadeath@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 April 2008 03:45:32 you wrote:
-> You are apparently using a SCSI device, so I assume it is a USB
-> based card reader, not a directly attached SD/MMC reader.
-You are correct.
 
-> My guess is that the problem is the way that the card is presented
-> to the USB mass storage driver by the reader. 
-Yes, Ive come to a conclusion that because reader does not do anything about 
-the speciality of the 2GB cards they wont be readable because Linux usb 
-storage does not know about them either.
+On Fri, 2008-04-11 at 21:03 -0700, Andrew Morton wrote: 
+> On Fri, 11 Apr 2008 15:02:39 +0800 (WST) Ian Kent <raven@themaw.net> wrote:
+> 
+> > On Sat, 1 Mar 2008, Ian Kent wrote:
+> > 
+> > > 
+> > > On Wed, 2008-02-27 at 21:17 -0800, Andrew Morton wrote:
+> > > > On Tue, 26 Feb 2008 12:23:55 +0900 (WST) Ian Kent <raven@themaw.net> wrote:
+> > > > 
+> > > > > Hi Andrew,
+> > > > > 
+> > > > > Patch to add miscellaneous device to autofs4 module for
+> > > > > ioctls.
+> > > > 
+> > > > Could you please document the new kernel interface which you're proposing? 
+> > > > In Docmentation/ or in the changelog?
+> > > > 
+> > > > We seem to be passing some string into a miscdevice ioctl and getting some
+> > > > results back.  Be aware that this won't be a terribly popular proposal, so
+> > > > I'd suggest that you fully describe the problem which it's trying to solve,
+> > > > and how it solves it, and why the various alternatives (sysfs, netlink,
+> > > > mount options, etc) were judged unsuitable.
+> > > 
+> > > It appears I could do this with the generic netlink subsystem.
+> > > I'll have a go at it.
+> > > 
+> > 
+> > I've spent several weeks on this now and I'm having considerable 
+> > difficulty with the expire function.
+> > 
+> > First, I think using a raw netlink implementation defeats the point of 
+> > using this approach at all due to increased complexity. So I've used the 
+> > generic netlink facility and the libnl library for user space. While the 
+> > complexity on the kernel side is acceptable that isn't the case in user 
+> > space, the code for the library to issue mount point control commands has 
+> > more than doubled in size and is still not working for mount point 
+> > expiration.  This has been made more difficult because libnl isn't 
+> > thread safe, but I have overcome this limitation for everything but 
+> > the expire function, I now can't determine whether the problem I have with 
+> > receiving multicast messages, possibly out of order, on individual 
+> > netlink sockets opened specifically for this purpose, is due to this or is 
+> > something I'm doing wrong.
+> > 
+> > The generic netlink implementation allows only one message to be in flight 
+> > at a time. But my expire selects an expire candidate (if possible), sends 
+> > a request to the daemon to do the umount, obtains the result status and 
+> > returns this as the result to the original expire request. Consequently, I 
+> > need to spawn a kernel thread to do this and return, then listen for the
+> > matching multicast message containing the result. I don't particularly 
+> > like spawning a thread to do this because it opens the possibility of 
+> > orphaned threads which introduces other difficulties cleaning them up if 
+> > the user space application goes away or misbehaves. But I'm also having 
+> > problems catching the multicast messages. This works fine in normal 
+> > operation but fails badly when I have multiple concurrent expires 
+> > happening, such as when shutting down the daemon with several hundred 
+> > active mounts. I can't avoid the fact that netlink doesn't provide the 
+> > same functionality as the ioctl interface and clearly isn't meant to.
+> 
+> Gee, it sounds like you went above and beyond the call there.
 
-> Generally, there is no problem with 2GB SD cards,
-It seems that in case of non-USB card readers, ie the ones built-in to laptops 
-the speciality is taken care of by the reader driver...
+Hahaha, maybe, but I have to be sure it's not just my own lack of
+understanding giving me grief!
 
-> so it would be good if you can try a different card reader with your cards.
-I have no different reader to try but I did try connecting the camera. It 
-works.
-[1249166.105850] scsi 6:0:0:0: Direct-Access     PENTAX   DIGITAL_CAMERA   
-1.20 PQ: 0 ANSI: 0
-[1249166.117440] sd 6:0:0:0: [sdb] 3985409 512-byte hardware sectors (2041 MB)
-[1249166.122416] sd 6:0:0:0: [sdb] Write Protect is off
-[1249166.122431] sd 6:0:0:0: [sdb] Mode Sense: 0a 0a 00 01
-[1249166.122438] sd 6:0:0:0: [sdb] Assuming drive cache: write through
-[1249166.137400] sd 6:0:0:0: [sdb] 3985409 512-byte hardware sectors (2041 MB)
-[1249166.142390] sd 6:0:0:0: [sdb] Write Protect is off
-[1249166.142406] sd 6:0:0:0: [sdb] Mode Sense: 0a 0a 00 01
-[1249166.142412] sd 6:0:0:0: [sdb] Assuming drive cache: write through
-[1249166.142430]  sdb: sdb1
-[1249166.176608] sd 6:0:0:0: [sdb] Attached SCSI removable disk
-[1249166.176735] sd 6:0:0:0: Attached scsi generic sg2 type 0
+> 
+> The one-message-in-flight limitation of genetlink is suprising - one would
+> expect a kernel subsystem (especially a networking one) to support
+> queueing.  I guess it was expedient and the need had not arisen.
 
-As you can see the camera rewrites the hw sectors description and presents it 
-quite differently than the card presents itself. Strangely enough my 
-cardreader/photobank itself has no problem copying from these cards but still 
-presents the cards to the pc "as is".
+I'm not sure but I think there are some special requirements for such a
+message bus architecture. I've only skimmed the code but it looked like
+a mutex for each genetlink family or, ideally, for each socket should
+be possible.
 
-On Monday 14 April 2008 02:28:13 Gene Heskett wrote:
-> I ask because my own camera with much smaller cards, has a similar problem,
-> and everything Just Works(TM) if I plug the usb cable directly into the
-> camera and mount it as a vfat file system.  I haven't had the memory card
-> out of my camera in a couple of years.
-That is interesting. I did not know there could be problems with smaller 
-cards.  However keeping the cards in the camera is not  solution for me. I 
-have a card reader to avoid tying the camera down for the copy duration.
+We also need to face the fact that this isn't designed to be a drop in
+replacement for ioctls as it can't provide (and probably can never
+provide) the not often used independently re-entrant function call like
+semantic of the ioctl interface.
 
-On Monday 14 April 2008 03:45:32 you wrote:
-> Also, please supply the "lsusb -v" output for the card reader.
-My cardreader/photobank is of pretty average sort:
+> 
+> > So, the question is, what are the criteria to use for deciding that a 
+> > netlink based implementation isn't appropriate because I think I'm well 
+> > past it now?
+> > 
+> > Comments please.
+> 
+> Do I recall correctly in remembering that your original design didn't
+> really add any _new_ concepts to autofs interfacing?  That inasmuch as
+> the patch sinned, it was repeating already-committed sins?
 
-Bus 001 Device 015: ID 0424:223a Standard Microsystems Corp. 8-in-1 Card 
-Reader
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0
-  bDeviceProtocol         0
-  bMaxPacketSize0        64
-  idVendor           0x0424 Standard Microsystems Corp.
-  idProduct          0x223a 8-in-1 Card Reader
-  bcdDevice            2.23
-  iManufacturer           1 DCB
-  iProduct                2     DCB201
-  iSerial                 3 000111111111
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           39
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0
-    bmAttributes         0x80
-      (Bus Powered)
-    MaxPower               96mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           2
-      bInterfaceClass         8 Mass Storage
-      bInterfaceSubClass      6 SCSI
-      bInterfaceProtocol     80 Bulk (Zip)
-      iInterface              0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x02  EP 2 OUT
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               1
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x82  EP 2 IN
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               0
-        ** UNRECOGNIZED:  07 21 07 e8 03 fe ff
-Device Qualifier (for other device speed):
-  bLength                10
-  bDescriptorType         6
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0
-  bDeviceProtocol         0
-  bMaxPacketSize0        64
-  bNumConfigurations      1
-Device Status:     0x0000
-  (Bus Powered)
+Almost, it is a re-implementation of the existing ioctl interface.
 
-Bus 001 Device 001: ID 0000:0000
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               1.10
-  bDeviceClass            9 Hub
-  bDeviceSubClass         0 Unused
-  bDeviceProtocol         0 Full speed (or root) hub
-  bMaxPacketSize0        64
-  idVendor           0x0000
-  idProduct          0x0000
-  bcdDevice            2.06
-  iManufacturer           3 Linux 2.6.24-8-generic uhci_hcd
-  iProduct                2 UHCI Host Controller
-  iSerial                 1 0000:00:1d.0
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           25
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0
-    bmAttributes         0xe0
-      Self Powered
-      Remote Wakeup
-    MaxPower                0mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           1
-      bInterfaceClass         9 Hub
-      bInterfaceSubClass      0 Unused
-      bInterfaceProtocol      0 Full speed (or root) hub
-      iInterface              0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x81  EP 1 IN
-        bmAttributes            3
-          Transfer Type            Interrupt
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0002  1x 2 bytes
-        bInterval             255
-Hub Descriptor:
-  bLength               9
-  bDescriptorType      41
-  nNbrPorts             2
-  wHubCharacteristic 0x000a
-    No power switching (usb 1.0)
-    Per-port overcurrent protection
-  bPwrOn2PwrGood        1 * 2 milli seconds
-  bHubContrCurrent      0 milli Ampere
-  DeviceRemovable    0x00
-  PortPwrCtrlMask    0xff
- Hub Port Status:
-   Port 1: 0000.0103 power enable connect
-   Port 2: 0000.0100 power
-Device Status:     0x0003
-  Self Powered
-  Remote Wakeup Enabled
+It has an extra entry point so we can obtain a file handle to an autofs
+mount that has been over mounted and another to get owner info for mount
+re-construction on daemon restart. Which is what we need to be able to
+solve the active restart problem.
+
+I also made a couple of improvements, namely, allow actual failure
+status to be returned from the daemon to the kernel rather than always
+using ENOENT (long overdue, still need to update the daemon though) and
+added an additional entry point to check if a path is a mount point so
+we can eliminate some of the high overhead mount table scanning in the
+daemon.
+
+> 
+> And: you know more about this than anyone else, and you are (now) unbiased
+> by the presence of existing code.  What's your opinion?
+
+There's no question that genetlink is an elegant solution for common
+case ioctl functions but, as I say, it's not a complete replacement
+probably because it's primary purpose in life is to be a message bus
+implementation rather than specifically an ioctl replacement.
+
+As is often the case after posting a "please help" message it occurred
+to me that there is another way I might be able to do this. Instead of
+sending an independent umount request I could check, and if a candidate
+is found, set the expiring flag and return a "yes" status to the daemon
+and have the same function do the umount, then clear the when returning
+the status. That would eliminate the ugliness in the daemon and the need
+to use kernel threads but would open the possibility of the "expiring
+flag" remaining set if the daemon went away. That would prevent lookups
+(since we wait for expires to complete) and so prevent manual umount
+cleanup so I'm not sure yet what the implications of this really are.
+
+There is one other concern, the expire in the daemon has become far to
+complex because I enumerate umount candidates, almost for no other
+reason than to "count" the number of times I need to call the expire
+ioctl. This involves scanning the mount table which has proven to be a
+bit of a killer for large maps. I think the best way to improve this is
+try and get back to the way the expire was done long ago. That is, when
+an expire comes in for a mount (file handle) continually call back to
+the daemon until we can't umount any more mounts, then return the
+appropriate status to the daemon (now we just expire one mount at a
+time). This changed because we were getting infinite loops on umount
+fails in some cases but I think my approach to fixing that was just
+plain wrong. A genetlink implementation will exclude this possibility
+and due to the requirements of the message bus architecture I don't
+think that is likely to change any time soon, if ever.
+
+All things considered I'm leaning toward using a misc device to route
+the ioctls.
+
+Ian
 
 
