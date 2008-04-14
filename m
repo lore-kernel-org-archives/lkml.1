@@ -1,219 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbYDNVlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762836AbYDNVlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762404AbYDNVlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYDNVlH
+	id S1762836AbYDNVlo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 17:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYDNVle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:41:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49122 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757114AbYDNVlF (ORCPT
+	Mon, 14 Apr 2008 17:41:34 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45896 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757157AbYDNVlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:41:05 -0400
-Date: Mon, 14 Apr 2008 23:41:02 +0200
-From: Jan Kara <jack@suse.cz>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3 truncate/quota lockdep trace.
-Message-ID: <20080414214102.GB7097@atrey.karlin.mff.cuni.cz>
-References: <20080412163436.GB23674@redhat.com>
+	Mon, 14 Apr 2008 17:41:32 -0400
+X-Sasl-enc: YvcTM4FeT+06nv8ED7lmk2cEZ6no89+7H6wiM/+6qGhy 1208209290
+Date: Mon, 14 Apr 2008 18:41:28 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 4/8] rfkill: add read-write rfkill switch support
+Message-ID: <20080414214128.GA9815@khazad-dum.debian.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <200804121236.43547.IvDoorn@gmail.com> <20080414012038.GB14406@khazad-dum.debian.net> <200804141400.41319.IvDoorn@gmail.com> <20080414100018.ZZRA012@mailhub.coreip.homeip.net> <20080414143603.GA31298@khazad-dum.debian.net> <20080414105933.ZZRA012@mailhub.coreip.homeip.net> <20080414163357.GA8438@khazad-dum.debian.net> <20080414133917.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080412163436.GB23674@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080414133917.ZZRA012@mailhub.coreip.homeip.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.25-0.195.rc8.git1.fc9.x86_64 #1
-> -------------------------------------------------------
-> tar/4243 is trying to acquire lock:
->  (&ei->truncate_mutex){--..}, at: [_end+107219435/2109740072] ext3_get_blocks_handle+0x143/0x8b1 [ext3]
+On Mon, 14 Apr 2008, Dmitry Torokhov wrote:
+> On Mon, Apr 14, 2008 at 01:33:57PM -0300, Henrique de Moraes Holschuh wrote:
+> > On Mon, 14 Apr 2008, Dmitry Torokhov wrote:
+> > > On Mon, Apr 14, 2008 at 11:36:03AM -0300, Henrique de Moraes Holschuh wrote:
+> > > > On Mon, 14 Apr 2008, Dmitry Torokhov wrote:
+> > > > > What exactly breaks with user_claim? I think the general issue is that
+> > > > 
+> > > > The same thing that happens if userspace is in charge and doesn't
+> > > > cooperate or if rfkill-input is not loaded:  the rfkill driver state is
+> > > > never updated (remember, it is about the radio controller, not the input
+> > > > device).
+> > > > 
+> > > 
+> > > And it should not - setting user_claim means userspace controls the
+> > > transmitter state. If userspace decides to ignore KEY_* event and not
+> > 
+> > Nuh-uh.  Here's the root of the bug.  The rfkill controller knowing
+> > whether its state is on or off for real has NOTHING to do with the user
+> > telling it to change state.
 > 
-> but task is already holding lock:
->  (&sb->s_type->i_mutex_key#9/4){--..}, at: [_end+107246718/2109740072] ext3_quota_write+0xb4/0x239 [ext3]
-> 
-> which lock already depends on the new lock.
-  Thanks for sending the trace. This is actually a false positive
-because fs locks on quota files rank differently from locks on other
-files. I'll try to think how to fix this in a nice way... Maybe we could
-give i_mutex and i_truncate_sem a separate lock class for quota files.
+> Nuh-uh. Nothing changed the transmitter sate yet. We just got a
+> request from user to do something.
 
-								Honza
+We are talking about different things. Please re-read the last three or
+four messages before this one, thread-wise.
 
-> the existing dependency chain (in reverse order) is:
+
+> switch until user[space] tells you to do so. I guess firmware could
+> work like a hard-wired switch, turnign radio off when battery goes
+> extremely low, so yes, I agree that allowing drivers to update their
+> state directly is required.
+
+Ok, then we DO agree.  Let's drop this point and go to the next one...
+
+> I agree. Here you are talking about hardwired-like scenarios where
+> kernel did not get a chance to interfere with the RF toggle. Still, if
+
+Actually, I am talking about ANY scenario where the kernel did not get a
+chance to interfere with the RF toggle.
+
+> there was a button involved it needs to be broadcasted so that the
+> rest of RF transmitters can be adjusted according to the used
+> policy.
+
+We must only broadcast master events, these switches are often tied to
+each other in a tree, you can't report events on the leaves, just the
+root.  In a ThinkPad T60, you get an rfkill input device (that can be
+read), which is hardwired into the WLAN card's rfkill input pin (that
+can ALSO be read, and could potentially be registered as a rfkill
+controller).  The WLAN card has also a second rfkill controller, which
+is in a config register.
+
+I kept that in mind, that's why I started talking about master and slave
+rfkill switches.  Only the master ones can also be used as rfkill input
+devices.
+
+So yes, if there is a button involved, it must issue one (and only one)
+input event.  We agree on this.
+
+> > So far so good, but it must not be used for something else entirely
+> > (namely: keeping rfkill->state consistent to the real hardware state).
+> > That's what I am talking about...
 > 
-> -> #4 (&sb->s_type->i_mutex_key#9/4){--..}:
->        [__lock_acquire+3027/3427] __lock_acquire+0xbd3/0xd63
->        [lock_acquire+94/120] lock_acquire+0x5e/0x78
->        [mutex_lock_nested+247/661] mutex_lock_nested+0xf7/0x295
->        [_end+107246718/2109740072] ext3_quota_write+0xb4/0x239 [ext3]
->        [v2_write_dquot+280/359] v2_write_dquot+0x118/0x167
->        [dquot_commit+160/243] dquot_commit+0xa0/0xf3
->        [_end+107256471/2109740072] ext3_write_dquot+0x64/0x89 [ext3]
->        [dqput+304/458] dqput+0x130/0x1ca
->        [dquot_drop+48/112] dquot_drop+0x30/0x70
->        [_end+107256657/2109740072] ext3_dquot_drop+0x4c/0x6c [ext3]
->        [_end+107210573/2109740072] ext3_free_inode+0xf9/0x2dc [ext3]
->        [_end+107226100/2109740072] ext3_delete_inode+0xba/0xda [ext3]
->        [generic_delete_inode+184/325] generic_delete_inode+0xb8/0x145
->        [generic_drop_inode+21/362] generic_drop_inode+0x15/0x16a
->        [iput+124/128] iput+0x7c/0x80
->        [do_unlinkat+254/340] do_unlinkat+0xfe/0x154
->        [sys_unlinkat+36/38] sys_unlinkat+0x24/0x26
->        [system_call_after_swapgs+123/128] system_call_after_swapgs+0x7b/0x80
->        [<ffffffffffffffff>] 0xffffffffffffffff
+> Here I agree.
+
+As far as I can see, we actually agree in most issues related to rfkill,
+maybe even in everything... but our terminology is NOT in sync, so it is
+not immediately obvious that we do.
+
+> > > If there are drivers sense button presses and alter their actual
+> > > transmitter state immediately but then rely on rfkill-input to update
+> > > their sysfs rfkill attributes then such drivers should be fixed.
+> > 
+> > That's the point, yes.  Currently *all* drivers have to do this :) and
+> > that's why I did not add thinkpad-acpi rfkill support until I had enough
+> > time to tack on rfkill itself to bring it up to speed with the extra
+> > requirements stuff like thinkpad-acpi and b43 have.
 > 
-> -> #3 (&s->s_dquot.dqio_mutex){--..}:
->        [__lock_acquire+3027/3427] __lock_acquire+0xbd3/0xd63
->        [lock_acquire+94/120] lock_acquire+0x5e/0x78
->        [mutex_lock_nested+247/661] mutex_lock_nested+0xf7/0x295
->        [dquot_acquire+65/276] dquot_acquire+0x41/0x114
->        [_end+107256334/2109740072] ext3_acquire_dquot+0x64/0x89 [ext3]
->        [dqget+665/712] dqget+0x299/0x2c8
->        [dquot_initialize+136/188] dquot_initialize+0x88/0xbc
->        [_end+107256769/2109740072] ext3_dquot_initialize+0x50/0x73 [ext3]
->        [vfs_quota_on_inode+876/1118] vfs_quota_on_inode+0x36c/0x45e
->        [vfs_quota_on+111/143] vfs_quota_on+0x6f/0x8f
->        [_end+107242277/2109740072] ext3_quota_on+0xd9/0xeb [ext3]
->        [sys_quotactl+918/1582] sys_quotactl+0x396/0x62e
->        [system_call_after_swapgs+123/128] system_call_after_swapgs+0x7b/0x80
->        [<ffffffffffffffff>] 0xffffffffffffffff
+> No, I dont believe all drivers have to do this. Ivo will correct me if
+> Im wrong but I believe he worked with drivers that dont necessarily
+> have the switch hard wired.
+
+WHEN the kernel is the ONLY possible source of a radio controller state
+change, it is not needed.  For all other cases, we are either ignoring
+the status changes (i.e. the kernel's idea of the current controller
+state can be wrong), or using the input layer to resync (b43 tries to do
+this).
+
+> Should I add attribute for every key on a keyboard just because some
+> userspace developers what to use shell scripts everywhere? key_a,
+> key_b, key_c and so on? No.
+
+It is a rare application that needs to know if a key is currently
+pressed or not.  And usually, it is assumed by the user that he should
+not expect an application to know a key was depressed before it started,
+nor are such applications usually written using shell script :-)
+
+For switches, that's not rare at all.
+
+> >  There is a big
+> > pontential for confusion and misuse of interfaces there, when you recall
+> > that it will be COMMON to have the same module (driver) provide both a
+> > rfkill controller through the rfkill class, and an input device.
 > 
-> -> #2 (&dquot->dq_lock){--..}:
->        [__lock_acquire+3027/3427] __lock_acquire+0xbd3/0xd63
->        [lock_acquire+94/120] lock_acquire+0x5e/0x78
->        [mutex_lock_nested+247/661] mutex_lock_nested+0xf7/0x295
->        [dqget+636/712] dqget+0x27c/0x2c8
->        [dquot_initialize+136/188] dquot_initialize+0x88/0xbc
->        [_end+107256769/2109740072] ext3_dquot_initialize+0x50/0x73 [ext3]
->        [vfs_quota_on_inode+876/1118] vfs_quota_on_inode+0x36c/0x45e
->        [vfs_quota_on+111/143] vfs_quota_on+0x6f/0x8f
->        [_end+107242277/2109740072] ext3_quota_on+0xd9/0xeb [ext3]
->        [sys_quotactl+918/1582] sys_quotactl+0x396/0x62e
->        [system_call_after_swapgs+123/128] system_call_after_swapgs+0x7b/0x80
->        [<ffffffffffffffff>] 0xffffffffffffffff
+> As soon as people will realize that button and RF transmitter are
+> different objects serving different purposes it all goes away. The
+> very same module also registers network device, why rfkill is so
+> different.
+
+It is not so different.  But you could make the handling of that
+information more generic if you could get it using just the rfkill
+interface.
+
+> > > > We could fix it in the input subsystem, instead.  How difficult (and
+> > > > welcome a change?) would it be for the input device infrastructure to
+> > > > provide pollable (for good measure!) "state" attributes for every EV_SW
+> > > > event an input device registers in evbits+swbits ?
+> > > > 
+> > > 
+> > > Given the above I don't see the need.
+> > 
+> > So, we can get the required information using an IOCTL.  That means
+> > rfkill class support for read-only devices is no longar mandatory.  It
+> > is still not clear to me it is not *desired*, though.
+> > 
+> > The reasons are:
+> >   1. Need to have an easy way to get that information for shell scripts,
+> >      and IOCTLs are not (AFAIK).  This can be fixed by adding a shell-
+> >      script helper to input-utils.
+> > 
+> >   2. It might be better to have all information directly related to
+> >      rfkill behaviour (i.e. both rfkill controller state and rfkill
+> >      input device state) in the same class, and present it in the same
+> >      way to userspace.
 > 
-> -> #1 (&s->s_dquot.dqptr_sem){----}:
->        [__lock_acquire+3027/3427] __lock_acquire+0xbd3/0xd63
->        [lock_acquire+94/120] lock_acquire+0x5e/0x78
->        [down_read+64/109] down_read+0x40/0x6d
->        [dquot_free_space+57/412] dquot_free_space+0x39/0x19c
->        [_end+107200960/2109740072] ext3_free_blocks+0x5e/0x7c [ext3]
->        [_end+107222729/2109740072] ext3_clear_blocks+0x180/0x19a [ext3]
->        [_end+107222931/2109740072] ext3_free_data+0xb0/0xd6 [ext3]
->        [_end+107225000/2109740072] ext3_truncate+0x589/0x91b [ext3]
->        [vmtruncate+194/228] vmtruncate+0xc2/0xe4
->        [inode_setattr+43/293] inode_setattr+0x2b/0x125
->        [_end+107215384/2109740072] ext3_setattr+0x1bc/0x223 [ext3]
->        [notify_change+383/782] notify_change+0x17f/0x30e
->        [do_truncate+101/131] do_truncate+0x65/0x83
->        [may_open+443/529] may_open+0x1bb/0x211
->        [open_namei+719/1726] open_namei+0x2cf/0x6be
->        [do_filp_open+40/75] do_filp_open+0x28/0x4b
->        [do_sys_open+81/210] do_sys_open+0x51/0xd2
->        [sys_open+27/29] sys_open+0x1b/0x1d
->        [system_call_after_swapgs+123/128] system_call_after_swapgs+0x7b/0x80
->        [<ffffffffffffffff>] 0xffffffffffffffff
+> No, we need to keep RF transmitetrs and buttons separate. I can assign
+> KEY_WLAN to one of the media keys on my laptop (that I dont use
+> otherwise). Does it make sense to "move" my keyboard to rfkill
+> vicinity? I dont think so. Its just a button.
+
+And it doesn't have much of an existence outside of when it generates an
+input event.  You don't ask a button where it is ON or OFF, that's a
+switch property.
+
+But that's not true for a real switch. You can ask it whether it is in
+the ON or OFF state (for two-state switches, they can have a lot more
+than just two states, but that's not relevant for rfkill).
+
+I can see why we'd not want to export that through rfkill now that you
+brought external keyboards into the picture.  If I have an external
+keyboard with a radio kill SWITCH (not key), I want it to work just like
+if it were built-in the platform.
+
+Which means it needs to be done in the input layer. Well, that gives me
+my answer, in a rather definitive way too.
+
+> > And there is the all important question about whether I should still
+> > export that information in thinkpad-acpi over pollable attributes (which
+> > are *really* easy to use) or not.  Other driver writers might want to
+> > think about it as well.
 > 
-> -> #0 (&ei->truncate_mutex){--..}:
->        [__lock_acquire+2774/3427] __lock_acquire+0xad6/0xd63
->        [lock_acquire+94/120] lock_acquire+0x5e/0x78
->        [mutex_lock_nested+247/661] mutex_lock_nested+0xf7/0x295
->        [_end+107219435/2109740072] ext3_get_blocks_handle+0x143/0x8b1 [ext3]
->        [_end+107221689/2109740072] ext3_getblk+0x64/0x194 [ext3]
->        [_end+107222015/2109740072] ext3_bread+0x16/0x82 [ext3]
->        [_end+107246762/2109740072] ext3_quota_write+0xe0/0x239 [ext3]
->        [get_free_dqblk+181/231] get_free_dqblk+0xb5/0xe7
->        [do_insert_tree+505/1069] do_insert_tree+0x1f9/0x42d
->        [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->        [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->        [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->        [v2_write_dquot+54/359] v2_write_dquot+0x36/0x167
->        [dquot_acquire+164/276] dquot_acquire+0xa4/0x114
->        [_end+107256334/2109740072] ext3_acquire_dquot+0x64/0x89 [ext3]
->        [dqget+665/712] dqget+0x299/0x2c8
->        [dquot_transfer+227/949] dquot_transfer+0xe3/0x3b5
->        [_end+107215161/2109740072] ext3_setattr+0xdd/0x223 [ext3]
->        [notify_change+383/782] notify_change+0x17f/0x30e
->        [chown_common+171/196] chown_common+0xab/0xc4
->        [sys_chown+76/105] sys_chown+0x4c/0x69
->        [tracesys+213/218] tracesys+0xd5/0xda
->        [<ffffffffffffffff>] 0xffffffffffffffff
+> If we export switches then we need to export leds. And keys. And
+> axis... It all adds up very quickly and wastes kernel memory. Just
+> write ioctl utility for script-users if such is needed and be done
+> with it.
+
+Actually, no, we don't.
+
+AFAIK, input layer LEDs should go away, they belong in the LED class.
+
+Keys have usage patterns that make it not necessary to export the
+information of whether they are currently pressed or not through sysfs.
+Utilities to query keyboard state are around for a long time as well.
+
+Stuff that needs an axis position usually needs to track the axis (i.e.
+they need a stream of data), so we are doing everyone a big favour if we
+never ever let big bad stupid mistakes like that hdaps "position"
+attribute's existence happen again.
+
+As for writing the ioctl utility, it looks that it will be needed
+without the sysfs attributes.  But who will write it?   Who will give it
+a home?  Maybe util-linux would take it in, if we're very lucky...
+
+> > Well, I do propose that we export any, and *every* radio controller
+> > state change through kernel notifier chains (and to userspace using
+> > uevents).  Those notifications should include the rfkill type (and type
+> > class if we add that), new switch state, and any other relevant
+> > information (e.g. that the switch is a master switch -- those usually
+> > need input events generated, whether the code that produced the
+> > notification will also handle issuing an input event for it or not
+> > (duplicate suppresion), etc).
 > 
-> other info that might help us debug this:
-> 
-> 6 locks held by tar/4243:
->  #0:  (&sb->s_type->i_mutex_key#9){--..}, at: [chown_common+159/196] chown_common+0x9f/0xc4
->  #1:  (jbd_handle){--..}, at: [_end+107143484/2109740072] journal_start+0xef/0x115 [jbd]
->  #2:  (&s->s_dquot.dqptr_sem){----}, at: [dquot_transfer+154/949] dquot_transfer+0x9a/0x3b5
->  #3:  (&dquot->dq_lock){--..}, at: [dquot_acquire+48/276] dquot_acquire+0x30/0x114
->  #4:  (&s->s_dquot.dqio_mutex){--..}, at: [dquot_acquire+65/276] dquot_acquire+0x41/0x114
->  #5:  (&sb->s_type->i_mutex_key#9/4){--..}, at: [_end+107246718/2109740072] ext3_quota_write+0xb4/0x239 [ext3]
-> 
-> stack backtrace:
-> Pid: 4243, comm: tar Not tainted 2.6.25-0.195.rc8.git1.fc9.x86_64 #1
-> 
-> Call Trace:
->  [print_circular_bug_tail+112/123] print_circular_bug_tail+0x70/0x7b
->  [print_circular_bug_entry+72/79] ? print_circular_bug_entry+0x48/0x4f
->  [__lock_acquire+2774/3427] __lock_acquire+0xad6/0xd63
->  [_spin_unlock_irqrestore+56/71] ? _spin_unlock_irqrestore+0x38/0x47
->  [sched_clock+80/109] ? native_sched_clock+0x50/0x6d
->  [lock_acquire+94/120] lock_acquire+0x5e/0x78
->  [_end+107219435/2109740072] ? :ext3:ext3_get_blocks_handle+0x143/0x8b1
->  [mutex_lock_nested+247/661] mutex_lock_nested+0xf7/0x295
->  [_end+107219435/2109740072] ? :ext3:ext3_get_blocks_handle+0x143/0x8b1
->  [sched_clock+80/109] ? native_sched_clock+0x50/0x6d
->  [sched_clock+80/109] ? native_sched_clock+0x50/0x6d
->  [_end+107219435/2109740072] :ext3:ext3_get_blocks_handle+0x143/0x8b1
->  [sched_clock+80/109] ? native_sched_clock+0x50/0x6d
->  [sched_clock+80/109] ? native_sched_clock+0x50/0x6d
->  [_end+107221689/2109740072] :ext3:ext3_getblk+0x64/0x194
->  [mark_held_locks+92/119] ? mark_held_locks+0x5c/0x77
->  [mutex_lock_nested+634/661] ? mutex_lock_nested+0x27a/0x295
->  [trace_hardirqs_on+241/277] ? trace_hardirqs_on+0xf1/0x115
->  [mutex_lock_nested+646/661] ? mutex_lock_nested+0x286/0x295
->  [_end+107246718/2109740072] ? :ext3:ext3_quota_write+0xb4/0x239
->  [_end+107222015/2109740072] :ext3:ext3_bread+0x16/0x82
->  [_end+107246762/2109740072] :ext3:ext3_quota_write+0xe0/0x239
->  [get_free_dqblk+181/231] get_free_dqblk+0xb5/0xe7
->  [do_insert_tree+505/1069] do_insert_tree+0x1f9/0x42d
->  [_end+107247324/2109740072] ? :ext3:ext3_quota_read+0xd9/0xfe
->  [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->  [_end+107247324/2109740072] ? :ext3:ext3_quota_read+0xd9/0xfe
->  [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->  [_end+107247324/2109740072] ? :ext3:ext3_quota_read+0xd9/0xfe
->  [do_insert_tree+876/1069] do_insert_tree+0x36c/0x42d
->  [find_tree_dqentry+487/505] ? find_tree_dqentry+0x1e7/0x1f9
->  [v2_write_dquot+54/359] v2_write_dquot+0x36/0x167
->  [v2_read_dquot+91/459] ? v2_read_dquot+0x5b/0x1cb
->  [mutex_lock_nested+646/661] ? mutex_lock_nested+0x286/0x295
->  [dquot_acquire+65/276] ? dquot_acquire+0x41/0x114
->  [dquot_acquire+164/276] dquot_acquire+0xa4/0x114
->  [_end+107256334/2109740072] :ext3:ext3_acquire_dquot+0x64/0x89
->  [dqget+665/712] dqget+0x299/0x2c8
->  [dquot_transfer+227/949] dquot_transfer+0xe3/0x3b5
->  [_end+107215161/2109740072] :ext3:ext3_setattr+0xdd/0x223
->  [notify_change+383/782] notify_change+0x17f/0x30e
->  [chown_common+171/196] chown_common+0xab/0xc4
->  [sys_chown+76/105] sys_chown+0x4c/0x69
->  [audit_syscall_exit+817/851] ? audit_syscall_exit+0x331/0x353
->  [syscall_trace_enter+181/185] ? syscall_trace_enter+0xb5/0xb9
->  [tracesys+113/218] ? tracesys+0x71/0xda
->  [tracesys+213/218] tracesys+0xd5/0xda
-> 
-> 
-> 
-> -- 
-> http://www.codemonkey.org.uk
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Notfiers are a good idea for RF transmitter state changes. Not so for
+> key/button notifiers because these can be ussued by regular PS/2 or
+> USB keyboards and other devices that have no idea about rfkill and
+> dont want to know.
+
+Agreed.
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
