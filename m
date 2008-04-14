@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbYDNUec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYDNUjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbYDNUec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDNUeY
+	id S1759205AbYDNUjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYDNUi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:34:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:29518 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbYDNUeW (ORCPT
+	Mon, 14 Apr 2008 16:38:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55857 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751932AbYDNUi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:34:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=lHdayXwZGHcfoJPiLfh9DI0n72FHWZu2jY9TV7RxOMBYHZpE8y+tNJAH+0CVIK23bg92DzOnwoxqyK2MvuGwy9SXZ0Ui/uvMg7ZUq6gwGL5U5wMh9/Iyrb1SRSu6X9hovpt4VPnOmMf7Oo0Dsy1Aug8TEtqyVAGzb53VpKLnXgU=
-Date: Mon, 14 Apr 2008 16:34:13 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 3/3] wm97xx-core: Support use as a wakeup source
-Message-ID: <20080414163033.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080414173841.GA2213@rakim.wolfsonmicro.main> <1208194775-4293-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1208194775-4293-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1208194775-4293-3-git-send-email-broonie@opensource.wolfsonmicro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208194775-4293-3-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 14 Apr 2008 16:38:56 -0400
+Date: Mon, 14 Apr 2008 13:38:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm, sclark46@earthlink.net,
+       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
+       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, davem@davemloft.net,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-Id: <20080414133802.4535e4da.akpm@linux-foundation.org>
+In-Reply-To: <4803ACE5.4020502@keyaccess.nl>
+References: <47FEADCB.7070104@rtr.ca>
+	<20080413121831.d89dd424.akpm@linux-foundation.org>
+	<20080413202118.GA29658@2ka.mipt.ru>
+	<200804132233.50491.rjw@sisk.pl>
+	<20080413205406.GA9190@2ka.mipt.ru>
+	<48028830.6020703@earthlink.net>
+	<alpine.DEB.1.10.0804131546370.9318@asgard>
+	<20080414043939.GA6862@1wt.eu>
+	<20080414053943.GU9785@ZenIV.linux.org.uk>
+	<20080413232441.e216a02c.akpm@linux-foundation.org>
+	<4803ACE5.4020502@keyaccess.nl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Mon, 14 Apr 2008 21:13:41 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-On Mon, Apr 14, 2008 at 06:39:35PM +0100, Mark Brown wrote:
-> The PENDOWN signal from the WM97xx touch screen controllers can be used
-> to generate a wakeup event when the system is suspended. Provide a new
-> machine configuration option 'suspend_mode' allowing machine drivers to
-> enable this. If no suspend_mode is provided then the touch panel will be
-> powered down when the system is suspended.
-> 
+> Does that mean you're not going to take patches that align the right end of 
+> lines in comments? :-(
 
-Hmm, another unique module option... How about using device_can_wakeup()
-infrastructure that we already have. I'm adding David Brownell to CC since
-I believe he's doing a lot of similar work.
+erm, was that ":-(" supposed to be a ":-)"?
 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/input/touchscreen/wm97xx-core.c |   22 ++++++++++++++++++++++
->  include/linux/wm97xx.h                  |    3 +++
->  2 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-> index fec07c2..e1a1ca0 100644
-> --- a/drivers/input/touchscreen/wm97xx-core.c
-> +++ b/drivers/input/touchscreen/wm97xx-core.c
-> @@ -689,10 +689,32 @@ static int wm97xx_remove(struct device *dev)
->  static int wm97xx_suspend(struct device *dev, pm_message_t state)
->  {
->  	struct wm97xx *wm = dev_get_drvdata(dev);
-> +	u16 reg;
-> +	int suspend_mode;
-> +
-> +	if (wm->mach_ops)
-> +		suspend_mode = wm->mach_ops->suspend_mode;
-> +	else
-> +		suspend_mode = 0;
->  
->  	if (wm->input_dev->users)
->  		cancel_delayed_work_sync(&wm->ts_reader);
->  
-> +	/* Power down the digitiser (bypassing the cache for resume) */
-> +	reg = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER2);
-> +	reg &= ~WM97XX_PRP_DET_DIG;
-> +	if (wm->input_dev->users && suspend_mode)
-> +		reg |= suspend_mode;
-> +	wm->ac97->bus->ops->write(wm->ac97, AC97_WM97XX_DIGITISER2, reg);
-> +
-> +	/* WM9713 has an additional power bit - turn it off if there
-> +	 * are no users or if suspend mode is zero. */
-> +	if (wm->id == WM9713_ID2 &&
-> +	    (!wm->input_dev->users || !suspend_mode)) {
-> +		reg = wm97xx_reg_read(wm, AC97_EXTENDED_MID) | 0x8000;
-> +		wm97xx_reg_write(wm, AC97_EXTENDED_MID, reg);
-> +	}
-> +
->  	return 0;
->  }
->  
-> diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
-> index ed01c7d..2082833 100644
-> --- a/include/linux/wm97xx.h
-> +++ b/include/linux/wm97xx.h
-> @@ -258,6 +258,9 @@ struct wm97xx_mach_ops {
->  	/* pre and post sample - can be used to minimise any analog noise */
->  	void (*pre_sample) (int);  /* function to run before sampling */
->  	void (*post_sample) (int);  /* function to run after sampling */
-> +
-> +	/* WM97XX_PRP value to configure while system is suspended */
-> +	u16 suspend_mode;
->  };
->  
->  struct wm97xx {
-> -- 
-> 1.5.5
-> 
+I don't like to merge patches which fix typos and spellos and grammaros
+in comments, simply because I'd be buried in the things.  I do take such
+fixes for user-visible text (Documentation/, kerneldoc comments and
+printks).
 
--- 
-Dmitry
+Right-justification of comments would fall rather a long way below spelling
+fixes.
+
