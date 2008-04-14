@@ -1,84 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbYDNCdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYDNDER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758461AbYDNCdU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 22:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYDNCdK
+	id S1755331AbYDNDER (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 23:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYDNDEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 22:33:10 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:40301 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbYDNCdJ (ORCPT
+	Sun, 13 Apr 2008 23:04:06 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:40721 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbYDNDED (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 22:33:09 -0400
+	Sun, 13 Apr 2008 23:04:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=WBbQdQlCw11yvSDngPlOuRQun+e2QSOzGqDhtitWvXptLE0DxD1Z87ShUKitOwPxTtvHTHgOiFry4FLtd1kmcURi1yiKhTCZCSMcy7hRA+wQ803a8Z408oVSPqhbnJy4EGgv+b6WAqbS9MPeNF6uzy0iamNolhv3mwIu6EwQ9tY=
-Message-ID: <4802C265.8060802@gmail.com>
-Date: Mon, 14 Apr 2008 06:33:09 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=j3sXRokgRlboPmbQbRcrouPVhf6zfLc8PNt6oQPNW7ylXPgKbiaSBSPo7rBws+JIZtX51flmmyLamhFcZBQ2XtXdA3GqjO14Tcyw11FZppbZTMICNIOQzkAIOkjav+TwZcPDkMb5AU+wuc1tS3oLawQ7aCwzjn2fVLOrZnNLvxU=
+Message-ID: <a44ae5cd0804132004v2bef54fek6e9634f8bce087ab@mail.gmail.com>
+Date: Sun, 13 Apr 2008 23:04:02 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.25-rc9 -- INFO: possible circular locking dependency detected
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, akpm@linux-foundation.org,
-       corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
-References: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com>	<20080413151020.bfa62f58.randy.dunlap@oracle.com>	<48028841.900@gmail.com>	<20080413224547.GS9785@ZenIV.linux.org.uk> <20080413190916.57cede66.randy.dunlap@oracle.com>
-In-Reply-To: <20080413190916.57cede66.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap пишет:
-> On Sun, 13 Apr 2008 23:45:47 +0100 Al Viro wrote:
-> 
->> On Mon, Apr 14, 2008 at 02:25:05AM +0400, Dmitri Vorobiev wrote:
->>
->>> Actually, I was doubting whether the "2 spaces" thing was
->>> intentional or not. The overwhelming majority of the sentences in
->>> this document use only one space after a period, however, and this
->>> made me decide that the "2 spaces" thing had not been deliberate
->>> but just a typo.
->>>
->>> Are there any rules about using spaces after a period at the end
->>> of a sentence?
->> See Knuth (TeXbook) for the story on that...
-> 
-> I googled that but I don't see the history there.
-> 
-> AFAIK, 2 spaces at the end of sentences is a typewriter-ism, for easier
-> visual separation of sentences.
-> Probably (just guessing here) has to do with monospace fonts vs.
-> (not having) proportional ones there (usually).
-
-The following Wikipedia article is the most complete and exhaustive source
-I could find while researching the double spacing rules:
-
-http://en.wikipedia.org/wiki/French_spacing
-
-To put it briefly, there are three main conventions about inter-sentence
-spacing:
-
-o English spacing a.k.a. American typewriter spacing: two spaces after full stop;
-
-o French spacing, i.e. one space;
-
-o traditional typography, which uses proportional fonts and is therefore not
-very much interesting here.
-
-Offhand, it seems that the double spacing convention is being currently used
-in a more or less consistent manner throughout Linux docs. It also seems to
-me that this can be made a requirement and documented somewhere.
-
-Thanks,
-Dmitri
-
-> 
-> ---
-> ~Randy
-> [Yes, I learned to type on a manual typewriter.]
-> 
-
+[ 3217.586003] [ INFO: possible circular locking dependency detected ]
+[ 3217.586006] 2.6.25-rc9 #1
+[ 3217.586008] -------------------------------------------------------
+[ 3217.586011] pm-suspend/7421 is trying to acquire lock:
+[ 3217.586013]  (&per_cpu(cpu_policy_rwsem, cpu)){----}, at:
+[<c0277fe1>] lock_policy_rwsem_write+0x33/0x5a
+[ 3217.586023]
+[ 3217.586024] but task is already holding lock:
+[ 3217.586026]  (&cpu_hotplug.lock){--..}, at: [<c0142cec>]
+cpu_hotplug_begin+0x2f/0x89
+[ 3217.586033]
+[ 3217.586033] which lock already depends on the new lock.
+[ 3217.586035]
+[ 3217.586036]
+[ 3217.586037] the existing dependency chain (in reverse order) is:
+[ 3217.586039]
+[ 3217.586040] -> #3 (&cpu_hotplug.lock){--..}:
+[ 3217.586044]        [<c013f39f>] __lock_acquire+0xa02/0xbaf
+[ 3217.586052]        [<c013f5c2>] lock_acquire+0x76/0x9d
+[ 3217.586058]        [<c0309c17>] mutex_lock_nested+0xd5/0x274
+[ 3217.586066]        [<c0143038>] get_online_cpus+0x2c/0x3e
+[ 3217.586072]        [<c011eb03>] sched_getaffinity+0xe/0x4d
+[ 3217.586079]        [<c0159784>] __synchronize_sched+0x11/0x5f
+[ 3217.586087]        [<c0137380>] synchronize_srcu+0x22/0x5b
+[ 3217.586093]        [<c01376a3>] srcu_notifier_chain_unregister+0x45/0x4c
+[ 3217.586100]        [<c0277204>] cpufreq_unregister_notifier+0x1f/0x2f
+[ 3217.586107]        [<f8cfd68c>] cpufreq_governor_dbs+0x1e9/0x242
+[cpufreq_conservative]
+[ 3217.586117]        [<c027758d>] __cpufreq_governor+0xb2/0xe9
+[ 3217.586124]        [<c0277703>] __cpufreq_set_policy+0x13f/0x1c3
+[ 3217.586130]        [<c0277bf3>] store_scaling_governor+0x150/0x17f
+[ 3217.586137]        [<c0278708>] store+0x42/0x5b
+[ 3217.586143]        [<c01b1ac9>] sysfs_write_file+0xb8/0xe3
+[ 3217.586151]        [<c017dbc7>] vfs_write+0x8c/0x108
+[ 3217.586158]        [<c017e122>] sys_write+0x3b/0x60
+[ 3217.586165]        [<c0104470>] sysenter_past_esp+0x6d/0xc5
+[ 3217.586172]        [<ffffffff>] 0xffffffff
+[ 3217.586184]
+[ 3217.586185] -> #2 (&sp->mutex){--..}:
+[ 3217.586188]        [<c013f39f>] __lock_acquire+0xa02/0xbaf
+[ 3217.586195]        [<c013f5c2>] lock_acquire+0x76/0x9d
+[ 3217.586201]        [<c0309c17>] mutex_lock_nested+0xd5/0x274
+[ 3217.586208]        [<c0137374>] synchronize_srcu+0x16/0x5b
+[ 3217.586214]        [<c01376a3>] srcu_notifier_chain_unregister+0x45/0x4c
+[ 3217.586220]        [<c0277204>] cpufreq_unregister_notifier+0x1f/0x2f
+[ 3217.586227]        [<f8cfd68c>] cpufreq_governor_dbs+0x1e9/0x242
+[cpufreq_conservative]
+[ 3217.586235]        [<c027758d>] __cpufreq_governor+0xb2/0xe9
+[ 3217.586242]        [<c0277703>] __cpufreq_set_policy+0x13f/0x1c3
+[ 3217.586248]        [<c0277bf3>] store_scaling_governor+0x150/0x17f
+[ 3217.586255]        [<c0278708>] store+0x42/0x5b
+[ 3217.586261]        [<c01b1ac9>] sysfs_write_file+0xb8/0xe3
+[ 3217.586268]        [<c017dbc7>] vfs_write+0x8c/0x108
+[ 3217.586274]        [<c017e122>] sys_write+0x3b/0x60
+[ 3217.586280]        [<c0104470>] sysenter_past_esp+0x6d/0xc5
+[ 3217.586287]        [<ffffffff>] 0xffffffff
+[ 3217.586297]
+[ 3217.586298] -> #1 (dbs_mutex#2){--..}:
+[ 3217.586302]        [<c013f39f>] __lock_acquire+0xa02/0xbaf
+[ 3217.586309]        [<c013f5c2>] lock_acquire+0x76/0x9d
+[ 3217.586315]        [<c0309c17>] mutex_lock_nested+0xd5/0x274
+[ 3217.586322]        [<f8cfd511>] cpufreq_governor_dbs+0x6e/0x242
+[cpufreq_conservative]
+[ 3217.586330]        [<c027758d>] __cpufreq_governor+0xb2/0xe9
+[ 3217.586336]        [<c0277719>] __cpufreq_set_policy+0x155/0x1c3
+[ 3217.586343]        [<c0277bf3>] store_scaling_governor+0x150/0x17f
+[ 3217.586349]        [<c0278708>] store+0x42/0x5b
+[ 3217.586355]        [<c01b1ac9>] sysfs_write_file+0xb8/0xe3
+[ 3217.586362]        [<c017dbc7>] vfs_write+0x8c/0x108
+[ 3217.586369]        [<c017e122>] sys_write+0x3b/0x60
+[ 3217.586375]        [<c0104470>] sysenter_past_esp+0x6d/0xc5
+[ 3217.586381]        [<ffffffff>] 0xffffffff
+[ 3217.586451]
+[ 3217.586452] -> #0 (&per_cpu(cpu_policy_rwsem, cpu)){----}:
+[ 3217.586456]        [<c013f2c6>] __lock_acquire+0x929/0xbaf
+[ 3217.586463]        [<c013f5c2>] lock_acquire+0x76/0x9d
+[ 3217.586469]        [<c030a219>] down_write+0x28/0x44
+[ 3217.586475]        [<c0277fe1>] lock_policy_rwsem_write+0x33/0x5a
+[ 3217.586482]        [<c0308abd>] cpufreq_cpu_callback+0x43/0x66
+[ 3217.586489]        [<c013753e>] notifier_call_chain+0x2b/0x4a
+[ 3217.586495]        [<c013757f>] __raw_notifier_call_chain+0xe/0x10
+[ 3217.586501]        [<c0142dde>] _cpu_down+0x71/0x1f8
+[ 3217.586507]        [<c0143094>] disable_nonboot_cpus+0x4a/0xc6
+[ 3217.586513]        [<c0146ce5>] suspend_devices_and_enter+0x6c/0x101
+[ 3217.586521]        [<c0146e8b>] enter_state+0xc4/0x119
+[ 3217.586527]        [<c0146f76>] state_store+0x96/0xac
+[ 3217.586533]        [<c01e7479>] kobj_attr_store+0x1a/0x22
+[ 3217.586541]        [<c01b1ac9>] sysfs_write_file+0xb8/0xe3
+[ 3217.586547]        [<c017dbc7>] vfs_write+0x8c/0x108
+[ 3217.586554]        [<c017e122>] sys_write+0x3b/0x60
+[ 3217.586560]        [<c0104470>] sysenter_past_esp+0x6d/0xc5
+[ 3217.586567]        [<ffffffff>] 0xffffffff
+[ 3217.586578]
+[ 3217.586578] other info that might help us debug this:
+[ 3217.586580]
+[ 3217.586582] 5 locks held by pm-suspend/7421:
+[ 3217.586584]  #0:  (&buffer->mutex){--..}, at: [<c01b1a36>]
+sysfs_write_file+0x25/0xe3
+[ 3217.586590]  #1:  (pm_mutex){--..}, at: [<c0146eca>] enter_state+0x103/0x119
+[ 3217.586596]  #2:  (pm_sleep_rwsem){--..}, at: [<c0261789>]
+device_suspend+0x25/0x1ad
+[ 3217.586604]  #3:  (cpu_add_remove_lock){--..}, at: [<c0142c93>]
+cpu_maps_update_begin+0xf/0x11
+[ 3217.586610]  #4:  (&cpu_hotplug.lock){--..}, at: [<c0142cec>]
+cpu_hotplug_begin+0x2f/0x89
+[ 3217.586616]
+[ 3217.586617] stack backtrace:
+[ 3217.586620] Pid: 7421, comm: pm-suspend Not tainted 2.6.25-rc9 #1
+[ 3217.586627]  [<c013d914>] print_circular_bug_tail+0x5b/0x66
+[ 3217.586634]  [<c013d25e>] ? print_circular_bug_entry+0x39/0x43
+[ 3217.586643]  [<c013f2c6>] __lock_acquire+0x929/0xbaf
+[ 3217.586656]  [<c013f5c2>] lock_acquire+0x76/0x9d
+[ 3217.586661]  [<c0277fe1>] ? lock_policy_rwsem_write+0x33/0x5a
+[ 3217.586668]  [<c030a219>] down_write+0x28/0x44
+[ 3217.586673]  [<c0277fe1>] ? lock_policy_rwsem_write+0x33/0x5a
+[ 3217.586678]  [<c0277fe1>] lock_policy_rwsem_write+0x33/0x5a
+[ 3217.586684]  [<c0308abd>] cpufreq_cpu_callback+0x43/0x66
+[ 3217.586689]  [<c013753e>] notifier_call_chain+0x2b/0x4a
+[ 3217.586696]  [<c013757f>] __raw_notifier_call_chain+0xe/0x10
+[ 3217.586701]  [<c0142dde>] _cpu_down+0x71/0x1f8
+[ 3217.586710]  [<c0143094>] disable_nonboot_cpus+0x4a/0xc6
+[ 3217.586716]  [<c0146ce5>] suspend_devices_and_enter+0x6c/0x101
+[ 3217.586721]  [<c0146e8b>] enter_state+0xc4/0x119
+[ 3217.586726]  [<c0146f76>] state_store+0x96/0xac
+[ 3217.586731]  [<c0146ee0>] ? state_store+0x0/0xac
+[ 3217.586736]  [<c01e7479>] kobj_attr_store+0x1a/0x22
+[ 3217.586742]  [<c01b1ac9>] sysfs_write_file+0xb8/0xe3
+[ 3217.586750]  [<c01b1a11>] ? sysfs_write_file+0x0/0xe3
+[ 3217.586755]  [<c017dbc7>] vfs_write+0x8c/0x108
+[ 3217.586762]  [<c017e122>] sys_write+0x3b/0x60
+[ 3217.586769]  [<c0104470>] sysenter_past_esp+0x6d/0xc5
+[ 3217.586780]  =======================
+[ 3217.588064] Breaking affinity for irq 16
