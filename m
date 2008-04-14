@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbYDNRuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763861AbYDNRwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbYDNRuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbYDNRuE
+	id S1763861AbYDNRwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYDNRw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:50:04 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48150 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbYDNRuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:50:03 -0400
-Date: Mon, 14 Apr 2008 11:50:02 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080414175001.GZ11962@parisc-linux.org>
-References: <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org> <adaskxqrgsl.fsf@cisco.com> <20080412204748.GN11962@parisc-linux.org> <20080413070833.GC19773@elte.hu> <20080413125758.GQ11962@parisc-linux.org> <20080414153928.GA22259@elte.hu> <adafxtoqvgh.fsf@cisco.com> <1208190749.7375.10.camel@twins> <20080414095638.64943a98@laptopd505.fenrus.org>
+	Mon, 14 Apr 2008 13:52:28 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:6135 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756718AbYDNRw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 13:52:27 -0400
+Date: Mon, 14 Apr 2008 19:52:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: scameron@beardog.cca.cpqcorp.net
+Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com,
+       mikem@beardog.cca.cpqcorp.net
+Subject: Re: [patch] cciss: Fix race between disk-adding code and interrupt handler
+Message-ID: <20080414175219.GR12774@kernel.dk>
+References: <20080414142019.GG16584@beardog.cca.cpqcorp.net> <20080414170505.GO12774@kernel.dk> <20080414172716.GM16584@beardog.cca.cpqcorp.net> <20080414173720.GQ12774@kernel.dk> <20080414174540.GO16584@beardog.cca.cpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414095638.64943a98@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080414174540.GO16584@beardog.cca.cpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 09:56:38AM -0700, Arjan van de Ven wrote:
-> On Mon, 14 Apr 2008 18:32:28 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> > Yeah, I would open code it.  But this is indeed a sane usage of the
-> > counting semaphore because there is no priority inversion.
+On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
+> On Mon, Apr 14, 2008 at 07:37:20PM +0200, Jens Axboe wrote:
+> > On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
+> > > 
+> > > 
+> > > > On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
+> > > > > 
+> > > > > 
+> > > > > Fix race condition between cciss_init_one(), cciss_update_drive_info(),
+> > > > > and cciss_check_queues().  cciss_softirq_done would try to start
+> > > > > queues which were not quite ready to be started, as its checks for
+> > > > > readiness were not sufficiently synchronized with the queue initializing
+> > > > > code in cciss_init_one and cciss_update_drive_info.  Slow cpu and
+> > > > > large numbers of logical drives seem to make the race more likely 
+> > > > > to cause a problem.
+> > > > 
+> > > > Hmm, this seems backwards to me.  cciss_softirq_done() isn't going to
+> > > > start the queues, until an irq has triggered for instance. Why isn't the
+> > > > init properly ordered instead of band-aiding around this with a
+> > > > 'queue_ready' variable?
+> > > >
+> > > 
+> > > Each call to add_disk() will trigger some interrupts, 
+> > > and earlier added disks may cause the queues of later,
+> > > not-yet-completely added disks to be started.
+> > > 
+> > > I suppose the init routine might be reorganized to initialize all
+> > > the queues, then have second loop call add_disk() for all
+> > > of them.  Is that what you had in mind by "properly ordered?"
+> > 
+> > Yep precisely, don't call add_disk() until everything is set up.
+> > 
+> > > Disks may be added at run time though, and I think this tears
+> > > down all but the first disk, and re-adds them all, if I remember
+> > > right, so there is some complication there to think about.
+> > 
+> > Well, other drivers manage quite fine without resorting to work-arounds
+> > :-)
 > 
-> Maybe we need a "counter" primitive instead?
-> From a conceptual point of view that even makes sense
+> Ok.  Thanks for the constructive criticism.  I'll rethink it.
 > 
-> (the implementation can be pretty much the current semaphore one of course)
+> Fortunately, (or unfortunately) the race is apparently pretty hard 
+> to trigger, it's been in there for ages, and we've only just seen it 
+> manifest as a problem recently and only in one particular configuration.
 
-I'm only too happy to rename semaphore.c to atomic_counter.c and do
-appropriate renames.  Or maybe 'kcounter' would be more in vogue for a
-name ;-)  I'd like a name that implies sleeping, but I'm not able to
-think of one right now.
-
-Then semaphores and completions each become wrappers around counters
-and everybody's happy.  Right?
+Hopefully that will not matter. If you rework the init code so that
+everything is up and running before you allow any IO going on, then
+it'll be easier to 'prove' that you can't hit such races. If you can
+have disk added at runtime, make them go through the same init
+process/function.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jens Axboe
+
