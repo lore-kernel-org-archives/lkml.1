@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbYDNHYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYDNHYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759908AbYDNHYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758195AbYDNHYG
+	id S1759773AbYDNHYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757541AbYDNHYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:24:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38712 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757485AbYDNHYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:24:03 -0400
-Date: Mon, 14 Apr 2008 08:23:28 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Willy Tarreau <w@1wt.eu>, david@lang.hm,
-       Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080414072328.GW9785@ZenIV.linux.org.uk>
-References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org> <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl> <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org>
+	Mon, 14 Apr 2008 03:24:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46527 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756334AbYDNHYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:24:42 -0400
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200804140843.06088.oliver@neukum.org>
+References: <200804040111.15255.rjw@sisk.pl>
+	 <200804140309.22057.rjw@sisk.pl> <1208143380.6958.105.camel@pasglop>
+	 <200804140843.06088.oliver@neukum.org>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 17:23:36 +1000
+Message-Id: <1208157816.6958.133.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080413232441.e216a02c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 11:24:41PM -0700, Andrew Morton wrote:
 
-> No.  The problem we're discussing here is the apparently-large number of
-> bugs which are in the kernel, the apparently-large number of new bugs which
-> we're adding to the kernel, and our apparent tardiness in addressing them.
+On Mon, 2008-04-14 at 08:43 +0200, Oliver Neukum wrote:
 > 
-> Do you agree with these impressions, or not?
-> 
-> If you do agree, what would you propose we do about it?
+> Which is the problem. Suspension is supposed to be transparent.
+> We cannot start returning error codes for operations which never
+> failed in practice (eg. switching configurations in USB), just because
+> the system is about to be suspended.
 
-In addition to obvious "we need testing and something better than bugzilla
-to keep track of bugs"?  Real review of code in tree and patches getting into
-the tree.
+Returning errors is better than crashing in any way. So what I meant
+here is that the problem is not as bad as it sounds.
 
-And the latter part _must_ be done on each entry point.  Any git tree
-that acts as injection point really needs a working mechanism of some
-sort that would do that; afterwards it's too late, since review of
-the stuff getting into mainline on a massive merge is sadly impractical.
+> If you want to request firmware in a PM callback, which makes a
+> certain
+> sense, as we should move to a comprehensive API, if we change the API
+> at all, we need a model with 3 callbacks.
 
-I don't know any formal mechanism that could take care of that; no more
-than making sure that no backdoors are injected into the tree.  It really
-has to be a matter of trust for tree maintainers and community around
-the subsystem.
+No. At this pace, we'll find reasons to have 98213674 callbacks and will
+still not be happy.
 
-Git is damn good at killing the merge bottleneck.  Too good, since it
-hides the review bottleneck.  And we get equivalents of self-selected
-communities that had been problem for "here's our CVS, here's monthly
-dump from it, apply" kind of setups.  It _is_ better, since one can
-get to commit history (modulo interesting issues with merge nodes and
-conflict resolution).  But in practice it's not good enough - the patches
-going in during a merge (especially for a tree that collects from
-secondaries) are not visible enough.  And it's too late at that point,
-since one has to do something monumentally ugly to get Linus revert
-a large merge.  On the scale of Great IDE Mess in 2.5...
+Prepare() should be the right place to call request_firmware() and if
+that is a problem because of bugs in some USB things, then those bugs
+should be fixed.
 
-linux-next might help with the last part, but I don't think it really
-deals with the first one.  It certainly helps to some extent, but...
+Ben.
 
-We need higher S/N on l-k.  We need people looking into the subsystem
-trees as those grow and causing a stench when bad things are found,
-with design issues getting brought to l-k if nothing else helps.  We
-need tree maintainers understanding that review, including out-of-community
-one, is needed (the need of testing is generally better understood - I
-_hope_).
-
-We need more people reading the fscking source.  Subsystem by subsystem.
-Without assumption that code is not broken.  With mechanism collating
-the questions asked and answers given.  Ideally we need growing documentation
-of core subsystems and data structures, with explicit goal of helping
-reviewers new to an area to find their way around it.  And yes, I'm
-guilty of procrastinating on that - several half-finished pieces on
-VFS-related stuff are sitting locally ;-/
-
-We need gregkh to get real and stop assuming that two Signed-off-by are
-equivalent to "reviewed at least twice", while we are at it ;-)
-
-We need people to realize that warnings are useful as triage tools -
-not as "Ug see warning.  Warning bad.  Ug fix that line.  Warning go away.
-Ug changeset count grow.  Ug happy.", but as machine-assisted part of
-finding confused areas of code.  With human combining signals from
-different warnings to get statistically useful triage strategies (note
-that aforementioned making gcc/sparse/whatnot to STFU by local change
-has a lovely potential of distorting those signals and actually _hiding_
-crap code).
-
-Maybe we need a list a-la linux-arch for tree maintainers to coordinate
-stuff - obviously open not only for those.
-
-We really need to get around to doing triage of remaining stuff in -mm,
-BTW - again, guilty for not getting through such on VFS-related stuff
-in there.  Hopefully linux-next trees will eventually vacuum most of the
-pile in...
-
-As for the bug that got this thread started...  I'd say that asking to
-bisect was reasonable in this particular case.  The following DSW mixed
-into the thread very soon went the way of all DSW (OK, it hadn't godwinated
-yet, at least in the parts I've seen, so there's still way to go, but...)
 
