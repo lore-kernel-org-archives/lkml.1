@@ -1,74 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYDNVEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYDNVG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbYDNVEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYDNVE2
+	id S1762189AbYDNVG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 17:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYDNVGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:04:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33065
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752216AbYDNVE2 (ORCPT
+	Mon, 14 Apr 2008 17:06:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:47599 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYDNVGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:04:28 -0400
-Date: Mon, 14 Apr 2008 14:04:28 -0700 (PDT)
-Message-Id: <20080414.140428.52588590.davem@davemloft.net>
-To: m.kozlowski@tuxland.pl
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sparc64 2.6.25-rc7 bug: kswapd oops
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200804142219.03962.m.kozlowski@tuxland.pl>
-References: <200804142219.03962.m.kozlowski@tuxland.pl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 14 Apr 2008 17:06:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s6ABpVAQ3MwWVTY3yfT3GfPOM/eGW9gijCnfT2JOF8QCZoLMotr2jRVA2mCEIjJLmxEthDyHBKRApDtiDnuPK/eaoDROqSGKyEkIUiiuaELzmwjWxaKqqdmpm6iw0Znehg5A5g8VeX1VnvYs9PYMNqJfdz/71BQT7zZzzih2UA4=
+Message-ID: <86802c440804141406u7543dbacifb4b93b7b0ee2cc3@mail.gmail.com>
+Date: Mon, 14 Apr 2008 14:06:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: x86 git tree broken (bisected)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <200804142221.19606.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804102159.14563.rjw@sisk.pl> <200804140219.07350.rjw@sisk.pl>
+	 <86802c440804131842t16d05976g20b2eb97af6bbf1b@mail.gmail.com>
+	 <200804142221.19606.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Date: Mon, 14 Apr 2008 22:19:03 +0200
+On Mon, Apr 14, 2008 at 1:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> On Monday, 14 of April 2008, Yinghai Lu wrote:
+>  > On Sun, Apr 13, 2008 at 5:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >
+>  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
+>  > >  > On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >  > >
+>  > >  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
+>  > >  > >  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  > >  > >  > ...
+>  > >  > >  > >  > can you try to apply the patch i sent to you about agp bridge order
+>  > >  > >  > >  > reading for buggy silicon?
+>  > >  > >  > >  >
+>  > >  > >  > >  > Please boot kernel with "debug"...
+>  > >  > >  > >  >
+>  > >  > >  > >  > I want to verify if you can get
+>  > >  > >  > >  >
+>  > >  > >  > >  > "
+>  > >  > >  > >  > Aperture conflicts with PCI mapping.
+>  > >  > >  > >  > "
+>  > >  > >  > >  >
+>  > >  > >  > >  > in your boot log...
+>  > >  > >  > >
+>  > >  > >  > >  It's not present in there:
+>  > >  > >  > >
+>  > >  > >  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
+>  > >  > >  > >  Aperture too small (32 MB)
+>  > >  > >  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
+>  > >  > >  > >  Aperture too small (0 MB)
+>  > >  > >  > >  agpgart: Aperture pointing to RAM
+>  > >  > >  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
+>  > >  > >  > >  agpgart: Aperture too small (0 MB)
+>  > >  > >  > >
+>  > >  > >  > >  Full dmesg output attached.
+>  > >  > >  >
+>  > >  > >  > please check attached debug patch. and check if you can change GART
+>  > >  > >  > size in your BIOS setup to 64M instead of 32M
+>  > >  > >
+>  > >  > >  Hm, what tree am I supposed to apply it too:
+>  > >  > >  (1) current x86 git
+>  > >  > >  (2) current x86 git w/ some of your previous patches (which ones in this case)
+>  > >  > >  (3) failing (old) x86 git
+>  > >  > >  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
+>  > >  > >     case)?
+>  > >  >
+>  > >  > (1) current x86.git
+>  > >
+>  > >  Attached is dmesg output from current x86.git with debug_gart_checking.patch
+>  > >  applied.
+>  >
+>  > please test the final one ... ...
+>  >
+>  > You should get back 64M memory back.
+>
+>  Tested (current x86.git), dmesg output attached.
 
-This one looks like it might not be sparc64 specific, so CC:'ing
-linux-kernel.
+thanks.
 
-> 	I got this on 2.6.25-rc7 when the box was under heavy load. I was compiling
-> kernel and (unfortunately) at the same time upgrading system. So ... the box went oops
-> and I'm left with unusable box due to missing coreutils :) As soon as I bring it back
-> to life I'll try to reproduce that on 2.6.25-rc9. It seems it happend when the box
-> was running out of ram and started (or was close to) swapping. Hm ... not sure though.
-> I'll get back if I get anything more substantial.
-> 
- ...
-> Unable to handle kernel NULL pointer dereference
-> tsk->{mm,active_mm}->context = 00000000000019db
-> tsk->{mm,active_mm}->pgd = fffff8008ea56000
->               \|/ ____ \|/
->               "@'/ .. \`@"
->               /_| \__/ |_\
->                  \__U_/
-> kswapd0(140): Oops [#1]
-> TSTATE: 0000008880009602 TPC: 00000000004d91ec TNPC: 00000000004d91f0 Y: 00000000    Not tainted
-> TPC: <prune_dcache+0xb4/0x220>
-> g0: fffff800bf1d71d1 g1: 0000000000762288 g2: 0000000000000000 g3: fffff800afb5f140
-> g4: fffff800bf0ae900 g5: fffff8007f94c000 g6: fffff800bf1d4000 g7: 0000000000000001
-> o0: 0000000000000000 o1: 0000000000000001 o2: 0000000000000001 o3: fffff800bf1d78e0
-> o4: 0000000000811800 o5: 000000000000000f sp: fffff800bf1d7241 ret_pc: 00000000004d9160
-> RPC: <prune_dcache+0x28/0x220>
-> l0: fffff800afb5f100 l1: fffff800bf4b6fc0 l2: fffff800afb5ebb8 l3: 0000000000762000
-> l4: 0000000000762000 l5: 0000000000786c00 l6: 00000000007608c0 l7: 0000000000000008
-> i0: 0000000000000021 i1: 0000000000000000 i2: 0000000000000000 i3: 0000000000000000
-> i4: 0000000000000000 i5: 000000000000000f i6: fffff800bf1d7301 i7: 00000000004d93b4
-> I7: <shrink_dcache_memory+0x5c/0x80>
-> Caller[00000000004d93b4]: shrink_dcache_memory+0x5c/0x80
-> Caller[00000000004a8704]: shrink_slab+0xec/0x200
-> Caller[00000000004a8c28]: kswapd+0x410/0x500
-> Caller[0000000000481780]: kthread+0x48/0x80
-> Caller[0000000000427290]: kernel_thread+0x38/0x60
-> Caller[0000000000481a08]: kthreadd+0x150/0x1c0
-> Instruction DUMP: c258c000  c458e008  c4706008 <c2708000> c670e008  c670c000  c25ce290  c7684000  29001d88 
-> note: kswapd0[140] exited with preempt_count 1
-> --
-> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+looks good. as expected...
+
+Checking aperture...
+AGP bridge at 00:04:00
+Aperture from AGP @ de000000 old size 32 MB
+Aperture size 4096 MB (APSIZE 0) is not right, using settings from NB
+Aperture from AGP @ de000000 size 32 MB (APSIZE 0)
+Node 0: aperture @ de000000 size 32 MB
+Aperture too small (32 MB) than (64 MB)
+...
+agpgart: Detected AGP bridge 20
+Setting up ULi AGP.
+agpgart: AGP aperture is 32M @ 0xde000000
+
+YH
