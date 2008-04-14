@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762714AbYDNO1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbYDNO1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762714AbYDNO1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761402AbYDNOWE
+	id S1762771AbYDNO1i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761994AbYDNOWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:22:04 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41425 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761849AbYDNOWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:22:02 -0400
-Date: Mon, 14 Apr 2008 17:20:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] parport/share.c: proper externs
-Message-ID: <20080414142057.GY6695@cs181133002.pp.htv.fi>
+	Mon, 14 Apr 2008 10:22:47 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23918 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760121AbYDNOWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:22:45 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Date: Mon, 14 Apr 2008 10:20:36 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, me@bobcopeland.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080414091639.4bd3879d@core> <20080414084141.GA29113@infradead.org>
+In-Reply-To: <20080414084141.GA29113@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804141020.37271.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds proper externs for parport_default_timeslice and 
-parport_default_spintime in include/linux/parport.h
+On Monday 14 April 2008, Christoph Hellwig wrote:
+> On Mon, Apr 14, 2008 at 09:16:39AM +0100, Alan Cox wrote:
+> > I think the exceed them quite easily. The costs are almost nil, while
+> > merging this provides another nice example fs (and one much easier to
+> > follow than ext*) for hardware that does have a few users and will no
+> > doubt get many more
+> >
+> > I wasn't aware Linus had introduced a new rule required 500 people sign
+> > up to use a feature before it gets added ?
+>
+> I'm also very surprised by this, especially as it seems to be applied
+> very selectively.  This filesystems is an almost 0 maintainance burden
+> unlike a lot of really crappy driver we're shoving in constantly.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Thanks to Bob Copeland for taking the time to submit this for mainline.  
+Please don't mistake the resulting debate as a sign we don't appreciate the 
+effort of making it available and getting it reviewed.
 
----
+This zero maintenance burden idea is a little suprising to me.  The kernel 
+interfaces do change and we either end up changing every filesystem to 
+support the new interface or we need to carry around the old ones for the old 
+filesystems.
 
- drivers/parport/procfs.c |    3 ---
- include/linux/parport.h  |    3 +++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Even though OMFS seems to be using the generic interfaces well, there is still 
+a testing burden for every change.  Someone needs to try it, report any 
+problems and get them fixed.  Since none of the people making the changes is 
+likely to have an OMFS test bed, all of that burden will fall on Bob, his 
+users, and anyone who tries to compile the module (Andrew).
 
-4b9040d06db3fe544aa9971ba18184e2fb9b52ce diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
-index d950fc3..554e11f 100644
---- a/drivers/parport/procfs.c
-+++ b/drivers/parport/procfs.c
-@@ -429,9 +429,6 @@ struct parport_default_sysctl_table
- 	ctl_table dev_dir[2];
- };
- 
--extern unsigned long parport_default_timeslice;
--extern int parport_default_spintime;
--
- static struct parport_default_sysctl_table
- parport_default_sysctl_table = {
- 	.sysctl_header	= NULL,
-diff --git a/include/linux/parport.h b/include/linux/parport.h
-index d1ad546..2794fcc 100644
---- a/include/linux/parport.h
-+++ b/include/linux/parport.h
-@@ -560,5 +560,8 @@ extern int parport_device_proc_unregister(struct pardevice *device);
- 
- #endif /*  !CONFIG_PARPORT_NOT_PC  */
- 
-+extern unsigned long parport_default_timeslice;
-+extern int parport_default_spintime;
-+
- #endif /* __KERNEL__ */
- #endif /* _PARPORT_H_ */
+Unlike all the device drivers we don't want floating around out of the tree, 
+filesystem authors do have a choice between FUSE and being in-kernel.  Since 
+OMFS has been maintained out of tree since 2.6.12 or so, Bob probably has a 
+very good idea of how much time he has needed to spend updating things for 
+each release.
 
+So, there are two big questions I'd ask:
+
+* Which setup (kernel or fuse) would Bob find easier to maintain things?
+* Is this a first step toward more development and an increased user base?
+
+Tossing it in -mm isn't a bad step toward getting attention to see if more 
+people want to use it.
+
+-chris
