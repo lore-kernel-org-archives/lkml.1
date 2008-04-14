@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbYDNIMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbYDNIMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760325AbYDNIMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbYDNILu
+	id S1760459AbYDNIMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760226AbYDNIMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:11:50 -0400
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:11581 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757101AbYDNILq convert rfc822-to-8bit (ORCPT
+	Mon, 14 Apr 2008 04:12:03 -0400
+Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:55627 "EHLO
+	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759766AbYDNIL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:11:46 -0400
-X-PGP-Universal: processed;
-	by hqnvupgp02.nvidia.com on Mon, 14 Apr 2008 01:11:42 -0700
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-MIME-Version: 1.0
-Subject: RE: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Date: Mon, 14 Apr 2008 16:11:34 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B26C12206@hkemmail01.nvidia.com>
-In-Reply-To: <200804140841.32477.volker.armin.hemmann@tu-clausthal.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Thread-Index: Acid/anhfMuXYUF0RJmFqhd3NDEOOgAB8hzg
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <480013A3.1010502@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B26C11B8C@hkemmail01.nvidia.com> <200804140841.32477.volker.armin.hemmann@tu-clausthal.de>
-From: "Peer Chen" <pchen@nvidia.com>
-To: "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
-       "Kuan Luo" <kluo@nvidia.com>
-X-OriginalArrivalTime: 14 Apr 2008 08:11:35.0093 (UTC) FILETIME=[27DEC650:01C89E07]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Apr 2008 04:11:58 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080414004909.1b21b738.akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414004909.1b21b738.akpm@linux-foundation.org>
+Message-Id: <FEE6C6C4-7F19-4769-B674-FFFCA764EDD3@cam.ac.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Date: Mon, 14 Apr 2008 09:11:35 +0100
+Cc: Miklos Szeredi <miklos@szeredi.hu>, dwmw2@infradead.org, hch@infradead.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker,
-I mean add msleep(x) function between writel(HOST_AHCI_EN, mmio + HOST_CTL) and readl(mmio + HOST_CTL) cause we ever met a bug that writing data to the AHCI BAR5 but need a delay to get correct read back value. But forget it, looks like it's not the same case here.
-Which mode do you set(ahci or non-raid) when you encountered the issue that the AHCI_EN bit failed to set? I found we have workaround for AHCI_EN bit setting in our Bios programming guide for AHCI mode.
+Hi,
 
-BRs
-Peer Chen
-
------Original Message-----
-From: Volker Armin Hemmann [mailto:volker.armin.hemmann@tu-clausthal.de] 
-Sent: Monday, April 14, 2008 2:42 PM
-To: Peer Chen
-Cc: Jeff Garzik; Tejun Heo; linux-kernel@vger.kernel.org; linux-ide@vger.kernel.org; Kuan Luo
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-
-On Montag, 14. April 2008, Peer Chen wrote:
-> Volker,
-> Could you add a delay between setting AHCI_EN and reading back function?
+On 14 Apr 2008, at 08:49, Andrew Morton wrote:
+> On Mon, 14 Apr 2008 09:25:46 +0200 Miklos Szeredi  
+> <miklos@szeredi.hu> wrote:
 >
+>> And I didn't advocate moving
+>> ntfs to fuse, still that was done and the resulting filesystem at the
+>> moment happens to outperform the kernel one in every respect ;)
+>
+> Gad.  Why?
 
-if you tell me how to?
+Miklos has the wrong end of the stick.  No-one has "moved" ntfs to  
+fuse.  And the fuse implementation doesn't outperform the kernel  
+implementation in anything at all.  However the kernel one as  
+available in the kernel source tree doesn't have many write-features,  
+it can only overwrite files, it cannot create/delete files, etc.  So I  
+guess if you define "performance" to mean "features" then sure  
+ntfsmount/ntfs-3g have more features than the public kernel driver.   
+If you define "performance" to mean "speed" then no ntfsmount/ntfs-3g  
+can't compare to the kernel except in very limited and meaningless  
+benchmarks...
 
-Glück Auf
-Volker
+btw. even comparing features, the fuse solutions lag behind in some  
+respects, e.g. no-one can "kill -9" the kernel driver leaving a  
+corrupt file system on the volume (and under no-one I include the OOM  
+killer for example!) and another example is that the fuse solutions  
+require large amounts of ram whereas the kernel driver can happily  
+function in 1MiB ram and less even as everything is in the page cache  
+so it will just cause heavy paging whilst the fuse solutions just blow  
+up / OOM the machine when they find a large directory and the user has  
+only 32MiB ram for example...  At least I have seen reports of this on  
+the mailing lists, not that I have ever cared to try.
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
