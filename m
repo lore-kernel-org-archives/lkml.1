@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764014AbYDNTH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYDNTMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764014AbYDNTH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbYDNTHP
+	id S1757786AbYDNTMI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYDNTLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:07:15 -0400
-Received: from phoenix.slamd64.com ([217.10.145.2]:48430 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756331AbYDNTHN (ORCPT
+	Mon, 14 Apr 2008 15:11:50 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:42584 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbYDNTLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:07:13 -0400
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 4/8] rfkill: add read-write rfkill switch support
-Date: Mon, 14 Apr 2008 20:06:50 +0100
-User-Agent: KMail/1.9.9
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <20080414012038.GB14406@khazad-dum.debian.net> <200804141400.41319.IvDoorn@gmail.com>
-In-Reply-To: <200804141400.41319.IvDoorn@gmail.com>
+	Mon, 14 Apr 2008 15:11:49 -0400
+Message-ID: <4803ACE5.4020502@keyaccess.nl>
+Date: Mon, 14 Apr 2008 21:13:41 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, Willy Tarreau <w@1wt.eu>, david@lang.hm,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+References: <47FEADCB.7070104@rtr.ca>	<20080413121831.d89dd424.akpm@linux-foundation.org>	<20080413202118.GA29658@2ka.mipt.ru>	<200804132233.50491.rjw@sisk.pl>	<20080413205406.GA9190@2ka.mipt.ru>	<48028830.6020703@earthlink.net>	<alpine.DEB.1.10.0804131546370.9318@asgard>	<20080414043939.GA6862@1wt.eu>	<20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org>
+In-Reply-To: <20080413232441.e216a02c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804142006.51224.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 14 Apr 2008 19:06:53 +0000 (UTC)
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 April 2008 13:00:41 Ivo van Doorn wrote:
-> > > See rt2x00 and b43 in driver-wireless for an example implementation
-> > > of pollable input device and rfkill
-> >
-> > They're broken by design, at least in b43's case.  Someone (Carlos, I
-> > believe?) posted an example of a ping-pong scenario using b43.
->
-> Thats true. But was that a scenario where there were 2 keys for the same
-> radio type? Or was that a matter of the driver indicating a key pressed
-> event while it has no attached key to it, and only checked the register for
-> the key status and the current radio status and saw it was different?
+On 14-04-08 08:24, Andrew Morton wrote:
 
-Two part problem:
+> On Mon, 14 Apr 2008 06:39:43 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-1) Bug in rfkill; rfkill is toggling all devices in the same state, and not 
-actually checking the type.
+>> I have a related proposal: let us require all patches to be stamped
+>> with Discordian *and* Eternal September dates.  In triplicate.  While
+>> we are at it, why don't we introduce new mandatory headers like, say
+>> it,
+>>
+>> X-checkpatch: {Yes,No}
+>> X-checkpatch-why-not: <string>
+>> X-pointless: <number from 1 to 69, going from "1: does something useful" all
+>> the way to "68: aligns right ends of lines in comments">
+>> X-arbitrary-rules-added-to-CodingStyle: <number> (should be present if
+>> and only if X-pointless: 69 is present).
+>>
+>> Come to think of that, we clearly need a new file in Documentation/*,
+>> documenting such headers.  Why don't we organize a subcommittee^Wnew maillist
+>> devoted to that?  That would provide another entry route for contributors,
+>> lowering the overall entry barriers even further...
+>>
+> 
+> None of the above was particularly useful.
 
-(I submitted a patch for this on Sunday, although I sent it to linux-wireless 
-before you sent the MAINTAINERS patch with netdev as the official list; but I 
-did CC you on it regardless so you should have seen this. If not, let me know 
-and I'll resend it).
+Does that mean you're not going to take patches that align the right end of 
+lines in comments? :-(
 
-2) The cycle-of-doom bug, as described earlier.
-
-This still applies.
-
-Yes, b43 can also be fixed not to emit a keycode if it cannot control the 
-rfkill switch; but that doesn't solve the case of what happens if both the 
-wireless driver and the platform driver can control the radio.
-
-I agree wholeheartedly with Henrique here though - wireless drivers should 
-_not_ be using key press events as a reporting mechanism.
-
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Rene.
