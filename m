@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYDNDkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYDNDqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYDNDkG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 23:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYDNDjz
+	id S1756782AbYDNDqY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 23:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYDNDqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 23:39:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:49483 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbYDNDjy (ORCPT
+	Sun, 13 Apr 2008 23:46:15 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:42307 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751910AbYDNDqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 23:39:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: Microblaze Linux release
-Date: Mon, 14 Apr 2008 05:38:28 +0200
-User-Agent: KMail/1.9.9
-Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       benh@kernel.crashing.org, John Linn <John.Linn@xilinx.com>,
-       git-dev@xilinx.com, Grant Likely <grant.likely@secretlab.ca>,
-       git@xilinx.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, paulus@samba.org
-References: <48020A21.4000404@seznam.cz>
-In-Reply-To: <48020A21.4000404@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 13 Apr 2008 23:46:14 -0400
+Message-ID: <4802D383.20401@gawab.com>
+Date: Sun, 13 Apr 2008 20:46:11 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+References: <47D828BB.2000702@gawab.com> <200804011322.58259.jbarnes@virtuousgeek.org> <47FC4C9B.1030703@gawab.com> <200804090824.35825.jbarnes@virtuousgeek.org>
+In-Reply-To: <200804090824.35825.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804140538.30268.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18SvTtfxF/WRKjE8ymfcDQr/To6WknQ0NQbBrH
- MsBWls1gxcyY0WelXckzL8EnVKJqRWuVNWvYuCOemAcfCjY4xL
- VvcBIkxlsNzoHYlIvgtJA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 13 April 2008, Michal Simek wrote:
-> I would like to ask you for review all microblaze code especially
-> arch/microblaze and include/asm-microblaze. Please don't send me question to
-> drivers - Microblaze will use only uartlite driver (only add on or to Kconfig -
-> that's enough for now).
+Jesse Barnes wrote:
+> You could try using the X vesa driver instead of the intel driver...
 
-I'm certainly willing to help review it, but I think the timing is too short
-for asking for a 2.6.26 merge. Judging from experience, a new architecture
-review takes a few weeks to sort out all the issues you want resolved before
-merging, so posting them now would put you in a much more comfortable position
-when targeting a 2.6.27 merge.
+Ok, so I tried with the vesa X.org driver and it never had the blank screen problem (so far).
+There were some screen distortions on mode change but no blank screen.
+I noticed that when using the vesa X.org driver the i915 kernel module didn't load.
 
-One of the things I always wanted to have is a common location for all the
-things that get duplicated verbatim into each new architecture, like all
-the include/asm/{fcntl,ioctls,ipcbuf,mman,poll,posix_types,sem_buf}.h and
-others that define part of the syscall ABI.
+I think we're getting closer! It seems like it's not a kernel regression but a bug in the intel Xorg driver.
+Or maybe an interaction between the i915 DRM kernel module (>=2.6.25) and the intel X.org driver,
+because it only happens with the 2.6.25 kernel, and I'd think if it was only an X driver bug,
+then it should've happened on other kernel versions.
 
-	Arnd <><
+Justin
+
