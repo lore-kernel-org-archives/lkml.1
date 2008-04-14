@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYDNGZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYDNGkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYDNGZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 02:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbYDNGZk
+	id S1755904AbYDNGkR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 02:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYDNGj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 02:25:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39643 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753083AbYDNGZj (ORCPT
+	Mon, 14 Apr 2008 02:39:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46546
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753480AbYDNGj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 02:25:39 -0400
-Date: Sun, 13 Apr 2008 23:24:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Willy Tarreau <w@1wt.eu>, david@lang.hm,
-       Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
+	Mon, 14 Apr 2008 02:39:58 -0400
+Date: Sun, 13 Apr 2008 23:39:59 -0700 (PDT)
+Message-Id: <20080413.233959.217341225.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm, sclark46@earthlink.net,
+       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
+       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: Reporting bugs and bisection
-Message-Id: <20080413232441.e216a02c.akpm@linux-foundation.org>
-In-Reply-To: <20080414053943.GU9785@ZenIV.linux.org.uk>
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru>
-	<200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru>
-	<48028830.6020703@earthlink.net>
-	<alpine.DEB.1.10.0804131546370.9318@asgard>
-	<20080414043939.GA6862@1wt.eu>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080413232441.e216a02c.akpm@linux-foundation.org>
+References: <20080414043939.GA6862@1wt.eu>
 	<20080414053943.GU9785@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	<20080413232441.e216a02c.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 06:39:43 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Sun, 13 Apr 2008 23:24:41 -0700
 
-> On Mon, Apr 14, 2008 at 06:39:39AM +0200, Willy Tarreau wrote:
-> 
-> [snip]
-> 
-> > I'm sure many people would find this useless (or in fact reject the
-> > idea because it would show that most code will be rated 1 or 2),
-> > but I really think it can help subsystem maintainers make the relation
-> > between a reported bug and a possible submitter.
-> 
-> I have a related proposal: let us require all patches to be stamped
-> with Discordian *and* Eternal September dates.  In triplicate.  While
-> we are at it, why don't we introduce new mandatory headers like, say
-> it,
-> 
-> X-checkpatch: {Yes,No}
-> X-checkpatch-why-not: <string>
-> X-pointless: <number from 1 to 69, going from "1: does something useful" all
-> the way to "68: aligns right ends of lines in comments">
-> X-arbitrary-rules-added-to-CodingStyle: <number> (should be present if
-> and only if X-pointless: 69 is present).
-> 
-> Come to think of that, we clearly need a new file in Documentation/*,
-> documenting such headers.  Why don't we organize a subcommittee^Wnew maillist
-> devoted to that?  That would provide another entry route for contributors,
-> lowering the overall entry barriers even further...
-> 
+> Do you agree with these impressions, or not?
 
-None of the above was particularly useful.
+I think things are improving.
 
-> 
-> Seriously, looks like Andi is right - we've got ourselves a developing
-> beaurocracy.  As in "more and more ways of generating activity without
-> doing anything even remotely useful".  Complete with tendency to operate in
-> the ways that make sense only to beaurocracy in question and an ever-growing
-> set of bylaws...
+I wrote or merged in ~10 bugs in the last hour, for example.
 
-No.  The problem we're discussing here is the apparently-large number of
-bugs which are in the kernel, the apparently-large number of new bugs which
-we're adding to the kernel, and our apparent tardiness in addressing them.
+And I also agree with Al's point, which was embedded in his humorous
+and obviously sarcastic suggestions, in that adding beurocracy isn't
+the answer.  We already have too much and it scares developers away.
 
-Do you agree with these impressions, or not?
+Sure you don't want crap getting into the tree (for too long), but it
+is important to be careful to define crap properly.  For example,
+inundating patch submitters with more requirements, especially ones
+involving automatons like checkpatch, is in the end bad.
 
-If you do agree, what would you propose we do about it?
+We can improve the quality of stuff going in and be flexible at the
+same time.
