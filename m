@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763097AbYDNTX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYDNT0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763097AbYDNTX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762695AbYDNTXq
+	id S1762562AbYDNT0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbYDNT0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:23:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35208 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762678AbYDNTXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:23:44 -0400
-Message-ID: <4803AF3B.2020702@redhat.com>
-Date: Mon, 14 Apr 2008 14:23:39 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: linux-ext4@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: Freeing blocks not in datazone
-References: <4803A109.5080800@rtr.ca>
-In-Reply-To: <4803A109.5080800@rtr.ca>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 14 Apr 2008 15:26:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57964 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752576AbYDNT0b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:26:31 -0400
+Date: Mon, 14 Apr 2008 20:16:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] Replace completions with semaphores
+Message-ID: <20080414201639.799770f4@core>
+In-Reply-To: <1208195673.7164.2.camel@twins>
+References: <20080411210022.GJ11962@parisc-linux.org>
+	<1208003081.7427.7.camel@twins>
+	<20080412172606.GL11962@parisc-linux.org>
+	<adaskxqrgsl.fsf@cisco.com>
+	<20080412204748.GN11962@parisc-linux.org>
+	<20080413070833.GC19773@elte.hu>
+	<20080413125758.GQ11962@parisc-linux.org>
+	<20080414153928.GA22259@elte.hu>
+	<adafxtoqvgh.fsf@cisco.com>
+	<1208190749.7375.10.camel@twins>
+	<87d4osuy6r.fsf@basil.nowhere.org>
+	<1208195673.7164.2.camel@twins>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> One of my test systems here, running 2.6.25-rc8-git*,
-> just now crapped out with this in the tail end of dmesg:
-> 
-> [   20.927780] EXT3-fs error (device sda1): ext3_free_blocks: Freeing blocks not in datazone - block
-> [   20.928756] Aborting journal on device sda1.
 
-I've got a similar report from the F9 installer, also on 2.6.25-rc8* ...
- trying to reproduce locally.
+> Because we can then eventually get rid of semaphores, so those people
+> cannot mistakenly use them. Its just too easy to create prio inversion
+> with them around.
 
-Thanks,
--Eric
+And it'll be far harder to even find the priority inversion problems in
+the open coded alternatives.
