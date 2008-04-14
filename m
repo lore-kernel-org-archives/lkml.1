@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYDNJ65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYDNJ7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYDNJ65 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYDNJ6o
+	id S1755201AbYDNJ7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 05:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYDNJ6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:58:44 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:20371 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbYDNJ6n (ORCPT
+	Mon, 14 Apr 2008 05:58:50 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53770 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbYDNJ6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:58:43 -0400
-To: Willy Tarreau <w@1wt.eu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Reporting bugs and bisection
-From: Andi Kleen <andi@firstfloor.org>
-References: <47FEADCB.7070104@rtr.ca>
-	<22880.1207943922@turing-police.cc.vt.edu> <47FFE5DA.8000709@imap.cc>
-	<200804132040.12138.rjw@sisk.pl> <20080413184730.GD8474@1wt.eu>
-Date: Mon, 14 Apr 2008 11:58:08 +0200
-In-Reply-To: <20080413184730.GD8474@1wt.eu> (Willy Tarreau's message of "Sun, 13 Apr 2008 20:47:30 +0200")
-Message-ID: <874pa4wyfj.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Apr 2008 09:51:22.0830 (UTC) FILETIME=[18D6EEE0:01C89E15]
+	Mon, 14 Apr 2008 05:58:48 -0400
+To: jamie@shareable.org
+CC: miklos@szeredi.hu, dwmw2@infradead.org, hch@infradead.org,
+       akpm@linux-foundation.org, me@bobcopeland.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080414094215.GD2076@shareable.org> (message from Jamie Lokier
+	on Mon, 14 Apr 2008 10:42:15 +0100)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414094215.GD2076@shareable.org>
+Message-Id: <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 14 Apr 2008 11:58:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau <w@1wt.eu> writes:
+> > And I didn't advocate moving
+> > ntfs to fuse, still that was done
+> 
+> Yes, that's quite annoying as FUSE doesn't work with my architecture,
+> so I can't use the only good NTFS driver.... grr! :-)
 
-> Linux is the *only* product which requires
-> the bug reporter to find the fault change (yes, I know, it's scalable).
+I'm not quite getting this joke :)
 
-It's a pretty common procedure for compilers (gcc, llvm) too, although
-they have the advantage that given a test case usually someone else
-can run the bisect procedure because they do not depend on the underlying
-hardware 
+> FUSE is great for user-mounted filesystems, though.  Having to use
+> "su" in shell scripts which modify loopback filesystems was always
+> very ugly.
+> 
+> I don't see why we need such a dichotomy, though.  The VFS API is
+> sensible enough that it should be possible to compile the same
+> filesystem code to run in kernel or in FUSE.
 
-That's unfortunately not the case for most kernel bugs, although
-sometimes it is possible given a hardware independent test case. And
-while most of the kernel code is drivers and arch, a lot of it is
-still pretty hardware independent, so at least in some cases it is
-possible to submit test cases and then let someone else (like a bug
-master) do the bisect.
+Well, yeah:
 
-Of course it is unclear if producing a submittable test case will be
-actually any faster than just running bisect for the user.
+  http://lkml.org/lkml/2006/2/27/148
 
-That said I agree it's a big burden to run bisect for everything
-because it can take very long (especially if the problem
-is not trivially reproducable) 
+Oh, you mean without having to run the whole kernel around the
+filesystem?  Well, that's a bit more tricky: filesystems use not just
+the VFS API, but the block, VM, SLAB, etc. APIs as well.  Porting all
+of these to userspace and keeping them in sync with the kernel changes
+doesn't sound much fun.
 
-It would be fair at least if maintainers always gave some candidate
-commit ids when asking for bisect for likely changes that could
-have matched the bug.  Then those could be checked quickly first
-before doing the full run.
-
-While that will not always work it would be still a useful short cut
-and save a lot of time for the reporter.
-
--Andi
+Miklos
