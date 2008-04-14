@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbYDNQ3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761945AbYDNQdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762477AbYDNQ3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758683AbYDNQ3M
+	id S1761945AbYDNQdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYDNQdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:29:12 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:60856 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758346AbYDNQ3L (ORCPT
+	Mon, 14 Apr 2008 12:33:02 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57604 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbYDNQdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:29:11 -0400
-Date: Mon, 14 Apr 2008 12:29:11 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Marc Perkel <mperkel@yahoo.com>, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AMD Quad Core clock problem?
-Message-ID: <20080414162911.GC7387@csclub.uwaterloo.ca>
-References: <47FFD3F3.50107@redhat.com> <821384.64293.qm@web52504.mail.re2.yahoo.com> <20080411213843.GH2160@csclub.uwaterloo.ca> <4802608A.3040901@zytor.com> <20080414151222.GF7385@csclub.uwaterloo.ca> <4803851A.8090206@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4803851A.8090206@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 14 Apr 2008 12:33:01 -0400
+Subject: Re: [PATCH] Replace completions with semaphores
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <adafxtoqvgh.fsf@cisco.com>
+References: <20080411210022.GJ11962@parisc-linux.org>
+	 <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org>
+	 <adaskxqrgsl.fsf@cisco.com> <20080412204748.GN11962@parisc-linux.org>
+	 <20080413070833.GC19773@elte.hu> <20080413125758.GQ11962@parisc-linux.org>
+	 <20080414153928.GA22259@elte.hu>  <adafxtoqvgh.fsf@cisco.com>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 18:32:28 +0200
+Message-Id: <1208190749.7375.10.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 09:23:54AM -0700, H. Peter Anvin wrote:
-> That, too, is clearly unrealistic, or NTP would be useless except on 
-> dedicated systems.
+On Mon, 2008-04-14 at 08:58 -0700, Roland Dreier wrote:
+> > which ones exactly are these places that demand the use of a counting 
+>  > semaphore? I cannot think of a single place where it's the best choice, 
+>  > let alone one where it's the only choice.
+> 
+> Two of the places that use semaphores are drivers/infiniband/hw/mthca
+> and drivers/net/mlx4 -- in both cases, the device firmware allows up to
+> "N" outstanding firmware commands to be in flight, and the driver uses a
+> semaphore to handle issuing firmware commands.  That is, down() when we
+> want to issue a command, and up() when the firmware responds that the
+> command is complete.
+> 
+> What would you suggest as a better way to code this?  This is an honest
+> question -- there probably is a more elegant way to handle this
+> situation and I really would like to learn about it.
+> 
+> Also, the argument that removing semaphores makes the kernel as a whole
+> better does make sense to me; I wouldn't be opposed to basically
+> open-coding semaphores in terms of wait_event() in the driver or
+> something like that, but I wouldn't say that such an implementation is
+> locally more readable or maintainable if we look only at the driver
+> code.
 
-Well I have certainly encountered quite a few systems now where ntp
-never converged if spread spectrum was enabled in the BIOS.  Disabling
-it on the other hand made ntp have no issues converging just fine.
+Yeah, I would open code it.  But this is indeed a sane usage of the
+counting semaphore because there is no priority inversion.
 
--- 
-Len Sorensen
