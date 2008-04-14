@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764973AbYDNSOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbYDNSOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764973AbYDNSOh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbYDNSO2
+	id S1765072AbYDNSOu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763933AbYDNSOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:14:28 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56853 "EHLO smtp5.pp.htv.fi"
+	Mon, 14 Apr 2008 14:14:32 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49278 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757633AbYDNSO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:14:27 -0400
-Date: Mon, 14 Apr 2008 21:13:22 +0300
+	id S1762857AbYDNSOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:14:31 -0400
+Date: Mon, 14 Apr 2008 21:13:25 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Igor Mammedov <niallain@gmail.com>, Steve French <sfrench@us.ibm.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make cifs_dfs_automount_list static
-Message-ID: <20080414181322.GA6695@cs181133002.pp.htv.fi>
+To: ysato@users.sourceforge.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove include/asm-h8300/keyboard.h
+Message-ID: <20080414181325.GB6695@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +23,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global cifs_dfs_automount_list static.
+This patch removes the unused include/asm-h8300/keyboard.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -32,33 +32,37 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 31 Mar 2008
 
- fs/cifs/cifs_dfs_ref.c |    2 +-
- fs/cifs/cifsfs.h       |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ include/asm-h8300/keyboard.h |   24 ------------------------
+ 1 file changed, 24 deletions(-)
 
-7bd42d48fcdcda24f48c025ca4bfd31b2bf77d46 diff --git a/fs/cifs/cifs_dfs_ref.c b/fs/cifs/cifs_dfs_ref.c
-index a1a95b0..33719df 100644
---- a/fs/cifs/cifs_dfs_ref.c
-+++ b/fs/cifs/cifs_dfs_ref.c
-@@ -23,7 +23,7 @@
- #include "dns_resolve.h"
- #include "cifs_debug.h"
- 
--LIST_HEAD(cifs_dfs_automount_list);
-+static LIST_HEAD(cifs_dfs_automount_list);
- 
- /*
-  * DFS functions
-diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
-index 6897830..dbaefc3 100644
---- a/fs/cifs/cifsfs.h
-+++ b/fs/cifs/cifsfs.h
-@@ -62,7 +62,6 @@ extern int cifs_setattr(struct dentry *, struct iattr *);
- 
- extern const struct inode_operations cifs_file_inode_ops;
- extern const struct inode_operations cifs_symlink_inode_ops;
--extern struct list_head cifs_dfs_automount_list;
- extern struct inode_operations cifs_dfs_referral_inode_operations;
- 
- 
+372be646df287c70971a0a5a8a1e2ee5dbc5a47f diff --git a/include/asm-h8300/keyboard.h b/include/asm-h8300/keyboard.h
+deleted file mode 100644
+index 90efbd6..0000000
+--- a/include/asm-h8300/keyboard.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-/*
+- *  linux/include/asm-h8300/keyboard.h
+- *  Created 04 Dec 2001 by Khaled Hassounah <khassounah@mediumware.net>
+- *  This file contains the Dragonball architecture specific keyboard definitions
+- */
+-
+-#ifndef _H8300_KEYBOARD_H
+-#define _H8300_KEYBOARD_H
+-
+-
+-/* dummy i.e. no real keyboard */
+-#define kbd_setkeycode(x...)	(-ENOSYS)
+-#define kbd_getkeycode(x...)	(-ENOSYS)
+-#define kbd_translate(x...)	(0)
+-#define kbd_unexpected_up(x...)	(1)
+-#define kbd_leds(x...)		do {;} while (0)
+-#define kbd_init_hw(x...)	do {;} while (0)
+-#define kbd_enable_irq(x...)	do {;} while (0)
+-#define kbd_disable_irq(x...)	do {;} while (0)
+-
+-#endif  /* _H8300_KEYBOARD_H */
+-
+-
+-
 
