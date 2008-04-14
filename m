@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbYDNKSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbYDNKTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbYDNKSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYDNKR7
+	id S1755653AbYDNKTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYDNKS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:17:59 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:56149 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751984AbYDNKR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:17:58 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Mon, 14 Apr 2008 20:17:47 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC] x86: Cleanup prose of Documentation/i386/IO-APIC.txt
-Message-ID: <20080414101747.GI29599@tull.net>
-References: <20080411154053.GD18242@tull.net> <20080413084536.GB24429@elte.hu> <20080413112522.GD29599@tull.net> <20080414094603.GB3761@elte.hu>
+	Mon, 14 Apr 2008 06:18:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36765 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbYDNKSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 06:18:55 -0400
+Date: Mon, 14 Apr 2008 12:18:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Willy Tarreau <w@1wt.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection (was: Re: 2.6.25-rc8: FTP
+	transfer errors)
+Message-ID: <20080414101813.GB14549@elte.hu>
+References: <47FEADCB.7070104@rtr.ca> <22880.1207943922@turing-police.cc.vt.edu> <47FFE5DA.8000709@imap.cc> <200804132040.12138.rjw@sisk.pl> <20080413184730.GD8474@1wt.eu> <20080413121831.d89dd424.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414094603.GB3761@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+In-Reply-To: <20080413121831.d89dd424.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 11:46:03AM +0200, Ingo Molnar wrote:
-> * Nick Andrew <nick@nick-andrew.net> wrote:
-> > I wouldn't know that, but I still have to use 'noapic' to get my AMD 
-> > box to boot :-(
-> 
-> oh. If "noapic" is still necessary with x86/latest:
-> 
->   http://people.redhat.com/mingo/x86.git/README
 
-Thanks; I'll retest on latest then. I didn't realise the problem was
-fixed.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+> We dont' do that as much nowadays - there's a tendency to
+> 
+> a) throw the problem back at the reporter, often asking them to 
+>    bisect. If the reporter is running a distro kernel (eg: Fedora) 
+>    then that's quite hard, and often isn't a think they have knowledge 
+>    to do.  So they'll just disappear.  Or
+> 
+> b) just ignore the report altogether.
+
+hm, who does this - i've seen networking folks do it but does anyone 
+else do it? Such cases are _clear_ abuse of users and they'll do the 
+obvious thing: vote with their feet.
+
+I only ask people to bisect it when all other avenues fail - and even 
+then i try to make it clear that bisection is just something they can 
+_optionally_ do to speed things up (it's never required), and that it's 
+a pure opt-in.
+
+doing _kernel_ bisection is totally hard at the moment - it disrupts the 
+user way too much and causes many hours of work for most users. [ 
+Requiring bisection for userspace projects might be more doable. (but 
+even there's it's wrong when it's not automated completely and where a 
+failure pattern is not deterministic.) ]
+
+	Ingo
