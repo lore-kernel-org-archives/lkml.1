@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbYDNOUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbYDNOWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbYDNOUp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760846AbYDNOS1
+	id S1761833AbYDNOWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760804AbYDNOUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:18:27 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41218 "EHLO smtp5.pp.htv.fi"
+	Mon, 14 Apr 2008 10:20:45 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:41352 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760838AbYDNOS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:18:26 -0400
-Date: Mon, 14 Apr 2008 17:17:21 +0300
+	id S1761236AbYDNOUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:20:43 -0400
+Date: Mon, 14 Apr 2008 17:19:38 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: hskinnemoen@atmel.com
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] avr32: don't offer SERIAL_8250
-Message-ID: <20080414141721.GI6695@cs181133002.pp.htv.fi>
+To: dhowells@redhat.com, yasutake.koichi@jp.panasonic.com
+Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] mn10300: export kernel_thread
+Message-ID: <20080414141938.GK6695@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -28,26 +28,34 @@ This patch fixes the following build error:
 <--  snip  -->
 
 ...
-  CC [M]  drivers/serial/8250.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/8250.c:95:24: error: asm/serial.h: No such file or directory
-make[3]: *** [drivers/serial/8250.o] Error 1
+  MODPOST 1256 modules
+ERROR: "kernel_thread" [net/sunrpc/sunrpc.ko] undefined!
+ERROR: "kernel_thread" [net/ipv4/ipvs/ip_vs.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/hidp/hidp.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/cmtp/cmtp.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/bnep/bnep.ko] undefined!
+ERROR: "kernel_thread" [fs/nfs/nfs.ko] undefined!
+ERROR: "kernel_thread" [fs/lockd/lockd.ko] undefined!
+ERROR: "kernel_thread" [fs/jffs2/jffs2.ko] undefined!
+ERROR: "kernel_thread" [drivers/usb/atm/usbatm.ko] undefined!
+...
+make[2]: *** [__modpost] Error 1
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-3cb4ef80d75e118ccfd44f7006aea3db54afb31c diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index b1bbaa0..b0e216d 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -11,7 +11,7 @@ menu "Serial drivers"
- # The new 8250/16550 serial drivers
- config SERIAL_8250
- 	tristate "8250/16550 and compatible serial support"
--	depends on (BROKEN || !SPARC)
-+	depends on (BROKEN || !SPARC) && !AVR32
- 	select SERIAL_CORE
- 	---help---
- 	  This selects whether you want to include the driver for the standard
+ca4c4f445e4b7cfbedc815cfc08ab2c70581c774 diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
+index 3b0d579..194574e 100644
+--- a/arch/mn10300/kernel/process.c
++++ b/arch/mn10300/kernel/process.c
+@@ -154,6 +154,7 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
+ 	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0,
+ 		       NULL, NULL);
+ }
++EXPORT_SYMBOL_GPL(kernel_thread);
+ 
+ /*
+  * free current thread data structures etc..
 
