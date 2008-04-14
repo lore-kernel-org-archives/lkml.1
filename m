@@ -1,111 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYDNVG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762386AbYDNVG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbYDNVG0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYDNVGT
+	id S1762386AbYDNVG6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 17:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYDNVGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:06:19 -0400
+	Mon, 14 Apr 2008 17:06:48 -0400
 Received: from wr-out-0506.google.com ([64.233.184.233]:47599 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYDNVGS (ORCPT
+	with ESMTP id S1754361AbYDNVGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:06:18 -0400
+	Mon, 14 Apr 2008 17:06:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=s6ABpVAQ3MwWVTY3yfT3GfPOM/eGW9gijCnfT2JOF8QCZoLMotr2jRVA2mCEIjJLmxEthDyHBKRApDtiDnuPK/eaoDROqSGKyEkIUiiuaELzmwjWxaKqqdmpm6iw0Znehg5A5g8VeX1VnvYs9PYMNqJfdz/71BQT7zZzzih2UA4=
-Message-ID: <86802c440804141406u7543dbacifb4b93b7b0ee2cc3@mail.gmail.com>
-Date: Mon, 14 Apr 2008 14:06:16 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86 git tree broken (bisected)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <200804142221.19606.rjw@sisk.pl>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hrWPrU+dtKDkSmi/V2kUPLnmsEUD02TsomXgZaFQQ3YB0t/tpk5cAPscGVjbAks/F1ob/IQF3pi08GO0iPny/twrcBoDfvGgvLRX9khVzl9vcHXts2SwCnGGoZgyJHhwYg2DBiMHud2vO+1XKNINujQfAp6g7M8ZGydIHYAsbPI=
+Message-ID: <84144f020804141406n7ffd8a89ld1008afc1d541640@mail.gmail.com>
+Date: Tue, 15 Apr 2008 00:06:46 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
+Cc: "Paul Menage" <menage@google.com>, balbir@linux.vnet.ibm.com,
+       serue@us.ibm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080414123624.0635798d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200804102159.14563.rjw@sisk.pl> <200804140219.07350.rjw@sisk.pl>
-	 <86802c440804131842t16d05976g20b2eb97af6bbf1b@mail.gmail.com>
-	 <200804142221.19606.rjw@sisk.pl>
+References: <48036677.3010807@linux.vnet.ibm.com>
+	 <48036F14.3050409@cs.helsinki.fi>
+	 <6599ad830804140904v66fab79at8c12e19db64f6608@mail.gmail.com>
+	 <20080414123624.0635798d.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 138183be9ba0dc31
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 1:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> On Monday, 14 of April 2008, Yinghai Lu wrote:
->  > On Sun, Apr 13, 2008 at 5:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > >
->  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
->  > >  > On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > >  > >
->  > >  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
->  > >  > >  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > >  > >  > ...
->  > >  > >  > >  > can you try to apply the patch i sent to you about agp bridge order
->  > >  > >  > >  > reading for buggy silicon?
->  > >  > >  > >  >
->  > >  > >  > >  > Please boot kernel with "debug"...
->  > >  > >  > >  >
->  > >  > >  > >  > I want to verify if you can get
->  > >  > >  > >  >
->  > >  > >  > >  > "
->  > >  > >  > >  > Aperture conflicts with PCI mapping.
->  > >  > >  > >  > "
->  > >  > >  > >  >
->  > >  > >  > >  > in your boot log...
->  > >  > >  > >
->  > >  > >  > >  It's not present in there:
->  > >  > >  > >
->  > >  > >  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
->  > >  > >  > >  Aperture too small (32 MB)
->  > >  > >  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
->  > >  > >  > >  Aperture too small (0 MB)
->  > >  > >  > >  agpgart: Aperture pointing to RAM
->  > >  > >  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
->  > >  > >  > >  agpgart: Aperture too small (0 MB)
->  > >  > >  > >
->  > >  > >  > >  Full dmesg output attached.
->  > >  > >  >
->  > >  > >  > please check attached debug patch. and check if you can change GART
->  > >  > >  > size in your BIOS setup to 64M instead of 32M
->  > >  > >
->  > >  > >  Hm, what tree am I supposed to apply it too:
->  > >  > >  (1) current x86 git
->  > >  > >  (2) current x86 git w/ some of your previous patches (which ones in this case)
->  > >  > >  (3) failing (old) x86 git
->  > >  > >  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
->  > >  > >     case)?
->  > >  >
->  > >  > (1) current x86.git
->  > >
->  > >  Attached is dmesg output from current x86.git with debug_gart_checking.patch
->  > >  applied.
+On Mon, Apr 14, 2008 at 10:36 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>  > >  Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 >  >
->  > please test the final one ... ...
+>  > Reviewed-by: Paul Menage <menage@google.com>
 >  >
->  > You should get back 64M memory back.
+>  > I'm still not sure when to use Acked-by versus Reviewed-by - is it
+>  > just based on the level of scrutiny/review?
 >
->  Tested (current x86.git), dmesg output attached.
+>  Yes.  Reviewed-by: is a lot stronger that Acked-by:.  I've seen some pretty
+>  shocking Acked-by:'s :)
 
-thanks.
-
-looks good. as expected...
-
-Checking aperture...
-AGP bridge at 00:04:00
-Aperture from AGP @ de000000 old size 32 MB
-Aperture size 4096 MB (APSIZE 0) is not right, using settings from NB
-Aperture from AGP @ de000000 size 32 MB (APSIZE 0)
-Node 0: aperture @ de000000 size 32 MB
-Aperture too small (32 MB) than (64 MB)
-...
-agpgart: Detected AGP bridge 20
-Setting up ULi AGP.
-agpgart: AGP aperture is 32M @ 0xde000000
-
-YH
+Heh, I hope mine wasn't one. But the point here is that, no, I didn't
+review the patch that closely (it's mostly cgroup stuff anyway) but I
+do want to see struct mm_struct ->owner in the kernel for revoke thus
+Acked-by.
