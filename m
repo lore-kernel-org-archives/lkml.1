@@ -1,92 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbYDNSbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbYDNSbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765071AbYDNSbZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYDNSbN
+	id S933471AbYDNSbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbYDNSb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:31:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50258 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005AbYDNSbL (ORCPT
+	Mon, 14 Apr 2008 14:31:28 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:52211 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765614AbYDNSb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:31:11 -0400
-Date: Mon, 14 Apr 2008 11:24:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Willy Tarreau <w@1wt.eu>, david@lang.hm,
-       Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080414112444.2504b48d@laptopd505.fenrus.org>
-In-Reply-To: <20080414105152.9cc06fab.akpm@linux-foundation.org>
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru>
-	<200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru>
-	<48028830.6020703@earthlink.net>
-	<alpine.DEB.1.10.0804131546370.9318@asgard>
-	<20080414043939.GA6862@1wt.eu>
-	<20080414053943.GU9785@ZenIV.linux.org.uk>
-	<20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<20080414010412.c42dc560.akpm@linux-foundation.org>
-	<20080414074349.24fa90f8@laptopd505.fenrus.org>
-	<20080414105152.9cc06fab.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 14:31:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gMJkYOupLn+uALXR7PAd4IAH8VrJpW9agIbzNUwuxWwHT0/TZEjsbz1vU9n/KGtFKcc6AfArhdPNpAjGLwuMeZOmD3nVUFr56AygU7iZ36KA8mqJWeD48Pg1jD6B+XHVaKScGtQtiZDPHdVPDPNbeXeOjxy8iV6Ui+E6JhsIHo8=
+Message-ID: <86802c440804141131v434f4890nf66e0ec4f231c939@mail.gmail.com>
+Date: Mon, 14 Apr 2008 11:31:22 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [BUG] linux-next: Tree for April 14 - kernel BUG at arch/powerpc/mm/init_64.c:240! (fixed in -mm)
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, pbadari@us.ibm.com,
+       michael@ellerman.id.au, "andy whitcroft" <apw@shadowen.org>
+In-Reply-To: <86802c440804141126x1744da7ewf988a0c9b13f14c8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080414203423.22bf99d1.sfr@canb.auug.org.au>
+	 <480349EB.8040708@linux.vnet.ibm.com>
+	 <86802c440804141126x1744da7ewf988a0c9b13f14c8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 10:51:52 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, Apr 14, 2008 at 11:26 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> On Mon, Apr 14, 2008 at 5:11 AM, Kamalesh Babulal
+>  <kamalesh@linux.vnet.ibm.com> wrote:
+>  > Hi Stephen,
+>  >
+>  >  The next-20080414 kernel panic's while booting up on the ppc machines.
+>  >  The same was seen in the 2.6.25-rc8-mm1 kernel and was fixed by
+>  >  the patch at http://lkml.org/lkml/2008/4/2/650
+>  >
+>  >  ------------[ cut here ]------------
+>  >  kernel BUG at arch/powerpc/mm/init_64.c:240!
+>  >  Oops: Exception in kernel mode, sig: 5 [#1]
+>  >  SMP NR_CPUS=128 NUMA pSeries
+>  >  Modules linked in:
+>  >  NIP: c0000000006ca18c LR: c0000000006ca184 CTR: 0000000000000000
+>  >  REGS: c00000000081f950 TRAP: 0700   Not tainted  (2.6.25-rc9-next-20080414-x86-latest.git-autotest)
+>  >  MSR: 8000000000021032 <ME,IR,DR>  CR: 24000088  XER: 20000001
+>  >  TASK = c0000000007334d0[0] 'swapper' THREAD: c00000000081c000 CPU: 0
+>  >  GPR00: c0000000006ca184 c00000000081fbd0 c00000000081c778 0000000000000001
+>  >  GPR04: c0000000006def90 000000000000016e 0000000000000170 0000000000001090
+>  >  GPR08: 0000000207038208 0000000000000000 0000000000000001 800000000ed93080
+>  >  GPR12: c00000000081fae0 c000000000733e80 0000000000000000 c0000000005f4788
+>  >  GPR16: 4000000002100000 c0000000005f3010 0000000000000000 000000000023f000
+>  >  GPR20: 00000000027d07d8 c0000000006d07d8 00000000027d0a48 c0000000006d0a48
+>  >  GPR24: c0000000005f41c8 0000000002b00000 0000000000000000 0000000000000000
+>  >  GPR28: cf000000001f8000 cf00000001000000 0000000001000000 cf00000000000000
+>  >  NIP [c0000000006ca18c] .vmemmap_populate+0xbc/0x100
+>  >  LR [c0000000006ca184] .vmemmap_populate+0xb4/0x100
+>  >  Call Trace:
+>  >  [c00000000081fbd0] [c0000000006ca184] .vmemmap_populate+0xb4/0x100 (unreliable)
+>  >  [c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
+>  >  [c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
+>  >  [c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
+>  >  [c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
+>  >  [c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
+>  >  [c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
+>  >  Instruction dump:
+>  >  7fe3fb78 7ca02a14 4082000c 3860fff4 48000040 e9228980 e9628988 e8e90002
+>  >  e90b0002 4b961ab1 60000000 78630fe0 <0b030000> 7ffff214 7fbdf214 7fbfe040
+>  >  ---[ end trace 8640abe69a316dee ]---
+>  >  Kernel panic - not syncing: Attempted to kill the idle task!
+>  >  Call Trace:
+>  >  [c00000000081f470] [c00000000000f970] .show_stack+0x70/0x1bc (unreliable)
+>  >  [c00000000081f520] [c0000000000540fc] .panic+0x80/0x1b8
+>  >  [c00000000081f5c0] [c000000000058ca4] .do_exit+0x8c/0x758
+>  >  [c00000000081f680] [c0000000000235cc] .die+0x24c/0x27c
+>  >  [c00000000081f720] [c0000000000238fc] ._exception+0x88/0x204
+>  >  [c00000000081f8e0] [c000000000004a84] program_check_common+0x104/0x180
+>  >  --- Exception: 700 at .vmemmap_populate+0xbc/0x100
+>  >     LR = .vmemmap_populate+0xb4/0x100
+>  >  [c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
+>  >  [c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
+>  >  [c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
+>  >  [c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
+>  >  [c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
+>  >  [c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
+>  >
+>
+>
+>  Ingo already update that in x86.git#latest.
+>
+>  so linux-next of today or tomorrow will fix this.
+>
+or you can apply patch from
 
+http://lkml.org/lkml/2008/4/14/51
 
-> Well OK.  But I don't think we can generalise from oops-causing bugs
-
-including all WARN_ON's and various other kernel backtrace-causing bugs.
-
-
-> all the way to all bugs.  Very few bugs actually cause oopses, and
-> oopses tend to be the thing which developers will zoom in on and pay
-> attention to.
-
-maybe.
-> 
-> If we had metrics on "time goes backwards" or anything containing
-> "ASUS", things might be different.
-
-Sounds really like we need to add more strategic WARN_ON's and other diagnostics in 
-the kernel to track these issues down.
-
-
-Because another thing that I found so far is that what hits LKML is by far not representative
-on what happens for users. The most obvious example was the whole input layer refcounting disaster
-in 2.6.25-rc; this was about 1/3rd of TOTAL reports for a few weeks in a row, but there
-was hardly an LKML posting for it (in fact there was only 1 half one).
-We need diagnostics and stuff the kernel spits out so that automated tools can detect these,
-otherwise we'll very likely not get good information on what is actually wrong with the kernel.
-
-
-In case you want to see the 2.6.25-rc data, the top 100 list is at
-http://www.kerneloops.org/twentyfive.html
-
-(I'm still working on annotating the individual items, but since there's 100
-that does take time)
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+YH
