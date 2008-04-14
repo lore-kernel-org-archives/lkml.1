@@ -1,60 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYDNCG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYDNCId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYDNCG7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 22:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYDNCGs
+	id S1759208AbYDNCId (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 22:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYDNCIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 22:06:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42429 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753776AbYDNCGg (ORCPT
+	Sun, 13 Apr 2008 22:08:21 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:58321 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751910AbYDNCIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 22:06:36 -0400
-Date: Sun, 13 Apr 2008 19:05:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com,
-       Steven French <sfrench@us.ibm.com>
-Subject: Re: 2.6.25-rc8-mm1: Intel SATA boot failure
-Message-Id: <20080413190556.69ed0dde.akpm@linux-foundation.org>
-In-Reply-To: <4802A538.9040107@imap.cc>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F56363.4090002@imap.cc>
-	<20080403161733.c05dac53.akpm@linux-foundation.org>
-	<4802A538.9040107@imap.cc>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Apr 2008 22:08:20 -0400
+Message-ID: <4802BBDC.1030707@crispincowan.com>
+Date: Sun, 13 Apr 2008 19:05:16 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp> <20080411143013.GB11962@parisc-linux.org> <20080413163658.GC7010@sergelap.austin.ibm.com>
+In-Reply-To: <20080413163658.GC7010@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 02:28:40 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
+Serge E. Hallyn wrote:
+> Quoting Matthew Wilcox (matthew@wil.cx):
+>   
+>> On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
+>>     
+>>> Matthew Wilcox wrote:
+>>>       
+>>>> When the rule is put in place, say "No modifications to /etc/passwd",
+>>>> look up the inode and major:minor of /etc/passwd.  If there's a rename,
+>>>> look up the new inode number.  If it's mounted elsewhere, it doesn't
+>>>> matter, they still can't modify it because it has the same
+>>>> major:minor:inode.
+>>>>         
+>>> If write access is denied because of a rule "No modifications to /etc/passwd",
+>>> a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
+>>> "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
+>>> "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
+>>>       
+>> That's a fundamental limitation of pathname-based security though.
+>> If the same file exists in two places, you have to resolve the question
+>> of which rule overrides the other.
+>>     
+> In the past, Crispin has given clear, concise explanations of a few of
+> the things pathname based access control in fact excels at.  Crispin,
+> can you recite those again so we can think constructively about which
+> (if any) of the currently considered options are or are not sufficient?
+>
+> I.e. what would be a motivation for a rule like 'no modifications to
+> /etc/passwd', and what precisely would and would not be accepted ways to
+> get around it (and why)?
+>   
+As I just posted, a rule of "no mods to /some/pathname" is broken, which 
+is why AppArmor has no such construct.
 
-> Final report, seeing -mm2 is out:
-> 
-> - Netconsole works. (grumblestupidsusefirewallgrumble)
-> 
-> - The hang during boot only happens with kernels compiled with
->   CONFIG_CIFS_EXPERIMENTAL=y
->   It also doesn't always happen at the same point in the boot sequence.
->   I'm suspecting it might be triggered by some network packet.
->   Anyway, it's obviously *not* a SATA problem.
->   (That was just me jumping to conclusions, because ...)
+Things that pathname-based access control is good at:
 
-I don't remember seeing a report of the CIFS hang.
+    * *System Integrity:* Many of the vital components of a UNIX system
+      are stored in files with Well Known Names such as /etc/shadow,
+      /var/www/htdocs/index.html and /home/crispin/.ssh/known_hosts. The
+      contents of the actual data blocks is less important than the
+      integrity of what some random process gets when it asks for these
+      resources by name. Preserving the integrity of what responds to
+      the Well Known Name is thus easier if you restrict access based on
+      the name.
+    * *Dynamic Access Control:* A special case of the above pertains to
+      files that may or may not exist. If you don't *have* a /etc/hosts
+      file, it is still important to have a rule that controls whether
+      it can be created. This is hard to do in label-based systems,
+      because the file does not exist to put a label on, so you have to
+      kludge it by either creating the file with zero length and
+      labeling it, or by creating more complex policy for the parent
+      /etc directory, and that's hard given the number of uses for /etc
+      such as /etc/motd. In a name based scheme, you simply don't
+      provide write permission to "/etc/hosts" unless you mean it, and
+      it can be enforced even if such a file does not exist.
+    * *Ad Hoc Generalization:* Label-based access control generalizes
+      policy in that the policy treats all files and resources that
+      share a label the same. If you want to make a new generalization
+      that encompasses *part* of the files that share a label, but *not
+      all* of those files, then you have to "split the label", relabel
+      the file system, and revise the policy accordingly. Name-based
+      access control lets you create ad hoc generalizations, so that
+      *my* policy can grant access to "/var/www/*.pl" without regard to
+      whatever labels or rules some other policy has applied to the same
+      directory tree.
+    * *Familiar Interface:* Administrators are accustomed to
+      administering the box in terms of the names of the files that
+      matter. A name-based policy is therefore somewhat more familiar
+      than a policy with label abstractions, where they then have to go
+      look at the restorecon file to discover what files will/should
+      have what labels.
+    * *Practical Concerns:* Not all file systems support labels, and so
+      label-based schemes become coarse grained when they run into them.
+      Name based schemes remain granular when specifying access down
+      into the internals of such file systems. Legacy Linux file systems
+      like ext2 don't matter much any more, but persistent file systems
+      that will never have label support include NFSv3 file systems
+      (nearly every Network Appliance NAS server out there) and FAT32
+      file system (most every USB storage device).
 
-It might be caused by
-bkl-removal-convert-cifs-over-to-unlocked_ioctl.patch, but it's hard to see
-how that could affect things before userspace has started.
+A lot of what's going on is the duality of the one:many relationships 
+between labels and names:
 
-> - That leaves only the messages
-> 
->   ata1: port is slow to respond, please be patient (Status 0x80)
->   ata1: COMRESET failed (errno=-16)
-> 
->   and accompanying delays during boot, for each installed SATA disk.
->   I'll try to find the time to retest this with 2.6.25-rc8-mm2.
+    * Labels: one label represents many files
+          o this property is why ad hoc generalization fails in label
+            based systems
+    * Names: many names can represent a single file
+          o This property is why deny rules fail in name based systems
 
-That would be good, thanks.
+Therefore, I am not claiming name-based access controls to be the 
+ultimate. Rather, there are duals for all of the above that induce 
+circumstances where label-based systems are superior. Each class of 
+system has strengths and weaknesses. These are name-based strengths.
+
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+The Olympic Games: Symbolizing oppression and corruption for over a hundred years
+
