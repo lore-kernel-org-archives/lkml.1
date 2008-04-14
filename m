@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbYDNIVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbYDNIW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759457AbYDNIVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYDNIVW
+	id S1759821AbYDNIW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYDNIWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:21:22 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52947 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751866AbYDNIVV (ORCPT
+	Mon, 14 Apr 2008 04:22:49 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40124 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755002AbYDNIWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:21:21 -0400
-Date: Mon, 14 Apr 2008 09:16:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       hch@infradead.org, me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080414091639.4bd3879d@core>
-In-Reply-To: <20080413161014.cb06964c.akpm@linux-foundation.org>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-	<20080412170304.54f139e2.akpm@linux-foundation.org>
-	<20080413033344.GA27494@hash.localnet>
-	<20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	<20080413080130.GA9622@infradead.org>
-	<20080413012001.8d7967f4.akpm@linux-foundation.org>
-	<20080413082815.GA20108@infradead.org>
-	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-	<1208121358.2700.4.camel@shinybook.infradead.org>
-	<20080413154459.4b2f125d.akpm@linux-foundation.org>
-	<20080413234920.63711ca7@core>
-	<20080413161014.cb06964c.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 14 Apr 2008 04:22:48 -0400
+Date: Mon, 14 Apr 2008 09:22:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 10 (arch/x86)
+Message-ID: <20080414082220.GZ9785@ZenIV.linux.org.uk>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <20080410150950.5913b16a.randy.dunlap@oracle.com> <20080411074631.GB6410@elte.hu> <20080411081901.f56f5180.randy.dunlap@oracle.com> <20080411152648.GK9785@ZenIV.linux.org.uk> <20080414081220.GA19865@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414081220.GA19865@elte.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I appear to be the only one who is looking at the whole picture.
+On Mon, Apr 14, 2008 at 10:12:20AM +0200, Ingo Molnar wrote:
+
+> well, gcc does not "recover", we _gave_ it the format string as a 
+> constant, and do so in 99.9% of the cases. It is a totally 
+> well-specified thing.
+
+It is an undefined behaviour according to any variant of C standard.
+Sorry, printf() is not magic and it does _not_ have special calling
+conventions.
+
+> but the constant noise from gcc about printf formats, where the 
+> conversion is very clear and could be done implicitly, only hinders us 
+> and only teaches people to _ignore_ gcc warnings - which is actually 
+> very dangerous.
 > 
-> Merging a new filesystem has costs - I don't need to enumerate them.  Do
-> the benefits of OMFS exceed them?
+> the only warning from gcc in this area should be where the format 
+> results in information _loss_ (i.e. the format has a narrower type than 
+> we pass into it) - there a warning is very much needed - and the 
+> programmer should then fix the bug or add a cast.
 
-I think the exceed them quite easily. The costs are almost nil, while
-merging this provides another nice example fs (and one much easier to
-follow than ext*) for hardware that does have a few users and will no
-doubt get many more
+No, sorry.  That kind of mismatch is simply not a valid C.  Plain as that,
+read the standard and you'll see.
 
-I wasn't aware Linus had introduced a new rule required 500 people sign
-up to use a feature before it gets added ?
+Fundamentally, printf() is a function like any other vararg one.  So
+explicitly typed arguments *are* the right thing to do.
 
-Alan
+What is not right is the lack of ability to define new conversions.  If
+we could do that, we would kill the absolute majority of casts - and
+remain within normal C limits...
