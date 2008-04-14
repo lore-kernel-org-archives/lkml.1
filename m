@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763337AbYDNXJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763146AbYDNXKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763337AbYDNXJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 19:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762921AbYDNXJ2
+	id S1763146AbYDNXKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 19:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbYDNXJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 14 Apr 2008 19:09:29 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:37477 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755862AbYDNXJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 14 Apr 2008 19:09:28 -0400
-Received: from atlanta.zankel.net ([69.61.78.146]:3992 "EHLO
-	atlanta.zankel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762850AbYDNXJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 19:09:27 -0400
-X-Greylist: delayed 516 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 19:09:27 EDT
-Message-ID: <4803E220.6030807@zankel.net>
-Date: Mon, 14 Apr 2008 16:00:48 -0700
-From: Chris Zankel <chris@zankel.net>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+Date: Mon, 14 Apr 2008 16:09:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
+       Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+In-Reply-To: <patchbomb.1207669443@duo.random>
+Message-ID: <Pine.LNX.4.64.0804141559410.11036@schroedinger.engr.sgi.com>
+References: <patchbomb.1207669443@duo.random>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] xtensa: don't offer PARPORT_PC
-References: <20080414195551.GE26885@cs181133002.pp.htv.fi> <20080414223124.6b92de11@core> <20080414221312.GI26885@cs181133002.pp.htv.fi>
-In-Reply-To: <20080414221312.GI26885@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+On Tue, 8 Apr 2008, Andrea Arcangeli wrote:
 
-Most of the boards with Xtensa don't have PCI, and the PCI bridge on the
-two boards I know have PCI are more or less broken. One (with a V3)
-doesn't support byte/word accesses and the other one has broken
-PCI-Master to main memory connection. I'll work on the one that has
-only 32-bit access and will try to fix it.
+> The difference with #v11 is a different implementation of mm_lock that
+> guarantees handling signals in O(N). It's also more lowlatency friendly. 
 
+Ok. So the rest of the issues remains unaddressed? I am glad that we 
+finally settled on the locking. But now I will have to clean this up, 
+address the remaining issues, sequence the patches right, provide docs, 
+handle the merging issue etc etc? I have seen no detailed review of my 
+patches that you include here.
 
-Thanks,
--Chris
-
-Adrian Bunk wrote:
-> On Mon, Apr 14, 2008 at 10:31:24PM +0100, Alan Cox wrote:
->> On Mon, 14 Apr 2008 22:55:51 +0300
->> Adrian Bunk <bunk@kernel.org> wrote:
->>
->>> This patch fixes the following compile error:
->>>
->>> <--  snip  -->
->>>
->>> ...
->>>   CC [M]  drivers/parport/parport_pc.o
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/parport/parport_pc.c:67:25: error: asm/parport.h: No such file or directory
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/parport/parport_pc.c: In function 'parport_pc_find_ports':
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/parport/parport_pc.c:3215: error: implicit declaration of function 'parport_pc_find_nonpci_ports'
->>> make[3]: *** [drivers/parport/parport_pc.o] Error 1
->>>
->>> <--  snip  -->
->>>
->>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->> If xtensa has PCI then if you fix up the headers so the PCI stuff works
->> we'll be in a better shape.
-> 
-> The only merged platform does not support PCI, and I don't have any 
-> xtensa hardware for knowing what to put there.
-> 
-> Chris?
-> 
-> cu
-> Adrian
-> 
-
+We are going down the same road as we had to go with the OOM patches where 
+David Rientjes and me had to deal with the issues you raised?
