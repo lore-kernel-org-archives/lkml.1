@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbYDNBfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbYDNBgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbYDNBfT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 21:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYDNBfH
+	id S1758978AbYDNBgk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 21:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYDNBga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 21:35:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:3089 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbYDNBfG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 21:35:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T0rgfUcHfo4Gi/l4m6+jer3JTltJbNhqQacj37UHn7mnsTxWrAzwrb7XBvfEcKbLMRMpOmbKUZ2LsZ+yhH4V3aYciaVfsyAVhJ91z5MJ/ImgrL1nqK3r2LSWnAJTiT7oseA22SYO4u51jLpGSj87oBuYLZ8c2eU17audK3pklLY=
-Message-ID: <a8e1da0804131835t76a9ed61qbcd507ecd65a894a@mail.gmail.com>
-Date: Mon, 14 Apr 2008 09:35:05 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: devzero@web.de
-Subject: Re: netsc520 - skeleton in the closet ?
-Cc: linux-kernel@vger.kernel.org, cebbert@redhat.com, jeremy@goop.org
-In-Reply-To: <237143435@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 13 Apr 2008 21:36:30 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:38990 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752907AbYDNBg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 21:36:29 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: benh@kernel.crashing.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1208134017.6958.94.camel@pasglop>
+References: <200804040111.15255.rjw@sisk.pl>
+	 <200804140108.05447.rjw@sisk.pl> <1208130390.6958.71.camel@pasglop>
+	 <200804140231.32245.rjw@sisk.pl>  <1208134017.6958.94.camel@pasglop>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Mon, 14 Apr 2008 11:37:14 +1000
+Message-Id: <1208137034.29577.41.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <237143435@web.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 8:45 PM,  <devzero@web.de> wrote:
-> i'm doing some module testing from time to time and i'm somewhat sure, that there is an issue with netsc520 module, as i have seen more than one occasion that after load/unloading of that module (w/o presence of the appropriate hw), other modules had issues.
->
->  see http://marc.info/?l=linux-kernel&m=120664963508105&w=2 for example.
->
->  now,by chance i came across this one: http://marc.info/?l=linux-kernel&m=118274309325836&w=2
->
->  >> > >> netsc520 is doing iounmap() of an area it did
->  >> > >> ioremap_nocache() on earlier, because it has now failed to
->  >> > >> find a device. Why it went BUG() I have no idea.
->  >> > >>
->  >> > >
->  >> > > Hi, maybe some config option cause this issue, here is my current
->  >> > > working-ok config file:
->  >> >
->  >> > What are the differences from the non-working config?
->  >> >
->  >> >     J
->  >> >
->  >> The diffrences is net520c item.
->  >>
->  >sorry it is netsc520, I will post the patch after a while.
->
->  so, it sounds there is a known issue with netsc520, but i'm not sure if it's the related and if that mentioned patch has been posted, at least i don't find it in git due to x86/64 unification.
+Hi.
 
-Please see:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9585116ba09f1d8c52d0a1346e20bb9d443e9c02
+On Mon, 2008-04-14 at 10:46 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-04-14 at 02:31 +0200, Rafael J. Wysocki wrote:
+> > 
+> > Well, in our discussions with Alan Stern ->prepare() turned out to be necessary
+> > for exactly one reason, preventing new children of the device from being
+> > registered (by threads concurrent wrt the suspend thread).  For this reason,
+> > it doesn't really seem a good idea to run it before the freezer (seemingly, it
+> > would be difficult to avoid situations in which the freezer would fail as a
+> > result of ->prepare()).
+> 
+> I'm opposed to designing something around the freezer since we know it
+> will ultimately go away.
 
->
->  maybe someone has a clue.... ?
->
->  _____________________________________________________________________
->  Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
->  http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
->
->
+I don't think we should be assuming that the freezer will ultimately go
+away. Aiming for that is one thing, assuming that we know what will
+happen in the future is another. Frankly, I hope it doesn't go away,
+because right now it's the only way I can see that we can capture as
+close as possible to a complete image of memory for hibernation. I know
+that some people don't care about that option, but others of us find it
+extremely useful.
+
+> If things like USB have issues with userland doing nasty things after
+> prepare(), then those things need to be fixed. The freezer will only
+> hide bugs and not even always or properly and not on all archs.
+
+Having said the above, I also agree with this. I want to see things
+being done properly too. I believe the freezer still has a place when it
+comes to providing the environment in which we can capture a consistent
+image for hibernation, but that shouldn't get in the way of kernel
+drivers (or even well designed userspace drivers) doing their thing,
+including reloading firmware post-atomic restore or post-suspend-to-ram.
+
+> > It looks like you'd like to have a third callback executed before the freezer,
+> > but OTOH I don't see the reason not to use a notifier for such things.
+> 
+> That's just gratuituous complication imho. We can add callbacks every
+> week and no driver will every find out what to use and when.
+> 
+> prepare() has quite well defined and nice semantics if you ignore your
+> freezer trickery. It matches well with the needs of things like
+> request_firmware or the DRM, and possibly a few others, in addition to
+> matching well the need to block bus discovery.
+> 
+> If some drivers have issue because of what userland might do after
+> prepare(), then those drivers need to be fixed. We all know the freezer
+> is not a proper solution. It just hides problems and not always
+> correctly.
+
+Not a proper/complete solution to every problem.
+
+> > I have imagined that while we have the freezer, the operations that need to
+> > be carried out with the user space available will be done using notifiers
+> > and the rest will be done by ->prepare() and ->suspend().  Next, when we
+> > finally drop the freezer, it will be possible to move the code from the
+> > notifiers into ->prepare() and drop the notifiers altogether.
+> 
+> Why do this two steps ? What is the point ?
+
+1 step for pre-freezing prepare (load firmware you might want to restore
+later, allocate memory) and 1 step for post-freezing prepare (stop
+driver discovery)? I'm not sure that this is what Rafael has in mind,
+though.
+
+Nigel
+
