@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYDNAgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYDNAih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbYDNAgz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYDNAgm
+	id S1758426AbYDNAih (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYDNAi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:36:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:53481 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479AbYDNAgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:36:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=x-authentication-warning:to:cc:subject:references:from:in-reply-to:message-id:lines:user-agent:mime-version:content-type:date;
-        b=ezCfP9RvKGWkeWlrg+mZ2VGNWjvBHqZNDFVYyBW8qTRiPEZS+7tDOz/0g3g47426btAsbrPeY3zH+onrwrD5L6JvCiKpIt33bnhaq22ED7KCbfQLX6M3Z9TSPWFnMc4WB5uhPgr4cqxFeOFKAk2MtdXhNNRrsJKa6rK466UrQ7E=
-To: david@lang.hm
-Cc: Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
-	<alpine.DEB.1.10.0804131546370.9318@asgard>
-From: Jakub Narebski <jnareb@gmail.com>
-In-Reply-To: <alpine.DEB.1.10.0804131546370.9318@asgard>
-Message-ID: <m3ve2ls26p.fsf@localhost.localdomain>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sun, 13 Apr 2008 17:36:38 -0700 (PDT)
+	Sun, 13 Apr 2008 20:38:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:50229 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753320AbYDNAi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 20:38:28 -0400
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, takata@linux-m32r.org,
+       linux-m32r@ml.linux-m32r.org, Linux-Arch <linux-arch@vger.kernel.org>
+In-Reply-To: <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 10:38:26 +1000
+Message-Id: <1208133506.6958.82.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm writes:
-
-> cross-posted to git for the suggestion at the bottom
-
-[...]
-
-> Elsewhere in this thread someone said that the pre-git way was to do a
-> manual bisect where the developer would send patches backing out
-> specific changes to find the problem. one big difference between that
-> and bisecting the problem is that the manual process was focused on
-> the changes in the area that is suspected of causing the problem,
-> while the git bisect process goes after all changes. this makes it
-> much more likely that the tester will run into unrelated problems
-> along the way.
+> > +#ifndef thread_info_cache_init
+> > +#define thread_info_cache_init	do { } while(0)
+> > +#endif
 > 
-> I wonder if it would be possible to make a variation of git bisect
-> that only looked at a subset of the tree when picking bisect points
-> (if you are looking for a e1000 bug, testing bisect points that
-> haven't changed that driver won't help you for example). If this can
-> be done it would speed up the reporters efforts, but will require more
-> assistance from the developers (who would need to tell the reporters
-> what subtrees to test) so it's a tradeoff of efficiancy vs simplicity.
+> This trick does cause a bit of a problem: it is undefined which arch header
+> file is to provide the alternative definition of thread_info_cache_init.
 
-Errr... the synopisis of git-bisect contains the following:
+I this case it's well defined: thread_info.h. Maybe I should add a
+comment ?
 
- git bisect start [<bad> [<good>...]] [--] [<paths>...]
+> So we can (and have) ended up in the situation where the override appears
+> in different files on different architectures and various screwups ensue.
 
-so you can limit bisection to commits affecting specified subsystem.
+Yup.
 
-P.S. Unfortunately git currently doesn't deal with directory renames,
-so if there was sime big code restructuring one has to provide all
-historic pathspecs.
+> So I'd suggest that we have a bigfatcomment telling implementors which file
+> the override should be implemented in.  And make sure that this arch file is
+> directly included from within sched.h.
 
--- 
-Jakub Narebski
-Poland
-ShadeHawk on #git
+Will do.
+
+> I have a suspicion that we can still get in a mess if .c files include the
+> per-arch file and don't include sched.h, but I forget where this happened
+> and why it broke stuff.
+
+In this case, there's only one call site and will only every be one, so
+that shouldn't be a problem. I don't see init/main.c not including
+sched.h
+
+> Sigh.  A nice, coded-in-C implementation within each and every architecture
+> remains the best implementation, and all the little tricks-to-save-typing
+> have failure modes.
+
+Well, I started doing it in all arch, and people around here told me
+that was not a good idea , that it would be trouble if the prototype
+ever had to change (adding an arg, etc... though very unlikely to happen
+in that case, granted).
+
+> otoh, if only one .c file will ever call this function then I think that
+> all problems are solved by
+> 
+> a) moving the above ifdeffery into the .c file
+> b) adding a comment explaining which arch file must provide the override
+> c) directly including that file from within the .c file.
+
+I can definitely do that. I have no problem either way. I can add to all
+archs too, it's just that whatever way I choose, some people won't be
+happy with it :-)
+
+Anyway, I'll move the ifdeferry to init/main.c then.
+
+Cheers,
+Ben.
+
