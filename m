@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYDNT43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYDNT4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbYDNT43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYDNT4V
+	id S1756463AbYDNT4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYDNT43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:56:21 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:55806 "EHLO smtp5.pp.htv.fi"
+	Mon, 14 Apr 2008 15:56:29 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38664 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbYDNT4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:56:20 -0400
-Date: Mon, 14 Apr 2008 22:55:14 +0300
+	id S1753130AbYDNT41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:56:27 -0400
+Date: Mon, 14 Apr 2008 22:55:21 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: chris@zankel.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xtensa: remove the nonexisting highmem support
-Message-ID: <20080414195514.GA26885@cs181133002.pp.htv.fi>
+To: chris@zankel.net, jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] xtensa: don't offer ATA
+Message-ID: <20080414195521.GB26885@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,100 +23,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to compile an xtensa kernel with CONFIG_HIGHMEM=y fails early and 
-hard:
+Trying to build libata for xtensa fails with the following error:
 
 <--  snip  -->
 
 ...
-  CC      init/main.o
-In file included from 
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:10,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/buffer_head.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:53:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h: In function 'clear_user_highpage':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: implicit declaration of function 'kmap_atomic'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: 'KM_USER0' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: for each function it appears in.)
-...
-make[2]: *** [init/main.o] Error 1
+  CC [M]  drivers/ata/libata-core.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_devchk':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1034: error: implicit declaration of function 'iowrite8'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1043: error: implicit declaration of function 'ioread8'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_data_xfer':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5027: error: implicit declaration of function 'ioread16_rep'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5029: error: implicit declaration of function 'iowrite16_rep'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5037: error: implicit declaration of function 'ioread16'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5041: error: implicit declaration of function 'iowrite16'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_wait_register':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:7700: error: implicit declaration of function 'ioread32'
+make[3]: *** [drivers/ata/libata-core.o] Error 1
 
 <--  snip  -->
-
-This patch removes all traces of highmem support from the
-xtensa port - highmem support was simply nonexisting.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- arch/xtensa/Kconfig          |    3 ---
- arch/xtensa/mm/init.c        |    8 --------
- include/asm-xtensa/highmem.h |   17 -----------------
- 3 files changed, 28 deletions(-)
-
-4593b43e8e6c763d90a4f45c9f2db8750e0fa9c7 diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index 9fc8551..09dafbc 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -97,9 +97,6 @@ config MATH_EMULATION
- 	help
- 	Can we use information of configuration file?
- 
--config HIGHMEM
--	bool "High memory support"
--
- endmenu
- 
- menu "Platform options"
-diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
-index 81d0560..89531ff 100644
---- a/arch/xtensa/mm/init.c
-+++ b/arch/xtensa/mm/init.c
-@@ -169,10 +169,6 @@ void __init paging_init(void)
- 	for (i = 1; i < MAX_NR_ZONES; i++)
- 		zones_size[i] = 0;
- 
--#ifdef CONFIG_HIGHMEM
--	zones_size[ZONE_HIGHMEM] = max_pfn - max_low_pfn;
--#endif
--
- 	/* Initialize the kernel's page tables. */
- 
- 	memset(swapper_pg_dir, 0, PAGE_SIZE);
-@@ -222,10 +218,6 @@ void __init mem_init(void)
- 	high_memory = (void *) __va(max_mapnr << PAGE_SHIFT);
- 	highmemsize = 0;
- 
--#ifdef CONFIG_HIGHMEM
--#error HIGHGMEM not implemented in init.c
--#endif
--
- 	totalram_pages += free_all_bootmem();
- 
- 	reservedpages = ram = 0;
-diff --git a/include/asm-xtensa/highmem.h b/include/asm-xtensa/highmem.h
-deleted file mode 100644
-index 0a046ca..0000000
---- a/include/asm-xtensa/highmem.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--/*
-- * include/asm-xtensa/highmem.h
-- *
-- * This file is subject to the terms and conditions of the GNU General
-- * Public License.  See the file "COPYING" in the main directory of
-- * this archive for more details.
-- *
-- * Copyright (C) 2003 - 2005 Tensilica Inc.
-- */
--
--#ifndef _XTENSA_HIGHMEM_H
--#define _XTENSA_HIGHMEM_H
--
--extern void flush_cache_kmaps(void);
--
--#endif
--
+aa579e7ab065e41a9d1e27e1f4b7af6b0508018c diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 25aba69..f34e9d1 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -6,7 +6,7 @@ menuconfig ATA
+ 	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
+ 	depends on HAS_IOMEM
+ 	depends on BLOCK
+-	depends on !(M32R || M68K) || BROKEN
++	depends on !(M32R || M68K || XTENSA) || BROKEN
+ 	depends on !SUN4 || BROKEN
+ 	select SCSI
+ 	---help---
 
