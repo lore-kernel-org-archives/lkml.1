@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYDNLib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYDNLj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbYDNLib (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 07:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYDNLiW
+	id S1755443AbYDNLj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 07:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYDNLjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 07:38:22 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34565 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbYDNLiV (ORCPT
+	Mon, 14 Apr 2008 07:39:51 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:63965
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752681AbYDNLju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 07:38:21 -0400
-Date: Mon, 14 Apr 2008 12:37:59 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080414113759.GG1540@flint.arm.linux.org.uk>
-References: <20080411103346.GC3185@local> <20080411110358.GC19973@digi.com> <20080411111703.GD3185@local> <20080411112543.GA23221@digi.com> <20080412131646.GF9669@flint.arm.linux.org.uk> <20080414074858.GA22694@digi.com> <20080414093714.GD1540@flint.arm.linux.org.uk> <20080414095445.GA19413@digi.com> <20080414101701.GE1540@flint.arm.linux.org.uk> <20080414112021.GA19986@digi.com>
+	Mon, 14 Apr 2008 07:39:50 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlUBAPfeAkjLrQz2/2dsb2JhbAAIqU4
+X-IronPort-AV: E=Sophos;i="4.25,655,1199631600"; 
+   d="scan'208";a="315627462"
+Subject: Re: UIO: Implement a UIO interface for the SMX Cryptengine
+From: Ben Nizette <bn@niasdigital.com>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080414100848.GA19369@digi.com>
+References: <20080414100848.GA19369@digi.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Nias Digital
+Date: Mon, 14 Apr 2008 21:39:41 +1000
+Message-Id: <1208173181.3351.63.camel@moss.renham>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080414112021.GA19986@digi.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 01:20:21PM +0200, Uwe Kleine-König wrote:
-> [1] http://lkml.org/lkml/2008/4/11/81 or
-> http://thread.gmane.org/gmane.linux.kernel/665257
 
-In one of the mails, it was said:
-  No. It's more important to see which variables are declared in the
-  function and which are declared elsewhere. If you have to search the
-  whole body of a function for possible declarations, this is BAD. And if
-  it's not clear where a variable is used, the function is too long or has
-  other style problems. Your function is short and clean, so where's the
-  problem? Please move the declaration to the top of the function.
+[putting lkml back in CC]
 
-I disagree with this statement.  It's far better to limit the scope of
-variables so that you know they only have local use, and eg, not used
-inside a loop and then outside with possible unintended effects.
+On Mon, 2008-04-14 at 12:08 +0200, Uwe Kleine-KÃ¶nig wrote:
 
-If a variable is only used inside a loop, it should be declared _inside_
-that loop.
+> The line "depends on UIO" isn't needed (anymore) because the whole
+> config item is located in a "if UIO"/"endif".
 
-The statement goes on to talk about the function being short and clean -
-that's not an argument to apply any particular point of view on this
-subject, since you can argue that because it's short and clean you can
-see that the variable is only used within the loop.
+Right, just saw your patch fly by.  Given mine's been taken up by gregkh
+already I was kinda hoping someone further up the tree would end up
+fixing it.  If not I can of course rebase and resend.
 
-So, please, keep the variable declaration inside the loop, and don't
-pollute the outer levels with unnecessary variable declarations.
+> 
+> The "default n" isn't necessary because that's the default anyhow.
+
+Eh, I like to be explicit.
+
+> 
+> I didn't look deeper into that patch, but it might be possible to
+share
+> code with my patch
+
+Indeed, I quite like your patch.  I spend a fair bit of time on the
+AVRFreaks AVR32 support community and I can see a great need for what
+you've done.  That said, if HJK/ GregKH don't object I think I'll leave
+mine pretty much as-is; having a device-specific ISR in platform code
+just doesn't quite sit smooth with me :-)
+
+Thanks!
+	--Ben.
