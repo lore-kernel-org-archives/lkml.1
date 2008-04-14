@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbYDNSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbYDNSmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933804AbYDNSmU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764071AbYDNSly
+	id S934243AbYDNSmh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760901AbYDNSmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:41:54 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51066 "EHLO smtp4.pp.htv.fi"
+	Mon, 14 Apr 2008 14:42:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51076 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764014AbYDNSlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:41:53 -0400
-Date: Mon, 14 Apr 2008 21:40:47 +0300
+	id S932867AbYDNSmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:42:01 -0400
+Date: Mon, 14 Apr 2008 21:40:55 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] #if 0 acpi/bay.c:eject_removable_drive()
-Message-ID: <20080414184047.GF6695@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [2.6 patch] fs/partitions/acorn.c: remove dead code
+Message-ID: <20080414184055.GI6695@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,8 +23,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch #if 0's the unused eject_removable_drive().
+I missed this when I did the arm26 removal.
 
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
@@ -33,30 +34,31 @@ This patch has been sent on:
 - 31 Mar 2008
 - 1 Mar 2008
 
- drivers/acpi/bay.c |    2 ++
- 1 file changed, 2 insertions(+)
+ fs/partitions/acorn.c |   10 ----------
+ 1 file changed, 10 deletions(-)
 
-de6f6fda54c9a51719c8e5a5b8d303fb958cfe36 foobar
-diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
-index 1fa8681..d2fc941 100644
---- a/drivers/acpi/bay.c
-+++ b/drivers/acpi/bay.c
-@@ -201,6 +201,7 @@ static int is_ejectable_bay(acpi_handle handle)
- 	return 0;
- }
+f7dc697bb2d04227b2f41a9d56f626fbd65c3d9d foobar
+diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
+index 3d3e166..a97b477 100644
+--- a/fs/partitions/acorn.c
++++ b/fs/partitions/acorn.c
+@@ -275,16 +275,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
+ 	id = data[0x1fc] & 15;
+ 	put_dev_sector(sect);
  
-+#if 0
- /**
-  * eject_removable_drive - try to eject this drive
-  * @dev : the device structure of the drive
-@@ -225,6 +226,7 @@ int eject_removable_drive(struct device *dev)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(eject_removable_drive);
-+#endif  /*  0  */
- 
- static int acpi_bay_add_fs(struct bay *bay)
- {
+-#ifdef CONFIG_BLK_DEV_MFM
+-	if (MAJOR(bdev->bd_dev) == MFM_ACORN_MAJOR) {
+-		extern void xd_set_geometry(struct block_device *,
+-			unsigned char, unsigned char, unsigned int);
+-		xd_set_geometry(bdev, dr->secspertrack, heads, 1);
+-		invalidate_bh_lrus();
+-		truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
+-	}
+-#endif
+-
+ 	/*
+ 	 * Work out start of non-adfs partition.
+ 	 */
 
 
 
