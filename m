@@ -1,293 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbYDNSFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764694AbYDNSIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764046AbYDNSFt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYDNSFl
+	id S1764694AbYDNSIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYDNSIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:05:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:6394 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754332AbYDNSFk (ORCPT
+	Mon, 14 Apr 2008 14:08:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:32603 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756790AbYDNSIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:05:40 -0400
+	Mon, 14 Apr 2008 14:08:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=EgBin1hDS7X7mF9egJrCaa24s9MHDg8PM8biXCkZsb9Do5iUah2Wm9Vdp9Bm0S4dczhUnrlNg/LY2qhMDNCkTMb676Y8PHJSFM4hbYv4BO4+8CkKaT0Db2/dz8H7wMJebxG1uYThGdh/93GVX6D8ARLeXTeR4bOoMbpKID/xlsU=
-Date: Mon, 14 Apr 2008 14:05:32 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH 4/8] rfkill: add read-write rfkill switch support
-Message-ID: <20080414133917.ZZRA012@mailhub.coreip.homeip.net>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <200804121236.43547.IvDoorn@gmail.com> <20080414012038.GB14406@khazad-dum.debian.net> <200804141400.41319.IvDoorn@gmail.com> <20080414100018.ZZRA012@mailhub.coreip.homeip.net> <20080414143603.GA31298@khazad-dum.debian.net> <20080414105933.ZZRA012@mailhub.coreip.homeip.net> <20080414163357.GA8438@khazad-dum.debian.net>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rSZyElrK2N/gPTXjgPnAflaKA3SNQt9VH79CBgKeweFgoqhw+oabynLO/A0j6Bs0kORZ1ToDXXivIMG7rTqQc6LAC/ms2pjt/Yxtlke9nPXeLMa73v4H9E6XY3pqrVrmdo8WqKqGVIsP+rGkijEo9aPrB6BTVcDJVj6dbsjn2lg=
+Message-ID: <86802c440804141108l1fd922b3tf566569bc4dc6767@mail.gmail.com>
+Date: Mon, 14 Apr 2008 11:08:09 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: x86 git tree broken (bisected)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <20080414091600.GI19865@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080414163357.GA8438@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <200804102159.14563.rjw@sisk.pl> <200804140010.01034.rjw@sisk.pl>
+	 <86802c440804131532g4626233br82a425d6a96a6e11@mail.gmail.com>
+	 <200804140219.07350.rjw@sisk.pl>
+	 <86802c440804131842t16d05976g20b2eb97af6bbf1b@mail.gmail.com>
+	 <20080414091600.GI19865@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 01:33:57PM -0300, Henrique de Moraes Holschuh wrote:
-> On Mon, 14 Apr 2008, Dmitry Torokhov wrote:
-> > On Mon, Apr 14, 2008 at 11:36:03AM -0300, Henrique de Moraes Holschuh wrote:
-> > > On Mon, 14 Apr 2008, Dmitry Torokhov wrote:
-> > > > What exactly breaks with user_claim? I think the general issue is that
-> > > 
-> > > The same thing that happens if userspace is in charge and doesn't
-> > > cooperate or if rfkill-input is not loaded:  the rfkill driver state is
-> > > never updated (remember, it is about the radio controller, not the input
-> > > device).
-> > > 
-> > 
-> > And it should not - setting user_claim means userspace controls the
-> > transmitter state. If userspace decides to ignore KEY_* event and not
-> 
-> Nuh-uh.  Here's the root of the bug.  The rfkill controller knowing
-> whether its state is on or off for real has NOTHING to do with the user
-> telling it to change state.
-> 
-
-Nuh-uh. Nothing changed the transmitter sate yet. We just got a
-request from user to do something.
-
-> Something changed the controller's state (the hardware, or the
-> firmware), and didn't do it using the rfkill class.  That's a fact.
-
-And this is a bug. How come hardware state changes without kernel not
-beign aware? The only case is hard-wired switch. Here I agree that if
-such switches are exported via rfkill to userspace the driver should
-be able to set rfkill state to match its own. In all other cases, when
-you can programmatically control RF state you shoudl defer the actual
-switch until user[space] tells you to do so. I guess firmware could
-work like a hard-wired switch, turnign radio off when battery goes
-extremely low, so yes, I agree that allowing drivers to update their
-state directly is required.
-
-> The
-> rfkill class needs to know of that change through an rfkill->state
-> update, or it misbehaves (because some stuff takes decisions depending
-> on the contents of rfkill->state, AND that state is exposed to userspace
-> which is allowed to also take decisions based on it).  That's another
-> fact.
-> 
-> And none of it has to do with input events, or what the user wants done.
-> During this entire process, the kernel did not take ANY active instances
-> on what should happen to the radio controller.  It didn't change the
-> radio controller state.  It is just making sure the kernel doesn't think
-> it is ON when it is OFF, for a particular, specific, radio rfkill
-> controller.
-> 
-> I propose that we broadcast (through normal kernel notifier chains) that
-> the state has been changed, and if something is trying to enforce that
-> no radio rfkill controllers deviate from the global rfkill state for
-> that radio rfkill controller state, IT should tell the radios to go back
-> to the state it wants.  But IT is not the rfkill class, nor any input
-> devices or rfkill devices.  Maybe it is userspace, or rfkill-input, or
-> another platform-specific policy module.
+On Mon, Apr 14, 2008 at 2:16 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
+>  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>
+> > >  Attached is dmesg output from current x86.git with
+>  > >  debug_gart_checking.patch applied.
+>  >
+>  > please test the final one ... ...
+>  >
+>  > You should get back 64M memory back.
+>
+>  so basically with all the right patches applied, and GART set to 32MB in
+>  the BIOS, Rafael should have more free RAM on his system than ever
+>  before :-)
 
-I agree. Here you are talking about hardwired-like scenarios where
-kernel did not get a chance to interfere with the RF toggle. Still, if
-there was a button involved it needs to be broadcasted so that the
-rest of RF transmitters can be adjusted according to the used
-policy.
+Yes
 
-> > turn the radio on or off - that is fine. rfkill-input simply provides
-> > default kernel policy for reacting to KEY_WLAN, KEY_BLUETOOTH, etc.
-> 
-> So far so good, but it must not be used for something else entirely
-> (namely: keeping rfkill->state consistent to the real hardware state).
-> That's what I am talking about...
-> 
+>
+>  i've put all the patches into x86.git/latest (it's all uploaded already
+>  as well), so that should give Rafael a one-stop shop to test it out. [i
+>  have not applied the debug patch that changes the aperture test from
+>  32MB to 64MB, and it should be unnecessary as well]
+>
+>  btw., Yinghai, should we perhaps add a WARN_ON() to those places where
+>  we waste RAM (such as the "This costs you 64 MB of RAM" message) - so
+>  that kerneloops.org can pick those warnings up? Maybe there are other
+>  situations where we waste RAM, and people dont realize it.
 
-Here I agree.
+in Rafael case, just need to ask user to increase GART size in BIOS if
+more than 4G RAM installed ( or 4G installed with hardware memhole
+remapping enabled).
 
-> > If there are drivers sense button presses and alter their actual
-> > transmitter state immediately but then rely on rfkill-input to update
-> > their sysfs rfkill attributes then such drivers should be fixed.
-> 
-> That's the point, yes.  Currently *all* drivers have to do this :) and
-> that's why I did not add thinkpad-acpi rfkill support until I had enough
-> time to tack on rfkill itself to bring it up to speed with the extra
-> requirements stuff like thinkpad-acpi and b43 have.
+if less than 4G installed, just take the BIOS setting with 32M
 
-No, I dont believe all drivers have to do this. Ivo will correct me if
-Im wrong but I believe he worked with drivers that dont necessarily
-have the switch hard wired.
-
-> 
-> > > > rfkill was originally not supposed to be used with switches that can't
-> > > > be programmatically controlled. If we have a switch that mechanically
-> > > 
-> > > The input layer does not provide a way for userspace to get access to
-> > > the current state of any switches easily (or at all?).  It just exports
-> > > events reporting these states sometimes.
-> > 
-> > You can use EVIOCGSW to get state of switches. I'd expect applications
-> > to use it when they open devices first time and then rely on event
-> > delivery to monitor changes in state of input devices.
-> 
-> Good to know.  But the usual consumers of those are shell scripts, do we
-> have a swiss-army-knife-for-the-input-layer utility a shell script can
-> use to do a EVIOCGSW call?  Or to wait for an event?
-> 
-> If we don't, but we provide one to be the companion of lsinput,
-> input-events and input-kbd, then I agree we can forego the sysfs
-> attribute.
-> 
-> But DO be warned that userspace developers will see that rfkill exports
-> a state attribute for the radio rfkill controllers, and will look for
-> something equally easy to use for the input devices.
-
-Should I add attribute for every key on a keyboard just because some
-userspace developers what to use shell scripts everywhere? key_a,
-key_b, key_c and so on? No.
-
->  There is a big
-> pontential for confusion and misuse of interfaces there, when you recall
-> that it will be COMMON to have the same module (driver) provide both a
-> rfkill controller through the rfkill class, and an input device.
-> 
-
-As soon as people will realize that button and RF transmitter are
-different objects serving different purposes it all goes away. The
-very same module also registers network device, why rfkill is so
-different.
-
-> > > We could fix it in the input subsystem, instead.  How difficult (and
-> > > welcome a change?) would it be for the input device infrastructure to
-> > > provide pollable (for good measure!) "state" attributes for every EV_SW
-> > > event an input device registers in evbits+swbits ?
-> > > 
-> > 
-> > Given the above I don't see the need.
-> 
-> So, we can get the required information using an IOCTL.  That means
-> rfkill class support for read-only devices is no longar mandatory.  It
-> is still not clear to me it is not *desired*, though.
-> 
-> The reasons are:
->   1. Need to have an easy way to get that information for shell scripts,
->      and IOCTLs are not (AFAIK).  This can be fixed by adding a shell-
->      script helper to input-utils.
-> 
->   2. It might be better to have all information directly related to
->      rfkill behaviour (i.e. both rfkill controller state and rfkill
->      input device state) in the same class, and present it in the same
->      way to userspace.
-
-No, we need to keep RF transmitetrs and buttons separate. I can assign
-KEY_WLAN to one of the media keys on my laptop (that I dont use
-otherwise). Does it make sense to "move" my keyboard to rfkill
-vicinity? I dont think so. Its just a button.
-
-> 
-> Anyone has an opinion about the above?  Provided we can do it without
-> major complexity (we can, AFAIK, since I did get quite close to it with
-> the first patchset and the code in there is definately NOT complex), I
-> think both points could be addressed at the same time, and userspace
-> can get the information it wants in whichever way it is easier for the
-> application.
-> 
-> > > If the input subsystem exports that information, we can define that
-> > > slave read-only radio controllers must NOT be registered as rfkill
-> > > devices, and drop support for read-only rfkill devices, as all master
-> > > rfkill devices (which are input devices by definition) would get their
-> > > state exported to userspace through the input layer.
-> > > 
-> > > However, that DOES mean userspace would need to look for rfkill state in
-> > > two places.  Input layer, to get the current state of the rfkill input
-> > > devices, and rfkill class to get the current state of the rfkill
-> > > radio controllers.
-> > >
-> > 
-> > I think you outlined the problem in your other mail quite well. We
-> > keep confusing button state with the transmitter state. Only for
-> > buttons that are hardwired to transmitters the states are the same,
-> > for programmatically controlled RF transmitters state may be
-> > different. So if you need to see state of transmitters you should look
-> > in /sys/class/rfkill and for input devices - hook into input devices.
-> 
-> I am not so sure about that last sentence.  See above.  And I really
-> need to have a very clear and fixed picture of which way to go about
-> this before I start respinning the rfkill patches :)
-> 
-> > > Let's decide this NOW, then.  But if we decide to not do it in rfkill,
-> > > you will have to add attributes to every input device which has
-> > > registered itself as a source of EV_SW events.
-> > 
-> > No, since they may not be tied directly to any RF transmitter.
-> 
-> It is valuable information for userspace.  I export the same information
-> available through SW_TABLET_MODE for example, as a thinkpad-acpi
-> specific attribute.  Doing EVIOCGSW is not a very friendly interface for
-> userspace shell scripts right now.
-> 
-> So it *would* be useful.  Whether it is the right way to go about it
-> (instead of adding a new utility to input-utils to do the EVIOCGSW for
-> shell scripts and other script languages that are IOCTL-challenged) is
-> something else.
-> 
-> If you really don't want that exported over sysfs as well, and EVIOCGSW
-> is the only way to get that information, I feel the immediate need for
-> an input-ioctl utility for userspace shell scripting.
-> 
-> And there is the all important question about whether I should still
-> export that information in thinkpad-acpi over pollable attributes (which
-> are *really* easy to use) or not.  Other driver writers might want to
-> think about it as well.
-
-If we export switches then we need to export leds. And keys. And
-axis... It all adds up very quickly and wastes kernel memory. Just
-write ioctl utility for script-users if such is needed and be done
-with it.
-
-> 
-> > > I better make it clear that I have NO idea how to properly implement the
-> > > required changes in the input layer if we go that way so if it is left
-> > > for me to do that work, it won't be ready anytime soon and it might be
-> > > supbar, so I'd appreciate lots of help in that case.
-> > 
-> > Well, let's see.. Do we have any issues with transmitters that can be
-> > controlled programmatically? Or is it the hardwired ones that give us
-> > trouble at the moment? I think that exporting all of them in rfkill is
-> 
-> Both, I think.  Any rfkill controller which is not in complete,
-> exclusive control by the kernel, is currently a problem.  That means
-> stuff the firmware can change, and it also means any stuff directly tied
-> to a button or switch that the user can change.
-> 
-> The only things we are handling well right now is pure keys/buttons, and
-> rfkill radio controllers that are in full control by their kernel driver
-> (i.e. those with NO sideway control paths that are out of the control of
-> the rfkill device).
-> 
-> > a good idea, even though originally I thought we would not need to do
-> > that. Therefore we do need to allow hardwided drivers updating their
-> > rfkill state directly. The only problem I see is that we need to monitor
-> > this closely, so non-hardwired cases won't try to use this mechanism.
-> 
-> Well, I do propose that we export any, and *every* radio controller
-> state change through kernel notifier chains (and to userspace using
-> uevents).  Those notifications should include the rfkill type (and type
-> class if we add that), new switch state, and any other relevant
-> information (e.g. that the switch is a master switch -- those usually
-> need input events generated, whether the code that produced the
-> notification will also handle issuing an input event for it or not
-> (duplicate suppresion), etc).
-> 
-
-Notfiers are a good idea for RF transmitter state changes. Not so for
-key/button notifiers because these can be ussued by regular PS/2 or
-USB keyboards and other devices that have no idea about rfkill and
-dont want to know.
-
-> We can monitor all rfkill radio controllers from userspace or
-> rfkill-input through those chains.
-
--- 
-Dmitry
+YH
