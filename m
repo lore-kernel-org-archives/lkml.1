@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYDNKhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbYDNKlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYDNKhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYDNKhE
+	id S1754956AbYDNKlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYDNKk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:37:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58371 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYDNKhD (ORCPT
+	Mon, 14 Apr 2008 06:40:59 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46783 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbYDNKk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:37:03 -0400
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Xavier Bestel <xavier.bestel@free.fr>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
-       me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080414032232.bc36ba5b.akpm@linux-foundation.org>
-References: <20080413080130.GA9622@infradead.org>
-	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
-	 <20080413082815.GA20108@infradead.org>
-	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-	 <1208121358.2700.4.camel@shinybook.infradead.org>
-	 <20080413154459.4b2f125d.akpm@linux-foundation.org>
-	 <20080413234920.63711ca7@core>
-	 <20080413161014.cb06964c.akpm@linux-foundation.org>
-	 <1208161859.3596.75.camel@skunk.anacadf.mentorg.com>
-	 <20080414014445.5b4a7b22.akpm@linux-foundation.org>
-	 <20080414090945.GA18494@infradead.org>
-	 <20080414022108.92ce9b1d.akpm@linux-foundation.org>
-	 <1208167786.31695.34.camel@pmac.infradead.org>
-	 <20080414032232.bc36ba5b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 14 Apr 2008 11:36:55 +0100
-Message-Id: <1208169415.31695.51.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+	Mon, 14 Apr 2008 06:40:59 -0400
+Message-ID: <48033561.3070309@keyaccess.nl>
+Date: Mon, 14 Apr 2008 12:43:45 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Andreas Mueller <andreas@stapelspeicher.org>, linux-kernel@vger.kernel.org,
+       MatzeBraun@gmx.de, ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: [PATCH] es1968: fix jitter on some maestro cards
+References: <20080329234943.GA2899@slappy>	<47F164AB.5040009@keyaccess.nl> <s5habjwhh1p.wl%tiwai@suse.de>
+In-Reply-To: <s5habjwhh1p.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-14 at 03:22 -0700, Andrew Morton wrote:
-> Not so.  There is a habit of treating corporate developers as somehow
-> inferior to the purer old-timers.  I know - people have told me.  Quite
-> often. 
+On 14-04-08 12:22, Takashi Iwai wrote:
 
-I'm not sure I agree. There is a habit of treating people who post crap
-code as somehow inferior to the purer old-timers, certainly. And that's
-probably not such a good thing, but at least it helps to keep the
-signal:noise ratio down a little, overall.
+> At Tue, 01 Apr 2008 00:24:43 +0200,
+> Rene Herman wrote:
+>> On 30-03-08 00:49, Andreas Mueller wrote:
+>>
+>>> This patch suppresses jitter on several Maestro cards in stereo mode
+>>> (ALSA of course).
+>>>
+>>> The patch is also incorporated in the *BSD drivers where I "ported" it from.
+>>> I am barely used to driver-development so please take a look (esp. the channel
+>>> parameters), nevertheless it completely works for me.
+>>>
+>>> Without this patch most of the stereo audio gets out of sync and really
+>>> distorted (oss-emulation with mplayer at 48000khz worked somehow).
+>>>
+>>> CCed to those listed in the .c file.
+>> Added the alsa-devel list (and re-attached the patch). My TerraTec DMX (ESS 
+>> Canyon3D, ES1970MS-3D) doesn't need this but doesn't seem to suffer from it 
+>> either. Otherwise no idea about this.
+> 
+> This should depend on the sample rate you use.  48k would work without
+> the patch.
 
-But except to the extent that there is a correlation between 'corporate
-developers' and 'people who post crap code', I wouldn't agree with your
-statement above. 
+Just to be clear archive-wise -- on this Canyon3D, so does 44100.
 
-We have a lot of people working for large corporations who don't post
-crap code, and to whom Christoph almost never promotes an attitude of
-violence. Looking at Jon's 'who wrote 2.6.23' analysis, I see quite a
-lot of successful 'corporate' involvement.
+> Anyway, I applied it to ALSA tree now.  Thanks.
 
-> And for various reasons, those people feel limited in their options
-> for standing up for themselves.
-
-Anyone trying to defend crap code _should_ be limited in their options,
-surely? And sometimes, 'corporate developers' do try to defend crap
-code, because they've made traditional corporate mistakes like
-developing it all in private and presenting it as a fait accomplis
-without proper a priori review, and/or haven't budgeted for the
-necessary time to fix it.
-
--- 
-dwmw2
+Rene.
 
