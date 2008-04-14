@@ -1,92 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYDNECe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYDNECz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYDNECe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 00:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYDNEC0
+	id S1756788AbYDNECz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 00:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYDNECo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 00:02:26 -0400
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:8699 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbYDNECZ convert rfc822-to-8bit (ORCPT
+	Mon, 14 Apr 2008 00:02:44 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:45103 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYDNECn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 00:02:25 -0400
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Sun, 13 Apr 2008 21:02:21 -0700
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Mon, 14 Apr 2008 00:02:43 -0400
+Date: Sun, 13 Apr 2008 21:02:35 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
+       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
+       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
+       oleg@tv-sign.ru, jamesclhuang@yahoo.com
+Subject: [PATCH 3/5] Add rcu_barrier_sched() and rcu_barrier_bh()
+Message-ID: <20080414040235.GC30495@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080414035848.GA30005@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Subject: RE: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Date: Mon, 14 Apr 2008 12:02:01 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B26C11B8C@hkemmail01.nvidia.com>
-In-Reply-To: <480013A3.1010502@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Thread-Index: AcicPpOHIXUlF+KmQTGrFaScyq3u/QBpYjLg
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804031347.20352.volker.armin.hemmann@tu-clausthal.de> <47FEFFC6.4@gmail.com> <200804111355.55364.volker.armin.hemmann@tu-clausthal.de> <48000FF8.300@gmail.com> <480013A3.1010502@garzik.org>
-From: "Peer Chen" <pchen@nvidia.com>
-To: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>
-Cc: "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>,
-       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
-       "Kuan Luo" <kluo@nvidia.com>
-X-OriginalArrivalTime: 14 Apr 2008 04:02:02.0090 (UTC) FILETIME=[4B43D4A0:01C89DE4]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414035848.GA30005@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker,
-Could you add a delay between setting AHCI_EN and reading back function?
+Add rcu_barrier_sched() and rcu_barrier_bh().  With these in place,
+rcutorture no longer gives the occasional oops when repeatedly starting
+and stopping torturing rcu_bh.  Also adds the API needed to flush out
+pre-existing call_rcu_sched() callbacks.
 
-BRs
-Peer Chen
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
 
------Original Message-----
-From: Jeff Garzik [mailto:jeff@garzik.org] 
-Sent: Saturday, April 12, 2008 9:43 AM
-To: Tejun Heo
-Cc: Volker Armin Hemmann; linux-kernel@vger.kernel.org;
-linux-ide@vger.kernel.org; Peer Chen; Kuan Luo
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+ include/linux/rcupdate.h |    2 +
+ kernel/rcupdate.c        |   55 +++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 51 insertions(+), 6 deletions(-)
 
-Tejun Heo wrote:
-> Volker Armin Hemmann wrote:
->> Hi,
->>
->>> Aiee.... Can you please try 2.6.25-rc8 with both configurations?
-And
->>> w/o systemrescuecd?  Just seeing whether things mount properly or
-not is
->>> good enough.  There isn't much risk of losing data.
->>
->> 2.6.25-rc8 is a 'no change'. AHCI+pci=nomsi boots, AHCI without
-hangs.
->> with AHCI I also get this:
->>
->> [    0.363828] ------------[ cut here ]------------
->> [    0.363828] WARNING: at drivers/ata/ahci.c:645 
->> ahci_init_one+0x190/0xa3a()
->> [    0.363828] Modules linked in:
->> [    0.363828] Pid: 1, comm: swapper Not tainted 2.6.25-rc8 #2
-> 
-> Heh.. that's AHCI_EN not getting set.  Peer, any ideas?  The driver
-set 
-> AHCI_EN in the HOST_CTL register but on reading back it's still clear.
-
-Possibly the hardware is not idle?  I wonder if the BIOS is doing 
-anything with the IDE interface.  _Probably_ not, but that is certainly 
-a situation where switching to AHCI can be a problem for certain AHCI
-chips.
-
-	Jeff
-
-
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+diff -urpNa -X dontdiff linux-2.6.25-rc6-C2-rcuclassic-fixes/include/linux/rcupdate.h linux-2.6.25-rc6-C3-rcu_barrier_sched/include/linux/rcupdate.h
+--- linux-2.6.25-rc6-C2-rcuclassic-fixes/include/linux/rcupdate.h	2008-03-20 21:10:42.000000000 -0700
++++ linux-2.6.25-rc6-C3-rcu_barrier_sched/include/linux/rcupdate.h	2008-04-09 13:40:53.000000000 -0700
+@@ -260,6 +260,8 @@ extern void call_rcu_bh(struct rcu_head 
+ /* Exported common interfaces */
+ extern void synchronize_rcu(void);
+ extern void rcu_barrier(void);
++extern void rcu_barrier_bh(void);
++extern void rcu_barrier_sched(void);
+ extern long rcu_batches_completed(void);
+ extern long rcu_batches_completed_bh(void);
+ 
+diff -urpNa -X dontdiff linux-2.6.25-rc6-C2-rcuclassic-fixes/kernel/rcupdate.c linux-2.6.25-rc6-C3-rcu_barrier_sched/kernel/rcupdate.c
+--- linux-2.6.25-rc6-C2-rcuclassic-fixes/kernel/rcupdate.c	2008-03-20 21:10:39.000000000 -0700
++++ linux-2.6.25-rc6-C3-rcu_barrier_sched/kernel/rcupdate.c	2008-04-09 13:54:53.000000000 -0700
+@@ -45,6 +45,12 @@
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+ 
++enum rcu_barrier {
++	RCU_BARRIER_STD,
++	RCU_BARRIER_BH,
++	RCU_BARRIER_SCHED,
++};
++
+ static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+ static atomic_t rcu_barrier_cpu_count;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+@@ -83,19 +89,30 @@ static void rcu_barrier_callback(struct 
+ /*
+  * Called with preemption disabled, and from cross-cpu IRQ context.
+  */
+-static void rcu_barrier_func(void *notused)
++static void rcu_barrier_func(void *type)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct rcu_head *head = &per_cpu(rcu_barrier_head, cpu);
+ 
+ 	atomic_inc(&rcu_barrier_cpu_count);
+-	call_rcu(head, rcu_barrier_callback);
++	switch ((enum rcu_barrier)type) {
++	case RCU_BARRIER_STD:
++		call_rcu(head, rcu_barrier_callback);
++		break;
++	case RCU_BARRIER_BH:
++		call_rcu_bh(head, rcu_barrier_callback);
++		break;
++	case RCU_BARRIER_SCHED:
++		call_rcu_sched(head, rcu_barrier_callback);
++		break;
++	}
+ }
+ 
+-/**
+- * rcu_barrier - Wait until all the in-flight RCUs are complete.
++/*
++ * Orchestrate the specified type of RCU barrier, waiting for all
++ * RCU callbacks of the specified type to complete.
+  */
+-void rcu_barrier(void)
++static void _rcu_barrier(enum rcu_barrier type)
+ {
+ 	BUG_ON(in_interrupt());
+ 	/* Take cpucontrol mutex to protect against CPU hotplug */
+@@ -111,13 +128,39 @@ void rcu_barrier(void)
+ 	 * until all the callbacks are queued.
+ 	 */
+ 	rcu_read_lock();
+-	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
++	on_each_cpu(rcu_barrier_func, (void *)type, 0, 1);
+ 	rcu_read_unlock();
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
+ }
++
++/**
++ * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
++ */
++void rcu_barrier(void)
++{
++	_rcu_barrier(RCU_BARRIER_STD);
++}
+ EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
++/**
++ * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
++ */
++void rcu_barrier_bh(void)
++{
++	_rcu_barrier(RCU_BARRIER_BH);
++}
++EXPORT_SYMBOL_GPL(rcu_barrier_bh);
++
++/**
++ * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
++ */
++void rcu_barrier_sched(void)
++{
++	_rcu_barrier(RCU_BARRIER_SCHED);
++}
++EXPORT_SYMBOL_GPL(rcu_barrier_sched);
++
+ void __init rcu_init(void)
+ {
+ 	__rcu_init();
