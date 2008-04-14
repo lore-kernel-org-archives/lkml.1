@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbYDNPr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbYDNPs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbYDNPr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbYDNPrV
+	id S1761005AbYDNPs6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYDNPst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:47:21 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:44977 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbYDNPrV (ORCPT
+	Mon, 14 Apr 2008 11:48:49 -0400
+Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:40689 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754235AbYDNPss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:47:21 -0400
-Message-ID: <48037C55.7060105@freescale.com>
-Date: Mon, 14 Apr 2008 10:46:29 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Mon, 14 Apr 2008 11:48:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
+Date: Mon, 14 Apr 2008 17:48:43 +0200
+User-Agent: KMail/1.9.9
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <200804021524.27222.elendil@planet.nl> <200804131559.21664.elendil@planet.nl> <20080414135214.GC7385@csclub.uwaterloo.ca>
+In-Reply-To: <20080414135214.GC7385@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: linuxppc-dev@ozlabs.org, York Sun <yorksun@freescale.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
-References: <12053582234100-git-send-email-yorksun@freescale.com>	<12053582231281-git-send-email-yorksun@freescale.com>	<47D8572C.8090501@gmail.com>	<47FFDBFF.1030809@gmail.com>	<20080411221817.0b1eb414.akpm@linux-foundation.org>	<48035E93.6070300@freescale.com> <48035F98.1020404@gmail.com>	<48036001.10905@freescale.com> <4803620C.6020905@gmail.com>	<48036649.6000409@freescale.com> <4803690A.3080105@gmail.com> <48036F00.6080200@freescale.com> <48037BA4.6070201@gmail.com>
-In-Reply-To: <48037BA4.6070201@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804141748.44306.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Apr 2008 15:48:46.0571 (UTC) FILETIME=[064E23B0:01C89E47]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
+On Monday 14 April 2008, you wrote:
+> > I also think the way I've implemented in the Debian installer should be
+> > relatively safe:
+> > 1) ide-generic is only loaded _after_ any otherwise detected modules
+> > 2) it is only loaded if an ISA bus is present
+> > 3) it is only included in the initrd for the installed system if
+> > loading it in the installer resulted in additional block devices
+> > appearing
+>
+> OK, great for x86 perhaps, what about other systems?
 
-> Mainly because you can sleep inside locked mutex and because spinlock shouldn't
-> be used for too many lines of code (busy waiting etc.). I think ldd3 will be
-> more descriptive than me here :).
+As I've said before, that needs testing.
 
-Ok, I'll look into it.
+> In the past debian would load ide-generic last.  It worked great.  Keep
+> doing that.  I am not aware of loading ide-generic after all the other
+> drivers ever causing any harm in the older debian installers.
 
-Andrew, do you want us to respin the patch, or would you be willing to let us
-make the change in a follow-up patch?
+Maybe not, but having it loaded in _every_ installed Debian system even when 
+it was completely unused is definitely something we want to get rid of.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Note that the old behavior relied on the fact that initramfs-tools also 
+loaded ide-generic by default, which it now no longer does.
+
+Cheers,
+FJP
