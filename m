@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbYDNJWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYDNJ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828AbYDNJWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbYDNJWp
+	id S1753401AbYDNJ12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 05:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYDNJ1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:22:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63394 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbYDNJWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:22:44 -0400
-Message-ID: <480321D9.7020507@cn.fujitsu.com>
-Date: Mon, 14 Apr 2008 17:20:25 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 14 Apr 2008 05:27:18 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:17485 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbYDNJ1R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 05:27:17 -0400
+To: sclark46@earthlink.net
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+From: Andi Kleen <andi@firstfloor.org>
+References: <47FEADCB.7070104@rtr.ca>
+	<20080413121831.d89dd424.akpm@linux-foundation.org>
+	<20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
+	<20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
+Date: Mon, 14 Apr 2008 11:26:24 +0200
+In-Reply-To: <48028830.6020703@earthlink.net> (Stephen Clark's message of "Sun, 13 Apr 2008 18:24:48 -0400")
+Message-ID: <87d4oswzwf.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] memcg: fix oops in oom handling
-References: <4802FF10.6030905@cn.fujitsu.com>	 <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830804140053y4bcdceeatc9763c1e8c1aaf44@mail.gmail.com> <480310C5.1070102@cn.fujitsu.com>
-In-Reply-To: <480310C5.1070102@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Apr 2008 09:19:38.0970 (UTC) FILETIME=[AA0CF3A0:01C89E10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Paul Menage wrote:
->> On Mon, Apr 14, 2008 at 12:14 AM, KAMEZAWA Hiroyuki
->> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>>  Paul, I have one confirmation. Lock hierarchy of
->>>         cgroup_lock()
->>>         ->      read_lock(&tasklist_lock)
->>>
->>>  is ok ? (I think this is ok.)
->> Should be fine, I think.
->>
->> Have you built/booted with lockdep?
->>
-> 
-> I should have done this. :(
-> 
-> I'll check it.
-> 
+Stephen Clark <sclark46@earthlink.net> writes:
 
-I've done the test, and nothing is broken ;)
+> I been a linux user and have followed the LKML for a
+> number of years and have yet to see
+> any test plans for any submitted patches.
 
+You haven't looked closely then. While it's not very common there 
+is a non trivial number of patches who describe how they got tested
+in the patch description.
+
+-Andi
