@@ -1,277 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbYDNWcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYDNWeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbYDNWcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYDNWbu
+	id S1762099AbYDNWeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDNWdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:31:50 -0400
-Received: from fmmailgate09.web.de ([217.72.192.184]:33793 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbYDNWbt convert rfc822-to-8bit (ORCPT
+	Mon, 14 Apr 2008 18:33:53 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:52180 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbYDNWdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:31:49 -0400
-Date: Tue, 15 Apr 2008 00:31:47 +0200
-Message-Id: <239038450@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Luis Sousa <ls.luis_sousa@yahoo.com.br>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sata io freeze, 2.6.18 and also 2.6.24 [the real culprit]
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+oz3+5yj+iR6T2DG9upP6TwfLdSQqaO7r7TbS8jdWq/lUXr
- l2q1Ouax7sza0FpXPC2KZcefZhu8yjGroq7ZzBxrUsnWswN5T8=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Apr 2008 18:33:52 -0400
+Date: Mon, 14 Apr 2008 17:22:16 -0500
+From: David Fries <david@fries.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/33 replaces 14/35 and 15/35] W1: w1_slave_read_id multiple short read bug
+Message-ID: <20080414222216.GA15536@spacedout.fries.net>
+References: <20080413225632.GA14058@spacedout.fries.net> <20080413231537.GF15213@spacedout.fries.net> <20080414114055.GA13385@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414114055.GA13385@2ka.mipt.ru>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 14 Apr 2008 17:22:17 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Yes, I can try that. But please bear with me as I won't be working full time
->in this. I hope we can get to the bottom of this, but it might not be as quick
->as we'd like.
->
->Thank you very much for the help.
->
->I'll write back asap.
-
-no hurry - i don`t want put any pressure on you, i just like help hunting bugs. :)
-maybe we could put that in bugzilla, so it won`t get lost....
-
-
-> -----Ursprüngliche Nachricht-----
-> Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
-> Gesendet: 15.04.08 00:24:17
-> An: devzero@web.de
-> CC: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-> Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [the real culprit]
-
-
+On Mon, Apr 14, 2008 at 03:40:55PM +0400, Evgeniy Polyakov wrote:
+> Hi David.
 > 
-> --- devzero@web.de escreveu:
-> 
-> > so - you told, you have your disk attached to this controller:
+> On Sun, Apr 13, 2008 at 06:15:37PM -0500, David Fries (david@fries.net) wrote:
+> > This is more to point out the bug in w1_slave_read_id, the next patch
+> > rewrites the routine.
 > > 
-> > 00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID Controller (rev
-> > 80)
-> > 	Subsystem: Micro-Star International Co., Ltd. Unknown device 0430
-> > 	Flags: bus master, medium devsel, latency 32, IRQ 16
-> > 	I/O ports at ec00 [size=8]
-> > 	I/O ports at e800 [size=4]
-> > 	I/O ports at e400 [size=8]
-> > 	I/O ports at e000 [size=4]
-> > 	I/O ports at dc00 [size=16]
-> > 	I/O ports at d800 [size=256]
-> > 	Capabilities: <access denied>
-> > 
-> > and use sata_via module - and your system works stable with nosmp, but freezes very soon
-> > on heavy i/o with smp. disabling dma makes no difference.
-> > 
-> > correct ?
-> 
-> Correct. 
-> 
-> But I'm not sure it's an exclusive i/o thing. I've had the box crash in
-> situations where I don't think heavy i/o is involved.. for instance, it
-> crashed two times just as I closed the iceape browser.
->  
-> > then i assume this could be an smp issue, probably a bug in sata_via and may need further
-> > investigation.
-> > 
-> > there seem no noticeable changes in that driver since 2.6.24 - but maybe it`s worth
-> > trying 2.6.25-rc9 to see if it behaves different?
-> 
-> I'm actually running 2.6.25-rc7-git6 now.
-> (so I really don't think that would make much of a difference)
-> 
-> > absolutely nothing in dmesg on freeze ?
-> 
-> Absolutely nothing. Never.
->  
-> > maybe you could try catching some message with attaching serial console?
-> 
-> Hmm, I have no serial consoles here, and my spare box is dead. 
-> 
-> Unless I can attach netconsole to a windows box.
-> 
-> I can probably crash it in console mode, without Xorg. Then I hope something
-> might show up in another vt at least.
-> 
-> > how reliably can you crash that box with lots of i/o ? just random crashes or after a
-> > certain amount of data written/read ?
-> 
-> There is definitely a random element in it. But I can reliably crash it.
-> Just trigger some CPU and i/o bound processes. I've crashed it with operations
-> which would only read from the disk, for instance unpacking to /dev/null.
-> Sometimes it takes longer, though.
-> 
-> > could you try if just reading from the raw blockdevice makes a differnce ? (dd
-> > if=/dev/sda of=/dev/zero)
-> 
-> Yes, I can try that. But please bear with me as I won't be working full time
-> in this. I hope we can get to the bottom of this, but it might not be as quick
-> as we'd like.
-> 
-> Thank you very much for the help.
-> 
-> I'll write back asap.
-> 
-> Best regards,
-> --
-> Luis Sousa
-> 
-> > > -----Ursprüngliche Nachricht-----
-> > > Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
-> > > Gesendet: 14.04.08 12:14:26
-> > > An: devzero@web.de
-> > > CC: linux-kernel@vger.kernel.org
-> > > Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [the real culprit]
-> > 
-> > 
-> > > 
-> > > Hello,
-> > > 
-> > > I did as planned, and I dare to say now, with
-> > > relative certainty, that the reason I have had all
-> > > these instabilities, including application crashes,
-> > > sneaky corrupt backups, and the dreaded freezes
-> > > every other day was SMP and HyperThreading not working
-> > > properly. Booting with nosmp gives me a stable system.
-> > > Booting only with the sata-related arguments had
-> > > the system freeze overnight.
-> > > 
-> > > Sincerely,
-> > > --
-> > > Luis Sousa
-> > > 
-> > > --- devzero@web.de escreveu:
-> > > 
-> > > > hi luis, 
-> > > > 
-> > > > glad that it worked - but let us better call this a possible workaround, not a
-> > solution.
-> > > > 
-> > > > mind that you loose lots of performance with this, because all i/o is handled by the
-> > cpu
-> > > > now.
-> > > > 
-> > > > > If everything goes well, I'll reduce the command line
-> > > > > in order to narrow the problem further down.
-> > > > 
-> > > > yes, please!
-> > > > 
-> > > > regards
-> > > > roland
-> > > > 
-> > > > 
-> > > > > -----Ursprüngliche Nachricht-----
-> > > > > Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
-> > > > > Gesendet: 12.04.08 17:34:39
-> > > > > An: devzero@web.de
-> > > > > CC: linux-kernel@vger.kernel.org
-> > > > > Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [POSSIBLE SOLUTION]
-> > > > 
-> > > > 
-> > > > > 
-> > > > > Hello all,
-> > > > > 
-> > > > > Thanks to valuable help from roland, I was able to
-> > > > > boot with the following options:
-> > > > > 
-> > > > > ``nosmp ide=nodma libata.dma=0''
-> > > > > 
-> > > > > after what I ran an agressive stability test for a
-> > > > > while, with no problem whatsoever. Maybe it's too
-> > > > > soon to say, but I have a good feeling this time. It
-> > > > > seems roland figured it out.
-> > > > > 
-> > > > > If everything goes well, I'll reduce the command line
-> > > > > in order to narrow the problem further down.
-> > > > > 
-> > > > > (and indeed, this is a hyper-threading single core CPU)
-> > > > > 
-> > > > > Sincerely,
-> > > > > --
-> > > > > Luis Sousa
-> > > > > 
-> > > > > --- devzero@web.de escreveu:
-> > > > > 
-> > > > > > did you try UP-kernel or tried booting with "nosmp" and does that make any
-> > difference
-> > > > ?
-> > > > > > 
-> > > > > > >This is a 2-processor CPU:
-> > > > > > ># cat /proc/cpuinfo 
-> > > > > > >processor       : 0
-> > > > > > >vendor_id       : GenuineIntel
-> > > > > > >cpu family      : 15
-> > > > > > >model           : 4
-> > > > > > >model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
-> > > > > > 
-> > > > > > most likely this just "appears" as 2-way processor , but i´m quite sure this is
-> > just
-> > > > a
-> > > > > > single-core CPU, but with HyperThreading enabled.
-> > > > > > 
-> > > > > > 
-> > > > > > regards
-> > > > > > roland
-> > > > > > 
-> > > > > > 
-> > > > > > 
-> > > > > > List:       linux-kernel
-> > > > > > Subject:    sata io freeze, 2.6.18 and also 2.6.24
-> > > > > > From:       Luis Sousa <ls.luis_sousa () yahoo ! com ! br>
-> > > > > > Date:       2008-03-28 22:24:48
-> > > > > > Message-ID: 739784.81690.qm () web46009 ! mail ! sp1 ! yahoo ! com
-> > > > > > [Download message RAW]
-> > > > > > 
-> > > > > > Hello,
-> > > > > > 
-> > > > > > I've been having consistent hard system freezes for a
-> > > > > > long time, every 2 days or so, and finally decided to
-> > > > > > move to the most recent stable kernel. Unfortunatelly
-> > > > > > that didn't fix it. The freezes seem to be io-related;
-> > > > > > they started since I moved my drive to sata. They seem
-> > > > > > to happen mostly when there's an io-intensive operation,
-> > > > > > like extracting a big archive; a reboot is needed.
-> > > > > > 
-> > > > > > Nothing ever shows up in the logs.
-> > > > > > 
-> > > > > > I'm using the following drive:
-> > > > > > 
-> > > > > > ATA device, with non-removable media
-> > > > > >         Model Number:       MAXTOR STM3160215AS                     
-> > > > > >         Serial Number:      6RA2TMJ4
-> > > > > >         Firmware Revision:  3.AAD   
-> > > > > > 
-> > > > > > Linux localhost 2.6.24.4 #4 SMP Fri Mar 28 14:51:50 BRT 2008 i686 GNU/Linux
-> > > > > > 
-> > > > > > This is a 2-processor CPU:
-> > > > > > 
-> > > > > > # cat /proc/cpuinfo 
-> > > > > > processor       : 0
-> > > > > > vendor_id       : GenuineIntel
-> > > > > > cpu family      : 15
-> > > > > > model           : 4
-> > > > > > model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
-> > > > > > stepping        : 9
-> > > > > > cpu MHz         : 3013.697
-> > > > > > cache size      : 1024 KB
-> > > > > > 
-> > > > > > (same goes for processor : 1)
-> > > > > > 
-> > > > > > Sincerely,
-> > > > > > --
-> > > > > > Luis Sousa
+> > w1.c 1.15
+> ... 
+> > w1.c 1.16
 > 
 > 
->       Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
-> http://br.mail.yahoo.com/
-> 
-> 
+> That is what I talked about. I agree with your analysis of the problem
+> and I agree with fixes. But I do not agree with how you created them:
+> why do we ever neen 1.15 version, since immediately after that we have
+> 1.16 which completely rewrite what was done in previous one?
+> This applies to the whole patchset: there are essentially several bug
+> fixes and several features, so separate them into several patches, which
+> do not collide with each other in the above way.
 
+The old patch 14/35 and 15/35 was the only place I know of where I
+fixed the bug, then replaced it wholesale with something better.
+Several bugs, a few features, lots of patches, go figure.
 
-_________________________________________________________________________
-In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
-Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
-
+-- 
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
