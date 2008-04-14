@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbYDNOtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbYDNOt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761376AbYDNOtk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760037AbYDNOtX
+	id S1761524AbYDNOt4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759178AbYDNOtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:49:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44762 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYDNOtV (ORCPT
+	Mon, 14 Apr 2008 10:49:32 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33025 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761017AbYDNOta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:49:21 -0400
-Date: Mon, 14 Apr 2008 07:43:49 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Willy Tarreau <w@1wt.eu>, david@lang.hm,
-       Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080414074349.24fa90f8@laptopd505.fenrus.org>
-In-Reply-To: <20080414010412.c42dc560.akpm@linux-foundation.org>
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru>
-	<200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru>
-	<48028830.6020703@earthlink.net>
-	<alpine.DEB.1.10.0804131546370.9318@asgard>
-	<20080414043939.GA6862@1wt.eu>
-	<20080414053943.GU9785@ZenIV.linux.org.uk>
-	<20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<20080414010412.c42dc560.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 Apr 2008 10:49:30 -0400
+Date: Mon, 14 Apr 2008 10:49:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 8)
+In-Reply-To: <1208143380.6958.105.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0804141043001.2236-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 01:04:12 -0700
+On Mon, 14 Apr 2008, Benjamin Herrenschmidt wrote:
+
 > 
-> The steps to be taken are:
+> > To avoid breaking things (from the functional point of view) unnecessarily.
+> > 
+> > In short, I don't really see the difference between moving ->prepare() before
+> > the freezer and droppig the freezer, which I'm not going to do right now.
 > 
-> a) agree that we have a problem
-> 
+> I believe the use of prepare for things like request_firmware etc... is
+> worth the effort of fixing the known breakage of not having the freezer
+> while preventing insertion of new devices (mostly USB).
 
+I used USB as an example simply because that's what I'm familiar with.  
+Don't be so quick to assume the rest of the kernel is trouble-free.
 
-I for one do not agree that we have a problem.
+> In fact, it
+> won't be such a big issue as the core should/will return an error from
+> attempting to add the device in that case.
 
-Based on actual data on oopses (which very clearly excludes other kinds of bugs, so I know I only see part of the story)
-we are doing reasonably well. Lets look at the 2.6.25 cycle. 
-We got a total of roughly 2700 reports of oopses/warn_ons from users. (This may sound high to those of you only reading
-lkml, but this includes automatically collected oopses from Fedora 9 beta testers).
-Out of these 2700, the top 20 issues account for 75% of the total reports.
+But it _would_ be a regression -- and everyone knows how much Linus and 
+Andrew dislike regressions.  :-)
 
-Out of these 20 issues, 9 were from still out of tree drivers (wireless.git and drm.git included in F9). These were
-caught before they even got close to mainline.
-The remaining 11 issues can be split in
-1) The ones we caught and fixed
-2) TCP/IP warnings that DaveM and co are chasing down hard (but have trouble finding reproducers)
-3) An EXT3 bug that in theory can cause data corruption, but in practice seems to happen after you yank out a USB stick
-  with an EXT3 filesystem on (so it can't corrupt the disk data). Ted is working on this
-4) A bug (double free) that hits in the skb layer, probably caused by a bug in the ipv4 code
-   (a first analysis + potential patch was mailed to netdev this weekend)
-5) sysfs "existing file added" warning, mostly in the USB stack
-   (gregkh claims he fixed this recently, I'm not entirely sure he got all cases)
+Now, I don't see what the big deal is here.  We all agree that it would 
+be nice and appropriate if drivers could do things like 
+request_firmware() during prepare().  But for the moment they can't.  
+It's not like this is some tremendous hardship -- you aren't going to 
+have to rip out all the existing prepare() implementations and rewrite 
+them, because they don't exist yet!
 
-And when I look beyond the first 20, the same pattern arises, we fixed the majority of the issues before -rc9.
-At position 25 we have less than 20 reports per bug. At position 35 we have less than 10 reports per bug. 
-At position 50 we have less than 5 reports per bug. Conclusion there: the bugs people actually hit fall of dramatically;
-there's a core set of issues that gets hit a lot, the rest quickly gets reduced to noise levels.
+All it means is that the full conversion to the new interface will be a 
+multi-step process.  Right now we add the new callbacks.  Later on we 
+make it safe to move the freezer after prepare.  Later still we 
+eliminate the freezer altogether from suspend.  (Hibernation is a 
+separate matter...)
 
+Alan Stern
 
-To me this does not sound like we have a huge quality problem because
-1) The distribution of the bugs is such that there is a relatively small set of core issues
-   that are widely hit, and then there's a near exponential drop after that
-2) We are fixing the important bugs by and large before they hit a release
-   (important as defined by the number of people actually hitting the bug)
-
-
- 
-I'll be writing a report with more details about this soon with more analysis and statistics
-(I'll be looking at more detail around the top 25 issues, when they got introduced, when they got fixed etc)
-
-
-
-
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
