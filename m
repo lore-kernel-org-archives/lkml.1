@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYDNGkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYDNGlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbYDNGkR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 02:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYDNGj7
+	id S1756888AbYDNGlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 02:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYDNGlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 02:39:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46546
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753480AbYDNGj6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 02:39:58 -0400
-Date: Sun, 13 Apr 2008 23:39:59 -0700 (PDT)
-Message-Id: <20080413.233959.217341225.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm, sclark46@earthlink.net,
-       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
-       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080413232441.e216a02c.akpm@linux-foundation.org>
-References: <20080414043939.GA6862@1wt.eu>
-	<20080414053943.GU9785@ZenIV.linux.org.uk>
-	<20080413232441.e216a02c.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 02:41:37 -0400
+Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:51823 "EHLO
+	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753646AbYDNGlg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 02:41:36 -0400
+From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+To: "Peer Chen" <pchen@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+Date: Mon, 14 Apr 2008 08:41:32 +0200
+User-Agent: KMail/1.9.9
+Cc: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Kuan Luo" <kluo@nvidia.com>
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <480013A3.1010502@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B26C11B8C@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B26C11B8C@hkemmail01.nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804140841.32477.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Sun, 13 Apr 2008 23:24:41 -0700
+On Montag, 14. April 2008, Peer Chen wrote:
+> Volker,
+> Could you add a delay between setting AHCI_EN and reading back function?
+>
 
-> Do you agree with these impressions, or not?
+if you tell me how to?
 
-I think things are improving.
+Glück Auf
+Volker
 
-I wrote or merged in ~10 bugs in the last hour, for example.
-
-And I also agree with Al's point, which was embedded in his humorous
-and obviously sarcastic suggestions, in that adding beurocracy isn't
-the answer.  We already have too much and it scares developers away.
-
-Sure you don't want crap getting into the tree (for too long), but it
-is important to be careful to define crap properly.  For example,
-inundating patch submitters with more requirements, especially ones
-involving automatons like checkpatch, is in the end bad.
-
-We can improve the quality of stuff going in and be flexible at the
-same time.
