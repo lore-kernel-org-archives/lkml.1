@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYDNUEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYDNUFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbYDNUEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYDNUEp
+	id S1759690AbYDNUFh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbYDNUFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:04:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:34332 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbYDNUEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:04:44 -0400
-Date: Mon, 14 Apr 2008 13:02:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: sander@van-ginkel.eu
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptmx: adding handshake support
-Message-Id: <20080414130241.f54fa128.randy.dunlap@oracle.com>
-In-Reply-To: <4803C0F9.9010004@van-ginkel.eu>
-References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
-	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>
-	<20080330131652.7073589c@core>
-	<480229CB.2080108@van-ginkel.eu>
-	<20080413233503.22576c47@core>
-	<4803C0F9.9010004@van-ginkel.eu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 14 Apr 2008 16:05:12 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:38641 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753373AbYDNUFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:05:09 -0400
+Date: Mon, 14 Apr 2008 13:05:09 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm2: FIX kmalloc-2048 (was Re: 2.6.25-rc8-mm2: IP:
+ [<ffffffff802868f9>] __kmalloc+0x69/0x110)
+In-Reply-To: <20080414195613.GA4772@martell.zuzino.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+ <20080413204422.GA5136@martell.zuzino.mipt.ru>
+ <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
+ <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com>
+ <20080414183221.GA5234@martell.zuzino.mipt.ru> <20080414195613.GA4772@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 22:39:21 +0200 sander van ginkel wrote:
+On Mon, 14 Apr 2008, Alexey Dobriyan wrote:
 
-> Corrected the last issues
+> I can reproduce semi-reliably (by kernel standards) corruption in
+> kmalloc-2048. No idea if this can explain all "struct file" related
+> oopses I saw, or SLUB free pointer corruption Pekka and Christoph are
+> looking into.
 
-Not AFAICT.  There's no full changelog/description here...
-and see below.
+The slub free pointer corruption is usually a result of the overwrites.
 
-
-> Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+> Bytes b4 0xffff81017ff9d2c0:  62 ea ff ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a
+>   Object 0xffff81017ff9d2d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+>   Object 0xffff81017ff9d2e0:  6b 6b 00 18 f3 a2 9f 90 00 1b 38 af 22 49 08 00
+>   Object 0xffff81017ff9d2f0:  45 10 00 4c ff 59 40 00 40 11 86 ac c0 a8 00 2a
+>   Object 0xffff81017ff9d300:  50 fa a2 be 91 43 00 7b 00 38 54 d4 23 00 00 00
+>   Object 0xffff81017ff9d310:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>   Object 0xffff81017ff9d320:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>   Object 0xffff81017ff9d330:  00 00 00 00 4c ff 10 44 74 7f 6f 9d e4 c8 a2 4f
+>   Object 0xffff81017ff9d340:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>  Redzone 0xffff81017ff9dad0:  bb bb bb bb bb bb bb bb
+>  Padding 0xffff81017ff9db10:  5a 5a 5a 5a 5a 5a 5a 5a
 > 
-> ===================================================================
-> 
-> diff -pru linux-2.6.25-rc8.orig/drivers/char/pty.c 
-> linux-2.6.25-rc8/drivers/char/pty.c
-> --- linux-2.6.25-rc8.orig/drivers/char/pty.c    2008-04-01 
-> 21:44:26.000000000 +0200
-> +++ linux-2.6.25-rc8/drivers/char/pty.c    2008-04-14 23:01:56.000000000 
-> +0200
-> @@ -196,6 +196,7 @@ static void pty_flush_buffer(struct tty_
->  
->  static int pty_open(struct tty_struct *tty, struct file * filp)
->  {
-> +    unsigned int    *mcrmsr;
+> FIX kmalloc-2048: Restoring 0xffff81017ff9d2e2-0xffff81017ff9d8d9=0x6b
 
-Something converted tabs to spaces throughout the entire patch.
+Looks like skb corruption. Would be helpful to have the complete output 
+though. Does the data in the restored range trigger any memories?
 
 
->      int    retval = -ENODEV;
->  
->      if (!tty || !tty->link)
 
----
-~Randy
