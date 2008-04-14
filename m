@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763882AbYDNUBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYDNUEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763882AbYDNUBy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbYDNUBq
+	id S1755324AbYDNUEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYDNUEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:01:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:37784 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760443AbYDNUBp (ORCPT
+	Mon, 14 Apr 2008 16:04:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34332 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbYDNUEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:01:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AHk2gceFqBnt0kWP2ij9RuNjabpyu8GPKpksX80xTPI2Gc9emSCOWxVzAHUy5sSP7ka4UwQ1QTcOrmgNuPQeM1XsInpRWTQneBkwMM2S1C0HF/wxUFRanMfTzdQDSv9Ddvoss60IejR962CMEsjRgOgDPx3rJoCuNv/+I3ExuLY=
-Message-ID: <4a4634330804141301l69d29e32wefa1ceb4ec75ec57@mail.gmail.com>
-Date: Mon, 14 Apr 2008 15:01:38 -0500
-From: "Shirish Pargaonkar" <shirishpargaonkar@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: valid task structure and wake_up_process
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080414121105.5f9e5482@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Apr 2008 16:04:44 -0400
+Date: Mon, 14 Apr 2008 13:02:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: sander@van-ginkel.eu
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptmx: adding handshake support
+Message-Id: <20080414130241.f54fa128.randy.dunlap@oracle.com>
+In-Reply-To: <4803C0F9.9010004@van-ginkel.eu>
+References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>
+	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>
+	<20080330131652.7073589c@core>
+	<480229CB.2080108@van-ginkel.eu>
+	<20080413233503.22576c47@core>
+	<4803C0F9.9010004@van-ginkel.eu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4a4634330804141136xcaf098esf02539bf76917781@mail.gmail.com>
-	 <20080414121105.5f9e5482@laptopd505.fenrus.org>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/08, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 14 Apr 2008 13:36:42 -0500
-> "Shirish Pargaonkar" <shirishpargaonkar@gmail.com> wrote:
->
-> > How do I check whether a task is valid before calling
-> > wake_up_process() with that task structure pointer?
->
-> Hi,
->
-> how did you get the pointer you got?
->
-> That part (the guy who gave you the pointer) should have taken a reference on the task basically,
-> or otherwise locked against the task going away.
->
-> In giving you advice it would help tremendously if you actually posted your code...
->
->
->
->
->
-> --
-> If you want to reach me at my work email, use arjan@linux.intel.com
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+On Mon, 14 Apr 2008 22:39:21 +0200 sander van ginkel wrote:
 
-Thanks.
+> Corrected the last issues
 
-This is cifs code fs/cifs.
+Not AFAICT.  There's no full changelog/description here...
+and see below.
 
-In cifs_demultiplex_thread, in fs/cifs/connect.c, it calls wake_up_process in
-a thread cifsd.
 
-The task struct ptr is stored in mid as current when sending a request.  So this
-could a command such as ls or some other application.
-A request was sent but a reply was not received or reply was processed late
-before the process went away and we have a probably freed task structure
-being treated as valid in cifs_demultiplex_thread.
+> Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+> 
+> ===================================================================
+> 
+> diff -pru linux-2.6.25-rc8.orig/drivers/char/pty.c 
+> linux-2.6.25-rc8/drivers/char/pty.c
+> --- linux-2.6.25-rc8.orig/drivers/char/pty.c    2008-04-01 
+> 21:44:26.000000000 +0200
+> +++ linux-2.6.25-rc8/drivers/char/pty.c    2008-04-14 23:01:56.000000000 
+> +0200
+> @@ -196,6 +196,7 @@ static void pty_flush_buffer(struct tty_
+>  
+>  static int pty_open(struct tty_struct *tty, struct file * filp)
+>  {
+> +    unsigned int    *mcrmsr;
 
-So I thought of checking validity of task structure before calling
-wake_up_process.
+Something converted tabs to spaces throughout the entire patch.
 
-Regards,
 
-Shirish
+>      int    retval = -ENODEV;
+>  
+>      if (!tty || !tty->link)
+
+---
+~Randy
