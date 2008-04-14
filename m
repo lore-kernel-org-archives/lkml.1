@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYDNUtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbYDNUuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbYDNUtV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYDNUtM
+	id S1761227AbYDNUuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbYDNUuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:49:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56512 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYDNUtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:49:10 -0400
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 8)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080414105522.GA4716@ucw.cz>
-References: <200804040111.15255.rjw@sisk.pl>
-	 <200804132339.45280.rjw@sisk.pl> <1208124646.6958.61.camel@pasglop>
-	 <200804140027.12161.rjw@sisk.pl> <1208126822.6958.63.camel@pasglop>
-	 <20080414105522.GA4716@ucw.cz>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 06:45:52 +1000
-Message-Id: <1208205952.6958.174.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 14 Apr 2008 16:50:44 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:11934 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbYDNUun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:50:43 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [2.6 patch] drivers/pnp/manager.c cleanups
+Date: Mon, 14 Apr 2008 14:50:27 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Adrian Bunk <bunk@kernel.org>, ambx1@neo.rr.com,
+       linux-kernel@vger.kernel.org
+References: <20080414184038.GB6695@cs181133002.pp.htv.fi> <4803B6C6.2020608@keyaccess.nl>
+In-Reply-To: <4803B6C6.2020608@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804141450.27805.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-04-14 at 12:55 +0200, Pavel Machek wrote:
-> On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
-> > 
-> > > Well, I'm not sure and I'm not going to introduce the change right now, after
-> > > the paches have been included in -mm.
-> > > 
-> > > That would require quite some changes in the core code that I'd prefer to
-> > > avoid for now.  We can do something like this in a separate patch series after
-> > > the present one settles down a bit.
-> > 
-> > I disagree.
-> > 
-> > Doing it later would introduce yet another major semantic change.
+On Monday 14 April 2008 01:55:50 pm Rene Herman wrote:
+> On 14-04-08 20:40, Adrian Bunk wrote:
 > 
-> 'allow load_firmware from prepare that was not allowed before' is not 'major'.
+> > This patch contains the following cleanups that are now possible:
+> > - remove the following unused functions:
+> >   - pnp_manual_config_dev()
+> >   - pnp_resource_change()
+> > - remove the following unused EXPORT_SYMBOL's:
+> >   - pnp_start_dev
+> >   - pnp_stop_dev
+> >   - pnp_init_resource_table
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Bjorn Helgaas (added to CC) is busy here, including doing the above. Don't 
+> know if he minds this not going through his own set...
 
-Having user space fully operating is major.
+I've recently posted patches that include the above.  The easiest for
+me would be to just wait for mine to avoid having to resolve more
+conflicts.
 
-Ben.
+I'm in the middle of updating my series and hope to post a new version
+later this week.
 
-
+Bjorn
