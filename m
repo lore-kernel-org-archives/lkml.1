@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbYDNSbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933935AbYDNSbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933471AbYDNSbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbYDNSb2
+	id S933935AbYDNSbz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932444AbYDNSba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:31:28 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:52211 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765614AbYDNSb0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:31:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gMJkYOupLn+uALXR7PAd4IAH8VrJpW9agIbzNUwuxWwHT0/TZEjsbz1vU9n/KGtFKcc6AfArhdPNpAjGLwuMeZOmD3nVUFr56AygU7iZ36KA8mqJWeD48Pg1jD6B+XHVaKScGtQtiZDPHdVPDPNbeXeOjxy8iV6Ui+E6JhsIHo8=
-Message-ID: <86802c440804141131v434f4890nf66e0ec4f231c939@mail.gmail.com>
-Date: Mon, 14 Apr 2008 11:31:22 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [BUG] linux-next: Tree for April 14 - kernel BUG at arch/powerpc/mm/init_64.c:240! (fixed in -mm)
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, pbadari@us.ibm.com,
-       michael@ellerman.id.au, "andy whitcroft" <apw@shadowen.org>
-In-Reply-To: <86802c440804141126x1744da7ewf988a0c9b13f14c8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 14:31:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48894 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765723AbYDNSb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:31:27 -0400
+Date: Mon, 14 Apr 2008 20:31:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch fixes
+Message-ID: <20080414183156.GA15287@uranus.ravnborg.org>
+References: <48022990.3060104@gmail.com> <20080414072645.GG16163@elte.hu> <20080414084127.GA11372@uranus.ravnborg.org> <20080414085307.GG19865@elte.hu> <20080414085927.GC11372@uranus.ravnborg.org> <48031FA7.9050803@gmail.com> <20080414095259.GA11966@uranus.ravnborg.org> <48033E2C.2080504@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080414203423.22bf99d1.sfr@canb.auug.org.au>
-	 <480349EB.8040708@linux.vnet.ibm.com>
-	 <86802c440804141126x1744da7ewf988a0c9b13f14c8@mail.gmail.com>
+In-Reply-To: <48033E2C.2080504@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 11:26 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> On Mon, Apr 14, 2008 at 5:11 AM, Kamalesh Babulal
->  <kamalesh@linux.vnet.ibm.com> wrote:
->  > Hi Stephen,
->  >
->  >  The next-20080414 kernel panic's while booting up on the ppc machines.
->  >  The same was seen in the 2.6.25-rc8-mm1 kernel and was fixed by
->  >  the patch at http://lkml.org/lkml/2008/4/2/650
->  >
->  >  ------------[ cut here ]------------
->  >  kernel BUG at arch/powerpc/mm/init_64.c:240!
->  >  Oops: Exception in kernel mode, sig: 5 [#1]
->  >  SMP NR_CPUS=128 NUMA pSeries
->  >  Modules linked in:
->  >  NIP: c0000000006ca18c LR: c0000000006ca184 CTR: 0000000000000000
->  >  REGS: c00000000081f950 TRAP: 0700   Not tainted  (2.6.25-rc9-next-20080414-x86-latest.git-autotest)
->  >  MSR: 8000000000021032 <ME,IR,DR>  CR: 24000088  XER: 20000001
->  >  TASK = c0000000007334d0[0] 'swapper' THREAD: c00000000081c000 CPU: 0
->  >  GPR00: c0000000006ca184 c00000000081fbd0 c00000000081c778 0000000000000001
->  >  GPR04: c0000000006def90 000000000000016e 0000000000000170 0000000000001090
->  >  GPR08: 0000000207038208 0000000000000000 0000000000000001 800000000ed93080
->  >  GPR12: c00000000081fae0 c000000000733e80 0000000000000000 c0000000005f4788
->  >  GPR16: 4000000002100000 c0000000005f3010 0000000000000000 000000000023f000
->  >  GPR20: 00000000027d07d8 c0000000006d07d8 00000000027d0a48 c0000000006d0a48
->  >  GPR24: c0000000005f41c8 0000000002b00000 0000000000000000 0000000000000000
->  >  GPR28: cf000000001f8000 cf00000001000000 0000000001000000 cf00000000000000
->  >  NIP [c0000000006ca18c] .vmemmap_populate+0xbc/0x100
->  >  LR [c0000000006ca184] .vmemmap_populate+0xb4/0x100
->  >  Call Trace:
->  >  [c00000000081fbd0] [c0000000006ca184] .vmemmap_populate+0xb4/0x100 (unreliable)
->  >  [c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
->  >  [c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
->  >  [c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
->  >  [c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
->  >  [c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
->  >  [c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
->  >  Instruction dump:
->  >  7fe3fb78 7ca02a14 4082000c 3860fff4 48000040 e9228980 e9628988 e8e90002
->  >  e90b0002 4b961ab1 60000000 78630fe0 <0b030000> 7ffff214 7fbdf214 7fbfe040
->  >  ---[ end trace 8640abe69a316dee ]---
->  >  Kernel panic - not syncing: Attempted to kill the idle task!
->  >  Call Trace:
->  >  [c00000000081f470] [c00000000000f970] .show_stack+0x70/0x1bc (unreliable)
->  >  [c00000000081f520] [c0000000000540fc] .panic+0x80/0x1b8
->  >  [c00000000081f5c0] [c000000000058ca4] .do_exit+0x8c/0x758
->  >  [c00000000081f680] [c0000000000235cc] .die+0x24c/0x27c
->  >  [c00000000081f720] [c0000000000238fc] ._exception+0x88/0x204
->  >  [c00000000081f8e0] [c000000000004a84] program_check_common+0x104/0x180
->  >  --- Exception: 700 at .vmemmap_populate+0xbc/0x100
->  >     LR = .vmemmap_populate+0xb4/0x100
->  >  [c00000000081fc70] [c0000000006cae08] .sparse_mem_map_populate+0x38/0x5c
->  >  [c00000000081fd00] [c0000000006b8db0] .sparse_early_mem_map_alloc+0x54/0x94
->  >  [c00000000081fd90] [c0000000006b91d8] .sparse_init+0x1dc/0x218
->  >  [c00000000081fe40] [c0000000006a54f4] .setup_arch+0x1ac/0x218
->  >  [c00000000081fed0] [c00000000069c6c0] .start_kernel+0xec/0x464
->  >  [c00000000081ff90] [c000000000008524] .start_here_common+0x54/0xb0
->  >
->
->
->  Ingo already update that in x86.git#latest.
->
->  so linux-next of today or tomorrow will fix this.
->
-or you can apply patch from
+> 
+> GCC is ok, I mean it inlines paravirt_pagetable_setup_[start,done] even with
+> CONFIG_OPTIMIZE_INLINING=y:
+> $ objdump -t vmlinux.o | grep pagetable_setup_start
+> 0000a418 g     F .init.text     000000a1 native_pagetable_setup_start
+> 
+> While running with CONFIG_DEBUG_SECTION_MISMTCH=y it does not inline
+> paravirt_pagetable_setup_start (_done is OK):
+> $ objdump -t vmlinux.o | grep pagetable_setup_start
+> 00017100 l     F .text  0000000b paravirt_pagetable_setup_start
+> 00009fb0 g     F .init.text     00000089 native_pagetable_setup_start
+> 
+> DEBUG_SECTION_MISMATCH probably generated mismatch with smpboot_setup_io_apic()
+> (commit: 96c968742fa1e6d64f979464acf2fd90cdc117b3, already merged). I will check
+> and if __init is really superfluous I will post delta patch to remove all those
+> __init annotations.
+> 
+> Similar situation might be found with unlock_ExtINT_logic()
+> (arch/x86/kernel/io_apic_32.c), which I annotated with __init in one of previous
+> patches, but here, this function IMO shouldn't be marked inline.
 
-http://lkml.org/lkml/2008/4/14/51
+Hi Jacek.
 
-YH
+Please consider following code snippet:
+
+static void __init foo() {}
+
+static void __init bar() { foo(); }
+
+static void __init baz() { bar(); }
+
+Browsing this code it makes perfect sense that when baz()
+is annotated __init bar and suddenly foo() has same annotation.
+
+There is no point in removing the __init annotation of bar()
+just becasue we happen to know it will be inlined by gcc.
+Removing the __init anotation is actually wrong - because
+the __init annotation has a two-fold purpose.
+It is used to locate this function in a section that
+is later discarded.
+But it is also used to document that this function
+is only used in the early init of this driver/what-ever.
+So using this function in non-__init code is wrong.
+
+Therefore I recommend to keep the __init annotation
+also for the inline functions - assuming these functions
+are supposed to be used only in the early init as the annotation
+says they are.
+
+	Sam
