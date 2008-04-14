@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYDNTRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbYDNTRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbYDNTRB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYDNTQu
+	id S1761817AbYDNTRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbYDNTRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:16:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56401 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbYDNTQt (ORCPT
+	Mon, 14 Apr 2008 15:17:11 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32708 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760819AbYDNTRI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:16:49 -0400
-Message-ID: <4803AD91.5020001@firstfloor.org>
-Date: Mon, 14 Apr 2008 21:16:33 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Mon, 14 Apr 2008 15:17:08 -0400
+X-ExtLoop1: 1
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-References: <20080411210022.GJ11962@parisc-linux.org>	 <1208003081.7427.7.camel@twins> <20080412172606.GL11962@parisc-linux.org>	 <adaskxqrgsl.fsf@cisco.com> <20080412204748.GN11962@parisc-linux.org>	 <20080413070833.GC19773@elte.hu> <20080413125758.GQ11962@parisc-linux.org>	 <20080414153928.GA22259@elte.hu> <adafxtoqvgh.fsf@cisco.com>	 <1208190749.7375.10.camel@twins>  <87d4osuy6r.fsf@basil.nowhere.org> <1208195673.7164.2.camel@twins>
-In-Reply-To: <1208195673.7164.2.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+Date: Mon, 14 Apr 2008 12:16:55 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC32904E2B65F@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <m33apqomgf.fsf@maximus.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+Thread-Index: Acic2prmyRwly60ITQKhcgqAgScE4ABiOZOg
+References: <m3prtzsszg.fsf@maximus.localdomain><m3tzj92xq6.fsf@maximus.localdomain><m33aqedg0a.fsf@maximus.localdomain><m37if4oz1g.fsf@maximus.localdomain><20080411221448.22b69ff5.akpm@linux-foundation.org><m3prsva3y7.fsf@maximus.localdomain> <20080412115950.1cbb9cfa@core> <m33apqomgf.fsf@maximus.localdomain>
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Krzysztof Halasa" <khc@pm.waw.pl>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+X-OriginalArrivalTime: 14 Apr 2008 19:16:54.0626 (UTC) FILETIME=[19C41C20:01C89E64]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-04-14 at 19:46 +0200, Andi Kleen wrote:
->   
->> Peter Zijlstra <peterz@infradead.org> writes:
->>     
->>> Yeah, I would open code it.  But this is indeed a sane usage of the
->>> counting semaphore because there is no priority inversion.
->>>       
->> But when you open code that, how is it different from just having
->> semaphores? 
->>     
->
-> Because we can then eventually get rid of semaphores, so those people
-> cannot mistakenly use them. Its just too easy to create prio inversion
-> with them around.
->   
+> It's not that simple - it was broken between 2.6.22 and 2.6.23 (2.6.23
+> was already broken), I just haven't noticed (I don't use PPP myself,
+> except for tests).
 
-But then you end up with lots of likely subtly buggy open coded
-implementations. Also not good.
+> author	Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> 	 Fri, 6 Jul 2007 20:36:20 +0000 (13:36 -0700)
+> commit	f25f4e44808f0f6c9875d94ef1c41ef86c288eb2
 
-For me it sounds like you just want to rename semaphores to some other
-name that people don't use them for normal locking?
+> [CORE] Stack changes to add multiqueue hardware support API
+> Add the multiqueue hardware device support API to the core network
+> stack.  Allow drivers to allocate multiple queues and manage them at
+> the netdev level if they choose to do so.
 
--Andi
+> Added a new field to sk_buff, namely queue_mapping, for drivers to
+> know which tx_ring to select based on OS classification of the flow.
 
+> And it included:
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -565,9 +578,7 @@ struct net_device
+ 
+> static inline void *netdev_priv(const struct net_device *dev)
+> {
+> -       return (char *)dev + ((sizeof(struct net_device)
+> -                                       + NETDEV_ALIGN_CONST)
+> -                               & ~NETDEV_ALIGN_CONST);
+> +       return dev->priv;
+> }
 
+What I find a bit disturbing is I found my original patchsets I
+submitted to the list that were committed for this patchset.  My
+original patches don't have this change in them at all.  :-(
 
+-PJ Waskiewicz
