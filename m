@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYDNXTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbYDNXWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbYDNXTg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 19:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbYDNXTW
+	id S1761707AbYDNXWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 19:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYDNXWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 19:19:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50910 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752286AbYDNXTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 19:19:21 -0400
-Date: Mon, 14 Apr 2008 16:05:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: jmorris@namei.org, viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm,
-       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-Id: <20080414160513.9f57e5ba.akpm@linux-foundation.org>
-In-Reply-To: <20080414.150105.101568769.davem@davemloft.net>
-References: <20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-	<20080414.150105.101568769.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 19:22:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40535 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755023AbYDNXWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 19:22:06 -0400
+Message-ID: <4803E711.8020008@redhat.com>
+Date: Mon, 14 Apr 2008 19:21:53 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Does process need to have a kernel-side stack all the time?
+References: <200804141547.57719.vda.linux@googlemail.com>
+In-Reply-To: <200804141547.57719.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 15:01:05 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
-
-> From: James Morris <jmorris@namei.org>
-> Date: Tue, 15 Apr 2008 01:54:00 +1000 (EST)
+Denys Vlasenko wrote:
+> Hi Ingo,
 > 
-> > - Things like "who made the kernel" statistics and related articles ignore 
-> >   code review.
+> You are one of the experts in processes/threads and scheduling
+> in Linux kernel, I hope you can answer this question.
 > 
-> Note the apparent irony in that the person who ends up often on the
-> top of those lists, Al Viro, is also someone who also does a
-> significant amount of code review.
-> 
-> I think this is no accident.
+> A lot of effort went into minimizing of stack usage.
+> If I understand it correctly, one of the reasons for this
+> was to be efficient and not have lots of pages
+> used for stacks when we have a lot of threads
+> (tens of thousands).
 
-"who made the kernel" was an interesting and useful exercise, but if you
-like irony then...
+If your application is using tens of thousands of threads on hardware that can't 
+spare tens of megabytes to ensure that a thread will always have a kernel stack 
+when it needs one, your application is horribly misdesigned.
 
-- The way to boost your commit count is to submit buggy patches and to
-  then fix your own bugs.
+> A random thought occurred to me: in a system with so many
+> threads most of them are not executing anyway, even on
+> that gigantic Altix machines. Do they all need to have
+> kernel stack, all the time? I mean: the process which
+> is running in user space is not using kernel stack at all.
+> Process which is not running on a CPU right now
+> is not using it either. But they do still consume
+> at least 4k (or 8k on 64bits) of RAM.
 
-- The way to lower your commit count is to fix things in other people's
-  patches, then fold your fix into the base patch.  I've lost over 1000
-  commits that way.  Unless they are counting '^    [akpm' as a commit.
+If they're sleeping, they need a kernel stack.  If they're simply scheduled out, 
+then your system is massively overloaded, and you need more CPUs or fewer threads.
+
+> Process absolutely must have kernel stack only when
+> it is actively running in kernel code (not sleeping),
+> right?
+
+It absolutely needs a kernel stack when it's sleeping in the kernel.  It does 
+not really need a stack if it's simply scheduled out, but sleeping should be the 
+typical case, if the application is designed and configured to operate efficiently.
+
+> Can we have per-CPU kernel stacks instead, so that process
+> gets a kernel stack only every time it enters the kernel;
+> and make it so that the process which is scheduled away
+> from a CPU does not need to have kernel stack?
+
+You're essentially asking us to optimize forkbombs at the expense of 
+well-designed applications.  Unless the cost is nearly zero (and it's not) we 
+shouldn't do something like this.
+
+> Currently, when process sleeps, we save some
+> state in stack, and such a change may require
+> some substantial surgery.
+
+Yes, and that surgery will absolutely kill performance on the page fault and I/O 
+paths, while only saving a few kilobytes of RAM on well-configured systems.
+
+> Can you tell me whether this is possible at all,
+> and how difficult you estimate it to be?
+
+It may be possible, but it's certainly not a good idea.  Applications that 
+suffer a performance hit due to kernel stack usage while scheduled out are 
+poorly designed and need to be fixed.  The fraction of a percent performance 
+boost they'd get from this change is nothing compared to the thousand percent 
+speedup they'd get from using threads intelligently.
+
+-- Chris
