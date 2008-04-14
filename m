@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYDNHgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbYDNHhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbYDNHgJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYDNHf4
+	id S1759898AbYDNHhv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbYDNHhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:35:56 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:54379 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754813AbYDNHfz (ORCPT
+	Mon, 14 Apr 2008 03:37:41 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:54274 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754611AbYDNHhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:35:55 -0400
-To: me@bobcopeland.com
-CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20080414004521.GA30489@hash.localnet> (message from Bob Copeland
-	on Sun, 13 Apr 2008 20:45:21 -0400)
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <20080414004521.GA30489@hash.localnet>
-Message-Id: <E1JlJE6-0004yZ-62@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 14 Apr 2008 09:35:42 +0200
+	Mon, 14 Apr 2008 03:37:41 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 09:37:07 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804040111.15255.rjw@sisk.pl> <200804140843.06088.oliver@neukum.org> <1208157816.6958.133.camel@pasglop>
+In-Reply-To: <1208157816.6958.133.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804140937.09915.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I don't feel strongly either way, and Christoph's arguments against
-> > fuse are mostly valid (although neither of them are serious).
+Am Montag, 14. April 2008 09:23:36 schrieb Benjamin Herrenschmidt:
 > 
-> I don't have hard numbers, but anecdotally my FUSE version is quite 
-> a bit less performant.  That's no criticism of FUSE - I just haven't
-> put the time into optimizing and adding various caches.
+> On Mon, 2008-04-14 at 08:43 +0200, Oliver Neukum wrote:
 
-The worst I/O performance problems should be gone by 2.6.26.
-Otherwise there shouldn't be a need to add optimizations to the
-userspace code.  The kernel caches take care of that, just like for a
-kernel filesystem.
-
-> > There's one thing which makes fuse a slightly better candidate for
-> > applications where the number of users is low: stability.  Unless you
-> > or your users test the hell out of your filesystem, there always a
-> > chance that some bugs will remain.  
+> > If you want to request firmware in a PM callback, which makes a
+> > certain
+> > sense, as we should move to a comprehensive API, if we change the API
+> > at all, we need a model with 3 callbacks.
 > 
-> Sure, though this FS won't see the same kind of use as ext2.  Most users
-> would just mount it, copy a bunch of files, then unmount it, and if that
-> works then great.
+> No. At this pace, we'll find reasons to have 98213674 callbacks and will
+> still not be happy.
+> 
+> Prepare() should be the right place to call request_firmware() and if
+> that is a problem because of bugs in some USB things, then those bugs
+> should be fixed.
 
-Exactly.  Which means, that bugs which happen only in special
-circumstances don't surface early and cause more headaches later.
+This isn't a bug. USB simply needs to be able to register (and deregister)
+children to be fully operative. You cannot expect a subsystem to work
+while some core services are not available.
 
-Miklos
+	Regards
+		Oliver
+
+
