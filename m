@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYDNUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbYDNUlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbYDNUjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYDNUi5
+	id S1760681AbYDNUlw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYDNUlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:38:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55857 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751932AbYDNUi4 (ORCPT
+	Mon, 14 Apr 2008 16:41:44 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:34210 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbYDNUln convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:38:56 -0400
-Date: Mon, 14 Apr 2008 13:38:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm, sclark46@earthlink.net,
-       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
-       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, davem@davemloft.net,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-Id: <20080414133802.4535e4da.akpm@linux-foundation.org>
-In-Reply-To: <4803ACE5.4020502@keyaccess.nl>
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru>
-	<200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru>
-	<48028830.6020703@earthlink.net>
-	<alpine.DEB.1.10.0804131546370.9318@asgard>
-	<20080414043939.GA6862@1wt.eu>
-	<20080414053943.GU9785@ZenIV.linux.org.uk>
-	<20080413232441.e216a02c.akpm@linux-foundation.org>
-	<4803ACE5.4020502@keyaccess.nl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 16:41:43 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 22:41:08 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0804141043001.2236-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804141043001.2236-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804142241.11545.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 21:13:41 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+Am Montag, 14. April 2008 16:49:26 schrieb Alan Stern:
+> Now, I don't see what the big deal is here.  We all agree that it would 
+> be nice and appropriate if drivers could do things like 
+> request_firmware() during prepare().  But for the moment they can't.  
+> It's not like this is some tremendous hardship -- you aren't going to 
+> have to rip out all the existing prepare() implementations and rewrite 
+> them, because they don't exist yet!
 
-> Does that mean you're not going to take patches that align the right end of 
-> lines in comments? :-(
+True. You cannot request firmware in the current suspend() call either.
+Rafael's code is a clear improvement over the existing code. Removal
+of the freezer will need a lot of rewriting in any case.
 
-erm, was that ":-(" supposed to be a ":-)"?
-
-I don't like to merge patches which fix typos and spellos and grammaros
-in comments, simply because I'd be buried in the things.  I do take such
-fixes for user-visible text (Documentation/, kerneldoc comments and
-printks).
-
-Right-justification of comments would fall rather a long way below spelling
-fixes.
+	Regards
+		Oliver
 
