@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbYDNOm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbYDNOng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbYDNOm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYDNOmu
+	id S1761140AbYDNOng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761095AbYDNOnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:42:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50157 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756808AbYDNOmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:42:49 -0400
-Date: Mon, 14 Apr 2008 10:42:28 -0400
-From: Neil Horman <nhorman@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nickpiggin@yahoo.com.au,
-       k-miyoshi@cb.jp.nec.com, greg@kroah.com,
-       Bernhard Walle <bwalle@suse.de>, kdb@oss.sgi.com,
-       kexec@lists.infradead.org, Takenori Nagano <t-nagano@ah.jp.nec.com>,
-       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Keith Owens <kaos@ocs.com.au>
-Subject: Re: [PATCH 0/2] add new notifier function ,take3
-Message-ID: <20080414144228.GD1193@hmsendeavour.rdu.redhat.com>
-References: <47FF190B.6030406@ah.jp.nec.com> <20080411210751.e4a468b2.akpm@linux-foundation.org> <20080414134622.GB6941@redhat.com>
+	Mon, 14 Apr 2008 10:43:08 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:37191 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761021AbYDNOnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:43:07 -0400
+Message-ID: <48036CF4.7050008@linux.vnet.ibm.com>
+Date: Mon, 14 Apr 2008 20:10:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414134622.GB6941@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       dhaval@linux.vnet.ibm.com
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com>
+In-Reply-To: <48036CB4.5050700@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 09:46:22AM -0400, Vivek Goyal wrote:
-> On Fri, Apr 11, 2008 at 09:07:51PM -0700, Andrew Morton wrote:
+Balbir Singh wrote:
+> Balaji Rao wrote:
+>> This patch implements trivial statistics for the memory resource controller.
+>>
+>> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+>> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+>>
+>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+>> index a860765..ca98b21 100644
+>> --- a/mm/memcontrol.c
+>> +++ b/mm/memcontrol.c
+>> @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
+>>  	 */
+>>  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+>>  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
+>> +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+>> +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+>>
+>>  	MEM_CGROUP_STAT_NSTATS,
+>>  };
+>> @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
+>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
+>>  	else
+>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
+>> +
+>> +	if (charge)
+>> +		__mem_cgroup_stat_add_safe(stat,
+>> +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
+>> +	else
+>> +		__mem_cgroup_stat_add_safe(stat,
+>> +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+>>  }
+>>
+>>  static struct mem_cgroup_per_zone *
+>> @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
+>>  } mem_cgroup_stat_desc[] = {
+>>  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
+>>  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+>> +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
+>> +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
+>>  };
+>>
+>>  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+>>
 > 
-> [..]
-> > > Kernel panic - not syncing: Panic by panic_module.
-> > > __tunable_atomic_notifier_call_chain enter
-> > > msg_handler:panic_event was called.
-> > > ipmi_wdog:wdog_panic_handler was called.
-> > > notifier_test: notifier_test_panic() is called.
-> > > notifier_test: notifier_test_panic2() is called.
-> > 
-> > OK.  But I don't see anywhere in here the most important piece of
-> > information: why do we need this feature in Linux?
-> > 
-> > What are the use-cases?  What is the value?  etc.
-> > 
-> > Often I can guess (but I like the originator to remove the guesswork).  In
-> > this case I'm stumped - I can't see any reason why anyone would want this.
-> > 
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 > 
-> Hi Andrew,
+> Hi, Andrew,
 > 
-> To begin with, he wants kdb, kgdb etc to co-exist with kdump. He wants
-> to put all the RAS tools (who are interested in panic event) on a list
-> and export it to user space and let user decide in what order do the tool get
-> executed at panic time (based on priority).
+> Could you please include these statistics in -mm.
 > 
-> This brings in little bit reliability concerns for kdump due to notifier
-> code being run after panic.
+> Balbir
 > 
-> I think people want to use this infrastrutucure beyond RAS tools. I
-> remember somebody wanting to send a message to remote node after a
-> panic (before kdump kicks in)  so that remote node can initiate failover
-> etc.
 > 
-I know it doesn't particularly relate to this patch, but FWIW, for cases like
-failover, I've inserted infrastrucutre in the userspace part of kdump for
-Fedora/RHEL to support this sort of thing.  We can run arbitrary scripts righte
-before and after a capture so that notifications can be sent to remote nodes in
-a much safer fashion than using the notifier chain after a panic.
-Neil
 
+Andrew,
+
+This should have been addressed to you in the first place. Resending.
 
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
