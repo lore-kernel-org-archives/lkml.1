@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYDNFfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYDNFk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbYDNFfS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 01:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYDNFfE
+	id S1758610AbYDNFk5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 01:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYDNFkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 01:35:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:32705 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYDNFfC (ORCPT
+	Mon, 14 Apr 2008 01:40:43 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57557 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbYDNFkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 01:35:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=fYkVdCSqW9znyGfaMWgQD4Ls9PHlqbmMADibrZRaYX+Sb/2JjKtbzS2w3uE2JyfX2ogfScfp/+nQwgb/y3d+Wsg6J2TLtqFRtmq/amrjmmr5OdzT5NjDkQw6aT5Dh6mIbfTvDNoi/9WLevqBxts0ERJx5oqlyTVSRo5XfqCrXWc=
-Message-ID: <517f3f820804132234l48f759ddn18447531e5361754@mail.gmail.com>
-Date: Mon, 14 Apr 2008 07:34:56 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch] F_GETPATH for linux
-Cc: "Arnd Bergmann" <arnd@arndb.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0804131839010.12741@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 01:40:42 -0400
+Date: Mon, 14 Apr 2008 06:39:43 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Willy Tarreau <w@1wt.eu>
+Cc: david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080414053943.GU9785@ZenIV.linux.org.uk>
+References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org> <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl> <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0804131455030.12741@alien.or.mcafeemobile.com>
-	 <200804140300.05719.arnd@arndb.de>
-	 <Pine.LNX.4.64.0804131839010.12741@alien.or.mcafeemobile.com>
-X-Google-Sender-Auth: b6ed2f4c8e847023
+In-Reply-To: <20080414043939.GA6862@1wt.eu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/08, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Mon, 14 Apr 2008, Arnd Bergmann wrote:
->
->  > On Monday 14 April 2008, Davide Libenzi wrote:
->  > > I was working on some bsd/linux compatibility code, and I noticed that we
->  > > do not have F_GETPATH. I know we can readlink /proc/PID/fd/FD (that is
->  > > what I'm doing now, under #ifdef), but I gave a patch a shot anyway.
->  > > Here it is, building but untested ...
->  >
->  > I reviewed the code path for compat_sys_fcntl{,64} for this patch, looks
->  > good in that respect.
->  >
->  > > +error:
->  > > +   free_page((unsigned long) buf);
->  > > +   return size;
->  > > +}
->  > > +EXPORT_SYMBOL(fcntl_getpath);
->  > > +
->  >
->  > Procfs cannot be a module, and there are no other users of this function,
->  > so why do you export it?
->
->
-> Springtime export fever? :)
->  I dropped the export. I'll repost as soon as I've five minutes to reboot
->  my box (to test the thing a little).
+On Mon, Apr 14, 2008 at 06:39:39AM +0200, Willy Tarreau wrote:
 
-Davide,
+[snip]
 
-Please CC me on all kernel-userland API changes, so that I can watch
-for changes that may be needed for man-pages.
+> I'm sure many people would find this useless (or in fact reject the
+> idea because it would show that most code will be rated 1 or 2),
+> but I really think it can help subsystem maintainers make the relation
+> between a reported bug and a possible submitter.
 
-Cheers,
+I have a related proposal: let us require all patches to be stamped
+with Discordian *and* Eternal September dates.  In triplicate.  While
+we are at it, why don't we introduce new mandatory headers like, say
+it,
 
-Michael
+X-checkpatch: {Yes,No}
+X-checkpatch-why-not: <string>
+X-pointless: <number from 1 to 69, going from "1: does something useful" all
+the way to "68: aligns right ends of lines in comments">
+X-arbitrary-rules-added-to-CodingStyle: <number> (should be present if
+and only if X-pointless: 69 is present).
 
--- 
-I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
+Come to think of that, we clearly need a new file in Documentation/*,
+documenting such headers.  Why don't we organize a subcommittee^Wnew maillist
+devoted to that?  That would provide another entry route for contributors,
+lowering the overall entry barriers even further...
+
+
+Seriously, looks like Andi is right - we've got ourselves a developing
+beaurocracy.  As in "more and more ways of generating activity without
+doing anything even remotely useful".  Complete with tendency to operate in
+the ways that make sense only to beaurocracy in question and an ever-growing
+set of bylaws...
