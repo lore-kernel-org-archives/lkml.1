@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764468AbYDNSwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935343AbYDNSxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764468AbYDNSwt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764205AbYDNSsZ
+	id S935343AbYDNSxz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934846AbYDNSst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:48:25 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:43777 "EHLO smtp6.pp.htv.fi"
+	Mon, 14 Apr 2008 14:48:49 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:43995 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965269AbYDNSsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:48:23 -0400
-Date: Mon, 14 Apr 2008 21:40:53 +0300
+	id S934780AbYDNSss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:48:48 -0400
+Date: Mon, 14 Apr 2008 21:41:53 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: samuel@sortiz.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [RFC: 2.6 patch] remove irlan_eth_send_gratuitous_arp()
-Message-ID: <20080414184053.GH6695@cs181133002.pp.htv.fi>
+To: Mike Isely <isely@pobox.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] video/pvrusb2/pvrusb2-hdw.c cleanups
+Message-ID: <20080414184153.GZ6695@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,108 +24,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Even kernel 2.2.26 (sic) already contains the
-  #undef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
-with the comment "but for some reason the machine crashes if you use DHCP".
+This patch contains the following cleanups:
+- make the following needlessly global function static:
+  - pvr2_hdw_set_cur_freq()
+- #if 0 the following unused global functions:
+  - pvr2_hdw_get_state_name()
+  - pvr2_hdw_get_debug_info_unlocked()
+  - pvr2_hdw_get_debug_info_locked()
 
-Either someone finally looks into this or it's simply time to remove 
-this dead code.
-
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
 - 31 Mar 2008
-- 1 Mar 2008
 
- include/net/irda/irlan_eth.h  |    1 -
- net/irda/irlan/irlan_common.c |   10 ----------
- net/irda/irlan/irlan_eth.c    |   33 ---------------------------------
- 3 files changed, 44 deletions(-)
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c |    6 +++++-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.h |    3 ---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-d8768e55070eb92eddb69ab8136ded02cc4ef9d0 foobar
-diff --git a/include/net/irda/irlan_eth.h b/include/net/irda/irlan_eth.h
-index 0062347..de5c816 100644
---- a/include/net/irda/irlan_eth.h
-+++ b/include/net/irda/irlan_eth.h
-@@ -29,5 +29,4 @@ struct net_device *alloc_irlandev(const char *name);
- int  irlan_eth_receive(void *instance, void *sap, struct sk_buff *skb);
+5446a1c0b050259bf276f1d365ca151afa276887 diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+index d6955fa..77c3c2d 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+@@ -983,7 +983,7 @@ unsigned long pvr2_hdw_get_cur_freq(struct pvr2_hdw *hdw)
  
- void irlan_eth_flow_indication( void *instance, void *sap, LOCAL_FLOW flow);
--void irlan_eth_send_gratuitous_arp(struct net_device *dev);
- #endif
-diff --git a/net/irda/irlan/irlan_common.c b/net/irda/irlan/irlan_common.c
-index a4b56e2..c31cb55 100644
---- a/net/irda/irlan/irlan_common.c
-+++ b/net/irda/irlan/irlan_common.c
-@@ -54,13 +54,6 @@
- #include <net/irda/irlan_filter.h>
- 
- 
--/*
-- * Send gratuitous ARP when connected to a new AP or not. May be a clever
-- * thing to do, but for some reason the machine crashes if you use DHCP. So
-- * lets not use it by default.
-- */
--#undef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
--
- /* extern char sysctl_devname[]; */
- 
- /*
-@@ -395,9 +388,6 @@ static void irlan_connect_confirm(void *instance, void *sap,
- 	/* Ready to transfer Ethernet frames */
- 	netif_start_queue(self->dev);
- 	self->disconnect_reason = 0; /* Clear reason */
--#ifdef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
--	irlan_eth_send_gratuitous_arp(&self->dev);
--#endif
- 	wake_up_interruptible(&self->open_wait);
+ /* Set the currently tuned frequency and account for all possible
+    driver-core side effects of this action. */
+-void pvr2_hdw_set_cur_freq(struct pvr2_hdw *hdw,unsigned long val)
++static void pvr2_hdw_set_cur_freq(struct pvr2_hdw *hdw,unsigned long val)
+ {
+ 	if (hdw->input_val == PVR2_CVAL_INPUT_RADIO) {
+ 		if (hdw->freqSelector) {
+@@ -1365,11 +1365,13 @@ int pvr2_hdw_untrip(struct pvr2_hdw *hdw)
  }
  
-diff --git a/net/irda/irlan/irlan_eth.c b/net/irda/irlan/irlan_eth.c
-index 1ab91f7..ef12ef1 100644
---- a/net/irda/irlan/irlan_eth.c
-+++ b/net/irda/irlan/irlan_eth.c
-@@ -289,39 +289,6 @@ void irlan_eth_flow_indication(void *instance, void *sap, LOCAL_FLOW flow)
+ 
++#if 0
+ const char *pvr2_hdw_get_state_name(unsigned int id)
+ {
+ 	if (id >= ARRAY_SIZE(pvr2_state_names)) return NULL;
+ 	return pvr2_state_names[id];
+ }
++#endif  /*  0  */
+ 
+ 
+ int pvr2_hdw_get_streaming(struct pvr2_hdw *hdw)
+@@ -3656,6 +3658,7 @@ static void pvr2_hdw_state_sched(struct pvr2_hdw *hdw)
+ 	queue_work(hdw->workqueue,&hdw->workpoll);
  }
  
- /*
-- * Function irlan_etc_send_gratuitous_arp (dev)
-- *
-- *    Send gratuitous ARP to announce that we have changed
-- *    hardware address, so that all peers updates their ARP tables
-- */
--void irlan_eth_send_gratuitous_arp(struct net_device *dev)
--{
--#ifdef CONFIG_INET
--	struct in_device *in_dev;
++#if 0
+ 
+ void pvr2_hdw_get_debug_info_unlocked(const struct pvr2_hdw *hdw,
+ 				      struct pvr2_hdw_debug_info *ptr)
+@@ -3697,6 +3700,7 @@ void pvr2_hdw_get_debug_info_locked(struct pvr2_hdw *hdw,
+ 	} while(0); LOCK_GIVE(hdw->ctl_lock);
+ }
+ 
++#endif  /*  0  */
+ 
+ int pvr2_hdw_gpio_get_dir(struct pvr2_hdw *hdw,u32 *dp)
+ {
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.h b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
+index 3ad7a13..1b4e5e3 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.h
++++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
+@@ -90,9 +90,6 @@ enum pvr2_v4l_type {
+ /* Translate configuration enum to a string label */
+ const char *pvr2_config_get_name(enum pvr2_config);
+ 
+-/* Translate a master state enum to a string label */
+-const char *pvr2_hdw_get_state_name(unsigned int);
 -
--	/*
--	 * When we get a new MAC address do a gratuitous ARP. This
--	 * is useful if we have changed access points on the same
--	 * subnet.
--	 */
--	IRDA_DEBUG(4, "IrLAN: Sending gratuitous ARP\n");
--	rcu_read_lock();
--	in_dev = __in_dev_get_rcu(dev);
--	if (in_dev == NULL)
--		goto out;
--	if (in_dev->ifa_list)
--
--	arp_send(ARPOP_REQUEST, ETH_P_ARP,
--		 in_dev->ifa_list->ifa_address,
--		 dev,
--		 in_dev->ifa_list->ifa_address,
--		 NULL, dev->dev_addr, NULL);
--out:
--	rcu_read_unlock();
--#endif /* CONFIG_INET */
--}
--
--/*
-  * Function set_multicast_list (dev)
-  *
-  *    Configure the filtering of the device
+ struct pvr2_hdw;
+ 
+ /* Create and return a structure for interacting with the underlying
 
