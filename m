@@ -1,141 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbYDNTjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764004AbYDNTlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762928AbYDNTjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYDNTj3
+	id S1764004AbYDNTlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYDNTlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:39:29 -0400
-Received: from smtp40.hccnet.nl ([62.251.0.29]:39276 "EHLO smtp40.hccnet.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbYDNTj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:39:28 -0400
-Message-ID: <4803C0F9.9010004@van-ginkel.eu>
-Date: Mon, 14 Apr 2008 22:39:21 +0200
-From: sander van ginkel <sander@van-ginkel.eu>
-Reply-To: sander@van-ginkel.eu
-User-Agent: Thunderbird 1.5.0.9 (X11/20070507)
+	Mon, 14 Apr 2008 15:41:00 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51043 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758249AbYDNTk7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:40:59 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 14 Apr 2008 12:40:53 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [patch] F_GETPATH implementation
+Message-ID: <Pine.LNX.4.64.0804141227490.7954@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: sander@van-ginkel.eu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptmx: adding handshake support
-References: <20080311212830.5f4apfr4uqs884cc@62.129.139.44>	<20080330140948.0cqmtqb9us880cw8@62.129.139.44>	<20080330131652.7073589c@core>	<480229CB.2080108@van-ginkel.eu> <20080413233503.22576c47@core>
-In-Reply-To: <20080413233503.22576c47@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrected the last issues
+This is a small patch to support BSD's F_GETPATH on Linux. I removed the 
+unneeded export, like Arnd pointed out.
+IMO the simplicity of the patch and the portability advantages makes it 
+worth it. I'll leave to others to further comments it.
+Built and tested on my box against 2.6.25-rc9. Simple test program here:
 
-Signed-off-by: Sander van Ginkel <sander@van-ginkel.eu>
+http://www.xmailserver.org/fgetpath-test.c
 
+
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+- Davide
+
+
+---
+ fs/fcntl.c                  |   26 ++++++++++++++++++++++++++
+ fs/proc/base.c              |   26 +-------------------------
+ include/asm-generic/fcntl.h |    1 +
+ include/linux/fs.h          |    1 +
+ 4 files changed, 29 insertions(+), 25 deletions(-)
+
+Index: linux-2.6.mod/fs/fcntl.c
 ===================================================================
-
-diff -pru linux-2.6.25-rc8.orig/drivers/char/pty.c 
-linux-2.6.25-rc8/drivers/char/pty.c
---- linux-2.6.25-rc8.orig/drivers/char/pty.c    2008-04-01 
-21:44:26.000000000 +0200
-+++ linux-2.6.25-rc8/drivers/char/pty.c    2008-04-14 23:01:56.000000000 
-+0200
-@@ -196,6 +196,7 @@ static void pty_flush_buffer(struct tty_
- 
- static int pty_open(struct tty_struct *tty, struct file * filp)
- {
-+    unsigned int    *mcrmsr;
-     int    retval = -ENODEV;
- 
-     if (!tty || !tty->link)
-@@ -212,11 +213,50 @@ static int pty_open(struct tty_struct *t
-     clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
-     set_bit(TTY_THROTTLED, &tty->flags);
-     set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-+
-+    /* first time accessing this device, let's create it */
-+
-+    mcrmsr = kzalloc(sizeof(*mcrmsr), GFP_KERNEL);
-+
-+    if (mcrmsr != NULL) {
-+
-+        /* save our data within the tty structure */
-+
-+        *mcrmsr=0;
-+
-+        tty->driver_data = mcrmsr;
-+        tty->link->driver_data = mcrmsr;
-+    }
-+    else
-+    {
-+        goto out;
-+    }      
-+
-     retval = 0;
-+
- out:
-     return retval;
+--- linux-2.6.mod.orig/fs/fcntl.c	2008-04-13 15:01:09.000000000 -0700
++++ linux-2.6.mod/fs/fcntl.c	2008-04-13 18:37:56.000000000 -0700
+@@ -316,6 +316,28 @@
+ 	return pid;
  }
  
-+static int pty_tiocmget(struct tty_struct *tty, struct file *file)
++int fcntl_getpath(struct path *fpath, char __user *path, int maxsize)
 +{
-+    unsigned int *mcrmsr;
++	int size;
++	char *buf, *pathname;
 +
-+    mcrmsr = tty->driver_data;
-+
-+    return *mcrmsr;
++	buf = (char *) __get_free_page(GFP_TEMPORARY);
++	if (!buf)
++		return -ENOMEM;
++	pathname = d_path(fpath, buf, PAGE_SIZE);
++	size = PTR_ERR(pathname);
++	if (IS_ERR(pathname))
++		goto error;
++	size = buf + PAGE_SIZE - 1 - pathname;
++	if (size > maxsize)
++		size = maxsize;
++	if (copy_to_user(path, pathname, size))
++		size = -EFAULT;
++error:
++	free_page((unsigned long) buf);
++	return size;
 +}
 +
-+static int pty_tiocmset(struct tty_struct *tty, struct file 
-*file,unsigned int set, unsigned int clear)
-+{
-+    unsigned int *mcrmsr;
-+
-+    mcrmsr = tty->driver_data;
-+    *mcrmsr=set;
-+
-+    return 0;
-+}
-+
- static void pty_set_termios(struct tty_struct *tty, struct ktermios 
-*old_termios)
+ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+ 		struct file *filp)
  {
-         tty->termios->c_cflag &= ~(CSIZE | PARENB);
-@@ -232,6 +272,8 @@ static const struct tty_operations pty_o
-     .chars_in_buffer = pty_chars_in_buffer,
-     .unthrottle = pty_unthrottle,
-     .set_termios = pty_set_termios,
-+    .tiocmget = pty_tiocmget,
-+    .tiocmset = pty_tiocmset,
- };
+@@ -381,6 +403,10 @@
+ 	case F_NOTIFY:
+ 		err = fcntl_dirnotify(fd, filp, arg);
+ 		break;
++	case F_GETPATH:
++		err = fcntl_getpath(&filp->f_path, (char __user *) arg,
++				    PATH_MAX);
++		break;
+ 	default:
+ 		break;
+ 	}
+Index: linux-2.6.mod/include/asm-generic/fcntl.h
+===================================================================
+--- linux-2.6.mod.orig/include/asm-generic/fcntl.h	2008-04-13 15:01:09.000000000 -0700
++++ linux-2.6.mod/include/asm-generic/fcntl.h	2008-04-13 18:37:35.000000000 -0700
+@@ -73,6 +73,7 @@
+ #define F_SETSIG	10	/* for sockets. */
+ #define F_GETSIG	11	/* for sockets. */
+ #endif
++#define F_GETPATH	12
  
- /* Traditional BSD devices */
-@@ -364,11 +406,26 @@ static struct ctl_table pty_root_table[]
- static int pty_unix98_ioctl(struct tty_struct *tty, struct file *file,
-                 unsigned int cmd, unsigned long arg)
+ /* for F_[GET|SET]FL */
+ #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+Index: linux-2.6.mod/fs/proc/base.c
+===================================================================
+--- linux-2.6.mod.orig/fs/proc/base.c	2008-04-13 15:01:09.000000000 -0700
++++ linux-2.6.mod/fs/proc/base.c	2008-04-13 18:37:35.000000000 -0700
+@@ -1192,30 +1192,6 @@
+ 	return ERR_PTR(error);
+ }
+ 
+-static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
+-{
+-	char *tmp = (char*)__get_free_page(GFP_TEMPORARY);
+-	char *pathname;
+-	int len;
+-
+-	if (!tmp)
+-		return -ENOMEM;
+-
+-	pathname = d_path(path, tmp, PAGE_SIZE);
+-	len = PTR_ERR(pathname);
+-	if (IS_ERR(pathname))
+-		goto out;
+-	len = tmp + PAGE_SIZE - 1 - pathname;
+-
+-	if (len > buflen)
+-		len = buflen;
+-	if (copy_to_user(buffer, pathname, len))
+-		len = -EFAULT;
+- out:
+-	free_page((unsigned long)tmp);
+-	return len;
+-}
+-
+ static int proc_pid_readlink(struct dentry * dentry, char __user * buffer, int buflen)
  {
-+    unsigned int value;
-+    unsigned int *mcrmsr;
-+
-+        mcrmsr=tty->driver_data;
-+
-     switch (cmd) {
-     case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
-         return pty_set_lock(tty, (int __user *)arg);
-     case TIOCGPTN: /* Get PT Number */
-         return put_user(tty->index, (unsigned int __user *)arg);
-+
-+    case VMCRMSR: /* Set all of the handshake line, even the normally 
-read only */
-+        {
-+        if (copy_from_user(&value,(unsigned int *)arg,sizeof(unsigned 
-int)))
-+            return -EFAULT;
-+
-+        *mcrmsr=value;
-+
-+        return 0;
-+        }        
-     }
+ 	int error = -EACCES;
+@@ -1230,7 +1206,7 @@
+ 	if (error)
+ 		goto out;
  
-     return -ENOIOCTLCMD;
-
-
+-	error = do_proc_readlink(&path, buffer, buflen);
++	error = fcntl_getpath(&path, buffer, buflen);
+ 	path_put(&path);
+ out:
+ 	return error;
+Index: linux-2.6.mod/include/linux/fs.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/fs.h	2008-04-13 15:01:09.000000000 -0700
++++ linux-2.6.mod/include/linux/fs.h	2008-04-13 18:37:35.000000000 -0700
+@@ -960,6 +960,7 @@
+ /* only for net: no internal synchronization */
+ extern void __kill_fasync(struct fasync_struct *, int, int);
+ 
++extern int fcntl_getpath(struct path *fpath, char __user *path, int maxsize);
+ extern int __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
+ extern int f_setown(struct file *filp, unsigned long arg, int force);
+ extern void f_delown(struct file *filp);
