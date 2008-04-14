@@ -1,90 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763257AbYDNRTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbYDNRUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763257AbYDNRTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbYDNRTZ
+	id S1762765AbYDNRUD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763234AbYDNRTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:19:25 -0400
-Received: from mailgw1.fraunhofer.de ([153.96.1.17]:55858 "EHLO
-	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762648AbYDNRTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:19:21 -0400
-Date: Mon, 14 Apr 2008 19:19:04 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: Again... DMA speed too slow
-Message-ID: <48039208.H1ySWf8m1sXKYjHZ%Joerg.Schilling@fokus.fraunhofer.de>
-References: <48038c3e.P3RWjRNXsDrhjIX7%Joerg.Schilling@fokus.fraunhofer.de>
- <20080414175636.4ea815dc@core>
-In-Reply-To: <20080414175636.4ea815dc@core>
-User-Agent: nail 11.22 3/20/05
+	Mon, 14 Apr 2008 13:19:48 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:23858 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763196AbYDNRTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 13:19:46 -0400
+From: Vitaliy Gusev <vgusev@openvz.org>
+To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Subject: [RFC][PATCH][NET] Fix never pruned tcp out-of-order queue
+Date: Mon, 14 Apr 2008 21:21:53 +0400
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Apr 2008 17:19:03.0952 (UTC) FILETIME=[A350E100:01C89E53]
-X-Fraunhofer-Email-Policy: accepted
+Content-Disposition: inline
+Message-Id: <200804142121.53860.vgusev@openvz.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hello!
 
-> On Mon, 14 Apr 2008 18:54:22 +0200
-> Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling) wrote:
->
-> > >Which controller are you on?  I bet the recording itself will work fine
-> > >on 48x.  It's probably that READ/WRITE BUFFERs are executed using PIO
-> > >for compatibility reasons. 
-> > 
-> > If this happens inside Linux, Linux should be changed...
->
-> The cases Linux falls back to PIO are the cases where the hardware isn't
-> up to it, or reliably handling some DMA commands. Lots of that about in
-> the PC world.
+tcp_prune_queue() doesn't prune an out-of-order queue at all.
+Therefore sk_rmem_schedule() can fail but the out-of-order queue
+isn't pruned . This can lead to tcp deadlock state if the
+next two conditions are held:
 
-OK, I know that a few drives give wrong DMA speed test results on Solaris,
-so the behavior for these drives seems to be unrelated to the OS.
+1. There are a sequence hole between last received in
+   order segment and segments enqueued to the out-of-order queue.
 
-Cdrecord is under constant development and for this reason, there are 
-workareounds for these drives.
-
-> > 2.01.01a38 is the latest. Install cdrecord suid root
->
-> Remarkably brave ;)
-
-I am not sure why you mention the term "brave", is it because all known Linux 
-distributions still require suid root? In this case, I encourage you to inform 
-yourself about the code quality of cdrecord. There was no known security problem 
-during the past 4 years. Try to compare with other software ,-)
+2. Size of all segments in the out-of-order queue is more than tcp_mem[2].
 
 
+Signed-off-by: Vitaliy Gusev <vgusev@openvz.org>
 
-If you have problems with drives that implement no DMA with read buffer, just 
-call:
-
-CDR_FORCESPEED=any cdrecord ......
-
-Another way to deal with the problem is to create a file /etc/default/cdrecord
-and to configure to use burnfree by default for the related drive.
-
-e.g. by using a line:
-
-optiarc=          1,0,0	-1	-1	burnfree
-
-and call "cdrecord dev=optiarc ..."
-
-If there is interest in having a way to force any speed without swiching on 
-burnfree, I may add an option that may be used in /etc/default/cdrecord with the
-same effect as CDR_FORCESPEED=any
+---
+ tcp_input.c |   72 ++++++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 46 insertions(+), 26 deletions(-)
 
 
+diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+index 5119856..fb5f522 100644
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -3841,8 +3841,26 @@ static void tcp_ofo_queue(struct sock *sk)
+ 	}
+ }
+ 
++static void tcp_prune_ofo_queue(struct sock *sk);
+ static int tcp_prune_queue(struct sock *sk);
+ 
++static inline int tcp_try_rmem_schedule(struct sock *sk, unsigned int size)
++{
++	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
++	    !sk_rmem_schedule(sk, size)) {
++
++		if (tcp_prune_queue(sk) < 0)
++			return -1;
++
++		if (!sk_rmem_schedule(sk, size)) {
++			tcp_prune_ofo_queue(sk);
++			if (!sk_rmem_schedule(sk, size))
++				return -1;
++		}
++	}
++	return 0;
++}
++
+ static void tcp_data_queue(struct sock *sk, struct sk_buff *skb)
+ {
+ 	struct tcphdr *th = tcp_hdr(skb);
+@@ -3892,12 +3910,9 @@ static void tcp_data_queue(struct sock *sk, struct sk_buff *skb)
+ 		if (eaten <= 0) {
+ queue_and_out:
+ 			if (eaten < 0 &&
+-			    (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
+-			     !sk_rmem_schedule(sk, skb->truesize))) {
+-				if (tcp_prune_queue(sk) < 0 ||
+-				    !sk_rmem_schedule(sk, skb->truesize))
+-					goto drop;
+-			}
++			    tcp_try_rmem_schedule(sk, skb->truesize))
++				goto drop;
++
+ 			skb_set_owner_r(skb, sk);
+ 			__skb_queue_tail(&sk->sk_receive_queue, skb);
+ 		}
+@@ -3966,12 +3981,8 @@ drop:
+ 
+ 	TCP_ECN_check_ce(tp, skb);
+ 
+-	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
+-	    !sk_rmem_schedule(sk, skb->truesize)) {
+-		if (tcp_prune_queue(sk) < 0 ||
+-		    !sk_rmem_schedule(sk, skb->truesize))
+-			goto drop;
+-	}
++	if (tcp_try_rmem_schedule(sk, skb->truesize))
++		goto drop;
+ 
+ 	/* Disable header prediction. */
+ 	tp->pred_flags = 0;
+@@ -4198,6 +4209,28 @@ static void tcp_collapse_ofo_queue(struct sock *sk)
+ 	}
+ }
+ 
++/*
++ * Purge the out-of-order queue.
++ */
++static void tcp_prune_ofo_queue(struct sock *sk)
++{
++	struct tcp_sock *tp = tcp_sk(sk);
++
++	if (!skb_queue_empty(&tp->out_of_order_queue)) {
++		NET_INC_STATS_BH(LINUX_MIB_OFOPRUNED);
++		__skb_queue_purge(&tp->out_of_order_queue);
++
++		/* Reset SACK state.  A conforming SACK implementation will
++		 * do the same at a timeout based retransmit.  When a connection
++		 * is in a sad state like this, we care only about integrity
++		 * of the connection not performance.
++		 */
++		if (tp->rx_opt.sack_ok)
++			tcp_sack_reset(&tp->rx_opt);
++		sk_mem_reclaim(sk);
++	}
++}
++
+ /* Reduce allocated memory if we can, trying to get
+  * the socket within its memory limits again.
+  *
+@@ -4231,20 +4264,7 @@ static int tcp_prune_queue(struct sock *sk)
+ 	/* Collapsing did not help, destructive actions follow.
+ 	 * This must not ever occur. */
+ 
+-	/* First, purge the out_of_order queue. */
+-	if (!skb_queue_empty(&tp->out_of_order_queue)) {
+-		NET_INC_STATS_BH(LINUX_MIB_OFOPRUNED);
+-		__skb_queue_purge(&tp->out_of_order_queue);
+-
+-		/* Reset SACK state.  A conforming SACK implementation will
+-		 * do the same at a timeout based retransmit.  When a connection
+-		 * is in a sad state like this, we care only about integrity
+-		 * of the connection not performance.
+-		 */
+-		if (tcp_is_sack(tp))
+-			tcp_sack_reset(&tp->rx_opt);
+-		sk_mem_reclaim(sk);
+-	}
++	tcp_prune_ofo_queue(sk);
+ 
+ 	if (atomic_read(&sk->sk_rmem_alloc) <= sk->sk_rcvbuf)
+ 		return 0;
 
-Jörg
-
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
