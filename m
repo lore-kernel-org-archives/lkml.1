@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbYDNV62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbYDNWBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbYDNV62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYDNV6R
+	id S1760456AbYDNWBD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYDNWAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:58:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56088 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751972AbYDNV6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:58:17 -0400
-Date: Mon, 14 Apr 2008 14:58:14 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: ralf@linux-mips.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and
- fix MIPS
-In-Reply-To: <20080414133213.82a5b76e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0804141456410.8740@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
- <20080414133213.82a5b76e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Apr 2008 18:00:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35163 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752171AbYDNWAv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 18:00:51 -0400
+Date: Mon, 14 Apr 2008 22:56:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: hskinnemoen@atmel.com, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] avr32: add include/asm-avr32/serial.h
+Message-ID: <20080414225617.5d41a13b@core>
+In-Reply-To: <20080414184220.GC6695@cs181133002.pp.htv.fi>
+References: <20080414141721.GI6695@cs181133002.pp.htv.fi>
+	<20080414153625.6150e999@core>
+	<20080414184220.GC6695@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008, Andrew Morton wrote:
+> 7beddb9fe7aee73227a9796a039cee9583cecc0a diff --git a/include/asm-avr32/serial.h b/include/asm-avr32/serial.h
+> new file mode 100644
+> index 0000000..5ecaebc
+> --- /dev/null
+> +++ b/include/asm-avr32/serial.h
+> @@ -0,0 +1,13 @@
+> +#ifndef _ASM_SERIAL_H
+> +#define _ASM_SERIAL_H
+> +
+> +/*
+> + * This assumes you have a 1.8432 MHz clock for your UART.
+> + *
+> + * It'd be nice if someone built a serial card with a 24.576 MHz
+> + * clock, since the 16550A is capable of handling a top speed of 1.5
+> + * megabits/second; but this requires the faster clock.
+> + */
+> +#define BASE_BAUD (1843200 / 16)
+> +
+> +#endif /* _ASM_SERIAL_H */
 
-> afaict this change is not dependent upon the other page-flags changes and
-> can and should be merged ahead of the page-flags patches to preserve mips
-> bisectability, yes?
-
-It could be merged before yes. There may be a conflict with the earlier 
-kbuild fixes though. Sam?
-
-> Mips and sparc64 are hopefully now mended.  powerpc allmodconfig is still
-> unwell:
-> 
->   CC      arch/powerpc/kernel/asm-offsets.s
-> In file included from include/linux/gfp.h:4,
->                  from include/linux/slab.h:14,
->                  from include/linux/percpu.h:5,
->                  from include/asm/time.h:18,
->                  from include/asm/cputime.h:26,
->                  from include/linux/sched.h:67,
->                  from arch/powerpc/kernel/asm-offsets.c:17:
-> include/linux/mmzone.h:830:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
-
-Cannot figure out what this has to do with page flags. AFACIT the powerpc 
-config is borked because section size is set too low for 64K pages.
-
-
-
+Acked-by: Alan Cox <alan@redhat.com>
