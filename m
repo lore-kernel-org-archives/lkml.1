@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYDNBIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYDNBJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758211AbYDNBIf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 21:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbYDNBI1
+	id S1759208AbYDNBJF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 21:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbYDNBIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 21:08:27 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59319 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752984AbYDNBI1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 21:08:27 -0400
-X-Sasl-enc: 6+WgDC4supHFYQP4oOsNea9O0AnXmAWQhysb6xn4wJLh 1208135302
-Message-ID: <4802AE84.4060400@imap.cc>
-Date: Mon, 14 Apr 2008 03:08:20 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Sun, 13 Apr 2008 21:08:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38420 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754557AbYDNBIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 21:08:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 03:09:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804040111.15255.rjw@sisk.pl> <200804140231.32245.rjw@sisk.pl> <1208134017.6958.94.camel@pasglop>
+In-Reply-To: <1208134017.6958.94.camel@pasglop>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@gmail.com>
-Subject: Re: [Bug #10344] [2.6.25-rc6] possible regression: X server dying
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.Bu.C4lAIB@albercik>
-In-Reply-To: <oq66hWjeF4N.A.Bu.C4lAIB@albercik>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig81832F432ABF16FFE9EE85FE"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804140309.22057.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig81832F432ABF16FFE9EE85FE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
+> 
+> On Mon, 2008-04-14 at 02:31 +0200, Rafael J. Wysocki wrote:
+> > 
+> > Well, in our discussions with Alan Stern ->prepare() turned out to be necessary
+> > for exactly one reason, preventing new children of the device from being
+> > registered (by threads concurrent wrt the suspend thread).  For this reason,
+> > it doesn't really seem a good idea to run it before the freezer (seemingly, it
+> > would be difficult to avoid situations in which the freezer would fail as a
+> > result of ->prepare()).
+> 
+> I'm opposed to designing something around the freezer since we know it
+> will ultimately go away.
 
-Am 13.04.2008 20:56 schrieb Rafael J. Wysocki:
-> The following bug entry is on the current list of known regressions
-> from 2.6.24.  Please verify if it still should be listed.
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D10344
-> Subject		: [2.6.25-rc6] possible regression: X server dying
-> Submitter	: Tilman Schmidt <tilman@imap.cc>
-> Date		: 2008-03-24 23:38 (21 days old)
-> References	: http://lkml.org/lkml/2008/3/24/260
-> Handled-By	: Dave Airlie <airlied@gmail.com>
+Well, I think the freezer is not anything we can remove overnight.  It's there
+and does something our users rely on, whether we like it or not.  That means
+we have to provide the users with other things to rely on and _then_
+remove the freezer, not the other way around.  Hence, we need to design
+around it, otherwise the users will suffer.
+ 
+> If things like USB have issues with userland doing nasty things after
+> prepare(), then those things need to be fixed. The freezer will only
+> hide bugs and not even always or properly and not on all archs.
+> 
+> > It looks like you'd like to have a third callback executed before the freezer,
+> > but OTOH I don't see the reason not to use a notifier for such things.
+> 
+> That's just gratuituous complication imho. We can add callbacks every
+> week and no driver will every find out what to use and when.
+> 
+> prepare() has quite well defined and nice semantics if you ignore your
+> freezer trickery. It matches well with the needs of things like
+> request_firmware or the DRM, and possibly a few others, in addition to
+> matching well the need to block bus discovery.
+> 
+> If some drivers have issue because of what userland might do after
+> prepare(), then those drivers need to be fixed. We all know the freezer
+> is not a proper solution. It just hides problems and not always
+> correctly.
+> 
+> > I have imagined that while we have the freezer, the operations that need to
+> > be carried out with the user space available will be done using notifiers
+> > and the rest will be done by ->prepare() and ->suspend().  Next, when we
+> > finally drop the freezer, it will be possible to move the code from the
+> > notifiers into ->prepare() and drop the notifiers altogether.
+> 
+> Why do this two steps ? What is the point ?
 
-I have reproduced the issue on kernel 2.6.22.17, so it looks like it's
-not a kernel regression, but an X server issue.
+To avoid breaking things (from the functional point of view) unnecessarily.
+
+In short, I don't really see the difference between moving ->prepare() before
+the freezer and droppig the freezer, which I'm not going to do right now.
 
 Thanks,
-Tilman
-
-
---------------enig81832F432ABF16FFE9EE85FE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFIAq6EMdB4Whm86/kRAjawAJ9Z0cTMXQkKzABhYmaIzLU8e1fqTwCfe+rT
-bLcc1Qx6x2N7N/XukQu6KYQ=
-=HRzL
------END PGP SIGNATURE-----
-
---------------enig81832F432ABF16FFE9EE85FE--
+Rafael
