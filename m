@@ -1,187 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYDNSzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761758AbYDNTD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYDNSzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbYDNSzi
+	id S1761758AbYDNTD0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYDNTDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:55:38 -0400
-Received: from web26113.mail.ukl.yahoo.com ([217.146.182.225]:27755 "HELO
-	web26113.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756357AbYDNSzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=5EwO+7F1TscDA/8R6SfhDwbVeidjb9Jga10HP6ExKU5ClwZnIOkkgQOcmU0lpYGEDu3tkR7qjw5tHHQkOC5AlRRw8469M21jRjBbZKSucxiVze1AEpI6YtBKaBl9Jmad6J8nZ0ygHclUIOLNc4IX16nbRXIKgeRBvq5dt6aarIY=;
-X-YMail-OSG: vARdOhwVM1nHzg9607Zu6L4fUtWI8Iw2VqDcP7uHgDFGwkyALoUdW9Eh1EGsoiavTw--
-Date: Mon, 14 Apr 2008 20:55:31 +0200 (CEST)
-From: linuxcbon <linuxcbon@yahoo.fr>
-Subject: RE : Re: Question about Creative Webcam Pro PD1030 ? Bug ?
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080412135207.79f7fce1@areia>
+	Mon, 14 Apr 2008 15:03:12 -0400
+Received: from styx.suse.cz ([82.119.242.94]:37985 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753464AbYDNTDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:03:10 -0400
+Date: Mon, 14 Apr 2008 21:03:09 +0200
+From: Jan Kara <jack@suse.cz>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
+       Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080414190308.GJ15824@duck.suse.cz>
+References: <ah5DA-3X9-9@gated-at.bofh.it> <ah5X5-4tl-13@gated-at.bofh.it> <ah66A-4Nk-7@gated-at.bofh.it> <ah7vN-7Wz-9@gated-at.bofh.it> <E1JkIJ0-0000tG-LV@be1.7eggert.dyndns.org> <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <483029.85409.qm@web26113.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414170613.GI7385@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Mauro Carvalho Chehab <mchehab@infradead.org> a écrit :
-
-> On Fri, 11 Apr 2008 00:35:15 +0200 (CEST)
-> linuxcbon <linuxcbon@yahoo.fr> wrote:
+On Mon 14-04-08 13:06:13, Lennart Sorensen wrote:
+> On Mon, Apr 14, 2008 at 06:53:54PM +0200, Jan Kara wrote:
+> >   Well, but imagine you have a file /proc/my_secret_file from which you
+> > are able to read from position A:a and B:b but not from position
+> > A:b. Concievably, checks for the file position could be bypassed because of
+> > this race... I know this is kind of dumb example but I can imagine someone
+> > can eventually find something like this. So I guess one spin lock/unlock
+> > pair is a price worth paying in the callpath which is quite long anyway.
 > 
-> > Hi,
-> > 
-> > sorry if this is not the correct mail list.
-> > 
-> > I am not sure if this is a bug, if someone can help me ?
-> > 
-> > I got a Creative Webcam Pro PD1030.
-> > 
-> > Drivers are loaded :
-> > # dmesg |grep ov511
-> > drivers/media/video/ov511.c: USB OV511+ video device found
-> > drivers/media/video/ov511.c: model: Creative Labs WebCam 3
-> > drivers/media/video/ov511.c: Sensor is an OV7620AE
-> > drivers/media/video/ov511.c: Enabling 511+/7620AE workaround
-> > drivers/media/video/ov511.c: Device at usb-0000:00:02.0-2 registered
-> to
-> > minor 0
-> > usbcore: registered new interface driver ov511
-> > drivers/media/video/ov511.c: v1.64 for Linux 2.5 : ov511 USB Camera
-> Driver
-> > 
-> > 
-> > lsmod gives :
-> > ov511                  77072  0 
-> > squashfs               46856  0 
-> > compat_ioctl32          1408  1 ov511
-> > videodev               27904  1 ov511
-> > v4l2_common            16896  1 videodev
-> > v4l1_compat            14596  1 videodev
-> > usbcore               127128  6
-> usb_storage,usblp,ov511,ehci_hcd,ohci_hcd
-> > 
-> > # uname -a
-> > Linux puppypc 2.6.21.7 #1 Sun Feb 24 10:22:08 GMT-8 2008 i686
-> GNU/Linux
-> > 
-> > 
-> > I try for testing
-> > cat /dev/video > video.avi
-> > 
-> > I got : 
-> > 
-> > cat: /dev/video*** glibc detected *** cat: free(): invalid next size
-> > (fast): 0x08050ab8 ***
-> > ======= Backtrace: =========
-> > /lib/libc.so.6[0xb7f4140e]
-> > /lib/libc.so.6(cfree+0xa9)[0xb7f42bdd]
-> > /lib/libc.so.6[0xb7f1088c]
-> > /lib/libc.so.6[0xb7f0f0ef]
-> > /lib/libc.so.6[0xb7f0edcf]
-> > /lib/libc.so.6(dcgettext+0x24)[0xb7f0e030]
-> > /lib/libc.so.6(__strerror_r+0xc9)[0xb7f46b19]
-> > /lib/libc.so.6[0xb7f89d37]
-> > /lib/libc.so.6(error+0x89)[0xb7f89f38]
-> > cat[0x8049321]
-> > /lib/libc.so.6(__libc_start_main+0x12e)[0xb7f0420e]
-> > cat[0x8048c5d]
-> > ======= Memory map: ========
-> > 08048000-0804c000 r-xp 00000000 16:05 304622     /bin/cat
-> > 0804c000-0804d000 rw-p 00003000 16:05 304622     /bin/cat
-> > 0804d000-0806e000 rw-p 0804d000 00:00 0          [heap]
-> > b7d00000-b7d21000 rw-p b7d00000 00:00 0 
-> > b7d21000-b7e00000 ---p b7d21000 00:00 0 
-> > b7ea1000-b7eaa000 r-xp 00000000 16:05 502230    
-> /usr/lib/libgcc_s.so.1
-> > b7eaa000-b7eab000 rw-p 00008000 16:05 502230    
-> /usr/lib/libgcc_s.so.1
-> > b7eab000-b7ede000 r--p 00000000 16:05 498627    
-> > /usr/lib/locale/en_US/LC_CTYPE
-> > b7ede000-b7edf000 r--p 00000000 16:05 498634    
-> > /usr/lib/locale/en_US/LC_NUMERIC
-> > b7edf000-b7ee0000 r--p 00000000 16:05 498637    
-> > /usr/lib/locale/en_US/LC_TIME
-> > b7ee0000-b7ee5000 r--p 00000000 16:05 498626    
-> > /usr/lib/locale/en_US/LC_COLLATE
-> > b7ee5000-b7ee6000 r--p 00000000 16:05 498632    
-> > /usr/lib/locale/en_US/LC_MONETARY
-> > b7ee6000-b7ee7000 r--p 00000000 16:05 498631    
-> > /usr/lib/locale/en_US/LC_MESSAGES/SYS_LC_MESSAGES
-> > b7ee7000-b7ee8000 r--p 00000000 16:05 498635    
-> > /usr/lib/locale/en_US/LC_PAPER
-> > b7ee8000-b7ee9000 r--p 00000000 16:05 498633    
-> > /usr/lib/locale/en_US/LC_NAME
-> > b7ee9000-b7eea000 r--p 00000000 16:05 498625    
-> > /usr/lib/locale/en_US/LC_ADDRESS
-> > b7eea000-b7eeb000 r--p 00000000 16:05 498636    
-> > /usr/lib/locale/en_US/LC_TELEPHONE
-> > b7eeb000-b7eec000 r--p 00000000 16:05 498629    
-> > /usr/lib/locale/en_US/LC_MEASUREMENT
-> > b7eec000-b7eed000 r--p 00000000 16:05 498628    
-> > /usr/lib/locale/en_US/LC_IDENTIFICATION
-> > b7eed000-b7eee000 rw-p b7eed000 00:00 0 
-> > b7eee000-b7fe3000 r-xp 00000000 16:05 16065      /lib/libc-2.6.1.so
-> > b7fe3000-b7fe4000 r--p 000f5000 16:05 16065      /lib/libc-2.6.1.so
-> > b7fe4000-b7fe6000 rw-p 000f6000 16:05 16065      /lib/libc-2.6.1.so
-> > b7fe6000-b7fea000 rw-p b7fe6000 00:00 0 
-> > b7fea000-b7fff000 r-xp 00000000 16:05 16055      /lib/ld-2.6.1.so
-> > b7fff000-b8001000 rw-p 00014000 16:05 16055      /lib/ld-2.6.1.so
-> > bf808000-bf81e000 rw-p bf808000 00:00 0          [stack]
-> > ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-> > Aborted
-> > 
-> > 
-> > I also got problems to use webcam with skype etc.
-> > Can you help find the origin of the bug ?
-> > 
-> > Thanks very much.
-> > 
-> > Cheers, linuxcbon
-> 
-> It seems that the userspace app is trying to free a memory block twice.
-> Only
-> the author of the application can help to fix this.
-> 
-> This may eventually be caused by some driver bad behavior or OOPS. Do
-> you have
-> any oops message, if you run "dmesg" ?
-> 
-> About skype, their V4L support is still broken, at least on the versions
-> I
-> tested here. I have several webcams here. On my tests, it worked only
-> with one
-> specific model. I suspect that they support only a very few subset of
-> the
-> supported video formats.
-> 
-> Cheers,
-> Mauro
+> But only two threads within the process can read from the filehandle and
+> hence the process would be doing locking.  And external attacker can't
+  Why would it be doing locking? If some nasty user runs the process, he
+*wants* his two threads to race as much as possible and trigger the race.
+And then use corrupted f_pos.
 
+> break the internal locking of the process between the threads, and even
+> if you do open the file in /proc that the process is using, being and
+> external process you would have your own file handle and hence your own
+> file position since you aren't part of that process.
 
-I forgot to cc the linux mailing list, so here it is again.
-
-
-hi Mauro,
-
-thanks for your answer !
-
-I already contacted the authors (Mark,Wallac,Olawlor), but no feedback
-yet.
-
-I got no oops message from kernel.
-Can you help me and show me how to debug it or give some ideas ?
-
-Cheers, linuxcbon
-
-
-
-
-      _____________________________________________________________________________ 
-Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
