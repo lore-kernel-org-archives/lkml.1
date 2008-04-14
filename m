@@ -1,203 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762372AbYDNO2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYDNOd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762372AbYDNO2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760048AbYDNO2S
+	id S1760641AbYDNOd2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYDNOdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:28:18 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:42404 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759441AbYDNO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:28:15 -0400
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <4802BBDC.1030707@crispincowan.com>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
-	 <20080404122408.986477936@I-love.SAKURA.ne.jp>
-	 <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp>
-	 <20080409131151.GK11962@parisc-linux.org>
-	 <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
-	 <20080411143013.GB11962@parisc-linux.org>
-	 <20080413163658.GC7010@sergelap.austin.ibm.com>
-	 <4802BBDC.1030707@crispincowan.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 14 Apr 2008 10:17:00 -0400
-Message-Id: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+	Mon, 14 Apr 2008 10:33:19 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:55815 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbYDNOdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:33:18 -0400
+Message-ID: <48036AA6.2010000@linux.vnet.ibm.com>
+Date: Mon, 14 Apr 2008 20:01:02 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Control Groups Roadmap ideas
+References: <6599ad830804081414x7be75d2fte5b500a7f81df40c@mail.gmail.com> <20080411144836.GA6468@sergelap.cust.hotspot.t-mobile.com> <661de9470804112210h49ef1371p2c3102ffdf2791f2@mail.gmail.com> <20080413161127.GB7010@sergelap.austin.ibm.com>
+In-Reply-To: <20080413161127.GB7010@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 2008-04-13 at 19:05 -0700, Crispin Cowan wrote:
-> Serge E. Hallyn wrote:
-> > Quoting Matthew Wilcox (matthew@wil.cx):
-> >   
-> >> On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
-> >>     
-> >>> Matthew Wilcox wrote:
-> >>>       
-> >>>> When the rule is put in place, say "No modifications to /etc/passwd",
-> >>>> look up the inode and major:minor of /etc/passwd.  If there's a rename,
-> >>>> look up the new inode number.  If it's mounted elsewhere, it doesn't
-> >>>> matter, they still can't modify it because it has the same
-> >>>> major:minor:inode.
-> >>>>         
-> >>> If write access is denied because of a rule "No modifications to /etc/passwd",
-> >>> a rule "Allow modifications to /tmp/passwd" can no longer be enforced after
-> >>> "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
-> >>> "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
-> >>>       
-> >> That's a fundamental limitation of pathname-based security though.
-> >> If the same file exists in two places, you have to resolve the question
-> >> of which rule overrides the other.
-> >>     
-> > In the past, Crispin has given clear, concise explanations of a few of
-> > the things pathname based access control in fact excels at.  Crispin,
-> > can you recite those again so we can think constructively about which
-> > (if any) of the currently considered options are or are not sufficient?
-> >
-> > I.e. what would be a motivation for a rule like 'no modifications to
-> > /etc/passwd', and what precisely would and would not be accepted ways to
-> > get around it (and why)?
-> >   
-> As I just posted, a rule of "no mods to /some/pathname" is broken, which 
-> is why AppArmor has no such construct.
+Serge E. Hallyn wrote:
+> Quoting Balbir Singh (balbir@linux.vnet.ibm.com):
+>> On Fri, Apr 11, 2008 at 8:18 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+>>> Quoting Paul Menage (menage@google.com):
+>>>  > This is a list of some of the sub-projects that I'm planning for
+>>>  > Control Groups, or that I know others are planning on or working on.
+>>>  > Any comments or suggestions are welcome.
+>>>  >
+>>>  >
+>>>  > 1) Stateless subsystems
+>>>  > -----
+>>>  >
+>>>  > This was motivated by the recent "freezer" subsystem proposal, which
+>>>  > included a facility for sending signals to all members of a cgroup.
+>>>  > This wasn't specifically freezer-related, and wasn't even something
+>>>  > that needed particular per-cgroup state - its only state is that set
+>>>  > of processes, which is already tracked by crgoups. So it could
+>>>  > theoretically be mounted on multiple hierarchies at once, and wouldn't
+>>>  > need an entry in the css_set array.
+>>>  >
+>>>  > This would require a few internal plumbing changes in cgroups, in particular:
+>>>  >
+>>>  > - hashing css_set objects based on their cgroups rather than their css pointers
+>>>  > - allowing stateless subsystems to be in multiple hierarchies
+>>>  > - changing the way hierarchy ids are calculated - simply ORing
+>>>  > together the subsystem would no longer work since that could result in
+>>>  > duplicates
+>>>  >
+>>>  > 2) More flexible binding/unbinding/rebinding
+>>>  > -----
+>>>  >
+>>>  > Currently you can only add/remove subsystems to a hierarchy when it
+>>>  > has just a single (root) cgroup. This is a bit inflexible, so I'm
+>>>  > planning to support:
+>>>  >
+>>>  > - adding a subsystem to an existing hierarchy by automatically
+>>>  > creating a subsys state object for the new subsystem for each existing
+>>>  > cgroup in the hierarchy and doing the appropriate
+>>>  > can_attach()/attach_tasks() callbacks for all tasks in the system
+>>>  >
+>>>  > - removing a subsystem from an existing hierarchy by moving all tasks
+>>>  > to that subsystem's root cgroup and destroying the child subsystem
+>>>  > state objects
+>>>  >
+>>>  > - merging two existing hierarchies that have identical cgroup trees
+>>>  >
+>>>  > - (maybe) splitting one hierarchy into two separate hierarchies
+>>>  >
+>>>  > Whether all these operations should be forced through the mount()
+>>>  > system call, or whether they should be done via operations on cgroup
+>>>  > control files, is something I've not figured out yet.
+>>>
+>>>  I'm tempted to ask what the use case is for this (I assume you have one,
+>>>  you don't generally introduce features for no good reason), but it
+>>>  doesn't sound like this would have any performance effect on the general
+>>>  case, so it sounds good.
+>>>
+>>>  I'd stick with mount semantics.  Just
+>>>         mount -t cgroup -o remount,devices,cpu none /devwh"
+>>>  should handle all cases, no?
+>>>
+>>>
+>>>
+>>>  > 3) Subsystem dependencies
+>>>  > -----
+>>>  >
+>>>  > This would be a fairly simple change, essentially allowing one
+>>>  > subsystem to require that it only be mounted on a hierarchy when some
+>>>  > other subsystem was also present. The implementation would probably be
+>>>  > a callback that allows a subsystem to confirm whether it's prepared to
+>>>  > be included in a proposed hierarchy containing a specified subsystem
+>>>  > bitmask; it would be able to prevent the hierarchy from being created
+>>>  > by giving an error return. An example of a use for this would be a
+>>>  > swap subsystem that is mostly independent of the memory controller,
+>>>  > but uses the page-ownership tracking of the memory controller to
+>>>  > determine which cgroup to charge swap pages to. Hence it would require
+>>>  > that it only be mounted on a hierarchy that also included a memory
+>>>  > controller. The memory controller would make no such requirement by
+>>>  > itself, so could be used on its own without the swap controller.
+>>>  >
+>>>  >
+>>>  > 4) Subsystem Inheritance
+>>>  > ------
+>>>  >
+>>>  > This is an idea that I've been kicking around for a while trying to
+>>>  > figure out whether its usefulness is worth the in-kernel complexity,
+>>>  > versus doing it in userspace. It comes from the idea that although
+>>>  > cgroups supports multiple hierarchies so that different subsystems can
+>>>  > see different task groupings, one of the more common uses of this is
+>>>  > (I believe) to support a setup where say we have separate groups A, B
+>>>  > and C for one resource X, but for resource Y we want a group
+>>>  > consisting of A+B+C. E.g. we want individual CPU limits for A, B and
+>>>  > C, but for disk I/O we want them all to share a common limit. This can
+>>>  > be done from userspace by mounting two hierarchies, one for CPU and
+>>>  > one for disk I/O, and creating appropriate groupings, but it could
+>>>  > also be done in the kernel as follows:
+>>>  >
+>>>  > - each subsystem "foo" would have a "foo.inherit" file provided by
+>>>  > (and handled by) cgroups in each group directory
+>>>  >
+>>>  > - setting the foo.inherit flag (i.e. writing 1 to it) would cause
+>>>  > tasks in that cgroup to share the "foo" subsystem state with the
+>>>  > parent cgroup
+>>>  >
+>>>  > - from the subsystem's point of view, it would only need to worry
+>>>  > about its own foo_cgroup objects  and which task was associated with
+>>>  > each object; the subsystem wouldn't need to care about which tasks
+>>>  > were part of each cgroup, and which cgroups were sharing state; that
+>>>  > would all be taken care of by the cgroup framework
+>>>  >
+>>>  > I've mentioned this a couple of times on the containers list as part
+>>>  > of other random discussions; at one point Serge Hallyn expressed some
+>>>  > interest but there's not been much noise about it either way. I
+>>>  > figured I'd include it on this list anyway to see what people think of
+>>>  > it.
+>>>
+>>>  I guess I'm hoping that if libcg goes well then a userspace daemon can
+>>>  do all we need.  Of course the use case I envision is having a container
+>>>  which is locked to some amount of ram, wherein the container admin wants
+>>>  to lock some daemon to a subset of that ram.  If the host admin lets the
+>>>  container admin edit a config file (or talk to a daemon through some
+>>>  sock designated for the container) that will only create a child of the
+>>>  container's cgroup, that's probably great.
+>>>
+>> I thought of doing something like this in libcg (having a daemon and a
+>> client socket interface), but dropped the idea later. When all
+>> controllers support multi-levels well, the plan is to create a
+>> sub-directory in the cgroup hierarchy and give subtree ownership to
+>> the application administrator.
+>>
+>>>  So I'm basically being quiet until I see whether libcg will suffice.
+>>>
+>> If you do have any specific requirements, we can cater to them right
+>> now. Please do let us know. The biggest challenge right now is getting
+>> a stable API.
 > 
-> Things that pathname-based access control is good at:
+> It sounds like what you're talking about should suffice - the container
+> can only write to its own subdirectory, and the control files therein
+> should not allow the container to escape the bounds set for it, only to
+> partition it.
 > 
->     * *System Integrity:* Many of the vital components of a UNIX system
->       are stored in files with Well Known Names such as /etc/shadow,
->       /var/www/htdocs/index.html and /home/crispin/.ssh/known_hosts. The
->       contents of the actual data blocks is less important than the
->       integrity of what some random process gets when it asks for these
->       resources by name. Preserving the integrity of what responds to
->       the Well Known Name is thus easier if you restrict access based on
->       the name.
-
-I think some might argue that the integrity of the data in /etc/shadow
-and your .ssh files is very important, not just their names.  And as
-names are themselves just data contained by directories, the integrity
-of the names is a particular case of the data integrity problem.  And
-ultimately data integrity requires information flow control to preserve.
-
->     * *Dynamic Access Control:* A special case of the above pertains to
->       files that may or may not exist. If you don't *have* a /etc/hosts
->       file, it is still important to have a rule that controls whether
->       it can be created. This is hard to do in label-based systems,
->       because the file does not exist to put a label on, so you have to
->       kludge it by either creating the file with zero length and
->       labeling it, or by creating more complex policy for the parent
->       /etc directory, and that's hard given the number of uses for /etc
->       such as /etc/motd. In a name based scheme, you simply don't
->       provide write permission to "/etc/hosts" unless you mean it, and
->       it can be enforced even if such a file does not exist.
-
-I'd view this as another example of practical or legacy concerns, as it
-wouldn't pose a problem if either of the following were true:
-- /etc was further partitioned into multiple subdirectories (seemingly
-true in an increasing number of cases, so we seem to be moving in that
-direction regardless) so that inheritance from parent directory would
-suffice, or
-- specific programs were used to create or update the individual files
-(true for some of the files in /etc, and generally helpful for ensuring
-proper data formatting and applying basic sanity checks on the content)
-so that the files created by them could be labeled based on the creating
-domain or via appropriate instrumentation of the programs to set the
-attributes (the latter is not fundamentally different than the situation
-for DAC ownership/mode or ACLs).
-
-Also, note that in the case of SELinux, we do have a solution to the
-above situation, namely restorecond, which leverages the kernel's
-inotify mechanism.
-
-As an example where the name-based schemes have difficulties with
-"dynamic" data, files created at runtime in /tmp and other shared
-directories often have security-irrelevant names, yet protecting them
-from tampering by others can be very relevant to security.  There the
-attribute-based schemes have the advantage.
-
->     * *Ad Hoc Generalization:* Label-based access control generalizes
->       policy in that the policy treats all files and resources that
->       share a label the same. If you want to make a new generalization
->       that encompasses *part* of the files that share a label, but *not
->       all* of those files, then you have to "split the label", relabel
->       the file system, and revise the policy accordingly. Name-based
->       access control lets you create ad hoc generalizations, so that
->       *my* policy can grant access to "/var/www/*.pl" without regard to
->       whatever labels or rules some other policy has applied to the same
->       directory tree.
-
-We might argue about whether ad hoc policy writing is the best approach.
-Regardless, the corresponding weakness here for the path-based schemes
-is that they force you into writing policy in terms of the filesystem
-layout and names, which may have little or no bearing on the actual
-security characteristics of the files.
-
->     * *Familiar Interface:* Administrators are accustomed to
->       administering the box in terms of the names of the files that
->       matter. A name-based policy is therefore somewhat more familiar
->       than a policy with label abstractions, where they then have to go
->       look at the restorecon file to discover what files will/should
->       have what labels.
-
-restorecon /path/to/file doesn't require the user to deal with anything
-other than a pathname.  The file contexts configuration is entirely
-hidden from the user by that interface.
-
->     * *Practical Concerns:* Not all file systems support labels, and so
->       label-based schemes become coarse grained when they run into them.
->       Name based schemes remain granular when specifying access down
->       into the internals of such file systems. Legacy Linux file systems
->       like ext2 don't matter much any more, but persistent file systems
->       that will never have label support include NFSv3 file systems
->       (nearly every Network Appliance NAS server out there) and FAT32
->       file system (most every USB storage device).
-
-At present this is a limitation, although we do support per-mount
-labeling of such filesystems, which is really all we can guarantee in
-terms of protection anyway - anything further is misleading as the
-server or device won't ensure any finer grained separation for us.  But
-labeled NFS support is in progress, and one should never let legacy code
-cripple one's approach.  Making compatibility allowances for legacy code
-is quite reasonable, and is precisely what we do in terms of supporting
-default type transitions, per-mount labels, etc, but that isn't the same
-thing as completely constraining your design to only what is supported
-by existing code.
-
-> A lot of what's going on is the duality of the one:many relationships 
-> between labels and names:
+> The only thing that worries me is how subtle it may turn out to be to
+> properly set up a container this way.  I.e. you'll need to
+> 	mount --bind /etc/cgroups/mycontainer /vps/container1/etc/cgroups
+> before the container is off and running and be able to then prevent
+> the cgroup from mounting the host's /etc any other way.
 > 
->     * Labels: one label represents many files
->           o this property is why ad hoc generalization fails in label
->             based systems
->     * Names: many names can represent a single file
->           o This property is why deny rules fail in name based systems
+> As in so many other cases it shouldn't be too difficult with selinux,
+> otherwise I suppose one thing you could do is to put the host's
+> /etc/cgroup (or really the host's /) on partitionN, mount
+> /etc/cgroup/container from another partitionM, and use the device
+> whitelist (eventually, device namespaces) to allow the container to
+> mount partitionM but not partitionN.
 > 
-> Therefore, I am not claiming name-based access controls to be the 
-> ultimate. Rather, there are duals for all of the above that induce 
-> circumstances where label-based systems are superior. Each class of 
-> system has strengths and weaknesses. These are name-based strengths.
+> So that's the one place where kernel support might be kind of seductive,
+> but I suspect it would just lead to either an unsafe, an inflexible, or
+> just a hokey "solution".  So let's stick with libcg for now.  A daemon
+> can always be written on top of it if people want, and if at some point
+> we see a real need for kernel support we can talk about it then.
+> 
 
-The weaknesses from my POV are:
-- no system-wide view of the subjects and objects and thus of the
-policy,
-- no uniform abstraction for handling objects (not everything has a
-pathname), leading to inconsistent or incomplete control,
-- no useful information for runtime objects,
-- forcing policy to be written in terms of individual objects and
-filesystem layout rather than security properties.
+Sounds fair to me. We intend to provide the basis for building a good daemon if
+ever required. You see left overs in libcg.h (that I need to clean up).
+
+> Thanks, Balbir.
+> 
+>>>  > 5) "procs" control file
+>>>  > -----
+>>>  >
+>>>  > This would be the equivalent of the "tasks" file, but acting/reporting
+>>>  > on entire thread groups. Not sure exactly what the read semantics
+>>>  > should be if a sub-thread of a process is in the cgroup, but not its
+>>>  > thread group leader.
+>>>  >
+>>>  >
+>>>  > 6) Statistics / binary API
+>>>  > ----
+>>>  >
+>>>  > Balaji Rao is working on a generic way to gather per-subsystem
+>>>  > statistics; it would also be interesting to construct an extensible
+>>>  > binary API via taskstats. One possible way to do this (taken from my
+>>>  > email earlier today) would be:
+>>>  >
+>>>  > With the taskstats interface, we could have operations to:
+>>>  >
+>>>  > - describe the API exported by a given subsystem (automatically
+>>>  > generated, based on its registered control files and their access
+>>>  > methods)
+>>>  >
+>>>  > - retrieve a specified set of stats in a binary format
+>>>  >
+>>>  > So as a concrete example, with the memory, cpuacct and cpu subsystems
+>>>  > configured, the reported API might look something like (in pseudo-code
+>>>  > form)
+>>>  >
+>>>  > 0 : memory.usage_in_bytes : u64
+>>>  > 1 : memory.limit_in_bytes : u64
+>>>  > 2 : memory.failcnt : u64
+>>>  > 3 : memory.stat : map
+>>>  > 4 : cpuacct.usage : u64
+>>>  > 5 : cpu.shares : u64
+>>>  > 6 : cpu.rt_runtime_ms : s64
+>>>  > 7 : cpu.stat : map
+>>>  >
+>>>  > This list would be auto-generated by cgroups based on inspection of
+>>>  > the control files.
+>>>  >
+>>>  > The user could then request stats 0, 3 and 7 for a cgroup to get the
+>>>  > memory.usage_in_bytes, memory.stat and cpu.stat statistics.
+>>>  >
+>>>  > The stats could be returned in a binary format; the format for each
+>>>  > individual stat would depend on the type of that stat, and these could
+>>>  > be simply concatenated together.
+>>>  >
+>>>  > A u64 or s64 stat would simply be a 64-bit value in the data stream
+>>>  >
+>>>  > A map stat would be represented as a sequence of 64-bit values,
+>>>  > representing the values in the map. There would be no need to include
+>>>  > the size of the map or the key ordering in the binary format, since
+>>>  > userspace could determine that by reading the ASCII version of the map
+>>>  > control file once at startup.
+>>>  >
+>>>  > So in the case of the request above for stats 0, 3 & 7, the binary
+>>>  > stats stream would be a sequence of 64-bit values consisting of:
+>>>  >
+>>>  > <memory.usage>
+>>>  > <memory.stat.cache>
+>>>  > <memory.stat.rss>
+>>>  > <memory.stat.active>
+>>>  > <memory.stat.inactive>
+>>>  > <cpu.stat.utime>
+>>>  > <cpu.stat.stime>
+>>>  >
+>>>  > If more stats were added to memory.stat or cpu.stat by a future
+>>>  > version of the code, then they would automatically appear; any that
+>>>  > userspace didn't understand it could ignore.
+>>>  >
+>>>  > The userspace side of this could be handled by libcg.
+>>>  >
+>> Yes, it can be easily handled by libcg. I think this is an important
+>> piece of the cgroup infrastructure.
+>>
+>>>  > 8) Subsystems from modules
+>>>  > ------
+>>>  >
+>>>  > Having completely unknown subsystems registered at run time would
+>>>  > involve adding a bunch of complexity and additional locking to cgroups
+>>>  > - but allowing a subsystem to be known at compile time but just
+>>>  > stubbed until first mounted (at which time its module would be loaded)
+>>>  > should increase the flexibility of cgroups without hurting its
+>>>  > complexity or performance.
+>>>  >
+>>>  >
+>>>  > 7) New subsystems
+>>>  > -----
+>>>  >
+>>>  > - Swap, disk I/O - already being worked on by others
+>>>  >
+>>>  > - OOM handler. Exactly what semantics this should provide aren't 100%
+>>>  > clear. At Google we have a useful OOM handler that allows root to
+>>>  > intercept OOMs as they're about to happen, and take appropriate action
+>>>  > such as killing some other lower-priority job to free up memory, etc.
+>>>  > Another useful feature of this subsystem might be to allow a process
+>>>  > in that cgroup to get an early notification that its cgroup is getting
+>>>  > close to OOM. This needs to be a separate subsystem since it could be
+>>>  > used to provide OOM notification/handling for localized OOMs caused
+>>>  > either by cpusets or the memory controller.
+>>>  >
+>>>  > - network tx/rx isolation. The cleanest way that we've found to do
+>>>  > this is to provide a per-cgroup id which can be exposed as a traffic
+>>>  > filter for regular Linux traffic control - then you can construct
+>>>  > arbitrary network queueing structures without requiring any new APIs,
+>>>  > and tie flows from particular cgroups into the appropriate queues.
+>>>  >
+>>>  >
+>>>  > 8) per-mm owner field
+>>>  > ----
+>>>  >
+>>>  > To remove the need for per-subsystem counted references from the mm.
+>>>  > Being developed by Balbir Singh
+>>>
+>> I have version 9 out. It has all the review comments incorporated. If
+>> the patch seems reasonable, I'll ask Andrew to include it.
+>>
+>>>  I'm slooowly trying to whip together a swapfile namespace - not a
+>>>  cgroup - which ties a swapfns to a list of swapfiles (where each
+>>>  swapfile belongs to only one swapfns).  So I also need an mm->task
+>>>  pointer of some kind.  I've got my own in my patches right now but
+>>>  sure do hope to make use of Balbir's mm owner field.
+>> Serge, do you have any specific requirements for the mm owner field.
+>> Will the current patch meet your requirements (including
+>> mm_owner_changed field callbacks)?
+> 
+> I'm behind in versions, but the last I took a look it looked great.
+
+Thanks, that would be nice. I've just asked Andrew to include it, if there are
+no objections.
+
+> 
+> thanks,
+> -serge
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+
 
 -- 
-Stephen Smalley
-National Security Agency
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
