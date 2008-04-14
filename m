@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbYDNPwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbYDNP4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbYDNPwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYDNPwb
+	id S1760400AbYDNP4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYDNPzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:52:31 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46796 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384AbYDNPwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:52:30 -0400
-Date: Mon, 14 Apr 2008 10:49:25 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mtd/chips/cfi_cmdset_0020.c: make a function static
-Message-ID: <20080414104925.5416d07c@zod.rchland.ibm.com>
-In-Reply-To: <20080414142030.GT6695@cs181133002.pp.htv.fi>
-References: <20080414142030.GT6695@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 11:55:49 -0400
+Received: from namei.org ([69.55.235.186]:52383 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752532AbYDNPzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 11:55:47 -0400
+Date: Tue, 15 Apr 2008 01:54:00 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+In-Reply-To: <20080414072328.GW9785@ZenIV.linux.org.uk>
+Message-ID: <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org>
+ <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
+ <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
+ <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu>
+ <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org>
+ <20080414072328.GW9785@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 17:20:30 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, 14 Apr 2008, Al Viro wrote:
 
-> This patch makes the needlessly global cfi_staa_erase_varsize() static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Real review of code in tree and patches getting into the tree.
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+There is currently little incentive for developers to perform review.  
 
-> 
-> ---
-> 071e1e3116928c1625f475a0fba2f96ee897a95c diff --git a/drivers/mtd/chips/cfi_cmdset_0020.c b/drivers/mtd/chips/cfi_cmdset_0020.c
-> index 492e2ab..356939b 100644
-> --- a/drivers/mtd/chips/cfi_cmdset_0020.c
-> +++ b/drivers/mtd/chips/cfi_cmdset_0020.c
-> @@ -893,7 +893,8 @@ retry:
->  	return ret;
->  }
-> 
-> -int cfi_staa_erase_varsize(struct mtd_info *mtd, struct erase_info *instr)
-> +static int cfi_staa_erase_varsize(struct mtd_info *mtd,
-> +				  struct erase_info *instr)
->  {	struct map_info *map = mtd->priv;
->  	struct cfi_private *cfi = map->fldrv_priv;
->  	unsigned long adr, len;
-> 
-> 
-> ______________________________________________________
-> Linux MTD discussion mailing list
-> http://lists.infradead.org/mailman/listinfo/linux-mtd/
+It's difficult work, and is generally not rewarded or recognized, except 
+in often quite negative ways.  There is a small handful of people who do a 
+lot of review, but they are exceptional in various ways.
+
+OTOH, writing code is relatively simple, and is much more highly rewarded:
+
+- People tend to get paid to write kernel code, but not so much to review 
+  it.
+
+- Things like "who made the kernel" statistics and related articles ignore 
+  code review.
+
+- Creating new features is perceived as the highest form of contribution 
+  for general developers, and likely important as career currency 
+  (similar to the publish or perish model in the academic world).
+
+I don't know how to solve this, but suspect that encouraging the use of 
+reviewed-by and also including it in things like analysis of who is 
+contributing, selection for kernel summit invitations etc. would be a 
+start.  At least, better than nothing.
+
+
+- James 
+-- 
+James Morris
+<jmorris@namei.org>
