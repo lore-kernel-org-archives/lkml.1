@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYDNKVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbYDNKV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYDNKVM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYDNKU6
+	id S1757230AbYDNKV0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYDNKVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:20:58 -0400
-Received: from mail.suse.de ([195.135.220.2]:60558 "EHLO mx1.suse.de"
+	Mon, 14 Apr 2008 06:21:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50068 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbYDNKU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:20:56 -0400
-Date: Mon, 14 Apr 2008 12:20:55 +0200
-Message-ID: <s5hej98hh4o.wl%tiwai@suse.de>
+	id S1756649AbYDNKVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 06:21:16 -0400
+Date: Mon, 14 Apr 2008 12:21:15 +0200
+Message-ID: <s5hd4oshh44.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Pavel Machek <pavel@suse.cz>
 Cc: perex@perex.cz, kernel list <linux-kernel@vger.kernel.org>,
        Trivial patch monkey <trivial@kernel.org>
-Subject: Re: sound/usb/usbaudio.c: printk() is fine
-In-Reply-To: <20080329212023.GA13329@elf.ucw.cz>
-References: <20080329212023.GA13329@elf.ucw.cz>
+Subject: Re: usb audio: make quirk handling more readable, and fix	commented-out code
+In-Reply-To: <20080329223540.GA5506@elf.ucw.cz>
+References: <20080329223540.GA5506@elf.ucw.cz>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,352 +27,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 29 Mar 2008 22:20:23 +0100,
+At Sat, 29 Mar 2008 23:35:40 +0100,
 Pavel Machek wrote:
 > 
 > 
-> printk() works perfectly fine, no need to obfuscate code with
-> snd_printk().
+> usb audio contains useful  debugging code, protected by #if
+> 0. Unfortunately, it will not compile because variable names changed;
+> fix it.
+> 
+> Dallas workaround is formatted in a way where it is not quite obvious
+> what is normal code and what is quirk. Reformat it to make it obvious.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Well, if we use printk(), we should put a prefix to identify the
-message.  snd_printk() puts the file name and the line number.
+Applied to ALSA tree now.  Thanks.
 
-And, it'd be appreciated if you split patches - coding style fixes and
-printk replacements.
-
-
-Thanks,
 
 Takashi
 
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
 > diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-> index f48838a..8056d8a 100644
+> index 257a4e1..b6b2490 100644
 > --- a/sound/usb/usbaudio.c
 > +++ b/sound/usb/usbaudio.c
-> @@ -846,7 +850,7 @@ static int start_urbs(struct snd_usb_sub
->  	for (i = 0; i < subs->nurbs; i++) {
->  		snd_assert(subs->dataurb[i].urb, return -EINVAL);
->  		if (subs->ops.prepare(subs, runtime, subs->dataurb[i].urb) < 0) {
-> -			snd_printk(KERN_ERR "cannot prepare datapipe for urb %d\n", i);
-> +			printk(KERN_ERR "cannot prepare datapipe for urb %d\n", i);
->  			goto __error;
->  		}
->  	}
-> @@ -854,7 +858,7 @@ static int start_urbs(struct snd_usb_sub
->  		for (i = 0; i < SYNC_URBS; i++) {
->  			snd_assert(subs->syncurb[i].urb, return -EINVAL);
->  			if (subs->ops.prepare_sync(subs, runtime, subs->syncurb[i].urb) < 0) {
-> -				snd_printk(KERN_ERR "cannot prepare syncpipe for urb %d\n", i);
-> +				printk(KERN_ERR "cannot prepare syncpipe for urb %d\n", i);
->  				goto __error;
->  			}
->  		}
-> @@ -866,7 +870,7 @@ static int start_urbs(struct snd_usb_sub
->  	for (i = 0; i < subs->nurbs; i++) {
->  		err = usb_submit_urb(subs->dataurb[i].urb, GFP_ATOMIC);
->  		if (err < 0) {
-> -			snd_printk(KERN_ERR "cannot submit datapipe "
-> +			printk(KERN_ERR "cannot submit datapipe "
->  				   "for urb %d, error %d: %s\n",
->  				   i, err, usb_error_string(err));
->  			goto __error;
-> @@ -877,7 +881,7 @@ static int start_urbs(struct snd_usb_sub
->  		for (i = 0; i < SYNC_URBS; i++) {
->  			err = usb_submit_urb(subs->syncurb[i].urb, GFP_ATOMIC);
->  			if (err < 0) {
-> -				snd_printk(KERN_ERR "cannot submit syncpipe "
-> +				printk(KERN_ERR "cannot submit syncpipe "
->  					   "for urb %d, error %d: %s\n",
->  					   i, err, usb_error_string(err));
->  				goto __error;
-> @@ -915,12 +919,12 @@ static int wait_clear_urbs(struct snd_us
->  					alive++;
->  			}
->  		}
-> -		if (! alive)
-> +		if (!alive)
->  			break;
->  		schedule_timeout_uninterruptible(1);
->  	} while (time_before(jiffies, end_time));
->  	if (alive)
-> -		snd_printk(KERN_ERR "timeout: still %d active urbs..\n", alive);
-> +		printk(KERN_ERR "timeout: still %d active urbs..\n", alive);
->  	return 0;
->  }
+> @@ -1427,9 +1433,9 @@ static int set_format(struct snd_usb_sub
 >  
-> @@ -1264,7 +1280,7 @@ static int init_usb_pitch(struct usb_dev
->  		if ((err = snd_usb_ctl_msg(dev, usb_sndctrlpipe(dev, 0), SET_CUR,
->  					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_OUT,
->  					   PITCH_CONTROL << 8, ep, data, 1, 1000)) < 0) {
-> -			snd_printk(KERN_ERR "%d:%d:%d: cannot set enable PITCH\n",
-> +			printk(KERN_ERR "%d:%d:%d: cannot set enable PITCH\n",
->  				   dev->devnum, iface, ep);
->  			return err;
->  		}
-> @@ -1290,14 +1306,14 @@ static int init_usb_sample_rate(struct u
->  		if ((err = snd_usb_ctl_msg(dev, usb_sndctrlpipe(dev, 0), SET_CUR,
->  					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_OUT,
->  					   SAMPLING_FREQ_CONTROL << 8, ep, data, 3, 1000)) < 0) {
-> -			snd_printk(KERN_ERR "%d:%d:%d: cannot set freq %d to ep 0x%x\n",
-> +			printk(KERN_ERR "%d:%d:%d: cannot set freq %d to ep 0x%x\n",
->  				   dev->devnum, iface, fmt->altsetting, rate, ep);
->  			return err;
->  		}
->  		if ((err = snd_usb_ctl_msg(dev, usb_rcvctrlpipe(dev, 0), GET_CUR,
->  					   USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_IN,
->  					   SAMPLING_FREQ_CONTROL << 8, ep, data, 3, 1000)) < 0) {
-> -			snd_printk(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
-> +			printk(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
->  				   dev->devnum, iface, fmt->altsetting, ep);
->  			return 0; /* some devices don't support reading */
->  		}
-> @@ -1335,7 +1351,7 @@ static int set_format(struct snd_usb_sub
->  	/* close the old interface */
->  	if (subs->interface >= 0 && subs->interface != fmt->iface) {
->  		if (usb_set_interface(subs->dev, subs->interface, 0) < 0) {
-> -			snd_printk(KERN_ERR "%d:%d:%d: return to setting 0 failed\n",
-> +			printk(KERN_ERR "%d:%d:%d: return to setting 0 failed\n",
->  				dev->devnum, fmt->iface, fmt->altsetting);
->  			return -EIO;
->  		}
-> @@ -1525,8 +1548,8 @@ static int snd_usb_pcm_prepare(struct sn
->  	struct snd_pcm_runtime *runtime = substream->runtime;
->  	struct snd_usb_substream *subs = runtime->private_data;
+>  	subs->cur_audiofmt = fmt;
 >  
-> -	if (! subs->cur_audiofmt) {
-> -		snd_printk(KERN_ERR "usbaudio: no format is specified!\n");
-> +	if (!subs->cur_audiofmt) {
-> +		printk(KERN_ERR "usbaudio: no format is specified!\n");
->  		return -ENXIO;
->  	}
->  
-> @@ -2431,7 +2454,7 @@ static int parse_audio_format_i_type(str
->  		/* fall-through */
->  	case USB_AUDIO_FORMAT_PCM:
->  		if (sample_width > sample_bytes * 8) {
-> -			snd_printk(KERN_INFO "%d:%u:%d : sample bitwidth %d in over sample bytes %d\n",
-> +			printk(KERN_INFO "%d:%u:%d : sample bitwidth %d in over sample bytes %d\n",
->  				   chip->dev->devnum, fp->iface, fp->altsetting,
->  				   sample_width, sample_bytes);
+> -#if 0
+> -	printk("setting done: format = %d, rate = %d, channels = %d\n",
+> -	       fmt->format, fmt->rate, fmt->channels);
+> +#if 0
+> +	printk("setting done: format = %d, rate = %d..%d, channels = %d\n",
+> +	       fmt->format, fmt->rate_min, fmt->rate_max, fmt->channels);
+>  	printk("  datapipe = 0x%0x, syncpipe = 0x%0x\n",
+>  	       subs->datapipe, subs->syncpipe);
+>  #endif
+> @@ -2464,11 +2470,12 @@ static int parse_audio_format_i_type(str
 >  		}
-> @@ -2456,7 +2479,7 @@ static int parse_audio_format_i_type(str
->  			pcm_format = SNDRV_PCM_FORMAT_S32_LE;
->  			break;
->  		default:
-> -			snd_printk(KERN_INFO "%d:%u:%d : unsupported sample bitwidth %d in %d bytes\n",
-> +			printk(KERN_ERR "%d:%u:%d : unsupported sample bitwidth %d in %d bytes\n",
->  				   chip->dev->devnum, fp->iface,
->  				   fp->altsetting, sample_width, sample_bytes);
->  			break;
-> @@ -2479,7 +2502,7 @@ static int parse_audio_format_i_type(str
->  		pcm_format = SNDRV_PCM_FORMAT_MU_LAW;
 >  		break;
->  	default:
-> -		snd_printk(KERN_INFO "%d:%u:%d : unsupported format type %d\n",
-> +		printk(KERN_ERR "%d:%u:%d : unsupported format type %d\n",
->  			   chip->dev->devnum, fp->iface, fp->altsetting, format);
+>  	case USB_AUDIO_FORMAT_PCM8:
+> -		/* Dallas DS4201 workaround */
+> +		pcm_format = SNDRV_PCM_FORMAT_U8;
+> +
+> +		/* Dallas DS4201 workaround: it advertises U8 format, but really
+> +		   supports S8. */
+>  		if (chip->usb_id == USB_ID(0x04fa, 0x4201))
+>  			pcm_format = SNDRV_PCM_FORMAT_S8;
+> -		else
+> -			pcm_format = SNDRV_PCM_FORMAT_U8;
 >  		break;
->  	}
-> @@ -2503,7 +2526,7 @@ static int parse_audio_format_rates(stru
->  	int nr_rates = fmt[offset];
->  
->  	if (fmt[0] < offset + 1 + 3 * (nr_rates ? nr_rates : 2)) {
-> -		snd_printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
-> +		printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
->  				   chip->dev->devnum, fp->iface, fp->altsetting);
->  		return -1;
->  	}
-> @@ -2517,7 +2540,7 @@ static int parse_audio_format_rates(stru
->  
->  		fp->rate_table = kmalloc(sizeof(int) * nr_rates, GFP_KERNEL);
->  		if (fp->rate_table == NULL) {
-> -			snd_printk(KERN_ERR "cannot malloc\n");
-> +			printk(KERN_ERR "cannot malloc\n");
->  			return -1;
->  		}
->  
-> @@ -2584,7 +2607,7 @@ static int parse_audio_format_i(struct s
->  	fp->format = pcm_format;
->  	fp->channels = fmt[4];
->  	if (fp->channels < 1) {
-> -		snd_printk(KERN_ERR "%d:%u:%d : invalid channels %d\n",
-> +		printk(KERN_ERR "%d:%u:%d : invalid channels %d\n",
->  			   chip->dev->devnum, fp->iface, fp->altsetting, fp->channels);
->  		return -1;
->  	}
-> @@ -2705,13 +2728,13 @@ static int parse_audio_endpoints(struct 
->  		/* get audio formats */
->  		fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen, NULL, AS_GENERAL);
->  		if (!fmt) {
-> -			snd_printk(KERN_ERR "%d:%u:%d : AS_GENERAL descriptor not found\n",
-> +			printk(KERN_ERR "%d:%u:%d : AS_GENERAL descriptor not found\n",
->  				   dev->devnum, iface_no, altno);
->  			continue;
->  		}
->  
->  		if (fmt[0] < 7) {
-> -			snd_printk(KERN_ERR "%d:%u:%d : invalid AS_GENERAL desc\n",
-> +			printk(KERN_ERR "%d:%u:%d : invalid AS_GENERAL desc\n",
->  				   dev->devnum, iface_no, altno);
->  			continue;
->  		}
-> @@ -2721,12 +2744,12 @@ static int parse_audio_endpoints(struct 
->  		/* get format type */
->  		fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen, NULL, FORMAT_TYPE);
->  		if (!fmt) {
-> -			snd_printk(KERN_ERR "%d:%u:%d : no FORMAT_TYPE desc\n",
-> +			printk(KERN_ERR "%d:%u:%d : no FORMAT_TYPE desc\n",
->  				   dev->devnum, iface_no, altno);
->  			continue;
->  		}
->  		if (fmt[0] < 8) {
-> -			snd_printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
-> +			printk(KERN_ERR "%d:%u:%d : invalid FORMAT_TYPE desc\n",
->  				   dev->devnum, iface_no, altno);
->  			continue;
->  		}
-> @@ -2736,15 +2759,15 @@ static int parse_audio_endpoints(struct 
->  		if (!csep && altsd->bNumEndpoints >= 2)
->  			csep = snd_usb_find_desc(alts->endpoint[1].extra, alts->endpoint[1].extralen, NULL, USB_DT_CS_ENDPOINT);
->  		if (!csep || csep[0] < 7 || csep[2] != EP_GENERAL) {
-> -			snd_printk(KERN_WARNING "%d:%u:%d : no or invalid"
-> +			printk(KERN_WARNING "%d:%u:%d : no or invalid"
->  				   " class specific endpoint descriptor\n",
->  				   dev->devnum, iface_no, altno);
->  			csep = NULL;
->  		}
->  
->  		fp = kzalloc(sizeof(*fp), GFP_KERNEL);
-> -		if (! fp) {
-> -			snd_printk(KERN_ERR "cannot malloc\n");
-> +		if (!fp) {
-> +			printk(KERN_ERR "cannot malloc\n");
->  			return -ENOMEM;
->  		}
->  
-> @@ -2845,11 +2868,11 @@ static int snd_usb_create_streams(struct
->  	/* find audiocontrol interface */
->  	host_iface = &usb_ifnum_to_if(dev, ctrlif)->altsetting[0];
->  	if (!(p1 = snd_usb_find_csint_desc(host_iface->extra, host_iface->extralen, NULL, HEADER))) {
-> -		snd_printk(KERN_ERR "cannot find HEADER\n");
-> +		printk(KERN_ERR "cannot find HEADER\n");
->  		return -EINVAL;
->  	}
-> -	if (! p1[7] || p1[0] < 8 + p1[7]) {
-> -		snd_printk(KERN_ERR "invalid HEADER\n");
-> +	if (!p1[7] || p1[0] < 8 + p1[7]) {
-> +		printk(KERN_ERR "invalid HEADER\n");
->  		return -EINVAL;
->  	}
->  
-> @@ -2862,7 +2885,7 @@ static int snd_usb_create_streams(struct
->  		j = p1[8 + i];
->  		iface = usb_ifnum_to_if(dev, j);
->  		if (!iface) {
-> -			snd_printk(KERN_ERR "%d:%u:%d : does not exist\n",
-> +			printk(KERN_ERR "%d:%u:%d : does not exist\n",
->  				   dev->devnum, ctrlif, j);
->  			continue;
->  		}
-> @@ -2876,7 +2899,7 @@ static int snd_usb_create_streams(struct
->  		     altsd->bInterfaceClass == USB_CLASS_VENDOR_SPEC) &&
->  		    altsd->bInterfaceSubClass == USB_SUBCLASS_MIDI_STREAMING) {
->  			if (snd_usb_create_midi_interface(chip, iface, NULL) < 0) {
-> -				snd_printk(KERN_ERR "%d:%u:%d: cannot create sequencer device\n", dev->devnum, ctrlif, j);
-> +				printk(KERN_ERR "%d:%u:%d: cannot create sequencer device\n", dev->devnum, ctrlif, j);
->  				continue;
->  			}
->  			usb_driver_claim_interface(&usb_audio_driver, iface, (void *)-1L);
-> @@ -2890,10 +2913,10 @@ static int snd_usb_create_streams(struct
->  			continue;
->  		}
->  		if (snd_usb_get_speed(dev) == USB_SPEED_LOW) {
-> -			snd_printk(KERN_ERR "low speed audio streaming not supported\n");
-> +			printk(KERN_ERR "low speed audio streaming not supported\n");
->  			continue;
->  		}
-> -		if (! parse_audio_endpoints(chip, j)) {
-> +		if (!parse_audio_endpoints(chip, j)) {
->  			usb_set_interface(dev, j, 0); /* reset the current interface */
->  			usb_driver_claim_interface(&usb_audio_driver, iface, (void *)-1L);
->  		}
-> @@ -2915,8 +2938,8 @@ static int create_fixed_stream_quirk(str
->  	unsigned *rate_table = NULL;
->  
->  	fp = kmemdup(quirk->data, sizeof(*fp), GFP_KERNEL);
-> -	if (! fp) {
-> -		snd_printk(KERN_ERR "cannot memdup\n");
-> +	if (!fp) {
-> +		printk(KERN_ERR "cannot memdup\n");
->  		return -ENOMEM;
->  	}
->  	if (fp->nr_rates > 0) {
-> @@ -2965,7 +2988,7 @@ static int create_standard_audio_quirk(s
->  	altsd = get_iface_desc(alts);
->  	err = parse_audio_endpoints(chip, altsd->bInterfaceNumber);
->  	if (err < 0) {
-> -		snd_printk(KERN_ERR "cannot setup if %d: error %d\n",
-> +		printk(KERN_ERR "cannot setup if %d: error %d\n",
->  			   altsd->bInterfaceNumber, err);
->  		return err;
->  	}
-> @@ -3052,7 +3075,7 @@ static int create_ua700_ua25_quirk(struc
->  		fp->rate_max = fp->rate_min = 96000;
->  		break;
->  	default:
-> -		snd_printk(KERN_ERR "unknown sample rate\n");
-> +		printk(KERN_ERR "unknown sample rate\n");
->  		kfree(fp);
->  		return -ENXIO;
->  	}
-> @@ -3438,18 +3461,18 @@ static int snd_usb_audio_create(struct u
->  	if (snd_usb_get_speed(dev) != USB_SPEED_LOW &&
->  	    snd_usb_get_speed(dev) != USB_SPEED_FULL &&
->  	    snd_usb_get_speed(dev) != USB_SPEED_HIGH) {
-> -		snd_printk(KERN_ERR "unknown device speed %d\n", snd_usb_get_speed(dev));
-> +		printk(KERN_ERR "unknown device speed %d\n", snd_usb_get_speed(dev));
->  		return -ENXIO;
->  	}
->  
->  	card = snd_card_new(index[idx], id[idx], THIS_MODULE, 0);
->  	if (card == NULL) {
-> -		snd_printk(KERN_ERR "cannot create card instance %d\n", idx);
-> +		printk(KERN_ERR "cannot create card instance %d\n", idx);
->  		return -ENOMEM;
->  	}
->  
->  	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-> -	if (! chip) {
-> +	if (!chip) {
->  		snd_card_free(card);
->  		return -ENOMEM;
->  	}
-> @@ -3579,19 +3602,19 @@ static void *snd_usb_audio_probe(struct 
->  	for (i = 0; i < SNDRV_CARDS; i++) {
->  		if (usb_chip[i] && usb_chip[i]->dev == dev) {
->  			if (usb_chip[i]->shutdown) {
-> -				snd_printk(KERN_ERR "USB device is in the shutdown state, cannot create a card instance\n");
-> +				printk(KERN_ERR "USB device is in the shutdown state, cannot create a card instance\n");
->  				goto __error;
->  			}
->  			chip = usb_chip[i];
->  			break;
->  		}
->  	}
-> -	if (! chip) {
-> +	if (!chip) {
->  		/* it's a fresh one.
->  		 * now look for an empty slot and create a new card instance
->  		 */
->  		for (i = 0; i < SNDRV_CARDS; i++)
-> -			if (enable[i] && ! usb_chip[i] &&
-> +			if (enable[i] && !usb_chip[i] &&
->  			    (vid[i] == -1 || vid[i] == USB_ID_VENDOR(id)) &&
->  			    (pid[i] == -1 || pid[i] == USB_ID_PRODUCT(id))) {
->  				if (snd_usb_audio_create(dev, i, quirk, &chip) < 0) {
+>  	case USB_AUDIO_FORMAT_IEEE_FLOAT:
+>  		pcm_format = SNDRV_PCM_FORMAT_FLOAT_LE;
 > 
 > -- 
 > (english) http://www.livejournal.com/~pavelmachek
