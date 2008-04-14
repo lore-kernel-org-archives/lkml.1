@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbYDNIW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759112AbYDNIYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759821AbYDNIW5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYDNIWt
+	id S1759112AbYDNIYk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbYDNIYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:22:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40124 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755002AbYDNIWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:22:48 -0400
-Date: Mon, 14 Apr 2008 09:22:20 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, mingo <mingo@redhat.com>,
-       tglx <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 10 (arch/x86)
-Message-ID: <20080414082220.GZ9785@ZenIV.linux.org.uk>
-References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <20080410150950.5913b16a.randy.dunlap@oracle.com> <20080411074631.GB6410@elte.hu> <20080411081901.f56f5180.randy.dunlap@oracle.com> <20080411152648.GK9785@ZenIV.linux.org.uk> <20080414081220.GA19865@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414081220.GA19865@elte.hu>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 14 Apr 2008 04:24:32 -0400
+Received: from [83.228.35.12] ([83.228.35.12]:54396 "EHLO fs.ru.acad.bg"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754965AbYDNIYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 04:24:31 -0400
+X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 04:24:31 EDT
+Message-ID: <48031387.3080205@fs.ru.acad.bg>
+Date: Mon, 14 Apr 2008 11:19:19 +0300
+From: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10412] BUG: scheduling while atomic: kmail/32546/0x00000003
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.SU.W3lAIB@albercik>
+In-Reply-To: <oq66hWjeF4N.A.SU.W3lAIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 10:12:20AM +0200, Ingo Molnar wrote:
-
-> well, gcc does not "recover", we _gave_ it the format string as a 
-> constant, and do so in 99.9% of the cases. It is a totally 
-> well-specified thing.
-
-It is an undefined behaviour according to any variant of C standard.
-Sorry, printf() is not magic and it does _not_ have special calling
-conventions.
-
-> but the constant noise from gcc about printf formats, where the 
-> conversion is very clear and could be done implicitly, only hinders us 
-> and only teaches people to _ignore_ gcc warnings - which is actually 
-> very dangerous.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> the only warning from gcc in this area should be where the format 
-> results in information _loss_ (i.e. the format has a narrower type than 
-> we pass into it) - there a warning is very much needed - and the 
-> programmer should then fix the bug or add a cast.
+> The following bug entry is on the current list of known regressions
+> from 2.6.24.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10412
+> Subject		: BUG: scheduling while atomic: kmail/32546/0x00000003
+> Submitter	: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
+> Date		: 2008-04-07 02:33 (7 days old)
+> 
+> 
 
-No, sorry.  That kind of mismatch is simply not a valid C.  Plain as that,
-read the standard and you'll see.
+Well, as I wrote earlier, after I changed the motherboard of
+the PC where it first appeared - I haven't encountered it again.
 
-Fundamentally, printf() is a function like any other vararg one.  So
-explicitly typed arguments *are* the right thing to do.
-
-What is not right is the lack of ability to define new conversions.  If
-we could do that, we would kill the absolute majority of casts - and
-remain within normal C limits...
+-- 
+Plamen Petrov, network & system administrator
+Filial - Silistra
+RU "Angel Kantchev"
+http://fs.ru.acad.bg/
+--------------------------------
+this message is UTF8 encoded
