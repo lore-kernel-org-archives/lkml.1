@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbYDNIJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbYDNIL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760174AbYDNIJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYDNIJf
+	id S1760071AbYDNIL7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbYDNILn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:09:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52915 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbYDNIJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:09:34 -0400
-Message-ID: <480310C5.1070102@cn.fujitsu.com>
-Date: Mon, 14 Apr 2008 16:07:33 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] memcg: fix oops in oom handling
-References: <4802FF10.6030905@cn.fujitsu.com>	 <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830804140053y4bcdceeatc9763c1e8c1aaf44@mail.gmail.com>
-In-Reply-To: <6599ad830804140053y4bcdceeatc9763c1e8c1aaf44@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 04:11:43 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34555 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755117AbYDNILm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 04:11:42 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, dwmw2@infradead.org, hch@infradead.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20080414004909.1b21b738.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 14 Apr 2008 00:49:09 -0700)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+	<20080412170304.54f139e2.akpm@linux-foundation.org>
+	<20080413033344.GA27494@hash.localnet>
+	<20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	<20080413080130.GA9622@infradead.org>
+	<20080413012001.8d7967f4.akpm@linux-foundation.org>
+	<20080413082815.GA20108@infradead.org>
+	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	<1208121358.2700.4.camel@shinybook.infradead.org>
+	<E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414004909.1b21b738.akpm@linux-foundation.org>
+Message-Id: <E1JlJmk-000532-KL@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 14 Apr 2008 10:11:30 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Apr 14, 2008 at 12:14 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>  Paul, I have one confirmation. Lock hierarchy of
->>         cgroup_lock()
->>         ->      read_lock(&tasklist_lock)
->>
->>  is ok ? (I think this is ok.)
+> > And I didn't advocate moving
+> > ntfs to fuse, still that was done and the resulting filesystem at the
+> > moment happens to outperform the kernel one in every respect ;)
 > 
-> Should be fine, I think.
-> 
-> Have you built/booted with lockdep?
-> 
+> Gad.  Why?
 
-I should have done this. :(
+I think mostly because of dedication of the maintainer (Szabolcs
+Szakacsits).  I don't claim fuse has a great part in it, except the
+obvious advantages of developing in userspace: no kernel crashes,
+easier debugging, etc...
 
-I'll check it.
+And of course it could be ported back to the kernel (ntfs-3g is GPL
+too), and that would probably result in even more speedups.  But
+that's not a trivial task either.
 
-> Paul
-> 
+Miklos
