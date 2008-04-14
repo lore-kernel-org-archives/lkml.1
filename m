@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYDNIx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYDNI6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYDNIx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 04:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYDNIxW
+	id S1754792AbYDNI6B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 04:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYDNI5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 04:53:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42189 "EHLO mx3.mail.elte.hu"
+	Mon, 14 Apr 2008 04:57:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55998 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbYDNIxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 04:53:22 -0400
-Date: Mon, 14 Apr 2008 10:53:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jacek Luczak <difrost.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch
-	fixes
-Message-ID: <20080414085307.GG19865@elte.hu>
-References: <48022990.3060104@gmail.com> <20080414072645.GG16163@elte.hu> <20080414084127.GA11372@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414084127.GA11372@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0007]
+	id S1750776AbYDNI5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 04:57:53 -0400
+Subject: Re: pci: add to global list before sysfs?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080414103504.24025b44@mjolnir.drzeus.cx>
+References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
+	 <20080404210132.GA14418@suse.de>
+	 <20080405115727.1265e8a9@mjolnir.drzeus.cx>
+	 <20080405155323.GA27252@suse.de>
+	 <20080405185501.41ec42a7@mjolnir.drzeus.cx>
+	 <1208122634.6958.59.camel@pasglop>
+	 <20080414103504.24025b44@mjolnir.drzeus.cx>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 18:57:41 +1000
+Message-Id: <1208163461.6958.153.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> > hm, that's an interesting case: we need those annotations probably 
-> > because gcc decided to not inline those functions. (this is possible 
-> > via the new CONFIG_OPTIMIZE_INLINING=y option) Sam, what's your take 
-> > on that?
+On Mon, 2008-04-14 at 10:35 +0200, Pierre Ossman wrote:
+> On Mon, 14 Apr 2008 07:37:14 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> gcc uses different heuristics for inlining between the different 
-> versions. Therefore to achieve somehow predictable results I added 
-> -fno-inline-functions-called-once when CONFIG_DEBUG_SECTION_MISMATCH 
-> is enabled.
+> > 
+> > You don't need a timer. You can just use the notifier mechanism I added
+> > a while ago that should call you on device addition and removal on the
+> > bus type you are interested in.
+> > 
 > 
-> So in the above case for any normal kernel build we would see that gcc 
-> inlined the above and everything is fine. But for the 
-> CONFIG_DEBUG_SECTION_MISMTCH cases we do not inline and thus we see 
-> that we have a section mismatch.
+> Another solution presented itself, but do you have some pointers on
+> where I get more information about the notifiers in case I need them
+> in the future?
 
-ah, ok. So i guess this will result in a few isolated cases of __init 
-annotations added to inline functions - Jacek fixed one such case - but 
-it should not result in the general spreading of __init annotations to 
-inline functions, correct? (which i was worried about)
+In devices.h :
 
-	Ingo
+
