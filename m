@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbYDNDKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYDNDY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbYDNDKU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 23:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYDNDKI
+	id S1755846AbYDNDY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 23:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYDNDYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 23:10:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34021 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbYDNDKH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 23:10:07 -0400
-Date: Mon, 14 Apr 2008 04:09:58 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, akpm@linux-foundation.org,
-       corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Fix typos in Documentation/filesystems/seq_file.txt
-Message-ID: <20080414030958.GT9785@ZenIV.linux.org.uk>
-References: <1208111201-15698-1-git-send-email-dmitri.vorobiev@gmail.com> <20080413151020.bfa62f58.randy.dunlap@oracle.com> <48028841.900@gmail.com> <20080413224547.GS9785@ZenIV.linux.org.uk> <20080413190916.57cede66.randy.dunlap@oracle.com>
+	Sun, 13 Apr 2008 23:24:04 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49772 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753080AbYDNDYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 23:24:02 -0400
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200804140309.22057.rjw@sisk.pl>
+References: <200804040111.15255.rjw@sisk.pl>
+	 <200804140231.32245.rjw@sisk.pl> <1208134017.6958.94.camel@pasglop>
+	 <200804140309.22057.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 13:23:00 +1000
+Message-Id: <1208143380.6958.105.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080413190916.57cede66.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 07:09:16PM -0700, Randy Dunlap wrote:
 
-> AFAIK, 2 spaces at the end of sentences is a typewriter-ism, for easier
-> visual separation of sentences.
-> Probably (just guessing here) has to do with monospace fonts vs.
-> (not having) proportional ones there (usually).
+> To avoid breaking things (from the functional point of view) unnecessarily.
+> 
+> In short, I don't really see the difference between moving ->prepare() before
+> the freezer and droppig the freezer, which I'm not going to do right now.
 
-In a sense...  Basically, the real rules are
-	* inter-sentence space is naturally wider than inter-word one
-	* if you need to stretch line, inter-sentence spaces get
-proportionally more than inter-word ones.
-	* if you need to shrink line, they get proportionally less.
-	* there are fun extra considerations for quoted sentences and
-friends.
+I believe the use of prepare for things like request_firmware etc... is
+worth the effort of fixing the known breakage of not having the freezer
+while preventing insertion of new devices (mostly USB). In fact, it
+won't be such a big issue as the core should/will return an error from
+attempting to add the device in that case.
 
-For monospace almost nothing of that can be applied, but the first part
-(wider inter-sentence spaces) is more painful to ignore.  The ratio for
-normally typeset text is going to be less than 2, but it's easier on
-eyes to approximate it with 2 than with 1...
+Ben.
+
+
