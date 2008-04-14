@@ -1,78 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934852AbYDNSsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934972AbYDNSt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934852AbYDNSsv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934348AbYDNSnR
+	id S934972AbYDNSt5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934378AbYDNSnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:43:17 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35423 "EHLO smtp5.pp.htv.fi"
+	Mon, 14 Apr 2008 14:43:33 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51157 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934345AbYDNSnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:43:15 -0400
-Date: Mon, 14 Apr 2008 21:41:47 +0300
+	id S934360AbYDNSn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:43:27 -0400
+Date: Mon, 14 Apr 2008 21:42:20 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: dm-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make dm_set_device_limits() static
-Message-ID: <20080414184147.GW6695@cs181133002.pp.htv.fi>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: hskinnemoen@atmel.com, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] avr32: add include/asm-avr32/serial.h
+Message-ID: <20080414184220.GC6695@cs181133002.pp.htv.fi>
+References: <20080414141721.GI6695@cs181133002.pp.htv.fi> <20080414153625.6150e999@core>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20080414153625.6150e999@core>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global dm_set_device_limits() static.
+On Mon, Apr 14, 2008 at 03:36:24PM +0100, Alan Cox wrote:
+> On Mon, 14 Apr 2008 17:17:21 +0300
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > This patch fixes the following build error:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC [M]  drivers/serial/8250.o
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/8250.c:95:24: error: asm/serial.h: No such file or directory
+> > make[3]: *** [drivers/serial/8250.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > ---
+> > 3cb4ef80d75e118ccfd44f7006aea3db54afb31c diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> > index b1bbaa0..b0e216d 100644
+> > --- a/drivers/serial/Kconfig
+> > +++ b/drivers/serial/Kconfig
+> > @@ -11,7 +11,7 @@ menu "Serial drivers"
+> >  # The new 8250/16550 serial drivers
+> >  config SERIAL_8250
+> >  	tristate "8250/16550 and compatible serial support"
+> > -	depends on (BROKEN || !SPARC)
+> > +	depends on (BROKEN || !SPARC) && !AVR32
+> >  	select SERIAL_CORE
+> >  	---help---
+> 
+> NAK.
+> 
+> Add an asm/serial.h to the platform as it has PCI so will have 8250 PCI
+> devices available to it. A copy of the MIPS one should be right.
+
+Patch below.
+
+> Alan
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+This patch fixes the following build error with CONFIG_SERIAL_8250:
+
+<--  snip  -->
+
+...
+  CC [M]  drivers/serial/8250.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/8250.c:95:24: error: asm/serial.h: No such file or directory
+make[3]: *** [drivers/serial/8250.o] Error 1
+
+<--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-This patch has been sent on:
-- 31 Mar 2008
+ include/asm-avr32/serial.h |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
- drivers/md/dm-table.c         |    4 ++--
- include/linux/device-mapper.h |    5 -----
- 2 files changed, 2 insertions(+), 7 deletions(-)
-
-bb081f9ddde6ca766b8c1cd1077f203d0a082cdb diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-index a999211..ce27283 100644
---- a/drivers/md/dm-table.c
-+++ b/drivers/md/dm-table.c
-@@ -491,7 +491,8 @@ static int __table_get_device(struct dm_table *t, struct dm_target *ti,
- 	return 0;
- }
- 
--void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev)
-+static void dm_set_device_limits(struct dm_target *ti,
-+				 struct block_device *bdev)
- {
- 	struct request_queue *q = bdev_get_queue(bdev);
- 	struct io_restrictions *rs = &ti->limits;
-@@ -541,7 +542,6 @@ void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev)
- 
- 	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
- }
--EXPORT_SYMBOL_GPL(dm_set_device_limits);
- 
- int dm_get_device(struct dm_target *ti, const char *path, sector_t start,
- 		  sector_t len, int mode, struct dm_dev **result)
-diff --git a/include/linux/device-mapper.h b/include/linux/device-mapper.h
-index 8fc199b..4c4b3a6 100644
---- a/include/linux/device-mapper.h
-+++ b/include/linux/device-mapper.h
-@@ -75,11 +75,6 @@ typedef int (*dm_ioctl_fn) (struct dm_target *ti, struct inode *inode,
- void dm_error(const char *message);
- 
- /*
-- * Combine device limits.
-- */
--void dm_set_device_limits(struct dm_target *ti, struct block_device *bdev);
--
--/*
-  * Constructors should call these functions to ensure destination devices
-  * are opened/closed correctly.
-  * FIXME: too many arguments.
-
+7beddb9fe7aee73227a9796a039cee9583cecc0a diff --git a/include/asm-avr32/serial.h b/include/asm-avr32/serial.h
+new file mode 100644
+index 0000000..5ecaebc
+--- /dev/null
++++ b/include/asm-avr32/serial.h
+@@ -0,0 +1,13 @@
++#ifndef _ASM_SERIAL_H
++#define _ASM_SERIAL_H
++
++/*
++ * This assumes you have a 1.8432 MHz clock for your UART.
++ *
++ * It'd be nice if someone built a serial card with a 24.576 MHz
++ * clock, since the 16550A is capable of handling a top speed of 1.5
++ * megabits/second; but this requires the faster clock.
++ */
++#define BASE_BAUD (1843200 / 16)
++
++#endif /* _ASM_SERIAL_H */
 
