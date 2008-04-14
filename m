@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbYDNUBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763882AbYDNUBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763657AbYDNUBA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760443AbYDNUAs
+	id S1763882AbYDNUBy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbYDNUBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:00:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:61531 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbYDNUAr (ORCPT
+	Mon, 14 Apr 2008 16:01:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:37784 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760443AbYDNUBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:00:47 -0400
+	Mon, 14 Apr 2008 16:01:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=FPrh2Cbpoym/dJ3roo9pPyYFc6HHtIxYMiZ8fIIGbc0yVQmIVBXmxPYRKrefZE3HqXIBY3QxXoAa1SF8avNaN7bPx1pv6Me/9lsVh2DkPqgpMoxHZUuUx8zBFwazs8R+IHGclqN0sPriPlAiwStDLuZtw8biKeTaXmr5zPUC3G4=
-Date: Mon, 14 Apr 2008 23:56:13 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: 2.6.25-rc8-mm2: FIX kmalloc-2048 (was Re: 2.6.25-rc8-mm2: IP:
-	[<ffffffff802868f9>] __kmalloc+0x69/0x110)
-Message-ID: <20080414195613.GA4772@martell.zuzino.mipt.ru>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080413204422.GA5136@martell.zuzino.mipt.ru> <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com> <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com> <20080414183221.GA5234@martell.zuzino.mipt.ru>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AHk2gceFqBnt0kWP2ij9RuNjabpyu8GPKpksX80xTPI2Gc9emSCOWxVzAHUy5sSP7ka4UwQ1QTcOrmgNuPQeM1XsInpRWTQneBkwMM2S1C0HF/wxUFRanMfTzdQDSv9Ddvoss60IejR962CMEsjRgOgDPx3rJoCuNv/+I3ExuLY=
+Message-ID: <4a4634330804141301l69d29e32wefa1ceb4ec75ec57@mail.gmail.com>
+Date: Mon, 14 Apr 2008 15:01:38 -0500
+From: "Shirish Pargaonkar" <shirishpargaonkar@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: valid task structure and wake_up_process
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080414121105.5f9e5482@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080414183221.GA5234@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <4a4634330804141136xcaf098esf02539bf76917781@mail.gmail.com>
+	 <20080414121105.5f9e5482@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can reproduce semi-reliably (by kernel standards) corruption in
-kmalloc-2048. No idea if this can explain all "struct file" related
-oopses I saw, or SLUB free pointer corruption Pekka and Christoph are
-looking into.
+On 4/14/08, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 14 Apr 2008 13:36:42 -0500
+> "Shirish Pargaonkar" <shirishpargaonkar@gmail.com> wrote:
+>
+> > How do I check whether a task is valid before calling
+> > wake_up_process() with that task structure pointer?
+>
+> Hi,
+>
+> how did you get the pointer you got?
+>
+> That part (the guy who gave you the pointer) should have taken a reference on the task basically,
+> or otherwise locked against the task going away.
+>
+> In giving you advice it would help tremendously if you actually posted your code...
+>
+>
+>
+>
+>
+> --
+> If you want to reach me at my work email, use arjan@linux.intel.com
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
 
-8139too and atl1 drivers are in use. 8139too connects to outer world,
-atl1 -- to laptop collecting netconsole logs. However, I never managed to
-collect late oopses with netconsole even if init scripts which are
-shutting down interfaces are disabled. :-(
+Thanks.
 
+This is cifs code fs/cifs.
 
+In cifs_demultiplex_thread, in fs/cifs/connect.c, it calls wake_up_process in
+a thread cifsd.
 
-Transcribed from photo:
+The task struct ptr is stored in mid as current when sending a request.  So this
+could a command such as ls or some other application.
+A request was sent but a reply was not received or reply was processed late
+before the process went away and we have a probably freed task structure
+being treated as valid in cifs_demultiplex_thread.
 
-8000 flags=0x8000000000002082
-INFO: Object 0xffff81017ff9d2d0 @offset=21200 fp=0xffff81017ff9ca88
+So I thought of checking validity of task structure before calling
+wake_up_process.
 
-Bytes b4 0xffff81017ff9d2c0:  62 ea ff ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a
-  Object 0xffff81017ff9d2d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-  Object 0xffff81017ff9d2e0:  6b 6b 00 18 f3 a2 9f 90 00 1b 38 af 22 49 08 00
-  Object 0xffff81017ff9d2f0:  45 10 00 4c ff 59 40 00 40 11 86 ac c0 a8 00 2a
-  Object 0xffff81017ff9d300:  50 fa a2 be 91 43 00 7b 00 38 54 d4 23 00 00 00
-  Object 0xffff81017ff9d310:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  Object 0xffff81017ff9d320:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  Object 0xffff81017ff9d330:  00 00 00 00 4c ff 10 44 74 7f 6f 9d e4 c8 a2 4f
-  Object 0xffff81017ff9d340:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- Redzone 0xffff81017ff9dad0:  bb bb bb bb bb bb bb bb
- Padding 0xffff81017ff9db10:  5a 5a 5a 5a 5a 5a 5a 5a
+Regards,
 
- Pid: 6168, comm: reboot Not tainted 2.6.25-rc8-mm2 #28
-
- Call Trace:
-	print_trailer
-	check_bytes_and_report
-	check_object
-	__free_slab
-	discard_slab
-	__slab_free
-	? skb_release_data
-	kfree
-	? skb_release_data
-	skb_release_all
-	__kfre_skb
-	kfree_skb
-	atl1_clean_rx_ring
-	atl1_down
-	atl1_close
-	dev_close
-	dev_change_flags
-	devinet_ioctl
-	? trace_hardirqs_on
-	inet_ioctl
-	sock_ioctl
-	vfs_ioctl
-	do_vfs_ioctl
-	sys_ioctl
-	system_call_after_swapgs
-
-FIX kmalloc-2048: Restoring 0xffff81017ff9d2e2-0xffff81017ff9d8d9=0x6b
-
+Shirish
