@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbYDNT6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbYDNT6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762928AbYDNT6d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761370AbYDNT5P
+	id S1762266AbYDNT6R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761074AbYDNT5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:57:15 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:38720 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761357AbYDNT5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:57:14 -0400
-Date: Mon, 14 Apr 2008 22:56:08 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] serial/8250_gsc.c: add MODULE_LICENSE
-Message-ID: <20080414195608.GF26885@cs181133002.pp.htv.fi>
+	Mon, 14 Apr 2008 15:57:06 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:40312 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758104AbYDNT5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:57:03 -0400
+Date: Mon, 14 Apr 2008 12:57:00 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
+       Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 2 of 9] Core of mmu notifiers
+In-Reply-To: <baceb322b45ed4328065.1207669445@duo.random>
+Message-ID: <Pine.LNX.4.64.0804141250590.7803@schroedinger.engr.sgi.com>
+References: <baceb322b45ed4328065.1207669445@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the missing MODULE_LICENSE("GPL").
+On Tue, 8 Apr 2008, Andrea Arcangeli wrote:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> +	/*
+> +	 * Called when nobody can register any more notifier in the mm
+> +	 * and after the "mn" notifier has been disarmed already.
+> +	 */
+> +	void (*release)(struct mmu_notifier *mn,
+> +			struct mm_struct *mm);
 
----
-c0d845566182db3fc650dcfa35700f84e82bbae7 diff --git a/drivers/serial/8250_gsc.c b/drivers/serial/8250_gsc.c
-index 4eb7437..0416ad3 100644
---- a/drivers/serial/8250_gsc.c
-+++ b/drivers/serial/8250_gsc.c
-@@ -119,3 +119,5 @@ int __init probe_serial_gsc(void)
- }
- 
- module_init(probe_serial_gsc);
-+
-+MODULE_LICENSE("GPL");
+Hmmm... The unregister function does not call this. Guess driver calls
+unregister function and does release like stuff on its own.
+
+> +	/*
+> +	 * invalidate_range_start() and invalidate_range_end() must be
+> +	 * paired. Multiple invalidate_range_start/ends may be nested
+> +	 * or called concurrently.
+> +	 */
+
+How could they be nested or called concurrently?
+
+
+> +/*
+> + * mm_users can't go down to zero while mmu_notifier_unregister()
+> + * runs or it can race with ->release. So a mm_users pin must
+> + * be taken by the caller (if mm can be different from current->mm).
+> + */
+> +int mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
+> +{
+> +	struct mm_lock_data *data;
+> +
+> +	BUG_ON(!atomic_read(&mm->mm_users));
+> +
+> +	data = mm_lock(mm);
+> +	if (unlikely(IS_ERR(data)))
+> +		return PTR_ERR(data);
+> +	hlist_del(&mn->hlist);
+> +	mm_unlock(mm, data);
+> +	return 0;
+
+Hmmm.. Ok, the user of the notifier does not get notified that it was 
+unregistered.
 
