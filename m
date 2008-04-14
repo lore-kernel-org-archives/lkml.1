@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYDNAbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYDNAgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758062AbYDNAbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDNAbK
+	id S1758189AbYDNAgz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYDNAgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:31:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38255 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753401AbYDNAbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:31:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 02:31:30 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200804040111.15255.rjw@sisk.pl> <200804140108.05447.rjw@sisk.pl> <1208130390.6958.71.camel@pasglop>
-In-Reply-To: <1208130390.6958.71.camel@pasglop>
+	Sun, 13 Apr 2008 20:36:42 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:53481 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753479AbYDNAgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Apr 2008 20:36:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=x-authentication-warning:to:cc:subject:references:from:in-reply-to:message-id:lines:user-agent:mime-version:content-type:date;
+        b=ezCfP9RvKGWkeWlrg+mZ2VGNWjvBHqZNDFVYyBW8qTRiPEZS+7tDOz/0g3g47426btAsbrPeY3zH+onrwrD5L6JvCiKpIt33bnhaq22ED7KCbfQLX6M3Z9TSPWFnMc4WB5uhPgr4cqxFeOFKAk2MtdXhNNRrsJKa6rK466UrQ7E=
+To: david@lang.hm
+Cc: Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+References: <47FEADCB.7070104@rtr.ca>
+	<20080413121831.d89dd424.akpm@linux-foundation.org>
+	<20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
+	<20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
+	<alpine.DEB.1.10.0804131546370.9318@asgard>
+From: Jakub Narebski <jnareb@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0804131546370.9318@asgard>
+Message-ID: <m3ve2ls26p.fsf@localhost.localdomain>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804140231.32245.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Date: Sun, 13 Apr 2008 17:36:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Mon, 2008-04-14 at 01:08 +0200, Rafael J. Wysocki wrote:
-> > 
-> > Well, if we put ->prepare() before the freezer, what can it actually do?
-> > Certainly nothing that will block any (user space) task, because the freezer
-> > won't work after that.  So, all of the significant suspend work, like blocking
-> > tasks using the device etc., will have to be done by ->suspend().  Will that be
-> > convenient?  I'm not sure.  I'm not even sure that would be _doable_ at all.
-> 
-> Most of the actual suspending of requests queues etc... has to be done
-> in suspend. Nothing changed here. I don't see why it would change.
-> prepare() is a way to preallocate things when needed, cache things when
-> needed, etc... and possibly interact user space. At least that how I see
-> it.
-> 
-> It -is- acceptable to stop servicing user space after prepare() in some
-> well defined cases such as the DRM, as long as in-kernel users aren't
-> affected. But that's not necessarily what I have in mind. In the case us
-> userspace for example, the idea here is to perform the migration of all
-> the dirty data in the VRAM (that will be lost during suspend) out to
-> main memory (or AGP memory). That doesn't mean necessarily that the DRM
-> will stop servicing anything from there, it can still perform things. It
-> might mean that user space would have to disable some accelerations that
-> rely on dirty data in VRAM though until complete() is called.
-> 
-> > The point of view depends on what you think ->prepare() should be used for
-> > and I'm sure you have some specific cases in mind.  However, are they generic
-> > enough?
-> 
-> request_firmware() & caching the resulting firmware so that the driver
-> can resume & start operating right away is an example (think about NFS
-> over wireless here for example, or iSCSI). the DRM example above. In
-> general, any driver that needs to interact with user space, perform
-> large allocations, muck around with the VM, etc...
-> 
-> prepare() isn't intended to stop operations, but to
-> preload/cache/prepare and have userspace available for drivers where
-> this is needed. In some case, that might need the driver will continue
-> operating in some degraded mode (for example, a multiqueue driver can
-> degrade to a single queue with one pre-allocated request to avoid
-> relying on allocations).
-> 
-> I would expect most simple drivers not to need it of course.
+david@lang.hm writes:
 
-Well, in our discussions with Alan Stern ->prepare() turned out to be necessary
-for exactly one reason, preventing new children of the device from being
-registered (by threads concurrent wrt the suspend thread).  For this reason,
-it doesn't really seem a good idea to run it before the freezer (seemingly, it
-would be difficult to avoid situations in which the freezer would fail as a
-result of ->prepare()).
+> cross-posted to git for the suggestion at the bottom
 
-It looks like you'd like to have a third callback executed before the freezer,
-but OTOH I don't see the reason not to use a notifier for such things.
+[...]
 
-I have imagined that while we have the freezer, the operations that need to
-be carried out with the user space available will be done using notifiers
-and the rest will be done by ->prepare() and ->suspend().  Next, when we
-finally drop the freezer, it will be possible to move the code from the
-notifiers into ->prepare() and drop the notifiers altogether.
-
-Since, as you said, there aren't too many drivers that will need anything like
-that, it seems perfectly doable to me.
-
-Thanks,
-Rafael
-
-
+> Elsewhere in this thread someone said that the pre-git way was to do a
+> manual bisect where the developer would send patches backing out
+> specific changes to find the problem. one big difference between that
+> and bisecting the problem is that the manual process was focused on
+> the changes in the area that is suspected of causing the problem,
+> while the git bisect process goes after all changes. this makes it
+> much more likely that the tester will run into unrelated problems
+> along the way.
 > 
-> Cheers,
-> Ben.
-> 
-> 
-> 
-> 
-> 
+> I wonder if it would be possible to make a variation of git bisect
+> that only looked at a subset of the tree when picking bisect points
+> (if you are looking for a e1000 bug, testing bisect points that
+> haven't changed that driver won't help you for example). If this can
+> be done it would speed up the reporters efforts, but will require more
+> assistance from the developers (who would need to tell the reporters
+> what subtrees to test) so it's a tradeoff of efficiancy vs simplicity.
 
+Errr... the synopisis of git-bisect contains the following:
 
+ git bisect start [<bad> [<good>...]] [--] [<paths>...]
+
+so you can limit bisection to commits affecting specified subsystem.
+
+P.S. Unfortunately git currently doesn't deal with directory renames,
+so if there was sime big code restructuring one has to provide all
+historic pathspecs.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jakub Narebski
+Poland
+ShadeHawk on #git
