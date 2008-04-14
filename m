@@ -1,221 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYDNNa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYDNNh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbYDNNa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 09:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYDNNat
+	id S1758560AbYDNNh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 09:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYDNNhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 09:30:49 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:18449 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750846AbYDNNat convert rfc822-to-8bit (ORCPT
+	Mon, 14 Apr 2008 09:37:15 -0400
+Received: from tamago.serverit.net ([91.189.209.155]:52816 "EHLO
+	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750755AbYDNNhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 09:30:49 -0400
-Message-Id: <480378CC.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 14 Apr 2008 14:31:24 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [RFC] x86: bitops asm constraint fixes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 14 Apr 2008 09:37:14 -0400
+X-Greylist: delayed 3006 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 09:37:14 EDT
+Date: Mon, 14 Apr 2008 15:46:33 +0300 (EEST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@tamago.serverit.net
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+cc: Miklos Szeredi <miklos@szeredi.hu>, dwmw2@infradead.org, hch@infradead.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+In-Reply-To: <14725485.776281208170999085.JavaMail.szaka@kolumbus.fi>
+Message-ID: <Pine.LNX.4.62.0804141444320.22065@tamago.serverit.net>
+References: <14725485.776281208170999085.JavaMail.szaka@kolumbus.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 27.03.08 09:41 >>>
->
->* Jan Beulich <jbeulich@novell.com> wrote:
->
->> Please revert it for the time being, I've got a better version (i.e. 
->> without extra dead code being generated) that I intended to submit 
->> once I know whether the other issues pointed out in the description on 
->> the original patch also should be adjusted. Of course, that could also 
->> be done incrementally, but I would think overhauling the whole file at 
->> once wouldn't be a bad thing...
->
->since it appears to cause no problems in x86.git (it passed a lot of 
->testing already) i'd prefer to keep it (so that we can see any other 
->side-effects of touching this code) - could you send your improvements 
->as a delta against x86.git/latest? [or is there any outright bug caused 
->by your changes that necessiates a revert?]
 
-(Sorry, need to resend, previous version was lacking a refresh.)
+On Mon, 14 Apr 2008 Anton Altaparmakov wrote:
+> On 14 Apr 2008, at 08:49, Andrew Morton wrote:
+> > On Mon, 14 Apr 2008 09:25:46 +0200 Miklos Szeredi  <miklos@szeredi.hu>
+> > wrote:
+> > 
+> > > And I didn't advocate moving
+> > > ntfs to fuse, still that was done and the resulting filesystem at the
+> > > moment happens to outperform the kernel one in every respect ;)
+> > 
+> > Gad.  Why?
 
-For those bitops that don't have a memory clobber, make the asm
-constraints more precise. It still remains questionable whether the
-inconsistencies in the use of memory clobbers shouldn't be addressed.
+Well, not only the kernel ntfs (in metadata operations) but also XFS, JFS, 
+ext2 in metadata operations, ext3 in large bulk writes on commodity 
+hardware.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+It's also important to note that ntfs-3g isn't optimized yet at all. There 
+are several major performance bootlenecks still in the kernel, FUSE and 
+ntfs-3g itself.
 
---- x86.git/include/asm-x86/bitops.h
-+++ x86.git/include/asm-x86/bitops.h
-@@ -20,16 +20,20 @@
-  * bit 0 is the LSB of addr; bit 32 is the LSB of (addr+1).
-  */
- 
-+struct __bits { int _[1UL << (32 - 3 - sizeof(int))]; };
-+
- #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 1)
- /* Technically wrong, but this avoids compilation errors on some gcc
-    versions. */
--#define ADDR "=m" (*(volatile long *)addr)
--#define BIT_ADDR "=m" (((volatile int *)addr)[nr >> 5])
-+#define ADDR "=m" (*(volatile long *) addr)
-+#define BIT_ADDR "=m" (((volatile int *) addr)[nr >> 5])
-+#define FULL_ADDR "=m" (*(volatile struct __bits *) addr)
- #else
- #define ADDR "+m" (*(volatile long *) addr)
--#define BIT_ADDR "+m" (((volatile int *)addr)[nr >> 5])
-+#define BIT_ADDR "+m" (((volatile int *) addr)[nr >> 5])
-+#define FULL_ADDR "+m" (*(volatile struct __bits *) addr)
- #endif
--#define BASE_ADDR "m" (*(volatile int *)addr)
-+#define BASE_ADDR "m" (*(volatile int *) addr)
- 
- /**
-  * set_bit - Atomically set a bit in memory
-@@ -62,7 +68,10 @@ static inline void set_bit(int nr, volat
-  */
- static inline void __set_bit(int nr, volatile void *addr)
- {
--	asm volatile("bts %1,%0" : ADDR : "Ir" (nr) : "memory");
-+	if (__builtin_constant_p(nr))
-+		asm volatile("bts %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("bts %1,%0" : FULL_ADDR : "r" (nr));
- }
- 
- /**
-@@ -77,7 +87,11 @@ static inline void __set_bit(int nr, vol
-  */
- static inline void clear_bit(int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile(LOCK_PREFIX "btr %1,%2"
-+			     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile(LOCK_PREFIX "btr %1,%0" : FULL_ADDR : "r" (nr));
- }
- 
- /*
-@@ -96,7 +110,10 @@ static inline void clear_bit_unlock(unsi
- 
- static inline void __clear_bit(int nr, volatile void *addr)
- {
--	asm volatile("btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile("btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("btr %1,%0" : FULL_ADDR : "r" (nr));
- }
- 
- /*
-@@ -131,7 +148,10 @@ static inline void __clear_bit_unlock(un
-  */
- static inline void __change_bit(int nr, volatile void *addr)
- {
--	asm volatile("btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile("btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("btc %1,%0" : FULL_ADDR : "r" (nr));
- }
- 
- /**
-@@ -145,7 +165,11 @@ static inline void __change_bit(int nr, 
-  */
- static inline void change_bit(int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile(LOCK_PREFIX "btc %1,%2"
-+			     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile(LOCK_PREFIX "btc %1,%0" : FULL_ADDR : "r" (nr));
- }
- 
- /**
-@@ -191,9 +217,15 @@ static inline int __test_and_set_bit(int
- {
- 	int oldbit;
- 
--	asm volatile("bts %2,%3\n\t"
--		     "sbb %0,%0"
--		     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile("bts %2,%3\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("bts %2,%1\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), FULL_ADDR : "r" (nr));
-+
- 	return oldbit;
- }
- 
-@@ -229,9 +262,15 @@ static inline int __test_and_clear_bit(i
- {
- 	int oldbit;
- 
--	asm volatile("btr %2,%3\n\t"
--		     "sbb %0,%0"
--		     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile("btr %2,%3\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("btr %2,%1\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), FULL_ADDR : "r" (nr));
-+
- 	return oldbit;
- }
- 
-@@ -240,9 +279,14 @@ static inline int __test_and_change_bit(
- {
- 	int oldbit;
- 
--	asm volatile("btc %2,%3\n\t"
--		     "sbb %0,%0"
--		     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	if (__builtin_constant_p(nr))
-+		asm volatile("btc %2,%3\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), BIT_ADDR : "Ir" (nr), BASE_ADDR);
-+	else
-+		asm volatile("btc %2,%1\n\t"
-+			     "sbb %0,%0"
-+			     : "=r" (oldbit), FULL_ADDR : "r" (nr));
- 
- 	return oldbit;
- }
-@@ -276,11 +321,10 @@ static inline int variable_test_bit(int 
- {
- 	int oldbit;
- 
--	asm volatile("bt %2,%3\n\t"
-+	asm volatile("bt %2,%1\n\t"
- 		     "sbb %0,%0"
- 		     : "=r" (oldbit)
--		     : "m" (((volatile const int *)addr)[nr >> 5]),
--		       "Ir" (nr), BASE_ADDR);
-+		     : "m" (*(volatile struct __bits *) addr), "Ir" (nr));
- 
- 	return oldbit;
- }
-@@ -398,6 +431,7 @@ static int test_bit(int nr, const volati
- #endif /* __KERNEL__ */
- 
- #undef BASE_ADDR
-+#undef FULL_ADDR
- #undef BIT_ADDR
- #undef ADDR
- 
+Answering the why, the issue is almost never the context switch but the 
+file system design and the quality of the implementation. While the latter 
+still needs a lot of work on several areas (the size of the Microsoft NTFS 
+driver is almost like all the in-kernel file system altogether) but the 
+design can very nicely compensate the latter. E.g. ntfs (and ntfs-3g) 
+already supports almost all the things what ext4 will include.
 
+> No-one has "moved" ntfs to fuse.  
+
+Yes, historically the user space ntfs code was moved to the kernel. The 
+kernel always lagged somehow behind when this work was stopped a few years 
+ago.
+
+> However the kernel one as available in the kernel source tree doesn't 
+> have many write-features, it can only overwrite files, it cannot 
+> create/delete files, etc.  So I guess if you define "performance" to mean 
+> "features" then sure ntfsmount/ntfs-3g have more features than the public 
+> kernel driver.  If you define "performance" to mean "speed" then no 
+> ntfsmount/ntfs-3g can't compare to the kernel except in very limited and 
+> meaningless benchmarks...
+
+First comes reliability for ntfs-3g. There are just too many million users. 
+This is non-negotiable. Because of this, ntfs-3g is indeed not optimized 
+yet. 
+
+However the bootlenecks are almost always storage related (seeks, 
+bandwidth, buses) on commodity desktop systems. Embedded devices and 
+servers come a bit later with the CPU usage optimizations.
+
+> btw. even comparing features, the fuse solutions lag behind in some  respects,
+> e.g. no-one can "kill -9" the kernel driver 
+
+I consider this as a benefit for FUSE file systems. An unloadable kernel 
+module results reboot which is much more intrusive.
+
+> leaving a corrupt file system on the volume 
+
+That would be a file system driver implementation bug. What I never denied 
+for ntfs-3g. Surely it's solvable but this was never a priority based on 
+user wishes.
+
+> (and under no-one I include the OOM killer for example!) 
+
+The OOM killer can be configured and if the fs still uses too much memory 
+then probably it's better to be killed/restarted with journaling support.
+The important here would be the kernel finally fixing the non-sync behavior 
+when it clams to do so (see recent kernel threads).
+
+On the other hand, when in-kernel drivers leak then you get a system 
+panic. 
+
+> and another example is that the fuse solutions require large amounts of 
+> ram whereas the kernel driver can happily function in 1MiB ram 
+
+A FUSE driver can also happily function in much less than 1 MB RAM.
+
+> when they find a large directory and the user has only 32MiB ram for 
+> example...  
+
+This is a FUSE fs implementation, not FUSE problem.
+
+	Szaka
+
+--
+NTFS-3G:  http://ntfs-3g.org
 
