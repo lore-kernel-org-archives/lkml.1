@@ -1,95 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYDNQhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762744AbYDNQiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbYDNQhN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759001AbYDNQg7
+	id S1762744AbYDNQiT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbYDNQiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:36:59 -0400
-Received: from rn-out-0910.google.com ([64.233.170.186]:27392 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753909AbYDNQg6 (ORCPT
+	Mon, 14 Apr 2008 12:38:09 -0400
+Received: from el-out-1112.google.com ([209.85.162.177]:37560 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759001AbYDNQiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:36:58 -0400
+	Mon, 14 Apr 2008 12:38:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=H4M25k2TQQt+vHcKBQBUqCTufvs1Fj5pOdDzIFcBRZi7qNRrZkT6uoWoXF/Y+PdcllNHQm+LMbjkP1YZYyjHn+6bOSz6PJ7Iqm4q2a4j4Tce3ML/UfFEwVm3u58HCSfVE3oo4ftAnZMCrixxHst5gM+t9js715dWKrBjVxie0vQ=
-Message-ID: <b6c5339f0804140936s3dcce48en59a270dc86bf7dc8@mail.gmail.com>
-Date: Mon, 14 Apr 2008 12:36:54 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Chris Mason" <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200804141020.37271.chris.mason@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QwPmU6ZAtO7alvddzXZqMknSSVAe8xVIoN0mVS0PDgte+KvxZTqDfc6FB+4Czlo20XAz+/Ac156+G6xznrk0skvF2D1PcyEG3RUYByqa9+wGKMyxlg8wB1CVG9tBc5bggJngPwFYdtpY3SAFS5FIgtFIlRfk2RFeCWwQvorZyPI=
+Subject: [PATCH 01/10] char: Use get_unaligned_* helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 09:37:53 -0700
+Message-Id: <1208191074.5721.23.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	 <20080414091639.4bd3879d@core> <20080414084141.GA29113@infradead.org>
-	 <200804141020.37271.chris.mason@oracle.com>
-X-Google-Sender-Auth: 236ecefe30b0316e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 10:20 AM, Chris Mason <chris.mason@oracle.com> wrote:
->  Thanks to Bob Copeland for taking the time to submit this for mainline.
->  Please don't mistake the resulting debate as a sign we don't appreciate the
->  effort of making it available and getting it reviewed.
+Remove unnecessary temp variable from_buf in snsc_event.c
 
-Sure, no worries...
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+All ten patches depend on the introduction of the new unaligned access
+helpers I sent out last week.  This is a demonstration of the users of
+the api.
 
->  Unlike all the device drivers we don't want floating around out of the tree,
->  filesystem authors do have a choice between FUSE and being in-kernel.  Since
->  OMFS has been maintained out of tree since 2.6.12 or so, Bob probably has a
->  very good idea of how much time he has needed to spend updating things for
->  each release.
+ drivers/char/rocket_int.h |    2 +-
+ drivers/char/snsc_event.c |   10 +++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-The recent deprecation of iget was probably the most involved of any.  It
-wasn't that bad, but the #ifdef jungle going back to at least .17 is getting
-somewhat hairy (I have 19 of them).  I would say over the past year or so
-most of the changes have been <10 liners with kmem_cache_* interface changes.
-Luckily through review here, that got zapped anyway.
-
-In the normal case, I'll grab an -rc3 kernel or so, try to compile it, if
-it fails, look at minix to see the minimum set of changes I need to make.
-The challenge for me maintaining it out-of-tree is that sometimes the git
-logs do not carry enough context to know why XYZ changed and if there's a
-better, new way to do things.  Then it's time to scour the mailing lists.
-
->  So, there are two big questions I'd ask:
->
->  * Which setup (kernel or fuse) would Bob find easier to maintain things?
->  * Is this a first step toward more development and an increased user base?
-
-Well, FUSE is easier from the standpoint of having somewhat more control.
-On the other hand, that also results in an inferior product if it isn't given
-the many-eyes treatment.  For the code itself, it's really not that much
-different since FUSE is so close to the VFS API anyway.
-
-For your second question:
-
-More users are always welcome.  At present, the FUSE version implements a few
-things that the kernel module does not - better/different block allocation
-algorithm, growing truncate, automatic byte-swapping for the ReplayTV model
-that had a busted block layer.  However, the FUSE version is known to be buggy
-with respect to every day use (I had one MD5 fail among 20G of files in one
-copy test).
-
-I could see adding 1 and 2 to the kernel version, but probably not the
-byte-swapping bit.  I'm not sure what to do from there on.
-
-As a user, I use the kernel module because it works, it's faster, and the
-other bells and whistles aren't that important to me.  It's hard to tell
-what the user community prefers, because the kernel module was first and
-so far no one has had a reason to try the FUSE implementation (if they
-have, I don't know about it).
-
+diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
+index b01d381..143cc43 100644
+--- a/drivers/char/rocket_int.h
++++ b/drivers/char/rocket_int.h
+@@ -55,7 +55,7 @@ static inline void sOutW(unsigned short port, unsigned short value)
+ 
+ static inline void out32(unsigned short port, Byte_t *p)
+ {
+-	u32 value = le32_to_cpu(get_unaligned((__le32 *)p));
++	u32 value = get_unaligned_le32(p);
+ #ifdef ROCKET_DEBUG_IO
+ 	printk(KERN_DEBUG "out32(%x, %lx)...\n", port, value);
+ #endif
+diff --git a/drivers/char/snsc_event.c b/drivers/char/snsc_event.c
+index 1b75b0b..31a7765 100644
+--- a/drivers/char/snsc_event.c
++++ b/drivers/char/snsc_event.c
+@@ -63,16 +63,13 @@ static int
+ scdrv_parse_event(char *event, int *src, int *code, int *esp_code, char *desc)
+ {
+ 	char *desc_end;
+-	__be32 from_buf;
+ 
+ 	/* record event source address */
+-	from_buf = get_unaligned((__be32 *)event);
+-	*src = be32_to_cpup(&from_buf);
++	*src = get_unaligned_be32(event);
+ 	event += 4; 			/* move on to event code */
+ 
+ 	/* record the system controller's event code */
+-	from_buf = get_unaligned((__be32 *)event);
+-	*code = be32_to_cpup(&from_buf);
++	*code = get_unaligned_be32(event);
+ 	event += 4;			/* move on to event arguments */
+ 
+ 	/* how many arguments are in the packet? */
+@@ -86,8 +83,7 @@ scdrv_parse_event(char *event, int *src, int *code, int *esp_code, char *desc)
+ 		/* not an integer argument, so give up */
+ 		return -1;
+ 	}
+-	from_buf = get_unaligned((__be32 *)event);
+-	*esp_code = be32_to_cpup(&from_buf);
++	*esp_code = get_unaligned_be32(event);
+ 	event += 4;
+ 
+ 	/* parse out the event description */
 -- 
-Bob Copeland %% www.bobcopeland.com
+1.5.5.144.g3e42
+
+
