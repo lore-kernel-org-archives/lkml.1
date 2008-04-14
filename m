@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbYDNU40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbYDNU5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761978AbYDNU40 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYDNU4P
+	id S1761935AbYDNU5J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYDNU4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:56:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45285 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754401AbYDNU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:56:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 22:56:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200804040111.15255.rjw@sisk.pl> <20080414105522.GA4716@ucw.cz> <1208205952.6958.174.camel@pasglop>
-In-Reply-To: <1208205952.6958.174.camel@pasglop>
+	Mon, 14 Apr 2008 16:56:55 -0400
+Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:56923
+	"EHLO spunkymail-a9.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754378AbYDNU4y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:56:54 -0400
+X-Greylist: delayed 1318 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 16:56:54 EDT
+Message-ID: <4803BF9D.4070304@dawes.za.net>
+Date: Mon, 14 Apr 2008 22:33:33 +0200
+From: Rogan Dawes <lists@dawes.za.net>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Adrian Bunk <bunk@kernel.org>
+Cc: chris@zankel.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] xtensa: don't offer PARPORT_PC
+References: <20080414195551.GE26885@cs181133002.pp.htv.fi>
+In-Reply-To: <20080414195551.GE26885@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804142256.03514.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Mon, 2008-04-14 at 12:55 +0200, Pavel Machek wrote:
-> > On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
-> > > 
-> > > > Well, I'm not sure and I'm not going to introduce the change right now, after
-> > > > the paches have been included in -mm.
-> > > > 
-> > > > That would require quite some changes in the core code that I'd prefer to
-> > > > avoid for now.  We can do something like this in a separate patch series after
-> > > > the present one settles down a bit.
-> > > 
-> > > I disagree.
-> > > 
-> > > Doing it later would introduce yet another major semantic change.
-> > 
-> > 'allow load_firmware from prepare that was not allowed before' is not 'major'.
-> 
-> Having user space fully operating is major.
+Adrian Bunk wrote:
 
-Please tell me what exactly is wrong with doing things that depend on the
-user space being available from notifiers.
+>  config PARPORT_PC
+>  	tristate "PC-style hardware"
+>  	depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && \
+> -		(!M68K || ISA) && !MN10300
+> +		(!M68K || ISA) && !MN10300 && !XTENSA
 
-Thanks,
-Rafael
+Pardon a possibly stupid question here, but would it not make more sense 
+to code the architectures for which these various devices *are* 
+possible, rather than requiring each architecture to go through the 
+entire config file and add their own "we don't do this" for many entries?
+
+As seen, it is easy for them to be missed, hence all these recent patches.
+
+The way I look at it, it is a lot easier to require that the arch 
+maintainer adds specific entries to get their particular hardware 
+working, rather than go through a working setup and figure out how much 
+they can take away before it breaks.
+
+Rogan
