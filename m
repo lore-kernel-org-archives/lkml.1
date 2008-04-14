@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYDNWse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761705AbYDNWss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYDNWse (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbYDNWr7
+	id S1761705AbYDNWss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761118AbYDNWsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:47:59 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:58009 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754608AbYDNWr6 (ORCPT
+	Mon, 14 Apr 2008 18:48:01 -0400
+Received: from rv-out-0708.google.com ([209.85.198.249]:1320 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755719AbYDNWr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:47:58 -0400
+	Mon, 14 Apr 2008 18:47:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VmfCul+PDa9NhR5cH6O1ciTnTTEtkISan4yaI2l5pI+06yoMFMLYWTa4Fn+dinNfmswUDaCwF16ge0T9DuNqQ4yogaD3QJBe0/MsFLXOuvxgH9UAa3TrDOUagMkcl6GPGhB9lQ4dzWnuTeG9JEW4H5otKL9cu7xeuU3OvwyEuz4=
-Subject: [PATCH-mm 02/15] char: Use get_unaligned_* helpers
+        b=oEYC3n2OUhR6FkuTAApsfrPt1sfXh2eAkmmW3P95sdz4Wjt5kuezApWJejS1a9w+8lpdLS8YaRf3YNlI/JqyPDDPM7l0rWrPmfNM4QS7CNQbEuQPsKj0HZl3ybs+A9BEoC9yUyrHeqIkZycFdH2I7r96F3bdtzwA8hmnEiemhEI=
+Subject: [PATCH-mm 03/15] hid-core: Use get_unaligned_* helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Mon, 14 Apr 2008 15:47:57 -0700
-Message-Id: <1208213277.11920.32.camel@brick>
+Message-Id: <1208213277.11920.33.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,60 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecessary temp variable from_buf in snsc_event.c
-
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/char/rocket_int.h |    2 +-
- drivers/char/snsc_event.c |   10 +++-------
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/hid/hid-core.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
-index b01d381..143cc43 100644
---- a/drivers/char/rocket_int.h
-+++ b/drivers/char/rocket_int.h
-@@ -55,7 +55,7 @@ static inline void sOutW(unsigned short port, unsigned short value)
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index f0b00ec..d76fec3 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -606,7 +606,7 @@ static u8 *fetch_item(__u8 *start, __u8 *end, struct hid_item *item)
+ 		case 2:
+ 			if ((end - start) < 2)
+ 				return NULL;
+-			item->data.u16 = le16_to_cpu(get_unaligned((__le16*)start));
++			item->data.u16 = get_unaligned_le16(start);
+ 			start = (__u8 *)((__le16 *)start + 1);
+ 			return start;
  
- static inline void out32(unsigned short port, Byte_t *p)
- {
--	u32 value = le32_to_cpu(get_unaligned((__le32 *)p));
-+	u32 value = get_unaligned_le32(p);
- #ifdef ROCKET_DEBUG_IO
- 	printk(KERN_DEBUG "out32(%x, %lx)...\n", port, value);
- #endif
-diff --git a/drivers/char/snsc_event.c b/drivers/char/snsc_event.c
-index 1b75b0b..31a7765 100644
---- a/drivers/char/snsc_event.c
-+++ b/drivers/char/snsc_event.c
-@@ -63,16 +63,13 @@ static int
- scdrv_parse_event(char *event, int *src, int *code, int *esp_code, char *desc)
- {
- 	char *desc_end;
--	__be32 from_buf;
- 
- 	/* record event source address */
--	from_buf = get_unaligned((__be32 *)event);
--	*src = be32_to_cpup(&from_buf);
-+	*src = get_unaligned_be32(event);
- 	event += 4; 			/* move on to event code */
- 
- 	/* record the system controller's event code */
--	from_buf = get_unaligned((__be32 *)event);
--	*code = be32_to_cpup(&from_buf);
-+	*code = get_unaligned_be32(event);
- 	event += 4;			/* move on to event arguments */
- 
- 	/* how many arguments are in the packet? */
-@@ -86,8 +83,7 @@ scdrv_parse_event(char *event, int *src, int *code, int *esp_code, char *desc)
- 		/* not an integer argument, so give up */
- 		return -1;
+@@ -614,7 +614,7 @@ static u8 *fetch_item(__u8 *start, __u8 *end, struct hid_item *item)
+ 			item->size++;
+ 			if ((end - start) < 4)
+ 				return NULL;
+-			item->data.u32 = le32_to_cpu(get_unaligned((__le32*)start));
++			item->data.u32 = get_unaligned_le32(start);
+ 			start = (__u8 *)((__le32 *)start + 1);
+ 			return start;
  	}
--	from_buf = get_unaligned((__be32 *)event);
--	*esp_code = be32_to_cpup(&from_buf);
-+	*esp_code = get_unaligned_be32(event);
- 	event += 4;
+@@ -765,7 +765,7 @@ static __inline__ __u32 extract(__u8 *report, unsigned offset, unsigned n)
  
- 	/* parse out the event description */
+ 	report += offset >> 3;  /* adjust byte index */
+ 	offset &= 7;            /* now only need bit offset into one byte */
+-	x = le64_to_cpu(get_unaligned((__le64 *) report));
++	x = get_unaligned_le64(report);
+ 	x = (x >> offset) & ((1ULL << n) - 1);  /* extract bit field */
+ 	return (u32) x;
+ }
 -- 
 1.5.5.144.g3e42
 
