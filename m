@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbYDNPlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYDNPns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760975AbYDNPlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbYDNPls
+	id S1761008AbYDNPns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYDNPnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:41:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50749 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbYDNPls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:41:48 -0400
-Date: Mon, 14 Apr 2008 17:41:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080414154129.GB22259@elte.hu>
-References: <20080411210022.GJ11962@parisc-linux.org> <1208003081.7427.7.camel@twins> <20080413070513.GB19773@elte.hu> <20080413125205.GP11962@parisc-linux.org>
+	Mon, 14 Apr 2008 11:43:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:22061 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752832AbYDNPnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 11:43:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=cBpvh8jv1EGHX6EW2oao0UdBC2Bkq3rHxxZqaed9yrZ8aT5YNljCic8m20uG4jICwCniiF6RZwm1BkzKbKnUHW8UxcE+J/lM/d+K2+ejdqPqAtfE8NAwZnwu7xDiKyP+k71bjtIzJouUBXAY4x5HRHSAwgQPF0H/+s4D59f/b/k=
+Message-ID: <48037BA4.6070201@gmail.com>
+Date: Mon, 14 Apr 2008 17:43:32 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080413125205.GP11962@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0003]
+To: Timur Tabi <timur@freescale.com>
+CC: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+       York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
+References: <12053582234100-git-send-email-yorksun@freescale.com>	<12053582231281-git-send-email-yorksun@freescale.com>	<47D8572C.8090501@gmail.com>	<47FFDBFF.1030809@gmail.com>	<20080411221817.0b1eb414.akpm@linux-foundation.org>	<48035E93.6070300@freescale.com> <48035F98.1020404@gmail.com>	<48036001.10905@freescale.com> <4803620C.6020905@gmail.com>	<48036649.6000409@freescale.com> <4803690A.3080105@gmail.com> <48036F00.6080200@freescale.com>
+In-Reply-To: <48036F00.6080200@freescale.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Sun, Apr 13, 2008 at 09:05:13AM +0200, Ingo Molnar wrote:
-> > there's also another aspect: completions are faster a bit 
-> > in theory, because they know that they will schedule most of the time - 
-> > while semaphores assume that they will _not_ schedule. (And that's 
-> > exactly because the intent of the developer when using a completion is 
-> > crystal clear.)
+On 04/14/2008 04:49 PM, Timur Tabi wrote:
+> Jiri Slaby wrote:
+>> On 04/14/2008 04:12 PM, Timur Tabi wrote:
+>>> Unfortunately, the author of the patch, York, is out this week, so I'll have to
+>>> take care of this.  It'd be easier to modify rh_alloc() so that it doesn't
+>>> sleep, so that's what I'm going to do.
+>> Anyway, why do you need the spin lock there (and not mutex)? 
 > 
-> In practice though, the current implementation is slower. [...]
+> I don't know.  A spinlock just seemed obvious.  Why would I prefer a mutex?
 
-any URL to benchmarks?
+Mainly because you can sleep inside locked mutex and because spinlock shouldn't
+be used for too many lines of code (busy waiting etc.). I think ldd3 will be
+more descriptive than me here :).
 
-> [...] Of course, that's fixable, and I strongly suspect that the 
-> current users of completions simply don't care about speed -- the 
-> normal use of completions is in startup and shutdown paths where a 
-> millisecond extra isn't going to be noticable.
-
-completions and semaphores act in the sub-microsecond range, not in the 
-milliseconds range.
-
-	Ingo
