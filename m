@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762055AbYDNVu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbYDNV62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762055AbYDNVu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 17:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYDNVuP
+	id S1760028AbYDNV62 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 17:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYDNV6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 17:50:15 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:16301 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbYDNVuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 17:50:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bWhMmrLH3DAu+0l4mkjTdqsOa7cIh62jQd9ZxfbMO4nmBnWSsdTuuGf9C5bheXExAtcmXxKH1TOGPRu5CiKtaDYIMCrz3eztN6OpKpOZI01X0Y2cWIpzghBnekWsFiq4WOQURwSAd1ZQMOEvhZm8v2HMLN4XFVtQSxGZIhBtcys=
-Message-ID: <8bd0f97a0804141450x51d93a5eh38a5144f5e6ec0f1@mail.gmail.com>
-Date: Mon, 14 Apr 2008 17:50:10 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Sebastian Siewior" <linux-crypto@ml.breakpoint.cc>
-Subject: Re: [2.6 patch] add include/asm-avr32/xor.h
-Cc: "Adrian Bunk" <bunk@kernel.org>, hskinnemoen@atmel.com,
-       herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shannon.nelson@intel.com, dan.j.williams@intel.com
-In-Reply-To: <20080414214640.GA2282@Chamillionaire.breakpoint.cc>
+	Mon, 14 Apr 2008 17:58:17 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56088 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751972AbYDNV6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 17:58:17 -0400
+Date: Mon, 14 Apr 2008 14:58:14 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: ralf@linux-mips.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and
+ fix MIPS
+In-Reply-To: <20080414133213.82a5b76e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0804141456410.8740@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+ <20080414133213.82a5b76e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080414141632.GA6695@cs181133002.pp.htv.fi>
-	 <20080414181140.GA813@Chamillionaire.breakpoint.cc>
-	 <20080414181536.GZ6695@cs181133002.pp.htv.fi>
-	 <20080414214640.GA2282@Chamillionaire.breakpoint.cc>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 5:46 PM, Sebastian Siewior
-<linux-crypto@ml.breakpoint.cc> wrote:
-> * Adrian Bunk | 2008-04-14 21:15:36 [+0300]:
->  >> >601f75e99c076c16e2648f4860cac4fc6ce187ea diff --git a/include/asm-avr32/xor.h b/include/asm-avr32/xor.h
->  >> >new file mode 100644
->  >> >index 0000000..99c87aa
->  >> >--- /dev/null
->  >> >+++ b/include/asm-avr32/xor.h
->  >> >@@ -0,0 +1,6 @@
->  >> >+#ifndef _ASM_XOR_H
->  >> >+#define _ASM_XOR_H
->  >> >+
->  >> >+#include <asm-generic/xor.h>
->  >> >+
->  >> >+#endif
->  >>
->  >> What about providing <linux/xor.h> which includes the right file from
->  >> asm/ or asm-generic/ depending on HAVE_.* ?
->  >
->  >Where's the advantage?
->
->  This week you are going through avr32. The same fixup is required for
->  blackfin or cris if my ls isn't lying. So either you fix every arch
->  with this missing include or you provide a generic include and every
->  arch that provides a private xor.h includes it. From what I can see
->  almost every arch includes the generic except for x86 & sparc so most
->  xor.h files are identical copies and this is probably as bad as a
->  trailing white space :)
+On Mon, 14 Apr 2008, Andrew Morton wrote:
 
-indeed.  the less work for arches the better :).
--mike
+> afaict this change is not dependent upon the other page-flags changes and
+> can and should be merged ahead of the page-flags patches to preserve mips
+> bisectability, yes?
+
+It could be merged before yes. There may be a conflict with the earlier 
+kbuild fixes though. Sam?
+
+> Mips and sparc64 are hopefully now mended.  powerpc allmodconfig is still
+> unwell:
+> 
+>   CC      arch/powerpc/kernel/asm-offsets.s
+> In file included from include/linux/gfp.h:4,
+>                  from include/linux/slab.h:14,
+>                  from include/linux/percpu.h:5,
+>                  from include/asm/time.h:18,
+>                  from include/asm/cputime.h:26,
+>                  from include/linux/sched.h:67,
+>                  from arch/powerpc/kernel/asm-offsets.c:17:
+> include/linux/mmzone.h:830:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
+
+Cannot figure out what this has to do with page flags. AFACIT the powerpc 
+config is borked because section size is set too low for 64K pages.
+
+
+
