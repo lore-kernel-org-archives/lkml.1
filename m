@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935217AbYDNSvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbYDNSw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935217AbYDNSvz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964839AbYDNSpp
+	id S932265AbYDNSw3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965213AbYDNSrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:45:45 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42842 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759114AbYDNSpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:45:44 -0400
-Date: Mon, 14 Apr 2008 21:40:40 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] libata-acpi.c: remove unneeded #if's
-Message-ID: <20080414184040.GC6695@cs181133002.pp.htv.fi>
+	Mon, 14 Apr 2008 14:47:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39903 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965209AbYDNSry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:47:54 -0400
+Message-ID: <48038DBE.7010203@zytor.com>
+Date: Mon, 14 Apr 2008 10:00:46 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Dan Williams <dan.j.williams@intel.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
+       neilb@suse.de, htejun@gmail.com, lkml@rtr.ca
+Subject: Re: [PATCH] sysfs: add /sys/dev/{char,	block} to lookup sysfs path
+ by major:minor
+References: <20080414165036.13697.6532.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20080414165036.13697.6532.stgit@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These #if's are unneeded since they:
-- did anyway not handle the CONFIG_ACPI_DOCK_MODULE case correctly and
-- this is already handled in include/acpi/acpi_drivers.h and
-- it's now correctly handled in kconfig.
+Dan Williams wrote:
+> 
+> What are the alternatives?:
+> 1/ Add an ioctl to return the path: Doable, but sysfs is meant to reduce
+>    the need to proliferate ioctl interfaces into the kernel, so this
+>    seems counter productive.
+> 
+> 2/ Use udev to create these symlinks: Also doable, but it adds a
+>    udev dependency to utilities that might be running in a limited
+>    environment like an initramfs.
+> 
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+3, of course, is what applications have to do today, which is to do a 
+full-tree search of sysfs.
 
----
+Given that this appears to be fairly little code it would make sense to 
+me; one could argue if /sys/dev/block/8/32 would be better than 
+/sys/dev/block/8:32, but (a) I don't think it matters and (b) the 
+non-atomicity of the former would
 
-This patch has been sent on:
-- 31 Mar 2008
-
- drivers/ata/libata-acpi.c |    4 ----
- 1 file changed, 4 deletions(-)
-
-2a7326b50cd80e6570803d4efb7bc15e029e61e3 diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index bf98a56..1db912e 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -227,11 +227,9 @@ void ata_acpi_associate(struct ata_host *host)
- 			acpi_install_notify_handler(ap->acpi_handle,
- 						    ACPI_SYSTEM_NOTIFY,
- 						    ata_acpi_ap_notify, ap);
--#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
- 			/* we might be on a docking station */
- 			register_hotplug_dock_device(ap->acpi_handle,
- 						     ata_acpi_ap_notify, ap);
--#endif
- 		}
- 
- 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
-@@ -241,11 +239,9 @@ void ata_acpi_associate(struct ata_host *host)
- 				acpi_install_notify_handler(dev->acpi_handle,
- 						ACPI_SYSTEM_NOTIFY,
- 						ata_acpi_dev_notify, dev);
--#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
- 				/* we might be on a docking station */
- 				register_hotplug_dock_device(dev->acpi_handle,
- 						ata_acpi_dev_notify, dev);
--#endif
- 			}
- 		}
- 	}
-
+	-hpa
