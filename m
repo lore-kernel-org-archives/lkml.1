@@ -1,52 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbYDNSym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYDNSzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764379AbYDNSym (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbYDNSyb
+	id S1762069AbYDNSzq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbYDNSzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:54:31 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:44803 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758579AbYDNSya (ORCPT
+	Mon, 14 Apr 2008 14:55:38 -0400
+Received: from web26113.mail.ukl.yahoo.com ([217.146.182.225]:27755 "HELO
+	web26113.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756357AbYDNSzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:54:30 -0400
-Message-ID: <4803A85F.2080603@colorfullife.com>
-Date: Mon, 14 Apr 2008 20:54:23 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 14 Apr 2008 14:55:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=5EwO+7F1TscDA/8R6SfhDwbVeidjb9Jga10HP6ExKU5ClwZnIOkkgQOcmU0lpYGEDu3tkR7qjw5tHHQkOC5AlRRw8469M21jRjBbZKSucxiVze1AEpI6YtBKaBl9Jmad6J8nZ0ygHclUIOLNc4IX16nbRXIKgeRBvq5dt6aarIY=;
+X-YMail-OSG: vARdOhwVM1nHzg9607Zu6L4fUtWI8Iw2VqDcP7uHgDFGwkyALoUdW9Eh1EGsoiavTw--
+Date: Mon, 14 Apr 2008 20:55:31 +0200 (CEST)
+From: linuxcbon <linuxcbon@yahoo.fr>
+Subject: RE : Re: Question about Creative Webcam Pro PD1030 ? Bug ?
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080412135207.79f7fce1@areia>
 MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-CC: Peter Zijlstra <peterz@infradead.org>, efault@gmx.de,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, xemul@openvz.org
-Subject: Re: [PATCH 00/13] Re: Scalability requirements for sysv ipc
-References: <20080411161702.460410000@bull.net>	 <1207931235.7157.0.camel@twins>  <4802E93E.4090205@bull.net> <1208157359.7427.25.camel@twins> <480316D3.7070901@bull.net>
-In-Reply-To: <480316D3.7070901@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <483029.85409.qm@web26113.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey wrote:
->
-> Well, 1 interface changes, 1 is added and another one went away:
->
-> 1) for the preload part (it becomes like the radix-tree preload part):
->
-> int idr_pre_get(struct idr *, gfp_t);
-> would become
-> int idr_pre_get(gfp_t);
->
-Btw, that's one point I didn't understand about the idr code:
-Is it interrupt-safe? It uses spin_lock_irqsave and gfp_t, this implies 
-that it could be called from all contexts.
 
-But the prealloc made me a bit nervous: does it handle idr_pre_get(); 
-interrupt with another idr_pre_get(), add, pre_get_end, interrupt ends, 
-... correctly?
+--- Mauro Carvalho Chehab <mchehab@infradead.org> a écrit :
 
-If it's only intended to be called from process context I would remove 
-the _irqsave and perhaps add an assert(!in_interrupt())
---
-    Manfred
+> On Fri, 11 Apr 2008 00:35:15 +0200 (CEST)
+> linuxcbon <linuxcbon@yahoo.fr> wrote:
+> 
+> > Hi,
+> > 
+> > sorry if this is not the correct mail list.
+> > 
+> > I am not sure if this is a bug, if someone can help me ?
+> > 
+> > I got a Creative Webcam Pro PD1030.
+> > 
+> > Drivers are loaded :
+> > # dmesg |grep ov511
+> > drivers/media/video/ov511.c: USB OV511+ video device found
+> > drivers/media/video/ov511.c: model: Creative Labs WebCam 3
+> > drivers/media/video/ov511.c: Sensor is an OV7620AE
+> > drivers/media/video/ov511.c: Enabling 511+/7620AE workaround
+> > drivers/media/video/ov511.c: Device at usb-0000:00:02.0-2 registered
+> to
+> > minor 0
+> > usbcore: registered new interface driver ov511
+> > drivers/media/video/ov511.c: v1.64 for Linux 2.5 : ov511 USB Camera
+> Driver
+> > 
+> > 
+> > lsmod gives :
+> > ov511                  77072  0 
+> > squashfs               46856  0 
+> > compat_ioctl32          1408  1 ov511
+> > videodev               27904  1 ov511
+> > v4l2_common            16896  1 videodev
+> > v4l1_compat            14596  1 videodev
+> > usbcore               127128  6
+> usb_storage,usblp,ov511,ehci_hcd,ohci_hcd
+> > 
+> > # uname -a
+> > Linux puppypc 2.6.21.7 #1 Sun Feb 24 10:22:08 GMT-8 2008 i686
+> GNU/Linux
+> > 
+> > 
+> > I try for testing
+> > cat /dev/video > video.avi
+> > 
+> > I got : 
+> > 
+> > cat: /dev/video*** glibc detected *** cat: free(): invalid next size
+> > (fast): 0x08050ab8 ***
+> > ======= Backtrace: =========
+> > /lib/libc.so.6[0xb7f4140e]
+> > /lib/libc.so.6(cfree+0xa9)[0xb7f42bdd]
+> > /lib/libc.so.6[0xb7f1088c]
+> > /lib/libc.so.6[0xb7f0f0ef]
+> > /lib/libc.so.6[0xb7f0edcf]
+> > /lib/libc.so.6(dcgettext+0x24)[0xb7f0e030]
+> > /lib/libc.so.6(__strerror_r+0xc9)[0xb7f46b19]
+> > /lib/libc.so.6[0xb7f89d37]
+> > /lib/libc.so.6(error+0x89)[0xb7f89f38]
+> > cat[0x8049321]
+> > /lib/libc.so.6(__libc_start_main+0x12e)[0xb7f0420e]
+> > cat[0x8048c5d]
+> > ======= Memory map: ========
+> > 08048000-0804c000 r-xp 00000000 16:05 304622     /bin/cat
+> > 0804c000-0804d000 rw-p 00003000 16:05 304622     /bin/cat
+> > 0804d000-0806e000 rw-p 0804d000 00:00 0          [heap]
+> > b7d00000-b7d21000 rw-p b7d00000 00:00 0 
+> > b7d21000-b7e00000 ---p b7d21000 00:00 0 
+> > b7ea1000-b7eaa000 r-xp 00000000 16:05 502230    
+> /usr/lib/libgcc_s.so.1
+> > b7eaa000-b7eab000 rw-p 00008000 16:05 502230    
+> /usr/lib/libgcc_s.so.1
+> > b7eab000-b7ede000 r--p 00000000 16:05 498627    
+> > /usr/lib/locale/en_US/LC_CTYPE
+> > b7ede000-b7edf000 r--p 00000000 16:05 498634    
+> > /usr/lib/locale/en_US/LC_NUMERIC
+> > b7edf000-b7ee0000 r--p 00000000 16:05 498637    
+> > /usr/lib/locale/en_US/LC_TIME
+> > b7ee0000-b7ee5000 r--p 00000000 16:05 498626    
+> > /usr/lib/locale/en_US/LC_COLLATE
+> > b7ee5000-b7ee6000 r--p 00000000 16:05 498632    
+> > /usr/lib/locale/en_US/LC_MONETARY
+> > b7ee6000-b7ee7000 r--p 00000000 16:05 498631    
+> > /usr/lib/locale/en_US/LC_MESSAGES/SYS_LC_MESSAGES
+> > b7ee7000-b7ee8000 r--p 00000000 16:05 498635    
+> > /usr/lib/locale/en_US/LC_PAPER
+> > b7ee8000-b7ee9000 r--p 00000000 16:05 498633    
+> > /usr/lib/locale/en_US/LC_NAME
+> > b7ee9000-b7eea000 r--p 00000000 16:05 498625    
+> > /usr/lib/locale/en_US/LC_ADDRESS
+> > b7eea000-b7eeb000 r--p 00000000 16:05 498636    
+> > /usr/lib/locale/en_US/LC_TELEPHONE
+> > b7eeb000-b7eec000 r--p 00000000 16:05 498629    
+> > /usr/lib/locale/en_US/LC_MEASUREMENT
+> > b7eec000-b7eed000 r--p 00000000 16:05 498628    
+> > /usr/lib/locale/en_US/LC_IDENTIFICATION
+> > b7eed000-b7eee000 rw-p b7eed000 00:00 0 
+> > b7eee000-b7fe3000 r-xp 00000000 16:05 16065      /lib/libc-2.6.1.so
+> > b7fe3000-b7fe4000 r--p 000f5000 16:05 16065      /lib/libc-2.6.1.so
+> > b7fe4000-b7fe6000 rw-p 000f6000 16:05 16065      /lib/libc-2.6.1.so
+> > b7fe6000-b7fea000 rw-p b7fe6000 00:00 0 
+> > b7fea000-b7fff000 r-xp 00000000 16:05 16055      /lib/ld-2.6.1.so
+> > b7fff000-b8001000 rw-p 00014000 16:05 16055      /lib/ld-2.6.1.so
+> > bf808000-bf81e000 rw-p bf808000 00:00 0          [stack]
+> > ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
+> > Aborted
+> > 
+> > 
+> > I also got problems to use webcam with skype etc.
+> > Can you help find the origin of the bug ?
+> > 
+> > Thanks very much.
+> > 
+> > Cheers, linuxcbon
+> 
+> It seems that the userspace app is trying to free a memory block twice.
+> Only
+> the author of the application can help to fix this.
+> 
+> This may eventually be caused by some driver bad behavior or OOPS. Do
+> you have
+> any oops message, if you run "dmesg" ?
+> 
+> About skype, their V4L support is still broken, at least on the versions
+> I
+> tested here. I have several webcams here. On my tests, it worked only
+> with one
+> specific model. I suspect that they support only a very few subset of
+> the
+> supported video formats.
+> 
+> Cheers,
+> Mauro
+
+
+I forgot to cc the linux mailing list, so here it is again.
+
+
+hi Mauro,
+
+thanks for your answer !
+
+I already contacted the authors (Mark,Wallac,Olawlor), but no feedback
+yet.
+
+I got no oops message from kernel.
+Can you help me and show me how to debug it or give some ideas ?
+
+Cheers, linuxcbon
+
+
+
+
+      _____________________________________________________________________________ 
+Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
