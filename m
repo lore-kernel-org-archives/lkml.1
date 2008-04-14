@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYDNWeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760489AbYDNWgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762099AbYDNWeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYDNWdx
+	id S1760489AbYDNWgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYDNWgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:33:53 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:52180 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbYDNWdw (ORCPT
+	Mon, 14 Apr 2008 18:36:36 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:50853 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbYDNWgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:33:52 -0400
-Date: Mon, 14 Apr 2008 17:22:16 -0500
-From: David Fries <david@fries.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/33 replaces 14/35 and 15/35] W1: w1_slave_read_id multiple short read bug
-Message-ID: <20080414222216.GA15536@spacedout.fries.net>
-References: <20080413225632.GA14058@spacedout.fries.net> <20080413231537.GF15213@spacedout.fries.net> <20080414114055.GA13385@2ka.mipt.ru>
-Mime-Version: 1.0
+	Mon, 14 Apr 2008 18:36:35 -0400
+Date: Mon, 14 Apr 2008 23:35:56 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: dwmw2@infradead.org, hch@infradead.org, akpm@linux-foundation.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-ID: <20080414223556.GA21340@shareable.org>
+Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>, dwmw2@infradead.org,
+	hch@infradead.org, akpm@linux-foundation.org, me@bobcopeland.com,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414094215.GD2076@shareable.org> <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu> <20080414115540.GA5802@shareable.org> <E1JlNly-0005bt-2v@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414114055.GA13385@2ka.mipt.ru>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 14 Apr 2008 17:22:17 -0500 (CDT)
+In-Reply-To: <E1JlNly-0005bt-2v@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 03:40:55PM +0400, Evgeniy Polyakov wrote:
-> Hi David.
-> 
-> On Sun, Apr 13, 2008 at 06:15:37PM -0500, David Fries (david@fries.net) wrote:
-> > This is more to point out the bug in w1_slave_read_id, the next patch
-> > rewrites the routine.
+Miklos Szeredi wrote:
+> > > > Yes, that's quite annoying as FUSE doesn't work with my architecture,
+> > > > so I can't use the only good NTFS driver.... grr! :-)
+> > > 
+> > > I'm not quite getting this joke :)
 > > 
-> > w1.c 1.15
-> ... 
-> > w1.c 1.16
+> > It's not really a joke.  It really is a problem: I'm supposed to
+> > provide NTFS support for a project, but the kernel I'm using doesn't
+> > work with FUSE (too old for the FUSE version needed by ntfs-3g),
 > 
-> 
-> That is what I talked about. I agree with your analysis of the problem
-> and I agree with fixes. But I do not agree with how you created them:
-> why do we ever neen 1.15 version, since immediately after that we have
-> 1.16 which completely rewrite what was done in previous one?
-> This applies to the whole patchset: there are essentially several bug
-> fixes and several features, so separate them into several patches, which
-> do not collide with each other in the above way.
+> How old?  The out of tree fuse module (hoping to get rid of it soon)
+> works down to 2.6.9.  Beyond that it does probably require a fair
+> amount of porting work.
 
-The old patch 14/35 and 15/35 was the only place I know of where I
-fixed the bug, then replaced it wholesale with something better.
-Several bugs, a few features, lots of patches, go figure.
+I imagine that backporting FUSE to 2.4 no-mmu will be more work than
+backporting a filesystem, but I could be mistaken.  Moving my project
+to a 2.6 kernel (*any* 2.6 kernel) would be much more work than
+either.
 
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+All other filesystems I care about are in-kernel - NTFS is quite
+exceptional in needing FUSE just to get ordinary, stable file access.
+(The in-kernel NTFS is regarded as unstable and missing essential
+basic features.)
+
+None of this should be taken as any kind of criticism.  I love what
+you guys have done.
+
+-- Jamie
+
