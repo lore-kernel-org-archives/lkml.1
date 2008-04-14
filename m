@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbYDNHec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYDNHgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbYDNHec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYDNHeV
+	id S1759688AbYDNHgJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYDNHf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:34:21 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:33367 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYDNHeV (ORCPT
+	Mon, 14 Apr 2008 03:35:56 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54379 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754813AbYDNHfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:34:21 -0400
-Subject: Re: [Bug #10300] volume wheel does not work in 2.6.25-rc6
-From: Romano Giannetti <romanol@upcomillas.es>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon <bugme-daemon@bugzilla.kernel.org>
-In-Reply-To: <oq66hWjeF4N.A.V9.p4lAIB@albercik>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
-	 <oq66hWjeF4N.A.V9.p4lAIB@albercik>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Mon, 14 Apr 2008 09:34:18 +0200
-Message-Id: <1208158458.9896.1.camel@pern>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 14 Apr 2008 03:35:55 -0400
+To: me@bobcopeland.com
+CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080414004521.GA30489@hash.localnet> (message from Bob Copeland
+	on Sun, 13 Apr 2008 20:45:21 -0400)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <20080414004521.GA30489@hash.localnet>
+Message-Id: <E1JlJE6-0004yZ-62@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 14 Apr 2008 09:35:42 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 2008-04-13 at 20:56 +0200, Rafael J. Wysocki wrote:
-
-> The following bug entry is on the current list of known regressions
-> from 2.6.24.  Please verify if it still should be listed.
-
-Still here with me at -rc9.
-
+> > I don't feel strongly either way, and Christoph's arguments against
+> > fuse are mostly valid (although neither of them are serious).
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10300
-> Subject		: volume wheel does not work in 2.6.25-rc6
-> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-> Date		: 2008-03-21 11:42 (24 days old)
-> References	: http://lkml.org/lkml/2008/4/9/94
+> I don't have hard numbers, but anecdotally my FUSE version is quite 
+> a bit less performant.  That's no criticism of FUSE - I just haven't
+> put the time into optimizing and adding various caches.
+
+The worst I/O performance problems should be gone by 2.6.26.
+Otherwise there shouldn't be a need to add optimizations to the
+userspace code.  The kernel caches take care of that, just like for a
+kernel filesystem.
+
+> > There's one thing which makes fuse a slightly better candidate for
+> > applications where the number of users is low: stability.  Unless you
+> > or your users test the hell out of your filesystem, there always a
+> > chance that some bugs will remain.  
 > 
+> Sure, though this FS won't see the same kind of use as ext2.  Most users
+> would just mount it, copy a bunch of files, then unmount it, and if that
+> works then great.
 
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
+Exactly.  Which means, that bugs which happen only in special
+circumstances don't surface early and cause more headaches later.
 
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Miklos
