@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYDNJ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbYDNJbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYDNJ12 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYDNJ1S
+	id S1752925AbYDNJbQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 05:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYDNJbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:27:18 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:17485 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbYDNJ1R (ORCPT
+	Mon, 14 Apr 2008 05:31:01 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42973 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbYDNJbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:27:17 -0400
-To: sclark46@earthlink.net
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       Tilman Schmidt <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       Mark Lord <lkml@rtr.ca>, David Miller <davem@davemloft.net>,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-From: Andi Kleen <andi@firstfloor.org>
-References: <47FEADCB.7070104@rtr.ca>
-	<20080413121831.d89dd424.akpm@linux-foundation.org>
-	<20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
-	<20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
-Date: Mon, 14 Apr 2008 11:26:24 +0200
-In-Reply-To: <48028830.6020703@earthlink.net> (Stephen Clark's message of "Sun, 13 Apr 2008 18:24:48 -0400")
-Message-ID: <87d4oswzwf.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 14 Apr 2008 05:31:00 -0400
+Date: Mon, 14 Apr 2008 10:30:38 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 10 (arch/x86)
+Message-ID: <20080414093038.GA9785@ZenIV.linux.org.uk>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au> <20080410150950.5913b16a.randy.dunlap@oracle.com> <20080411074631.GB6410@elte.hu> <20080411081901.f56f5180.randy.dunlap@oracle.com> <20080411152648.GK9785@ZenIV.linux.org.uk> <20080414081220.GA19865@elte.hu> <20080414082220.GZ9785@ZenIV.linux.org.uk> <20080414083440.GD19865@elte.hu> <20080414084320.GE23259@devserv.devel.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Apr 2008 09:19:38.0970 (UTC) FILETIME=[AA0CF3A0:01C89E10]
+Content-Disposition: inline
+In-Reply-To: <20080414084320.GE23259@devserv.devel.redhat.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark <sclark46@earthlink.net> writes:
+On Mon, Apr 14, 2008 at 04:43:20AM -0400, Jakub Jelinek wrote:
+> On Mon, Apr 14, 2008 at 10:34:40AM +0200, Ingo Molnar wrote:
+> > ... but reality called in and gcc added printf format checks as a gcc 
+> > extension and even modifies the code to make it safe when the user gets 
+> > it "wrong".
+> 
+> GCC format string checking is only about warnings, GCC never modifies
+> the arguments passed to make them match the format string conversions.
 
-> I been a linux user and have followed the LKML for a
-> number of years and have yet to see
-> any test plans for any submitted patches.
+Actually, how hard would it be to allow new modifiers recognized by
+format string checking?  Hell, even being able to teach it that (in this
+family of functions) "%<d>u" should expect dma_addr_t, "%016<64>x" -
+u64, etc. would solve all the problems.  Ideally we'd need something
+for things like IPv4 address (__be32 expected), IPv6 address (taking
+__be32 *), etc.
 
-You haven't looked closely then. While it's not very common there 
-is a non trivial number of patches who describe how they got tested
-in the patch description.
+No magic, usual calling conventions - it'd still remain a valid C.
+We can do that in sparse and just tell gcc to STFU about these warnings,
+of course, but that's kind of things that is probably wanted by userland
+projects as well...
 
--Andi
+BTW, ISTR FreeBSD folks carrying gcc patches in their tree for something
+with similar purpose - project-specific format modifiers/specifiers.
+No idea how hard it would be to generalize, though - never looked at
+those in details...
