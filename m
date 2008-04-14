@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYDNHTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbYDNHTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYDNHTK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbYDNHS4
+	id S1759989AbYDNHTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbYDNHTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:18:56 -0400
-Received: from mail.hevs.ch ([153.109.23.10]:57019 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755973AbYDNHSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:18:55 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] atmel_serial remove duplicated macro definition
-Date: Mon, 14 Apr 2008 09:18:52 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-References: <370563.4572.qm@web26213.mail.ukl.yahoo.com>
-In-Reply-To: <370563.4572.qm@web26213.mail.ukl.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 14 Apr 2008 03:19:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54632 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755966AbYDNHTo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:19:44 -0400
+Date: Mon, 14 Apr 2008 16:24:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: fix oops in oom handling
+Message-Id: <20080414162404.b5340fe9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4802FF10.6030905@cn.fujitsu.com>
+References: <4802FF10.6030905@cn.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804140918.53612.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 April 2008, Michael Trimarchi wrote:
-> After commit 39d4c922b596633da86878b1a5cc881785b8e5fa (atmel_serial: fix
-> uart/console concurrent access) the UART_GET_TCR macro got redefined. This
-> patch removes the duplicated definition.
->
-Ooops, seems my error!
+On Mon, 14 Apr 2008 14:52:00 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+> It's reproducable in a x86_64 box, but doesn't happen in x86_32.
+> 
+> This is because tsk->sighand is not guarded by RCU, so we have to
+> hold tasklist_lock, just as what out_of_memory() does.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu>
 
-ack
+Andrew, fast-path for 2.6.25 is still not-closed ? I think this patch is worth
+to be merged as bugfix to 2.6.25 if enough acks.
 
-Regards
+Thanks,
+-Kame
 
-Marc
+
+> ---
+>  mm/oom_kill.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index f255eda..beb592f 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -423,7 +423,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+>  	struct task_struct *p;
+>  
+>  	cgroup_lock();
+> -	rcu_read_lock();
+> +	read_lock(&tasklist_lock);
+>  retry:
+>  	p = select_bad_process(&points, mem);
+>  	if (PTR_ERR(p) == -1UL)
+> @@ -436,7 +436,7 @@ retry:
+>  				"Memory cgroup out of memory"))
+>  		goto retry;
+>  out:
+> -	rcu_read_unlock();
+> +	read_unlock(&tasklist_lock);
+>  	cgroup_unlock();
+>  }
+>  #endif
+> -- 1.5.4.rc3 
+> 
+> 
+> 
+> 
 
