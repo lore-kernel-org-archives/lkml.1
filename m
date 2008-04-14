@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbYDNQLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYDNQNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761562AbYDNQLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbYDNQLo
+	id S1761939AbYDNQNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYDNQNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:11:44 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48560 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754394AbYDNQLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:11:43 -0400
-Date: Mon, 14 Apr 2008 19:10:38 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mtd/cmdlinepart.c: don't compare pointers with 0
-Message-ID: <20080414161037.GZ6695@cs181133002.pp.htv.fi>
-References: <20080414142004.GR6695@cs181133002.pp.htv.fi> <48036D43.6070307@ru.mvista.com>
+	Mon, 14 Apr 2008 12:13:23 -0400
+Received: from tamago.serverit.net ([91.189.209.155]:51631 "EHLO
+	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755051AbYDNQNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 12:13:22 -0400
+Date: Mon, 14 Apr 2008 19:12:50 +0300 (EEST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@tamago.serverit.net
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+cc: Miklos Szeredi <miklos@szeredi.hu>, dwmw2@infradead.org, hch@infradead.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+In-Reply-To: <38B7FCFD-9F4F-4D03-9FEE-E44EA19D1599@cam.ac.uk>
+Message-ID: <Pine.LNX.4.62.0804141812040.3058@tamago.serverit.net>
+References: <14725485.776281208170999085.JavaMail.szaka@kolumbus.fi>
+ <Pine.LNX.4.62.0804141444320.22065@tamago.serverit.net>
+ <38B7FCFD-9F4F-4D03-9FEE-E44EA19D1599@cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <48036D43.6070307@ru.mvista.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 06:42:11PM +0400, Sergei Shtylyov wrote:
-> Hello.
->
-> Adrian Bunk wrote:
->
->> Sparse spotted that 0 was compared to pointers.
->
->> While I was at it, I also moved the assignments out of the if's.
->
->> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
->> 32de76e83f37322dd85eaecf126e7b17327f606f diff --git a/drivers/mtd/cmdlinepart.c b/drivers/mtd/cmdlinepart.c
->> index b44292a..3e09043 100644
->> --- a/drivers/mtd/cmdlinepart.c
->> +++ b/drivers/mtd/cmdlinepart.c
->> @@ -119,7 +119,8 @@ static struct mtd_partition * newpart(char *s,
->>  		char *p;
->>   	    	name = ++s;
->> -		if ((p = strchr(name, delim)) == 0)
->> +		p = strchr(name, delim);
->> +		if (!p)
->>  		{
->
->    Wouldn't it be nice to join the standalone brace to if () while it?
 
-Most of the file is written like this, so there's no point in changing 
-it only here...
+On Mon, 14 Apr 2008, Anton Altaparmakov wrote:
 
->>  			printk(KERN_ERR ERRP "no closing %c found in partition name\n", delim);
->>  			return NULL;
->
-> WBR, Sergei
+> > I consider this as a benefit for FUSE file systems. An unloadable kernel
+> > module results reboot which is much more intrusive.
+> 
+> Kernel modules don't become "unloadable" unless there is a bug.  
 
-cu
-Adrian
+That's exactly what I meant. The majority of the system crashes are due to 
+kernel drivers.
 
--- 
+> The "kill -9" can happen inadvertently even without any bugs in the FUSE 
+> or the FUSE-fs. 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Not really. And if so then distros solve it, as some of them already did 
+(e.g. during system shutdown). 
 
+> > The OOM killer can be configured and if the fs still uses too much memory
+> > then probably it's better to be killed/restarted with journaling support.
+> > The important here would be the kernel finally fixing the non-sync behavior
+> > when it clams to do so (see recent kernel threads).
+> 
+> You don't get the point.  Any process in the system can be using too much
+> memory and trigger the OOM killer even when the FS is behaving just fine...
+
+Actually you missed when I wrote "the OOM killer can be configured".
+
+FUSE is a new thing which sometimes requires non-conventional thinking and 
+minor adjustments here and there. These works are ongoing for some years 
+now.
+ 
+> I never said it was a FUSE problem!  It is a ntfsmount/ntfs-3g problem.  At
+> least a few years ago someone was trying to use ntfsmount (or ntfs-3g I can't
+> remember if you had already forked it then) on a 32MiB RAM embedded ARM box
+> and he was running OOM when trying to list directories due to the ntfs/fuse
+> implementation.  In the kernel ntfs driver that does not happen.
+
+Listing a directory with over 100k files can be still an ENOMEM problem 
+using 32 MB RAM but of course it's solvable. Nobody was interested so far.
+
+	Szaka
+
+--
+NTFS-3G:  http://ntfs-3g.org
