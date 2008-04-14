@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYDNLDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYDNLGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbYDNLDi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 07:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYDNLDa
+	id S1757446AbYDNLGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 07:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYDNLGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 07:03:30 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:33296 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1752126AbYDNLDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 07:03:30 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Mon, 14 Apr 2008 21:03:16 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       joe@perches.com
-Subject: Re: [PATCH 2/2] printk: Remember the message level for multi-line	output
-Message-ID: <20080414110316.GJ29599@tull.net>
-References: <20080413115152.29086.37845.stgit@marcab.local.tull.net> <20080413122735.31769.17716.stgit@marcab.local.tull.net> <20080414080351.GL16163@elte.hu> <20080414101200.GH29599@tull.net> <20080414102634.GA20649@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414102634.GA20649@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+	Mon, 14 Apr 2008 07:06:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36453 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYDNLGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 07:06:16 -0400
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jamie@shareable.org, hch@infradead.org, akpm@linux-foundation.org,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+	 <20080412170304.54f139e2.akpm@linux-foundation.org>
+	 <20080413033344.GA27494@hash.localnet>
+	 <20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	 <20080413080130.GA9622@infradead.org>
+	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
+	 <20080413082815.GA20108@infradead.org>
+	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	 <1208121358.2700.4.camel@shinybook.infradead.org>
+	 <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu>
+	 <20080414094215.GD2076@shareable.org>
+	 <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 12:05:43 +0100
+Message-Id: <1208171143.31695.54.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 12:26:34PM +0200, Ingo Molnar wrote:
-> * Nick Andrew <nick@nick-andrew.net> wrote:
-> > Yes, quite. The state of whether we're inside a line is retained 
-> > across calls to printk (from anywhere in the system) - this allows 
-> > code like this to usually do what you expect:
-> > 
-> > 	printk(KERN_ERR "Error:");
-> > 	for (i = 0; i < 16; ++i) {
-> > 		printk("  %02x", i);
-> > 	}
-> > 	printk("\n");
-> > 
-> > But in your example the first printk call contains a \n at the end of 
-> > the line and so upon entry to the second printk call the function 
-> > knows a new line is beginning.
-> 
-> ok - i think your change is a good one.
+On Mon, 2008-04-14 at 11:58 +0200, Miklos Szeredi wrote:
+> Oh, you mean without having to run the whole kernel around the
+> filesystem?  Well, that's a bit more tricky: filesystems use not just
+> the VFS API, but the block, VM, SLAB, etc. APIs as well.  Porting all
+> of these to userspace and keeping them in sync with the kernel changes
+> doesn't sound much fun.
 
-Thank you.
+That would be UML :)
 
-> btw., we could also start emitting debug warnings that the printk is not 
-> conform. Something like:
-> 
->   "INFO: the previous printk was done without a KERN_ annotation"
+But seriously -- wouldn't our time be better spent on improving error
+handling in the kernel, rather than taking advantage of the benefits of
+microkernel design... but only for those parts which don't matter?
 
-There are 20k+ instances of this in the codebase; we don't need a
-runtime message to find them. If you annotate them all, that will
-add up to 60k to the binary size. Perhaps it's best to retain the
-default support.
-
-Nick.
 -- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+dwmw2
+
