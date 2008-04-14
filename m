@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbYDNQEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbYDNQLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbYDNQEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYDNQEm
+	id S1760156AbYDNQLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbYDNQLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:04:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:37872 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755051AbYDNQEm (ORCPT
+	Mon, 14 Apr 2008 12:11:06 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56129 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752774AbYDNQLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:04:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=J0s6Nb/9Do812DieP9Xg+p3pUtSwP/1+RvSYF5Y6nQBPFFRocnYTU4/I6GAPi3k+O
-	pdPmYq4OkqCGbgXkhE1jQ==
-Message-ID: <6599ad830804140904v66fab79at8c12e19db64f6608@mail.gmail.com>
-Date: Mon, 14 Apr 2008 09:04:28 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48036F14.3050409@cs.helsinki.fi>
+	Mon, 14 Apr 2008 12:11:05 -0400
+Date: Mon, 14 Apr 2008 12:11:05 -0400
+To: Alexia Death <alexiadeath@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
+Message-ID: <20080414161105.GA7387@csclub.uwaterloo.ca>
+References: <200804132326.07713.alexiadeath@gmail.com> <200804140245.33171.arnd@arndb.de> <200804140749.57049.alexiadeath@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48036677.3010807@linux.vnet.ibm.com>
-	 <48036F14.3050409@cs.helsinki.fi>
+In-Reply-To: <200804140749.57049.alexiadeath@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 7:49 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Balbir Singh wrote:
->
-> > If nobody has any specific objection to this patch, can I go ahead and
-> request
-> > Andrew to include this patch?
-> >
->
->  ->owner in struct mm_struct is very useful for revokeat() so
->
->  Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->
+On Mon, Apr 14, 2008 at 07:49:56AM +0300, Alexia Death wrote:
+> Yes, Ive come to a conclusion that because reader does not do anything about 
+> the speciality of the 2GB cards they wont be readable because Linux usb 
+> storage does not know about them either.
 
-Reviewed-by: Paul Menage <menage@google.com>
+The reader in my wife's old laptop (Compaq R3240) would not work with
+1gB or 2GB cards, but would work with 512MB and smaller.  It would
+detect the card but have random contents displayed and certainly
+wouldn't read.  An SD reader in a USB printer on the other hand
+connected to the same machine read all the cards fine.  There certainly
+are some misdesigned SD readers out there that fail with larger cards
+due to having made invalid assumptions.
 
-I'm still not sure when to use Acked-by versus Reviewed-by - is it
-just based on the level of scrutiny/review?
+Sounds like that particular readers is junk and belongs in the trash. :)
 
-Paul
+-- 
+Len Sorensen
