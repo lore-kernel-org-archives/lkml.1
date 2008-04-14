@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbYDNUcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbYDNUcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759221AbYDNUcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYDNUcX
+	id S1760386AbYDNUcy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYDNUcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:32:23 -0400
-Received: from rtr.ca ([76.10.145.34]:4516 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYDNUcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:32:22 -0400
-Message-ID: <4803BF54.4040205@rtr.ca>
-Date: Mon, 14 Apr 2008 16:32:20 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-ext4@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: Freeing blocks not in datazone
-References: <4803A109.5080800@rtr.ca> <4803AF3B.2020702@redhat.com>
-In-Reply-To: <4803AF3B.2020702@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 14 Apr 2008 16:32:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43459 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754379AbYDNUcl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:32:41 -0400
+Date: Mon, 14 Apr 2008 13:32:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: ralf@linux-mips.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and
+ fix MIPS
+Message-Id: <20080414133213.82a5b76e.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Mark Lord wrote:
->> One of my test systems here, running 2.6.25-rc8-git*,
->> just now crapped out with this in the tail end of dmesg:
->>
->> [   20.927780] EXT3-fs error (device sda1): ext3_free_blocks: Freeing blocks not in datazone - block
->> [   20.928756] Aborting journal on device sda1.
+On Mon, 14 Apr 2008 11:43:08 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> Add the ability to pass comments into asm-offsets.h by generating asm
+> output like
 > 
-> I've got a similar report from the F9 installer, also on 2.6.25-rc8* ...
->  trying to reproduce locally.
-..
+> -># comment line
+> 
+> Mips needs this feature to preserve the comments that are in asm-mips/asm-offsets.h
+> right now.
+> 
+> Then remove the special handling for mips from Kbuild and convert mips to use
+> the new string to include the comments.
 
-Well, if it's of any help, here it was on a 2.4GHz Intel QuadCore,
-32-bit kernel/userspace, 4GB RAM, PAE-enabled.
+OK, let's try that.  Ralf, could you please review it?
 
-Cheers
+
+afaict this change is not dependent upon the other page-flags changes and
+can and should be merged ahead of the page-flags patches to preserve mips
+bisectability, yes?
+
+Mips and sparc64 are hopefully now mended.  powerpc allmodconfig is still
+unwell:
+
+  CC      arch/powerpc/kernel/asm-offsets.s
+In file included from include/linux/gfp.h:4,
+                 from include/linux/slab.h:14,
+                 from include/linux/percpu.h:5,
+                 from include/asm/time.h:18,
+                 from include/asm/cputime.h:26,
+                 from include/linux/sched.h:67,
+                 from arch/powerpc/kernel/asm-offsets.c:17:
+include/linux/mmzone.h:830:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
+
