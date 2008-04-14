@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYDNHO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbYDNHQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbYDNHO7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbYDNHOu
+	id S1759732AbYDNHQI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbYDNHP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:14:50 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:53436 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754324AbYDNHOt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:14:49 -0400
-Message-ID: <4803035D.5030400@seznam.cz>
-Date: Mon, 14 Apr 2008 09:10:21 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Mon, 14 Apr 2008 03:15:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47733 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754324AbYDNHPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:15:55 -0400
+Date: Mon, 14 Apr 2008 09:15:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10427] e1000e broke e1000
+Message-ID: <20080414071546.GD16163@elte.hu>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.VR.Q3lAIB@albercik>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       benh@kernel.crashing.org, John Linn <John.Linn@xilinx.com>,
-       git-dev@xilinx.com, Grant Likely <grant.likely@secretlab.ca>,
-       git@xilinx.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: Microblaze Linux release
-References: <48020A21.4000404@seznam.cz> <200804140538.30268.arnd@arndb.de>
-In-Reply-To: <200804140538.30268.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <oq66hWjeF4N.A.VR.Q3lAIB@albercik>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
 
->> I would like to ask you for review all microblaze code especially
->> arch/microblaze and include/asm-microblaze. Please don't send me question to
->> drivers - Microblaze will use only uartlite driver (only add on or to Kconfig -
->> that's enough for now).
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> I'm certainly willing to help review it, but I think the timing is too short
-> for asking for a 2.6.26 merge. Judging from experience, a new architecture
-> review takes a few weeks to sort out all the issues you want resolved before
-> merging, so posting them now would put you in a much more comfortable position
-> when targeting a 2.6.27 merge.
+> The following bug entry is on the current list of known regressions 
+> from 2.6.24.  Please verify if it still should be listed.
 
-Thanks for your help. I know that the time is short.:-( We'll see. I will
-request for merge if I know Microblaze cpu is clean.
+yes, it still occurs.
 
-> One of the things I always wanted to have is a common location for all the
-> things that get duplicated verbatim into each new architecture, like all
-> the include/asm/{fcntl,ioctls,ipcbuf,mman,poll,posix_types,sem_buf}.h and
-> others that define part of the syscall ABI.
-> 
-> 	Arnd <><
-
-Include files are pain I know.
-
-Michal Simek
-www.monstr.eu
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10427
+> Subject		: e1000e broke e1000
+> Submitter	: Ingo Molnar <mingo@elte.hu>
+> Date		: 2008-04-08 20:39 (6 days old)
+> References	: http://lkml.org/lkml/2008/4/8/256
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=15704&amp;action=view
