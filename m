@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbYDNQk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbYDNQkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763430AbYDNQk1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763182AbYDNQj0
+	id S1763518AbYDNQkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763204AbYDNQj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:39:26 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:32518 "EHLO
+	Mon, 14 Apr 2008 12:39:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:32974 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763159AbYDNQjY (ORCPT
+	with ESMTP id S1763172AbYDNQjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:39:24 -0400
+	Mon, 14 Apr 2008 12:39:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qO6dVEBGq+OlU8AKM3CTaxAjIPowJZu1cphNd2PLouFUFTJgqmfuvPUuasrN/Zol0bCdbbOPZYyGsbFfE7JnaJ/fa9/xkJOZ+H9Kg6YwVB8HshPubdn+UrNJdNAy4dCRsVvJ+254ASUk0E7TRilkIAvBOZiX+YH2gx9BTyfQx8Q=
-Subject: [PATCH 08/10] pcmcia: Use get/put_unaligned_* helpers
+        b=UfDHwoaO+HrXYIK4J31jg1qoBshO0DbuP4Z17+klDUbva3GWanKmEKCX7GZinGt+oVk2g49+gTunyha9tUWuOoFPla7j40EZVHMDRw9cDvhUINROMLb33veyLF74GVH2fbVrt95hF8SNqdfQ5kIQs7SAHhIwFEKtQmztbRyjGWI=
+Subject: [PATCH 10/10] video: Use get/put_unaligned_* helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        linux-arch <linux-arch@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 14 Apr 2008 09:37:56 -0700
-Message-Id: <1208191076.5721.30.camel@brick>
+Date: Mon, 14 Apr 2008 09:37:57 -0700
+Message-Id: <1208191077.5721.33.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -32,137 +32,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/pcmcia/cistpl.c |   39 +++++++++++++++------------------------
- 1 files changed, 15 insertions(+), 24 deletions(-)
+ drivers/video/matrox/matroxfb_misc.c |   28 ++++++++++++++--------------
+ drivers/video/metronomefb.c          |    9 +++------
+ 2 files changed, 17 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/pcmcia/cistpl.c b/drivers/pcmcia/cistpl.c
-index 06a85d7..3637953 100644
---- a/drivers/pcmcia/cistpl.c
-+++ b/drivers/pcmcia/cistpl.c
-@@ -402,15 +402,6 @@ EXPORT_SYMBOL(pcmcia_replace_cis);
-     
- ======================================================================*/
- 
--static inline u16 cis_get_u16(void *ptr)
--{
--	return le16_to_cpu(get_unaligned((__le16 *) ptr));
--}
--static inline u32 cis_get_u32(void *ptr)
--{
--	return le32_to_cpu(get_unaligned((__le32 *) ptr));
--}
--
- typedef struct tuple_flags {
-     u_int		link_space:4;
-     u_int		has_link:1;
-@@ -471,7 +462,7 @@ static int follow_link(struct pcmcia_socket *s, tuple_t *tuple)
- 	/* Get indirect link from the MFC tuple */
- 	read_cis_cache(s, LINK_SPACE(tuple->Flags),
- 		       tuple->LinkOffset, 5, link);
--	ofs = cis_get_u32(link + 1);
-+	ofs = get_unaligned_le32(link + 1);
- 	SPACE(tuple->Flags) = (link[0] == CISTPL_MFC_ATTR);
- 	/* Move to the next indirect link */
- 	tuple->LinkOffset += 5;
-@@ -679,8 +670,8 @@ static int parse_checksum(tuple_t *tuple, cistpl_checksum_t *csum)
-     if (tuple->TupleDataLen < 5)
- 	return CS_BAD_TUPLE;
-     p = (u_char *) tuple->TupleData;
--    csum->addr = tuple->CISOffset + cis_get_u16(p) - 2;
--    csum->len = cis_get_u16(p + 2);
-+    csum->addr = tuple->CISOffset + get_unaligned_le16(p) - 2;
-+    csum->len = get_unaligned_le16(p + 2);
-     csum->sum = *(p + 4);
-     return CS_SUCCESS;
- }
-@@ -691,7 +682,7 @@ static int parse_longlink(tuple_t *tuple, cistpl_longlink_t *link)
- {
-     if (tuple->TupleDataLen < 4)
- 	return CS_BAD_TUPLE;
--    link->addr = cis_get_u32(tuple->TupleData);
-+    link->addr = get_unaligned_le32(tuple->TupleData);
-     return CS_SUCCESS;
+diff --git a/drivers/video/matrox/matroxfb_misc.c b/drivers/video/matrox/matroxfb_misc.c
+index ab7fb50..cfb5205 100644
+--- a/drivers/video/matrox/matroxfb_misc.c
++++ b/drivers/video/matrox/matroxfb_misc.c
+@@ -522,8 +522,6 @@ static void parse_bios(unsigned char __iomem* vbios, struct matrox_bios* bd) {
+ #endif
  }
  
-@@ -710,7 +701,7 @@ static int parse_longlink_mfc(tuple_t *tuple,
- 	return CS_BAD_TUPLE;
-     for (i = 0; i < link->nfn; i++) {
- 	link->fn[i].space = *p; p++;
--	link->fn[i].addr = cis_get_u32(p);
-+	link->fn[i].addr = get_unaligned_le32(p);
- 	p += 4;
-     }
-     return CS_SUCCESS;
-@@ -800,8 +791,8 @@ static int parse_manfid(tuple_t *tuple, cistpl_manfid_t *m)
- {
-     if (tuple->TupleDataLen < 4)
- 	return CS_BAD_TUPLE;
--    m->manf = cis_get_u16(tuple->TupleData);
--    m->card = cis_get_u16(tuple->TupleData + 2);
-+    m->manf = get_unaligned_le16(tuple->TupleData);
-+    m->card = get_unaligned_le16(tuple->TupleData + 2);
-     return CS_SUCCESS;
- }
+-#define get_u16(x) (le16_to_cpu(get_unaligned((__u16*)(x))))
+-#define get_u32(x) (le32_to_cpu(get_unaligned((__u32*)(x))))
+ static int parse_pins1(WPMINFO const struct matrox_bios* bd) {
+ 	unsigned int maxdac;
  
-@@ -1100,7 +1091,7 @@ static int parse_cftable_entry(tuple_t *tuple,
- 	break;
-     case 0x20:
- 	entry->mem.nwin = 1;
--	entry->mem.win[0].len = cis_get_u16(p) << 8;
-+	entry->mem.win[0].len = get_unaligned_le16(p) << 8;
- 	entry->mem.win[0].card_addr = 0;
- 	entry->mem.win[0].host_addr = 0;
- 	p += 2;
-@@ -1108,8 +1099,8 @@ static int parse_cftable_entry(tuple_t *tuple,
- 	break;
-     case 0x40:
- 	entry->mem.nwin = 1;
--	entry->mem.win[0].len = cis_get_u16(p) << 8;
--	entry->mem.win[0].card_addr = cis_get_u16(p + 2) << 8;
-+	entry->mem.win[0].len = get_unaligned_le16(p) << 8;
-+	entry->mem.win[0].card_addr = get_unaligned_le16(p + 2) << 8;
- 	entry->mem.win[0].host_addr = 0;
- 	p += 4;
- 	if (p > q) return CS_BAD_TUPLE;
-@@ -1146,7 +1137,7 @@ static int parse_bar(tuple_t *tuple, cistpl_bar_t *bar)
-     p = (u_char *)tuple->TupleData;
-     bar->attr = *p;
-     p += 2;
--    bar->size = cis_get_u32(p);
-+    bar->size = get_unaligned_le32(p);
-     return CS_SUCCESS;
- }
+@@ -532,11 +530,12 @@ static int parse_pins1(WPMINFO const struct matrox_bios* bd) {
+ 		case 1:		maxdac = 220000; break;
+ 		default:	maxdac = 240000; break;
+ 	}
+-	if (get_u16(bd->pins + 24)) {
+-		maxdac = get_u16(bd->pins + 24) * 10;
++	if (get_unaligned_le16(bd->pins + 24)) {
++		maxdac = get_unaligned_le16(bd->pins + 24) * 10;
+ 	}
+ 	MINFO->limits.pixel.vcomax = maxdac;
+-	MINFO->values.pll.system = get_u16(bd->pins + 28) ? get_u16(bd->pins + 28) * 10 : 50000;
++	MINFO->values.pll.system = get_unaligned_le16(bd->pins + 28) ?
++		get_unaligned_le16(bd->pins + 28) * 10 : 50000;
+ 	/* ignore 4MB, 8MB, module clocks */
+ 	MINFO->features.pll.ref_freq = 14318;
+ 	MINFO->values.reg.mctlwtst	= 0x00030101;
+@@ -575,7 +574,8 @@ static void default_pins2(WPMINFO2) {
+ static int parse_pins3(WPMINFO const struct matrox_bios* bd) {
+ 	MINFO->limits.pixel.vcomax	=
+ 	MINFO->limits.system.vcomax	= (bd->pins[36] == 0xFF) ? 230000			: ((bd->pins[36] + 100) * 1000);
+-	MINFO->values.reg.mctlwtst	= get_u32(bd->pins + 48) == 0xFFFFFFFF ? 0x01250A21	: get_u32(bd->pins + 48);
++	MINFO->values.reg.mctlwtst	= get_unaligned_le32(bd->pins + 48) == 0xFFFFFFFF ?
++		0x01250A21 : get_unaligned_le32(bd->pins + 48);
+ 	/* memory config */
+ 	MINFO->values.reg.memrdbk	= ((bd->pins[57] << 21) & 0x1E000000) |
+ 					  ((bd->pins[57] << 22) & 0x00C00000) |
+@@ -601,7 +601,7 @@ static void default_pins3(WPMINFO2) {
+ static int parse_pins4(WPMINFO const struct matrox_bios* bd) {
+ 	MINFO->limits.pixel.vcomax	= (bd->pins[ 39] == 0xFF) ? 230000			: bd->pins[ 39] * 4000;
+ 	MINFO->limits.system.vcomax	= (bd->pins[ 38] == 0xFF) ? MINFO->limits.pixel.vcomax	: bd->pins[ 38] * 4000;
+-	MINFO->values.reg.mctlwtst	= get_u32(bd->pins + 71);
++	MINFO->values.reg.mctlwtst	= get_unaligned_le32(bd->pins + 71);
+ 	MINFO->values.reg.memrdbk	= ((bd->pins[87] << 21) & 0x1E000000) |
+ 					  ((bd->pins[87] << 22) & 0x00C00000) |
+ 					  ((bd->pins[86] <<  1) & 0x000001E0) |
+@@ -609,7 +609,7 @@ static int parse_pins4(WPMINFO const struct matrox_bios* bd) {
+ 	MINFO->values.reg.opt		= ((bd->pins[53] << 15) & 0x00400000) |
+ 					  ((bd->pins[53] << 22) & 0x10000000) |
+ 					  ((bd->pins[53] <<  7) & 0x00001C00);
+-	MINFO->values.reg.opt3		= get_u32(bd->pins + 67);
++	MINFO->values.reg.opt3		= get_unaligned_le32(bd->pins + 67);
+ 	MINFO->values.pll.system	= (bd->pins[ 65] == 0xFF) ? 200000 			: bd->pins[ 65] * 4000;
+ 	MINFO->features.pll.ref_freq	= (bd->pins[ 92] & 0x01) ? 14318 : 27000;
+ 	return 0;
+@@ -640,12 +640,12 @@ static int parse_pins5(WPMINFO const struct matrox_bios* bd) {
+ 	MINFO->limits.video.vcomin	= (bd->pins[122] == 0xFF) ? MINFO->limits.system.vcomin	: bd->pins[122] * mult;
+ 	MINFO->values.pll.system	=
+ 	MINFO->values.pll.video		= (bd->pins[ 92] == 0xFF) ? 284000			: bd->pins[ 92] * 4000;
+-	MINFO->values.reg.opt		= get_u32(bd->pins+ 48);
+-	MINFO->values.reg.opt2		= get_u32(bd->pins+ 52);
+-	MINFO->values.reg.opt3		= get_u32(bd->pins+ 94);
+-	MINFO->values.reg.mctlwtst	= get_u32(bd->pins+ 98);
+-	MINFO->values.reg.memmisc	= get_u32(bd->pins+102);
+-	MINFO->values.reg.memrdbk	= get_u32(bd->pins+106);
++	MINFO->values.reg.opt		= get_unaligned_le32(bd->pins + 48);
++	MINFO->values.reg.opt2		= get_unaligned_le32(bd->pins + 52);
++	MINFO->values.reg.opt3		= get_unaligned_le32(bd->pins + 94);
++	MINFO->values.reg.mctlwtst	= get_unaligned_le32(bd->pins + 98);
++	MINFO->values.reg.memmisc	= get_unaligned_le32(bd->pins + 102);
++	MINFO->values.reg.memrdbk	= get_unaligned_le32(bd->pins + 106);
+ 	MINFO->features.pll.ref_freq	= (bd->pins[110] & 0x01) ? 14318 : 27000;
+ 	MINFO->values.memory.ddr	= (bd->pins[114] & 0x60) == 0x20;
+ 	MINFO->values.memory.dll	= (bd->pins[115] & 0x02) != 0;
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index e9a89fd..7e7e977 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -236,8 +236,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	}
  
-@@ -1159,7 +1150,7 @@ static int parse_config_cb(tuple_t *tuple, cistpl_config_t *config)
- 	return CS_BAD_TUPLE;
-     config->last_idx = *(++p);
-     p++;
--    config->base = cis_get_u32(p);
-+    config->base = get_unaligned_le32(p);
-     config->subtuples = tuple->TupleDataLen - 6;
-     return CS_SUCCESS;
- }
-@@ -1275,7 +1266,7 @@ static int parse_vers_2(tuple_t *tuple, cistpl_vers_2_t *v2)
+ 	/* check waveform mode table address checksum */
+-	wmta = le32_to_cpu(get_unaligned((__le32 *) wfm_hdr->wmta));
+-	wmta &= 0x00FFFFFF;
++	wmta = get_unaligned_le32(wfm_hdr->wmta) & 0x00FFFFFF;
+ 	cksum_idx = wmta + m*4 + 3;
+ 	if (cksum_idx > size)
+ 		return -EINVAL;
+@@ -249,8 +248,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	}
  
-     v2->vers = p[0];
-     v2->comply = p[1];
--    v2->dindex = cis_get_u16(p +2 );
-+    v2->dindex = get_unaligned_le16(p +2 );
-     v2->vspec8 = p[6];
-     v2->vspec9 = p[7];
-     v2->nhdr = p[8];
-@@ -1316,8 +1307,8 @@ static int parse_format(tuple_t *tuple, cistpl_format_t *fmt)
+ 	/* check waveform temperature table address checksum */
+-	tta = le32_to_cpu(get_unaligned((int *) (mem + wmta + m*4)));
+-	tta &= 0x00FFFFFF;
++	tta = get_unaligned_le32(mem + wmta + m * 4) & 0x00FFFFFF;
+ 	cksum_idx = tta + trn*4 + 3;
+ 	if (cksum_idx > size)
+ 		return -EINVAL;
+@@ -263,8 +261,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
  
-     fmt->type = p[0];
-     fmt->edc = p[1];
--    fmt->offset = cis_get_u32(p + 2);
--    fmt->length = cis_get_u32(p + 6);
-+    fmt->offset = get_unaligned_le32(p + 2);
-+    fmt->length = get_unaligned_le32(p + 6);
- 
-     return CS_SUCCESS;
- }
+ 	/* here we do the real work of putting the waveform into the
+ 	metromem buffer. this does runlength decoding of the waveform */
+-	wfm_idx = le32_to_cpu(get_unaligned((__le32 *) (mem + tta + trn*4)));
+-	wfm_idx &= 0x00FFFFFF;
++	wfm_idx = get_unaligned_le32(mem + tta + trn * 4) & 0x00FFFFFF;
+ 	owfm_idx = wfm_idx;
+ 	if (wfm_idx > size)
+ 		return -EINVAL;
 -- 
 1.5.5.144.g3e42
-
 
