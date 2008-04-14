@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbYDNP4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbYDNP4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760400AbYDNP4E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYDNPzt
+	id S1761732AbYDNP4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759311AbYDNPz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:55:49 -0400
-Received: from namei.org ([69.55.235.186]:52383 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752532AbYDNPzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:55:47 -0400
-Date: Tue, 15 Apr 2008 01:54:00 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-In-Reply-To: <20080414072328.GW9785@ZenIV.linux.org.uk>
-Message-ID: <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-References: <47FEADCB.7070104@rtr.ca> <20080413121831.d89dd424.akpm@linux-foundation.org>
- <20080413202118.GA29658@2ka.mipt.ru> <200804132233.50491.rjw@sisk.pl>
- <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net>
- <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu>
- <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org>
- <20080414072328.GW9785@ZenIV.linux.org.uk>
+	Mon, 14 Apr 2008 11:55:59 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:22717 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758246AbYDNPz5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 11:55:57 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Microblaze Linux release
+Date: Mon, 14 Apr 2008 08:55:52 -0700
+In-reply-to: <4802560D.3020308@seznam.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Microblaze Linux release
+Thread-Index: AcidlyjNMgYFh8XrR8eNkbITuVK2OQAsJbdg
+References: <48020A21.4000404@seznam.cz> <20080413101304.308f6c1a@zod.rchland.ibm.com> <4802560D.3020308@seznam.cz>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <monstr@seznam.cz>, "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: "John Williams" <john.williams@petalogix.com>, <benh@kernel.crashing.org>,
+       "John Linn" <linnj@xilinx.com>, "git-dev" <git-dev@xilinx.com>,
+       "Grant Likely" <grant.likely@secretlab.ca>,
+       <microblaze-uclinux@itee.uq.edu.au>, <linux-kernel@vger.kernel.org>,
+       <paulus@samba.org>
+X-OriginalArrivalTime: 14 Apr 2008 15:55:53.0345 (UTC) FILETIME=[04AEAF10:01C89E48]
+Message-Id: <20080414155554.5B8CD98059@mail51-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008, Al Viro wrote:
-
-> Real review of code in tree and patches getting into the tree.
-
-There is currently little incentive for developers to perform review.  
-
-It's difficult work, and is generally not rewarded or recognized, except 
-in often quite negative ways.  There is a small handful of people who do a 
-lot of review, but they are exceptional in various ways.
-
-OTOH, writing code is relatively simple, and is much more highly rewarded:
-
-- People tend to get paid to write kernel code, but not so much to review 
-  it.
-
-- Things like "who made the kernel" statistics and related articles ignore 
-  code review.
-
-- Creating new features is perceived as the highest form of contribution 
-  for general developers, and likely important as career currency 
-  (similar to the publish or perish model in the academic world).
-
-I don't know how to solve this, but suspect that encouraging the use of 
-reviewed-by and also including it in things like analysis of who is 
-contributing, selection for kernel summit invitations etc. would be a 
-start.  At least, better than nothing.
 
 
-- James 
--- 
-James Morris
-<jmorris@namei.org>
+> -----Original Message-----
+> From: Michal Simek [mailto:monstr@seznam.cz]
+> Sent: Sunday, April 13, 2008 11:51 AM
+> To: Josh Boyer
+> Cc: Stephen Neuendorffer; John Williams; benh@kernel.crashing.org;
+John Linn; git-dev; Grant Likely;
+> git; microblaze-uclinux@itee.uq.edu.au; linux-kernel@vger.kernel.org;
+paulus@samba.org
+> Subject: Re: Microblaze Linux release
+> 
+> Hi Josh,
+> 
+> >> Hi Everybody,
+> >>
+> >> I fixed all reported bugs which I got from LKML and from you.
+> >> Latest version of Microblaze Linux kernel is available at
+git.monstr.eu.
+> >> There is git repository called linux-microblaze.git
+> >> Microblaze port is based on 2.6.24-rc5. I'll create the new repo
+with clean pack
+> >> of changes based on latest kernel version for easier pull.
+> >>
+> >> Merge windows will be open hopefully next week and I would like to
+send pull
+> >> request to Paul.
+> >
+> > Why Paul?  If microblaze is a new architecture (which it seems to
+be),
+> > then you should really work through Linus directly.
+> 
+> I don't know who start with it. For me is not this point important.
+> I think that was Steve's idea, wasn't it?
+
+Nope, it should go through Linus.  My hope was to recruit reviewers from
+the powerpc community, since there is alot of overlap (device trees,
+drivers, the MMU is very similar).
+
+Steve
+
