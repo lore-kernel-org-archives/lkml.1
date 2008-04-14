@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYDNOnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYDNOqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761240AbYDNOnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758964AbYDNOmv
+	id S1761008AbYDNOqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYDNOqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:42:51 -0400
-Received: from ns2.mvista.com ([63.81.120.155]:62209 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758797AbYDNOmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:42:50 -0400
-Message-ID: <48036D43.6070307@ru.mvista.com>
-Date: Mon, 14 Apr 2008 18:42:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mtd/cmdlinepart.c: don't compare pointers with 0
-References: <20080414142004.GR6695@cs181133002.pp.htv.fi>
-In-Reply-To: <20080414142004.GR6695@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 14 Apr 2008 10:46:10 -0400
+Received: from ns.suse.de ([195.135.220.2]:60231 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752330AbYDNOqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:46:09 -0400
+Date: Mon, 14 Apr 2008 16:46:34 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       nickpiggin@yahoo.com.au, k-miyoshi@cb.jp.nec.com, greg@kroah.com,
+       kdb@oss.sgi.com, kexec@lists.infradead.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Keith Owens <kaos@ocs.com.au>
+Subject: Re: [PATCH 0/2] add new notifier function ,take3
+Message-ID: <20080414164634.190e3e0e@strauss.suse.de>
+In-Reply-To: <20080414144228.GD1193@hmsendeavour.rdu.redhat.com>
+References: <47FF190B.6030406@ah.jp.nec.com>
+	<20080411210751.e4a468b2.akpm@linux-foundation.org>
+	<20080414134622.GB6941@redhat.com>
+	<20080414144228.GD1193@hmsendeavour.rdu.redhat.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+* Neil Horman [2008-04-14 10:42]:
+>
+> I know it doesn't particularly relate to this patch, but FWIW, for cases like
+> failover, I've inserted infrastrucutre in the userspace part of kdump for
+> Fedora/RHEL to support this sort of thing.  We can run arbitrary scripts righte
+> before and after a capture so that notifications can be sent to remote nodes in
+> a much safer fashion than using the notifier chain after a panic.
 
-Adrian Bunk wrote:
+But that doesn't help if you want to use a debugger (KDB, KGDB).
 
-> Sparse spotted that 0 was compared to pointers.
 
-> While I was at it, I also moved the assignments out of the if's.
-
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
-> 32de76e83f37322dd85eaecf126e7b17327f606f diff --git a/drivers/mtd/cmdlinepart.c b/drivers/mtd/cmdlinepart.c
-> index b44292a..3e09043 100644
-> --- a/drivers/mtd/cmdlinepart.c
-> +++ b/drivers/mtd/cmdlinepart.c
-> @@ -119,7 +119,8 @@ static struct mtd_partition * newpart(char *s,
->  		char *p;
->  
->  	    	name = ++s;
-> -		if ((p = strchr(name, delim)) == 0)
-> +		p = strchr(name, delim);
-> +		if (!p)
->  		{
-
-    Wouldn't it be nice to join the standalone brace to if () while it?
-
->  			printk(KERN_ERR ERRP "no closing %c found in partition name\n", delim);
->  			return NULL;
-
-WBR, Sergei
+	Bernhard
