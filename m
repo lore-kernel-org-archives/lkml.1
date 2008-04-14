@@ -1,108 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYDNWSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbYDNWYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbYDNWSO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYDNWRy
+	id S1759289AbYDNWYY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYDNWYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:17:54 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:44992 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbYDNWRx (ORCPT
+	Mon, 14 Apr 2008 18:24:16 -0400
+Received: from n77.bullet.mail.sp1.yahoo.com ([98.136.44.45]:49111 "HELO
+	n77.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751325AbYDNWYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:17:53 -0400
-Message-ID: <4803D830.7000206@keyaccess.nl>
-Date: Tue, 15 Apr 2008 00:18:24 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 14 Apr 2008 18:24:15 -0400
+X-Yahoo-Newman-Property: ymail-5
+X-Yahoo-Newman-Id: 335541.40516.bm@omp507.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.br;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=MEacI1XQsH04Qn9fLPSAUzV7VeuZxNRSaSoL9FVJDUSKlzN8SXizy3alrjp+hscihk+LTES/jYbUblY/CzdheOVCND1y7D8mUva67kkQvV+VVhAyighA0Sm71k/wBR856ZLBEMw3NnwO+9skT0YVCc6ulkEAIFfDYTbL+rCFuxs=;
+X-YMail-OSG: W8.EAJUVM1lyYJ1xh91z1X9tdGj83ptqr7aPTCOq4oGDUMewGWOjrb_JRMftL7m0iBvLFXRkNLS6E9lWKRypu3kg8eFKjSNhwhPi
+Date: Mon, 14 Apr 2008 19:24:06 -0300 (ART)
+From: Luis Sousa <ls.luis_sousa@yahoo.com.br>
+Subject: Re: sata io freeze, 2.6.18 and also 2.6.24 [the real culprit]
+To: devzero@web.de
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <238986828@web.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm, sclark46@earthlink.net,
-       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
-       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, davem@davemloft.net,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-References: <47FEADCB.7070104@rtr.ca>	<20080413121831.d89dd424.akpm@linux-foundation.org>	<20080413202118.GA29658@2ka.mipt.ru>	<200804132233.50491.rjw@sisk.pl>	<20080413205406.GA9190@2ka.mipt.ru>	<48028830.6020703@earthlink.net>	<alpine.DEB.1.10.0804131546370.9318@asgard>	<20080414043939.GA6862@1wt.eu>	<20080414053943.GU9785@ZenIV.linux.org.uk>	<20080413232441.e216a02c.akpm@linux-foundation.org>	<4803ACE5.4020502@keyaccess.nl> <20080414133802.4535e4da.akpm@linux-foundation.org>
-In-Reply-To: <20080414133802.4535e4da.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <104512.75249.qm@web46010.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14-04-08 22:38, Andrew Morton wrote:
+--- devzero@web.de escreveu:
 
-> On Mon, 14 Apr 2008 21:13:41 +0200
-> Rene Herman <rene.herman@keyaccess.nl> wrote:
+> so - you told, you have your disk attached to this controller:
 > 
->> Does that mean you're not going to take patches that align the right end of 
->> lines in comments? :-(
+> 00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID Controller (rev
+> 80)
+> 	Subsystem: Micro-Star International Co., Ltd. Unknown device 0430
+> 	Flags: bus master, medium devsel, latency 32, IRQ 16
+> 	I/O ports at ec00 [size=8]
+> 	I/O ports at e800 [size=4]
+> 	I/O ports at e400 [size=8]
+> 	I/O ports at e000 [size=4]
+> 	I/O ports at dc00 [size=16]
+> 	I/O ports at d800 [size=256]
+> 	Capabilities: <access denied>
 > 
-> erm, was that ":-(" supposed to be a ":-)"?
-
-The ":-(" was supposed to add to the implicitly obvious ":-)". That is, was 
-indeed joking (Al mentioned them) but with a slightly serious undertone:
-
-> I don't like to merge patches which fix typos and spellos and grammaros 
-> in comments, simply because I'd be buried in the things. I do take such 
-> fixes for user-visible text (Documentation/, kerneldoc comments and 
-> printks).
+> and use sata_via module - and your system works stable with nosmp, but freezes very soon
+> on heavy i/o with smp. disabling dma makes no difference.
 > 
-> Right-justification of comments would fall rather a long way below
-> spelling fixes.
+> correct ?
 
-You, particularly, seem to be very good at picking up trivia. I've posted 
-completely trivial patches from time to time for small things I encounter 
-while looking at something else. Things at the "are people going to look 
-funny at me for even bothering or..." level but you picking them up means 
-it's still useful to post, so I sometimes do.
+Correct. 
 
-Now, in fact, Linux as a _whole_ doesn't seem bad at accepting that kind of 
-small janitorial stuff but I have been noticing some backlash to it as well. 
-I'm not sure it's worse or better than historically, but the "checkpatch 
-syndrome" certainly triggers more of it.
+But I'm not sure it's an exclusive i/o thing. I've had the box crash in
+situations where I don't think heavy i/o is involved.. for instance, it
+crashed two times just as I closed the iceape browser.
+ 
+> then i assume this could be an smp issue, probably a bug in sata_via and may need further
+> investigation.
+> 
+> there seem no noticeable changes in that driver since 2.6.24 - but maybe it`s worth
+> trying 2.6.25-rc9 to see if it behaves different?
 
-Al specifically wanted more new eyes but the way to reward those new eyes is 
-accepting their small changes. Al also specifically doesn't like those small 
-changes when at the level of the automated and semi-brainless checkpatch level.
+I'm actually running 2.6.25-rc7-git6 now.
+(so I really don't think that would make much of a difference)
 
-I believe the janitorial work has been over-organized, both through the 
-kernel-janitors and checkpatch since while these are very useful in guiding 
-a newbie in _what_ to do they cause "automated" huge tree-wide trivia storms 
-which people then don't react overly favourable to and the new eyes who did 
-all that work of generating it all dim again...
+> absolutely nothing in dmesg on freeze ?
 
-Frankly, the kernel really is fairly complex these days when starting at 0. 
-Much more complex certainly than, say, back in 2.0 or 2.2 days and while 
-Al's scenario of per-subsystem reviews might be good, I don't believe it's 
-very realistic. Companies don't pay to have those done and for newbies it's 
-generally too complex since understanding most parts of the kernel fully, 
-requires understanding most of the rest kernel rather well also.
+Absolutely nothing. Never.
+ 
+> maybe you could try catching some message with attaching serial console?
 
-So you get the really promising newbies? Yeah, that, or you don't get anyone 
-and if some promising newbies are building up 137 part checkpatch inspired 
-patchsets that don't help none.
+Hmm, I have no serial consoles here, and my spare box is dead. 
 
-So, what am I saying (what _am_ I saying?!?) ...
+Unless I can attach netconsole to a windows box.
 
-I seemed to observe somewhat of an internal contradiction in Al's message 
-about new eyes and his dislike of the trivial stuff but the contradiction 
-only exists if the dislike wouldn't be limited to these kinds of huge trivia 
-storms. I believe it is, and I furthermore believe that yes, it's 
-over-organization that causes many new eyes to focus on the brainless aspects.
+I can probably crash it in console mode, without Xorg. Then I hope something
+might show up in another vt at least.
 
-Now, do those new eyes have many other options when very few (to none) of 
-the core crowd ever does things like answer question on the kernelnewbies 
-list? From the established names, I only remember ever seeing Greg KH and 
-Adrian Bunk there. And I'm _still_ pissed that noone would or could tell me 
-what was wrong with the legacy CD-ROM driver I and Pekka Enberg were toying 
-around with a while ago. Frankly, I care a whole lot less about a hundred 
-sparse warning fixes.
+> how reliably can you crash that box with lots of i/o ? just random crashes or after a
+> certain amount of data written/read ?
 
-In short -- the kernel in it's current state is already quite complex and if 
-new eyes are wanted they'll need to be coached more. I'm seeing very little 
-of that.
+There is definitely a random element in it. But I can reliably crash it.
+Just trigger some CPU and i/o bound processes. I've crashed it with operations
+which would only read from the disk, for instance unpacking to /dev/null.
+Sometimes it takes longer, though.
 
-Rene.
+> could you try if just reading from the raw blockdevice makes a differnce ? (dd
+> if=/dev/sda of=/dev/zero)
+
+Yes, I can try that. But please bear with me as I won't be working full time
+in this. I hope we can get to the bottom of this, but it might not be as quick
+as we'd like.
+
+Thank you very much for the help.
+
+I'll write back asap.
+
+Best regards,
+--
+Luis Sousa
+
+> > -----Ursprüngliche Nachricht-----
+> > Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
+> > Gesendet: 14.04.08 12:14:26
+> > An: devzero@web.de
+> > CC: linux-kernel@vger.kernel.org
+> > Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [the real culprit]
+> 
+> 
+> > 
+> > Hello,
+> > 
+> > I did as planned, and I dare to say now, with
+> > relative certainty, that the reason I have had all
+> > these instabilities, including application crashes,
+> > sneaky corrupt backups, and the dreaded freezes
+> > every other day was SMP and HyperThreading not working
+> > properly. Booting with nosmp gives me a stable system.
+> > Booting only with the sata-related arguments had
+> > the system freeze overnight.
+> > 
+> > Sincerely,
+> > --
+> > Luis Sousa
+> > 
+> > --- devzero@web.de escreveu:
+> > 
+> > > hi luis, 
+> > > 
+> > > glad that it worked - but let us better call this a possible workaround, not a
+> solution.
+> > > 
+> > > mind that you loose lots of performance with this, because all i/o is handled by the
+> cpu
+> > > now.
+> > > 
+> > > > If everything goes well, I'll reduce the command line
+> > > > in order to narrow the problem further down.
+> > > 
+> > > yes, please!
+> > > 
+> > > regards
+> > > roland
+> > > 
+> > > 
+> > > > -----Ursprüngliche Nachricht-----
+> > > > Von: "Luis Sousa" <ls.luis_sousa@yahoo.com.br>
+> > > > Gesendet: 12.04.08 17:34:39
+> > > > An: devzero@web.de
+> > > > CC: linux-kernel@vger.kernel.org
+> > > > Betreff: Re: sata io freeze, 2.6.18 and also 2.6.24 [POSSIBLE SOLUTION]
+> > > 
+> > > 
+> > > > 
+> > > > Hello all,
+> > > > 
+> > > > Thanks to valuable help from roland, I was able to
+> > > > boot with the following options:
+> > > > 
+> > > > ``nosmp ide=nodma libata.dma=0''
+> > > > 
+> > > > after what I ran an agressive stability test for a
+> > > > while, with no problem whatsoever. Maybe it's too
+> > > > soon to say, but I have a good feeling this time. It
+> > > > seems roland figured it out.
+> > > > 
+> > > > If everything goes well, I'll reduce the command line
+> > > > in order to narrow the problem further down.
+> > > > 
+> > > > (and indeed, this is a hyper-threading single core CPU)
+> > > > 
+> > > > Sincerely,
+> > > > --
+> > > > Luis Sousa
+> > > > 
+> > > > --- devzero@web.de escreveu:
+> > > > 
+> > > > > did you try UP-kernel or tried booting with "nosmp" and does that make any
+> difference
+> > > ?
+> > > > > 
+> > > > > >This is a 2-processor CPU:
+> > > > > ># cat /proc/cpuinfo 
+> > > > > >processor       : 0
+> > > > > >vendor_id       : GenuineIntel
+> > > > > >cpu family      : 15
+> > > > > >model           : 4
+> > > > > >model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+> > > > > 
+> > > > > most likely this just "appears" as 2-way processor , but i´m quite sure this is
+> just
+> > > a
+> > > > > single-core CPU, but with HyperThreading enabled.
+> > > > > 
+> > > > > 
+> > > > > regards
+> > > > > roland
+> > > > > 
+> > > > > 
+> > > > > 
+> > > > > List:       linux-kernel
+> > > > > Subject:    sata io freeze, 2.6.18 and also 2.6.24
+> > > > > From:       Luis Sousa <ls.luis_sousa () yahoo ! com ! br>
+> > > > > Date:       2008-03-28 22:24:48
+> > > > > Message-ID: 739784.81690.qm () web46009 ! mail ! sp1 ! yahoo ! com
+> > > > > [Download message RAW]
+> > > > > 
+> > > > > Hello,
+> > > > > 
+> > > > > I've been having consistent hard system freezes for a
+> > > > > long time, every 2 days or so, and finally decided to
+> > > > > move to the most recent stable kernel. Unfortunatelly
+> > > > > that didn't fix it. The freezes seem to be io-related;
+> > > > > they started since I moved my drive to sata. They seem
+> > > > > to happen mostly when there's an io-intensive operation,
+> > > > > like extracting a big archive; a reboot is needed.
+> > > > > 
+> > > > > Nothing ever shows up in the logs.
+> > > > > 
+> > > > > I'm using the following drive:
+> > > > > 
+> > > > > ATA device, with non-removable media
+> > > > >         Model Number:       MAXTOR STM3160215AS                     
+> > > > >         Serial Number:      6RA2TMJ4
+> > > > >         Firmware Revision:  3.AAD   
+> > > > > 
+> > > > > Linux localhost 2.6.24.4 #4 SMP Fri Mar 28 14:51:50 BRT 2008 i686 GNU/Linux
+> > > > > 
+> > > > > This is a 2-processor CPU:
+> > > > > 
+> > > > > # cat /proc/cpuinfo 
+> > > > > processor       : 0
+> > > > > vendor_id       : GenuineIntel
+> > > > > cpu family      : 15
+> > > > > model           : 4
+> > > > > model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
+> > > > > stepping        : 9
+> > > > > cpu MHz         : 3013.697
+> > > > > cache size      : 1024 KB
+> > > > > 
+> > > > > (same goes for processor : 1)
+> > > > > 
+> > > > > Sincerely,
+> > > > > --
+> > > > > Luis Sousa
+
+
+      Abra sua conta no Yahoo! Mail, o único sem limite de espaço para armazenamento!
+http://br.mail.yahoo.com/
+
