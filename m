@@ -1,37 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYDNUAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbYDNUBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbYDNUAR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbYDNT74
+	id S1763657AbYDNUBA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760443AbYDNUAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:59:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55741 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757376AbYDNT7z (ORCPT
+	Mon, 14 Apr 2008 16:00:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:61531 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbYDNUAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:59:55 -0400
-Date: Mon, 14 Apr 2008 12:59:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
-       Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 2 of 9] Core of mmu notifiers
-In-Reply-To: <baceb322b45ed4328065.1207669445@duo.random>
-Message-ID: <Pine.LNX.4.64.0804141259440.7803@schroedinger.engr.sgi.com>
-References: <baceb322b45ed4328065.1207669445@duo.random>
+	Mon, 14 Apr 2008 16:00:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=FPrh2Cbpoym/dJ3roo9pPyYFc6HHtIxYMiZ8fIIGbc0yVQmIVBXmxPYRKrefZE3HqXIBY3QxXoAa1SF8avNaN7bPx1pv6Me/9lsVh2DkPqgpMoxHZUuUx8zBFwazs8R+IHGclqN0sPriPlAiwStDLuZtw8biKeTaXmr5zPUC3G4=
+Date: Mon, 14 Apr 2008 23:56:13 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: 2.6.25-rc8-mm2: FIX kmalloc-2048 (was Re: 2.6.25-rc8-mm2: IP:
+	[<ffffffff802868f9>] __kmalloc+0x69/0x110)
+Message-ID: <20080414195613.GA4772@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080413204422.GA5136@martell.zuzino.mipt.ru> <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com> <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com> <20080414183221.GA5234@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414183221.GA5234@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Where is the documentation on locking that you wanted to provide?
+I can reproduce semi-reliably (by kernel standards) corruption in
+kmalloc-2048. No idea if this can explain all "struct file" related
+oopses I saw, or SLUB free pointer corruption Pekka and Christoph are
+looking into.
 
+8139too and atl1 drivers are in use. 8139too connects to outer world,
+atl1 -- to laptop collecting netconsole logs. However, I never managed to
+collect late oopses with netconsole even if init scripts which are
+shutting down interfaces are disabled. :-(
+
+
+
+Transcribed from photo:
+
+8000 flags=0x8000000000002082
+INFO: Object 0xffff81017ff9d2d0 @offset=21200 fp=0xffff81017ff9ca88
+
+Bytes b4 0xffff81017ff9d2c0:  62 ea ff ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a
+  Object 0xffff81017ff9d2d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+  Object 0xffff81017ff9d2e0:  6b 6b 00 18 f3 a2 9f 90 00 1b 38 af 22 49 08 00
+  Object 0xffff81017ff9d2f0:  45 10 00 4c ff 59 40 00 40 11 86 ac c0 a8 00 2a
+  Object 0xffff81017ff9d300:  50 fa a2 be 91 43 00 7b 00 38 54 d4 23 00 00 00
+  Object 0xffff81017ff9d310:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  Object 0xffff81017ff9d320:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  Object 0xffff81017ff9d330:  00 00 00 00 4c ff 10 44 74 7f 6f 9d e4 c8 a2 4f
+  Object 0xffff81017ff9d340:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ Redzone 0xffff81017ff9dad0:  bb bb bb bb bb bb bb bb
+ Padding 0xffff81017ff9db10:  5a 5a 5a 5a 5a 5a 5a 5a
+
+ Pid: 6168, comm: reboot Not tainted 2.6.25-rc8-mm2 #28
+
+ Call Trace:
+	print_trailer
+	check_bytes_and_report
+	check_object
+	__free_slab
+	discard_slab
+	__slab_free
+	? skb_release_data
+	kfree
+	? skb_release_data
+	skb_release_all
+	__kfre_skb
+	kfree_skb
+	atl1_clean_rx_ring
+	atl1_down
+	atl1_close
+	dev_close
+	dev_change_flags
+	devinet_ioctl
+	? trace_hardirqs_on
+	inet_ioctl
+	sock_ioctl
+	vfs_ioctl
+	do_vfs_ioctl
+	sys_ioctl
+	system_call_after_swapgs
+
+FIX kmalloc-2048: Restoring 0xffff81017ff9d2e2-0xffff81017ff9d8d9=0x6b
 
