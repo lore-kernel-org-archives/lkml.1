@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbYDNUzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbYDNU40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761838AbYDNUzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761451AbYDNUzY
+	id S1761978AbYDNU40 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYDNU4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:55:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33166 "EHLO mail.dvmed.net"
+	Mon, 14 Apr 2008 16:56:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45285 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761423AbYDNUzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:55:22 -0400
-Message-ID: <4803C4A8.7020304@garzik.org>
-Date: Mon, 14 Apr 2008 16:55:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1754401AbYDNU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:56:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 22:56:01 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804040111.15255.rjw@sisk.pl> <20080414105522.GA4716@ucw.cz> <1208205952.6958.174.camel@pasglop>
+In-Reply-To: <1208205952.6958.174.camel@pasglop>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, me@bobcopeland.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <20080413154459.4b2f125d.akpm@linux-foundation.org> <20080413234920.63711ca7@core> <20080413161014.cb06964c.akpm@linux-foundation.org> <20080414091639.4bd3879d@core> <20080414084141.GA29113@infradead.org>
-In-Reply-To: <20080414084141.GA29113@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200804142256.03514.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Apr 14, 2008 at 09:16:39AM +0100, Alan Cox wrote:
->> I think the exceed them quite easily. The costs are almost nil, while
->> merging this provides another nice example fs (and one much easier to
->> follow than ext*) for hardware that does have a few users and will no
->> doubt get many more
->>
->> I wasn't aware Linus had introduced a new rule required 500 people sign
->> up to use a feature before it gets added ?
+On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
 > 
-> I'm also very surprised by this, especially as it seems to be applied
-> very selectively.  This filesystems is an almost 0 maintainance burden
-> unlike a lot of really crappy driver we're shoving in constantly.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> On Mon, 2008-04-14 at 12:55 +0200, Pavel Machek wrote:
+> > On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > Well, I'm not sure and I'm not going to introduce the change right now, after
+> > > > the paches have been included in -mm.
+> > > > 
+> > > > That would require quite some changes in the core code that I'd prefer to
+> > > > avoid for now.  We can do something like this in a separate patch series after
+> > > > the present one settles down a bit.
+> > > 
+> > > I disagree.
+> > > 
+> > > Doing it later would introduce yet another major semantic change.
+> > 
+> > 'allow load_firmware from prepare that was not allowed before' is not 'major'.
 > 
+> Having user space fully operating is major.
 
-Agreed.  And adding to the pile-on, I think that we should be 
-_encouraging_ rather than discouraging innovative new filesystems.
+Please tell me what exactly is wrong with doing things that depend on the
+user space being available from notifiers.
 
-I rather dislike limiting filesystem maintenance to the "old guard".
-
-See comments like those on Evgeniy's blog: 
-http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_04_14.html
-
-Sure we do not need to merge every filesystem under the sun, or things 
-that much better belong in userspace (sshfs), but AFAICS there is not a 
-huge increase in maintenance cost to add a new kernel filesystem.
-
-	Jeff
-
-
+Thanks,
+Rafael
