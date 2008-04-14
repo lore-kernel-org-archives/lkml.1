@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbYDNMku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757617AbYDNMmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbYDNMku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 08:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYDNMkl
+	id S1757617AbYDNMmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 08:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYDNMmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 08:40:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:30023 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494AbYDNMkl (ORCPT
+	Mon, 14 Apr 2008 08:42:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:52766 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbYDNMmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 08:40:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=xVptr9pj4TdNXJHEl2IzN2pdZaKljnwMf7juVYUuL7FLf4ctwbFsi5g4+SwhNNE5n5xUAisMa5x+qWfmJoHXdeBlXtNPPLuauBK0EUTvi3XPi1IGAO2Up+8egX1+dAA5Fl30u0VMxpEzEiPF+TZHQU5OeALu9do+aO9kcer9ZH0=
-Message-ID: <cfd18e0f0804140540i1c6f035o259a7c4635194f54@mail.gmail.com>
-Date: Mon, 14 Apr 2008 14:40:40 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: jens.axboe@oracle.com
-Subject: CLONE_IO documentation
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Mon, 14 Apr 2008 08:42:06 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
+Date: Mon, 14 Apr 2008 14:40:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Alexia Death <alexiadeath@gmail.com>, linux-kernel@vger.kernel.org
+References: <200804132326.07713.alexiadeath@gmail.com> <200804140848.39226.arnd@arndb.de> <480343F2.3040401@zytor.com>
+In-Reply-To: <480343F2.3040401@zytor.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200804141440.48960.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX193rDtoHW1YB2tGk2M07feD7oxxVcxIR/rhrYs
+ NhYXpxfCuq9VxxypJTz7QsjmeRXrbLrKQPATn9XpDdv/tbjSAv
+ 9g63+NWAdFg3Wf/fTMM+Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Monday 14 April 2008, H. Peter Anvin wrote:
 
-Could you supply some text describing CLONE_IO suitable for inclusion
-in the clone.2 man page?
-( http://www.kernel.org/doc/man-pages/online/pages/man2/clone.2.html
-).  In that text it would be helpful to explain what an "I/O context"
-is.
+> Actually, I believe 2 GB (non-SDHC) *only* have 1024 byte sectors.
+> 
 
-Cheers,
+Right, I found out the same after reading the page pointed out by Wander,
+and the older specifications. SD 2.0 SDHC requires 512 byte sectors now, but
+the older standard is still used for 2GB cards.
 
-Michael
+Most USB card readers seem to translate the native sector size to 512 byte
+sectors internally, and we've seen that the linux SCSI disk driver together
+with the USB mass storage driver doesn't cope well with the device
+Alexia is using.
 
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug? Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+	Arnd <><
