@@ -1,109 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYDNAUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYDNA2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbYDNAUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYDNAUW
+	id S1757136AbYDNA2z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDNA2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:20:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35366 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753444AbYDNAUU (ORCPT
+	Sun, 13 Apr 2008 20:28:44 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51081 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753444AbYDNA2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:20:20 -0400
-Date: Sun, 13 Apr 2008 17:19:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-Cc: <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       <linuxppc-dev@ozlabs.org>, <takata@linux-m32r.org>,
-       <linux-m32r@ml.linux-m32r.org>, Linux-Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080413171953.bde5e9ac.akpm@linux-foundation.org>
-In-Reply-To: <20080410032354.90CB1DDF0F@ozlabs.org>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Apr 2008 20:28:43 -0400
+X-Sasl-enc: c30zwca3VZgEmXM0xKSaCI+6k/cXX050ZCvdKVDPqkMI 1208132922
+Message-ID: <4802A538.9040107@imap.cc>
+Date: Mon, 14 Apr 2008 02:28:40 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: 2.6.25-rc8-mm1: Intel SATA boot failure
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>	<47F56363.4090002@imap.cc> <20080403161733.c05dac53.akpm@linux-foundation.org>
+In-Reply-To: <20080403161733.c05dac53.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD0D290390308BF7439E8D25D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Apr 2008 13:22:56 +1000 Benjamin Herrenschmidt <benh@ozlabs.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD0D290390308BF7439E8D25D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Some architecture need to maintain a kmem cache for thread info
-> structures. (next patch adds that to powerpc to fix an alignment
-> problem).
-> 
-> There is no good arch callback to use to initialize that cache
-> that I can find, so this adds a new one and adds an empty macro
-> for when it's not implemented.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> So we have the choice here between:
-> 
->  - the ifdef on the func name that I did, consistent with what
-> I did before for iomap, which iirc Linus liked
-> 
->  - add some more ARCH_HAS_* or HAVE_* (yuck)
-> 
->  - add an empty definition to all archs .h (pain in the neck but I
-> can do it, though it will be an annoying patch to keep around)
-> 
->  - do a weak function (will slightly bloat everybody for no good reason)
-> 
-> So unless there is strong complaints, I'd like to stick to my
-> current approach.
-> 
->  include/linux/sched.h |    4 ++++
->  init/main.c           |    1 +
->  2 files changed, 5 insertions(+)
-> 
-> --- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
-> +++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
-> @@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
->  	if (efi_enabled)
->  		efi_enter_virtual_mode();
->  #endif
-> +	thread_info_cache_init();
->  	fork_init(num_physpages);
->  	proc_caches_init();
->  	buffer_init();
-> Index: linux-work/include/linux/sched.h
-> ===================================================================
-> --- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
-> +++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
-> @@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
->  
->  #endif
->  
-> +#ifndef thread_info_cache_init
-> +#define thread_info_cache_init	do { } while(0)
-> +#endif
+Final report, seeing -mm2 is out:
 
-This trick does cause a bit of a problem: it is undefined which arch header
-file is to provide the alternative definition of thread_info_cache_init.
+- Netconsole works. (grumblestupidsusefirewallgrumble)
 
-So we can (and have) ended up in the situation where the override appears
-in different files on different architectures and various screwups ensue.
+- The hang during boot only happens with kernels compiled with
+  CONFIG_CIFS_EXPERIMENTAL=3Dy
+  It also doesn't always happen at the same point in the boot sequence.
+  I'm suspecting it might be triggered by some network packet.
+  Anyway, it's obviously *not* a SATA problem.
+  (That was just me jumping to conclusions, because ...)
 
-So I'd suggest that we have a bigfatcomment telling implementors which file
-the override should be implemented in.  And make sure that this arch file is
-directly included from within sched.h.
+- That leaves only the messages
 
-I have a suspicion that we can still get in a mess if .c files include the
-per-arch file and don't include sched.h, but I forget where this happened
-and why it broke stuff.
+  ata1: port is slow to respond, please be patient (Status 0x80)
+  ata1: COMRESET failed (errno=3D-16)
 
-Sigh.  A nice, coded-in-C implementation within each and every architecture
-remains the best implementation, and all the little tricks-to-save-typing
-have failure modes.
+  and accompanying delays during boot, for each installed SATA disk.
+  I'll try to find the time to retest this with 2.6.25-rc8-mm2.
 
-otoh, if only one .c file will ever call this function then I think that
-all problems are solved by
+Thanks,
+Tilman
 
-a) moving the above ifdeffery into the .c file
-b) adding a comment explaining which arch file must provide the override
-c) directly including that file from within the .c file.
+--=20
+Tilman Schmidt                                  E-Mail: tilman@imap.cc
+Wehrhausweg 66                                  Fax: +49 228 4299019
+53227 Bonn, Germany
 
+
+--------------enigD0D290390308BF7439E8D25D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFIAqU4MdB4Whm86/kRAkuQAJ996P0box0gl+95xNfjWurYzUUimQCZAZIk
+edjS6UJ0YthQHL1YMZRIO5I=
+=gjNn
+-----END PGP SIGNATURE-----
+
+--------------enigD0D290390308BF7439E8D25D--
