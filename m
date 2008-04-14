@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763861AbYDNRwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764240AbYDNRxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763861AbYDNRwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 13:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYDNRw2
+	id S1764240AbYDNRxW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 13:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbYDNRxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 13:52:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6135 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756718AbYDNRw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 13:52:27 -0400
-Date: Mon, 14 Apr 2008 19:52:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com,
-       mikem@beardog.cca.cpqcorp.net
-Subject: Re: [patch] cciss: Fix race between disk-adding code and interrupt handler
-Message-ID: <20080414175219.GR12774@kernel.dk>
-References: <20080414142019.GG16584@beardog.cca.cpqcorp.net> <20080414170505.GO12774@kernel.dk> <20080414172716.GM16584@beardog.cca.cpqcorp.net> <20080414173720.GQ12774@kernel.dk> <20080414174540.GO16584@beardog.cca.cpqcorp.net>
+	Mon, 14 Apr 2008 13:53:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50274 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755702AbYDNRxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 13:53:13 -0400
+Date: Mon, 14 Apr 2008 10:53:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc8-mm2: IP: [<ffffffff802868f9>] __kmalloc+0x69/0x110
+In-Reply-To: <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> 
+ <20080413204422.GA5136@martell.zuzino.mipt.ru>
+ <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414174540.GO16584@beardog.cca.cpqcorp.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> On Mon, Apr 14, 2008 at 07:37:20PM +0200, Jens Axboe wrote:
-> > On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> > > 
-> > > 
-> > > > On Mon, Apr 14 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> > > > > 
-> > > > > 
-> > > > > Fix race condition between cciss_init_one(), cciss_update_drive_info(),
-> > > > > and cciss_check_queues().  cciss_softirq_done would try to start
-> > > > > queues which were not quite ready to be started, as its checks for
-> > > > > readiness were not sufficiently synchronized with the queue initializing
-> > > > > code in cciss_init_one and cciss_update_drive_info.  Slow cpu and
-> > > > > large numbers of logical drives seem to make the race more likely 
-> > > > > to cause a problem.
-> > > > 
-> > > > Hmm, this seems backwards to me.  cciss_softirq_done() isn't going to
-> > > > start the queues, until an irq has triggered for instance. Why isn't the
-> > > > init properly ordered instead of band-aiding around this with a
-> > > > 'queue_ready' variable?
-> > > >
-> > > 
-> > > Each call to add_disk() will trigger some interrupts, 
-> > > and earlier added disks may cause the queues of later,
-> > > not-yet-completely added disks to be started.
-> > > 
-> > > I suppose the init routine might be reorganized to initialize all
-> > > the queues, then have second loop call add_disk() for all
-> > > of them.  Is that what you had in mind by "properly ordered?"
-> > 
-> > Yep precisely, don't call add_disk() until everything is set up.
-> > 
-> > > Disks may be added at run time though, and I think this tears
-> > > down all but the first disk, and re-adds them all, if I remember
-> > > right, so there is some complication there to think about.
-> > 
-> > Well, other drivers manage quite fine without resorting to work-arounds
-> > :-)
-> 
-> Ok.  Thanks for the constructive criticism.  I'll rethink it.
-> 
-> Fortunately, (or unfortunately) the race is apparently pretty hard 
-> to trigger, it's been in there for ages, and we've only just seen it 
-> manifest as a problem recently and only in one particular configuration.
+On Mon, 14 Apr 2008, Pekka Enberg wrote:
 
-Hopefully that will not matter. If you rework the init code so that
-everything is up and running before you allow any IO going on, then
-it'll be easier to 'prove' that you can't hit such races. If you can
-have disk added at runtime, make them go through the same init
-process/function.
+> >  Code: 48 89 45 d0 9c 41 5d fa e8 f5 a5 fc ff 65 8b 04 25 24 00 00 00 48 98 4c 8b bc c3 c8 00 00 00 4d 8b 27 4d 85 e4 74 7a 41 8b 47 14 <49> 8b 04 c4 49 89 07 41 f7 c5 00 02 00 00 75 37 41 55 9d e8 bf
+> >  RIP  [<ffffffff802868f9>] __kmalloc+0x69/0x110
+> >   RSP <ffff81017cba9c68>
+> >  CR2: 0000000500000500
+> 
+> Looks like freelist corruption where c->freelist is 0x0000000500000500
+> and c->offset is zero... Christoph?
 
--- 
-Jens Axboe
+c->offset is zero is okay. Could be a object freepointer corruption 
+because the first word of the object is overwritten after free. You 
+need to run with slub_debug on the commandline or CONFIG_SLUB_DEBUG_ON to 
+debug this.
+
+Anyone know what the possible meaning of 0x0000000500000500 is? I do not 
+see anything in poison.h.
 
