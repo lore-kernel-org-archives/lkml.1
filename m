@@ -1,91 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYDNEDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYDNEEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbYDNEDw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 00:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbYDNEDo
+	id S1753667AbYDNEEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 00:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYDNEDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 00:03:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54649 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbYDNEDn (ORCPT
+	Mon, 14 Apr 2008 00:03:51 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34483 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755814AbYDNEDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 00:03:43 -0400
-Date: Sun, 13 Apr 2008 20:58:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Erik Bosman <ejbosman@cs.vu.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3-REVISED] x86: Implement prctl PR_GET_TSC and
- PR_SET_TSC
-Message-ID: <20080413205821.61d6c85b@laptopd505.fenrus.org>
-In-Reply-To: <Pine.GSO.4.56.0804140014000.6537@keg.few.vu.nl>
-References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl>
-	<Pine.GSO.4.56.0804140014000.6537@keg.few.vu.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 Apr 2008 00:03:50 -0400
+Date: Sun, 13 Apr 2008 21:03:43 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
+       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
+       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
+       oleg@tv-sign.ru, jamesclhuang@yahoo.com
+Subject: [PATCH 4/5] Add call_rcu_sched() and friends to rcutorture
+Message-ID: <20080414040343.GD30495@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080414035848.GA30005@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414035848.GA30005@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 00:24:18 +0200 (CEST)
-Erik Bosman <ejbosman@cs.vu.nl> wrote:
+Add entry to rcu_torture_ops allowing the correct barrier function to
+be used upon exit from rcutorture.  Also add torture options for the
+new call_rcu_sched() API.
 
-> 
-> (I have made it non-configurable and it does not touch
-> kernel/seccomp.c anymore. I only changed ifdef/endifs)
-> 
->     This patch implements the PR_GET_TSC and PR_SET_TSC prctl()
->     commands on the x86 platform (both 32 and 64 bit.) These
->     commands control the ability to read the timestamp counter
->     from userspace (the RDTSC instruction.)
-> 
->     While the RDTSC instuction is a useful profiling tool,
->     it is also the source of some non-determinism in ring-3.
->     For deterministic replay applications it is useful to be
->     able to trap and emulate (and record the outcome of) this
->     instruction.
-> 
->     This patch uses code earlier used to disable the timestamp
->     counter for the SECCOMP framework. A side-effect of this
->     patch is that the SECCOMP environment will now also disable
->     the timestamp counter on x86_64 due to the addition of the
->     TIF_NOTSC define on this platform.
-> 
->     The code which enables/disables the RDTSC instruction during
->     context switches is in the __switch_to_xtra function, which
->     already handles other unusual conditions, so normal
->     performance should not have to suffer from this change.
-> 
->     Signed-off-by: Erik Bosman <ejbosman@cs.vu.nl>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
+ rcutorture.c |   34 +++++++++++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
-I like this a whole lot more than the previous version; in fact
-I like how it gets rid of various ifdefs. It's a bit unfortunate that
-it duplicates for 32/64 bit but this code isn't unified yet, and at least
-your 2 functions are identical, making it not hard to deal with in the unification.
-(so .. not your fault you did all the right things)
-
-
-Acked-by: Arjan van de Ven  <arjan@linux.intel.com>
-
-
-
-Btw one other reason I like this general approach is that we can now start to get
-apps to ask for the tsc to be enabled when they use it, and then we can just say
-"no" on systems without reliable tsc...
-(obviously we can't do that right away but we should try to migrate to that approach)
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff -urpNa -X dontdiff linux-2.6.25-rc6-C3-rcu_barrier_sched/kernel/rcutorture.c linux-2.6.25-rc6-C4-rcutorture/kernel/rcutorture.c
+--- linux-2.6.25-rc6-C3-rcu_barrier_sched/kernel/rcutorture.c	2008-03-16 17:45:17.000000000 -0700
++++ linux-2.6.25-rc6-C4-rcutorture/kernel/rcutorture.c	2008-04-09 16:39:14.000000000 -0700
+@@ -191,6 +191,7 @@ struct rcu_torture_ops {
+ 	int (*completed)(void);
+ 	void (*deferredfree)(struct rcu_torture *p);
+ 	void (*sync)(void);
++	void (*cb_barrier)(void);
+ 	int (*stats)(char *page);
+ 	char *name;
+ };
+@@ -264,6 +265,7 @@ static struct rcu_torture_ops rcu_ops = 
+ 	.completed = rcu_torture_completed,
+ 	.deferredfree = rcu_torture_deferred_free,
+ 	.sync = synchronize_rcu,
++	.cb_barrier = rcu_barrier,
+ 	.stats = NULL,
+ 	.name = "rcu"
+ };
+@@ -303,6 +305,7 @@ static struct rcu_torture_ops rcu_sync_o
+ 	.completed = rcu_torture_completed,
+ 	.deferredfree = rcu_sync_torture_deferred_free,
+ 	.sync = synchronize_rcu,
++	.cb_barrier = NULL,
+ 	.stats = NULL,
+ 	.name = "rcu_sync"
+ };
+@@ -363,6 +366,7 @@ static struct rcu_torture_ops rcu_bh_ops
+ 	.completed = rcu_bh_torture_completed,
+ 	.deferredfree = rcu_bh_torture_deferred_free,
+ 	.sync = rcu_bh_torture_synchronize,
++	.cb_barrier = rcu_barrier_bh,
+ 	.stats = NULL,
+ 	.name = "rcu_bh"
+ };
+@@ -376,6 +380,7 @@ static struct rcu_torture_ops rcu_bh_syn
+ 	.completed = rcu_bh_torture_completed,
+ 	.deferredfree = rcu_sync_torture_deferred_free,
+ 	.sync = rcu_bh_torture_synchronize,
++	.cb_barrier = NULL,
+ 	.stats = NULL,
+ 	.name = "rcu_bh_sync"
+ };
+@@ -457,6 +462,7 @@ static struct rcu_torture_ops srcu_ops =
+ 	.completed = srcu_torture_completed,
+ 	.deferredfree = rcu_sync_torture_deferred_free,
+ 	.sync = srcu_torture_synchronize,
++	.cb_barrier = NULL,
+ 	.stats = srcu_torture_stats,
+ 	.name = "srcu"
+ };
+@@ -481,6 +487,11 @@ static int sched_torture_completed(void)
+ 	return 0;
+ }
+ 
++static void rcu_sched_torture_deferred_free(struct rcu_torture *p)
++{
++	call_rcu_sched(&p->rtort_rcu, rcu_torture_cb);
++}
++
+ static void sched_torture_synchronize(void)
+ {
+ 	synchronize_sched();
+@@ -493,12 +504,27 @@ static struct rcu_torture_ops sched_ops 
+ 	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
+ 	.readunlock = sched_torture_read_unlock,
+ 	.completed = sched_torture_completed,
+-	.deferredfree = rcu_sync_torture_deferred_free,
++	.deferredfree = rcu_sched_torture_deferred_free,
+ 	.sync = sched_torture_synchronize,
++	.cb_barrier = rcu_barrier_sched,
+ 	.stats = NULL,
+ 	.name = "sched"
+ };
+ 
++static struct rcu_torture_ops sched_ops_sync = {
++	.init = rcu_sync_torture_init,
++	.cleanup = NULL,
++	.readlock = sched_torture_read_lock,
++	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
++	.readunlock = sched_torture_read_unlock,
++	.completed = sched_torture_completed,
++	.deferredfree = rcu_sync_torture_deferred_free,
++	.sync = sched_torture_synchronize,
++	.cb_barrier = NULL,
++	.stats = NULL,
++	.name = "sched_sync"
++};
++
+ /*
+  * RCU torture writer kthread.  Repeatedly substitutes a new structure
+  * for that pointed to by rcu_torture_current, freeing the old structure
+@@ -844,7 +870,9 @@ rcu_torture_cleanup(void)
+ 	stats_task = NULL;
+ 
+ 	/* Wait for all RCU callbacks to fire.  */
+-	rcu_barrier();
++
++	if (cur_ops->cb_barrier != NULL)
++		cur_ops->cb_barrier();
+ 
+ 	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
+ 
+@@ -864,7 +892,7 @@ rcu_torture_init(void)
+ 	int firsterr = 0;
+ 	static struct rcu_torture_ops *torture_ops[] =
+ 		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
+-		  &srcu_ops, &sched_ops, };
++		  &srcu_ops, &sched_ops, &sched_ops_sync, };
+ 
+ 	/* Process args and tell the world that the torturer is on the job. */
+ 	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
