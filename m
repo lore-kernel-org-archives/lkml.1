@@ -1,55 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761758AbYDNTD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbYDNTD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761758AbYDNTD0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 15:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYDNTDM
+	id S1762736AbYDNTD4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 15:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbYDNTDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 15:03:12 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37985 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753464AbYDNTDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 15:03:10 -0400
-Date: Mon, 14 Apr 2008 21:03:09 +0200
-From: Jan Kara <jack@suse.cz>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
-       Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080414190308.GJ15824@duck.suse.cz>
-References: <ah5DA-3X9-9@gated-at.bofh.it> <ah5X5-4tl-13@gated-at.bofh.it> <ah66A-4Nk-7@gated-at.bofh.it> <ah7vN-7Wz-9@gated-at.bofh.it> <E1JkIJ0-0000tG-LV@be1.7eggert.dyndns.org> <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca>
+	Mon, 14 Apr 2008 15:03:40 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:59050 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755543AbYDNTDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 15:03:38 -0400
+Date: Mon, 14 Apr 2008 15:03:02 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: trond.myklebust@fys.uio.no, eshel@almaden.ibm.com, neilb@suse.de,
+       akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Miklos Szeredi <mszeredi@suse.cz>, stable@kernel.org
+Subject: [PATCH] locks: fix possible infinite loop in fcntl(F_SETLKW) over
+	nfs
+Message-ID: <20080414190302.GM15950@fieldses.org>
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org> <20080410215410.GF22324@fieldses.org> <E1JkOff-0000pS-A7@pomaz-ex.szeredi.hu> <20080413000830.GF31789@fieldses.org> <E1JkxKz-0003A8-9V@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080414170613.GI7385@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <E1JkxKz-0003A8-9V@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 14-04-08 13:06:13, Lennart Sorensen wrote:
-> On Mon, Apr 14, 2008 at 06:53:54PM +0200, Jan Kara wrote:
-> >   Well, but imagine you have a file /proc/my_secret_file from which you
-> > are able to read from position A:a and B:b but not from position
-> > A:b. Concievably, checks for the file position could be bypassed because of
-> > this race... I know this is kind of dumb example but I can imagine someone
-> > can eventually find something like this. So I guess one spin lock/unlock
-> > pair is a price worth paying in the callpath which is quite long anyway.
-> 
-> But only two threads within the process can read from the filehandle and
-> hence the process would be doing locking.  And external attacker can't
-  Why would it be doing locking? If some nasty user runs the process, he
-*wants* his two threads to race as much as possible and trigger the race.
-And then use corrupted f_pos.
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-> break the internal locking of the process between the threads, and even
-> if you do open the file in /proc that the process is using, being and
-> external process you would have your own file handle and hence your own
-> file position since you aren't part of that process.
+Miklos Szeredi found the bug:
 
-								Honza
+	"Basically what happens is that on the server nlm_fopen() calls
+	nfsd_open() which returns -EACCES, to which nlm_fopen() returns
+	NLM_LCK_DENIED.
+
+	"On the client this will turn into a -EAGAIN (nlm_stat_to_errno()),
+	which in will cause fcntl_setlk() to retry forever."
+
+So, for example, opening a file on an nfs filesystem, changing
+permissions to forbid further access, then trying to lock the file,
+could result in an infinite loop.
+
+And Trond Myklebust identified the culprit, from Marc Eshel and I:
+
+	7723ec9777d9832849b76475b1a21a2872a40d20 "locks: factor out
+	generic/filesystem switch from setlock code"
+
+That commit claimed to just be reshuffling code, but actually introduced
+a behavioral change by calling the lock method repeatedly as long as it
+returned -EAGAIN.
+
+We assumed this would be safe, since we assumed a lock of type SETLKW
+would only return with either success or an error other than -EAGAIN.
+However, nfs does can in fact return -EAGAIN in this situation, and
+independently of whether that behavior is correct or not, we don't
+actually need this change, and it seems far safer not to depend on such
+assumptions about the filesystem's ->lock method.
+
+Therefore, revert the problematic part of the original commit.  This
+leaves vfs_lock_file() and its other callers unchanged, while returning
+fcntl_setlk and fcntl_setlk64 to their former behavior.
+
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Tested-by: Miklos Szeredi <mszeredi@suse.cz>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Marc Eshel <eshel@almaden.ibm.com>
+---
+ fs/locks.c |   48 ++++++++++++++++++++++++++++--------------------
+ 1 files changed, 28 insertions(+), 20 deletions(-)
+
+This is appropriate for 2.6.25 (as well as older stable kernels--the bug
+was introduced in 2.6.22).
+
+--b.
+
+diff --git a/fs/locks.c b/fs/locks.c
+index d83fab1..43c0af2 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -1801,17 +1801,21 @@ again:
+ 	if (error)
+ 		goto out;
+ 
+-	for (;;) {
+-		error = vfs_lock_file(filp, cmd, file_lock, NULL);
+-		if (error != -EAGAIN || cmd == F_SETLK)
+-			break;
+-		error = wait_event_interruptible(file_lock->fl_wait,
+-				!file_lock->fl_next);
+-		if (!error)
+-			continue;
++	if (filp->f_op && filp->f_op->lock != NULL)
++		error = filp->f_op->lock(filp, cmd, file_lock);
++	else {
++		for (;;) {
++			error = posix_lock_file(filp, file_lock, NULL);
++			if (error != -EAGAIN || cmd == F_SETLK)
++				break;
++			error = wait_event_interruptible(file_lock->fl_wait,
++					!file_lock->fl_next);
++			if (!error)
++				continue;
+ 
+-		locks_delete_block(file_lock);
+-		break;
++			locks_delete_block(file_lock);
++			break;
++		}
+ 	}
+ 
+ 	/*
+@@ -1925,17 +1929,21 @@ again:
+ 	if (error)
+ 		goto out;
+ 
+-	for (;;) {
+-		error = vfs_lock_file(filp, cmd, file_lock, NULL);
+-		if (error != -EAGAIN || cmd == F_SETLK64)
+-			break;
+-		error = wait_event_interruptible(file_lock->fl_wait,
+-				!file_lock->fl_next);
+-		if (!error)
+-			continue;
++	if (filp->f_op && filp->f_op->lock != NULL)
++		error = filp->f_op->lock(filp, cmd, file_lock);
++	else {
++		for (;;) {
++			error = posix_lock_file(filp, file_lock, NULL);
++			if (error != -EAGAIN || cmd == F_SETLK64)
++				break;
++			error = wait_event_interruptible(file_lock->fl_wait,
++					!file_lock->fl_next);
++			if (!error)
++				continue;
+ 
+-		locks_delete_block(file_lock);
+-		break;
++			locks_delete_block(file_lock);
++			break;
++		}
+ 	}
+ 
+ 	/*
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.5.5.rc1
+
