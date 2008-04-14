@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbYDNU5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761731AbYDNU61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbYDNU5J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 16:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYDNU4z
+	id S1761731AbYDNU61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 16:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYDNU6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 16:56:55 -0400
-Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:56923
-	"EHLO spunkymail-a9.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754378AbYDNU4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 16:56:54 -0400
-X-Greylist: delayed 1318 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 16:56:54 EDT
-Message-ID: <4803BF9D.4070304@dawes.za.net>
-Date: Mon, 14 Apr 2008 22:33:33 +0200
-From: Rogan Dawes <lists@dawes.za.net>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: chris@zankel.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] xtensa: don't offer PARPORT_PC
-References: <20080414195551.GE26885@cs181133002.pp.htv.fi>
-In-Reply-To: <20080414195551.GE26885@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 16:58:19 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39740 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753304AbYDNU6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 16:58:19 -0400
+Date: Mon, 14 Apr 2008 22:58:47 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and fix MIPS
+Message-ID: <20080414205847.GA16416@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
+On Mon, Apr 14, 2008 at 11:43:08AM -0700, Christoph Lameter wrote:
+> Add the ability to pass comments into asm-offsets.h by generating asm
+> output like
+> 
+> -># comment line
+> 
+> Mips needs this feature to preserve the comments that are in asm-mips/asm-offsets.h
+> right now.
+> 
+> Then remove the special handling for mips from Kbuild and convert mips to use
+> the new string to include the comments.
+> 
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
->  config PARPORT_PC
->  	tristate "PC-style hardware"
->  	depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && \
-> -		(!M68K || ISA) && !MN10300
-> +		(!M68K || ISA) && !MN10300 && !XTENSA
+My sedfu is not enough to properly review this.
+And I am not yet able to test it.
 
-Pardon a possibly stupid question here, but would it not make more sense 
-to code the architectures for which these various devices *are* 
-possible, rather than requiring each architecture to go through the 
-entire config file and add their own "we don't do this" for many entries?
+But the general principle is good and I really like to see mips
+aligned with the rest!
 
-As seen, it is easy for them to be missed, hence all these recent patches.
-
-The way I look at it, it is a lot easier to require that the arch 
-maintainer adds specific entries to get their particular hardware 
-working, rather than go through a working setup and figure out how much 
-they can take away before it breaks.
-
-Rogan
+	Sam
