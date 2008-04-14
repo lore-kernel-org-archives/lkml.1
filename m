@@ -1,370 +1,1230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763610AbYDNQk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbYDNQlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763610AbYDNQk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 12:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763221AbYDNQjb
+	id S1763680AbYDNQlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 12:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYDNQlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 12:39:31 -0400
-Received: from el-out-1112.google.com ([209.85.162.182]:38749 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763196AbYDNQj3 (ORCPT
+	Mon, 14 Apr 2008 12:41:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43212 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757658AbYDNQld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 12:39:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nPVyUgHvysDZOJ4E2CyWHGJW+hb5ZW/zwGxB4HYanDn7EyM99ZHX8g5Os7q0736OfJP/Xiq/eVCgYtMRm1Gr7DoblMn8UtoMA0e2shi5p0HGGNI61tlc8yJnNmhBCBfse0LVyPkcCH07odVP16dpi+fnpIz/vVhyP8pH/TxIgtI=
-Subject: [PATCH 09/10] usb: Use get/put_unaligned_* helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 14 Apr 2008 09:37:57 -0700
-Message-Id: <1208191077.5721.31.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 12:41:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:to:subject:cc:message-id:date:from;
+	b=hK2VFfaUzXBXozLo4m4gnTbEtumssNurhdJuoekt8uZt9Yl+H9kXpi78BsLjbM6rh
+	HFOg44ghBm/XzBWM3XAeA==
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rossb@google.com,
+       akpm@linux-foundation.org
+Subject: [PATCH 2/2] MM: Make page tables relocatable -- relocation code (rc9)
+Cc: rossb@google.com
+Message-Id: <20080414164013.36129DCA48@localhost>
+Date: Mon, 14 Apr 2008 09:40:13 -0700 (PDT)
+From: rossb@google.com (Ross Biro)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/usb/atm/ueagle-atm.c   |   48 +++++++++++++++++++--------------------
- drivers/usb/class/cdc-acm.c    |    2 +-
- drivers/usb/gadget/goku_udc.c  |    2 +-
- drivers/usb/gadget/rndis.c     |   40 ++++++++++++--------------------
- drivers/usb/gadget/usbstring.c |    2 +-
- drivers/usb/host/ehci-hub.c    |    2 +-
- drivers/usb/host/ohci-hub.c    |    4 +-
- 7 files changed, 44 insertions(+), 56 deletions(-)
-
-diff --git a/drivers/usb/atm/ueagle-atm.c b/drivers/usb/atm/ueagle-atm.c
-index c5ec1a5..bdb52a8 100644
---- a/drivers/usb/atm/ueagle-atm.c
-+++ b/drivers/usb/atm/ueagle-atm.c
-@@ -305,8 +305,6 @@ enum {
-  */
+-----
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/fault.c 2.6.25-rc9/arch/powerpc/mm/fault.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/fault.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/powerpc/mm/fault.c	2008-04-14 09:00:29.000000000 -0700
+@@ -299,6 +299,8 @@ good_area:
+ 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
+ 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
+ 			spin_lock(ptl);
++			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
++
+ 			if (pte_present(*ptep)) {
+ 				struct page *page = pte_page(*ptep);
  
- #define FW_GET_BYTE(p)	*((__u8 *) (p))
--#define FW_GET_WORD(p)	le16_to_cpu(get_unaligned((__le16 *) (p)))
--#define FW_GET_LONG(p)	le32_to_cpu(get_unaligned((__le32 *) (p)))
- 
- #define FW_DIR "ueagle-atm/"
- #define NB_MODEM 4
-@@ -621,7 +619,7 @@ static void uea_upload_pre_firmware(const struct firmware *fw_entry, void *conte
- 	if (size < 4)
- 		goto err_fw_corrupted;
- 
--	crc = FW_GET_LONG(pfw);
-+	crc = get_unaligned_le32(pfw);
- 	pfw += 4;
- 	size -= 4;
- 	if (crc32_be(0, pfw, size) != crc)
-@@ -640,7 +638,7 @@ static void uea_upload_pre_firmware(const struct firmware *fw_entry, void *conte
- 
- 	while (size > 3) {
- 		u8 len = FW_GET_BYTE(pfw);
--		u16 add = FW_GET_WORD(pfw + 1);
-+		u16 add = get_unaligned_le16(pfw + 1);
- 
- 		size -= len + 3;
- 		if (size < 0)
-@@ -738,7 +736,7 @@ static int check_dsp_e1(u8 *dsp, unsigned int len)
- 
- 	for (i = 0; i < pagecount; i++) {
- 
--		pageoffset = FW_GET_LONG(dsp + p);
-+		pageoffset = get_unaligned_le32(dsp + p);
- 		p += 4;
- 
- 		if (pageoffset == 0)
-@@ -759,7 +757,7 @@ static int check_dsp_e1(u8 *dsp, unsigned int len)
- 				return 1;
- 
- 			pp += 2;	/* skip blockaddr */
--			blocksize = FW_GET_WORD(dsp + pp);
-+			blocksize = get_unaligned_le16(dsp + pp);
- 			pp += 2;
- 
- 			/* enough space for block data? */
-@@ -928,7 +926,7 @@ static void uea_load_page_e1(struct work_struct *work)
- 		goto bad1;
- 
- 	p += 4 * pageno;
--	pageoffset = FW_GET_LONG(p);
-+	pageoffset = get_unaligned_le32(p);
- 
- 	if (pageoffset == 0)
- 		goto bad1;
-@@ -945,10 +943,10 @@ static void uea_load_page_e1(struct work_struct *work)
- 	bi.wOvlOffset = cpu_to_le16(ovl | 0x8000);
- 
- 	for (i = 0; i < blockcount; i++) {
--		blockaddr = FW_GET_WORD(p);
-+		blockaddr = get_unaligned_le16(p);
- 		p += 2;
- 
--		blocksize = FW_GET_WORD(p);
-+		blocksize = get_unaligned_le16(p);
- 		p += 2;
- 
- 		bi.wSize = cpu_to_le16(blocksize);
-@@ -1152,9 +1150,9 @@ static int uea_cmv_e1(struct uea_softc *sc,
- 	cmv.bDirection = E1_HOSTTOMODEM;
- 	cmv.bFunction = function;
- 	cmv.wIndex = cpu_to_le16(sc->cmv_dsc.e1.idx);
--	put_unaligned(cpu_to_le32(address), &cmv.dwSymbolicAddress);
-+	put_unaligned_le32(address, &cmv.dwSymbolicAddress);
- 	cmv.wOffsetAddress = cpu_to_le16(offset);
--	put_unaligned(cpu_to_le32(data >> 16 | data << 16), &cmv.dwData);
-+	put_unaligned_le32(data >> 16 | data << 16, &cmv.dwData);
- 
- 	ret = uea_request(sc, UEA_E1_SET_BLOCK, UEA_MPTX_START, sizeof(cmv), &cmv);
- 	if (ret < 0)
-@@ -1646,7 +1644,7 @@ static int request_cmvs(struct uea_softc *sc,
- 	if (size < 5)
- 		goto err_fw_corrupted;
- 
--	crc = FW_GET_LONG(data);
-+	crc = get_unaligned_le32(data);
- 	data += 4;
- 	size -= 4;
- 	if (crc32_be(0, data, size) != crc)
-@@ -1696,9 +1694,9 @@ static int uea_send_cmvs_e1(struct uea_softc *sc)
- 			"please update your firmware\n");
- 
- 		for (i = 0; i < len; i++) {
--			ret = uea_write_cmv_e1(sc, FW_GET_LONG(&cmvs_v1[i].address),
--						FW_GET_WORD(&cmvs_v1[i].offset),
--						FW_GET_LONG(&cmvs_v1[i].data));
-+			ret = uea_write_cmv_e1(sc, get_unaligned_le32(&cmvs_v1[i].address),
-+						get_unaligned_le16(&cmvs_v1[i].offset),
-+						get_unaligned_le32(&cmvs_v1[i].data));
- 			if (ret < 0)
- 				goto out;
- 		}
-@@ -1706,9 +1704,9 @@ static int uea_send_cmvs_e1(struct uea_softc *sc)
- 		struct uea_cmvs_v2 *cmvs_v2 = cmvs_ptr;
- 
- 		for (i = 0; i < len; i++) {
--			ret = uea_write_cmv_e1(sc, FW_GET_LONG(&cmvs_v2[i].address),
--						(u16) FW_GET_LONG(&cmvs_v2[i].offset),
--						FW_GET_LONG(&cmvs_v2[i].data));
-+			ret = uea_write_cmv_e1(sc, get_unaligned_le32(&cmvs_v2[i].address),
-+						(u16) get_unaligned_le32(&cmvs_v2[i].offset),
-+						get_unaligned_le32(&cmvs_v2[i].data));
- 			if (ret < 0)
- 				goto out;
- 		}
-@@ -1759,10 +1757,10 @@ static int uea_send_cmvs_e4(struct uea_softc *sc)
- 
- 		for (i = 0; i < len; i++) {
- 			ret = uea_write_cmv_e4(sc, 1,
--						FW_GET_LONG(&cmvs_v2[i].group),
--						FW_GET_LONG(&cmvs_v2[i].address),
--						FW_GET_LONG(&cmvs_v2[i].offset),
--						FW_GET_LONG(&cmvs_v2[i].data));
-+						get_unaligned_le32(&cmvs_v2[i].group),
-+						get_unaligned_le32(&cmvs_v2[i].address),
-+						get_unaligned_le32(&cmvs_v2[i].offset),
-+						get_unaligned_le32(&cmvs_v2[i].data));
- 			if (ret < 0)
- 				goto out;
- 		}
-@@ -1964,7 +1962,7 @@ static void uea_dispatch_cmv_e1(struct uea_softc *sc, struct intr_pkt *intr)
- 		if (UEA_CHIP_VERSION(sc) == ADI930
- 				&& cmv->bFunction ==  E1_MAKEFUNCTION(2, 2)) {
- 			cmv->wIndex = cpu_to_le16(dsc->idx);
--			put_unaligned(cpu_to_le32(dsc->address), &cmv->dwSymbolicAddress);
-+			put_unaligned_le32(dsc->address, &cmv->dwSymbolicAddress);
- 			cmv->wOffsetAddress = cpu_to_le16(dsc->offset);
- 		} else
- 			goto bad2;
-@@ -1978,11 +1976,11 @@ static void uea_dispatch_cmv_e1(struct uea_softc *sc, struct intr_pkt *intr)
- 
- 	/* in case of MEMACCESS */
- 	if (le16_to_cpu(cmv->wIndex) != dsc->idx ||
--	    le32_to_cpu(get_unaligned(&cmv->dwSymbolicAddress)) != dsc->address ||
-+	    get_unaligned_le32(&cmv->dwSymbolicAddress) != dsc->address ||
- 	    le16_to_cpu(cmv->wOffsetAddress) != dsc->offset)
- 		goto bad2;
- 
--	sc->data = le32_to_cpu(get_unaligned(&cmv->dwData));
-+	sc->data = get_unaligned_le32(&cmv->dwData);
- 	sc->data = sc->data << 16 | sc->data >> 16;
- 
- 	wake_up_cmv_ack(sc);
-diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
-index 0147ea3..6581068 100644
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -288,7 +288,7 @@ static void acm_ctrl_irq(struct urb *urb)
- 
- 		case USB_CDC_NOTIFY_SERIAL_STATE:
- 
--			newctrl = le16_to_cpu(get_unaligned((__le16 *) data));
-+			newctrl = get_unaligned_le16(data);
- 
- 			if (acm->tty && !acm->clocal && (acm->ctrlin & ~newctrl & ACM_CTRL_DCD)) {
- 				dbg("calling hangup");
-diff --git a/drivers/usb/gadget/goku_udc.c b/drivers/usb/gadget/goku_udc.c
-index d3e7025..6aacbe1 100644
---- a/drivers/usb/gadget/goku_udc.c
-+++ b/drivers/usb/gadget/goku_udc.c
-@@ -127,7 +127,7 @@ goku_ep_enable(struct usb_ep *_ep, const struct usb_endpoint_descriptor *desc)
- 
- 	/* enabling the no-toggle interrupt mode would need an api hook */
- 	mode = 0;
--	max = le16_to_cpu(get_unaligned(&desc->wMaxPacketSize));
-+	max = get_unaligned_le16(&desc->wMaxPacketSize);
- 	switch (max) {
- 	case 64:	mode++;
- 	case 32:	mode++;
-diff --git a/drivers/usb/gadget/rndis.c b/drivers/usb/gadget/rndis.c
-index 3d03664..f569e8c 100644
---- a/drivers/usb/gadget/rndis.c
-+++ b/drivers/usb/gadget/rndis.c
-@@ -183,14 +183,10 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
- 		DBG("query OID %08x value, len %d:\n", OID, buf_len);
- 		for (i = 0; i < buf_len; i += 16) {
- 			DBG("%03d: %08x %08x %08x %08x\n", i,
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 4])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 8])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 12])));
-+				get_unaligned_le32(&buf[i]),
-+				get_unaligned_le32(&buf[i + 4]),
-+				get_unaligned_le32(&buf[i + 8]),
-+				get_unaligned_le32(&buf[i + 12]));
- 		}
- 	}
- 
-@@ -666,7 +662,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
- 		break;
- 	case OID_PNP_QUERY_POWER:
- 		DBG("%s: OID_PNP_QUERY_POWER D%d\n", __FUNCTION__,
--				le32_to_cpu(get_unaligned((__le32 *)buf)) - 1);
-+				get_unaligned_le32(buf) - 1);
- 		/* only suspend is a real power state, and
- 		 * it can't be entered by OID_PNP_SET_POWER...
- 		 */
-@@ -705,14 +701,10 @@ static int gen_ndis_set_resp (u8 configNr, u32 OID, u8 *buf, u32 buf_len,
- 		DBG("set OID %08x value, len %d:\n", OID, buf_len);
- 		for (i = 0; i < buf_len; i += 16) {
- 			DBG("%03d: %08x %08x %08x %08x\n", i,
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 4])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 8])),
--				le32_to_cpu(get_unaligned((__le32 *)
--					&buf[i + 12])));
-+				get_unaligned_le32(&buf[i]),
-+				get_unaligned_le32(&buf[i + 4]),
-+				get_unaligned_le32(&buf[i + 8]),
-+				get_unaligned_le32(&buf[i + 12]));
- 		}
- 	}
- 
-@@ -726,8 +718,7 @@ static int gen_ndis_set_resp (u8 configNr, u32 OID, u8 *buf, u32 buf_len,
- 		 *	PROMISCUOUS, DIRECTED,
- 		 *	MULTICAST, ALL_MULTICAST, BROADCAST
- 		 */
--		*params->filter = (u16) le32_to_cpu(get_unaligned(
--				(__le32 *)buf));
-+		*params->filter = (u16)get_unaligned_le32(buf);
- 		DBG("%s: OID_GEN_CURRENT_PACKET_FILTER %08x\n",
- 			__FUNCTION__, *params->filter);
- 
-@@ -777,7 +768,7 @@ update_linkstate:
- 		 * resuming, Windows forces a reset, and then SET_POWER D0.
- 		 * FIXME ... then things go batty; Windows wedges itself.
- 		 */
--		i = le32_to_cpu(get_unaligned((__le32 *)buf));
-+		i = get_unaligned_le32(buf);
- 		DBG("%s: OID_PNP_SET_POWER D%d\n", __FUNCTION__, i - 1);
- 		switch (i) {
- 		case NdisDeviceStateD0:
-@@ -1064,8 +1055,8 @@ int rndis_msg_parser (u8 configNr, u8 *buf)
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c 2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c	2008-04-14 09:00:29.000000000 -0700
+@@ -73,6 +73,7 @@ static int __hugepte_alloc(struct mm_str
  		return -ENOMEM;
  
- 	tmp = (__le32 *) buf;
--	MsgType   = le32_to_cpu(get_unaligned(tmp++));
--	MsgLength = le32_to_cpu(get_unaligned(tmp++));
-+	MsgType   = get_unaligned_le32(tmp++);
-+	MsgLength = get_unaligned_le32(tmp++);
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_hpd(&hpdp, mm, address);
+ 	if (!hugepd_none(*hpdp))
+ 		kmem_cache_free(huge_pgtable_cache, new);
+ 	else
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/fault.c 2.6.25-rc9/arch/ppc/mm/fault.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/fault.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/ppc/mm/fault.c	2008-04-14 09:00:29.000000000 -0700
+@@ -219,6 +219,7 @@ good_area:
+ 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
+ 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
+ 			spin_lock(ptl);
++			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
+ 			if (pte_present(*ptep)) {
+ 				struct page *page = pte_page(*ptep);
  
- 	if (configNr >= RNDIS_MAX_CONFIGS)
- 		return -ENOTSUPP;
-@@ -1296,10 +1287,9 @@ int rndis_rm_hdr(struct sk_buff *skb)
- 	tmp++;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/hugetlbpage.c 2.6.25-rc9/arch/x86/mm/hugetlbpage.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/hugetlbpage.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/x86/mm/hugetlbpage.c	2008-04-14 09:00:29.000000000 -0700
+@@ -88,6 +88,7 @@ static void huge_pmd_share(struct mm_str
+ 		goto out;
  
- 	/* DataOffset, DataLength */
--	if (!skb_pull(skb, le32_to_cpu(get_unaligned(tmp++))
--			+ 8 /* offset of DataOffset */))
-+	if (!skb_pull(skb, get_unaligned_le32(tmp++) + 8))
- 		return -EOVERFLOW;
--	skb_trim(skb, le32_to_cpu(get_unaligned(tmp++)));
-+	skb_trim(skb, get_unaligned_le32(tmp++));
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_pud(&pud, mm, addr);
+ 	if (pud_none(*pud))
+ 		pud_populate(mm, pud, (pmd_t *)((unsigned long)spte & PAGE_MASK));
+ 	else
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgalloc.h 2.6.25-rc9/include/asm-generic/pgalloc.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgalloc.h	1969-12-31 16:00:00.000000000 -0800
++++ 2.6.25-rc9/include/asm-generic/pgalloc.h	2008-04-14 09:00:29.000000000 -0700
+@@ -0,0 +1,37 @@
++#ifndef _ASM_GENERIC_PGALLOC_H
++#define _ASM_GENERIC_PGALLOC_H
++
++
++
++/* Page Table Levels used for alloc_page_table. */
++#define PAGE_TABLE_PGD 0
++#define PAGE_TABLE_PUD 1
++#define PAGE_TABLE_PMD 2
++#define PAGE_TABLE_PTE 3
++
++static inline struct page *alloc_page_table_node(struct mm_struct *mm,
++						 unsigned long addr,
++						 int node,
++						 int page_table_level)
++{
++	switch (page_table_level) {
++	case PAGE_TABLE_PGD:
++		return virt_to_page(pgd_alloc_node(mm, node));
++
++	case PAGE_TABLE_PUD:
++		return virt_to_page(pud_alloc_one_node(mm, addr, node));
++
++	case PAGE_TABLE_PMD:
++		return virt_to_page(pmd_alloc_one_node(mm, addr, node));
++
++	case PAGE_TABLE_PTE:
++		return pte_alloc_one_node(mm, addr, node);
++
++	default:
++		BUG();
++		return NULL;
++	}
++}
++
++
++#endif /* _ASM_GENERIC_PGALLOC_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgtable.h 2.6.25-rc9/include/asm-generic/pgtable.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgtable.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-generic/pgtable.h	2008-04-14 09:00:29.000000000 -0700
+@@ -4,6 +4,8 @@
+ #ifndef __ASSEMBLY__
+ #ifdef CONFIG_MMU
  
++#include <linux/sched.h>
++
+ #ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+ /*
+  * Largely same as above, but only sets the access flags (dirty,
+@@ -195,6 +197,48 @@ static inline int pmd_none_or_clear_bad(
+ 	}
  	return 0;
  }
-diff --git a/drivers/usb/gadget/usbstring.c b/drivers/usb/gadget/usbstring.c
-index 878e428..4154be3 100644
---- a/drivers/usb/gadget/usbstring.c
-+++ b/drivers/usb/gadget/usbstring.c
-@@ -74,7 +74,7 @@ static int utf8_to_utf16le(const char *s, __le16 *cp, unsigned len)
- 				goto fail;
- 		} else
- 			uchar = c;
--		put_unaligned (cpu_to_le16 (uchar), cp++);
-+		put_unaligned_le16(uchar, cp++);
- 		count++;
- 		len--;
- 	}
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 4e065e5..85f7c6e 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -782,7 +782,7 @@ static int ehci_hub_control (
- 	if (status & ~0xffff)	/* only if wPortChange is interesting */
- #endif
- 		dbg_port (ehci, "GetStatus", wIndex + 1, temp);
--		put_unaligned(cpu_to_le32 (status), (__le32 *) buf);
-+		put_unaligned_le32(status, buf);
- 		break;
- 	case SetHubFeature:
- 		switch (wValue) {
-diff --git a/drivers/usb/host/ohci-hub.c b/drivers/usb/host/ohci-hub.c
-index 48e4b11..7c84a9e 100644
---- a/drivers/usb/host/ohci-hub.c
-+++ b/drivers/usb/host/ohci-hub.c
-@@ -666,14 +666,14 @@ static int ohci_hub_control (
- 		break;
- 	case GetHubStatus:
- 		temp = roothub_status (ohci) & ~(RH_HS_CRWE | RH_HS_DRWE);
--		put_unaligned(cpu_to_le32 (temp), (__le32 *) buf);
-+		put_unaligned_le32(temp, buf);
- 		break;
- 	case GetPortStatus:
- 		if (!wIndex || wIndex > ports)
- 			goto error;
- 		wIndex--;
- 		temp = roothub_portstatus (ohci, wIndex);
--		put_unaligned(cpu_to_le32 (temp), (__le32 *) buf);
-+		put_unaligned_le32(temp, buf);
++
++
++/* Used to rewalk the page tables if after we grab the appropriate lock,
++   we end up with a page that's just waiting to go away. */
++static inline pgd_t *walk_page_table_pgd(struct mm_struct *mm,
++					  unsigned long addr)
++{
++	return pgd_offset(mm, addr);
++}
++
++static inline pud_t *walk_page_table_pud(struct mm_struct *mm,
++					 unsigned long addr) {
++	pgd_t *pgd;
++	pgd = walk_page_table_pgd(mm, addr);
++	BUG_ON(!pgd);
++	return pud_offset(pgd, addr);
++}
++
++static inline pmd_t *walk_page_table_pmd(struct mm_struct *mm,
++					 unsigned long addr)
++{
++	pud_t *pud;
++	pud = walk_page_table_pud(mm, addr);
++	BUG_ON(!pud);
++	return  pmd_offset(pud, addr);
++}
++
++static inline pte_t *walk_page_table_pte(struct mm_struct *mm,
++					 unsigned long addr)
++{
++	pmd_t *pmd;
++	pmd = walk_page_table_pmd(mm, addr);
++	BUG_ON(!pmd);
++	return pte_offset_map(pmd, addr);
++}
++
++static inline pte_t *walk_page_table_huge_pte(struct mm_struct *mm,
++					      unsigned long addr)
++{
++	return (pte_t *)walk_page_table_pmd(mm, addr);
++}
++
+ #endif /* CONFIG_MMU */
  
- #ifndef	OHCI_VERBOSE_DEBUG
- 	if (*(u16*)(buf+2))	/* only if wPortChange is interesting */
--- 
-1.5.5.144.g3e42
-
-
+ /*
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_64.h 2.6.25-rc9/include/asm-x86/pgalloc_64.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_64.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-x86/pgalloc_64.h	2008-04-14 09:00:29.000000000 -0700
+@@ -25,16 +25,6 @@ static inline void pmd_free(struct mm_st
+ 	free_page((unsigned long)pmd);
+ }
+ 
+-static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
+-{
+-	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
+-}
+-
+-static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+-{
+-	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
+-}
+-
+ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
+ {
+ 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
+@@ -61,12 +51,75 @@ static inline void pgd_list_del(pgd_t *p
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
+ }
+ 
+-static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
++	pgd_list_del(pgd);
++	free_page((unsigned long)pgd);
++}
++
++
++/* Should really implement gc for free page table pages. This could be
++   done with a reference count in struct page. */
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
++{
++	pgtable_page_dtor(pte);
++	__free_page(pte);
++}
++
++#define __pte_free_tlb(tlb,pte)				\
++do {							\
++	pgtable_page_dtor((pte));				\
++	tlb_remove_page((tlb), (pte));			\
++} while (0)
++
++#define __pmd_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
++#define __pud_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
++
++#ifdef CONFIG_NUMA
++static inline pud_t *pud_alloc_one_node(struct mm_struct *mm,
++					unsigned long addr,
++					int node)
++{
++	struct page *page;
++
++	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
++	if (page)
++		return (pud_t *)page_address(page);
++	return NULL;
++}
++
++static inline pmd_t *pmd_alloc_one_node(struct mm_struct *mm,
++					unsigned long addr,
++					int node)
++{
++	struct page *page;
++
++	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
++	if (page)
++		return (pmd_t *)page_address(page);
++	return NULL;
++}
++
++static inline pgd_t *pgd_alloc_node(struct mm_struct *mm, int node)
+ {
+ 	unsigned boundary;
+-	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
+-	if (!pgd)
++	struct page *page;
++	pgd_t *pgd;
++
++	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT, 0);
++	if (!page)
+ 		return NULL;
++
++	pgd = (pgd_t *)page_address(page);
++
+ 	pgd_list_add(pgd);
+ 	/*
+ 	 * Copy kernel pointers in from init.
+@@ -81,11 +134,72 @@ static inline pgd_t *pgd_alloc(struct mm
+ 	return pgd;
+ }
+ 
+-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++static inline pte_t *pte_alloc_one_kernel_node(struct mm_struct *mm,
++					       unsigned long address,
++					       int node)
+ {
+-	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
+-	pgd_list_del(pgd);
+-	free_page((unsigned long)pgd);
++	struct page *page;
++
++	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
++	if (page)
++		return (pte_t *)page_address(page);
++	return NULL;
++}
++
++static inline struct page *pte_alloc_one_node(struct mm_struct *mm,
++					      unsigned long address,
++					      int node)
++{
++	struct page *page;
++	page = alloc_pages_node(node, GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
++	return page;
++}
++
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++{
++	return pgd_alloc_node(mm, -1);
++}
++
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++					  unsigned long address)
++{
++	return (pte_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return pte_alloc_one_node(mm, addr, -1);
++}
++
++static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
++{
++	return pmd_alloc_one_node(mm, addr, -1);
++}
++
++static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return pud_alloc_one_node(mm, addr, -1);
++}
++
++#else /* !CONFIG_NUMA */
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++{
++	unsigned boundary;
++	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
++	if (!pgd)
++		return NULL;
++	pgd_list_add(pgd);
++	/*
++	 * Copy kernel pointers in from init.
++	 * Could keep a freelist or slab cache of those because the kernel
++	 * part never changes.
++	 */
++	boundary = pgd_index(__PAGE_OFFSET);
++	memset(pgd, 0, boundary * sizeof(pgd_t));
++	memcpy(pgd + boundary,
++	       init_level4_pgt + boundary,
++	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
++	return pgd;
+ }
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+@@ -106,28 +220,19 @@ static inline pgtable_t pte_alloc_one(st
+ 	return page;
+ }
+ 
+-/* Should really implement gc for free page table pages. This could be
+-   done with a reference count in struct page. */
+-
+-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
+-	free_page((unsigned long)pte); 
++	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
+ }
+ 
+-static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
++static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	pgtable_page_dtor(pte);
+-	__free_page(pte);
++	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
+ } 
+ 
+-#define __pte_free_tlb(tlb,pte)				\
+-do {							\
+-	pgtable_page_dtor((pte));				\
+-	tlb_remove_page((tlb), (pte));			\
+-} while (0)
++#endif
++
++#include <asm-generic/pgalloc.h>
+ 
+-#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
+-#define __pud_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
+ 
+ #endif /* _X86_64_PGALLOC_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/migrate.h 2.6.25-rc9/include/linux/migrate.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/linux/migrate.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/linux/migrate.h	2008-04-14 09:00:29.000000000 -0700
+@@ -6,6 +6,10 @@
+ #include <linux/pagemap.h>
+ 
+ typedef struct page *new_page_t(struct page *, unsigned long private, int **);
++typedef struct page *new_page_table_t(struct mm_struct *,
++				      unsigned long addr,
++				      unsigned long private,
++				      int **, int page_table_level);
+ 
+ #ifdef CONFIG_MIGRATION
+ /* Check if a vma is migratable */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/mm.h 2.6.25-rc9/include/linux/mm.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/linux/mm.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/linux/mm.h	2008-04-14 09:00:29.000000000 -0700
+@@ -12,6 +12,7 @@
+ #include <linux/prio_tree.h>
+ #include <linux/debug_locks.h>
+ #include <linux/mm_types.h>
++#include <asm/pgtable.h>
+ 
+ struct mempolicy;
+ struct anon_vma;
+@@ -921,6 +922,7 @@ static inline void pgtable_page_dtor(str
+ 	pte_t *__pte = pte_offset_map(pmd, address);	\
+ 	*(ptlp) = __ptl;				\
+ 	spin_lock(__ptl);				\
++	delimbo_pte(&__pte, ptlp, &pmd, mm, address);	\
+ 	__pte;						\
+ })
+ 
+@@ -945,6 +947,99 @@ extern void free_area_init(unsigned long
+ extern void free_area_init_node(int nid, pg_data_t *pgdat,
+ 	unsigned long * zones_size, unsigned long zone_start_pfn, 
+ 	unsigned long *zholes_size);
++
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++
++static inline void delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
++			  struct mm_struct *mm,
++			  unsigned long addr)
++{
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++	spin_unlock(*ptl);
++	spin_lock(&mm->page_table_lock);
++#endif
++	pte_unmap(*pte);
++	*pmd = walk_page_table_pmd(mm, addr);
++	*pte = pte_offset_map(*pmd, addr);
++	*ptl = pte_lockptr(mm, *pmd);
++#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++	spin_lock(*ptl);
++	spin_unlock(&mm->page_table_lock);
++#endif
++}
++
++static inline void delimbo_pte_nested(pte_t **pte, spinlock_t **ptl,
++				pmd_t **pmd,
++				struct mm_struct *mm,
++				unsigned long addr, int subclass)
++{
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++	spin_unlock(*ptl);
++	spin_lock(&mm->page_table_lock);
++#endif
++	*pmd = walk_page_table_pmd(mm, addr);
++	*pte = pte_offset_map(*pmd, addr);
++	*ptl = pte_lockptr(mm, *pmd);
++
++#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++	spin_lock_nested(*ptl, subclass);
++	spin_unlock(&mm->page_table_lock);
++#endif
++}
++
++static inline void delimbo_pud(pud_t **pud,  struct mm_struct *mm,
++			  unsigned long addr)
++{
++
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++	*pud = walk_page_table_pud(mm, addr);
++}
++
++static inline void delimbo_pmd(pmd_t **pmd,  struct mm_struct *mm,
++			       unsigned long addr)
++{
++
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++	*pmd = walk_page_table_pmd(mm, addr);
++}
++
++static inline void delimbo_pgd(pgd_t **pgd,  struct mm_struct *mm,
++			       unsigned long addr)
++{
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++	*pgd = walk_page_table_pgd(mm, addr);
++}
++
++static inline void delimbo_huge_pte(pte_t **pte,  struct mm_struct *mm,
++				    unsigned long addr)
++{
++	if (!test_bit(MMF_NEED_REWALK, &mm->flags))
++		return;
++
++	*pte = walk_page_table_huge_pte(mm, addr);
++}
++
++#else /* CONFIG_RELOCATE_PAGE_TABLES */
++#define delimbo_pte(pte, ptl,  pmd, mm, addr)
++#define delimbo_pte_nested(pte, ptl, pmd, mm, addr, subclass)
++#define delimbo_pud(pud, mm, addr)
++#define delimbo_pmd(pmd, mm, addr)
++#define delimbo_pgd(pgd, mm, addr)
++#define delimbo_huge_pte(pte, mm, addr)
++#endif /* CONFIG_RELOCATE_PAGE_TABLES */
++
+ #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
+ /*
+  * With CONFIG_ARCH_POPULATES_NODE_MAP set, an architecture may initialise its
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/mm_types.h 2.6.25-rc9/include/linux/mm_types.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/linux/mm_types.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/linux/mm_types.h	2008-04-14 09:03:34.000000000 -0700
+@@ -10,6 +10,9 @@
+ #include <linux/rbtree.h>
+ #include <linux/rwsem.h>
+ #include <linux/completion.h>
++#include <linux/rcupdate.h>
++#include <linux/workqueue.h>
++#include <asm/semaphore.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ 
+@@ -71,9 +74,18 @@ struct page {
+ 		pgoff_t index;		/* Our offset within mapping. */
+ 		void *freelist;		/* SLUB: freelist req. slab lock */
+ 	};
++
++	union {
+ 	struct list_head lru;		/* Pageout list, eg. active_list
+ 					 * protected by zone->lru_lock !
+ 					 */
++		struct rcu_head rcu;	/* Used by page table relocation code
++					 * to remember page for later freeing,
++					 * after we are sure anyone
++					 * poking at the page tables is no
++					 * longer looking at this page.
++					 */
++	};
+ 	/*
+ 	 * On machines where all RAM is mapped into kernel address space,
+ 	 * we can simply calculate the virtual address. On machines with
+@@ -173,6 +185,8 @@ struct mm_struct {
+ 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
+ 	int map_count;				/* number of VMAs */
+ 	struct rw_semaphore mmap_sem;
++	unsigned long flags; /* Must use atomic bitops to access the bits */
++
+ 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
+ 
+ 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung
+@@ -213,8 +227,6 @@ struct mm_struct {
+ 	unsigned int token_priority;
+ 	unsigned int last_interval;
+ 
+-	unsigned long flags; /* Must use atomic bitops to access the bits */
+-
+ 	/* coredumping support */
+ 	int core_waiters;
+ 	struct completion *core_startup_done, core_done;
+@@ -225,6 +237,11 @@ struct mm_struct {
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 	struct mem_cgroup *mem_cgroup;
+ #endif
++
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++	/* Page table relocation support. */
++	struct semaphore	page_table_relocation_lock;
++#endif /* CONFIG_RELOCATE_PAGE_TABLES */
+ };
+ 
+ #endif /* _LINUX_MM_TYPES_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/kernel/fork.c 2.6.25-rc9/kernel/fork.c
+--- /home/rossb/local/linux-2.6.25-rc9/kernel/fork.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/kernel/fork.c	2008-04-14 09:00:29.000000000 -0700
+@@ -360,6 +360,10 @@ static struct mm_struct * mm_init(struct
+ 	mm->cached_hole_size = ~0UL;
+ 	mm_init_cgroup(mm, p);
+ 
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++	init_MUTEX(&mm->page_table_relocation_lock);
++#endif
++
+ 	if (likely(!mm_alloc_pgd(mm))) {
+ 		mm->def_flags = 0;
+ 		return mm;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/Kconfig 2.6.25-rc9/mm/Kconfig
+--- /home/rossb/local/linux-2.6.25-rc9/mm/Kconfig	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/Kconfig	2008-04-14 09:00:29.000000000 -0700
+@@ -143,6 +143,10 @@ config MEMORY_HOTREMOVE
+ 	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	depends on MIGRATION
+ 
++config RELOCATE_PAGE_TABLES 
++	def_bool y
++	depends on X86_64 && MIGRATION
++
+ # Heavily threaded applications may benefit from splitting the mm-wide
+ # page_table_lock, so that faults on different parts of the user address
+ # space can be handled with less contention: split it at this NR_CPUS.
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/hugetlb.c 2.6.25-rc9/mm/hugetlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/hugetlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/hugetlb.c	2008-04-14 09:01:16.000000000 -0700
+@@ -762,6 +762,8 @@ int copy_hugetlb_page_range(struct mm_st
+ 
+ 		spin_lock(&dst->page_table_lock);
+ 		spin_lock(&src->page_table_lock);
++		delimbo_huge_pte(&src_pte, src, addr);
++		delimbo_huge_pte(&dst_pte, dst, addr);
+ 		if (!pte_none(*src_pte)) {
+ 			if (cow)
+ 				ptep_set_wrprotect(src, addr, src_pte);
+@@ -937,6 +939,7 @@ retry:
+ 	}
+ 
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_huge_pte(&ptep, mm, address);
+ 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
+ 	if (idx >= size)
+ 		goto backout;
+@@ -994,6 +997,7 @@ int hugetlb_fault(struct mm_struct *mm, 
+ 	ret = 0;
+ 
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_huge_pte(&ptep, mm, address);
+ 	/* Check for a racing update before calling hugetlb_cow */
+ 	if (likely(pte_same(entry, *ptep)))
+ 		if (write_access && !pte_write(entry))
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/memory.c 2.6.25-rc9/mm/memory.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/memory.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/memory.c	2008-04-14 09:00:29.000000000 -0700
+@@ -312,6 +312,7 @@ int __pte_alloc(struct mm_struct *mm, pm
+ 		return -ENOMEM;
+ 
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_pmd(&pmd, mm, address);
+ 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
+ 		mm->nr_ptes++;
+ 		pmd_populate(mm, pmd, new);
+@@ -330,6 +331,7 @@ int __pte_alloc_kernel(pmd_t *pmd, unsig
+ 		return -ENOMEM;
+ 
+ 	spin_lock(&init_mm.page_table_lock);
++	delimbo_pmd(&pmd, &init_mm, address);
+ 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
+ 		pmd_populate_kernel(&init_mm, pmd, new);
+ 		new = NULL;
+@@ -513,6 +515,8 @@ again:
+ 	src_pte = pte_offset_map_nested(src_pmd, addr);
+ 	src_ptl = pte_lockptr(src_mm, src_pmd);
+ 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
++
++	delimbo_pte(&src_pte, &src_ptl, &src_pmd, src_mm, addr);
+ 	arch_enter_lazy_mmu_mode();
+ 
+ 	do {
+@@ -1488,13 +1492,15 @@ EXPORT_SYMBOL_GPL(apply_to_page_range);
+  * and do_anonymous_page and do_no_page can safely check later on).
+  */
+ static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+-				pte_t *page_table, pte_t orig_pte)
++				pte_t *page_table, pte_t orig_pte,
++				unsigned long address)
+ {
+ 	int same = 1;
+ #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+ 	if (sizeof(pte_t) > sizeof(unsigned long)) {
+ 		spinlock_t *ptl = pte_lockptr(mm, pmd);
+ 		spin_lock(ptl);
++		delimbo_pte(&page_table, &ptl, &pmd, mm, address);
+ 		same = pte_same(*page_table, orig_pte);
+ 		spin_unlock(ptl);
+ 	}
+@@ -2021,7 +2027,7 @@ static int do_swap_page(struct mm_struct
+ 	pte_t pte;
+ 	int ret = 0;
+ 
+-	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
++	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
+ 		goto out;
+ 
+ 	entry = pte_to_swp_entry(orig_pte);
+@@ -2100,6 +2106,10 @@ static int do_swap_page(struct mm_struct
+ 	}
+ 
+ 	/* No need to invalidate - it was non-present before */
++	/* Unless of course the cpu might be looking at an old
++	   copy of the pte. */
++	maybe_reload_tlb_mm(mm);
++
+ 	update_mmu_cache(vma, address, pte);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+@@ -2151,6 +2161,10 @@ static int do_anonymous_page(struct mm_s
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+ 	/* No need to invalidate - it was non-present before */
++	/* Unless of course the cpu might be looking at an old
++	   copy of the pte. */
++	maybe_reload_tlb_mm(mm);
++
+ 	update_mmu_cache(vma, address, entry);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+@@ -2312,6 +2326,10 @@ static int __do_fault(struct mm_struct *
+ 		}
+ 
+ 		/* no need to invalidate: a not-present page won't be cached */
++		/* Unless of course the cpu could be looking at an old page
++		   table entry. */
++		maybe_reload_tlb_mm(mm);
++
+ 		update_mmu_cache(vma, address, entry);
+ 	} else {
+ 		mem_cgroup_uncharge_page(page);
+@@ -2418,7 +2436,7 @@ static int do_nonlinear_fault(struct mm_
+ 				(write_access ? FAULT_FLAG_WRITE : 0);
+ 	pgoff_t pgoff;
+ 
+-	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
++	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
+ 		return 0;
+ 
+ 	if (unlikely(!(vma->vm_flags & VM_NONLINEAR) ||
+@@ -2477,6 +2495,7 @@ static inline int handle_pte_fault(struc
+ 
+ 	ptl = pte_lockptr(mm, pmd);
+ 	spin_lock(ptl);
++	delimbo_pte(&pte, &ptl, &pmd, mm, address);
+ 	if (unlikely(!pte_same(*pte, entry)))
+ 		goto unlock;
+ 	if (write_access) {
+@@ -2498,6 +2517,12 @@ static inline int handle_pte_fault(struc
+ 		if (write_access)
+ 			flush_tlb_page(vma, address);
+ 	}
++
++	/* if the cpu could be looking at an old page table, we need to
++	   flush out everything. */
++	maybe_reload_tlb_mm(mm);
++
++
+ unlock:
+ 	pte_unmap_unlock(pte, ptl);
+ 	return 0;
+@@ -2547,6 +2572,7 @@ int __pud_alloc(struct mm_struct *mm, pg
+ 		return -ENOMEM;
+ 
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_pgd(&pgd, mm, address);
+ 	if (pgd_present(*pgd))		/* Another has populated it */
+ 		pud_free(mm, new);
+ 	else
+@@ -2568,6 +2594,7 @@ int __pmd_alloc(struct mm_struct *mm, pu
+ 		return -ENOMEM;
+ 
+ 	spin_lock(&mm->page_table_lock);
++	delimbo_pud(&pud, mm, address);
+ #ifndef __ARCH_HAS_4LEVEL_HACK
+ 	if (pud_present(*pud))		/* Another has populated it */
+ 		pmd_free(mm, new);
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/mempolicy.c 2.6.25-rc9/mm/mempolicy.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/mempolicy.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/mempolicy.c	2008-04-14 09:00:29.000000000 -0700
+@@ -101,6 +101,12 @@
+ static struct kmem_cache *policy_cache;
+ static struct kmem_cache *sn_cache;
+ 
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++int migrate_page_tables_mm(struct mm_struct *mm,  int source,
++			   new_page_table_t get_new_page,
++			   unsigned long private);
++#endif
++
+ /* Highest zone. An specific allocation for a zone below that is not
+    policied. */
+ enum zone_type policy_zone = 0;
+@@ -627,6 +633,20 @@ static struct page *new_node_page(struct
+ 	return alloc_pages_node(node, GFP_HIGHUSER_MOVABLE, 0);
+ }
+ 
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++static struct page *new_node_page_page_tables(struct mm_struct *mm,
++					      unsigned long addr,
++					      unsigned long node,
++					      int **x,
++					      int level)
++{
++	struct page *p;
++	p = alloc_page_table_node(mm, addr, node, level);
++	return p;
++}
++
++#endif /* CONFIG_RELOCATE_PAGE_TABLES  */
++
+ /*
+  * Migrate pages from one node to a target node.
+  * Returns error or the number of pages not migrated.
+@@ -647,6 +667,12 @@ static int migrate_to_node(struct mm_str
+ 	if (!list_empty(&pagelist))
+ 		err = migrate_pages(&pagelist, new_node_page, dest);
+ 
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++	if (!err)
++		err = migrate_page_tables_mm(mm, source,
++					     new_node_page_page_tables, dest);
++#endif /* CONFIG_RELOCATE_PAGE_TABLES */
++
+ 	return err;
+ }
+ 
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/migrate.c 2.6.25-rc9/mm/migrate.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/migrate.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/migrate.c	2008-04-14 09:00:29.000000000 -0700
+@@ -30,9 +30,18 @@
+ #include <linux/vmalloc.h>
+ #include <linux/security.h>
+ #include <linux/memcontrol.h>
++#include <linux/mm.h>
++#include <asm/tlb.h>
++#include <asm/tlbflush.h>
++#include <asm/pgalloc.h>
+ 
+ #include "internal.h"
+ 
++int migrate_page_tables_mm(struct mm_struct *mm, int source,
++			   new_page_table_t get_new_page,
++			   unsigned long private);
++
++
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+ 
+ /*
+@@ -155,6 +164,7 @@ static void remove_migration_pte(struct 
+ 
+  	ptl = pte_lockptr(mm, pmd);
+  	spin_lock(ptl);
++	delimbo_pte(&ptep, &ptl, &pmd, mm, addr);
+ 	pte = *ptep;
+ 	if (!is_swap_pte(pte))
+ 		goto out;
+@@ -895,9 +905,10 @@ set_status:
+ 		err = migrate_pages(&pagelist, new_page_node,
+ 				(unsigned long)pm);
+ 	else
+-		err = -ENOENT;
++		err = 0;
+ 
+ 	up_read(&mm->mmap_sem);
++
+ 	return err;
+ }
+ 
+@@ -1075,3 +1086,344 @@ int migrate_vmas(struct mm_struct *mm, c
+  	}
+  	return err;
+ }
++
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++static void rcu_free_pt(struct rcu_head *head)
++{
++	/* Need to know that the mm has been flushed before
++	 * we get here.  Otherwise we need a way to find
++	 * the appropriate mm to flush.
++	 */
++	struct page *page = container_of(head, struct page, rcu);
++	INIT_LIST_HEAD(&page->lru);
++	__free_page(page);
++}
++
++int migrate_pgd(pgd_t *pgd, struct mm_struct *mm,
++		unsigned long addr, struct page *dest,
++		struct list_head *old_pages)
++{
++	unsigned long flags;
++	void *dest_ptr;
++	pud_t *pud;
++
++	spin_lock_irqsave(&mm->page_table_lock, flags);
++
++	delimbo_pgd(&pgd, mm, addr);
++
++	pud = pud_offset(pgd, addr);
++	dest_ptr = page_address(dest);
++	memcpy(dest_ptr, pud, PAGE_SIZE);
++
++	list_add_tail(&(pgd_page(*pgd)->lru), old_pages);
++	pgd_populate(mm, pgd, dest_ptr);
++
++	maybe_need_flush_mm(mm);
++
++	spin_unlock_irqrestore(&mm->page_table_lock, flags);
++
++	return 0;
++
++}
++
++int migrate_pud(pud_t *pud, struct mm_struct *mm, unsigned long addr,
++		struct page *dest, struct list_head *old_pages)
++{
++	unsigned long flags;
++	void *dest_ptr;
++	pmd_t *pmd;
++
++	spin_lock_irqsave(&mm->page_table_lock, flags);
++
++	delimbo_pud(&pud, mm, addr);
++	pmd = pmd_offset(pud, addr);
++
++	dest_ptr = page_address(dest);
++	memcpy(dest_ptr, pmd, PAGE_SIZE);
++
++	list_add_tail(&(pud_page(*pud)->lru), old_pages);
++
++	pud_populate(mm, pud, dest_ptr);
++	maybe_need_flush_mm(mm);
++
++	spin_unlock_irqrestore(&mm->page_table_lock, flags);
++
++	return 0;
++}
++
++
++int migrate_pmd(pmd_t *pmd, struct mm_struct *mm, unsigned long addr,
++		struct page *dest, struct list_head *old_pages)
++{
++	unsigned long flags;
++	void *dest_ptr;
++	spinlock_t *ptl;
++	pte_t *pte;
++
++	spin_lock_irqsave(&mm->page_table_lock, flags);
++
++	delimbo_pmd(&pmd, mm, addr);
++
++	/* this could happen if the page table has been swapped out and we
++	   were looking at the old one. */
++	if (unlikely(!pmd_present(*pmd))) {
++		spin_unlock_irqrestore(&mm->page_table_lock, flags);
++		return 1;
++	}
++
++	ptl = pte_lockptr(mm, pmd);
++
++	/* We need the page lock as well. */
++	if (ptl != &mm->page_table_lock)
++		spin_lock(ptl);
++
++	pte = pte_offset_map(pmd, addr);
++
++	dest_ptr = kmap_atomic(dest, KM_USER0);
++	memcpy(dest_ptr, pte, PAGE_SIZE);
++	list_add_tail(&(pmd_page(*pmd)->lru), old_pages);
++
++	kunmap_atomic(dest, KM_USER0);
++	pte_unmap(pte);
++	pte_lock_init(dest);
++	pmd_populate(mm, pmd, dest);
++
++	maybe_need_flush_mm(mm);
++
++	if (ptl != &mm->page_table_lock)
++		spin_unlock(ptl);
++
++	spin_unlock_irqrestore(&mm->page_table_lock, flags);
++
++	return 0;
++}
++
++static int migrate_page_tables_pmd(pmd_t *pmd, struct mm_struct *mm,
++				   unsigned long *address, int source,
++				   new_page_table_t get_new_page,
++				   unsigned long private,
++				   struct list_head *old_pages)
++{
++	int pages_not_migrated = 0;
++	int *result = NULL;
++	struct page *old_page = virt_to_page(pmd);
++	struct page *new_page;
++	int not_migrated;
++
++	if (!pmd_present(*pmd)) {
++		*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
++		return 0;
++	}
++
++	if (page_to_nid(old_page) == source) {
++		new_page = get_new_page(mm, *address, private, &result,
++					PAGE_TABLE_PTE);
++		if (!new_page)
++			return -ENOMEM;
++		not_migrated = migrate_pmd(pmd, mm, *address, new_page,
++					   old_pages);
++		if (not_migrated)
++			__free_page(new_page);
++
++		pages_not_migrated += not_migrated;
++	}
++
++
++	*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
++
++	return pages_not_migrated;
++}
++
++static int migrate_page_tables_pud(pud_t *pud, struct mm_struct *mm,
++				   unsigned long *address, int source,
++				   new_page_table_t get_new_page,
++				   unsigned long private,
++				   struct list_head *old_pages)
++{
++	int pages_not_migrated = 0;
++	int i;
++	int *result = NULL;
++	struct page *old_page = virt_to_page(pud);
++	struct page *new_page;
++	int not_migrated;
++
++	if (!pud_present(*pud)) {
++		*address += (unsigned long)PTRS_PER_PMD *
++				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
++		return 0;
++	}
++
++	if (page_to_nid(old_page) == source) {
++		new_page = get_new_page(mm, *address, private, &result,
++					PAGE_TABLE_PMD);
++		if (!new_page)
++			return -ENOMEM;
++
++		not_migrated = migrate_pud(pud, mm, *address, new_page,
++					   old_pages);
++
++		if (not_migrated)
++			__free_page(new_page);
++
++		pages_not_migrated += not_migrated;
++	}
++
++	for (i = 0; i < PTRS_PER_PUD; i++) {
++		int ret;
++		ret = migrate_page_tables_pmd(pmd_offset(pud, *address), mm,
++					      address, source,
++					      get_new_page, private,
++					      old_pages);
++		if (ret < 0)
++			return ret;
++		pages_not_migrated += ret;
++	}
++
++	return pages_not_migrated;
++}
++
++static int migrate_page_tables_pgd(pgd_t *pgd, struct mm_struct *mm,
++				   unsigned long *address, int source,
++				   new_page_table_t get_new_page,
++				   unsigned long private,
++				   struct list_head *old_pages)
++{
++	int pages_not_migrated = 0;
++	int i;
++	int *result = NULL;
++	struct page *old_page = virt_to_page(pgd);
++	struct page *new_page;
++	int not_migrated;
++
++	if (!pgd_present(*pgd)) {
++		*address +=  (unsigned long)PTRS_PER_PUD *
++				(unsigned long)PTRS_PER_PMD *
++				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
++		return 0;
++	}
++
++	if (page_to_nid(old_page) == source) {
++		new_page = get_new_page(mm, *address,  private, &result,
++					PAGE_TABLE_PUD);
++		if (!new_page)
++			return -ENOMEM;
++
++		not_migrated = migrate_pgd(pgd, mm,  *address, new_page,
++					   old_pages);
++		if (not_migrated)
++			__free_page(new_page);
++
++		pages_not_migrated += not_migrated;
++
++	}
++
++	for (i = 0; i < PTRS_PER_PUD; i++) {
++		int ret;
++		ret = migrate_page_tables_pud(pud_offset(pgd, *address), mm,
++					      address, source,
++					      get_new_page, private,
++					      old_pages);
++		if (ret < 0)
++			return ret;
++		pages_not_migrated += ret;
++	}
++
++	return pages_not_migrated;
++}
++
++static int enter_page_table_relocation_mode(struct mm_struct *mm)
++{
++	if (down_interruptible(&mm->page_table_relocation_lock))
++		return -EINTR;
++	set_bit(MMF_NEED_REWALK, &mm->flags);
++	return 0;
++}
++
++static void leave_page_table_relocation_mode(struct mm_struct *mm)
++{
++	synchronize_rcu();
++	clear_bit(MMF_NEED_REWALK, &mm->flags);
++	up(&mm->page_table_relocation_lock);
++}
++
++/* similiar to migrate pages, but migrates the page tables. */
++int migrate_page_tables_mm(struct mm_struct *mm, int source,
++			   new_page_table_t get_new_page,
++			   unsigned long private)
++{
++	int pages_not_migrated = 0;
++	int i;
++	int *result = NULL;
++	struct page *old_page = virt_to_page(mm->pgd);
++	struct page *new_page;
++	unsigned long address = 0UL;
++	int not_migrated;
++	int ret = 0;
++	LIST_HEAD(old_pages);
++
++	if (mm->pgd == NULL)
++		return 0;
++
++	ret = enter_page_table_relocation_mode(mm);
++	if (ret)
++		return ret;
++
++	for (i = 0; i < PTRS_PER_PGD && address < mm->task_size; i++) {
++		ret = migrate_page_tables_pgd(pgd_offset(mm, address), mm,
++					      &address, source,
++					      get_new_page, private,
++					      &old_pages);
++		if (ret < 0)
++			goto out_exit;
++
++		pages_not_migrated += ret;
++	}
++
++	if (page_to_nid(old_page) == source) {
++		new_page = get_new_page(mm, address, private, &result,
++					PAGE_TABLE_PGD);
++		if (!new_page) {
++			ret = -ENOMEM;
++			goto out_exit;
++		}
++
++		not_migrated = migrate_top_level_page_table(mm, new_page,
++							&old_pages);
++		if (not_migrated) {
++			pgd_list_del(page_address(new_page));
++			__free_page(new_page);
++		}
++
++		pages_not_migrated += not_migrated;
++	}
++
++	/* reload or flush the tlbs if necessary. */
++	maybe_reload_tlb_mm(mm);
++
++	/* Add the pages freed up to the rcu list to be freed later.
++	 * We need to do this after we flush the mm to prevent
++	 * a possible race where the page is freed while one of
++	 * the cpus is still looking at it.
++	 */
++
++	while (!list_empty(&old_pages)) {
++		old_page = list_first_entry(&old_pages, struct page, lru);
++		list_del(&old_page->lru);
++		/* This is the same memory as the list
++		 * head we are using to maintain the list.
++		 * so we have to make sure the list_del
++		 * comes first.
++		 */
++		INIT_RCU_HEAD(&old_page->rcu);
++		call_rcu(&old_page->rcu, rcu_free_pt);
++	}
++
++ out_exit:
++	leave_page_table_relocation_mode(mm);
++
++	if (ret < 0)
++		return ret;
++	return pages_not_migrated;
++}
++
++#endif /* CONFIG_RELOCATE_PAGE_TABLES */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/mremap.c 2.6.25-rc9/mm/mremap.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/mremap.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/mremap.c	2008-04-14 09:00:29.000000000 -0700
+@@ -98,6 +98,7 @@ static void move_ptes(struct vm_area_str
+ 	new_ptl = pte_lockptr(mm, new_pmd);
+ 	if (new_ptl != old_ptl)
+ 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
++	delimbo_pte(&new_pte, &new_ptl, &new_pmd, mm, new_addr);
+ 	arch_enter_lazy_mmu_mode();
+ 
+ 	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE,
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/rmap.c 2.6.25-rc9/mm/rmap.c
+--- /home/rossb/local/linux-2.6.25-rc9/mm/rmap.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/mm/rmap.c	2008-04-14 09:00:29.000000000 -0700
+@@ -255,6 +255,7 @@ pte_t *page_check_address(struct page *p
+ 
+ 	ptl = pte_lockptr(mm, pmd);
+ 	spin_lock(ptl);
++	delimbo_pte(&pte, &ptl, &pmd, mm, address);
+ 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
+ 		*ptlp = ptl;
+ 		return pte;
