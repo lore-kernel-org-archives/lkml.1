@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbYDNFZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYDNFfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759122AbYDNFZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 01:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYDNFZF
+	id S1756669AbYDNFfS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 01:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYDNFfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 01:25:05 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:44442 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbYDNFZD (ORCPT
+	Mon, 14 Apr 2008 01:35:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:32705 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYDNFfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 01:25:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=WrVEKehlxPzUERG/ALhO5gYbLQD+DLpeSzwBNf1zLMYZ1jIEOnSa4jHwjls9tjnPY
-	Eu34UrnE5GsHqEY+poe3g==
-Message-ID: <6599ad830804132224h4b958891i101c6e068ea15f55@mail.gmail.com>
-Date: Sun, 13 Apr 2008 22:24:56 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC] Control Groups Roadmap ideas
-Cc: "Linux Containers" <containers@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080411144836.GA6468@sergelap.cust.hotspot.t-mobile.com>
+	Mon, 14 Apr 2008 01:35:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fYkVdCSqW9znyGfaMWgQD4Ls9PHlqbmMADibrZRaYX+Sb/2JjKtbzS2w3uE2JyfX2ogfScfp/+nQwgb/y3d+Wsg6J2TLtqFRtmq/amrjmmr5OdzT5NjDkQw6aT5Dh6mIbfTvDNoi/9WLevqBxts0ERJx5oqlyTVSRo5XfqCrXWc=
+Message-ID: <517f3f820804132234l48f759ddn18447531e5361754@mail.gmail.com>
+Date: Mon, 14 Apr 2008 07:34:56 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch] F_GETPATH for linux
+Cc: "Arnd Bergmann" <arnd@arndb.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0804131839010.12741@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6599ad830804081414x7be75d2fte5b500a7f81df40c@mail.gmail.com>
-	 <20080411144836.GA6468@sergelap.cust.hotspot.t-mobile.com>
+References: <Pine.LNX.4.64.0804131455030.12741@alien.or.mcafeemobile.com>
+	 <200804140300.05719.arnd@arndb.de>
+	 <Pine.LNX.4.64.0804131839010.12741@alien.or.mcafeemobile.com>
+X-Google-Sender-Auth: b6ed2f4c8e847023
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 7:48 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->  > 2) More flexible binding/unbinding/rebinding
->  > -----
->  >
->  > Currently you can only add/remove subsystems to a hierarchy when it
->  > has just a single (root) cgroup. This is a bit inflexible, so I'm
->  > planning to support:
->  >
->  > - adding a subsystem to an existing hierarchy by automatically
->  > creating a subsys state object for the new subsystem for each existing
->  > cgroup in the hierarchy and doing the appropriate
->  > can_attach()/attach_tasks() callbacks for all tasks in the system
->  >
->  > - removing a subsystem from an existing hierarchy by moving all tasks
->  > to that subsystem's root cgroup and destroying the child subsystem
->  > state objects
->  >
->  > - merging two existing hierarchies that have identical cgroup trees
->  >
->  > - (maybe) splitting one hierarchy into two separate hierarchies
->  >
->  > Whether all these operations should be forced through the mount()
->  > system call, or whether they should be done via operations on cgroup
->  > control files, is something I've not figured out yet.
+On 4/14/08, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Mon, 14 Apr 2008, Arnd Bergmann wrote:
 >
->  I'm tempted to ask what the use case is for this (I assume you have one,
->  you don't generally introduce features for no good reason), but it
-
-Back during the early versions of control groups, Paul Jackson
-proposed a bind/unbind API that would let you affect the subsystems on
-an active hierarchy, and it was always a goal of mine to implement
-that - current inflexibility is something that I've never been that
-keen on, but it was OK for the first big release and could be extended
-later.
-
-One of the potential scenarios was that you might want to have a very
-early boot script set up cpusets and node isolation for a set of
-system daemons, and then bind other subsystems on to the same
-hierarchy later in the boot process.
-
->  I'd stick with mount semantics.  Just
->         mount -t cgroup -o remount,devices,cpu none /devwh"
->  should handle all cases, no?
-
-Yes, probably - particularly if we restrict it to adding/removing
-subsystems from an existing tree, rather than splitting and merging
-multiple hierarchies.
-
->
->  I guess I'm hoping that if libcg goes well then a userspace daemon can
->  do all we need.  Of course the use case I envision is having a container
->  which is locked to some amount of ram, wherein the container admin wants
->  to lock some daemon to a subset of that ram.  If the host admin lets the
->  container admin edit a config file (or talk to a daemon through some
->  sock designated for the container) that will only create a child of the
->  container's cgroup, that's probably great.
-
-That's a different issue, and one that I left out of the roadmap
-email. We can have a virtualization subsystem that controls what
-subset of a given hierarchy you can see - if the virtualization
-subsystem is bound to a given hierarchy, and a cgroup is marked as
-virtualized, then a mount of that hierarchy by a process in the
-virtualized cgroup will see that cgroup as the root of the hierarchy.
-It would be a bit like doing a bind mount of a subtree of the main
-hierarchy, but automatically enforced by the kernel.
-
->  > 8) per-mm owner field
->  > ----
+>  > On Monday 14 April 2008, Davide Libenzi wrote:
+>  > > I was working on some bsd/linux compatibility code, and I noticed that we
+>  > > do not have F_GETPATH. I know we can readlink /proc/PID/fd/FD (that is
+>  > > what I'm doing now, under #ifdef), but I gave a patch a shot anyway.
+>  > > Here it is, building but untested ...
 >  >
->  > To remove the need for per-subsystem counted references from the mm.
->  > Being developed by Balbir Singh
+>  > I reviewed the code path for compat_sys_fcntl{,64} for this patch, looks
+>  > good in that respect.
+>  >
+>  > > +error:
+>  > > +   free_page((unsigned long) buf);
+>  > > +   return size;
+>  > > +}
+>  > > +EXPORT_SYMBOL(fcntl_getpath);
+>  > > +
+>  >
+>  > Procfs cannot be a module, and there are no other users of this function,
+>  > so why do you export it?
 >
->  I'm slooowly trying to whip together a swapfile namespace - not a
->  cgroup - which ties a swapfns to a list of swapfiles (where each
->  swapfile belongs to only one swapfns).
+>
+> Springtime export fever? :)
+>  I dropped the export. I'll repost as soon as I've five minutes to reboot
+>  my box (to test the thing a little).
 
-This would be to allow virtual servers to mount their own swapfiles?
-Presumably there'd still be a use for a swap cgroup for job systems
-that want to isolate swap usage without virtualization or requiring
-jobs to mount their own swapfiles?
+Davide,
 
-Paul
+Please CC me on all kernel-userland API changes, so that I can watch
+for changes that may be needed for man-pages.
+
+Cheers,
+
+Michael
+
+-- 
+I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
