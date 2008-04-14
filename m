@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760402AbYDNW2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761636AbYDNW3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760402AbYDNW2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 18:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYDNW2J
+	id S1761636AbYDNW3e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 18:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYDNW30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 18:28:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:18287 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbYDNW2I (ORCPT
+	Mon, 14 Apr 2008 18:29:26 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:61669 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbYDNW3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 18:28:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QUDgbeG7cMyKIfK/ZSpnwwi87SwBrYZCH6eiPiG3lKWv98QWmjj4zyeccQn8jSC2i4rv2GAfaGXH+DXkaP2/JfnpLldp9hhwo/qVd3/cHggrzDfr+ZJRXN7DFUmGy9rXy55Iwdsto0gUyVmQwTDjWWfz7qIc2X3n1f+Jvl+Z8eY=
-Message-ID: <e9c3a7c20804141527k475ee297wdf1053179abdaaf8@mail.gmail.com>
-Date: Mon, 14 Apr 2008 15:27:45 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [2.6 patch] add include/asm-avr32/xor.h
-Cc: "Adrian Bunk" <bunk@kernel.org>,
-       "Sebastian Siewior" <linux-crypto@ml.breakpoint.cc>,
-       hskinnemoen@atmel.com, herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shannon.nelson@intel.com
-In-Reply-To: <8bd0f97a0804141511o28385fcfl11923148f7fe701a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Apr 2008 18:29:25 -0400
+Date: Mon, 14 Apr 2008 15:28:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       mingo <mingo@redhat.com>, tglx <tglx@linutronix.de>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 10 (arch/x86)
+Message-Id: <20080414152831.9b9753c1.randy.dunlap@oracle.com>
+In-Reply-To: <20080414084048.GD23259@devserv.devel.redhat.com>
+References: <20080410181404.b76939a6.sfr@canb.auug.org.au>
+	<20080410150950.5913b16a.randy.dunlap@oracle.com>
+	<20080411074631.GB6410@elte.hu>
+	<20080411081901.f56f5180.randy.dunlap@oracle.com>
+	<20080414084048.GD23259@devserv.devel.redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080414141632.GA6695@cs181133002.pp.htv.fi>
-	 <20080414181140.GA813@Chamillionaire.breakpoint.cc>
-	 <20080414181536.GZ6695@cs181133002.pp.htv.fi>
-	 <20080414214640.GA2282@Chamillionaire.breakpoint.cc>
-	 <20080414220129.GH26885@cs181133002.pp.htv.fi>
-	 <8bd0f97a0804141511o28385fcfl11923148f7fe701a@mail.gmail.com>
-X-Google-Sender-Auth: dab6e4e98944dcf3
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 3:11 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Mon, Apr 14, 2008 at 6:01 PM, Adrian Bunk <bunk@kernel.org> wrote:
->  > On Mon, Apr 14, 2008 at 11:46:40PM +0200, Sebastian Siewior wrote:
->
-> >  > so most
->  >  > xor.h files are identical copies and this is probably as bad as a
->  >  > trailing white space :)
->  >
->  >  I'm not sure whether it's worth spending my time discussing whether
->  >  adding a config variable to 6 architectures is really better than
->  >  adding trivial headers to 3 architectures...
->
->  long term robustness for new ports/codedrops indicates that having a
->  common header in linux/ and making arches opt-in via Kconfig/whatever
->  makes life a lot easier for everyone
->
->  everything builds by default with the generic C versions and arches
->  dont have to go through and figure out all the fun little stub files
->  they need to straight copy from other architectures ... they only have
->  to care if they want to implement an optimized version
+On Mon, 14 Apr 2008 04:40:49 -0400 Jakub Jelinek wrote:
 
-"arches" did not have to go through and figure out the fun little stub
-file for xor.h.  Adrian already made your "life easier".
+> On Fri, Apr 11, 2008 at 08:19:01AM -0700, Randy Dunlap wrote:
+> > On Fri, 11 Apr 2008 09:46:31 +0200 Ingo Molnar wrote:
+> > 
+> > > 
+> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > 
+> > > > Fix printk formats in x86/mm/ioremap.c:
+> > > > 
+> > > > next-20080410/arch/x86/mm/ioremap.c:137: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+> > > > next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
+> > > > next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'long unsigned int'
+> > > 
+> > > thanks, applied.
+> > > 
+> > > >  	if (!phys_addr_valid(phys_addr)) {
+> > > >  		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
+> > > > -		       phys_addr);
+> > > > +		       (unsigned long long)phys_addr);
+> > > 
+> > > is there really no way to solve this more cleanly than a forced cast?
+> > 
+> > I haven't seen any other decent solutions.  This is what we do
+> > all over the kernel.
+> 
+> You can define macros and use them in the format string.
+> In this case
+> 		printk(KERN_WARNING "ioremap: invalid physical address %" PRIRESOURCESZ "\n",
+> 		       phys_addr);
+> (see the PRI* macros in
+> http://www.opengroup.org/onlinepubs/009695399/basedefs/inttypes.h.html
+> and e.g. glibc inttypes.h to see how it is defined).  Other alternative is
+> custom format length modifiers, but unfortunately there is no easy way ATM
+> to teach GCC about them.
 
---
-Dan
+Hi,
+I tried this.
+
+In this particular case, phys_addr is a type(def) of resource_size_t,
+so we still get gcc warnings:
+
+next-20080410/arch/x86/mm/ioremap.c: In function '__ioremap':
+next-20080410/arch/x86/mm/ioremap.c:137: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'resource_size_t'
+next-20080410/arch/x86/mm/ioremap.c:188: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'resource_size_t'
+
+so we still need to cast phys_addr either to (unsigned long) or
+(unsigned long long).  Rigth?  or am I missing something?  if so, what?
+
+Thanks,
+---
+~Randy
