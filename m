@@ -1,51 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbYDNATo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYDNAUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbYDNATo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Apr 2008 20:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDNATG
+	id S1758206AbYDNAUb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Apr 2008 20:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYDNAUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Apr 2008 20:19:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35605 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYDNATE (ORCPT
+	Sun, 13 Apr 2008 20:20:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35366 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753444AbYDNAUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Apr 2008 20:19:04 -0400
-Message-ID: <4802A155.8000006@zytor.com>
-Date: Sun, 13 Apr 2008 17:12:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: x86 git tree broken (bisected)
-References: <200804102159.14563.rjw@sisk.pl> <200804140141.45830.rjw@sisk.pl> <48029B04.9010108@zytor.com> <200804140209.28755.rjw@sisk.pl>
-In-Reply-To: <200804140209.28755.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 13 Apr 2008 20:20:20 -0400
+Date: Sun, 13 Apr 2008 17:19:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@ozlabs.org>
+Cc: <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       <linuxppc-dev@ozlabs.org>, <takata@linux-m32r.org>,
+       <linux-m32r@ml.linux-m32r.org>, Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-Id: <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+In-Reply-To: <20080410032354.90CB1DDF0F@ozlabs.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 14 of April 2008, H. Peter Anvin wrote:
->> Rafael J. Wysocki wrote:
->>> Well, unfortunately current x86.git doesn't even boot on the affected box.
->>> It 'cannot open root device "md1" or unknown-block (0,0)' (Ingo, any ideas?).
->>>
->>> Today I have to take some sleep, so I'll try to debug it tomorrow, unless
->>> someone else does it earlier.
->>>
->> Sounds like you didn't compile in the appropriate RAID support...
-> 
-> In fact I did, but I didn't notice that the initrd image was not built
-> correctly due to a local error.
-> 
+On Thu, 10 Apr 2008 13:22:56 +1000 Benjamin Herrenschmidt <benh@ozlabs.org> wrote:
 
-Happens :)
+> Some architecture need to maintain a kmem cache for thread info
+> structures. (next patch adds that to powerpc to fix an alignment
+> problem).
+> 
+> There is no good arch callback to use to initialize that cache
+> that I can find, so this adds a new one and adds an empty macro
+> for when it's not implemented.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> So we have the choice here between:
+> 
+>  - the ifdef on the func name that I did, consistent with what
+> I did before for iomap, which iirc Linus liked
+> 
+>  - add some more ARCH_HAS_* or HAVE_* (yuck)
+> 
+>  - add an empty definition to all archs .h (pain in the neck but I
+> can do it, though it will be an annoying patch to keep around)
+> 
+>  - do a weak function (will slightly bloat everybody for no good reason)
+> 
+> So unless there is strong complaints, I'd like to stick to my
+> current approach.
+> 
+>  include/linux/sched.h |    4 ++++
+>  init/main.c           |    1 +
+>  2 files changed, 5 insertions(+)
+> 
+> --- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
+> +++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
+> @@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
+>  	if (efi_enabled)
+>  		efi_enter_virtual_mode();
+>  #endif
+> +	thread_info_cache_init();
+>  	fork_init(num_physpages);
+>  	proc_caches_init();
+>  	buffer_init();
+> Index: linux-work/include/linux/sched.h
+> ===================================================================
+> --- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
+> +++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
+> @@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
+>  
+>  #endif
+>  
+> +#ifndef thread_info_cache_init
+> +#define thread_info_cache_init	do { } while(0)
+> +#endif
 
-	-hpa
+This trick does cause a bit of a problem: it is undefined which arch header
+file is to provide the alternative definition of thread_info_cache_init.
+
+So we can (and have) ended up in the situation where the override appears
+in different files on different architectures and various screwups ensue.
+
+So I'd suggest that we have a bigfatcomment telling implementors which file
+the override should be implemented in.  And make sure that this arch file is
+directly included from within sched.h.
+
+I have a suspicion that we can still get in a mess if .c files include the
+per-arch file and don't include sched.h, but I forget where this happened
+and why it broke stuff.
+
+Sigh.  A nice, coded-in-C implementation within each and every architecture
+remains the best implementation, and all the little tricks-to-save-typing
+have failure modes.
+
+otoh, if only one .c file will ever call this function then I think that
+all problems are solved by
+
+a) moving the above ifdeffery into the .c file
+b) adding a comment explaining which arch file must provide the override
+c) directly including that file from within the .c file.
 
