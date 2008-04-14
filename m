@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbYDNJDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbYDNJDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbYDNJDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYDNJDR
+	id S1754159AbYDNJDs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 05:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYDNJDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:03:17 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:49449 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbYDNJDQ (ORCPT
+	Mon, 14 Apr 2008 05:03:39 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:13097 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbYDNJDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:03:16 -0400
+	Mon, 14 Apr 2008 05:03:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KNKk+XGfsw45V0nf29ryifY1SneILXs5G7RBAuvvvCDy11q2PENAiDWiLzI3kof5impxUrGQz0465ZNouQVTAelzhDute2U9/l9DNffDHaGiGzeHLZr+MAiXbRaN6c2RJSeMoWO1YYk4XgiS86eHxBxY4pUVfY+oOVWUUpKbpA8=
-Message-ID: <5699f8f00804140203t6f22d25dp7bd5a0d26203dd1f@mail.gmail.com>
-Date: Mon, 14 Apr 2008 11:03:14 +0200
-From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
-To: "Alexia Death" <alexiadeath@gmail.com>
-Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <002401c89df5$f5dd2b80$087811ac@encnet.ead.ems>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=lFuhrgCe31BL9GDMGiUpPQrpIxChZKXOGdx6ZwPHkRSix0YoudLR361Y52ly19z7x9umk+8T6b0ZRpUL4MNGlz2SlfV+WaOoH0uoZ5baFDx0in6k4mY6xzls1lEUBNXja81TarBF8Jxvt2/CD5yaM7kzsgC5rdnqyvCutBeVho4=
+Message-ID: <48031CF0.5060409@gmail.com>
+Date: Mon, 14 Apr 2008 10:59:28 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch	fixes
+References: <48022990.3060104@gmail.com> <20080414072645.GG16163@elte.hu> <20080414084127.GA11372@uranus.ravnborg.org> <20080414085307.GG19865@elte.hu>
+In-Reply-To: <20080414085307.GG19865@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804132326.07713.alexiadeath@gmail.com>
-	 <200804140245.33171.arnd@arndb.de>
-	 <002401c89df5$f5dd2b80$087811ac@encnet.ead.ems>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 8:08 AM, Alexia Death <alexiadeath@gmail.com> wrote:
-> It seems  this issue is a "wont fix" even tho its quite common since its a
->  reader problem.
+Ingo Molnar pisze:
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+>>> hm, that's an interesting case: we need those annotations probably 
+>>> because gcc decided to not inline those functions. (this is possible 
+>>> via the new CONFIG_OPTIMIZE_INLINING=y option) Sam, what's your take 
+>>> on that?
+>> gcc uses different heuristics for inlining between the different 
+>> versions. Therefore to achieve somehow predictable results I added 
+>> -fno-inline-functions-called-once when CONFIG_DEBUG_SECTION_MISMATCH 
+>> is enabled.
+>>
+>> So in the above case for any normal kernel build we would see that gcc 
+>> inlined the above and everything is fine. But for the 
+>> CONFIG_DEBUG_SECTION_MISMTCH cases we do not inline and thus we see 
+>> that we have a section mismatch.
+> 
+> ah, ok. So i guess this will result in a few isolated cases of __init 
+> annotations added to inline functions - Jacek fixed one such case - but 
+> it should not result in the general spreading of __init annotations to 
+> inline functions, correct? (which i was worried about)
+> 
 
-There are a *LOT* of cardreaders that have a problem with larger cards.
-See the table on http://www.hjreggel.net/cardspeed/special-sd.html and
-notice the enormous amount of red colored cells (meaning failure)
+Yep, I was confused about that patch, thus I didn't sent it previously.
 
-Read the rest of http://www.hjreggel.net/cardspeed/ for a lot more
-info about cards and card readers.
+Hmm...I forgot that all my kernels where compiled with
+CONFIG_OPTIMIZE_INLINING=y. There's no mismatch warning printed while
+OPTIMIZE_INLINING is not set. Also I've made a fast look into objects and looks
+like those two functions are really inlined. I will also take a look on those
+functions with CONFIG_OPTIMIZE_INLINING=y && ONFIG_DEBUG_SECTION_MISMATCH=n.
 
-Wander.
+-Jacek
