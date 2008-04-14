@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbYDNSmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934334AbYDNSnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934243AbYDNSmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 14:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760901AbYDNSmE
+	id S934334AbYDNSnE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 14:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933391AbYDNSmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 14:42:04 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51076 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932867AbYDNSmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 14:42:01 -0400
-Date: Mon, 14 Apr 2008 21:40:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [2.6 patch] fs/partitions/acorn.c: remove dead code
-Message-ID: <20080414184055.GI6695@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 14 Apr 2008 14:42:07 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:34174 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933206AbYDNSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 14:42:05 -0400
+Date: Mon, 14 Apr 2008 13:42:03 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: boot cgroup questions
+Message-Id: <20080414134203.ea5a7de7.pj@sgi.com>
+In-Reply-To: <47FE5655.10900@qualcomm.com>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+	<20080312153712.bc5df7a1.pj@sgi.com>
+	<47D8593A.6040503@qualcomm.com>
+	<20080312183059.6716d630.pj@sgi.com>
+	<47D87BE5.4010702@qualcomm.com>
+	<20080313020300.92244956.pj@sgi.com>
+	<47FE5655.10900@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I missed this when I did the arm26 removal.
+Max K wrote:
+> I agree in general. In this particular case additional grouping introduces 
+> even more hierarchy. I seems to me that
+> 	"irqN -> cpu1, cpu2, cpu3"
+> is a very simple, straightforward relationship. Whereas
+> 	"irqN -> groupX"
+> 	"groupX -> cpu1"
+> 	"groupX -> cpu2"
+> 	"groupX -> cpu3"
+> Is not that straightforward.
 
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Clearly, yes, the first is simpler than the second.
 
----
+The question is which is correct.
 
-This patch has been sent on:
-- 31 Mar 2008
-- 1 Mar 2008
-
- fs/partitions/acorn.c |   10 ----------
- 1 file changed, 10 deletions(-)
-
-f7dc697bb2d04227b2f41a9d56f626fbd65c3d9d foobar
-diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
-index 3d3e166..a97b477 100644
---- a/fs/partitions/acorn.c
-+++ b/fs/partitions/acorn.c
-@@ -275,16 +275,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
- 	id = data[0x1fc] & 15;
- 	put_dev_sector(sect);
- 
--#ifdef CONFIG_BLK_DEV_MFM
--	if (MAJOR(bdev->bd_dev) == MFM_ACORN_MAJOR) {
--		extern void xd_set_geometry(struct block_device *,
--			unsigned char, unsigned char, unsigned int);
--		xd_set_geometry(bdev, dr->secspertrack, heads, 1);
--		invalidate_bh_lrus();
--		truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
--	}
--#endif
--
- 	/*
- 	 * Work out start of non-adfs partition.
- 	 */
-
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
