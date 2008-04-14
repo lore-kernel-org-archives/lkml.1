@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYDNJ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYDNKA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbYDNJ7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 05:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYDNJ6u
+	id S1754801AbYDNKA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYDNKAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 05:58:50 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53770 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbYDNJ6s (ORCPT
+	Mon, 14 Apr 2008 06:00:22 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:47626 "HELO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751745AbYDNKAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 05:58:48 -0400
-To: jamie@shareable.org
-CC: miklos@szeredi.hu, dwmw2@infradead.org, hch@infradead.org,
-       akpm@linux-foundation.org, me@bobcopeland.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20080414094215.GD2076@shareable.org> (message from Jamie Lokier
-	on Mon, 14 Apr 2008 10:42:15 +0100)
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com> <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414094215.GD2076@shareable.org>
-Message-Id: <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 14 Apr 2008 11:58:05 +0200
+	Mon, 14 Apr 2008 06:00:20 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-6.tower-164.messagelabs.com!1208167219!8602098!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Mon, 14 Apr 2008 12:00:15 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
+Message-ID: <20080414100015.GA19304@digi.com>
+References: <20080411062106.GA18096@digi.com> <20080411092158.GB31625@digi.com> <20080411103346.GC3185@local> <20080411110358.GC19973@digi.com> <20080411111703.GD3185@local> <20080411112543.GA23221@digi.com> <20080412131646.GF9669@flint.arm.linux.org.uk> <20080414074858.GA22694@digi.com> <20080414093714.GD1540@flint.arm.linux.org.uk> <20080414095445.GA19413@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080414095445.GA19413@digi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 14 Apr 2008 10:00:16.0278 (UTC) FILETIME=[56CCA360:01C89E16]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15848.006
+X-TM-AS-Result: No--9.797000-8.000000-2
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > And I didn't advocate moving
-> > ntfs to fuse, still that was done
-> 
-> Yes, that's quite annoying as FUSE doesn't work with my architecture,
-> so I can't use the only good NTFS driver.... grr! :-)
+Hello,
 
-I'm not quite getting this joke :)
+> This is completly independant of the inclusion of drivers/uio/Kconfig in
+> arch/arm/Kconfig.  I will send a patch for that.
+BTW: I just found
 
-> FUSE is great for user-mounted filesystems, though.  Having to use
-> "su" in shell scripts which modify loopback filesystems was always
-> very ugly.
-> 
-> I don't see why we need such a dichotomy, though.  The VFS API is
-> sensible enough that it should be possible to compile the same
-> filesystem code to run in kernel or in FUSE.
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core/uio-arch-arm-kconfig-make-uio-available-on-arm-architecture.patch
 
-Well, yeah:
+So obviously gkh looks for that issue.  In my eyes it should better go
+via rmk, but it doesn't really matter for me.  Should I still send a
+patch to the patch system?
 
-  http://lkml.org/lkml/2006/2/27/148
+Best regards
+Uwe
 
-Oh, you mean without having to run the whole kernel around the
-filesystem?  Well, that's a bit more tricky: filesystems use not just
-the VFS API, but the block, VM, SLAB, etc. APIs as well.  Porting all
-of these to userspace and keeping them in sync with the kernel changes
-doesn't sound much fun.
-
-Miklos
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
