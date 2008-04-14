@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761348AbYDNPFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbYDNPH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761348AbYDNPFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 11:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbYDNPFr
+	id S1761490AbYDNPH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 11:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbYDNPHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 11:05:47 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:48036 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753566AbYDNPFq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 11:05:46 -0400
-Date: Mon, 14 Apr 2008 11:03:58 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] uml: compile error fix
-Message-ID: <20080414150358.GD7186@c2.user-mode-linux.org>
-References: <20080412.174733.133433510.xiyou.wangcong@gmail.com>
+	Mon, 14 Apr 2008 11:07:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43182 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755423AbYDNPHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 11:07:18 -0400
+Date: Mon, 14 Apr 2008 17:07:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] scheduler fix
+Message-ID: <20080414150700.GA14195@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080412.174733.133433510.xiyou.wangcong@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0426]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 12, 2008 at 05:47:33PM +0800, WANG Cong wrote:
-> 
-> This patch fixes this error:
-> 
->   CC      arch/um/kernel/smp.o
-> In file included from /home/wangcong/projects/linux-2.6/arch/um/kernel/smp.c:9:
-> include2/asm/tlb.h: In function ‘tlb_remove_page’:
-> include2/asm/tlb.h:101: error: implicit declaration of function ‘page_cache_release’
-> make[2]: *** [arch/um/kernel/smp.o] Error 1
-> make[1]: *** [arch/um/kernel] Error 2
-> make: *** [sub-make] Error 2
-> 
-> And since including <linux/pagemap.h> in <linux/swap.h> will break sparc,
-> we add this #include in uml's own header.
 
-Sigh, ACK.
+Linus, please pull the latest scheduler git tree from:
 
-I took a stab at fixing this problem for real a while ago by
-untangling the headers involved, but failed.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git for-linus
 
-	       	       		 Jeff
+it contains a single revert for an interactivity commit that has been 
+tracked down to cause audio skipping for some folks. We'll delay that 
+change to v2.6.26 instead. Thanks,
 
--- 
-Work email - jdike at linux dot intel dot com
+	Ingo
+
+------------------>
+Ingo Molnar (1):
+      revert "sched: fix fair sleepers"
+
+ kernel/sched_fair.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 86a9337..0080968 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -510,10 +510,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 
+ 	if (!initial) {
+ 		/* sleeps upto a single latency don't count. */
+-		if (sched_feat(NEW_FAIR_SLEEPERS)) {
+-			vruntime -= calc_delta_fair(sysctl_sched_latency,
+-						    &cfs_rq->load);
+-		}
++		if (sched_feat(NEW_FAIR_SLEEPERS))
++			vruntime -= sysctl_sched_latency;
+ 
+ 		/* ensure we never gain time by being placed backwards. */
+ 		vruntime = max_vruntime(se->vruntime, vruntime);
