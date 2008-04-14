@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYDNKIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYDNKKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbYDNKIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbYDNKH6
+	id S1754242AbYDNKKR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 06:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYDNKKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:07:58 -0400
-Received: from 1wt.eu ([62.212.114.60]:3093 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbYDNKH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:07:58 -0400
-Date: Mon, 14 Apr 2008 12:00:18 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080414100018.GA10378@1wt.eu>
-References: <47FEADCB.7070104@rtr.ca> <22880.1207943922@turing-police.cc.vt.edu> <47FFE5DA.8000709@imap.cc> <200804132040.12138.rjw@sisk.pl> <20080413184730.GD8474@1wt.eu> <874pa4wyfj.fsf@basil.nowhere.org>
+	Mon, 14 Apr 2008 06:10:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51694 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbYDNKKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 06:10:01 -0400
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Xavier Bestel <xavier.bestel@free.fr>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080414022108.92ce9b1d.akpm@linux-foundation.org>
+References: <20080413080130.GA9622@infradead.org>
+	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
+	 <20080413082815.GA20108@infradead.org>
+	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	 <1208121358.2700.4.camel@shinybook.infradead.org>
+	 <20080413154459.4b2f125d.akpm@linux-foundation.org>
+	 <20080413234920.63711ca7@core>
+	 <20080413161014.cb06964c.akpm@linux-foundation.org>
+	 <1208161859.3596.75.camel@skunk.anacadf.mentorg.com>
+	 <20080414014445.5b4a7b22.akpm@linux-foundation.org>
+	 <20080414090945.GA18494@infradead.org>
+	 <20080414022108.92ce9b1d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 11:09:46 +0100
+Message-Id: <1208167786.31695.34.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874pa4wyfj.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 11:58:08AM +0200, Andi Kleen wrote:
-> Willy Tarreau <w@1wt.eu> writes:
+On Mon, 2008-04-14 at 02:21 -0700, Andrew Morton wrote:
+> On Mon, 14 Apr 2008 05:09:45 -0400 Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> > Linux is the *only* product which requires
-> > the bug reporter to find the fault change (yes, I know, it's scalable).
+> > the lastet crap code from the corporate drones.
 > 
-> It's a pretty common procedure for compilers (gcc, llvm) too, although
-> they have the advantage that given a test case usually someone else
-> can run the bisect procedure because they do not depend on the underlying
-> hardware 
-> 
-> That's unfortunately not the case for most kernel bugs, although
-> sometimes it is possible given a hardware independent test case. And
-> while most of the kernel code is drivers and arch, a lot of it is
-> still pretty hardware independent, so at least in some cases it is
-> possible to submit test cases and then let someone else (like a bug
-> master) do the bisect.
-> 
-> Of course it is unclear if producing a submittable test case will be
-> actually any faster than just running bisect for the user.
-> 
-> That said I agree it's a big burden to run bisect for everything
-> because it can take very long (especially if the problem
-> is not trivially reproducable) 
-> 
-> It would be fair at least if maintainers always gave some candidate
-> commit ids when asking for bisect for likely changes that could
-> have matched the bug.  Then those could be checked quickly first
-> before doing the full run.
-> 
-> While that will not always work it would be still a useful short cut
-> and save a lot of time for the reporter.
+> That's about the fourth time you've made this assertion.  It is pointless,
+> it is of no use to anyone and it is unjustly insulting to a large number of
+> kernel developers.  
 
-And most of all, the reporter would not feel like the bisection is
-the default response !
+No, it isn't. Christoph can be insulting sometimes, but that wasn't it.
 
-> -Andi
+Anyone who thinks that Christoph was referring to them obviously
+identifies _themselves_ as 'corporate drone who posts crap code'.
+Why is it insulting for Christoph to opine that his time is better spent
+on reviewing something fun?
 
-Willy
+I find it extremely annoying when people claim offence on behalf of
+unspecified third parties, when no real adult actually _is_ so wet as to
+have actually been offended.
+
+> If you have issues with certain parts of the kernel code then tell us, with
+> a usable level of detail what they are.  Preferably as a reply-to-all prior
+> to that code being merged, but after merging is fine too.
+
+As if Christoph needs encouragement to do just that... :)
+
+-- 
+dwmw2
 
