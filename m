@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbYDNNth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbYDNNug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbYDNNth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 09:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760019AbYDNNtR
+	id S1760269AbYDNNug (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 09:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbYDNNu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 09:49:17 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47973 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759951AbYDNNtP (ORCPT
+	Mon, 14 Apr 2008 09:50:26 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:33518 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbYDNNuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 09:49:15 -0400
-Date: Mon, 14 Apr 2008 07:48:58 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080414134858.GV11962@parisc-linux.org>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp> <20080404122408.986477936@I-love.SAKURA.ne.jp> <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp> <20080411143013.GB11962@parisc-linux.org> <4802B63F.2010804@crispincowan.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4802B63F.2010804@crispincowan.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 14 Apr 2008 09:50:25 -0400
+Date: Mon, 14 Apr 2008 22:52:09 +0900 (JST)
+Message-Id: <20080414.225209.92939349.yoshfuji@linux-ipv6.org>
+To: ramirose@gmail.com
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH net-2.6.26] [IPV6] Return NET_RX_DROP when a packet is
+ dropped in ipv6_rcv().
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <eb3ff54b0804140615u3dd4549fie83ae6818c33beba@mail.gmail.com>
+References: <eb3ff54b0804140615u3dd4549fie83ae6818c33beba@mail.gmail.com>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 06:41:19PM -0700, Crispin Cowan wrote:
-> You are discussing a straw-man, because AppArmor (and I think TOMOYO) do 
-> not operate that way.
+In article <eb3ff54b0804140615u3dd4549fie83ae6818c33beba@mail.gmail.com> (at Mon, 14 Apr 2008 16:15:54 +0300), "Rami Rosen" <ramirose@gmail.com> says:
 
-Thanks for clarifying that.  I had to put a straw-man up for discussion
-because nobody else had.  I'll continue this discussion in terms of
-allow-rules.
+> Hi,
+> - The IPv6 handler for receiving packets is ipv6_rcv() in net/ipv6/ip6_input.c.
+> It is called by netif_receive_skb() (net/core/dev.c)
+> According to the documentation, the return value of netif_receive_skb() should
+> be NET_RX_DROP when the packet is dropped; though this return value
+> is usually not used (except maybe for congestion), this patch fixes the
+> ipv6_rcv() to return NET_RX_DROP when the packet is dropped (note that
+> NET_RX_DROP value **is not** 0 but 1; NET_RX_SUCCESS value is in fact	0).
 
-> Rather, it is "can write to /tmp/ntpd/*". You *grant* permissions. You 
-> do *not* throw deny rules.
+Well yes, and I think we should fix other paths as well, right?
+So, I'm going to defer this for now.
 
-So primarily we're concerned here with things that are running as root,
-daemons and the like.  Normal unix file permissions (or ACLs, if you
-must) are adequate to handle anything not running as uid 0.
-
-I don't see what apparmour and tomoya buy us that namespaces can't.
-Maybe a nicer interface, but that's something that a nice userspace
-management interface can handle.
-
-Create an empty namespace.  Create /tmp/ntpd in it.  Bind the outside
-/tmp/ntpd onto that directory.  Presto, the equivalent to an allow-rule
-of 'can write to /tmp/ntpd/*'.
-
-The equivalent of 'can read, but not write /home/crispin/.ssh/id_rsa.pub'
-will need r-o bind mounts, which Miklos seems to have become distracted
-from by working on the hooks for TOMOYA.
-
-Do you have a good example of something that apparmour can protect against
-that namespaces can't?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--yoshfuji
