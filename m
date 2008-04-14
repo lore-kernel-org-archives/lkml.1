@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbYDNOyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbYDNOyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbYDNOyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 10:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYDNOyM
+	id S1761355AbYDNOyq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 10:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbYDNOyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 10:54:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54473 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752195AbYDNOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 10:54:11 -0400
-Date: Mon, 14 Apr 2008 10:53:23 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nickpiggin@yahoo.com.au,
-       k-miyoshi@cb.jp.nec.com, greg@kroah.com,
-       Bernhard Walle <bwalle@suse.de>, kdb@oss.sgi.com,
-       kexec@lists.infradead.org, Takenori Nagano <t-nagano@ah.jp.nec.com>,
-       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Keith Owens <kaos@ocs.com.au>
-Subject: Re: [PATCH 0/2] add new notifier function ,take3
-Message-ID: <20080414145323.GE6941@redhat.com>
-References: <47FF190B.6030406@ah.jp.nec.com> <20080411210751.e4a468b2.akpm@linux-foundation.org> <20080414134622.GB6941@redhat.com> <20080414144228.GD1193@hmsendeavour.rdu.redhat.com>
+	Mon, 14 Apr 2008 10:54:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:48945 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759406AbYDNOyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 10:54:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=DOByJnWupyyANm6K9ad+8GmoKC6Ecjc+LtMo4W5JMBkOpUCv8KnMhfIjmtLnGW1vS67cKH3yyOZiDlyUCFmxUnvCZkgaR2OrOiOOgsbPSHq8WAyfESbGpMxLxYwjf7GD2fhY0askjZFBqukmlgvj8jZ+eA4W801WTd+YqMu1Buo=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "Denis V. Lunev" <den@openvz.org>
+Subject: Re: Does process need to have a kernel-side stack all the time?
+Date: Mon, 14 Apr 2008 16:54:22 +0200
+User-Agent: KMail/1.8.2
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <200804141547.57719.vda.linux@googlemail.com> <1208182649.7688.7.camel@iris.sw.ru>
+In-Reply-To: <1208182649.7688.7.camel@iris.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080414144228.GD1193@hmsendeavour.rdu.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804141654.22513.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 10:42:28AM -0400, Neil Horman wrote:
-> On Mon, Apr 14, 2008 at 09:46:22AM -0400, Vivek Goyal wrote:
-> > On Fri, Apr 11, 2008 at 09:07:51PM -0700, Andrew Morton wrote:
+On Monday 14 April 2008 16:17, Denis V. Lunev wrote:
+> On Mon, 2008-04-14 at 15:47 +0200, Denys Vlasenko wrote:
+> > Currently, when process sleeps, we save some
+> > state in stack, and such a change may require
+> > some substantial surgery.
 > > 
-> > [..]
-> > > > Kernel panic - not syncing: Panic by panic_module.
-> > > > __tunable_atomic_notifier_call_chain enter
-> > > > msg_handler:panic_event was called.
-> > > > ipmi_wdog:wdog_panic_handler was called.
-> > > > notifier_test: notifier_test_panic() is called.
-> > > > notifier_test: notifier_test_panic2() is called.
-> > > 
-> > > OK.  But I don't see anywhere in here the most important piece of
-> > > information: why do we need this feature in Linux?
-> > > 
-> > > What are the use-cases?  What is the value?  etc.
-> > > 
-> > > Often I can guess (but I like the originator to remove the guesswork).  In
-> > > this case I'm stumped - I can't see any reason why anyone would want this.
-> > > 
-> > 
-> > Hi Andrew,
-> > 
-> > To begin with, he wants kdb, kgdb etc to co-exist with kdump. He wants
-> > to put all the RAS tools (who are interested in panic event) on a list
-> > and export it to user space and let user decide in what order do the tool get
-> > executed at panic time (based on priority).
-> > 
-> > This brings in little bit reliability concerns for kdump due to notifier
-> > code being run after panic.
-> > 
-> > I think people want to use this infrastrutucure beyond RAS tools. I
-> > remember somebody wanting to send a message to remote node after a
-> > panic (before kdump kicks in)  so that remote node can initiate failover
-> > etc.
-> > 
-> I know it doesn't particularly relate to this patch, but FWIW, for cases like
-> failover, I've inserted infrastrucutre in the userspace part of kdump for
-> Fedora/RHEL to support this sort of thing.  We can run arbitrary scripts righte
-> before and after a capture so that notifications can be sent to remote nodes in
-> a much safer fashion than using the notifier chain after a panic.
-> Neil
+> > Can you tell me whether this is possible at all,
+> > and how difficult you estimate it to be?
 > 
+> I do not think that this can help. Usually, the process (thread) invokes
+> some syscall like sleep and goes to the waiting state _from the kernel_,
+> i.e. the kernel stack is used at that moment and will be required during
+> wake up.
 
-That's great. I did not know about these. So user can write custom
-scripts/binaries which can be packed into kdump initrd and executed either
-before or after dump capture? Any idea, if somebody has started using it
-already?
+See my quote above. That's exactly what I said. This is how it currently
+works.
 
-If that's the case then only other serious user at this point of time
-is kernel debugger (kdb, kgdb), which needs to run before kdump, in case
-of panic. And Eric suggested for those cases debugger can just insert a 
-break point at panic(), instead of introducing the tunable notifier list
-infrastructure.
-
-Thanks
-Vivek
+But do you really need 4k to remember that "this thread went to sleep by
+executing sleep(60)"? Theoretically, you may get away with much smaller
+save area to remember that, and be able to wake up and return to userspace.
+--
+vda
