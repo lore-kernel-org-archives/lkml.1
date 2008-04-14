@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYDNH0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbYDNH1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbYDNH0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYDNH0H
+	id S1760091AbYDNH1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbYDNH0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:26:07 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:37846 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755235AbYDNH0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:26:06 -0400
-To: dwmw2@infradead.org
-CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
-       me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <1208121358.2700.4.camel@shinybook.infradead.org> (message from
-	David Woodhouse on Sun, 13 Apr 2008 22:15:58 +0100)
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
-	 <20080412170304.54f139e2.akpm@linux-foundation.org>
-	 <20080413033344.GA27494@hash.localnet>
-	 <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	 <20080413080130.GA9622@infradead.org>
-	 <20080413012001.8d7967f4.akpm@linux-foundation.org>
-	 <20080413082815.GA20108@infradead.org>
-	 <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org>
-Message-Id: <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 14 Apr 2008 09:25:46 +0200
+	Mon, 14 Apr 2008 03:26:54 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49485 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755235AbYDNH0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:26:53 -0400
+Message-ID: <480306A4.8080700@cn.fujitsu.com>
+Date: Mon, 14 Apr 2008 15:24:20 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: fix oops in oom handling
+References: <4802FF10.6030905@cn.fujitsu.com> <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080414161428.27f3ee59.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 2008-04-13 at 12:37 +0200, Miklos Szeredi wrote:
-> > There's one thing which makes fuse a slightly better candidate for
-> > applications where the number of users is low: stability.  Unless you
-> > or your users test the hell out of your filesystem, there always a
-> > chance that some bugs will remain.  These rarely bring down the whole
-> > system, but it usually requires a reboot to let you continue using the
-> > Oopsing fs.
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 14 Apr 2008 14:52:00 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> It's reproducable in a x86_64 box, but doesn't happen in x86_32.
+>>
+>> This is because tsk->sighand is not guarded by RCU, so we have to
+>> hold tasklist_lock, just as what out_of_memory() does.
+>>
 > 
-> I think it's a slippery slope from that to rewriting Linux as a
-> microkernel.
+> Good catch! and patch seems good.
+> 
+> Paul, I have one confirmation. Lock hierarchy of
+> 	cgroup_lock()
+> 	->	read_lock(&tasklist_lock)
+> 
+> is ok ? (I think this is ok.)
+> 
 
-You say that as if a microkernel had _no_ advantages.  Which isn't
-true: it's just a trade between performance and encapsulation.  What I
-was saying, that if there are few users, and so the tester base is
-limited, then they _might_ just be better off with a slower, but more
-stable solution.
+I think so, because we used to have this in cgroup:
 
-I'm not advocating moving ext3 to fuse.  And I didn't advocate moving
-ntfs to fuse, still that was done and the resulting filesystem at the
-moment happens to outperform the kernel one in every respect ;)
+mutex_lock(&cgroup_mutex);
+  -> attach_task_by_pid()
+       -> read_lock(&tasklist_lock)
 
-Miklos
+But afte some time, some uses of tasklist_lock is replaced by rcu.
+
+> Thanks,
+> -Kame
+> 
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu>
+>> ---
+>>  mm/oom_kill.c |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+>> index f255eda..beb592f 100644
+>> --- a/mm/oom_kill.c
+>> +++ b/mm/oom_kill.c
+>> @@ -423,7 +423,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+>>  	struct task_struct *p;
+>>  
+>>  	cgroup_lock();
+>> -	rcu_read_lock();
+>> +	read_lock(&tasklist_lock);
+>>  retry:
+>>  	p = select_bad_process(&points, mem);
+>>  	if (PTR_ERR(p) == -1UL)
+>> @@ -436,7 +436,7 @@ retry:
+>>  				"Memory cgroup out of memory"))
+>>  		goto retry;
+>>  out:
+>> -	rcu_read_unlock();
+>> +	read_unlock(&tasklist_lock);
+>>  	cgroup_unlock();
+>>  }
+>>  #endif
+>> -- 1.5.4.rc3 
+>>
+>>
+>>
+>>
+> 
