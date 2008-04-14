@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbYDNHQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbYDNHQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759732AbYDNHQI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 03:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbYDNHP4
+	id S1759928AbYDNHQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 03:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759715AbYDNHQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 03:15:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47733 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754324AbYDNHPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 03:15:55 -0400
-Date: Mon, 14 Apr 2008 09:15:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10427] e1000e broke e1000
-Message-ID: <20080414071546.GD16163@elte.hu>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <oq66hWjeF4N.A.VR.Q3lAIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <oq66hWjeF4N.A.VR.Q3lAIB@albercik>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 14 Apr 2008 03:16:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49750 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759669AbYDNHQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 03:16:05 -0400
+Subject: Re: [PATCH 00/13] Re: Scalability requirements for sysv ipc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: efault@gmx.de, manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org, xemul@openvz.org
+In-Reply-To: <4802E93E.4090205@bull.net>
+References: <20080411161702.460410000@bull.net>
+	 <1207931235.7157.0.camel@twins>  <4802E93E.4090205@bull.net>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 09:15:59 +0200
+Message-Id: <1208157359.7427.25.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Mon, 2008-04-14 at 07:18 +0200, Nadia Derbey wrote:
+> Peter Zijlstra wrote:
+> > On Fri, 2008-04-11 at 18:17 +0200, Nadia.Derbey@bull.net wrote:
+> > 
+> >>Here is finally the ipc ridr-based implementation I was talking about last
+> >>week (see http://lkml.org/lkml/2008/4/4/208).
+> >>I couldn't avoid much of the code duplication, but at least made things
+> >>incremental.
+> >>
+> >>Does somebody now a test suite that exists for the idr API, that I could
+> >>run on this new api?
+> >>
+> >>Mike, can you try to run it on your victim: I had such a hard time building
+> >>this patch, that I couldn't re-run the test on my 8-core with this new
+> >>version. So the last results I have are for 2.6.25-rc3-mm1.
+> >>
+> >>Also, I think a careful review should be done to avoid introducing yet other
+> >>problems :-(
+> > 
+> > 
+> > Why duplicate the whole thing, when we converted the Radix tree to be
+> > RCU safe we did it in-place. Is there a reason this is not done for idr?
+> > 
+> > 
+> > 
 > 
-> The following bug entry is on the current list of known regressions 
-> from 2.6.24.  Please verify if it still should be listed.
+> I did that because I wanted to go fast and try to fix the performance 
+> problem we have with sysV ipc's. I didn't want to introduce (yet other) 
+> regressions in the code that uses idr's today and that works well ;-)
+> May be in the future if this rcu based api appears to be ok, we can 
+> replace one with the other?
 
-yes, it still occurs.
+>From what I can see the API doesn't change at all, so I don't see why
+you need to duplicate - either the new code works as expected or its
+broken. If it works its good enough for all IDR users, if its broken we
+should fix it. Seems simple enough.. am I missing something obvious?
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10427
-> Subject		: e1000e broke e1000
-> Submitter	: Ingo Molnar <mingo@elte.hu>
-> Date		: 2008-04-08 20:39 (6 days old)
-> References	: http://lkml.org/lkml/2008/4/8/256
-> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=15704&amp;action=view
+
