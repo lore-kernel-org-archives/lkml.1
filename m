@@ -1,111 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYDNLUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYDNLZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYDNLUf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 07:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYDNLU1
+	id S1756483AbYDNLZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 07:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYDNLY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 07:20:27 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:14751 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752812AbYDNLU1 (ORCPT
+	Mon, 14 Apr 2008 07:24:59 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:31394 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbYDNLY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 07:20:27 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-11.tower-29.messagelabs.com!1208172026!921749!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Mon, 14 Apr 2008 13:20:21 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: [PATCH 4/4 v2] [RFC] UIO: generic platform driver
-Message-ID: <20080414112021.GA19986@digi.com>
-References: <20080411092158.GB31625@digi.com> <20080411103346.GC3185@local> <20080411110358.GC19973@digi.com> <20080411111703.GD3185@local> <20080411112543.GA23221@digi.com> <20080412131646.GF9669@flint.arm.linux.org.uk> <20080414074858.GA22694@digi.com> <20080414093714.GD1540@flint.arm.linux.org.uk> <20080414095445.GA19413@digi.com> <20080414101701.GE1540@flint.arm.linux.org.uk>
+	Mon, 14 Apr 2008 07:24:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=l2boMnyEcLG4SUeTcnAvGQM2g5jhtvybEx4GViOce1gI4HQmFEv/7XtguU+LajiQYPeMTU+K5QSfd4HQ1/yfWx/jlpa/wLUdmVgKoq+tmQj5RRbuzISvzJkAvU2KpimobRiH2AIrmUV/CRtAvjmDp2dEXDIE5/xzmzbnsBAH4DA=
+Message-ID: <48033E2C.2080504@gmail.com>
+Date: Mon, 14 Apr 2008 13:21:16 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080414101701.GE1540@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 14 Apr 2008 11:20:22.0981 (UTC) FILETIME=[87D14F50:01C89E21]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15848.006
-X-TM-AS-Result: No--19.965000-8.000000-1
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: pgtable_32.h - prototype and section mismatch fixes
+References: <48022990.3060104@gmail.com> <20080414072645.GG16163@elte.hu> <20080414084127.GA11372@uranus.ravnborg.org> <20080414085307.GG19865@elte.hu> <20080414085927.GC11372@uranus.ravnborg.org> <48031FA7.9050803@gmail.com> <20080414095259.GA11966@uranus.ravnborg.org>
+In-Reply-To: <20080414095259.GA11966@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Russell,
-
-> > > What's this drivers/uio/uio_pdrv.ko module, and why doesn't it appear
-> > > in the LKML archive of this thread?
-> > Don't know why lkml.org didn't link these.  The start of the thread can
-> > be found at
-> > 
-> > 	http://lkml.org/lkml/2008/4/10/110
+Sam Ravnborg pisze:
+> On Mon, Apr 14, 2008 at 11:11:03AM +0200, Jacek Luczak wrote:
+>> Sam Ravnborg pisze:
+>>> On Mon, Apr 14, 2008 at 10:53:07AM +0200, Ingo Molnar wrote:
+>>>> * Sam Ravnborg <sam@ravnborg.org> wrote:
+>>>>
+>>>>>> hm, that's an interesting case: we need those annotations probably 
+>>>>>> because gcc decided to not inline those functions. (this is possible 
+>>>>>> via the new CONFIG_OPTIMIZE_INLINING=y option) Sam, what's your take 
+>>>>>> on that?
+>>>>> gcc uses different heuristics for inlining between the different 
+>>>>> versions. Therefore to achieve somehow predictable results I added 
+>>>>> -fno-inline-functions-called-once when CONFIG_DEBUG_SECTION_MISMATCH 
+>>>>> is enabled.
+>>>>>
+>>>>> So in the above case for any normal kernel build we would see that gcc 
+>>>>> inlined the above and everything is fine. But for the 
+>>>>> CONFIG_DEBUG_SECTION_MISMTCH cases we do not inline and thus we see 
+>>>>> that we have a section mismatch.
+>>>> ah, ok. So i guess this will result in a few isolated cases of __init 
+>>>> annotations added to inline functions - Jacek fixed one such case - but 
+>>>> it should not result in the general spreading of __init annotations to 
+>>>> inline functions, correct? (which i was worried about)
+>>> I do not think so. The need for small isolated inline functions
+>>> in the init paths are minimal and last I did a section mismatch free
+>>> sweep on the kernel it was only few if any inline functions(*) I had
+>>> to annotate.
+>>>
+>>> (*) Considering only the minimal amount of function that ought
+>>> to be annotated inlined.
+>> There's a lot of inline __init functions already - which, on the other hand
+>> should not result in more of such. Attached you can find grep on tree which
+>> shows all inline __init functions (you won't find my paravirt_pagetable_setup_*
+>> functions in output as I removed __init for test).
 > 
-> Thanks.  Well, tbh, I don't know which way to go on this.  Each of the
-> suggested ways have their downsides.
-> 
-> However:
-> 
-> +       pdata->clk = clk_get(&pdev->dev, DRIVER_NAME);
-> 
-> seems wrong - "uio" as a clock name?
-What do you suggest?  "uioclk"?
- 
-> +               /* XXX: better use dev_dbg, but which device should I use?
-> +                * info->uio_dev->dev isn't accessible here as struct uio_device
-> +                * is opaque.
-> +                */
-> 
-> why not store a copy of 'dev' in struct uio_platdata ?
-I don't like increasing the size of struct uio_platdata only for a debug
-helper.  In most cases pr_debug (or dev_dbg) compiles to nothing.
-Maybe the easiest way is to remove that debug statement.
+> Most of the functionas listed should never have been annotated inline.
+> If you filter aways the functions that are in one one of their
+> incarnations longer than 8 lines or are located in a .c file the list
+> is much shorter. This is the real candidates (the figure '8' is just bad way
+> to filter away 'complex' functions).
+> Your paravirt_pagetable_setup_done is a real one btw.
 
-> +       uiomem = &uioinfo->mem[0];
-> +       for (i = 0; i < pdev->num_resources; ++i) {
-> ...
-> +               ++uiomem;
-> +       }
-> 
-> Who's to say there's pdev->num_resources entries in the 'mem' array?
-The code you skipped with ... from that loop includes
+It's worth of closer investigation I think.
 
-	if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
-		dev_warn(&pdev->dev, "...");
-		break;
-	}
+>> Sam, do -fno-inline-functions-called-once could affect
+>> paravirt_pagetable_setup_done? In general there was no section mismatch warning
+>> for this function, but I've annotated it also.
+> Most liekly yes - but I did not check.
 
-that should take care of that.  In v2 of this patch the remaining
-entries are disabled by .size = 0.
+GCC is ok, I mean it inlines paravirt_pagetable_setup_[start,done] even with
+CONFIG_OPTIMIZE_INLINING=y:
+$ objdump -t vmlinux.o | grep pagetable_setup_start
+0000a418 g     F .init.text     000000a1 native_pagetable_setup_start
 
-> Shouldn't this loop also be limited to MAX_UIO_MAPS iterations (or
-> maybe complain if there's more than MAX_UIO_MAPS)?
-> 
-> +/* XXX: I thought there already exists something like STRINGIFY, but I could not
-> + * find it ...
-> + */
-> +#ifndef STRINGIFY
-> +#define STRINGIFY(x) __STRINGIFY_HELPER(x)
-> +#define __STRINGIFY_HELPER(x) #x
-> +#endif
-> 
-> #include <linux/stringify.h> ?
-If you look at the v2 patch[1] I found that in the mean time.  Thanks
-all the same.
+While running with CONFIG_DEBUG_SECTION_MISMTCH=y it does not inline
+paravirt_pagetable_setup_start (_done is OK):
+$ objdump -t vmlinux.o | grep pagetable_setup_start
+00017100 l     F .text  0000000b paravirt_pagetable_setup_start
+00009fb0 g     F .init.text     00000089 native_pagetable_setup_start
 
-Best regards and thanks for your review,
-Uwe
+DEBUG_SECTION_MISMATCH probably generated mismatch with smpboot_setup_io_apic()
+(commit: 96c968742fa1e6d64f979464acf2fd90cdc117b3, already merged). I will check
+and if __init is really superfluous I will post delta patch to remove all those
+__init annotations.
 
-[1] http://lkml.org/lkml/2008/4/11/81 or
-http://thread.gmane.org/gmane.linux.kernel/665257
+Similar situation might be found with unlock_ExtINT_logic()
+(arch/x86/kernel/io_apic_32.c), which I annotated with __init in one of previous
+patches, but here, this function IMO shouldn't be marked inline.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+-Jacek
