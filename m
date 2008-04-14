@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbYDNK7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYDNLDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbYDNK7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 06:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYDNK7a
+	id S1756535AbYDNLDi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 07:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYDNLDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 06:59:30 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:41028 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbYDNK7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 06:59:30 -0400
-Date: Mon, 14 Apr 2008 12:58:30 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: benh@kernel.crashing.org
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pci: add to global list before sysfs?
-Message-ID: <20080414125830.6c2211bf@mjolnir.drzeus.cx>
-In-Reply-To: <1208163516.6958.155.camel@pasglop>
-References: <20080404191350.7f0183a5@mjolnir.drzeus.cx>
-	<20080404210132.GA14418@suse.de>
-	<20080405115727.1265e8a9@mjolnir.drzeus.cx>
-	<20080405155323.GA27252@suse.de>
-	<20080405185501.41ec42a7@mjolnir.drzeus.cx>
-	<1208122634.6958.59.camel@pasglop>
-	<20080414103504.24025b44@mjolnir.drzeus.cx>
-	<1208163516.6958.155.camel@pasglop>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Apr 2008 07:03:30 -0400
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:33296 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1752126AbYDNLDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 07:03:30 -0400
+X-Spam-Check-By: mail.local.tull.net
+Date: Mon, 14 Apr 2008 21:03:16 +1000
+From: Nick Andrew <nick@nick-andrew.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       joe@perches.com
+Subject: Re: [PATCH 2/2] printk: Remember the message level for multi-line	output
+Message-ID: <20080414110316.GJ29599@tull.net>
+References: <20080413115152.29086.37845.stgit@marcab.local.tull.net> <20080413122735.31769.17716.stgit@marcab.local.tull.net> <20080414080351.GL16163@elte.hu> <20080414101200.GH29599@tull.net> <20080414102634.GA20649@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414102634.GA20649@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 18:58:36 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> 
-> On Mon, 2008-04-14 at 10:35 +0200, Pierre Ossman wrote:
+On Mon, Apr 14, 2008 at 12:26:34PM +0200, Ingo Molnar wrote:
+> * Nick Andrew <nick@nick-andrew.net> wrote:
+> > Yes, quite. The state of whether we're inside a line is retained 
+> > across calls to printk (from anywhere in the system) - this allows 
+> > code like this to usually do what you expect:
 > > 
-> > Another solution presented itself, but do you have some pointers on
-> > where I get more information about the notifiers in case I need them
-> > in the future?
+> > 	printk(KERN_ERR "Error:");
+> > 	for (i = 0; i < 16; ++i) {
+> > 		printk("  %02x", i);
+> > 	}
+> > 	printk("\n");
+> > 
+> > But in your example the first printk call contains a \n at the end of 
+> > the line and so upon entry to the second printk call the function 
+> > knows a new line is beginning.
 > 
-> In device.h:
+> ok - i think your change is a good one.
+
+Thank you.
+
+> btw., we could also start emitting debug warnings that the printk is not 
+> conform. Something like:
 > 
+>   "INFO: the previous printk was done without a KERN_ annotation"
 
-*snip*
+There are 20k+ instances of this in the codebase; we don't need a
+runtime message to find them. If you annotate them all, that will
+add up to 60k to the binary size. Perhaps it's best to retain the
+default support.
 
-> 						      unbound */
-> Do you need more info ?
-> 
-
-That'll do fine. Thanks.
-
-Rgds
+Nick.
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
