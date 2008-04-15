@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbYDOKJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764070AbYDOKLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762229AbYDOKJI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 06:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYDOKI4
+	id S1764070AbYDOKLh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 06:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYDOKL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 06:08:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55184 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756292AbYDOKIz (ORCPT
+	Tue, 15 Apr 2008 06:11:29 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:13203 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbYDOKL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 06:08:55 -0400
-Date: Tue, 15 Apr 2008 11:04:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Frans Pop <elendil@planet.nl>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-Message-ID: <20080415110419.785a75ee@core>
-In-Reply-To: <480414E6.2090205@gmail.com>
-References: <200804021524.27222.elendil@planet.nl>
-	<200804021820.04610.elendil@planet.nl>
-	<20080402194938.GI24237@csclub.uwaterloo.ca>
-	<200804031947.07674.elendil@planet.nl>
-	<48017248.4030600@gmail.com>
-	<20080414134734.GB7385@csclub.uwaterloo.ca>
-	<20080414145302.4239b0b9@core>
-	<480414E6.2090205@gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 06:11:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=HId2hD40Hv+FcRhzm+EhYXGyHdROWOwGkZFBYQvd4vGzHq/Vg3E4QA4/xcv83jWZgkQtMQv+JDsoQs4ZZN9fAXOSXUhJp5rYbKe5pcj0oaRG7d7Er7UeisQlZCr32h6+OrvgProM+64fRB6CzvWTmyhaO9adZTjggKqzZPY2Y38=
+Date: Tue, 15 Apr 2008 14:11:13 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
+       paul@pwsan.com, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/5] Clocklib: add generic framework for managing
+	clocks.
+Message-ID: <20080415101113.GD7506@doriath.ww600.siemens.net>
+References: <20080413144138.GA31665@doriath.ww600.siemens.net> <20080413144312.GA1943@doriath.ww600.siemens.net> <20080414231330.b72cd746.akpm@linux-foundation.org> <20080415093451.GA6377@doriath.ww600.siemens.net> <20080415024743.51aeac8c.akpm@linux-foundation.org> <20080415095332.GB32652@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415095332.GB32652@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Always loading generic or ata_generic used to be safe.  It's still 
-> pretty safe but not as much as before.  Nowadays, there are good number 
+On Tue, Apr 15, 2008 at 11:53:32AM +0200, Pavel Machek wrote:
+> > On Tue, 15 Apr 2008 13:34:51 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+> > 
+> > > On Mon, Apr 14, 2008 at 11:13:30PM -0700, Andrew Morton wrote:
+> > > > On Sun, 13 Apr 2008 18:43:12 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+> > > > 
+> > > > > +#define FUNC_TO_CLK(func)	&(&(struct clk_function) func)->clk
+> > > > 
+> > > > scratched my head for a while, was unable to work out what this does.
+> > > > It is unused, so I think it can be zapped?
+> > > 
+> > > It take clk_function and returns pointer to the contained struct clk.
+> > 
+> > Then why does it cast a clk_function to a clk_function?
+> > 
+> > The innermost `&' hurts my brain.
+> 
+> Hmm, is that obfuscated way of writing
+> 
+> &(func.clk)
 
-ata_generic is always safe unless you force it to grab every class
-device. By default it grabs only those devices we know obey the class
-interface well enough and for which we have no proper driver (usually
-because there are no documents). Ditto for ide/pci/generic.
+Oops... Yes. Then it really can be dropped.
 
-The trickier one is pata_legacy, which tries to be smart and knows about
-the known exception so *should* always be safe. The old IDE legacy driver
-lacks these smarts so in some cases will do the wrong thing even if
-loaded last.
+> 
+> ?
+> 									Pavel
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Alan
+-- 
+With best wishes
+Dmitry
+
