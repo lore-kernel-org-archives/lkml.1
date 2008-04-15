@@ -1,465 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbYDUNWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbYDUNXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761543AbYDUNWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759920AbYDUNTD
+	id S932150AbYDUNXb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbYDUNTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:19:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:8449 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759728AbYDUNSy (ORCPT
+	Mon, 21 Apr 2008 09:19:06 -0400
+Received: from el-out-1112.google.com ([209.85.162.183]:25531 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759889AbYDUNS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:18:54 -0400
+	Mon, 21 Apr 2008 09:18:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:in-reply-to:references:date:subject:cc:from;
-        b=N0jBy4vJP3HE3LVE1dOvfQ5UnoYoPr4OaiiQTBF/CUmroTjsVVorgiJG9YaCZwHODMutP1mxaiCoj4RIEhzRxpO66h6P2zOCuV+IddjUTthewvAvkiFM0JSNNvEnCDz+R+ahj1Epu4TiIBrJtu8htAi8ISX24vmrPmMtOSJDY4w=
-Message-Id: <9f9439e92a7fb057d31a19636b99e43306192756.1208783694.git.dmitry.torokhov@gmail.com>
+        b=u3VcqJfw2Ny8UMoI2Gv5Oq2EJ7N4gY6i2k64L+kS6foZIT/pGlSsv+NEaJ42rYVpkyBJWYr7e8bm3rxsjEAtIT/t1nfulCRI/YOy5qmKahtmFcxiTrQSXmSxed2tlp2E6zZaGBA0PtfOn0YAC3lsNCV/cFFXb7yYhQjqghPDSAk=
+Message-Id: <da3e4c885e5ebbccc8181f53d8ae74c4c22d506f.1208783694.git.dmitry.torokhov@gmail.com>
 In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
 References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-Date: Tue, 15 Apr 2008 01:30:47 -0400
-Subject: [PATCH 22/37] Input: add PS/2 serio driver for AVR32 devices
+Date: Tue, 15 Apr 2008 01:31:33 -0400
+Subject: [PATCH 24/37] Input: omap-keypad - fix build warning
 Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-From: Hans-Christian Egtvedt <dmitry.torokhov@gmail.com>
+From: David Brownell <dmitry.torokhov@gmail.com>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the PSIF peripheral on AVR32 AP7 devices.  It is implemented
-as a serio driver and will behave like a serio 8042 device.
+Fix the following build warning:
 
-The driver has been tested with a Dell keyboard capable of running on 3.3
-volts and a Logitech mouse on the STK1000 + STK1002 starter kit.  The Logitech
-mouse was hacked by cutting the cord and using a bi-directional voltage
-converter to get the required 5 volt I/O level.
+drivers/input/keyboard/omap-keypad.c: In function 'omap_kp_probe':
+drivers/input/keyboard/omap-keypad.c:418: warning: 'row_idx' is used uninitialized in this function
+drivers/input/keyboard/omap-keypad.c:421: warning: 'col_idx' is used uninitialized in this function
 
-For more information about the PSIF module, see the datasheet for AT32AP700X at
-http://www.atmel.com/dyn/products/datasheets.asp?family_id=682
+These variables are useful when cpu_is_omap24xx(), and otherwise just
+for useless cleanup.
 
-Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
- drivers/input/serio/Kconfig    |   10 +
- drivers/input/serio/Makefile   |    1 +
- drivers/input/serio/at32psif.c |  375 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 386 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/serio/at32psif.c
+ drivers/input/keyboard/omap-keypad.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
-index b88569e..ec4b661 100644
---- a/drivers/input/serio/Kconfig
-+++ b/drivers/input/serio/Kconfig
-@@ -88,6 +88,16 @@ config SERIO_RPCKBD
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called rpckbd.
- 
-+config SERIO_AT32PSIF
-+	tristate "AVR32 PSIF PS/2 keyboard and mouse controller"
-+	depends on AVR32
-+	help
-+	  Say Y here if you want to use the PSIF peripheral on AVR32 devices
-+	  and connect a PS/2 keyboard and/or mouse to it.
-+
-+	  To compile this driver as a module, choose M here: the module will
-+	  be called at32psif.
-+
- config SERIO_AMBAKMI
- 	tristate "AMBA KMI keyboard controller"
- 	depends on ARM_AMBA
-diff --git a/drivers/input/serio/Makefile b/drivers/input/serio/Makefile
-index 4155197..38b8868 100644
---- a/drivers/input/serio/Makefile
-+++ b/drivers/input/serio/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_SERIO_CT82C710)	+= ct82c710.o
- obj-$(CONFIG_SERIO_RPCKBD)	+= rpckbd.o
- obj-$(CONFIG_SERIO_SA1111)	+= sa1111ps2.o
- obj-$(CONFIG_SERIO_AMBAKMI)	+= ambakmi.o
-+obj-$(CONFIG_SERIO_AT32PSIF)	+= at32psif.o
- obj-$(CONFIG_SERIO_Q40KBD)	+= q40kbd.o
- obj-$(CONFIG_SERIO_GSCPS2)	+= gscps2.o
- obj-$(CONFIG_HP_SDC)		+= hp_sdc.o
-diff --git a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
-new file mode 100644
-index 0000000..c267588
---- /dev/null
-+++ b/drivers/input/serio/at32psif.c
-@@ -0,0 +1,375 @@
-+/*
-+ * Copyright (C) 2007 Atmel Corporation
-+ *
-+ * Driver for the AT32AP700X PS/2 controller (PSIF).
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/serio.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/clk.h>
-+#include <linux/platform_device.h>
-+
-+/* PSIF register offsets */
-+#define PSIF_CR				0x00
-+#define PSIF_RHR			0x04
-+#define PSIF_THR			0x08
-+#define PSIF_SR				0x10
-+#define PSIF_IER			0x14
-+#define PSIF_IDR			0x18
-+#define PSIF_IMR			0x1c
-+#define PSIF_PSR			0x24
-+
-+/* Bitfields in control register. */
-+#define PSIF_CR_RXDIS_OFFSET		1
-+#define PSIF_CR_RXDIS_SIZE		1
-+#define PSIF_CR_RXEN_OFFSET		0
-+#define PSIF_CR_RXEN_SIZE		1
-+#define PSIF_CR_SWRST_OFFSET		15
-+#define PSIF_CR_SWRST_SIZE		1
-+#define PSIF_CR_TXDIS_OFFSET		9
-+#define PSIF_CR_TXDIS_SIZE		1
-+#define PSIF_CR_TXEN_OFFSET		8
-+#define PSIF_CR_TXEN_SIZE		1
-+
-+/* Bitfields in interrupt disable, enable, mask and status register. */
-+#define PSIF_NACK_OFFSET		8
-+#define PSIF_NACK_SIZE			1
-+#define PSIF_OVRUN_OFFSET		5
-+#define PSIF_OVRUN_SIZE			1
-+#define PSIF_PARITY_OFFSET		9
-+#define PSIF_PARITY_SIZE		1
-+#define PSIF_RXRDY_OFFSET		4
-+#define PSIF_RXRDY_SIZE			1
-+#define PSIF_TXEMPTY_OFFSET		1
-+#define PSIF_TXEMPTY_SIZE		1
-+#define PSIF_TXRDY_OFFSET		0
-+#define PSIF_TXRDY_SIZE			1
-+
-+/* Bitfields in prescale register. */
-+#define PSIF_PSR_PRSCV_OFFSET		0
-+#define PSIF_PSR_PRSCV_SIZE		12
-+
-+/* Bitfields in receive hold register. */
-+#define PSIF_RHR_RXDATA_OFFSET		0
-+#define PSIF_RHR_RXDATA_SIZE		8
-+
-+/* Bitfields in transmit hold register. */
-+#define PSIF_THR_TXDATA_OFFSET		0
-+#define PSIF_THR_TXDATA_SIZE		8
-+
-+/* Bit manipulation macros */
-+#define PSIF_BIT(name)					\
-+	(1 << PSIF_##name##_OFFSET)
-+
-+#define PSIF_BF(name, value)				\
-+	(((value) & ((1 << PSIF_##name##_SIZE) - 1))	\
-+	 << PSIF_##name##_OFFSET)
-+
-+#define PSIF_BFEXT(name, value)				\
-+	(((value) >> PSIF_##name##_OFFSET)		\
-+	 & ((1 << PSIF_##name##_SIZE) - 1))
-+
-+#define PSIF_BFINS(name, value, old)			\
-+	(((old) & ~(((1 << PSIF_##name##_SIZE) - 1)	\
-+		    << PSIF_##name##_OFFSET))		\
-+	 | PSIF_BF(name, value))
-+
-+/* Register access macros */
-+#define psif_readl(port, reg)				\
-+	__raw_readl((port)->regs + PSIF_##reg)
-+
-+#define psif_writel(port, reg, value)			\
-+	__raw_writel((value), (port)->regs + PSIF_##reg)
-+
-+struct psif {
-+	struct platform_device	*pdev;
-+	struct clk		*pclk;
-+	struct serio		*io;
-+	void __iomem		*regs;
-+	unsigned int		irq;
-+	unsigned int		open;
-+	/* Prevent concurrent writes to PSIF THR. */
-+	spinlock_t		lock;
-+};
-+
-+static irqreturn_t psif_interrupt(int irq, void *_ptr)
-+{
-+	struct psif *psif = _ptr;
-+	int retval = IRQ_NONE;
-+	unsigned int io_flags = 0;
-+	unsigned long status;
-+
-+	status = psif_readl(psif, SR);
-+
-+	if (status & PSIF_BIT(RXRDY)) {
-+		unsigned char val = (unsigned char) psif_readl(psif, RHR);
-+
-+		if (status & PSIF_BIT(PARITY))
-+			io_flags |= SERIO_PARITY;
-+		if (status & PSIF_BIT(OVRUN))
-+			dev_err(&psif->pdev->dev, "overrun read error\n");
-+
-+		serio_interrupt(psif->io, val, io_flags);
-+
-+		retval = IRQ_HANDLED;
-+	}
-+
-+	return retval;
-+}
-+
-+static int psif_write(struct serio *io, unsigned char val)
-+{
-+	struct psif *psif = io->port_data;
-+	unsigned long flags;
-+	int timeout = 10;
-+	int retval = 0;
-+
-+	spin_lock_irqsave(&psif->lock, flags);
-+
-+	while (!(psif_readl(psif, SR) & PSIF_BIT(TXEMPTY)) && timeout--)
-+		msleep(10);
-+
-+	if (timeout >= 0) {
-+		psif_writel(psif, THR, val);
+diff --git a/drivers/input/keyboard/omap-keypad.c b/drivers/input/keyboard/omap-keypad.c
+index babc913..eec3281 100644
+--- a/drivers/input/keyboard/omap-keypad.c
++++ b/drivers/input/keyboard/omap-keypad.c
+@@ -352,6 +352,9 @@ static int __init omap_kp_probe(struct platform_device *pdev)
+ 			}
+ 			omap_set_gpio_direction(row_gpios[row_idx], 1);
+ 		}
 +	} else {
-+		dev_dbg(&psif->pdev->dev, "timeout writing to THR\n");
-+		retval = -EBUSY;
-+	}
-+
-+	spin_unlock_irqrestore(&psif->lock, flags);
-+
-+	return retval;
-+}
-+
-+static int psif_open(struct serio *io)
-+{
-+	struct psif *psif = io->port_data;
-+	int retval;
-+
-+	retval = clk_enable(psif->pclk);
-+	if (retval)
-+		goto out;
-+
-+	psif_writel(psif, CR, PSIF_BIT(CR_TXEN) | PSIF_BIT(CR_RXEN));
-+	psif_writel(psif, IER, PSIF_BIT(RXRDY));
-+
-+	psif->open = 1;
-+out:
-+	return retval;
-+}
-+
-+static void psif_close(struct serio *io)
-+{
-+	struct psif *psif = io->port_data;
-+
-+	psif->open = 0;
-+
-+	psif_writel(psif, IDR, ~0UL);
-+	psif_writel(psif, CR, PSIF_BIT(CR_TXDIS) | PSIF_BIT(CR_RXDIS));
-+
-+	clk_disable(psif->pclk);
-+}
-+
-+static void psif_set_prescaler(struct psif *psif)
-+{
-+	unsigned long prscv;
-+	unsigned long rate = clk_get_rate(psif->pclk);
-+
-+	/* PRSCV = Pulse length (100 us) * PSIF module frequency. */
-+	prscv = 100 * (rate / 1000000UL);
-+
-+	if (prscv > ((1<<PSIF_PSR_PRSCV_SIZE) - 1)) {
-+		prscv = (1<<PSIF_PSR_PRSCV_SIZE) - 1;
-+		dev_dbg(&psif->pdev->dev, "pclk too fast, "
-+				"prescaler set to max\n");
-+	}
-+
-+	clk_enable(psif->pclk);
-+	psif_writel(psif, PSR, prscv);
-+	clk_disable(psif->pclk);
-+}
-+
-+static int __init psif_probe(struct platform_device *pdev)
-+{
-+	struct resource *regs;
-+	struct psif *psif;
-+	struct serio *io;
-+	struct clk *pclk;
-+	int irq;
-+	int ret;
-+
-+	psif = kzalloc(sizeof(struct psif), GFP_KERNEL);
-+	if (!psif) {
-+		dev_dbg(&pdev->dev, "out of memory\n");
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+	psif->pdev = pdev;
-+
-+	io = kzalloc(sizeof(struct serio), GFP_KERNEL);
-+	if (!io) {
-+		dev_dbg(&pdev->dev, "out of memory\n");
-+		ret = -ENOMEM;
-+		goto out_free_psif;
-+	}
-+	psif->io = io;
-+
-+	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!regs) {
-+		dev_dbg(&pdev->dev, "no mmio resources defined\n");
-+		ret = -ENOMEM;
-+		goto out_free_io;
-+	}
-+
-+	psif->regs = ioremap(regs->start, regs->end - regs->start + 1);
-+	if (!psif->regs) {
-+		ret = -ENOMEM;
-+		dev_dbg(&pdev->dev, "could not map I/O memory\n");
-+		goto out_free_io;
-+	}
-+
-+	pclk = clk_get(&pdev->dev, "pclk");
-+	if (IS_ERR(pclk)) {
-+		dev_dbg(&pdev->dev, "could not get peripheral clock\n");
-+		ret = PTR_ERR(pclk);
-+		goto out_iounmap;
-+	}
-+	psif->pclk = pclk;
-+
-+	/* Reset the PSIF to enter at a known state. */
-+	ret = clk_enable(pclk);
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "could not enable pclk\n");
-+		goto out_put_clk;
-+	}
-+	psif_writel(psif, CR, PSIF_BIT(CR_SWRST));
-+	clk_disable(pclk);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
-+		dev_dbg(&pdev->dev, "could not get irq\n");
-+		ret = -ENXIO;
-+		goto out_put_clk;
-+	}
-+	ret = request_irq(irq, psif_interrupt, IRQF_SHARED, "at32psif", psif);
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "could not request irq %d\n", irq);
-+		goto out_put_clk;
-+	}
-+	psif->irq = irq;
-+
-+	io->id.type	= SERIO_8042;
-+	io->write	= psif_write;
-+	io->open	= psif_open;
-+	io->close	= psif_close;
-+	snprintf(io->name, sizeof(io->name), "AVR32 PS/2 port%d", pdev->id);
-+	snprintf(io->phys, sizeof(io->phys), "at32psif/serio%d", pdev->id);
-+	io->port_data	= psif;
-+	io->dev.parent	= &pdev->dev;
-+
-+	psif_set_prescaler(psif);
-+
-+	spin_lock_init(&psif->lock);
-+	serio_register_port(psif->io);
-+	platform_set_drvdata(pdev, psif);
-+
-+	dev_info(&pdev->dev, "Atmel AVR32 PSIF PS/2 driver on 0x%08x irq %d\n",
-+			(int)psif->regs, psif->irq);
-+
-+	return 0;
-+
-+out_put_clk:
-+	clk_put(psif->pclk);
-+out_iounmap:
-+	iounmap(psif->regs);
-+out_free_io:
-+	kfree(io);
-+out_free_psif:
-+	kfree(psif);
-+out:
-+	return ret;
-+}
-+
-+static int __exit psif_remove(struct platform_device *pdev)
-+{
-+	struct psif *psif = platform_get_drvdata(pdev);
-+
-+	psif_writel(psif, IDR, ~0UL);
-+	psif_writel(psif, CR, PSIF_BIT(CR_TXDIS) | PSIF_BIT(CR_RXDIS));
-+
-+	serio_unregister_port(psif->io);
-+	iounmap(psif->regs);
-+	free_irq(psif->irq, psif);
-+	clk_put(psif->pclk);
-+	kfree(psif);
-+
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int psif_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct psif *psif = platform_get_drvdata(pdev);
-+
-+	if (psif->open) {
-+		psif_writel(psif, CR, PSIF_BIT(CR_RXDIS) | PSIF_BIT(CR_TXDIS));
-+		clk_disable(psif->pclk);
-+	}
-+
-+	return 0;
-+}
-+
-+static int psif_resume(struct platform_device *pdev)
-+{
-+	struct psif *psif = platform_get_drvdata(pdev);
-+
-+	if (psif->open) {
-+		clk_enable(psif->pclk);
-+		psif_set_prescaler(psif);
-+		psif_writel(psif, CR, PSIF_BIT(CR_RXEN) | PSIF_BIT(CR_TXEN));
-+	}
-+
-+	return 0;
-+}
-+#else
-+#define psif_suspend	NULL
-+#define psif_resume	NULL
-+#endif
-+
-+static struct platform_driver psif_driver = {
-+	.remove		= __exit_p(psif_remove),
-+	.driver		= {
-+		.name	= "atmel_psif",
-+	},
-+	.suspend	= psif_suspend,
-+	.resume		= psif_resume,
-+};
-+
-+static int __init psif_init(void)
-+{
-+	return platform_driver_probe(&psif_driver, psif_probe);
-+}
-+
-+static void __exit psif_exit(void)
-+{
-+	platform_driver_unregister(&psif_driver);
-+}
-+
-+module_init(psif_init);
-+module_exit(psif_exit);
-+
-+MODULE_AUTHOR("Hans-Christian Egtvedt <hcegtvedt@atmel.com>");
-+MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
-+MODULE_LICENSE("GPL");
++		col_idx = 0;
++		row_idx = 0;
+ 	}
+ 
+ 	setup_timer(&omap_kp->timer, omap_kp_timer, (unsigned long)omap_kp);
+@@ -415,10 +418,10 @@ err4:
+ err3:
+ 	device_remove_file(&pdev->dev, &dev_attr_enable);
+ err2:
+-	for (i = row_idx-1; i >=0; i--)
++	for (i = row_idx - 1; i >=0; i--)
+ 		omap_free_gpio(row_gpios[i]);
+ err1:
+-	for (i = col_idx-1; i >=0; i--)
++	for (i = col_idx - 1; i >=0; i--)
+ 		omap_free_gpio(col_gpios[i]);
+ 
+ 	kfree(omap_kp);
 -- 
 1.5.5.rc2.6.gf58d
 
