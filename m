@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763268AbYDOJxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbYDOJye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763268AbYDOJxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbYDOJxe
+	id S1764216AbYDOJye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbYDOJyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:53:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40937 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757579AbYDOJxd (ORCPT
+	Tue, 15 Apr 2008 05:54:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:40077 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757844AbYDOJyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:53:33 -0400
-Date: Tue, 15 Apr 2008 11:53:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
-       paul@pwsan.com, David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/5] Clocklib: add generic framework for managing clocks.
-Message-ID: <20080415095332.GB32652@atrey.karlin.mff.cuni.cz>
-References: <20080413144138.GA31665@doriath.ww600.siemens.net> <20080413144312.GA1943@doriath.ww600.siemens.net> <20080414231330.b72cd746.akpm@linux-foundation.org> <20080415093451.GA6377@doriath.ww600.siemens.net> <20080415024743.51aeac8c.akpm@linux-foundation.org>
+	Tue, 15 Apr 2008 05:54:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=oQ1zsApqX/wwzF2YefICq53bhqK0zLpAiwIJP0ayggSlgKNkWDirF6ktor6gFqVwuJ+eeI2xa1hz3E15RWmEvKjlMlVpsM99ciFemxU5wRmcd22djV36DZuwscxvMjoJg2XWzU9YTgAbM8V6mcg6G1bZfVwdrz9nRqIGGE78Vuw=
+Message-ID: <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com>
+Date: Tue, 15 Apr 2008 11:54:18 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "David Newall" <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Cc: "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
+       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Tilman Schmidt" <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, "Mark Lord" <lkml@rtr.ca>,
+       "David Miller" <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <4804765B.2070300@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080415024743.51aeac8c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <47FEADCB.7070104@rtr.ca> <20080413205406.GA9190@2ka.mipt.ru>
+	 <48028830.6020703@earthlink.net>
+	 <alpine.DEB.1.10.0804131546370.9318@asgard>
+	 <20080414043939.GA6862@1wt.eu>
+	 <20080414053943.GU9785@ZenIV.linux.org.uk>
+	 <20080413232441.e216a02c.akpm@linux-foundation.org>
+	 <20080414072328.GW9785@ZenIV.linux.org.uk>
+	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+	 <4804765B.2070300@davidnewall.com>
+X-Google-Sender-Auth: 8c67319cabcfd62b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 15 Apr 2008 13:34:51 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
-> 
-> > On Mon, Apr 14, 2008 at 11:13:30PM -0700, Andrew Morton wrote:
-> > > On Sun, 13 Apr 2008 18:43:12 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
-> > > 
-> > > > +#define FUNC_TO_CLK(func)	&(&(struct clk_function) func)->clk
-> > > 
-> > > scratched my head for a while, was unable to work out what this does.
-> > > It is unused, so I think it can be zapped?
-> > 
-> > It take clk_function and returns pointer to the contained struct clk.
-> 
-> Then why does it cast a clk_function to a clk_function?
-> 
-> The innermost `&' hurts my brain.
+On 4/15/08, David Newall <davidn@davidnewall.com> wrote:
+> James Morris wrote:
+>  > I don't know how to solve this, but suspect that encouraging the use of
+>  > reviewed-by and also including it in things like analysis of who is
+>  > contributing, selection for kernel summit invitations etc. would be a
+>  > start.  At least, better than nothing.
+>
+> Would it be hard to keep count of the number of errors introduced by
+>  author and reviewer?
 
-Hmm, is that obfuscated way of writing
-
-&(func.clk)
-
-?
-									Pavel
+I've found quite a few errors in kernel-userland APIs, but I'm not
+sure that this sort of negative statistic would be helpful -- e.g.,
+more productive developers probably also introduce more errors.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
