@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbYDOJye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbYDOJyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764216AbYDOJye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbYDOJyV
+	id S1764634AbYDOJyu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760475AbYDOJyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:54:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:40077 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757844AbYDOJyT (ORCPT
+	Tue, 15 Apr 2008 05:54:39 -0400
+Received: from web26102.mail.ukl.yahoo.com ([217.146.182.143]:45838 "HELO
+	web26102.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758790AbYDOJyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oQ1zsApqX/wwzF2YefICq53bhqK0zLpAiwIJP0ayggSlgKNkWDirF6ktor6gFqVwuJ+eeI2xa1hz3E15RWmEvKjlMlVpsM99ciFemxU5wRmcd22djV36DZuwscxvMjoJg2XWzU9YTgAbM8V6mcg6G1bZfVwdrz9nRqIGGE78Vuw=
-Message-ID: <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com>
-Date: Tue, 15 Apr 2008 11:54:18 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: Reporting bugs and bisection
-Cc: "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
-       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Tilman Schmidt" <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, "Mark Lord" <lkml@rtr.ca>,
-       "David Miller" <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <4804765B.2070300@davidnewall.com>
+	Tue, 15 Apr 2008 05:54:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=ahrrX72ZsxRf+BH4vDxtSIQ8ez010EHJH1cXZHf7Q4y2kD3MR1msQrW/Vc5UBEQihayGmNW/OtzqsBUNonoq7osLTvv/qquGA501X/JEp4eHqSgtowzB+x0fF56kTSA8Pc0iP8PKC+0zqb0b+80hgYm4BGLaVzOskDo7JDaT3Ds=;
+X-YMail-OSG: uNZDgMUVM1nL4Ig7fbKQsuR86aPLZdKYcMXCWC9H7HVkVMw5uR81TKfblqIExB1Vi_JQu9iJ1n7OfKFi1pysuxWZuP_RZYE-
+Date: Tue, 15 Apr 2008 11:54:36 +0200 (CEST)
+From: linuxcbon <linuxcbon@yahoo.fr>
+Subject: RE : Re: RE : Re: Question about Creative Webcam Pro PD1030 ? Bug ?
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Video <video4linux-list@redhat.com>
+In-Reply-To: <20080414172208.3b20e53d@areia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47FEADCB.7070104@rtr.ca> <20080413205406.GA9190@2ka.mipt.ru>
-	 <48028830.6020703@earthlink.net>
-	 <alpine.DEB.1.10.0804131546370.9318@asgard>
-	 <20080414043939.GA6862@1wt.eu>
-	 <20080414053943.GU9785@ZenIV.linux.org.uk>
-	 <20080413232441.e216a02c.akpm@linux-foundation.org>
-	 <20080414072328.GW9785@ZenIV.linux.org.uk>
-	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-	 <4804765B.2070300@davidnewall.com>
-X-Google-Sender-Auth: 8c67319cabcfd62b
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <969007.77776.qm@web26102.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/15/08, David Newall <davidn@davidnewall.com> wrote:
-> James Morris wrote:
->  > I don't know how to solve this, but suspect that encouraging the use of
->  > reviewed-by and also including it in things like analysis of who is
->  > contributing, selection for kernel summit invitations etc. would be a
->  > start.  At least, better than nothing.
->
-> Would it be hard to keep count of the number of errors introduced by
->  author and reviewer?
 
-I've found quite a few errors in kernel-userland APIs, but I'm not
-sure that this sort of negative statistic would be helpful -- e.g.,
-more productive developers probably also introduce more errors.
+--- Mauro Carvalho Chehab <mchehab@infradead.org> a écrit :
 
--- 
-I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
+> > I forgot to cc the linux mailing list, so here it is again.
+> 
+> The better is to copy V4L mailing list.
+> 
+> > hi Mauro,
+> > 
+> > thanks for your answer !
+> > 
+> > I already contacted the authors (Mark,Wallac,Olawlor), but no feedback
+> > yet.
+> > 
+> > I got no oops message from kernel.
+> 
+> So, this doesn't seem to be a driver issue. I suspect that your
+> userspace app
+> is trying to configure an unsupported configuration. This driver still
+> implements the legacy V4L1 API. Maybe converting it to V4L2 would solve
+> your
+> issues. Another option is to check if gspca driver works with this
+> device.
+> 
+> Cheers,
+> Mauro
+
+Hi,
+
+lsmod gives :
+ov511                  77072  0 
+compat_ioctl32          1408  1 ov511
+videodev               27904  1 ov511
+v4l2_common            16896  1 videodev
+v4l1_compat            14596  1 videodev
+
+This device works with OV511+ 
+(see http://alpha.dyndns.org/ov511/cameras.html).
+Difference between OV511 and OV511+ ?
+
+cheers, linuxcbon
+
+
+
+
+      _____________________________________________________________________________ 
+Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
