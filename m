@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYDOWsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbYDOWtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYDOWsc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 18:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759731AbYDOWsN
+	id S1759362AbYDOWtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 18:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYDOWt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 18:48:13 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:40211 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759600AbYDOWsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 18:48:12 -0400
-From: Paul Collins <paul@burly.ondioline.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: ata2: SATA link down (SStatus 611 SControl 300)
-References: <87od8cxg45.fsf@burly.wgtn.ondioline.org>
-	<48040AB5.6050300@gmail.com> <87hce3yhmi.fsf@burly.wgtn.ondioline.org>
-	<480419B6.1050309@gmail.com> <87d4oryf4u.fsf@burly.wgtn.ondioline.org>
-	<4804288D.5090504@gmail.com> <87y77ex1oh.fsf@burly.wgtn.ondioline.org>
-	<48052BB3.2090509@gmail.com>
-Date: Wed, 16 Apr 2008 10:43:18 +1200
-In-Reply-To: <48052BB3.2090509@gmail.com> (Tejun Heo's message of "Wed, 16 Apr
-	2008 07:26:59 +0900")
-Message-ID: <87od8awxh5.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/23.0.60 (gnu/linux)
+	Tue, 15 Apr 2008 18:49:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48224 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751828AbYDOWt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 18:49:27 -0400
+Date: Wed, 16 Apr 2008 00:48:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: lkml@rtr.ca, jesper.juhl@gmail.com, tilman@imap.cc,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, corbet@lwn.net,
+       torvalds@linux-foundation.org
+Subject: Re: about bisections
+Message-ID: <20080415224849.GA14592@elte.hu>
+References: <47FEB062.3020003@rtr.ca> <20080410.173911.179180620.davem@davemloft.net> <20080415215306.GA7437@elte.hu> <20080415.153003.36624305.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415.153003.36624305.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
 
-> Paul Collins wrote:
->> I found a setting labelled "SATA Power Management".  It was set to
->> "Enable".  When I set it to "Disable", 2.6.25-rc9 detected the optical
->> drive.
->
-> This can't be something changed between 2.6.24 and 2.6.25-rc9.  Can
-> you please double check that?
+* David Miller <davem@davemloft.net> wrote:
 
-I double-checked as follows:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 15 Apr 2008 23:53:06 +0200
+> 
+> > but please do _not_ require it from testers and users.
+> 
+> I don't.  I ask for a bisection when it is appropriate and I think 
+> other avenues will not bear fruit in a reasonable amount of time.
 
-* Verified "SATA Power Management" set to "Enable"
-* Verified optical device present in 2.6.24.3
-* Verified optical device not present in 2.6.25-rc9
+i'm glad i misunderstood you. My impression from reading this thread was 
+that you preferred reporters who do bisection (which is fine so far), to 
+the level of sometimes ignoring reporters who dont (which is not).
 
--- 
-Paul Collins
-Wellington, New Zealand
+> Thanks for the arbitrary diatribe about my contributions over the 
+> years and accusations that I have some kind of monopoly over the 
+> networking code and fixes to it.  I really appreciate that.
 
-Dag vijandelijk luchtschip de huismeester is dood
+you certainly do have a fair amount of exclusivity in determining the 
+dosage of networking commits. Dont get me wrong, you earned it and you 
+deserve it - not the least because you do it best.
+
+	Ingo
