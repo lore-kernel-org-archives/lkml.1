@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbYDOFDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbYDOFF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763972AbYDOFDa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 01:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYDOFDW
+	id S1764069AbYDOFF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 01:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYDOFFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 01:03:22 -0400
-Received: from rv-out-0708.google.com ([209.85.198.243]:51986 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753231AbYDOFDV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 01:03:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kXAzqfbRvbylHPX6+txlNrqVDNubvlboJPmVAMZ9GOnWqEfZ/TdCdopHheXjKqe940QvE8HWOZiPsxDe0JY3bQcyqdafW4d7yzUahzp3vY2RWmUj/AXGMYZhc21KspBvq5WAY6N4g75CIFz6q0V7fFeBt0ar+LN/sZiPuzA3yjo=
-Subject: Re: [PATCH-possible bugfix] xfs: ensure extents are read as be64
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080415045803.GE103491721@sgi.com>
-References: <1208230131.11920.59.camel@brick>
-	 <20080415045803.GE103491721@sgi.com>
-Content-Type: text/plain
-Date: Mon, 14 Apr 2008 22:03:23 -0700
-Message-Id: <1208235803.11920.62.camel@brick>
+	Tue, 15 Apr 2008 01:05:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:3112 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753332AbYDOFFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 01:05:22 -0400
+Date: Tue, 15 Apr 2008 06:55:42 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, jmorris@namei.org,
+       viro@ZenIV.linux.org.uk, david@lang.hm, sclark46@earthlink.net,
+       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
+       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080415045541.GA611@1wt.eu>
+References: <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <20080414.150105.101568769.davem@davemloft.net> <20080414160513.9f57e5ba.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414160513.9f57e5ba.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 14:58 +1000, David Chinner wrote:
-> On Mon, Apr 14, 2008 at 08:28:51PM -0700, Harvey Harrison wrote:
-> > The debug code reads the extents in cpu-order rather than BE.  Make the
-> > debug code match.
+On Mon, Apr 14, 2008 at 04:05:13PM -0700, Andrew Morton wrote:
+> On Mon, 14 Apr 2008 15:01:05 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
 > 
-> xfs_validate_extents() is reading in-core extents which have already
-> been byte-swapped when they were read into memory.
+> > From: James Morris <jmorris@namei.org>
+> > Date: Tue, 15 Apr 2008 01:54:00 +1000 (EST)
+> > 
+> > > - Things like "who made the kernel" statistics and related articles ignore 
+> > >   code review.
+> > 
+> > Note the apparent irony in that the person who ends up often on the
+> > top of those lists, Al Viro, is also someone who also does a
+> > significant amount of code review.
+> > 
+> > I think this is no accident.
 > 
-> FWIW, when changing anything to do with endian conversion, please
-> ensure you run:
+> "who made the kernel" was an interesting and useful exercise, but if you
+> like irony then...
 > 
-> $ make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__"
+> - The way to boost your commit count is to submit buggy patches and to
+>   then fix your own bugs.
 > 
-> over the change. This change would introduce errors because:
-> 
-> typedef struct xfs_bmbt_rec_host {
->         __uint64_t              l0, l1;
-> } xfs_bmbt_rec_host_t;
-> 
-> is not defined with __beXX types like the disk format version of this
-> structure which is:
-> 
-> typedef struct xfs_bmbt_rec_64 {
->         __be64                  l0, l1;
-> } xfs_bmbt_rec_64_t;
-> 
+> - The way to lower your commit count is to fix things in other people's
+>   patches, then fold your fix into the base patch.  I've lost over 1000
+>   commits that way.  Unless they are counting '^    [akpm' as a commit.
 
-Sorry for the noise, I didn't notice the (slightly) different struct
-types.  Just the very similar looking blocks in both functions.
+And if Dave speaks about these stats : http://lwn.net/Articles/237768/
+then Al does not even appear in it, which proves your point.
 
-My Bad,
-
-Harvey
+Willy
 
