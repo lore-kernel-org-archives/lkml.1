@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763835AbYDOQG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbYDOQIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763835AbYDOQG6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 12:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYDOQGs
+	id S1759539AbYDOQIm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 12:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYDOQIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 12:06:48 -0400
-Received: from host64.cybernetics.com ([70.169.137.4]:4582 "EHLO
-	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbYDOQGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 12:06:47 -0400
-X-Greylist: delayed 1638 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Apr 2008 12:06:47 EDT
-Message-ID: <4804CC2F.6030403@cybernetics.com>
-Date: Tue, 15 Apr 2008 11:39:27 -0400
-From: Tony Battersby <tonyb@cybernetics.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220034515.GC22703@gondor.apana.org.au> <47BC44E2.9060301@cybernetics.com> <20080415001207.GA11852@localdomain>
-In-Reply-To: <20080415001207.GA11852@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Apr 2008 12:08:31 -0400
+Received: from pat.uio.no ([129.240.10.15]:42660 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbYDOQIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 12:08:30 -0400
+Subject: Re: User space automounter problems after upgrade to 2.6.25-rc9
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Martin Knoblauch <spamtrap@knobisoft.de>
+Cc: linux-kernel@vger.kernel.org, am-utils <am-utils@am-utils.org>
+In-Reply-To: <914095.44950.qm@web32604.mail.mud.yahoo.com>
+References: <914095.44950.qm@web32604.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Tue, 15 Apr 2008 12:08:27 -0400
+Message-Id: <1208275707.10759.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 2E9814C0110088373DB66A50EA8CEFAB137900D3
+X-UiO-SR-test: 47D71AC88D2F6EE3B5A712C01F3097D345CA62E0
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 127 total 7902759 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Carlson wrote:
-> Hi Tony.  Sorry for the radio silence.
->
-> Michael and I have discussed this problem a bit.  Another possibility is
-> that the chip may be having difficulty with non-dword aligned TX buffers.
-> Since we already know the RX side has the same problem, it isn't so
-> far-fetched to think that perhaps it can affect the TX side too.  Can
-> you give the following patch a try and see if the corruption still
-> happens?
->
->   
 
-Thanks, your patch fixes the problem (tested on 2.6.24.4).  However, I
-had to change "(skb->mac_header & 3)" in your patch to "((long)
-skb->mac_header & 3)" since mac_header is a pointer rather than an int
-on 32-bit systems.
+On Tue, 2008-04-15 at 06:58 -0700, Martin Knoblauch wrote:
 
-Tested-by: Tony Battersby <tonyb@cybernetics.com>
+>  Not sure what kind of side effects that will have. Probably better to stay at 2.6.24 and wait for a fix in am-utils.
+
+2.6.24 has exactly the same problem. It is just that the kernel will
+report it much later (essentially the first time that you try to lock a
+file).
+
+Trond
 
