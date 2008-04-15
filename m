@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765480AbYDOUEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762827AbYDOUGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765480AbYDOUEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764895AbYDOUEP
+	id S1762827AbYDOUGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYDOUGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:04:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34635 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761910AbYDOUEN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:04:13 -0400
-Date: Tue, 15 Apr 2008 13:02:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: hch@infradead.org, bunk@kernel.org, dwmw2@infradead.org, miklos@szeredi.hu,
-       me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-Id: <20080415130240.1b9b7662.akpm@linux-foundation.org>
-In-Reply-To: <20080415195330.17f63348@the-village.bc.nu>
-References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	<20080413080130.GA9622@infradead.org>
-	<20080413012001.8d7967f4.akpm@linux-foundation.org>
-	<20080413082815.GA20108@infradead.org>
-	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-	<1208121358.2700.4.camel@shinybook.infradead.org>
-	<20080413154459.4b2f125d.akpm@linux-foundation.org>
-	<20080413234920.63711ca7@core>
-	<20080413161014.cb06964c.akpm@linux-foundation.org>
-	<20080415151643.GD2454@cs181133002.pp.htv.fi>
-	<20080415165727.GA8783@infradead.org>
-	<20080415113452.e9eacb54.akpm@linux-foundation.org>
-	<20080415195330.17f63348@the-village.bc.nu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 16:06:04 -0400
+Received: from saeurebad.de ([85.214.36.134]:38971 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754101AbYDOUGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 16:06:02 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
+References: <20080412223319.372887160@symbol.fehenstaub.lan>
+	<20080412225850.704752615@symbol.fehenstaub.lan>
+	<87lk3hwv52.fsf@basil.nowhere.org>
+	<20080414232308.ffa4e269.akpm@linux-foundation.org>
+	<48045D6C.1010508@firstfloor.org> <87skxnibb1.fsf@saeurebad.de>
+	<86802c440804151144l7497dae3nb3b07374fd71a282@mail.gmail.com>
+	<87r6d6hp6y.fsf@saeurebad.de>
+	<86802c440804151257m735bdac6xb7d0b1b155274e2d@mail.gmail.com>
+Date: Tue, 15 Apr 2008 22:05:44 +0200
+In-Reply-To: <86802c440804151257m735bdac6xb7d0b1b155274e2d@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 15 Apr 2008 12:57:04 -0700")
+Message-ID: <87iqyihoiv.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Apr 2008 19:53:30 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi,
 
-> > You can continue to ignore my logic, but that won't go unnoticed.
-> > 
-> > Just as a thought exercise: should we merge a small and well-written
-> > driver which has zero users?
-> 
-> We've previously merged ones that fit this category and have one user.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-Probably incorrectly.
+> On Tue, Apr 15, 2008 at 12:51 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>> Hi,
+>>
+>>
+>>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>>  > On Tue, Apr 15, 2008 at 4:53 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>>  >>
+>>  >> Andi Kleen <andi@firstfloor.org> writes:
+>>  >>
+>>  >>  > Andrew Morton wrote:
+>>  >>  >> On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+>>  >>  >>
+>>  >>  >>> Johannes Weiner <hannes@saeurebad.de> writes:
+>>  >>  >>>
+>>  >>  >>>> Make free_bootmem() look up the node holding the specified address
+>>  >>  >>>> range which lets it work transparently on single-node and multi-node
+>>  >>  >>>> configurations.
+>>  >>  >>> Acked-by: Andi Kleen <andi@firstfloor.org>
+>>  >>  >>>
+>>  >>  >>> This is far better than the original change it replaces and which
+>>  >>  >>> I also objected to in review.
+>>  >>  >>>
+>>  >>  >>
+>>  >>  >> So...  do we think these two patches are sufficiently safe and important for
+>>  >>  >> 2.6.25?
+>>  >>  >
+>>  >>  > It's only strictly needed for .26 I think for some (also slightly
+>>  >>  > dubious) changes queued in git-x86.
+>>  >>
+>>  >>  Does anything yet rely on this new free_bootmem() behaviour?  If not,
+>>  >>  the safest thing would be to just revert the original patch in mainline
+>>  >>  and drop the second patch completely.
+>>  >
+>>  > 1. free_bootmem(ramdisk_image, ramdisk_size) in setup_arch of x86_64
+>>  > need that
+>>  > 2. another patch in x86.git need that.
+>>
+>>  Ok, to avoid confusion: we are talking about free_bootmem() iterating
+>>  over nodes and looking up an area WITHIN a node or free_bootmem()
+>>  freeing an area ACROSS nodes?
+>>
+>>  The first is what my patch does _only_.
+>
+> Yes, your patch for free_bootmem only can free blocks in the same
+> node.
 
-> If
-> the driver doesn't disrupt core code and is useful to help other people
-> write drivers then I think we should. It may also get more users as a
-> result.
+Yep.
 
-Maybe.
+> but the free_bootmem(ramdisk_image,...) in setup_arch could cross
+> node... , and some other via reserve_early...
+>
+> for example two nodes, every node have 2G, and in case use
+> memmap=NN$SS to execlude some memory on node1. the ramdisk could sit
+> cross the boundary.
 
-> This is a free software project not a business enterprise.
+Now it gets clear.  Alright, then my patches should be dropped and I'll
+whip something up for the 2.6.26 merge window.
 
-And the same principles apply, don't they?  We seek to minimise overhead
-and to use our kernel development hours as effectively as we can.
-
-This is particularly important when person A is thrusting additional work
-onto persons B, C, and D.
-
+	Hannes
