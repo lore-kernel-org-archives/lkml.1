@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYDOUIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765032AbYDOUMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbYDOUIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765971AbYDOUHt
+	id S1765032AbYDOUMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbYDOUMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:07:49 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:59372 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761578AbYDOUHs (ORCPT
+	Tue, 15 Apr 2008 16:12:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50311 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753832AbYDOUMW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:07:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=KbUSLKZMdTAdq89qVVN/B8LvqBT3TmSQwuw5t8GVEL9BGA47T7j8Cvw2xo+lVGWEUG73VAAUv5bPxoDXqr740boylu6xr1mVxQpE+hDXrRwDnJgX7PUvQrAPJg66ygmqZ2vDhMccTnCNyHx8avuBDh/FCNPJlJCPe7qSm3mc1Gk=
-Subject: Re: [PATCH] crypto: padlock-aes.c replace private copy of bit
-	rotation routines
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org
-In-Reply-To: <20080415130541.4123b8a3.akpm@linux-foundation.org>
-References: <1208286963.11920.90.camel@brick>
-	 <20080415130541.4123b8a3.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 13:07:51 -0700
-Message-Id: <1208290071.11920.92.camel@brick>
+	Tue, 15 Apr 2008 16:12:22 -0400
+Date: Tue, 15 Apr 2008 13:11:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: hch@infradead.org, alan@lxorguk.ukuu.org.uk, dwmw2@infradead.org,
+       miklos@szeredi.hu, me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-Id: <20080415131120.f1bab12a.akpm@linux-foundation.org>
+In-Reply-To: <20080415192432.GB1677@cs181133002.pp.htv.fi>
+References: <20080413012001.8d7967f4.akpm@linux-foundation.org>
+	<20080413082815.GA20108@infradead.org>
+	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	<1208121358.2700.4.camel@shinybook.infradead.org>
+	<20080413154459.4b2f125d.akpm@linux-foundation.org>
+	<20080413234920.63711ca7@core>
+	<20080413161014.cb06964c.akpm@linux-foundation.org>
+	<20080415151643.GD2454@cs181133002.pp.htv.fi>
+	<20080415165727.GA8783@infradead.org>
+	<20080415113452.e9eacb54.akpm@linux-foundation.org>
+	<20080415192432.GB1677@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 13:05 -0700, Andrew Morton wrote:
-> On Tue, 15 Apr 2008 12:16:03 -0700
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Use the generic kernel implementation of the bit-rotation routines.
-> > The generic routines to not shift by mod 32, but all callers in the
-> > file pass constant values less than 32 making this a non-issue.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> >  drivers/crypto/padlock-aes.c |   19 +++----------------
-> 
-> git-cryptodev.patch has taken a big chainsaw to the code which you're
-> patching.
-> 
+On Tue, 15 Apr 2008 22:24:32 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-No worries, I'll wait for the crypto merge and see if this is still
-there.
+> > Look, I have repeatedly described the reason why it is probable a poor
+> > tradeoff to merge code such as this.  The only response has been "well
+> > we've done it before", which is largely a non-reason.
+> >...
+> 
+> It seems you missed the first point in my email:
+> 
+> We do not have a stable API for external modules, and part of the deal 
+> is that external modules have the chance of entering the kernel where 
+> they will get API changes automatically.
+> 
+> 
+> Plus my other point that one might argue that OMFS adds support for some 
+> hardware in which case a recent commandment by Linus would require it 
+> has to be merged...
 
-Harvey
+That's lawyerly trickery, sorry.  Take some set of guidelines and then say
+"you are thereby committed to doing X".
+
+We're not committed to doing anything and it would be bad if we were. 
+Let's apply common sense and judgement to each case on its own.
 
