@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765511AbYDOUXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYDOUYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765511AbYDOUXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762992AbYDOUXi
+	id S1752303AbYDOUYN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbYDOUXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:23:38 -0400
-Received: from 1wt.eu ([62.212.114.60]:3119 "EHLO 1wt.eu"
+	Tue, 15 Apr 2008 16:23:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39209 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbYDOUXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:23:37 -0400
-Date: Tue, 15 Apr 2008 22:14:41 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Anton Titov <a.titov@host.bg>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: Bad network performance over 2Gbps
-Message-ID: <20080415201441.GE8474@1wt.eu>
-References: <1208282804.23631.27.camel@localhost>
-Mime-Version: 1.0
+	id S1765384AbYDOUXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 16:23:46 -0400
+Date: Tue, 15 Apr 2008 22:23:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+Message-ID: <20080415202324.GA26710@elte.hu>
+References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com> <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org> <20080415161532.GA15088@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1208282804.23631.27.camel@localhost>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080415161532.GA15088@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 09:06:44PM +0300, Anton Titov wrote:
-> I use Linux for serving a huge amount of static web on few servers. When
-> network traffic goes above 2Gbit/sec ksoftirqd/5 (not every time 5, but
-> every time just one) starts using exactly 100% CPU time and packet
-> packet loss starts preventing traffic from going up. When the network
-> traffic is lower than 1.9Gbit ksoftirqds use 0% CPU according to top.
-> 
-> Uplink is 6 gigabit Intel cards bonded together using 802.3ad algorithm
-> with xmit_hash_policy set to layer3+4. On the other side is Cisco 2960
-> switch. Machine is with two quad core Intel Xeons @2.33GHz.
-> 
-> Here goes a screen snapshot of "top" command. The described behavior
-> have nothing to do with 13% io-wait. It happens even if it is 0%
-> io-wait.
-> http://www.titov.net/misc/top-snap.png
-> 
-> kernel configuration:
-> http://www.titov.net/misc/config.gz
-> 
-> /proc/interrupts, lspci, dmesg (nothing intresting there), ifconfig,
-> uname -a:
-> http://www.titov.net/misc/misc.txt.gz
-> 
-> Is it a Linux bug or some hardware limitation?
 
-possibly some missing parameters when loading your e1000 drivers.
-e1000 NICs support interrupt rate limitation, which proves very
-efficient in cases such as yours. I'm used to limit them to about
-5k ints/s. Do a "modinfo e1000" to get the parameter name, I don't
-have it quite right in mind.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Also, I've CCed linux-net.
+> [...] increasing SECTION_SIZE_BITS in include/asm-x86/sparsemem.h from 
+> 26 to 27 makes it go away. (i.e. we use section chunks of 128 MB 
+> instead of 64 MB before) [...]
 
-Regards,
-Willy
+btw., here's the 'good' versus 'bad' bootup log (vanilla kernel spiced 
+with a few extra stats printed out [*]):
 
+ http://redhat.com/~mingo/misc/boot.26.log         # bad
+ http://redhat.com/~mingo/misc/boot.27.log         # good
+
+the only difference is SECTION_SIZE_BITS == 26 versus 27.
+
+looking at the dmesg diff, there's just minimal (and expected) offset 
+difference in some structure sizes. (more sparse maps use a bit more 
+memory)
+
+	Ingo
+
+[*] in case you wonder why memory_section->map is twice its size - i 
+    doubled it just to eliminate any doubts about off-by-one errors. 
+    Their natural size, as returned by bootmem, was 512KB plus 16 bytes 
+    (!), which seemed a bit weird. Probably a section entry came between 
+    two memory map allocations?
