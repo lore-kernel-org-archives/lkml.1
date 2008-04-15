@@ -1,167 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbYDOSwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYDOSyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbYDOSwY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYDOSwQ
+	id S1758684AbYDOSyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYDOSyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:52:16 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:20928 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754113AbYDOSwO (ORCPT
+	Tue, 15 Apr 2008 14:54:08 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:52713 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270AbYDOSyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:52:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FCdm1PzUBxBmcDHjja00URpoq9ojDZgju+FmGJleftkLGoJxrVHXI+x5O7wn7S9NIaQhDAQ0wKNnkE5ZJS46f7lU4msxMSA6fzr6I/KpbIbjpOUlPdyEXLqgz8fbtIy250UayjJVFabt3q0GaQuTi34DvTUXe4vAAq1SVXjtJFA=
-Message-ID: <86802c440804151152i1db7bff8n4b64eba8b912d49f@mail.gmail.com>
-Date: Tue, 15 Apr 2008 11:52:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <87wsmzibf7.fsf@saeurebad.de>
+	Tue, 15 Apr 2008 14:54:07 -0400
+Message-ID: <4804F971.3020207@cs.columbia.edu>
+Date: Tue, 15 Apr 2008 14:52:33 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+CC: Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [RFC][PATCH 0/4] Object creation with a specified id
+References: <20080404145129.637145000@bull.net> <20080415030623.GA8171@tull.net> <480483C2.3030509@bull.net>
+In-Reply-To: <480483C2.3030509@bull.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080412223319.372887160@symbol.fehenstaub.lan>
-	 <20080412225850.704752615@symbol.fehenstaub.lan>
-	 <87lk3hwv52.fsf@basil.nowhere.org>
-	 <20080414232308.ffa4e269.akpm@linux-foundation.org>
-	 <86802c440804150004w1c94b2dci520e0ffb8b60632f@mail.gmail.com>
-	 <20080415001512.60cb784d.akpm@linux-foundation.org>
-	 <86802c440804150028t33fabd7fn40d3d47d0482bfc1@mail.gmail.com>
-	 <20080415003647.922a9a05.akpm@linux-foundation.org>
-	 <87wsmzibf7.fsf@saeurebad.de>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 4:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi,
->
->
->
->  Andrew Morton <akpm@linux-foundation.org> writes:
->
->  > On Tue, 15 Apr 2008 00:28:34 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->  >
->  >> On Tue, Apr 15, 2008 at 12:15 AM, Andrew Morton
->  >> <akpm@linux-foundation.org> wrote:
->  >> >
->  >> > On Tue, 15 Apr 2008 00:04:03 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->  >> >
->  >> >  > On Mon, Apr 14, 2008 at 11:23 PM, Andrew Morton
->  >> >  > <akpm@linux-foundation.org> wrote:
->  >> >  > >
->  >> >  > > On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
->  >> >  > >
->  >> >  > >  > Johannes Weiner <hannes@saeurebad.de> writes:
->  >> >  > >  >
->  >> >  > >  > > Make free_bootmem() look up the node holding the specified address
->  >> >  > >  > > range which lets it work transparently on single-node and multi-node
->  >> >  > >  > > configurations.
->  >> >  > >  >
->  >> >  > >  > Acked-by: Andi Kleen <andi@firstfloor.org>
->  >> >  > >  >
->  >> >  > >  > This is far better than the original change it replaces and which
->  >> >  > >  > I also objected to in review.
->  >> >  > >  >
->  >> >  > >
->  >> >  > >  So...  do we think these two patches are sufficiently safe and important for
->  >> >  > >  2.6.25?
->  >> >  >
->  >> >  > the patch is wrong
->  >> >  >
->  >> >
->  >> >  The last I saw was this:
->  >> >
->  >> >
->  >> >  On Sun, 13 Apr 2008 12:57:22 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
->  >> >
->  >> >  > Hi,
->  >> >  >
->  >> >  > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->  >> >  >
->  >> >  > > On Sat, Apr 12, 2008 at 3:33 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->  >> >  > > ...
->  >> >
->  >> > > >
->  >> >  > > could have chance that bootmem with reserved_early that is crossing
->  >> >  > > the nodes.
->  >> >  >
->  >> >  > Upstream reserve_bootmem_core() would BUG() on a caller trying to cross
->  >> >  > nodes, so I don't see where this chance could come from.
->  >> >
->  >> >  Is that what you're referring to?
->  >> >
->  >> >  Was Johannes observation incorrect?  If so, why?
->  >>
->  >> my patch with free_bootmem will make sure free_bootmem_core only free
->  >> bootmem in the bdata scope.
->  >> so free_bootmem can handle the cross_node bootmem that is done by
->  >> reserve_early ( done in another patch, is dropped by you because took
->  >> Jonannes).
->  >>
->  >> in setup_arch for x86_64 there is one free_bootmem that is used when
->  >> ramdisk is falled out of ram map. that could be crossed by bootloader
->  >> and kexec, and kernel or second kernel is memmap=NN@SS to execlue some
->  >> memory.
->  >>
->  >> anyway that is extrem case, but my patch could handle that.
->
->  Has this case ever occured?  If this could become real, I have no
->  objections to implement a way to handle it (why would I?), but until now
->  you just said that in some time in the future, this could be useful.
->
->
->  >>
->  >> I wonder if any regression caused by my previous patch? maybe on other platform?
->  >>
->  >
->  > Not that I'm aware of.
->
->  It papers over buggy usage of free_bootmem().  If its arguments are
->  bogus, it will just return again where it BUG()ed out before.  The pages
->  might be never marked free and therefor never reach the buddy allocator.
->
->
->  > I restored mm-make-reserve_bootmem-can-crossed-the-nodes.patch.  Johannes,
->  > can you please check 2.6.28-rc8-mm2, see if it looks OK?
->
->  I object to the way it is implemented.  If it is really needed, that
->  should be done properly:
->
->         - remove the double loop over the area on the likely succeeding
->           path and unroll the reserving on the unlikely path as it was
->           done before.  Better to punish exceptional branches than
->           the working paths.
->         - make reserve_bootmem_core be strict with its arguments.  If
->           you want to iterate over the bdata list, you should not just
->           throw every item at the _core functions and let them work it
->           out for themselves.  The correct parameters should be
->           calculated in advance and then passed to a strict
->           _bootmem_core() function that BUG()s on failure.
->
->  But still, Yinghai, you never brought in practical reasons for this
->  whole thing.  You talked about extreme and theoretical cases and I don't
->  think that this justifies breaking API or pessimizing code at all.
 
-free_bootmem(ramdisk_image, ramdisk_size) is sitting in setup_arch of
-x86_64. or make that panic directly.
 
-what i needed is: free_bootmem can free bootmem cross the nodes.
+Nadia Derbey wrote:
+> Nick Andrew wrote:
+>> On Fri, Apr 04, 2008 at 04:51:29PM +0200, Nadia.Derbey@bull.net wrote:
+>>
+>>>   . echo "LONG XX" > /proc/self/next_id
+>>>     next object to be created will have an id set to XX
+>>>   . echo "LONG<n> X0 ... X<n-1>" > /proc/self/next_id
+>>>     next object to be created will have its ids set to XX0, ... X<n-1>
+>>>     This is particularly useful for processes that may have several 
+>>> ids if
+>>>     they belong to nested namespaces.
+>>
+>>
+>> How do you handle race conditions, i.e. you specify the ID for the
+>> next object to be created, and then some other thread goes and creates
+>> an object before your thread creates one?
+>>
+>> Nick.
+> 
+> 
+> Sorry for not answering earlier, I just saw your e-mail!
 
-on numa
-alloc_bootmem always return blocks on same nodes. but some via
-reserve_early and then to bootmem via early_res_to_bootmem could be
-crossing nodes.
+[I too managed to miss that message].
 
-BTW, can you look at patches in -mm about make reserve_bootmem cross the nodes?
+> 
+> It's true that the way I've done things, the "create_with_id" doesn't 
+> take into account multi-threaded apps, since "self" is related to the 
+> thread group leader.
+> 
+> May be using something like /proc/self/task/<my_tid>/next_id would be 
+> better, but I have to think more about it...
 
-YH
+That /proc/self links to /proc/TGID slipped my mind. Definitely must
+be done on a per-thread basis (and /proc/<TGID>/task/<PID>/next_id
+will do the trick).
+
+Oren.
+
+> 
+> Regards,
+> Nadia
