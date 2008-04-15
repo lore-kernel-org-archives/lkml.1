@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbYDOTVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbYDOTZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762305AbYDOTVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 15:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYDOTVb
+	id S1760848AbYDOTZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 15:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYDOTZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 15:21:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51287 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753411AbYDOTVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 15:21:30 -0400
-Date: Tue, 15 Apr 2008 19:53:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 15 Apr 2008 15:25:44 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58381 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753980AbYDOTZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 15:25:43 -0400
+Date: Tue, 15 Apr 2008 22:24:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        David Woodhouse <dwmw2@infradead.org>,
        Miklos Szeredi <miklos@szeredi.hu>, me@bobcopeland.com,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080415195330.17f63348@the-village.bc.nu>
+Message-ID: <20080415192432.GB1677@cs181133002.pp.htv.fi>
+References: <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <20080413154459.4b2f125d.akpm@linux-foundation.org> <20080413234920.63711ca7@core> <20080413161014.cb06964c.akpm@linux-foundation.org> <20080415151643.GD2454@cs181133002.pp.htv.fi> <20080415165727.GA8783@infradead.org> <20080415113452.e9eacb54.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 In-Reply-To: <20080415113452.e9eacb54.akpm@linux-foundation.org>
-References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
-	<20080413080130.GA9622@infradead.org>
-	<20080413012001.8d7967f4.akpm@linux-foundation.org>
-	<20080413082815.GA20108@infradead.org>
-	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
-	<1208121358.2700.4.camel@shinybook.infradead.org>
-	<20080413154459.4b2f125d.akpm@linux-foundation.org>
-	<20080413234920.63711ca7@core>
-	<20080413161014.cb06964c.akpm@linux-foundation.org>
-	<20080415151643.GD2454@cs181133002.pp.htv.fi>
-	<20080415165727.GA8783@infradead.org>
-	<20080415113452.e9eacb54.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You can continue to ignore my logic, but that won't go unnoticed.
+On Tue, Apr 15, 2008 at 11:34:52AM -0700, Andrew Morton wrote:
+> On Tue, 15 Apr 2008 12:57:27 -0400 Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> Just as a thought exercise: should we merge a small and well-written
-> driver which has zero users?
+> > On Tue, Apr 15, 2008 at 06:16:43PM +0300, Adrian Bunk wrote:
+> > > We are talking about a filesystem even Christoph considers OK.
+> > > 
+> > > And who asked about the costs of merging crap like 
+> > > drivers/infiniband/hw/nes/ ?
+> > > 
+> > > Speaking about the latter, with Linus' logic one might argue that OMFS 
+> > > must not be rejected since it adds support for some hardware...
+> > 
+> > Excatly.  I find it very strange to even consider rejecting a rather
+> > small and very well written driver for let's say "political" reasons.
+> 
+> "economic" would be a far more accurate term.
+> 
+> Look, I have repeatedly described the reason why it is probable a poor
+> tradeoff to merge code such as this.  The only response has been "well
+> we've done it before", which is largely a non-reason.
+>...
 
-We've previously merged ones that fit this category and have one user. If
-the driver doesn't disrupt core code and is useful to help other people
-write drivers then I think we should. It may also get more users as a
-result.
+It seems you missed the first point in my email:
 
-This is a free software project not a business enterprise.
+We do not have a stable API for external modules, and part of the deal 
+is that external modules have the chance of entering the kernel where 
+they will get API changes automatically.
 
-Alan
+
+Plus my other point that one might argue that OMFS adds support for some 
+hardware in which case a recent commandment by Linus would require it 
+has to be merged...
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
