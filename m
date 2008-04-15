@@ -1,118 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764857AbYDOM7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764900AbYDONAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764857AbYDOM7y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 08:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYDOM7o
+	id S1764900AbYDONAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 09:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbYDONAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 08:59:44 -0400
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:9424 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998AbYDOM7n convert rfc822-to-8bit (ORCPT
+	Tue, 15 Apr 2008 09:00:39 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:13558 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755035AbYDONAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 08:59:43 -0400
-X-PGP-Universal: processed;
-	by hqnvupgp02.nvidia.com on Tue, 15 Apr 2008 05:59:39 -0700
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Tue, 15 Apr 2008 09:00:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lp9Wxmdvgswlh+U7T8wpSZ/bRP3MoWPqnD3v6Jg87dgr5o/Te6XDH6GjkA5NbZ+Tm6Z1QWlumc58gQo3WVCAFmRTpL8qLBW+FSct/jcZ5VGfdUCoULBkfaG7VqLOufwf9MwpHQgCeCYjVY7wBe6ax0qYpmHYXMBUq3gkHI8QCE8=
+Message-ID: <9d732d950804150600t64cfc1c6qdabdca83f74ff346@mail.gmail.com>
+Date: Tue, 15 Apr 2008 06:00:32 -0700
+From: "Toshiharu Harada" <haradats@gmail.com>
+To: "Crispin Cowan" <crispin@crispincowan.com>
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Matthew Wilcox" <matthew@wil.cx>,
+       "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <4802BBDC.1030707@crispincowan.com>
 MIME-Version: 1.0
-Subject: RE: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Date: Tue, 15 Apr 2008 20:57:08 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B26E76A63@hkemmail01.nvidia.com>
-In-Reply-To: <200804142312.32991.volker.armin.hemmann@tu-clausthal.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Thread-Index: AciedEczGQVIXcK0SM2cwFjaPGSN7wAZvQFA
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804140841.32477.volker.armin.hemmann@tu-clausthal.de> <15F501D1A78BD343BE8F4D8DB854566B26C12206@hkemmail01.nvidia.com> <200804142312.32991.volker.armin.hemmann@tu-clausthal.de>
-From: "Peer Chen" <pchen@nvidia.com>
-To: "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
-       "Kuan Luo" <kluo@nvidia.com>
-X-OriginalArrivalTime: 15 Apr 2008 12:57:09.0832 (UTC) FILETIME=[37623480:01C89EF8]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+	 <20080404122408.986477936@I-love.SAKURA.ne.jp>
+	 <200804071140.59247.paul.moore@hp.com>
+	 <47FC8052.9070409@nttdata.co.jp>
+	 <20080409131151.GK11962@parisc-linux.org>
+	 <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
+	 <20080411143013.GB11962@parisc-linux.org>
+	 <20080413163658.GC7010@sergelap.austin.ibm.com>
+	 <4802BBDC.1030707@crispincowan.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Serge E. Hallyn wrote:
+>> Quoting Matthew Wilcox (matthew@wil.cx):
+>>
+>>> On Fri, Apr 11, 2008 at 11:12:27PM +0900, Tetsuo Handa wrote:
+>>>
+>>>> Matthew Wilcox wrote:
+>>>>
+>>>>> When the rule is put in place, say "No modifications to /etc/passwd",
+>>>>> look up the inode and major:minor of /etc/passwd.  If there's a
+>>>>> rename,
+>>>>> look up the new inode number.  If it's mounted elsewhere, it doesn't
+>>>>> matter, they still can't modify it because it has the same
+>>>>> major:minor:inode.
+>>>>>
+>>>> If write access is denied because of a rule "No modifications to
+>>>> /etc/passwd",
+>>>> a rule "Allow modifications to /tmp/passwd" can no longer be
+>>>> enforced after
+>>>> "mount --bind /etc/ /tmp/" or "mount --bind /etc/passwd /tmp/passwd" or
+>>>> "mv /etc/passwd /tmp/passwd" or "ln /etc/passwd /tmp/passwd" is done.
+>>>>
+>>> That's a fundamental limitation of pathname-based security though.
+>>> If the same file exists in two places, you have to resolve the question
+>>> of which rule overrides the other.
+>>>
+>> In the past, Crispin has given clear, concise explanations of a few of
+>> the things pathname based access control in fact excels at.  Crispin,
+>> can you recite those again so we can think constructively about which
+>> (if any) of the currently considered options are or are not sufficient?
+>>
+>> I.e. what would be a motivation for a rule like 'no modifications to
+>> /etc/passwd', and what precisely would and would not be accepted ways to
+>> get around it (and why)?
+>>
+> As I just posted, a rule of "no mods to /some/pathname" is broken, which
+> is why AppArmor has no such construct.
 
-Yes, could you dump the IO port data from 0x2f00 to 0x2fff and send it to me, it record the base address BIOS trap?
-Also, could you update the latest BIOS to try this issue again?
+Traditional "talking by examples" is a good way and works in general,
+but not always right for this case (I mean "label or path" discussion.
+Yes, I've learned this from AppArmor thread. :)
 
-BRs
-Peer Chen
+> Things that pathname-based access control is good at:
+>
+>    * *System Integrity:* Many of the vital components of a UNIX system
+>      are stored in files with Well Known Names such as /etc/shadow,
+>      /var/www/htdocs/index.html and /home/crispin/.ssh/known_hosts. The
+>      contents of the actual data blocks is less important than the
+>      integrity of what some random process gets when it asks for these
+>      resources by name. Preserving the integrity of what responds to
+>      the Well Known Name is thus easier if you restrict access based on
+>      the name.
+>    * *Dynamic Access Control:* A special case of the above pertains to
+>      files that may or may not exist. If you don't *have* a /etc/hosts
+>      file, it is still important to have a rule that controls whether
+>      it can be created. This is hard to do in label-based systems,
+>      because the file does not exist to put a label on, so you have to
+>      kludge it by either creating the file with zero length and
+>      labeling it, or by creating more complex policy for the parent
+>      /etc directory, and that's hard given the number of uses for /etc
+>      such as /etc/motd. In a name based scheme, you simply don't
+>      provide write permission to "/etc/hosts" unless you mean it, and
+>      it can be enforced even if such a file does not exist.
+>    * *Ad Hoc Generalization:* Label-based access control generalizes
+>      policy in that the policy treats all files and resources that
+>      share a label the same. If you want to make a new generalization
+>      that encompasses *part* of the files that share a label, but *not
+>      all* of those files, then you have to "split the label", relabel
+>      the file system, and revise the policy accordingly. Name-based
+>      access control lets you create ad hoc generalizations, so that
+>      *my* policy can grant access to "/var/www/*.pl" without regard to
+>      whatever labels or rules some other policy has applied to the same
+>      directory tree.
+>    * *Familiar Interface:* Administrators are accustomed to
+>      administering the box in terms of the names of the files that
+>      matter. A name-based policy is therefore somewhat more familiar
+>      than a policy with label abstractions, where they then have to go
+>      look at the restorecon file to discover what files will/should
+>      have what labels.
+>    * *Practical Concerns:* Not all file systems support labels, and so
+>      label-based schemes become coarse grained when they run into them.
+>      Name based schemes remain granular when specifying access down
+>      into the internals of such file systems. Legacy Linux file systems
+>      like ext2 don't matter much any more, but persistent file systems
+>      that will never have label support include NFSv3 file systems
+>      (nearly every Network Appliance NAS server out there) and FAT32
+>      file system (most every USB storage device).
+>
+> A lot of what's going on is the duality of the one:many relationships
+> between labels and names:
+>
+>    * Labels: one label represents many files
+>          o this property is why ad hoc generalization fails in label
+>            based systems
+>    * Names: many names can represent a single file
+>          o This property is why deny rules fail in name based systems
+>
+> Therefore, I am not claiming name-based access controls to be the
+> ultimate. Rather, there are duals for all of the above that induce
+> circumstances where label-based systems are superior. Each class of
+> system has strengths and weaknesses. These are name-based strengths.
 
------Original Message-----
-From: Volker Armin Hemmann [mailto:volker.armin.hemmann@tu-clausthal.de] 
-Sent: Tuesday, April 15, 2008 5:13 AM
-To: Peer Chen
-Cc: Jeff Garzik; Tejun Heo; linux-kernel@vger.kernel.org; linux-ide@vger.kernel.org; Kuan Luo
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+Agreed and I personally would love to stay discussions in this layer
+forgetting existing implementations, including my own project of
+TOMOYO Linux. The above summary of labels and names are very important,
+but I would like to "raise" the layer of discussion.
 
-Hi,
+The essence of MAC is limiting and restricting.
+My version of the MAC *issues* are as follows:
 
-On Montag, 14. April 2008, Peer Chen wrote:
-> Volker,
-> I mean add msleep(x) function between writel(HOST_AHCI_EN, mmio + HOST_CTL)
-> and readl(mmio + HOST_CTL) cause we ever met a bug that writing data to the
-> AHCI BAR5 but need a delay to get correct read back value. But forget it,
-> looks like it's not the same case here. Which mode do you set(ahci or
-> non-raid) when you encountered the issue that the AHCI_EN bit failed to
-> set? I found we have workaround for AHCI_EN bit setting in our Bios
-> programming guide for AHCI mode.
+- how to distinguish good(necessary) and bad(unnecessary) accesses
+- how to describe the rule (the most important result is a policy language)
+- how to keep Linux kernel aware of the rule and keep it safely
+- how to administrate the whole picture (with human error in mind)
 
-you mean this?
+The first one belongs to a human responsible part and the
+remainders belong to implementations. Let me note, label vs. names
+issue resides in the implementation layer.
 
-[    0.363828] ------------[ cut here ]------------
-[    0.363828] WARNING: at drivers/ata/ahci.c:645 ahci_init_one+0x190/0xa3a()
-[    0.363828] Modules linked in:
-[    0.363828] Pid: 1, comm: swapper Not tainted 2.6.25-rc8 #2
-[    0.363828]
-[    0.363828] Call Trace:
-[    0.363828]  [<ffffffff8022c5a5>] warn_on_slowpath+0x51/0x63
-[    0.363832]  [<ffffffff80220061>] __ioremap+0x8/0x197
-[    0.363872]  [<ffffffff803921f4>] pci_conf1_read+0xb2/0xbd
-[    0.363911]  [<ffffffff802f3316>] pcim_iomap_release+0x0/0x2c
-[    0.363950]  [<ffffffff802f3316>] pcim_iomap_release+0x0/0x2c
-[    0.363989]  [<ffffffff803471a9>] devres_find+0x4b/0x65
-[    0.364028]  [<ffffffff8036e4cd>] ahci_init_one+0x190/0xa3a
-[    0.364067]  [<ffffffff802af837>] sysfs_addrm_finish+0x1d/0x209
-[    0.364107]  [<ffffffff80284014>] ifind+0x34/0x8d
-[    0.364145]  [<ffffffff802af54e>] sysfs_find_dirent+0x1b/0x2f
-[    0.364184]  [<ffffffff802eb75d>] ida_get_new_above+0xf0/0x180
-[    0.364223]  [<ffffffff802af837>] sysfs_addrm_finish+0x1d/0x209
-[    0.364263]  [<ffffffff802b0378>] sysfs_create_link+0xb6/0x102
-[    0.364303]  [<ffffffff802f8664>] pci_device_probe+0x4c/0x72
-[    0.364342]  [<ffffffff80344c48>] driver_probe_device+0xb5/0x132
-[    0.364381]  [<ffffffff80344ddb>] __driver_attach+0x6f/0xaf
-[    0.364419]  [<ffffffff80344d6c>] __driver_attach+0x0/0xaf
-[    0.364458]  [<ffffffff80344d6c>] __driver_attach+0x0/0xaf
-[    0.364498]  [<ffffffff8034400a>] bus_for_each_dev+0x44/0x6f
-[    0.364538]  [<ffffffff802a9b57>] proc_match+0x23/0x2d
-[    0.364576]  [<ffffffff80344876>] bus_add_driver+0xae/0x1f4
-[    0.364614]  [<ffffffff8034500a>] driver_register+0x59/0xce
-[    0.364654]  [<ffffffff802f88a5>] __pci_register_driver+0x4a/0x7d
-[    0.364701]  [<ffffffff804e56b8>] kernel_init+0x14f/0x2b9
-[    0.364740]  [<ffffffff8020be98>] child_rip+0xa/0x12
-[    0.364779]  [<ffffffff804e5569>] kernel_init+0x0/0x2b9
-[    0.364817]  [<ffffffff8020be8e>] child_rip+0x0/0x12
-[    0.364854]
-[    0.364891] ---[ end trace ea9d541113ecaf1e ]---
+How to describe rules imply "what is the natural way for human
+administrators" while keeping the Linux kernel implies
+"what is the most solid and trusted way for Linux".
+>From the fact is Linux works with names and inodes, I'm pretty sure
+we will end up with some sort of hybrid system.
 
-this happened with AHCI mode set in bios, pci=nomsi as kernel boot parameter 
-and kernel 2.6.25-rc8.
+>From the above point of view, the option 2 which Stephen
+kindly showed quite *practical* to me, because it allows
+loose connection of the "namespace" and "inode". (If your
+initial is not S.S, my PNG diagram posted on April 10 might help
+to understand what I wrote here)
 
-Something similar looking happened without pci=nomsi, but in that case I could 
-not scroll back to even make a picture because of the kernel panic (rootfs 
-not found).
 
-Glück Auf
-Volker
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+BTW I'm attending the ELC2008. Hope to see and talk in peace
+with some of related people. :)
+
+Regards,
+Toshiharu Harada
+NTT DATA CORPORATION
