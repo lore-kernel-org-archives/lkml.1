@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764318AbYDOCl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbYDOCmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764318AbYDOCl0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 22:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760539AbYDOClT
+	id S1764373AbYDOCmQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 22:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYDOCmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 22:41:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49211 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759827AbYDOClS (ORCPT
+	Mon, 14 Apr 2008 22:42:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40969 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759827AbYDOCmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 22:41:18 -0400
-Message-ID: <480415AB.2070308@zytor.com>
-Date: Mon, 14 Apr 2008 19:40:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 14 Apr 2008 22:42:01 -0400
+Date: Mon, 14 Apr 2008 19:41:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch] F_GETPATH implementation (rev 2)
+In-Reply-To: <Pine.LNX.4.64.0804141700010.6238@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.1.00.0804141931070.2879@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0804141700010.6238@alien.or.mcafeemobile.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Marc Perkel <mperkel@yahoo.com>, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AMD Quad Core clock problem?
-References: <47FFD3F3.50107@redhat.com>	<821384.64293.qm@web52504.mail.re2.yahoo.com>	<20080411213843.GH2160@csclub.uwaterloo.ca>	<4802608A.3040901@zytor.com>	<20080414151222.GF7385@csclub.uwaterloo.ca>	<m3prsrj51j.fsf@maximus.localdomain> <480403DE.4070901@zytor.com> <m3lk3fj3gd.fsf@maximus.localdomain>
-In-Reply-To: <m3lk3fj3gd.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
->> It shouldn't really matter, since "below" produces a similar spectrum
->> at a slightly lower frequency.
-> 
-> Sure for CPU/TSC and similar clocks but in case of well-known (not
-> calibrated) frequency it could be a problem. Not sure if there are
-> such cases.
 
-There is - the 14.31818 MHz clock, but as previously noted it is 
-generally not spread.  If *that* clock is spread I would expect problems.
 
-	-hpa
+On Mon, 14 Apr 2008, Davide Libenzi wrote:
+>
+> This is a small patch to support BSD's F_GETPATH on Linux.
+> IMO the simplicity of the patch and the portability advantages makes it 
+> worth it. I'll leave to others to further comments it.
+
+So, I'd like to know who (if anybody) really uses F_GETPATH. 
+
+I think the patch is simple enough, and if there is a real program that is 
+worth porting for which this actually matters, I don't really see any 
+downsides. But I'd like to hear more about it, and I also wonder if others 
+do it differently.
+
+Also, are there any other interfaces that other OS's use for this, do you 
+know? Would be good to know before/if we decide to support something like 
+this..
+
+		Linus
