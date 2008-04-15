@@ -1,156 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYDOHRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYDOHTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbYDOHRw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYDOHRn
+	id S1757978AbYDOHTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYDOHTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:17:43 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35546 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbYDOHRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:17:43 -0400
-Date: Tue, 15 Apr 2008 10:17:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: kernel warning: tried to kill an mm-less task!
-Message-ID: <20080415061716.GA89@tv-sign.ru>
-References: <4803030D.3070906@cn.fujitsu.com> <48030F69.7040801@linux.vnet.ibm.com> <48031090.5050002@cn.fujitsu.com> <48042539.8050009@cn.fujitsu.com>
+	Tue, 15 Apr 2008 03:19:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44845 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753414AbYDOHT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 03:19:28 -0400
+Date: Tue, 15 Apr 2008 00:18:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Tejun Heo" <htejun@gmail.com>, "Mark Lord" <lkml@rtr.ca>,
+       "Greg KH" <gregkh@suse.de>, "Jens Axboe" <axboe@kernel.dk>,
+       "Jeff Garzik" <jgarzik@pobox.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+Message-Id: <20080415001828.b0c9ed64.akpm@linux-foundation.org>
+In-Reply-To: <e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>
+References: <47E875AD.1000901@rtr.ca>
+	<47E88A13.70808@zytor.com>
+	<47E90019.3050006@rtr.ca>
+	<47E90458.7030801@zytor.com>
+	<47E9383F.3050908@rtr.ca>
+	<20080325192515.GA24234@suse.de>
+	<47E99A02.7040903@rtr.ca>
+	<47E99EBE.7010708@gmail.com>
+	<3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
+	<47EBF7D0.6000901@zytor.com>
+	<e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48042539.8050009@cn.fujitsu.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc Roland)
+On Fri, 11 Apr 2008 16:25:32 -0700 "Dan Williams" <dan.j.williams@intel.com> wrote:
 
-On 04/15, Li Zefan wrote:
->
-> Li Zefan wrote:
-> > Balbir Singh wrote:
-> >> Li Zefan wrote:
-> >>> When I ran the same test program I described in a previous patch,
-> >>> I got the following warning:
-> >>>
-> >>> WARNING: at mm/oom_kill.c:320 __oom_kill_task+0x6d/0x101()
-> >>> Modules linked in: 
-> >>>
+> >  It doesn't really seem to be to belong under class at all.  I would suggest
+> > /sys/dev/char/ and /sys/dev/block/, for char and block respectively.
+> >
 > 
-> I Added 2 printk()s:
+> This thread fizzled out without a patch... here goes:
 > 
->  static void __oom_kill_task(struct task_struct *p, int verbose)
->  {
-> +       printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
-> +
->         if (is_global_init(p)) {
->                 WARN_ON(1);
->                 printk(KERN_WARNING "tried to kill init!\n");
-> @@ -319,6 +320,7 @@ static void __oom_kill_task(struct task_struct *p, int verbo
-> 
->         if (!p->mm) {
->                 WARN_ON(1);
-> +               printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
->                 printk(KERN_WARNING "tried to kill an mm-less task!\n");
->                 return;
->         }
-> 
-> got this:
-> 
-> pid = 3817, flags = 400140
-> ------------[ cut here ]------------
-> WARNING: at mm/oom_kill.c:322 __oom_kill_task+0x74/0xf1()
 > ...
-> ---[ end trace bb92f2fd8fe6c7c5 ]---
-> pid = 3817, flags = 400144
-> tried to kill an mm-less task!
-> 
-> So PF_EXITING may be set during the call of oom_kill_task(), and I notice
-> the comment in oom_kill_task():
-> 
-> 	 * Furthermore, even if mm contains a non-NULL value, p->mm may
-> 	 * change to NULL at any time since we do not hold task_lock(p).
-> 	 * However, this is of no concern to us.
-> 
-> Is this warning just harmless so that we can just ignore it ?
+>
+> sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
 
-Yes sure, tasklist_lock can't prevent the task exiting, it only protects
-from release_task(). And task->mm == NULL after do_exit()->exit_mm().
-Perhaps we can check "!p->mm && !PF_EXITING".
+Crickets are chirping and I can't remember what the conclusion to all this
+was.  In fact the thread was more than ten-deep so I probably fell asleep.
 
-I don't think we should check PF_BORROWED_MM in __oom_kill_task(), it is
-too late.
-
-Perhaps,
-
-	--- fs/aio.c	2008-02-17 23:40:07.000000000 +0300
-	+++ fs/aio.c	2008-04-15 09:31:23.841202187 +0400
-	@@ -579,6 +579,7 @@ static void use_mm(struct mm_struct *mm)
-	 
-		task_lock(tsk);
-		tsk->flags |= PF_BORROWED_MM;
-	+	smp_wmb();
-		active_mm = tsk->active_mm;
-		atomic_inc(&mm->mm_count);
-		tsk->mm = mm;
-	@@ -606,13 +607,23 @@ static void unuse_mm(struct mm_struct *m
-		struct task_struct *tsk = current;
-	 
-		task_lock(tsk);
-	-	tsk->flags &= ~PF_BORROWED_MM;
-		tsk->mm = NULL;
-	+	smp_wmb();
-	+	tsk->flags &= ~PF_BORROWED_MM;
-		/* active_mm is still 'mm' */
-		enter_lazy_tlb(mm, tsk);
-		task_unlock(tsk);
-	 }
-	 
-	+struct mm_struct *__get_task_mm(struct task_struct *tsk)
-	+{
-	+	struct mm_struct *mm = tsk->mm;
-	+	smp_rmb();
-	+	if (tsk->flags & PF_BORROWED_MM)
-	+		mm = NULL;
-	+	return mm;
-	+}
-	+
-	 /*
-	  * Queue up a kiocb to be retried. Assumes that the kiocb
-	  * has already been marked as kicked, and places it on
-
-Now oom_kill_task/select_bad_process/etc can use __get_task_mm() to avoid
-killing the kernel thread.
-
-Off-topic: why ->oomkilladj is per thread, not per process? All threads share
-the same ->mm. Note oom_kill_process(), it shouldn't use do_each_thread(),
-it actually needs for_each_process().
-
-
-Roland, what do you think about the coredump? Looks like we have the ancient
-bug, zap_threads() can hit the kernel thread.
-
-How about
-
-	--- fs/exec.c	2008-02-17 23:40:07.000000000 +0300
-	+++ fs/exec.c	2008-04-15 10:07:08.998518272 +0400
-	@@ -1547,7 +1547,7 @@ static inline int zap_threads(struct tas
-			p = g;
-			do {
-				if (p->mm) {
-	-				if (p->mm == mm) {
-	+				if (__get_task_mm(p) == mm) {
-						/*
-						 * p->sighand can't disappear, but
-						 * may be changed by de_thread()
-
-?
-
-Oleg.
-
+I queued it up so that others cannot do the same ;)
