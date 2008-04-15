@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763623AbYDOBr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbYDOBvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763623AbYDOBr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 21:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbYDOBrT
+	id S1763462AbYDOBvt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 21:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbYDOBvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 21:47:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51082 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758503AbYDOBrT (ORCPT
+	Mon, 14 Apr 2008 21:51:41 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39941 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758961AbYDOBvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 21:47:19 -0400
-Date: Mon, 14 Apr 2008 18:45:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, mingo@elte.hu, hch@infradead.org,
-       mmlnx@us.ibm.com, dipankar@in.ibm.com, dsmith@redhat.com,
-       rostedt@goodmis.org, adrian.bunk@movial.fi, a.p.zijlstra@chello.nl,
-       ego@in.ibm.com, niv@us.ibm.com, dvhltc@us.ibm.com, rusty@au1.ibm.com,
-       jkenisto@linux.vnet.ibm.com, oleg@tv-sign.ru, jamesclhuang@yahoo.com
-Subject: Re: [PATCH 0/5] call_rcu_sched() series
-Message-Id: <20080414184544.16ae4123.akpm@linux-foundation.org>
-In-Reply-To: <20080414183312.eba58a41.akpm@linux-foundation.org>
-References: <20080414035848.GA30005@linux.vnet.ibm.com>
-	<20080414183312.eba58a41.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 14 Apr 2008 21:51:41 -0400
+Date: Tue, 15 Apr 2008 10:54:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>, lizf@cn.fujitsu.com,
+       menage@google.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] use vmalloc for mem_cgroup allocation.
+Message-Id: <20080415105434.3044afb6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,35 +28,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 18:33:12 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+On ia64, kmalloc() in mem_cgroup_create requires order-4 pages. But this is not
+necessary to be phisically contiguous. And we'll see page allocation failure.
+(Note: x86-32, which has small vmalloc area, has small mem_cgroup struct.)
+For here, vmalloc is better.
 
-> On Sun, 13 Apr 2008 20:58:48 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > This series adds call_rcu_sched(), applies some fixes to RCU Classic,
-> > adds rcu_barrier_sched(), updates rcutorture, and updates the RCU
-> > documentation.
-> 
-> Some massaging was needed here to make these apply against the
-> RCU changes in git-sched.
-> 
-> All fairly simple, except I don't know if these:
-> 
-> static inline void rcu_enter_nohz(void)
-> {
-> 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
-> 	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-> 	WARN_ON(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1);
-> }
-> 
-> static inline void rcu_exit_nohz(void)
-> {
-> 	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-> 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
-> 	WARN_ON(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1));
-> }
-> 
-> in include/linux/rcupreempt.h ended up the way we want them?
 
-argh, I see.  It's all tangled up with the WARN_ON_SECS stuff.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Let me try to straighten it all out.
+Index: mm-2.6.25-rc8-mm2/mm/memcontrol.c
+===================================================================
+--- mm-2.6.25-rc8-mm2.orig/mm/memcontrol.c
++++ mm-2.6.25-rc8-mm2/mm/memcontrol.c
+@@ -31,6 +31,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -993,7 +994,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		mem = &init_mem_cgroup;
+ 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
+ 	} else
+-		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
++		mem = vmalloc(sizeof(struct mem_cgroup));
+ 
+ 	if (mem == NULL)
+ 		return ERR_PTR(-ENOMEM);
+@@ -1011,7 +1012,7 @@ free_out:
+ 	for_each_node_state(node, N_POSSIBLE)
+ 		free_mem_cgroup_per_zone_info(mem, node);
+ 	if (cont->parent != NULL)
+-		kfree(mem);
++		vfree(mem);
+ 	return ERR_PTR(-ENOMEM);
+ }
+ 
+@@ -1031,7 +1032,7 @@ static void mem_cgroup_destroy(struct cg
+ 	for_each_node_state(node, N_POSSIBLE)
+ 		free_mem_cgroup_per_zone_info(mem, node);
+ 
+-	kfree(mem_cgroup_from_cont(cont));
++	vfree(mem_cgroup_from_cont(cont));
+ }
+ 
+ static int mem_cgroup_populate(struct cgroup_subsys *ss,
+
