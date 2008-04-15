@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYDOJHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbYDOJHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760855AbYDOJHY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYDOJHL
+	id S1762512AbYDOJHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYDOJHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:07:11 -0400
-Received: from smtp2.sssup.it ([193.205.80.100]:46874 "EHLO smtp2.sssup.it"
+	Tue, 15 Apr 2008 05:07:30 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:59605 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755630AbYDOJHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:07:10 -0400
-Date: Tue, 15 Apr 2008 11:11:39 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, paolo.valente@unimore.it
-Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
-Message-ID: <20080415091139.GC29846@gandalf.sssup.it>
-References: <20080401152903.GB34860@gandalf.sssup.it> <20080415082236.GD12774@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1761378AbYDOJH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 05:07:29 -0400
+Date: Tue, 15 Apr 2008 12:06:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Gortmaker <p_gortmaker@yahoo.com>
+Cc: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] avr32: don't offer CONFIG_GEN_RTC
+Message-ID: <20080415090619.GA2454@cs181133002.pp.htv.fi>
+References: <20080414141644.GC6695@cs181133002.pp.htv.fi> <426764.23035.qm@web65609.mail.ac4.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080415082236.GD12774@kernel.dk>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <426764.23035.qm@web65609.mail.ac4.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Tue, Apr 15, 2008 10:22:36AM +0200
->
-> On Tue, Apr 01 2008, Fabio Checconi wrote:
-...
-> > We would greatly appreciate any sort of feedback from you, comments,
-> > suggestions, corrections and so on.  Thank you for your attention.
+On Mon, Apr 14, 2008 at 09:08:16PM -0400, Paul Gortmaker wrote:
 > 
-> Fabio, I've merged the scheduler for some testing. Overall the code
-> looks great, you've done a good job!
+> --- Adrian Bunk <bunk@kernel.org> wrote:
 > 
-
-thank you very much :)
-
-
-> I didn't touch patches 2 and 3, but I rewrote #1 somewhat. See the
-> result here:
+> > This patch fixes the following compile error:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC [M]  drivers/char/genrtc.o
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/genrtc.c:58:21:
+> > error: asm/rtc.h: No such file or directory
+> > ...
+> > make[3]: *** [drivers/char/genrtc.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=973a02c4ea1c324c41e45b69c074b13d3bfa97de;hp=a985aabe4d7a720b109c2b63549f8641676a9c88
-> 
-> I'm sure you'll agree with the hlist_sched_*() functions. I also killed
-> the ->bfq_ioprio_changed modification, what exactly was the purpose of
-> that?
-> 
+> I'm assuming this must be a randconfig error, as at
+> a glance, nothing in arch/avr32/configs/* is setting
+> GEN_RTC.
+>...
 
-of course the hlist_sched_*() functions are much better than what was
-in the patch (the idea behind the patch was to not touch at all cfq code).
+Not randconfig, I tried allmodconfig.
 
-the ->bfq_ioprio_changed was there to avoid that a process/ioc doing
-i/o on multiple devices managed by cfq and bfq would see ioprio
-changes only for one of the two schedulers.
+cu
+Adrian
 
-cfq_ioc_set_ioprio() (and its bfq counterpart bfq_ioc_set_ioprio())
-unconditionally assign 0 to (bfq_)ioprio_changed, so the first
-scheduler that sees the ioprio change eats the new priority values.
-of course I may be wrong, but I think it (or some better mechanism
-to avoid the problem) is necessary.
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-> The code is now in the 'bfq' branch of the block git repo.
-> 
-
-of course we'll be glad to help in testing in any way you can find useful.
-
-thank you!
