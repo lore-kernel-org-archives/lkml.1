@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbYDOJyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760204AbYDOKDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764634AbYDOJyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760475AbYDOJyj
+	id S1760204AbYDOKDA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 06:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbYDOKCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:54:39 -0400
-Received: from web26102.mail.ukl.yahoo.com ([217.146.182.143]:45838 "HELO
-	web26102.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758790AbYDOJyj (ORCPT
+	Tue, 15 Apr 2008 06:02:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42860 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754834AbYDOKCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:54:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ahrrX72ZsxRf+BH4vDxtSIQ8ez010EHJH1cXZHf7Q4y2kD3MR1msQrW/Vc5UBEQihayGmNW/OtzqsBUNonoq7osLTvv/qquGA501X/JEp4eHqSgtowzB+x0fF56kTSA8Pc0iP8PKC+0zqb0b+80hgYm4BGLaVzOskDo7JDaT3Ds=;
-X-YMail-OSG: uNZDgMUVM1nL4Ig7fbKQsuR86aPLZdKYcMXCWC9H7HVkVMw5uR81TKfblqIExB1Vi_JQu9iJ1n7OfKFi1pysuxWZuP_RZYE-
-Date: Tue, 15 Apr 2008 11:54:36 +0200 (CEST)
-From: linuxcbon <linuxcbon@yahoo.fr>
-Subject: RE : Re: RE : Re: Question about Creative Webcam Pro PD1030 ? Bug ?
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Video <video4linux-list@redhat.com>
-In-Reply-To: <20080414172208.3b20e53d@areia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <969007.77776.qm@web26102.mail.ukl.yahoo.com>
+	Tue, 15 Apr 2008 06:02:51 -0400
+Date: Tue, 15 Apr 2008 10:58:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: fix routine name in ptmx_open()
+Message-ID: <20080415105821.768470a6@core>
+In-Reply-To: <4803FD15.6030006@ct.jp.nec.com>
+References: <4803FD15.6030006@ct.jp.nec.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 Apr 2008 17:55:49 -0700
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
---- Mauro Carvalho Chehab <mchehab@infradead.org> a écrit :
-
-> > I forgot to cc the linux mailing list, so here it is again.
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> The better is to copy V4L mailing list.
+> At ptmx_open(), the 2nd parameter for check_tty_count() should
+> be "ptmx_open".
 > 
-> > hi Mauro,
-> > 
-> > thanks for your answer !
-> > 
-> > I already contacted the authors (Mark,Wallac,Olawlor), but no feedback
-> > yet.
-> > 
-> > I got no oops message from kernel.
-> 
-> So, this doesn't seem to be a driver issue. I suspect that your
-> userspace app
-> is trying to configure an unsupported configuration. This driver still
-> implements the legacy V4L1 API. Maybe converting it to V4L2 would solve
-> your
-> issues. Another option is to check if gspca driver works with this
-> device.
-> 
-> Cheers,
-> Mauro
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Hi,
-
-lsmod gives :
-ov511                  77072  0 
-compat_ioctl32          1408  1 ov511
-videodev               27904  1 ov511
-v4l2_common            16896  1 videodev
-v4l1_compat            14596  1 videodev
-
-This device works with OV511+ 
-(see http://alpha.dyndns.org/ov511/cameras.html).
-Difference between OV511 and OV511+ ?
-
-cheers, linuxcbon
-
-
-
-
-      _____________________________________________________________________________ 
-Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
+Acked-by: Alan Cox <alan@redhat.com>
