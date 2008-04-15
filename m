@@ -1,129 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbYDOFKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763980AbYDOF0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764332AbYDOFKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 01:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYDOFKK
+	id S1763980AbYDOF0o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 01:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYDOF0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 01:10:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39945 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbYDOFKI (ORCPT
+	Tue, 15 Apr 2008 01:26:35 -0400
+Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:50740 "EHLO
+	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753635AbYDOF0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 01:10:08 -0400
-Date: Tue, 15 Apr 2008 14:12:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>, lizf@cn.fujitsu.com,
-       menage@google.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] use vmalloc for mem_cgroup allocation. v3
-Message-Id: <20080415141208.8be5af56.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080415105434.3044afb6.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080415105434.3044afb6.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 15 Apr 2008 01:26:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=f1HHp2Jq1/VMA/hVSIzr74ZPRpW/jvo+hASEq6TvfCF3R0pqd6yWMZq7dGKG1MB9;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Tue, 15 Apr 2008 01:25:33 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm,
+       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
+       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
+       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-Id: <20080415012533.832db7ed.billfink@mindspring.com>
+In-Reply-To: <878wzgwyyw.fsf@basil.nowhere.org>
+References: <20080413232441.e216a02c.akpm@linux-foundation.org>
+	<20080414072328.GW9785@ZenIV.linux.org.uk>
+	<20080414010412.c42dc560.akpm@linux-foundation.org>
+	<20080414.013058.149905948.davem@davemloft.net>
+	<878wzgwyyw.fsf@basil.nowhere.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d3abc4c2fc79d9de2dba9bc6b49639829350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.48.212.104
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested on ia64/NUMA and x86/smp.
-==
-On ia64, this kmalloc() requires order-4 pages. But this is not
-necessary to be phisically contiguous. 
-For big mem_cgroup, vmalloc is better. For small ones, kmalloc is used.
+On Mon, 14 Apr 2008, Andi Kleen wrote:
 
+> David Miller <davem@davemloft.net> writes:
+> >
+> > It's still largely free form, loose, and flexible. 
+> 
+> I think Al's point was that we need far more "free form, loose and
+> flexible" work for reviewing code. As in people going over trees and
+> just checking it for anything suspicious and going over existing code
+> and checking it for anything suspicious and going also over mailing
+> list patch posts. And also maintainers who appreciate such review.
+> 
+> And checking it for anything suspicious does not mean running
+> only checkpatch.pl or even just sparse, but actually reading it
+> and trying to make sense of it.
 
-Changelog: v2->v3
- - fixed the place of memset.
- - added mem_cgroup_alloc()/free()
- - use kmalloc if mem_cgroup is enough small.
-Changelog: v1->v2
- - added memset().
+If you really want to get more such review, then it would be very
+useful when someone asks about some obtuse portion of kernel code
+or makes a suggested improvement, that the reviewer then not be
+flamed as being dense for not understanding the code or some kernel
+coding concept.  It would be much better to treat it as an oppurtunity
+to educate rather than belittle, thus eventually enlarging the base
+of people who can assist with various aspects of kernel development.
+For what's supposed to be an open, engaging community, and which
+generally is, there sometimes seems to be some level of dismissal
+of newcomers (not sure it's intended that way but nevertheless it
+can tend to discourage newcomers from getting more involved).
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Index: mm-2.6.25-rc8-mm2/mm/memcontrol.c
-===================================================================
---- mm-2.6.25-rc8-mm2.orig/mm/memcontrol.c
-+++ mm-2.6.25-rc8-mm2/mm/memcontrol.c
-@@ -31,6 +31,7 @@
- #include <linux/spinlock.h>
- #include <linux/fs.h>
- #include <linux/seq_file.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -983,6 +984,31 @@ static void free_mem_cgroup_per_zone_inf
- 	kfree(mem->info.nodeinfo[node]);
- }
- 
-+static struct mem_cgroup *mem_cgroup_alloc(void)
-+{
-+	struct mem_cgroup *mem;
-+
-+	if (sizeof(*mem) < PAGE_SIZE)
-+		mem = kmalloc(sizeof(*mem), GFP_KERNEL);
-+	else
-+		mem = vmalloc(sizeof(*mem));
-+
-+	if (!mem)
-+		return NULL;
-+
-+	memset(mem, 0, sizeof(*mem));
-+	return mem;
-+}
-+
-+static void mem_cgroup_free(struct mem_cgroup *mem)
-+{
-+	if (sizeof(*mem) < PAGE_SIZE)
-+		kfree(mem);
-+	else
-+		vfree(mem);
-+}
-+
-+
- static struct cgroup_subsys_state *
- mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- {
-@@ -992,11 +1018,11 @@ mem_cgroup_create(struct cgroup_subsys *
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
- 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
--	} else
--		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
--
--	if (mem == NULL)
--		return ERR_PTR(-ENOMEM);
-+	} else {
-+		mem = mem_cgroup_alloc();
-+		if (!mem)
-+			return ERR_PTR(-ENOMEM);
-+	}
- 
- 	res_counter_init(&mem->res);
- 
-@@ -1011,7 +1037,7 @@ free_out:
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 	if (cont->parent != NULL)
--		kfree(mem);
-+		mem_cgroup_free(mem);
- 	return ERR_PTR(-ENOMEM);
- }
- 
-@@ -1031,7 +1057,7 @@ static void mem_cgroup_destroy(struct cg
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 
--	kfree(mem_cgroup_from_cont(cont));
-+	mem_cgroup_free(mem_cgroup_from_cont(cont));
- }
- 
- static int mem_cgroup_populate(struct cgroup_subsys *ss,
-
+						-Bill
