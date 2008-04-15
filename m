@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbYDOGMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYDOGOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbYDOGMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 02:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYDOGL4
+	id S1753018AbYDOGOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 02:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYDOGOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 02:11:56 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:59456 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbYDOGLz (ORCPT
+	Tue, 15 Apr 2008 02:14:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750833AbYDOGOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 02:11:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nqY1hbqj4RHflrlWsGTLFkj7ECqex4QoIjZC6RjfI0qMSEXKvKMAea3TcjhwP6+1ZlF9a9MvRESy8LHT1/zoHz8lO6lN4Q69JjxwvhL92MtuP8DnvdntZiakWZO3oD8gb7pUDuJaC4bFpuyYnAohnuCUqP7BpBezN8fpCB4IMN0=
-Message-ID: <e2e108260804142311r7ca31d29m7221ca8935a79f35@mail.gmail.com>
-Date: Tue, 15 Apr 2008 08:11:54 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: AMD Quad Core clock problem?
-Cc: "Marc Perkel" <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4803AD83.4030807@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Apr 2008 02:14:33 -0400
+Date: Mon, 14 Apr 2008 23:13:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/5] Clocklib: add generic framework for managing
+ clocks.
+Message-Id: <20080414231330.b72cd746.akpm@linux-foundation.org>
+In-Reply-To: <20080413144312.GA1943@doriath.ww600.siemens.net>
+References: <20080413144138.GA31665@doriath.ww600.siemens.net>
+	<20080413144312.GA1943@doriath.ww600.siemens.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <303918.65020.qm@web52503.mail.re2.yahoo.com>
-	 <4803AD83.4030807@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 9:16 PM, Chris Snook <csnook@redhat.com> wrote:
-> Marc Perkel wrote:
->
-> > My best guess at this time is that the drift of this
-> > computer using the quad core is so great that the ntpd
-> > can't get in sync. Is there any way to make ntpd more
-> > agressive by setting something in ntp.conf?
-> >
->
->  ntp can correct for 500 ppm drift, which equates to 1.8 seconds per hour.
-> Beyond that you need to run ntpdate or ntpd -gq from cron to correct it.
+On Sun, 13 Apr 2008 18:43:12 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-It's better to correct the clock frequency once with the tickadj or
-adjtimex, so you don't have to add ntpdate to cron and you can still
-run ntpd.
+> +#define FUNC_TO_CLK(func)	&(&(struct clk_function) func)->clk
 
-Bart.
+scratched my head for a while, was unable to work out what this does.
+It is unused, so I think it can be zapped?
+
+All the inlined functions in clklib.h are waaaaaaaaaaaay too big
+to be inlined.  Did I fail to notice that last time around?
+
+Anyway, this patchset is basically an arm-only thing, so I'll need
+guidance, please...
