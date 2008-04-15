@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbYDOV5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765653AbYDOWCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932931AbYDOV5U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbYDOV5M
+	id S1765653AbYDOWCk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 18:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbYDOWCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:57:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53679 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754415AbYDOV5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:57:11 -0400
-Subject: Re: Microblaze Linux release
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: monstr@seznam.cz, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       paulus@samba.org
-In-Reply-To: <200804151532.11619.arnd@arndb.de>
-References: <48020A21.4000404@seznam.cz> <200804140801.57464.arnd@arndb.de>
-	 <4804A59B.5040909@seznam.cz>  <200804151532.11619.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 16 Apr 2008 07:52:38 +1000
-Message-Id: <1208296358.6958.237.camel@pasglop>
+	Tue, 15 Apr 2008 18:02:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55783 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755763AbYDOWCb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 18:02:31 -0400
+Date: Tue, 15 Apr 2008 15:01:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] tty: fix routine name in ptmx_open()
+Message-Id: <20080415150143.e19bb518.akpm@linux-foundation.org>
+In-Reply-To: <4803FD15.6030006@ct.jp.nec.com>
+References: <4803FD15.6030006@ct.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 Apr 2008 17:55:49 -0700
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-On Tue, 2008-04-15 at 15:32 +0200, Arnd Bergmann wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> I'd recommend splitting prom.c into code that can be shared between powerpc
-> and microblaze and architecture specific code. Anything that deals with
-> LMB should go into powerpc, and you can simply use the alloc_bootmem
-> mechanism for your architecture.
+> At ptmx_open(), the 2nd parameter for check_tty_count() should
+> be "ptmx_open".
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  drivers/char/tty_io.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index 613ec81..546217d 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -2774,7 +2774,7 @@ static int ptmx_open(struct inode *inode, struct file *filp)
+>  	if (devpts_pty_new(tty->link))
+>  		goto out1;
+>  
+> -	check_tty_count(tty, "tty_open");
+> +	check_tty_count(tty, "ptmx_open");
+>  	retval = ptm_driver->open(tty, filp);
+>  	if (!retval) {
+>  		tty_audit_opening();
 
-That is non trivial... the unflatten DT code among others relies heavily
-on the LMB's to allocate the objects.
+Of course, using __func__ prevents this sort of bitrot.
 
-We could split the early accessors, unflatten code, and kernel-side
-accessors at one point, though we already did most of it no ?
-
-Ben.
+Or even #define check_tty_count(tty) __check_tty_count(tty, __func__)
 
 
