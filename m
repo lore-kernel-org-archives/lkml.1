@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYDORoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYDOR6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYDORoM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 13:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYDORn6
+	id S1753320AbYDOR6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 13:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYDOR6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 13:43:58 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:46299 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbYDORn5 (ORCPT
+	Tue, 15 Apr 2008 13:58:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39046 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751190AbYDOR6m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 13:43:57 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 15 Apr 2008 10:43:53 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch] F_GETPATH implementation (rev 2)
-In-Reply-To: <cfd18e0f0804142334w23a0f492we6b0a47ebee055f7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804151038250.8218@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0804141700010.6238@alien.or.mcafeemobile.com> 
- <alpine.LFD.1.00.0804141931070.2879@woody.linux-foundation.org>
- <cfd18e0f0804142334w23a0f492we6b0a47ebee055f7@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 15 Apr 2008 13:58:42 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/42Q8y71b40QGHO/272+yVbZgu8S8JTdzZ2LqYnY
+	PNaWFWxWgQy/Fo
+From: Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: build issue #469 for v2.6.25-rc8-166-g6fdf5e6 in pms.c : undefined reference to `video_usercopy'
+Date: Tue, 15 Apr 2008 19:58:39 +0200
+User-Agent: KMail/1.9.7
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+References: <200804061448.42888.toralf.foerster@gmx.de> <20080415135933.1a85fd2e@gaivota>
+In-Reply-To: <20080415135933.1a85fd2e@gaivota>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804151958.39524.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Apr 2008, Michael Kerrisk wrote:
-
-> On Tue, Apr 15, 2008 at 4:41 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> >
-> > On Mon, 14 Apr 2008, Davide Libenzi wrote:
-> > >
-> > > This is a small patch to support BSD's F_GETPATH on Linux.
-> > > IMO the simplicity of the patch and the portability advantages makes it
-> > > worth it. I'll leave to others to further comments it.
-> >
-> > So, I'd like to know who (if anybody) really uses F_GETPATH.
+At Tuesday 15 April 2008 18:59:33 Mauro Carvalho Chehab wrote :
+> Hi Toralf,
+> Please try the enclosed patch. It should fix the issue.
+...
+> ---
+> Fix build when CONFIG_VIDEO_PMS=y and VIDEO_V4L2_COMMON=m
 > 
-> Davide described this as "BSD's F_GETPATH".  It's worth clarifying
-> that more accurately this is "MacOS's F_GETPATH".  I can't find any
-> trace of F_GETPATH on Net/Open/FreeBSD, Solaris doesn't seem to have
-> it either, and none of the other systems I checked has it either.
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+> 
+> 
+> Cheers,
+> Mauro
 
-Oh, I thought it was a common BSD-isdh thing. I did find it inside some 
-OSX code indeed.
-Given this, and given that the interface is not that great too (buffer 
-size bolt in), I think we can safely drop it.
+The patch works, thx :)
 
+However I had to change the files manually b/c the patch utility didn't
+accepted your input, therefore here's the diff output from my side:
 
+tfoerste@n22 ~/devel/linux-2.6 $ git diff drivers/media/Kconfig
+diff --git a/drivers/media/Kconfig b/drivers/media/Kconfig
+index 1195069..a91f768 100644
+--- a/drivers/media/Kconfig
++++ b/drivers/media/Kconfig
+@@ -30,7 +30,7 @@ config VIDEO_V4L2_COMMON
+        depends on (I2C || I2C=n) && VIDEO_DEV
+        default (I2C || I2C=n) && VIDEO_DEV
 
-- Davide
+-config VIDEO_V4L1
++config VIDEO_ALLOW_V4L1
+        bool "Enable Video For Linux API 1 (DEPRECATED)"
+        depends on VIDEO_DEV && VIDEO_V4L2_COMMON
+        default VIDEO_DEV && VIDEO_V4L2_COMMON
+@@ -60,9 +60,14 @@ config VIDEO_V4L1_COMPAT
 
+ config VIDEO_V4L2
+        bool
++       tristate
+        depends on VIDEO_DEV && VIDEO_V4L2_COMMON
+        default VIDEO_DEV && VIDEO_V4L2_COMMON
 
++config VIDEO_V4L1
++       tristate
++       depends on VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
++       default VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
+ source "drivers/media/video/Kconfig"
+
+ source "drivers/media/radio/Kconfig"
+
+-- 
+MfG/Sincerely
+
+Toralf Förster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
