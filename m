@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765153AbYDONrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbYDONvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765153AbYDONrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 09:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbYDONrP
+	id S1763972AbYDONvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 09:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYDONvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 09:47:15 -0400
-Received: from rtr.ca ([76.10.145.34]:1080 "EHLO mail.rtr.ca"
+	Tue, 15 Apr 2008 09:51:38 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:23311 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761283AbYDONrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 09:47:13 -0400
-Message-ID: <4804B1E0.10200@rtr.ca>
-Date: Tue, 15 Apr 2008 09:47:12 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1753588AbYDONvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 09:51:37 -0400
+From: Vitaliy Gusev <vgusev@openvz.org>
+To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Subject: Re: [RFC][PATCH][NET] Fix never pruned tcp out-of-order queue
+Date: Tue, 15 Apr 2008 17:54:07 +0400
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+References: <87mynvtuoj.fsf@basil.nowhere.org> <480467AA.2050808@firstfloor.org> <20080415115924.GA1550@ms2.inr.ac.ru>
+In-Reply-To: <20080415115924.GA1550@ms2.inr.ac.ru>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dan Williams <dan.j.williams@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <htejun@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca>	<47E88A13.70808@zytor.com>	<47E90019.3050006@rtr.ca>	<47E90458.7030801@zytor.com>	<47E9383F.3050908@rtr.ca>	<20080325192515.GA24234@suse.de>	<47E99A02.7040903@rtr.ca>	<47E99EBE.7010708@gmail.com>	<3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>	<47EBF7D0.6000901@zytor.com>	<e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com> <20080415001828.b0c9ed64.akpm@linux-foundation.org>
-In-Reply-To: <20080415001828.b0c9ed64.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Disposition: inline
+Message-Id: <200804151754.07397.vgusev@openvz.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 11 Apr 2008 16:25:32 -0700 "Dan Williams" <dan.j.williams@intel.com> wrote:
+> On 15 April 2008 15:59:24 Alexey Kuznetsov wrote:
+> Hello!
 > 
->>>  It doesn't really seem to be to belong under class at all.  I would suggest
->>> /sys/dev/char/ and /sys/dev/block/, for char and block respectively.
->>>
->> This thread fizzled out without a patch... here goes:
->>
->> ...
->>
->> sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
+> > I still think the guards are pretty much the same as before, sorry:)
 > 
-> Crickets are chirping and I can't remember what the conclusion to all this
-> was.  In fact the thread was more than ten-deep so I probably fell asleep.
-..
+> Guards inside tcp_prune_queue() are the same exactly.
+> 
+> But the patch adds the second point where out-of-order queue is discarded.
+> It is when the socket is under rcvbuf, but nevertheless skb cannot
+> be queued due to system-wide limit. In that case out-of-order queue 
+> is dropped and the limits are rechecked.
+> 
+> 
+> > But why not repeat the whole prune for all cases in this case then?
+> 
+> Collapsing and tuning rcv_ssthresh was done once, they are not guarded
+> by rcvbuf check. So, repeating those steps would be useless.
+> 
+> The only thing is:
+> 
+> > e.g. you should probably at least repeat the third step (setting
+> > pred_flags to 0) too.
+> 
+> Formally, this is correct. But this is not necessary, pred_flags reset
+> is redundant even in the first place. The fast path is not so fast,
+> memory limit is checked explicitly there.
+> 
+> 
+> The patch is not perfect. F.e. tcp_prune_ofo_queue() could see empty
+> out-of-order queue, in this case the second sk_stream_rmem_schedule()
+> is useless and could be skipped. But it is the second order effect.
+> 
+> I think this will work.
 
-Last I recall, Greg was vehemently opposed to having direct path access
-by device number in sysfs, but many other people saw benefit.
+> Thanks for comments. I will correct second call sk_stream_rmem_schedule()
+> and resend new patch.
 
-Myself (the originator), I simply decided that my sysfs access code has
-to work with older kernels too, so for now I'm just doing a brute force
-tree search to find things in sysfs.  I did get the code size down smaller
-for it, but it's still a pain.
-
-When the direct access feature goes in, I'll just change my code to try it first,
-and then still fall back to the tree search method on failure.
-
-> I queued it up so that others cannot do the same ;)
-..
-
-Good!
+Does tuning window need to consider free TCP memory (something like
+tcp_mem[2] - memory_allocated) ?
+ 
+-- 
+Thank,
+Vitaliy Gusev
