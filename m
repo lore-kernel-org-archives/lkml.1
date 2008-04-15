@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbYDOLIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbYDOLO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760450AbYDOLIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 07:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYDOLIJ
+	id S1762281AbYDOLO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 07:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYDOLOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 07:08:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40567 "EHLO mx1.redhat.com"
+	Tue, 15 Apr 2008 07:14:46 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49466 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755969AbYDOLII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 07:08:08 -0400
-Date: Tue, 15 Apr 2008 07:07:45 -0400
-From: Alan Cox <alan@redhat.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       alan@redhat.com, borntraeger@de.ibm.com, peter.oberparleiter@de.ibm.com,
-       schwidefsky@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: + s390-tty-prepare-for-put_char-to-return-success-fail.patch added to -mm tree
-Message-ID: <20080415110745.GA11858@devserv.devel.redhat.com>
-References: <200804150204.m3F24GdU005600@imap1.linux-foundation.org> <20080415072117.GA4177@osiris.boeblingen.de.ibm.com> <20080415111101.41b6e9e3@core> <20080415104507.GA18307@osiris.boeblingen.de.ibm.com>
+	id S1756107AbYDOLOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 07:14:45 -0400
+To: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
+       casey@schaufler-ca.com
+Cc: serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
+	<484889.77284.qm@web36604.mail.mud.yahoo.com>
+In-Reply-To: <484889.77284.qm@web36604.mail.mud.yahoo.com>
+Message-Id: <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 15 Apr 2008 20:14:41 +0900
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080415104507.GA18307@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 12:45:07PM +0200, Heiko Carstens wrote:
-> Ok, thanks for pointing this out! We are going to fix this as soon as your
-> patch is merged, so we can avoid further merge conflicts.
-> I assume your patch is for 2.6.26?
+Casey Schaufler wrote:
+> The question of protections on the object named /etc/passwd came
+> up time and time again. The notion that /etc/passwd could be a
+> symlink to /home/smalley/heeheehee really gave evaluators the
+> whillies. As did the chroot environment, where /roots/crispin/etc/passwd
+> could magicly become /etc/passwd.
+Why do people continue speaking symlinks and chroots?
+To avoid the effect of symlinks and chroots, AppArmor and TOMOYO Linux
+derive pathnames from dentry and vfsmount.
+If /etc/passwd was a symlink, the derived pathname will be /home/smalley/heeheehee.
+If accessed from inside a chroot, the derived pathname will be /roots/crispin/etc/passwd.
 
-I would hope so - assuming no other bugs fall out of this.
+It is true that namespace may differ between processes,
+but I think that that is the matter of how to restrict namespace manipulation operations.
+As I said, a system can't survive if namespace is madly manipulated.
+To keep the system workable, /bin/ must be the directory for binary programs,
+/etc/ must be the directory for configuration files, and so on in all namespaces.
 
-Alan
+It is true that the pathname may change while traversing up the dentry/vfsmount trees.
+But the change does not occur infinitely.
+As I said, a system can't survive if files and directories are madly renamed.
+The possible changes are bounded by the policy.
 
+At least, I want people not to speak symlinks and chroots when talking about
+AppArmor and TOMOYO Linux.
+
+Regards.
