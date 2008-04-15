@@ -1,81 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbYDOXRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYDOXWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbYDOXRj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 19:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYDOXRa
+	id S1755571AbYDOXWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 19:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYDOXWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 19:17:30 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:43380 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751536AbYDOXR3 (ORCPT
+	Tue, 15 Apr 2008 19:22:03 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:43335 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbYDOXWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 19:17:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TSyDOiFTYSt8+EszNgXFDki5nyudoTC4q3xAOtzDjAdjTMZUX5aDhmfPucHQcN+F1xAxWuxfoXTj/qUNf1DTGK7f+ka+0T9cNY2adFMFUnldQ7jNrYceNO46Uzue5lKYQbgfjZrY9Qs137HOtuqmv8ltw1PKalXsrZyqe4phFb0=  ;
-X-YMail-OSG: oMMu.7kVM1mCKD6vw0RklDP8qKOQfn5Dk4yxvHnyETWFJntxBj52ac1M8GbRTWKLcfM.kLAo1bwZNT6uyEDg74m9tH_psJM-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-Subject: Re: ehci-hcd affects hda speed
-Date: Tue, 15 Apr 2008 16:17:22 -0700
-User-Agent: KMail/1.9.6
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <47E1B062.4060709@keyaccess.nl> <alpine.LFD.1.10.0804152220560.6429@nev.ubzr>
-In-Reply-To: <alpine.LFD.1.10.0804152220560.6429@nev.ubzr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 15 Apr 2008 19:22:01 -0400
+Subject: Re: bdev size not updated correctly after underlying device is
+	resized
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com,
+       axboe@kernel.dk, andmike@linux.vnet.ibm.com
+In-Reply-To: <20080415160314.11e9b7e1.akpm@linux-foundation.org>
+References: <1207783782.31821.80.camel@bluto.andrew>
+	 <20080415160314.11e9b7e1.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 Apr 2008 17:21:59 -0600
+Message-Id: <1208301719.24092.21.camel@bluto.andrew>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804151617.23012.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 April 2008, Lev A. Melnikovsky wrote:
-
-> I have repeated experiments with P3B-F and VT6212L combination (to 
-> improve visibility the AsyncSchedSleepTime is set to 1us):
-
-Which you *know* is aggravating the problem.  What numbers
-do you observe with a generic 2.6.25-rc9 kernel?  (That is,
-without that abusive 1 usec setting ... that kernel includes
-the patch switching to a more customary 10 usec value.)
-
-
-> The oddest peculiarity for me is the hysteretic difference between #1 and 
-> #3 states. I mean experimental data (hda throughput) depends not on the 
-> state (hardware/loaded modules), but on the path we followed.
+On Tue, 2008-04-15 at 16:03 -0700, Andrew Morton wrote:
+> On Wed, 09 Apr 2008 17:29:42 -0600
+> .
+> > Subject: [PATCH] Reset bdev size regardless of other openers.
+> > 
+> > A block device may be resized while online.  If the revalidate_disk
+> > routine is called after the resize, the gendisk->capacity value is
+> > updated for the device.  However, the bdev->bd_inode->i_size is not
+> > updated when the block device is opened if there are any other openers
+> > on the device.  This means that apps like LVM are unlikely to see the
+> > size change as they tend to keep their block devices open.  There is a
+> > discussion of this problem at:
+> > 
+> >   http://lkml.org/lkml/2007/7/3/83
+> > 
+> > This patch changes block_dev.c:do_open() to call bd_set_size()
+> > regardless if there are other openers on the device.  It should not be
+> > applied in its existing state as changing i_size should be protected by
+> > a lock. Also, there needs to be some analysis on the effects of changing
+> > the device size underneath an app.
 > 
-> Interestingly enough, sampling registers (via /sys) often shows Async bit 
-> set of the status register in the state #3. It is always cleared in #1.
+> hm, tricky.
+> 
+> I don't know what problems a change like this might cause - probably few,
+> given the rarity and slowness of block device resizing.
 
-With 2.6.25-rc9's default setting for async sleep time?
+I have been looking through code where this might be a problem.  The
+sort of things I was worried about is where something might try and do a
+calculation based on the i_size and write/read data from there after it
+has been resized, possibly corrupting data.  The COW code in dm seems to
+come the closest, but then if you are resizing the device that has
+snapshots on it, you might be getting what you deserve.
 
+> 
+> Presumably increasing the device size will cause les problems than
+> decreasing it would. 
 
-> The async file is empty in both states. I wonder, how many degrees of
-> freedom does an empty schedule have? Does "empty" mean "has no incomplete
-> requests" or "has no requests at all"? Just guessing...
+Agreed.
 
-Means "none at all".  So if the "Async" status bit is set
-while the "Async" command is clear, it means the hardware
-is clearly misbehaving.  That status bit is supposed to
-turn itself off after the command bit is cleared ... within
-a couple milliseconds.
+>  Do we even support device shrinking?
 
+Yes, this common with LVM at least.  Whether it is a good idea to do
+this with a mounted file-system on it is another matter.
 
-> I don't think this is purely VIA problem. 
+> 
+> > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > index 7d822fa..d13a4e5 100644
+> > --- a/fs/block_dev.c
+> > +++ b/fs/block_dev.c
+> > @@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+> >  				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
+> >  				if (ret)
+> >  					goto out;
+> > +				/* device may have been resized with revalidate_disk */
+> > +				if (!part)
+> > +					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
+> >  			}
+> >  			if (bdev->bd_invalidated)
+> >  				rescan_partitions(bdev->bd_disk, bdev);
+> 
+> I'd have thought that an appropriate way to fix all this would be to
+> perform the i_size update between freeze_bdev() and thaw_bdev(), when the
+> fs is quiesced.  But it's not really in my comfort zone.
 
-We've certainly seen enough "purely on VIA hardware" issues
-though; and I don't recall evidence showing this is NOT
-another one of those.  Example, that bogus 1 usec default...
+Except that this is not only done with file-systems.  In my case I am
+just trying to extend an LVM logical volume after a resize but cannot
+because it is open (activated). In practice, however, it is probably
+only useful to do this with an online file-system.  Otherwise you could
+just close all openers and the resize will work fine.
 
-One hopes that when http://linux.via.com.tw finally appears,
-it will include errata for all relevant chipsets.
+> 
 
-- Dave
+-- 
+Andrew Patterson
 
