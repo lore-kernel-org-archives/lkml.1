@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYDOQE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763835AbYDOQG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbYDOQE2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 12:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYDOQEU
+	id S1763835AbYDOQG6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 12:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYDOQGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 12:04:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42799 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750840AbYDOQET (ORCPT
+	Tue, 15 Apr 2008 12:06:48 -0400
+Received: from host64.cybernetics.com ([70.169.137.4]:4582 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYDOQGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 12:04:19 -0400
-Date: Tue, 15 Apr 2008 09:02:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
-Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
-In-Reply-To: <20080415062534.GA9172@elte.hu>
-Message-ID: <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
-References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
- <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 15 Apr 2008 12:06:47 -0400
+X-Greylist: delayed 1638 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Apr 2008 12:06:47 EDT
+Message-ID: <4804CC2F.6030403@cybernetics.com>
+Date: Tue, 15 Apr 2008 11:39:27 -0400
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220034515.GC22703@gondor.apana.org.au> <47BC44E2.9060301@cybernetics.com> <20080415001207.GA11852@localdomain>
+In-Reply-To: <20080415001207.GA11852@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Apr 2008, Ingo Molnar wrote:
+Matt Carlson wrote:
+> Hi Tony.  Sorry for the radio silence.
 >
-> debug output is:
-> 
->   http://redhat.com/~mingo/misc/log-Thu_Apr_10_10_41_16_CEST_2008.bad.rc9
-> 
-> so it's probably the first few page allocations (setup_cpu_cache()) 
-> going wrong already - suggesting a some fundamental borkage in SLAB?
+> Michael and I have discussed this problem a bit.  Another possibility is
+> that the chip may be having difficulty with non-dword aligned TX buffers.
+> Since we already know the RX side has the same problem, it isn't so
+> far-fetched to think that perhaps it can affect the TX side too.  Can
+> you give the following patch a try and see if the corruption still
+> happens?
+>
+>   
 
-Well, I think it suggests some fundamental borkage in the page allocator.
+Thanks, your patch fixes the problem (tested on 2.6.24.4).  However, I
+had to change "(skb->mac_header & 3)" in your patch to "((long)
+skb->mac_header & 3)" since mac_header is a pointer rather than an int
+on 32-bit systems.
 
-That first warn-on is from the "alloc_pages_node()" returning NULL at 
-bootup. Sure, it could be that the arguments are bogus, but that sounds 
-unlikely since none of that is dependent on any kconfig stuff.
+Tested-by: Tony Battersby <tonyb@cybernetics.com>
 
-The fact that it happens with both SLUB/SLAB makes that even more obvious.
-
-Now, you don't have fault injection on, so it can't be that, and your 
-debug entry for *z == NULL didn' trigger in alloc_pages, so it's no that 
-one either. 
-
-However, if __alloc_pages() failed, I would have expected to see the 
-"memory allocation failed" printk. Why didn't it? Is printk_ratelimit() 
-broken at boot (last_msg start out as zero - maybe i should start out as 
-a negative number)?
-
-			Linus
