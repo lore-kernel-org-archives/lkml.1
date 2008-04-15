@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbYDOVPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbYDOVQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbYDOVPW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbYDOVO7
+	id S932611AbYDOVQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 17:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYDOVQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:14:59 -0400
-Received: from saeurebad.de ([85.214.36.134]:40786 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756943AbYDOVO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:14:58 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, ak@suse.de, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
-References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
-	<20080415071120.GB15499@elte.hu> <87hce3i8mq.fsf@saeurebad.de>
-	<86802c440804151157m5baab2efla7f35a8f98ac76b7@mail.gmail.com>
-	<87mynuhp0o.fsf@saeurebad.de>
-	<86802c440804151303k29295e9bp70c1046b8c9dca76@mail.gmail.com>
-Date: Tue, 15 Apr 2008 23:14:38 +0200
-In-Reply-To: <86802c440804151303k29295e9bp70c1046b8c9dca76@mail.gmail.com>
-	(Yinghai Lu's message of "Tue, 15 Apr 2008 13:03:53 -0700")
-Message-ID: <87ej96hlc1.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 15 Apr 2008 17:16:22 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49557 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754060AbYDOVQW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 17:16:22 -0400
+Message-ID: <48051B22.1040901@sgi.com>
+Date: Tue, 15 Apr 2008 14:16:18 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Christoph Lameter <clameter@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+References: <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <20080415202805.GA26880@elte.hu> <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu> <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com> <20080415205820.GC31645@elte.hu> <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Christoph Lameter wrote:
+> On Tue, 15 Apr 2008, Ingo Molnar wrote:
+> 
+>> and the bug pattern seems to be memory corruption - not memory 
+>> exhaustion.
+> 
+> SLUB does not do a memory allocation where it fails here but simply 
+> accesses per cpu information that is expected to be already zeroed.
+> 
+>> i.e. we allocated RAM but it got corrupted after allocation.
+> 
+> In some situations we are screwing up the per cpu data handling on 
+> 32 bit x86? Adding Mike. This looks like the per cpu area overlaps with 
+> something else?
+> 
+> 
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+I'll certainly take a look...
 
->>  > 2. intel cross node box: node0: 0g-2g, 4g-6g, node1: 2g-4g, 6g-8g. i
->>  > don't think they have two bdata struct for every node.
->>
->>  How do the bdata structures represent this setup right now?  Are you
->>  sure that there is not a node descriptor for every contiguous region?
->
-> http://lkml.org/lkml/2008/3/25/233
->
-> Subject	[patch] srat, x86_64: Add support for nodes spanning other nodes
->
-> For example, If the physical address layout on a two node system with 8 GB
-> memory is something like:
-> node 0: 0-2GB, 4-6GB
-> node 1: 2-4GB, 6-8GB
->
-> Current kernels fail to boot/detect this NUMA topology.
->
-> ACPI SRAT tables can expose such a topology which needs to be supported.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-
-As I understood the code (more guessing than understanding), it breaks
-down these physical nodes into contiguous logical memory blocks which
-then get represented by having a node descriptor for each of them.  Can
-you confirm that?
-
-	Hannes
+-Mike
