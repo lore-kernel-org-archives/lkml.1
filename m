@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbYDOSVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYDOSZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759244AbYDOSVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYDOSVa
+	id S1757964AbYDOSZH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYDOSYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:21:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50099 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbYDOSV3 (ORCPT
+	Tue, 15 Apr 2008 14:24:54 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35144 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752551AbYDOSYx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:21:29 -0400
-Message-ID: <4804F108.6020505@zytor.com>
-Date: Tue, 15 Apr 2008 11:16:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 15 Apr 2008 14:24:53 -0400
+Date: Tue, 15 Apr 2008 14:24:53 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080415182453.GR7385@csclub.uwaterloo.ca>
+References: <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca> <20080414190308.GJ15824@duck.suse.cz> <20080414192928.GM7385@csclub.uwaterloo.ca> <20080415085740.GA7603@atrey.karlin.mff.cuni.cz> <20080415153221.GD7387@csclub.uwaterloo.ca> <20080415173430.GB4994@elf.ucw.cz>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <htejun@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E88A13.70808@zytor.com>	 <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com>	 <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de>	 <47E99A02.7040903@rtr.ca> <47E99EBE.7010708@gmail.com>	 <3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>	 <47EBF7D0.6000901@zytor.com>	 <e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>	 <20080415001828.b0c9ed64.akpm@linux-foundation.org> <1208269202.3131.3.camel@localhost.localdomain>
-In-Reply-To: <1208269202.3131.3.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415173430.GB4994@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> 
-> The expressed preference was simply to expand the ioctl (or add a new
-> one that got the required information without having to go through the
-> old HDIOGETGEO path to extract the value from a fictitious geometry).
-> 
-> Greg was a bit sceptical of the value of the above proposal ...
-> 
+On Tue, Apr 15, 2008 at 07:34:30PM +0200, Pavel Machek wrote:
+> Yes, kernel bugs are confusing ;-).
 
-However, you have to admit that kind of defeats the whole point of 
-having this information in sysfs.  IMNSHO, even scanning sysfs is better 
-than keep adding binary ioctls.
+I only see an application bug so far.
 
-	-hpa
+> The "application" could be malware trying to confuse debugger, for
+> example.
 
+If you can't do it on demand (which I can't see any way to do) then I
+don't think malware can take advantage of it.
+
+> The "application" could be something you are trying to debug.
+
+True, but even without this behaviour doing seeks and read/writes from
+multiple threads without locking will already show plenty of problems
+even if you somehow manage to hit this issue, and not only that you have
+to have threads writing to different 4GB aligned chunks of the file to
+cause a problem, since otherwise they would all be setting the top bits
+the same.  I would hope anyone doing multithreaded work on a file that
+big would like to avoid the locking issue by using pread and pwrite
+instead in which case there is no problem either.
+
+> I did brief reading on lseek man pages, and it does not mention
+> "kernel may seek to random place if you attempt to seek  from two
+> threads at the same time". So this is a kernel or manpages bug.
+
+Does it say anything about what happens if you try to seek from two
+places at once?
+
+> Maybe you can take a look at POSIX if it permits this behaviour? 
+
+The parts I can find for posix don't say one way or the other.
+
+-- 
+Len Sorensen
