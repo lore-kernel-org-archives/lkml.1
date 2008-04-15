@@ -1,106 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764575AbYDOUqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbYDOUuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764575AbYDOUqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYDOUqN
+	id S1762229AbYDOUuY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYDOUuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:46:13 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47803 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752588AbYDOUqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:46:12 -0400
-Date: Tue, 15 Apr 2008 23:45:00 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot -
-	dual-core Sony Vaio
-Message-ID: <20080415204500.GD1677@cs181133002.pp.htv.fi>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <20080413202545.GA7111@localhost.ift.unesp.br> <20080415162533.GA7354@localhost.ift.unesp.br> <200804152233.39079.rjw@sisk.pl>
+	Tue, 15 Apr 2008 16:50:12 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:38086 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752864AbYDOUuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 16:50:11 -0400
+Date: Tue, 15 Apr 2008 13:50:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+In-Reply-To: <20080415204208.GA30432@elte.hu>
+Message-ID: <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com>
+References: <20080415062534.GA9172@elte.hu>
+ <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
+ <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
+ <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com>
+ <20080415201734.GA25628@elte.hu> <20080415202805.GA26880@elte.hu>
+ <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200804152233.39079.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 10:33:38PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 15 of April 2008, Carlos R. Mafra wrote:
-> > On Sun 13.Apr'08 at 17:25:45 -0300, Carlos R. Mafra wrote:
-> > > On Sun 13.Apr'08 at 20:56:41 +0200, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.24.  Please verify if it still should be listed.
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
-> > > > Subject		: 2.6.25-current-git sometimes hangs on boot - dual-core Sony Vaio
-> > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> > > > Date		: 2008-02-23 18:55 (51 days old)
-> > > > References	: http://lkml.org/lkml/2008/2/23/263
-> > > > 		  http://lkml.org/lkml/2008/4/4/41
-> > > > 		  http://lkml.org/lkml/2008/4/9/69
-> > > 
-> > > Soeren said it no longer happens to him in http://lkml.org/lkml/2008/4/9/53
-> > > but unfortunately it still happens with me using -rc9. So I kidnapped his 
-> > > bugzilla report :-)
-> > > 
-> > > In the bugzilla entry I said earlier today that "hpet=disable" apparently
-> > > makes the problem go away (42 boots OK so far, whereas without this
-> > > boot option it hangs ~90% using vga=6 and ~10% using vga=0x0364)
-> > > 
-> > > I tried to bisect it, but sometimes in pre 2.6.25-rc1 kernels it takes
-> > > 30 boots before the first hang to occur. So bisection is not reliable...
-> > > 
-> > > If someone proposes a patch I will be glad to test it!
-> > > 
-> > > PS: The similar bug in buzilla 10377 also appears to be "fixed"
-> > > by using hpet=disable, see comment #17 in that bug.
-> > 
-> > 
-> > From what Mark Lord said in his comments #33 to #35 in 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10117
-> > it appears that this is a much older regression, from april 2007.
-> > 
-> > So this is a regression, but not from 2.6.24 (although somehow
-> > it never hit me before). I don't know about the policy of closing
-> > regressions that come from way before the previous kernel version, 
-> > if there is any. Then I will let you manage the bugzilla #10117
-> > as you see fit (but I will be "there" to hopefuly test any 
-> > proposed patches).
-> 
-> I dropped the bug from the list of recent regressions, so it doesn't block
-> bug #9832 any more.  However, this still is a bug and regression, so the
-> bugzilla entry remains open.
-
-Soerens original report was a 2.6.25 regression.
-
-And #10377 that was closed as a duplicate of #10117 was also reported as 
-a 2.6.25 regression.
-
-#10117 seems to suffer from the common disease of people hijacking an 
-existing bug, but Soeren's issue that was what was originally tracked in 
-#10117 is (or was) a 2.6.25 regression.
-
-If other people have similar problems that already existed in 2.6.24 
-these are different issues that should be tracked in their own bugs.
-
-> Thanks,
-> Rafael
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Vexing. The failure in the slabs suggests that no lowmem pages were freed 
+during the walk of the bootmem bitmaps. Could you call show_mem before 
+kmem_cache_init() runs?
