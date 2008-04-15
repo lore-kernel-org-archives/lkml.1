@@ -1,91 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbYDOAMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761400AbYDOARC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762571AbYDOAMh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 20:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763114AbYDOAMX
+	id S1761400AbYDOARC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 20:17:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYDOAQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 20:12:23 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:48409 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763058AbYDOAMW (ORCPT
+	Mon, 14 Apr 2008 20:16:53 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:27904 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbYDOAQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 20:12:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Al0FAHKPA0hMQWoK/2dsb2JhbACBXql+
-Date: Mon, 14 Apr 2008 20:12:19 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
-Subject: Re: [patch 16/17] Immediate Values - Documentation
-Message-ID: <20080415001219.GC19596@Krystal>
-References: <20080409150829.855195878@polymtl.ca> <200804101333.36419.rusty@rustcorp.com.au> <20080411011647.GA2785@Krystal> <200804120106.52981.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Apr 2008 20:16:52 -0400
+Message-ID: <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
+Date: Mon, 14 Apr 2008 17:16:50 -0700
+From: "Tom May" <tom@tommay.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804120106.52981.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:52:39 up 45 days, 20:03,  5 users,  load average: 0.47, 0.62,
-	0.70
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+	 <ab3f9b940804011635g2de833d0l44558f78a1cce1e5@mail.gmail.com>
+	 <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Friday 11 April 2008 11:16:47 Mathieu Desnoyers wrote:
-> > * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > > On Thursday 10 April 2008 01:08:45 Mathieu Desnoyers wrote:
-> > > > If you have to read the immediate values from a function declared as
-> > > > __init or __exit, you should explicitly use _imv_read(), which will
-> > > > fall back on a global variable read. Failing to do so will leave a
-> > > > reference to the __init section after it is freed (it would generate a
-> > > > modpost warning).
-> > >
-> > > That's a real usability wart.  Couldn't we skip these in the patching
-> > > loop if required and revert so noone can make this mistake?
-> >
-> > Yeah, I know :(
-> >
-> > Well, only if we can find a way to detect the macro is put within a init
-> > or exit section. Is there some assembly trickery that would permit us to
-> > do that ?
-> >
-> > Otherwise, given the memory freed from the init section could be reused
-> > later by the kernel, I don't see how we can detect the pointer leads to
-> > a freed init section and, say, a module.
-> 
-> In theory although not in practice, since everyone vmallocs modules.  Let's 
-> not rely on that tho.
-> 
-> How about we sweep the immediate table on init discard and remove/mark all the 
-> init and exit references?
-> 
-> Cheers,
-> Rusty.
+On Wed, Apr 2, 2008 at 12:31 AM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi Tom,
+>
+>  Thank you very useful comment.
+>  that is very interesting.
+>
+>
+>  > I tried it with a real-world program that, among other things, mmaps
+>  > anonymous pages and touches them at a reasonable speed until it gets
+>  > notified via /dev/mem_notify, releases most of them with
+>  > madvise(MADV_DONTNEED), then loops to start the cycle again.
+>  >
+>  > What tends to happen is that I do indeed get notifications via
+>  > /dev/mem_notify when the kernel would like to be swapping, at which
+>  > point I free memory.  But the notifications come at a time when the
+>  > kernel needs memory, and it gets the memory by discarding some Cached
+>  > or Mapped memory (I can see these decreasing in /proc/meminfo with
+>  > each notification).  With each mmap/notify/madvise cycle the Cached
+>  > and Mapped memory gets smaller, until eventually while I'm touching
+>  > pages the kernel can't find enough memory and will either invoke the
+>  > OOM killer or return ENOMEM from syscalls.  This is precisely the
+>  > situation I'm trying to avoid by using /dev/mem_notify.
+>
+>  Could you send your test program?
+>  I can't reproduce that now, sorry.
+>
+>
+>
+>  > The criterion of "notify when the kernel would like to swap" feels
+>  > correct, but in addition I seem to need something like "notify when
+>  > cached+mapped+free memory is getting low".
+>
+>  Hmmm,
+>  I think this idea is only useful when userland process call
+>  madvise(MADV_DONTNEED) periodically.
+>
+>  but I hope improve my patch and solve your problem.
+>  if you don' mind, please help my testing ;)
 
-I already posted a patch which nullifies the immediate values pointing
-to init code after the init phase of the core kernel and the init phase
-of modules, just before the init section is freed.
+Here's a test program that allocates memory and frees on notification.
+ It takes an argument which is the number of pages to use; use a
+number considerably higher than the amount of memory in the system.
+I'm running this on a system without swap.  Each time it gets a
+notification, it frees memory and writes out the /proc/meminfo
+contents.  What I see is that Cached gradually decreases, then Mapped
+decreases, and eventually the kernel invokes the oom killer.  It may
+be necessary to tune some of the constants that control the allocation
+and free rates and latency; these values work for my system.
 
-For the exit section, I could add some code which nullifies the
-immediate values pointing to exit section for !CONFIG_MODULE_UNLOAD.
-However, I would need to get the equivalent of init and init_size for
-.exit too.
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <sched.h>
+#include <time.h>
 
-I wonder what would happen if someone declares a __exit function in a
-builtin object, with an immediate value in it ? Is there a possibility
-that it leaves a reference to code not even linked in ?
+#define PAGESIZE 4096
 
-Mathieu
+/* How many pages we've mmap'd. */
+static int pages;
 
+/* Pointer to mmap'd memory used as a circular buffer.  One thread
+   touches pages, another thread releases them on notification. */
+static char *p;
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+/* How many pages to touch each 5ms.  This makes at most 2000
+   pages/sec. */
+#define TOUCH_CHUNK 10
+
+/* How many pages to free when we're notified.  With a 100ms FREE_DELAY,
+   we can free ~9110 pages/sec, or perhaps only 5*911 = 4555 pages/sec if we're
+   notified only 5 times/sec. */
+#define FREE_CHUNK 911
+
+/* Delay in milliseconds before freeing pages, to simulate latency while finding
+   pages to free. */
+#define FREE_DELAY 100
+
+static void touch(void);
+static int release(void *arg);
+static void release_pages(void);
+static void show_meminfo(void);
+
+/* Stack for the release thread. */
+static char stack[8192];
+
+int
+main (int argc, char **argv)
+{
+    pages = atoi(argv[1]);
+    p = mmap(NULL, pages * PAGESIZE, PROT_READ | PROT_WRITE,
+                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, 0, 0);
+    if (p == MAP_FAILED) {
+        perror("mmap");
+        exit(1);
+    }
+
+    if (clone(release, stack + sizeof(stack) - 4,
+              CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD,
+              NULL) == -1) {
+        perror("clone failed");
+        exit(1);
+    }
+
+    touch();
+}
+
+static void
+touch (void)
+{
+    int page = 0;
+
+    while (1) {
+        int i;
+        struct timespec t;
+        for (i = 0; i < TOUCH_CHUNK; i++) {
+            p[page * PAGESIZE] = 1;
+            if (++page >= pages) {
+                page = 0;
+            }
+        }
+
+        t.tv_sec = 0;
+        t.tv_nsec = 5000000;
+        if (nanosleep(&t, NULL) == -1) {
+            perror("nanosleep");
+        }
+    }
+}
+
+static int
+release (void *arg)
+{
+    int fd = open("/dev/mem_notify", O_RDONLY);
+    if (fd == -1) {
+        perror("open(/dev/mem_notify)");
+        exit(1);
+    }
+
+    while (1) {
+        struct pollfd pfd;
+        int nfds;
+
+        pfd.fd = fd;
+        pfd.events = POLLIN;
+
+        nfds = poll(&pfd, 1, -1);
+        if (nfds == -1) {
+            perror("poll");
+            exit(1);
+        }
+        if (nfds == 1) {
+            struct timespec t;
+            t.tv_sec = 0;
+            t.tv_nsec = FREE_DELAY * 1000000;
+            if (nanosleep(&t, NULL) == -1) {
+                perror("nanosleep");
+            }
+            release_pages();
+            printf("time: %d\n", time(NULL));
+            show_meminfo();
+        }
+    }
+}
+
+static void
+release_pages (void)
+{
+    /* Index of the next page to free. */
+    static int page = 0;
+    int i;
+
+    /* Release FREE_CHUNK pages. */
+
+    for (i = 0; i < FREE_CHUNK; i++) {
+        int r = madvise(p + page*PAGESIZE, PAGESIZE, MADV_DONTNEED);
+        if (r == -1) {
+            perror("madvise");
+            exit(1);
+        }
+        if (++page >= pages) {
+            page = 0;
+        }
+    }
+}
+
+static void
+show_meminfo (void)
+{
+    char buffer[2000];
+    int fd;
+    ssize_t n;
+
+    fd = open("/proc/meminfo", O_RDONLY);
+    if (fd == -1) {
+        perror("open(/proc/meminfo)");
+        exit(1);
+    }
+
+    n = read(fd, buffer, sizeof(buffer));
+    if (n == -1) {
+        perror("read(/proc/meminfo)");
+        exit(1);
+    }
+
+    n = write(1, buffer, n);
+    if (n == -1) {
+        perror("write(stdout)");
+        exit(1);
+    }
+
+    if (close(fd) == -1) {
+        perror("close(/proc/meminfo)");
+        exit(1);
+    }
+}
+
+.tom
