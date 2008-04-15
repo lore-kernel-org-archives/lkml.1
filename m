@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYDORlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYDORoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbYDORlg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 13:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYDORl1
+	id S1754478AbYDORoM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 13:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYDORn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 13:41:27 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:51555 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYDORl0 (ORCPT
+	Tue, 15 Apr 2008 13:43:58 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:46299 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbYDORn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 13:41:26 -0400
-Date: Tue, 15 Apr 2008 11:41:09 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080415174109.GD9191@parisc-linux.org>
-References: <4803AD91.5020001@firstfloor.org> <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com> <1208242017.7053.4.camel@lappy> <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com> <1208249088.7124.7.camel@twins> <alpine.LFD.1.00.0804150907080.2879@woody.linux-foundation.org> <4804D779.6070907@firstfloor.org> <alpine.LFD.1.00.0804150952300.2879@woody.linux-foundation.org> <4804E29F.9060703@firstfloor.org> <alpine.LFD.1.00.0804151023350.2879@woody.linux-foundation.org>
+	Tue, 15 Apr 2008 13:43:57 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 15 Apr 2008 10:43:53 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch] F_GETPATH implementation (rev 2)
+In-Reply-To: <cfd18e0f0804142334w23a0f492we6b0a47ebee055f7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804151038250.8218@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0804141700010.6238@alien.or.mcafeemobile.com> 
+ <alpine.LFD.1.00.0804141931070.2879@woody.linux-foundation.org>
+ <cfd18e0f0804142334w23a0f492we6b0a47ebee055f7@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0804151023350.2879@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 10:26:21AM -0700, Linus Torvalds wrote:
-> MUCH more trivial than this complex series.
+On Tue, 15 Apr 2008, Michael Kerrisk wrote:
+
+> On Tue, Apr 15, 2008 at 4:41 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> >
+> > On Mon, 14 Apr 2008, Davide Libenzi wrote:
+> > >
+> > > This is a small patch to support BSD's F_GETPATH on Linux.
+> > > IMO the simplicity of the patch and the portability advantages makes it
+> > > worth it. I'll leave to others to further comments it.
+> >
+> > So, I'd like to know who (if anybody) really uses F_GETPATH.
 > 
-> (You may think that the "Replace completions with semaphores" patch is not 
-> very complicated, but it *is* - it depends very intimately on the big 
-> patch-series that basically turns semaphores into what completions are 
-> now!)
+> Davide described this as "BSD's F_GETPATH".  It's worth clarifying
+> that more accurately this is "MacOS's F_GETPATH".  I can't find any
+> trace of F_GETPATH on Net/Open/FreeBSD, Solaris doesn't seem to have
+> it either, and none of the other systems I checked has it either.
 
-complex?  big?  The big bits are dealing with renaming asm/semaphore.h to
-linux/semaphore.h, and I've dropped those out now.  There's a couple of
-up-front patches which add inclusions of asm/semaphore.h to files which
-were missing it.  Then I add the new semaphore implementation, delete
-the old ones, and add the down_timeout() and down_killable() functions.
+Oh, I thought it was a common BSD-isdh thing. I did find it inside some 
+OSX code indeed.
+Given this, and given that the interface is not that great too (buffer 
+size bolt in), I think we can safely drop it.
 
-> In other words, what makes me not like this is hat we first turn 
-> semaphores into the generic code (which is largely what completions were: 
-> just a special case of the generic semaphores!) and then turns completions 
-> into these things. That just doesn't make any sense to me!
 
-Blame me for not realising that completions were semaphores under a
-different name.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+- Davide
+
+
