@@ -1,96 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765297AbYDOQQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765478AbYDOQRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765297AbYDOQQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 12:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbYDOQQW
+	id S1765478AbYDOQRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 12:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYDOQRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 12:16:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60741 "EHLO mx2.mail.elte.hu"
+	Tue, 15 Apr 2008 12:17:10 -0400
+Received: from saeurebad.de ([85.214.36.134]:34711 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761754AbYDOQQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 12:16:20 -0400
-Date: Tue, 15 Apr 2008 18:15:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
-Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
-Message-ID: <20080415161532.GA15088@elte.hu>
-References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com> <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
+	id S1753150AbYDOQRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 12:17:09 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
+       Andreas Schwab <schwab@suse.de>, Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2] mm: Fix possible off-by-one in walk_pte_range()
+References: <12082680403770-git-send-email-hannes@saeurebad.de>
+	<18436.52094.242415.163660@harpo.it.uu.se>
+Date: Tue, 15 Apr 2008 18:16:53 +0200
+In-Reply-To: <18436.52094.242415.163660@harpo.it.uu.se> (Mikael Pettersson's
+	message of "Tue, 15 Apr 2008 17:36:30 +0200")
+Message-ID: <8763ujhz4a.fsf_-_@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Mikael Pettersson <mikpe@it.uu.se> writes:
 
-> On Tue, 15 Apr 2008, Ingo Molnar wrote:
-> >
-> > debug output is:
-> > 
-> >   http://redhat.com/~mingo/misc/log-Thu_Apr_10_10_41_16_CEST_2008.bad.rc9
-> > 
-> > so it's probably the first few page allocations (setup_cpu_cache()) 
-> > going wrong already - suggesting a some fundamental borkage in SLAB?
-> 
-> Well, I think it suggests some fundamental borkage in the page 
-> allocator.
-> 
-> That first warn-on is from the "alloc_pages_node()" returning NULL at 
-> bootup. Sure, it could be that the arguments are bogus, but that 
-> sounds unlikely since none of that is dependent on any kconfig stuff.
-> 
-> The fact that it happens with both SLUB/SLAB makes that even more 
-> obvious.
-> 
-> Now, you don't have fault injection on, so it can't be that, and your 
-> debug entry for *z == NULL didn' trigger in alloc_pages, so it's no 
-> that one either.
-> 
-> However, if __alloc_pages() failed, I would have expected to see the 
-> "memory allocation failed" printk. Why didn't it? Is 
-> printk_ratelimit() broken at boot (last_msg start out as zero - maybe 
-> i should start out as a negative number)?
+> Johannes Weiner writes:
+>  > After the loop in walk_pte_range() pte might point to the first address
+>  > after the pmd it walks.  The pte_unmap() is then applied to something
+>  > bad.
+>  > 
+>  > Spotted by Roel Kluin and Andreas Schwab.
+>  > 
+>  > Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>  > CC: Roel Kluin <12o3l@tiscali.nl>
+>  > CC: Andreas Schwab <schwab@suse.de>
+>  > CC: Matt Mackall <mpm@selenic.com>
+>  > CC: Andrew Morton <akpm@linux-foundation.org>
+>  > ---
+>  > 
+>  > A bug is unlikely, though.  kunmap_atomic() looks up the kmap entry by
+>  > map-type instead of the address the pte points.  So the worst thing I
+>  > could find with a quick grep was that a wrong TLB entry is being
+>  > flushed.  Still, the code is wrong :)
+>  > 
+>  > diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+>  > index 1cf1417..cf3c004 100644
+>  > --- a/mm/pagewalk.c
+>  > +++ b/mm/pagewalk.c
+>  > @@ -13,7 +13,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  >  		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
+>  >  		if (err)
+>  >  		       break;
+>  > -	} while (pte++, addr += PAGE_SIZE, addr != end);
+>  > +	} while (addr += PAGE_SIZE, addr != end && pte++);
+>
+> Instead of obfuscating the code by putting "&& pte++" in the
+> condition (it will always be true in valid C), you should IMO
+> rewrite the do-while as a for loop + break, like this:
+>
+> 	for (;;) {
+> 	    // same body as before
+> 	    addr += PAGE_SIZE;
+> 	    if (addr == end)
+> 	        break;
+> 	    pte++;
+> 	}
 
-btw., now with a second full day spent on this regression, i have 
-figured out a workaround the hard way: increasing SECTION_SIZE_BITS in 
-include/asm-x86/sparsemem.h from 26 to 27 makes it go away. (i.e. we use 
-section chunks of 128 MB instead of 64 MB before) I've given up on 
-analyzing the crash site - it seems rather random and uninformative and 
-just suggests page allocator borkage.
+Sorry, I think too lispy :)
 
-So this seems like a general sparsemem borkage. PAE uses a shift of 30 
-due to page->flags shortage (which masks this bug), 64-bit uses 27 which 
-too probably masks this bug.
+	Hannes
+---
 
-Since this is a !NUMA config and !PAE as well, NODES_SHIFT is 0, 
-ZONES_SHIFT is 2, so the theory of running out of bits in page->flags is 
-wrong as well.
+From: Johannes Weiner <hannes@saeurebad.de>
+Subject: [PATCH] mm: Fix possible off-by-one in walk_pte_range()
 
-I also tried a hack to double the size of all sparsemem mem_map 
-allocations (on the theory of an overflow there) - but it didnt help.
+After the loop in walk_pte_range() pte might point to the first address
+after the pmd it walks.  The pte_unmap() is then applied to something
+bad.
 
-So i think we need to go down further into the page allocator. Perhaps 
-the buddy bitmaps are wrongly sized somewhere. I'm grasping at straws.
+Spotted by Roel Kluin and Andreas Schwab.
 
-Btw., Mel Gorman has reproduced crashes with my bzImage on his box (and 
-a hang with my config, using his build), so i think we can eliminate hw 
-and build environment specialities as a cause.
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+CC: Roel Kluin <12o3l@tiscali.nl>
+CC: Andreas Schwab <schwab@suse.de>
+CC: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
 
-	Ingo
+A bug is unlikely, though.  kunmap_atomic() looks up the kmap entry by
+map-type instead of the address the pte points.  So the worst thing I
+could find with a quick grep was that a wrong TLB entry is being
+flushed.  Still, the code is wrong :)
+
+diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+index 1cf1417..0afd238 100644
+--- a/mm/pagewalk.c
++++ b/mm/pagewalk.c
+@@ -9,11 +9,15 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+ 	int err = 0;
+ 
+ 	pte = pte_offset_map(pmd, addr);
+-	do {
++	for (;;) {
+ 		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
+ 		if (err)
+ 		       break;
+-	} while (pte++, addr += PAGE_SIZE, addr != end);
++		addr += PAGE_SIZE;
++		if (addr == end)
++			break;
++		pte++;
++	}
+ 
+ 	pte_unmap(pte);
+ 	return err;
