@@ -1,67 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYDOSZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbYDOSZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbYDOSZH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYDOSYy
+	id S1760018AbYDOSZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYDOSZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:24:54 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35144 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752551AbYDOSYx (ORCPT
+	Tue, 15 Apr 2008 14:25:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:10131 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbYDOSZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:24:53 -0400
-Date: Tue, 15 Apr 2008 14:24:53 -0400
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
-       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080415182453.GR7385@csclub.uwaterloo.ca>
-References: <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca> <20080414190308.GJ15824@duck.suse.cz> <20080414192928.GM7385@csclub.uwaterloo.ca> <20080415085740.GA7603@atrey.karlin.mff.cuni.cz> <20080415153221.GD7387@csclub.uwaterloo.ca> <20080415173430.GB4994@elf.ucw.cz>
+	Tue, 15 Apr 2008 14:25:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kFhgHFlZHjwRw5DxRMkyxK/YINUmjVKSyIb5+39ITM26p8DHMSZEwIpZfPQYFvscNJ+oxE1ViYRQcPj2Nl2diXot0dLQMdRcXgfTartyyfEfqNcTzy6ziWRSKIBDVXCV6KFNjAyCSO8Dc5RQY+brMRl7FRYzt0cBSoWlQVnaftY=
+Date: Tue, 15 Apr 2008 14:25:18 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] input: support maple controller on SEGA Dreamcast
+Message-ID: <20080415141746.ZZRA012@mailhub.coreip.homeip.net>
+References: <1203862726.6474.18.camel@localhost.localdomain> <1204057817.6388.5.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080415173430.GB4994@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <1204057817.6388.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 07:34:30PM +0200, Pavel Machek wrote:
-> Yes, kernel bugs are confusing ;-).
+Hi Adrian,
 
-I only see an application bug so far.
+On Tue, Feb 26, 2008 at 08:30:17PM +0000, Adrian McMenamin wrote:
+> This adds support for the maple controller (as a joystick) on the SEGA
+> Dreamcast.
+> 
+> I've adjusted the polling rate for the controller in comparison to
+> earlier patches and the high rate of polling was locking out hotplugging
+> updates.
+> 
+> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
-> The "application" could be malware trying to confuse debugger, for
-> example.
+Sorry for sittign on the patches for so long, just catching up with
+my long backlog... Several comments:
 
-If you can't do it on demand (which I can't see any way to do) then I
-don't think malware can take advantage of it.
+> +
+> +struct dc_pad {
+> +	struct input_dev *dev;
+> +	struct maple_device *mdev;
+> +	int open;
 
-> The "application" could be something you are trying to debug.
+I don't see "open" being used.
 
-True, but even without this behaviour doing seeks and read/writes from
-multiple threads without locking will already show plenty of problems
-even if you somehow manage to hit this issue, and not only that you have
-to have threads writing to different 4GB aligned chunks of the file to
-cause a problem, since otherwise they would all be setting the top bits
-the same.  I would hope anyone doing multithreaded work on a file that
-big would like to avoid the locking issue by using pread and pwrite
-instead in which case there is no problem either.
+> +	for (i = 0; i < 32; i++)
+> +		if (data & (1<<i) && btn_bit[i] >= 0)
+> +			pad->dev->keybit[BIT_WORD(BTN_JOYSTICK)] |= BIT_MASK(btn_bit[i]);
+> +
+> +	if (pad->dev->keybit[BTN_JOYSTICK/32])
+> +		pad->dev->evbit[0] |= BIT_MASK(EV_KEY);
+> +
+> +	for (i = 0; i < 32; i++)
+> +		if (data & (1<<i) && abs_bit[i] >= 0)
+> +			pad->dev->absbit[0] |= BIT_MASK(abs_bit[i]);
+> +
+> +	if (pad->dev->absbit[0])
+> +		pad->dev->evbit[0] |= BIT_MASK(EV_ABS);
+> +
 
-> I did brief reading on lseek man pages, and it does not mention
-> "kernel may seek to random place if you attempt to seek  from two
-> threads at the same time". So this is a kernel or manpages bug.
+Just use dev->.. instead of pad->dev->.., it will save a few bytes.
 
-Does it say anything about what happens if you try to seek from two
-places at once?
+> +	for (i = ABS_X; i <= ABS_BRAKE; i++) {
+> +		pad->dev->absmax[i] = 255;
+> +		pad->dev->absmin[i] = 0;
+> +		pad->dev->absfuzz[i] = 0;
+> +		pad->dev->absflat[i] = 0;
+> +	}
+> +
 
-> Maybe you can take a look at POSIX if it permits this behaviour? 
+I like input_set_abs_params(...), it is more concise and you don't need a
+separate loop to set up absbits.
 
-The parts I can find for posix don't say one way or the other.
+> +	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
+> +		pad->dev->absmax[i] = 1;
+> +		pad->dev->absmin[i] = -1;
+> +		pad->dev->absfuzz[i] = 0;
+> +		pad->dev->absflat[i] = 0;
+> +	}
+> +
+> +	pad->dev->private = pad;
+> +	pad->dev->event = NULL;
+> +	pad->dev->dev.parent = &mdev->dev;
+> +	pad->dev->name = mdev->product_name;
+> +	pad->dev->id.bustype = BUS_HOST;
+> +	input_set_drvdata(dev, pad);
+> +
+> +	error = input_register_device(pad->dev);
+> +	if (error)
+> +		goto fail_register;
+> +
+> +	maple_getcond_callback(mdev, dc_pad_callback, HZ/10,
+> +		MAPLE_FUNC_CONTROLLER);
+> +	
+
+May I recommend creating maple_open and maple_close and start polling from
+there? This way we only poll if we have users.
+
+> +	return error;
+> +
+> +fail_register:
+> +	input_free_device(pad->dev);
+> +fail_nomem_2:
+> +	kfree(pad);
+> +fail_nomem_1:
+> +	return -error;
+> +}
+> +
+> +static void dc_pad_disconnect(struct maple_device *mdev)
+> +{
+> +	struct dc_pad *pad = mdev->private_data;
+> +
+> +	mdev->callback = NULL;
+> +	input_unregister_device(pad->dev);
+> +	kfree(pad);
+> +}
+> +
+> +/* allow the controller to be used */
+> +static int probe_maple_controller(struct device *dev)
+> +{
+> +	struct maple_device *mdev = to_maple_dev(dev);
+> +	struct maple_driver *mdrv = to_maple_driver(dev->driver);
+> +	int error;
+> +
+> +	error = dc_pad_connect(mdev);
+> +	if (error)
+> +		return error;
+> +
+> +	mdev->driver = mdrv;
+> +
+> +	return 0;
+> +}
+> +
+> +static int remove_maple_controller(struct device *dev)
+> +{
+> +	struct maple_device *mdev = to_maple_dev(dev);
+> +
+> +	dc_pad_disconnect(mdev);
+> +	return 0;
+> +}
+> +
+> +static struct maple_driver dc_pad_driver = {
+> +	.function =	MAPLE_FUNC_CONTROLLER,
+> +	.connect =	dc_pad_connect,
+> +	.disconnect =	dc_pad_disconnect,
+> +	.drv = {
+> +		.name = "Dreamcast_controller",
+> +		.probe = probe_maple_controller,
+> +		.remove = remove_maple_controller,
+> +	},
+> +};
+> +
+> +static int unplug_maple_control(struct device *dev, void *ignored)
+> +{
+> +	/* Please DO NOT really unplug your controller */
+> +	struct maple_device *mdev;
+> +
+> +	mdev = to_maple_dev(dev);
+> +	if ((mdev->function & MAPLE_FUNC_CONTROLLER)
+> +		&& (mdev->driver == &dc_pad_driver))
+> +		remove_maple_controller(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __init dc_pad_init(void)
+> +{
+> +	return 	maple_driver_register(&dc_pad_driver.drv);
+> +}
+> +
+> +static void __exit dc_pad_exit(void)
+> +{
+> +	bus_for_each_dev(&maple_bus_type, NULL, NULL, unplug_maple_control);
+
+Why is this needed? As far as I know most driver core will automatically
+disconnect devices form driver upon driver unregistration, so manually
+iteracting through all devices on bus is not needed.
+
+> +	driver_unregister(&dc_pad_driver.drv);
+> +}
+> +
+> +module_init(dc_pad_init);
+> +module_exit(dc_pad_exit);
+> 
+> 
+
+Thank you.
+
 
 -- 
-Len Sorensen
+Dmitry
