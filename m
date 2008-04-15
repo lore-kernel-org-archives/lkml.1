@@ -1,172 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765749AbYDOTyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765971AbYDOTy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765749AbYDOTyI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 15:54:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbYDOTx5
+	id S1765971AbYDOTy7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 15:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbYDOTyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 15:53:57 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49116 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756362AbYDOTxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 15:53:55 -0400
-Date: Tue, 15 Apr 2008 21:54:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: =?iso-8859-1?Q?K=E1roly?= Kasza <kaszak@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       kernel list <linux-kernel@vger.kernel.org>, lcostantino@gmail.com,
-       someone@dunanet.hu
-Subject: Re: w35und: add softmac interface
-Message-ID: <20080415195426.GD4994@elf.ucw.cz>
-References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz> <544ab8580804150110x2f1841b4m7ebd43f1a6441458@mail.gmail.com> <20080415091403.GA32652@atrey.karlin.mff.cuni.cz> <544ab8580804150317k637118cp2cab91bfa1e37875@mail.gmail.com>
+	Tue, 15 Apr 2008 15:54:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35136 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756368AbYDOTyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 15:54:51 -0400
+Date: Tue, 15 Apr 2008 21:54:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+Message-ID: <20080415195430.GA23015@elte.hu>
+References: <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com> <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org> <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <544ab8580804150317k637118cp2cab91bfa1e37875@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> >  Really take a look at those patches. I believe I'm pretty close to
-> >  dropping those upper layer code... Then, we'll be able to proceed
-> >  incrementally.
-> >
-> I commited them after some changes, please send patches next time
-> against the last revision :)
+* Christoph Lameter <clameter@sgi.com> wrote:
 
-Sorry, will violate that once again (this is preview, not for
-commiting, so perhaps you can forgive me :-).
+> On Tue, 15 Apr 2008, Linus Torvalds wrote:
+> 
+> > On Tue, 15 Apr 2008, Ingo Molnar wrote:
+> > > 
+> > > btw., now with a second full day spent on this regression, i have 
+> > > figured out a workaround the hard way: increasing SECTION_SIZE_BITS in 
+> > > include/asm-x86/sparsemem.h from 26 to 27 makes it go away.
+> > 
+> > Interesting.
+> 
+> Hmmmm. SECTION_SIZE_BITS == 26 means SECTIONS_SHIFT == 6. Increasing 
+> SECTION_SIZE_BITS to 27 reduces SECTION_SHIFT to 5. Thereby the number 
+> of sparsemem sections (NR_MEM_SECTIONS) is reduced to half (64 to 32).
 
-Which this, I'm able to connect to my access point and ping, without
-ifconfig-ing the original interface up. Only softmac interface is
-active.
+yes, as i said in this thread already earlier today, the sparse chunking 
+goes from 64MB to 128MB. (and hence, by virtue of !PAE having a 4GB 
+physical address space, the # of sparse sections goes from 64 to 32 - 
+you can see the full sparse sections printout in my latest crashlog in 
+my previous mail, including the NR_MEM_SECTIONS printout.)
 
-> However I still think we should focus on rewriting the whole thing
-> instead of hacking this elder chaos.
-> I created /branches/softmac for the new code, You should extend that
-> maybe?
+Pretty please, could you pay more than cursory attention to this bug i 
+already spent two full days on and which is blocking the v2.6.25 
+release?
 
-I don't believe rewrite like that is a good idea.
+Your commits are all over the place in this code, and you are one of the 
+maintainers as well. We've got 5000 lines of flux in mm/* in v2.6.25.
 
-My plan is: 
+I'm just guessing my way around, but right now my impression is that the 
+current early memory setup code is unrobust, over-complex, occasionally 
+butt-ugly to read code in high need of cleanups, simplifications and 
+debug facilities, visibly plagued by hit-and-run changes with frequent 
+typos and everything else you normally dont want to see in the core 
+kernel. (Did i get your attention now? ;-)
 
-1) remove duplicate 802.11 stack, making sure it still works as I
-progress.
-
-(at this point I have pretty small driver -- like 2000 lines -- but it
-will be ugly)
-
-2) either clean that one up, or rewrite it; making sure it still works
-in the process.
-
-(at this point we have mergeable driver)
-
-								Pavel
-
-
-diff --git a/drivers/net/wireless/winbond/winbondport/linux/wbusb.c b/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-index de30a56..d128fc1 100644
---- a/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-+++ b/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-@@ -126,6 +126,31 @@ static int wbsoft_start(struct ieee80211
- static int wbsoft_config(struct ieee80211_hw *dev, struct ieee80211_conf *conf)
- {
- 	printk("wbsoft_config called\n");
-+
-+	ChanInfo ch;
-+
-+	ch.band = 1;
-+	ch.ChanNo = 1;	/* Should use channel_num, or something, as that is already pre-translated */
-+
-+
-+	hal_set_current_channel(&my_adapter->sHwData, ch);
-+	hal_set_beacon_period(&my_adapter->sHwData, conf->beacon_int);
-+//	hal_set_cap_info(&my_adapter->sHwData, ?? );
-+// hal_set_ssid(phw_data_t pHwData,  PUCHAR pssid,  u8 ssid_len); ??
-+	hal_set_accept_broadcast(&my_adapter->sHwData, 1);
-+	hal_set_accept_promiscuous(&my_adapter->sHwData,  1);
-+	hal_set_accept_multicast(&my_adapter->sHwData,  1);
-+	hal_set_accept_beacon(&my_adapter->sHwData,  1);
-+	hal_set_radio_mode(&my_adapter->sHwData,  0);
-+	//hal_set_antenna_number(  phw_data_t pHwData, u8 number )
-+	//hal_set_rf_power(phw_data_t pHwData, u8 PowerIndex)
-+
-+
-+//	hal_start_bss(&my_adapter->sHwData, WLAN_BSSTYPE_INFRASTRUCTURE);	??
-+
-+//void hal_set_rates(phw_data_t pHwData, PUCHAR pbss_rates, 
-+//		   u8 length, unsigned char basic_rate_set)
-+
- 	return 0;
- }
- 
-@@ -155,6 +180,7 @@ static const struct ieee80211_ops wbsoft
- 	.get_stats		= wbsoft_nop,
- 	.get_tx_stats		= wbsoft_nop,
- 	.get_tsf		= wbsoft_get_tsf,
-+// conf_tx: hal_set_cwmin()/hal_set_cwmax;
- };
- 
- struct wbsoft_priv {
-diff --git a/drivers/net/wireless/winbond/winbondport/wbhal.c b/drivers/net/wireless/winbond/winbondport/wbhal.c
-index 6599538..0177bc0 100644
---- a/drivers/net/wireless/winbond/winbondport/wbhal.c
-+++ b/drivers/net/wireless/winbond/winbondport/wbhal.c
-@@ -418,7 +418,7 @@ u8 hal_init_hardware(phw_data_t pHwData,
- }
- 
- 
--void hal_halt( phw_data_t pHwData, void *ppa_data)
-+void hal_halt(phw_data_t pHwData, void *ppa_data)
- {
- 	switch( pHwData->InitialResource )
- 	{
-@@ -500,7 +500,7 @@ void hal_set_slot_time( phw_data_t pHwDa
- }
- //---------------------------------------------------------------------------------------------------
- void hal_set_rates(phw_data_t pHwData, PUCHAR pbss_rates, 
--		   u8 length, unsigned char basic_rate_set )
-+		   u8 length, unsigned char basic_rate_set)
- {
- 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
- 	u32		tmp, tmp1;
-@@ -765,6 +765,8 @@ void hal_set_current_channel_ex(  phw_da
- 	if( pHwData->SurpriseRemove )
- 		return;
- 
-+	printk("Going to channel: %d/%d\n", channel.band, channel.ChanNo);
-+
- 	RFSynthesizer_SwitchingChannel( pHwData, channel );// Switch channel
- 	pHwData->Channel = channel.ChanNo;
- 	pHwData->band = channel.band;
-diff --git a/drivers/net/wireless/winbond/winbondport/wblinux.c b/drivers/net/wireless/winbond/winbondport/wblinux.c
-index 0b0b200..ebe8dbe 100644
---- a/drivers/net/wireless/winbond/winbondport/wblinux.c
-+++ b/drivers/net/wireless/winbond/winbondport/wblinux.c
-@@ -416,7 +416,7 @@ #endif
- 		Adapter->sLocalPara.ShutDowned = FALSE;
- 
- 		//added by ws for wep key error detection
--		Adapter->sLocalPara.bWepKeyError= FALSE;//added by ws 02/02/04
-+		Adapter->sLocalPara.bWepKeyError= FALSE;
- 		Adapter->sLocalPara.bToSelfPacketReceived = FALSE;
- 		Adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
- 
-@@ -534,7 +534,7 @@ #endif
- }
- 
- // 20060802
--void WBLINUX_ConnectStatus(  PADAPTER Adapter,  u32 flag )
-+void WBLINUX_ConnectStatus(PADAPTER Adapter, u32 flag)
- {
-    PWBLINUX	pWbLinux = &Adapter->WbLinux;
- 
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
