@@ -1,106 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYDOXWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYDOXWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbYDOXWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 19:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYDOXWD
+	id S1753392AbYDOXWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 19:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbYDOXWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 19:22:03 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:43335 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYDOXWB (ORCPT
+	Tue, 15 Apr 2008 19:22:16 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53307 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754145AbYDOXWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 19:22:01 -0400
-Subject: Re: bdev size not updated correctly after underlying device is
-	resized
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com,
-       axboe@kernel.dk, andmike@linux.vnet.ibm.com
-In-Reply-To: <20080415160314.11e9b7e1.akpm@linux-foundation.org>
-References: <1207783782.31821.80.camel@bluto.andrew>
-	 <20080415160314.11e9b7e1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 17:21:59 -0600
-Message-Id: <1208301719.24092.21.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 19:22:15 -0400
+Date: Tue, 15 Apr 2008 16:22:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+In-Reply-To: <Pine.LNX.4.64.0804151517530.4038@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0804151609510.5018@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com>
+ <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi>
+ <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org>
+ <20080415211359.GA1531@elte.hu> <20080415212430.GA5467@elte.hu>
+ <Pine.LNX.4.64.0804151437300.3252@schroedinger.engr.sgi.com>
+ <20080415215504.GA9066@elte.hu> <Pine.LNX.4.64.0804151455520.4038@schroedinger.engr.sgi.com>
+ <20080415221314.GA12094@elte.hu> <Pine.LNX.4.64.0804151517530.4038@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 16:03 -0700, Andrew Morton wrote:
-> On Wed, 09 Apr 2008 17:29:42 -0600
-> .
-> > Subject: [PATCH] Reset bdev size regardless of other openers.
-> > 
-> > A block device may be resized while online.  If the revalidate_disk
-> > routine is called after the resize, the gendisk->capacity value is
-> > updated for the device.  However, the bdev->bd_inode->i_size is not
-> > updated when the block device is opened if there are any other openers
-> > on the device.  This means that apps like LVM are unlikely to see the
-> > size change as they tend to keep their block devices open.  There is a
-> > discussion of this problem at:
-> > 
-> >   http://lkml.org/lkml/2007/7/3/83
-> > 
-> > This patch changes block_dev.c:do_open() to call bd_set_size()
-> > regardless if there are other openers on the device.  It should not be
-> > applied in its existing state as changing i_size should be protected by
-> > a lock. Also, there needs to be some analysis on the effects of changing
-> > the device size underneath an app.
-> 
-> hm, tricky.
-> 
-> I don't know what problems a change like this might cause - probably few,
-> given the rarity and slowness of block device resizing.
+Hmmm... If one enables CONFIG_X86_PAE (even with no highmem) then 
+everything is fine. For PAE to be enabled some other things also fall by 
+the wayside. Diff to your failing config follows. Will try to minimize 
+the diff even further:
 
-I have been looking through code where this might be a problem.  The
-sort of things I was worried about is where something might try and do a
-calculation based on the i_size and write/read data from there after it
-has been resized, possibly corrupting data.  The COW code in dm seems to
-come the closest, but then if you are resizing the device that has
-snapshots on it, you might be getting what you deserve.
-
-> 
-> Presumably increasing the device size will cause les problems than
-> decreasing it would. 
-
-Agreed.
-
->  Do we even support device shrinking?
-
-Yes, this common with LVM at least.  Whether it is a good idea to do
-this with a mounted file-system on it is another matter.
-
-> 
-> > diff --git a/fs/block_dev.c b/fs/block_dev.c
-> > index 7d822fa..d13a4e5 100644
-> > --- a/fs/block_dev.c
-> > +++ b/fs/block_dev.c
-> > @@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
-> >  				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
-> >  				if (ret)
-> >  					goto out;
-> > +				/* device may have been resized with revalidate_disk */
-> > +				if (!part)
-> > +					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
-> >  			}
-> >  			if (bdev->bd_invalidated)
-> >  				rescan_partitions(bdev->bd_disk, bdev);
-> 
-> I'd have thought that an appropriate way to fix all this would be to
-> perform the i_size update between freeze_bdev() and thaw_bdev(), when the
-> fs is quiesced.  But it's not really in my comfort zone.
-
-Except that this is not only done with file-systems.  In my case I am
-just trying to extend an LVM logical volume after a resize but cannot
-because it is open (activated). In practice, however, it is probably
-only useful to do this with an online file-system.  Otherwise you could
-just close all openers and the resize will work fine.
-
-> 
-
--- 
-Andrew Patterson
+--- config-Thu_Apr_10_10_41_16_CEST_2008.bad.rc9	2008-04-15 06:02:13.000000000 +0000
++++ .config	2008-04-15 23:15:53.000000000 +0000
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.25-rc9
+-# Tue Apr 15 07:37:33 2008
++# Tue Apr 15 23:15:53 2008
+ #
+ # CONFIG_64BIT is not set
+ CONFIG_X86_32=y
+@@ -169,11 +169,11 @@
+ # CONFIG_X86_VSMP is not set
+ # CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER is not set
+ CONFIG_PARAVIRT_GUEST=y
++# CONFIG_XEN is not set
+ CONFIG_VMI=y
+-# CONFIG_LGUEST_GUEST is not set
+ CONFIG_PARAVIRT=y
+ # CONFIG_M386 is not set
+-CONFIG_M486=y
++# CONFIG_M486 is not set
+ # CONFIG_M586 is not set
+ # CONFIG_M586TSC is not set
+ # CONFIG_M586MMX is not set
+@@ -196,20 +196,23 @@
+ # CONFIG_MVIAC3_2 is not set
+ # CONFIG_MVIAC7 is not set
+ # CONFIG_MPSC is not set
+-# CONFIG_MCORE2 is not set
++CONFIG_MCORE2=y
+ # CONFIG_GENERIC_CPU is not set
+ # CONFIG_X86_GENERIC is not set
+ CONFIG_X86_CMPXCHG=y
+-CONFIG_X86_L1_CACHE_SHIFT=4
++CONFIG_X86_L1_CACHE_SHIFT=6
+ CONFIG_X86_XADD=y
+-# CONFIG_X86_PPRO_FENCE is not set
+-CONFIG_X86_F00F_BUG=y
+ CONFIG_X86_WP_WORKS_OK=y
+ CONFIG_X86_INVLPG=y
+ CONFIG_X86_BSWAP=y
+ CONFIG_X86_POPAD_OK=y
+-CONFIG_X86_ALIGNMENT_16=y
+-CONFIG_X86_MINIMUM_CPU_FAMILY=4
++CONFIG_X86_GOOD_APIC=y
++CONFIG_X86_INTEL_USERCOPY=y
++CONFIG_X86_USE_PPRO_CHECKSUM=y
++CONFIG_X86_P6_NOP=y
++CONFIG_X86_TSC=y
++CONFIG_X86_MINIMUM_CPU_FAMILY=6
++CONFIG_X86_DEBUGCTLMSR=y
+ # CONFIG_HPET_TIMER is not set
+ # CONFIG_IOMMU_HELPER is not set
+ CONFIG_NR_CPUS=8
+@@ -229,11 +232,11 @@
+ CONFIG_MICROCODE_OLD_INTERFACE=y
+ CONFIG_X86_MSR=y
+ CONFIG_X86_CPUID=y
+-# CONFIG_NOHIGHMEM is not set
+-CONFIG_HIGHMEM4G=y
++CONFIG_NOHIGHMEM=y
++# CONFIG_HIGHMEM4G is not set
+ # CONFIG_HIGHMEM64G is not set
+ CONFIG_PAGE_OFFSET=0xC0000000
+-CONFIG_HIGHMEM=y
++CONFIG_X86_PAE=y
+ CONFIG_NEED_NODE_MEMMAP_SIZE=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+ CONFIG_ARCH_SPARSEMEM_ENABLE=y
+@@ -246,13 +249,11 @@
+ CONFIG_HAVE_MEMORY_PRESENT=y
+ CONFIG_SPARSEMEM_STATIC=y
+ # CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+-# CONFIG_MEMORY_HOTPLUG is not set
+ CONFIG_SPLIT_PTLOCK_CPUS=4
+-# CONFIG_RESOURCES_64BIT is not set
++CONFIG_RESOURCES_64BIT=y
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_VIRT_TO_BUS=y
+-# CONFIG_HIGHPTE is not set
+ # CONFIG_MATH_EMULATION is not set
+ CONFIG_MTRR=y
+ CONFIG_EFI=y
+@@ -265,13 +266,11 @@
+ CONFIG_HZ=1000
+ # CONFIG_SCHED_HRTICK is not set
+ CONFIG_KEXEC=y
+-CONFIG_CRASH_DUMP=y
+ CONFIG_PHYSICAL_START=0x100000
+ # CONFIG_RELOCATABLE is not set
+ CONFIG_PHYSICAL_ALIGN=0x100000
+ # CONFIG_HOTPLUG_CPU is not set
+ CONFIG_COMPAT_VDSO=y
+-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ 
+ #
+ # Power management options
+@@ -1844,7 +1843,6 @@
+ #
+ CONFIG_PROC_FS=y
+ # CONFIG_PROC_KCORE is not set
+-CONFIG_PROC_VMCORE=y
+ CONFIG_PROC_SYSCTL=y
+ CONFIG_SYSFS=y
+ CONFIG_TMPFS=y
 
