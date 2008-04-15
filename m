@@ -1,95 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbYDOXif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYDOXn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761258AbYDOXif (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 19:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYDOXi0
+	id S1758798AbYDOXn3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 19:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYDOXnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 19:38:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:10175 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbYDOXiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 19:38:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=j5xMdM5RHVcodH6KrEDsMgm2BaM7k1PuJduM3pmHoLDaVB3E+j3YAiKTaGvUBesUnysJ6q7y6fVFZC5CIsSNPdCpHj8R5xHbsN5UUHmE5QfW5XjEzX+Jc3styuViJ09JcHNdKwUFWyQVEO6LhKl/YS7eun0Nm/GYxWxznTWYSYY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [2.6 patch] PCMCIA mustn't select HAVE_IDE
-Date: Wed, 16 Apr 2008 01:26:10 +0200
-User-Agent: KMail/1.9.9
-Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk>
-In-Reply-To: <20080415223928.GH5676@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 15 Apr 2008 19:43:18 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31814 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753399AbYDOXnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 19:43:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,662,1199692800"; 
+   d="scan'208";a="233150435"
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+From: Dan Williams <dan.j.williams@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <htejun@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4804F108.6020505@zytor.com>
+References: <47E875AD.1000901@rtr.ca> <47E88A13.70808@zytor.com>
+	 <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com>
+	 <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de>
+	 <47E99A02.7040903@rtr.ca> <47E99EBE.7010708@gmail.com>
+	 <3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
+	 <47EBF7D0.6000901@zytor.com>
+	 <e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>
+	 <20080415001828.b0c9ed64.akpm@linux-foundation.org>
+	 <1208269202.3131.3.camel@localhost.localdomain>
+	 <4804F108.6020505@zytor.com>
+Content-Type: text/plain
+Date: Tue, 15 Apr 2008 16:43:15 -0700
+Message-Id: <1208302995.21877.12.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804160126.11116.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, Russell King wrote:
-> On Wed, Apr 16, 2008 at 01:10:02AM +0300, Adrian Bunk wrote:
-> > On Tue, Apr 15, 2008 at 11:03:45PM +0100, Russell King wrote:
-> > > On Wed, Apr 16, 2008 at 12:52:23AM +0300, Adrian Bunk wrote:
-> > >...
-> > > So this is a only impacting ARM wrt. PCMCIA, and given that ARM supplies
-> > > an asm/ide.h, it's _entirely_ reasonable that if a platform has PCMCIA
-> > > then it supports IDE.
-> > > 
-> > > > We could simply always select HAVE_IDE on arm instead of manually 
-> > > > setting which platforms could possibly get IDE support (e.g. are there
-> > > > any boards with PCI slots for which HAVE_IDE is currently not 
-> > > > selected?).
-> > > 
-> > > You could, if there was a demand for it.  As no one has added that,
-> > > I conclude that its less common for people to stick an IDE controller
-> > > into a PCI backplane.
-> > 
-> > People can always enable code for stuff they don't use.
-> > 
-> > But instead of having 14 ARM platforms plus PCMCIA (which is offered 
-> > unconditionally on all ARM platforms...) select HAVE_IDE it's simpler
-> > to select it once for all ARM platforms.
+Subject: sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
 
-Please send me a patch doing this, it should be safe for current IDE tree.
+From: Dan Williams <dan.j.williams@intel.com>
 
-> That would seem logical, but Bart objects to that idea.
+Why?:
+There are occasions where userspace would like to access sysfs
+attributes for a device but it may not know how sysfs has named the
+device or the path.  For example what is the sysfs path for
+/dev/disk/by-id/ata-ST3160827AS_5MT004CK?  With this change a call to
+stat(2) returns the major:minor then userspace can see that
+/sys/dev/block/8:32 links to /sys/block/sdc.
 
-I don't remember the background but I think it was needed because of badly
-perplexed ide_init_hwif_ports() and friends in <asm/ide.h> vs <linux/ide.h>
-(almost all this stuff is gone in IDE tree for 2.6.26)...
+What are the alternatives?:
+1/ Add an ioctl to return the path: Doable, but sysfs is meant to reduce
+   the need to proliferate ioctl interfaces into the kernel, so this
+   seems counter productive.
 
-Ok, I found the patch:
+2/ Use udev to create these symlinks: Also doable, but it adds a
+   udev dependency to utilities that might be running in a limited
+   environment like an initramfs.
 
-http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=4b3b8ee5db374b76608537e061f2efd90e21179d
+3/ Do a full-tree search of sysfs.
 
-[ tglx's history tree since it is from May 2004. ]
+Cc: NeilBrown <neilb@suse.de>
+Cc: Tejun Heo <htejun@gmail.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <gregkh@suse.de>
+Acked-by: Mark Lord <lkml@rtr.ca>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+Reviewed-by: SL Baur <steve@xemacs.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
 
-> However, consider that we're gradually transitioning over to being
-> exclusively libata only.
-> 
-> > > In fact, there are only three classes of ARM platforms which have PCI
-> > > selected but not HAVE_IDE - IOP13xx, IXP2000, and Orion.  I suspect
-> > > the only reason they don't select it because they now use the ATA code
-> > > rather than the old IDE code - that's certainly true of Orion.
-> > 
-> > The libata options are offered unconditionally on all platforms...
-> 
-> It wasn't *my* choice to restrict IDE on ARM.  See Bart for that
-> decision.
+Andrew here is an updated patch with some presumptive acked-by's from Mark and hpa.
 
-It could be that I did the poor job of explaining things back then
-but I also didn't like the fact that I needed to restrict the IDE
-choice on ARM - the change in question was _necessary_ to start
-converting IDE drivers to become real, independent, modular host
-drivers and as a preparation for adding proper warm-plug support.
+* fixed up ENOMEM handling in devices_init()
+* added a short blurb in Documentation/filesystems/sysfs.txt
+* dropped the size of the buffer passed to format_dev_t a bit
 
-Thanks,
-Bart
+ Documentation/filesystems/sysfs.txt |    6 +++++
+ drivers/base/core.c                 |   46 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 51 insertions(+), 1 deletions(-)
+
+
+diff --git a/Documentation/filesystems/sysfs.txt b/Documentation/filesystems/sysfs.txt
+index 7f27b8f..9e9c348 100644
+--- a/Documentation/filesystems/sysfs.txt
++++ b/Documentation/filesystems/sysfs.txt
+@@ -248,6 +248,7 @@ The top level sysfs directory looks like:
+ block/
+ bus/
+ class/
++dev/
+ devices/
+ firmware/
+ net/
+@@ -274,6 +275,11 @@ fs/ contains a directory for some filesystems.  Currently each
+ filesystem wanting to export attributes must create its own hierarchy
+ below fs/ (see ./fuse.txt for an example).
+ 
++dev/ contains two directories char/ and block/. Inside these two
++directories there are symlinks named <major>:<minor>.  These symlinks
++point to the sysfs directory for the given device.  /sys/dev provides a
++quick way to lookup the sysfs interface for a device from the result of
++a stat(2) operation.
+ 
+ More information can driver-model specific features can be found in
+ Documentation/driver-model/. 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 24198ad..ba21118 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -27,6 +27,9 @@
+ 
+ int (*platform_notify)(struct device *dev) = NULL;
+ int (*platform_notify_remove)(struct device *dev) = NULL;
++static struct kobject *dev_kobj;
++static struct kobject *char_kobj;
++static struct kobject *block_kobj;
+ 
+ #ifdef CONFIG_BLOCK
+ static inline int device_is_not_partition(struct device *dev)
+@@ -759,6 +762,11 @@ static void device_remove_class_symlinks(struct device *dev)
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ }
+ 
++static struct kobject *device_to_dev_kobj(struct device *dev)
++{
++	return dev->class == &block_class ? block_kobj : char_kobj;
++}
++
+ /**
+  * device_add - add device to device hierarchy.
+  * @dev: device.
+@@ -775,6 +783,7 @@ int device_add(struct device *dev)
+ 	struct device *parent = NULL;
+ 	struct class_interface *class_intf;
+ 	int error;
++	char devt_str[15];
+ 
+ 	dev = get_device(dev);
+ 	if (!dev || !strlen(dev->bus_id)) {
+@@ -806,9 +815,16 @@ int device_add(struct device *dev)
+ 		goto attrError;
+ 
+ 	if (MAJOR(dev->devt)) {
++		struct kobject *kobj = device_to_dev_kobj(dev);
++
+ 		error = device_create_file(dev, &devt_attr);
+ 		if (error)
+ 			goto ueventattrError;
++
++		format_dev_t(devt_str, dev->devt);
++		error = sysfs_create_link(kobj, &dev->kobj, devt_str);
++		if (error)
++			goto devtattrError;
+ 	}
+ 
+ 	error = device_add_class_symlinks(dev);
+@@ -854,6 +870,9 @@ int device_add(struct device *dev)
+ 	device_remove_class_symlinks(dev);
+  SymlinkError:
+ 	if (MAJOR(dev->devt))
++		sysfs_remove_link(device_to_dev_kobj(dev), devt_str);
++ devtattrError:
++	if (MAJOR(dev->devt))
+ 		device_remove_file(dev, &devt_attr);
+  ueventattrError:
+ 	device_remove_file(dev, &uevent_attr);
+@@ -925,12 +944,16 @@ void device_del(struct device *dev)
+ {
+ 	struct device *parent = dev->parent;
+ 	struct class_interface *class_intf;
++	char devt_str[15];
+ 
+ 	device_pm_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+-	if (MAJOR(dev->devt))
++	if (MAJOR(dev->devt)) {
++		format_dev_t(devt_str, dev->devt);
++		sysfs_remove_link(device_to_dev_kobj(dev), devt_str);
+ 		device_remove_file(dev, &devt_attr);
++	}
+ 	if (dev->class) {
+ 		device_remove_class_symlinks(dev);
+ 
+@@ -1055,7 +1078,25 @@ int __init devices_init(void)
+ 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
+ 	if (!devices_kset)
+ 		return -ENOMEM;
++	dev_kobj = kobject_create_and_add("dev", NULL);
++	if (!dev_kobj)
++		goto dev_kobj_err;
++	block_kobj = kobject_create_and_add("block", dev_kobj);
++	if (!block_kobj)
++		goto block_kobj_err;
++	char_kobj = kobject_create_and_add("char", dev_kobj);
++	if (!char_kobj)
++		goto char_kobj_err;
++
+ 	return 0;
++
++ char_kobj_err:
++	kobject_put(block_kobj);
++ block_kobj_err:
++	kobject_put(dev_kobj);
++ dev_kobj_err:
++	kset_unregister(devices_kset);
++	return -ENOMEM;
+ }
+ 
+ EXPORT_SYMBOL_GPL(device_for_each_child);
+@@ -1380,4 +1421,7 @@ void device_shutdown(void)
+ 			dev->driver->shutdown(dev);
+ 		}
+ 	}
++	kobject_put(char_kobj);
++	kobject_put(block_kobj);
++	kobject_put(dev_kobj);
+ }
+
