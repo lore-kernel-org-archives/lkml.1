@@ -1,252 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761400AbYDOARC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYDOA3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761400AbYDOARC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 20:17:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYDOAQx
+	id S1762189AbYDOA3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 20:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbYDOA3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 20:16:53 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:27904 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755222AbYDOAQw (ORCPT
+	Mon, 14 Apr 2008 20:29:12 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:46217 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753686AbYDOA3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 20:16:52 -0400
-Message-ID: <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
-Date: Mon, 14 Apr 2008 17:16:50 -0700
-From: "Tom May" <tom@tommay.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 14 Apr 2008 20:29:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=oL0hmUeAS9HrTpBbqZupId44962Fc0kaYrM0hlQeZzxJS2a1lEsVUxXU1o57RIyziUJu3SEIjgdH/fzzvJoOnExe5bL+Hr7Xg9HUEkFe6vh85qIB+69fcboZ2MP4r1LxlYnb4m1fleXmfY7QRnCGWYsX+QGvuvmfEYQ3Lq+0UFI=  ;
+X-YMail-OSG: _syhcocVM1kG7kueTxeJN_hS_v4wq9zIa9V75HBByuVVgWE3
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 3/3] wm97xx-core: Support use as a wakeup source
+Date: Mon, 14 Apr 2008 17:29:07 -0700
+User-Agent: KMail/1.9.6
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080414173841.GA2213@rakim.wolfsonmicro.main> <1208194775-4293-3-git-send-email-broonie@opensource.wolfsonmicro.com> <20080414163033.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080414163033.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
-	 <ab3f9b940804011635g2de833d0l44558f78a1cce1e5@mail.gmail.com>
-	 <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200804141729.08036.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 2, 2008 at 12:31 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Hi Tom,
->
->  Thank you very useful comment.
->  that is very interesting.
->
->
->  > I tried it with a real-world program that, among other things, mmaps
->  > anonymous pages and touches them at a reasonable speed until it gets
->  > notified via /dev/mem_notify, releases most of them with
->  > madvise(MADV_DONTNEED), then loops to start the cycle again.
->  >
->  > What tends to happen is that I do indeed get notifications via
->  > /dev/mem_notify when the kernel would like to be swapping, at which
->  > point I free memory.  But the notifications come at a time when the
->  > kernel needs memory, and it gets the memory by discarding some Cached
->  > or Mapped memory (I can see these decreasing in /proc/meminfo with
->  > each notification).  With each mmap/notify/madvise cycle the Cached
->  > and Mapped memory gets smaller, until eventually while I'm touching
->  > pages the kernel can't find enough memory and will either invoke the
->  > OOM killer or return ENOMEM from syscalls.  This is precisely the
->  > situation I'm trying to avoid by using /dev/mem_notify.
->
->  Could you send your test program?
->  I can't reproduce that now, sorry.
->
->
->
->  > The criterion of "notify when the kernel would like to swap" feels
->  > correct, but in addition I seem to need something like "notify when
->  > cached+mapped+free memory is getting low".
->
->  Hmmm,
->  I think this idea is only useful when userland process call
->  madvise(MADV_DONTNEED) periodically.
->
->  but I hope improve my patch and solve your problem.
->  if you don' mind, please help my testing ;)
+On Monday 14 April 2008, Dmitry Torokhov wrote:
+> Hi Mark,
+> 
+> On Mon, Apr 14, 2008 at 06:39:35PM +0100, Mark Brown wrote:
+> > The PENDOWN signal from the WM97xx touch screen controllers can be used
+> > to generate a wakeup event when the system is suspended. Provide a new
+> > machine configuration option 'suspend_mode' allowing machine drivers to
+> > enable this. If no suspend_mode is provided then the touch panel will be
+> > powered down when the system is suspended.
+> > 
+> 
+> Hmm, another unique module option... How about using device_can_wakeup()
+> infrastructure that we already have. I'm adding David Brownell to CC since
+> I believe he's doing a lot of similar work.
 
-Here's a test program that allocates memory and frees on notification.
- It takes an argument which is the number of pages to use; use a
-number considerably higher than the amount of memory in the system.
-I'm running this on a system without swap.  Each time it gets a
-notification, it frees memory and writes out the /proc/meminfo
-contents.  What I see is that Cached gradually decreases, then Mapped
-decreases, and eventually the kernel invokes the oom killer.  It may
-be necessary to tune some of the constants that control the allocation
-and free rates and latency; these values work for my system.
+I don't quite follow the technical content of this "suspend_mode"
+mask, but it sure looks as if it should use the driver model flags
+in addition to whatever that mask is doing.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <sched.h>
-#include <time.h>
+There are two aspects to this:
 
-#define PAGESIZE 4096
+ (a) Whether on a given system the touchscreen *can* issue wakeup
+     events ... call device_init_wakeup(dev, true) to say it can.
+     In this case, presumably suspend_mode == 0 means it can't.
+     Board setup, or at latest probe(), should device_init_wakeup().
 
-/* How many pages we've mmap'd. */
-static int pages;
+ (b) Whether it *should* do so ... e.g. the Nokia N810 has a mode
+     where it doesn't, and usually when you're carrying one around
+     in a pocket (or purse, or whatever) you would say "doesn't".
+     Userspace manages that answer via a sysfs file, and drivers
+     test the answer with device_may_wakeup(dev).
 
-/* Pointer to mmap'd memory used as a circular buffer.  One thread
-   touches pages, another thread releases them on notification. */
-static char *p;
+So:  yes, this should initialize and use those driver model flags.
 
-/* How many pages to touch each 5ms.  This makes at most 2000
-   pages/sec. */
-#define TOUCH_CHUNK 10
 
-/* How many pages to free when we're notified.  With a 100ms FREE_DELAY,
-   we can free ~9110 pages/sec, or perhaps only 5*911 = 4555 pages/sec if we're
-   notified only 5 times/sec. */
-#define FREE_CHUNK 911
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > ---
+> >  drivers/input/touchscreen/wm97xx-core.c |   22 ++++++++++++++++++++++
+> >  include/linux/wm97xx.h                  |    3 +++
+> >  2 files changed, 25 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+> > index fec07c2..e1a1ca0 100644
+> > --- a/drivers/input/touchscreen/wm97xx-core.c
+> > +++ b/drivers/input/touchscreen/wm97xx-core.c
+> > @@ -689,10 +689,32 @@ static int wm97xx_remove(struct device *dev)
+> >  static int wm97xx_suspend(struct device *dev, pm_message_t state)
+> >  {
+> >  	struct wm97xx *wm = dev_get_drvdata(dev);
+> > +	u16 reg;
+> > +	int suspend_mode;
+> > +
+> > +	if (wm->mach_ops)
+> > +		suspend_mode = wm->mach_ops->suspend_mode;
+> > +	else
+> > +		suspend_mode = 0;
+> >  
+> >  	if (wm->input_dev->users)
+> >  		cancel_delayed_work_sync(&wm->ts_reader);
+> >  
+> > +	/* Power down the digitiser (bypassing the cache for resume) */
+> > +	reg = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER2);
+> > +	reg &= ~WM97XX_PRP_DET_DIG;
+> > +	if (wm->input_dev->users && suspend_mode)
 
-/* Delay in milliseconds before freeing pages, to simulate latency while finding
-   pages to free. */
-#define FREE_DELAY 100
+This should probably check device_may_wakeup(SOMEDEV), rather
+than testing suspend_mode.
 
-static void touch(void);
-static int release(void *arg);
-static void release_pages(void);
-static void show_meminfo(void);
+The wakeup mechanism here isn't clear to me.  Does this assume
+that the touchscreen IRQ is wakeup-capable?  I don't see any
+calls to enable_irq_wake() or disable_irq_wake() ... or for that
+matter any other calls that might affect system behavior.
 
-/* Stack for the release thread. */
-static char stack[8192];
 
-int
-main (int argc, char **argv)
-{
-    pages = atoi(argv[1]);
-    p = mmap(NULL, pages * PAGESIZE, PROT_READ | PROT_WRITE,
-                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, 0, 0);
-    if (p == MAP_FAILED) {
-        perror("mmap");
-        exit(1);
-    }
+> > +		reg |= suspend_mode;
+> > +	wm->ac97->bus->ops->write(wm->ac97, AC97_WM97XX_DIGITISER2, reg);
+> > +
+> > +	/* WM9713 has an additional power bit - turn it off if there
+> > +	 * are no users or if suspend mode is zero. */
+> > +	if (wm->id == WM9713_ID2 &&
+> > +	    (!wm->input_dev->users || !suspend_mode)) {
+> > +		reg = wm97xx_reg_read(wm, AC97_EXTENDED_MID) | 0x8000;
+> > +		wm97xx_reg_write(wm, AC97_EXTENDED_MID, reg);
+> > +	}
+> > +
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
+> > index ed01c7d..2082833 100644
+> > --- a/include/linux/wm97xx.h
+> > +++ b/include/linux/wm97xx.h
+> > @@ -258,6 +258,9 @@ struct wm97xx_mach_ops {
+> >  	/* pre and post sample - can be used to minimise any analog noise */
+> >  	void (*pre_sample) (int);  /* function to run before sampling */
+> >  	void (*post_sample) (int);  /* function to run after sampling */
+> > +
+> > +	/* WM97XX_PRP value to configure while system is suspended */
+> > +	u16 suspend_mode;
 
-    if (clone(release, stack + sizeof(stack) - 4,
-              CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD,
-              NULL) == -1) {
-        perror("clone failed");
-        exit(1);
-    }
+I'm more accustomed to thinking that the driver will
+know "the" setup bit values to assign which will
+ensure that the chip issues wakeup events ... that
+stuff is usually not board-specific.
 
-    touch();
-}
 
-static void
-touch (void)
-{
-    int page = 0;
+> >  };
+> >  
+> >  struct wm97xx {
+> > -- 
+> > 1.5.5
+> > 
+> 
+> -- 
+> Dmitry
+> 
 
-    while (1) {
-        int i;
-        struct timespec t;
-        for (i = 0; i < TOUCH_CHUNK; i++) {
-            p[page * PAGESIZE] = 1;
-            if (++page >= pages) {
-                page = 0;
-            }
-        }
 
-        t.tv_sec = 0;
-        t.tv_nsec = 5000000;
-        if (nanosleep(&t, NULL) == -1) {
-            perror("nanosleep");
-        }
-    }
-}
-
-static int
-release (void *arg)
-{
-    int fd = open("/dev/mem_notify", O_RDONLY);
-    if (fd == -1) {
-        perror("open(/dev/mem_notify)");
-        exit(1);
-    }
-
-    while (1) {
-        struct pollfd pfd;
-        int nfds;
-
-        pfd.fd = fd;
-        pfd.events = POLLIN;
-
-        nfds = poll(&pfd, 1, -1);
-        if (nfds == -1) {
-            perror("poll");
-            exit(1);
-        }
-        if (nfds == 1) {
-            struct timespec t;
-            t.tv_sec = 0;
-            t.tv_nsec = FREE_DELAY * 1000000;
-            if (nanosleep(&t, NULL) == -1) {
-                perror("nanosleep");
-            }
-            release_pages();
-            printf("time: %d\n", time(NULL));
-            show_meminfo();
-        }
-    }
-}
-
-static void
-release_pages (void)
-{
-    /* Index of the next page to free. */
-    static int page = 0;
-    int i;
-
-    /* Release FREE_CHUNK pages. */
-
-    for (i = 0; i < FREE_CHUNK; i++) {
-        int r = madvise(p + page*PAGESIZE, PAGESIZE, MADV_DONTNEED);
-        if (r == -1) {
-            perror("madvise");
-            exit(1);
-        }
-        if (++page >= pages) {
-            page = 0;
-        }
-    }
-}
-
-static void
-show_meminfo (void)
-{
-    char buffer[2000];
-    int fd;
-    ssize_t n;
-
-    fd = open("/proc/meminfo", O_RDONLY);
-    if (fd == -1) {
-        perror("open(/proc/meminfo)");
-        exit(1);
-    }
-
-    n = read(fd, buffer, sizeof(buffer));
-    if (n == -1) {
-        perror("read(/proc/meminfo)");
-        exit(1);
-    }
-
-    n = write(1, buffer, n);
-    if (n == -1) {
-        perror("write(stdout)");
-        exit(1);
-    }
-
-    if (close(fd) == -1) {
-        perror("close(/proc/meminfo)");
-        exit(1);
-    }
-}
-
-.tom
