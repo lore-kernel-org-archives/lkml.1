@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYDOIG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbYDOILO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYDOIG2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYDOIGM
+	id S1758432AbYDOILO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 04:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYDOIK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:06:12 -0400
-Received: from rv-out-0708.google.com ([209.85.198.243]:14167 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752726AbYDOIGL (ORCPT
+	Tue, 15 Apr 2008 04:10:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:5218 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbYDOIKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:06:11 -0400
+	Tue, 15 Apr 2008 04:10:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EAKfBJjwABXxWeM1FsyIedFPJj8q9pDiumFjzqE+8QH2IhuhIrArZrL5kanVIi2iCfKy4Os4pQvyxGAGcFljFgn8gfAp6muavVXW5zEvdU2E0LlOSQnWcmZWo+//QxdBA3RQMSe0OWIyUridfsxLTB0tA6MSntppMF+X/WSQ8kA=
-Message-ID: <86802c440804150106p42b2befax349c24b6ff476238@mail.gmail.com>
-Date: Tue, 15 Apr 2008 01:06:10 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: regression caused by: genirq: do not leave interupts enabled on free_irq
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jeff Garzik" <jeff@garzik.org>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080415004400.bb941191.akpm@linux-foundation.org>
+        b=UmSXhUJn2l3SeFtCiSvb+tg4vDw3l9othKt3cIi/FOtPxysrZ6d//hzGIx47K4bbpW0xdILsUjr7HSA1iZ3caDFASlmgVO+Crd9+PA4yoFz4aEmy/qDmzzdDoVyWd/5mT0Tu6wvPHZ+uCvaY3+J1gXwkerqt0gh/N7AdV1iUN3M=
+Message-ID: <544ab8580804150110x2f1841b4m7ebd43f1a6441458@mail.gmail.com>
+Date: Tue, 15 Apr 2008 10:10:53 +0200
+From: "=?ISO-8859-1?Q?K=E1roly_Kasza?=" <kaszak@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: w35und: add softmac interface
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>, lcostantino@gmail.com,
+       someone@dunanet.hu
+In-Reply-To: <20080415070923.GA13767@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440804102313k4546cd73s7bffb30a14239472@mail.gmail.com>
-	 <alpine.LFD.1.10.0804110841370.3261@apollo.tec.linutronix.de>
-	 <86802c440804110014j44b32d16ubfaa0f327c3a384f@mail.gmail.com>
-	 <86802c440804110017y62938d90x7e3e32df25a60d1@mail.gmail.com>
-	 <1207899030.15605.1.camel@x61.ebiederm.org>
-	 <86802c440804111122x5c106779g60f1c04ae21fed94@mail.gmail.com>
-	 <86802c440804111248je6dfa99va8eec42531f4b689@mail.gmail.com>
-	 <20080415004400.bb941191.akpm@linux-foundation.org>
+References: <20080414224740.GA31431@elf.ucw.cz>
+	 <20080415002826.GC4270@tuxdriver.com>
+	 <20080415070923.GA13767@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 12:44 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+On Tue, Apr 15, 2008 at 9:22 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
-> On Fri, 11 Apr 2008 12:48:43 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->
->  > On Fri, Apr 11, 2008 at 11:22 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > > On Fri, Apr 11, 2008 at 12:30 AM, Eric W. Biederman
->  > >  <ebiederm@xmission.com> wrote:
->  > >  >
->  > >  >
+>  > > This adds softmac interface to w35und driver... so it becomes monster
+>  > > driver with _two_ interfaces.
 >  > >
+>  > > If you initialize hardmac interface, then softmac starts to
+>  > > works... it associates to AP, and can even ping.
 >  > >
->  > > >  On Fri, 2008-04-11 at 00:17 -0700, Yinghai Lu wrote:
->  > >  >  > On Fri, Apr 11, 2008 at 12:14 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > >  >  > > On Fri, Apr 11, 2008 at 12:01 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->  > >  >  > >  > On Thu, 10 Apr 2008, Yinghai Lu wrote:
->  > >  >  > >  >  > last week found:
->  > >  >  > >  >  > after latest kernel kexec RHEL 5.1 or other stack kernel, the nvidia
->  > >  >  > >  >  > forcedeth doesn't work anymore.
->  > >  >  > >  >  >
->  > >  >  > >  >  > I stared at forcedeth.c two days. and revert every patches about that
->  > >  >  > >  >  > doesn't help.
->  > >  >  > >  >
->  > >  >  > >  >  So forcedeth does not come up again, when you kexec from linus.git
->  > >  >  > >  >  into an older distro kernel. Or is it the other way round ?
->  > >  >  > >  RHEL 5.1 kexec RHEL 5.1 : works
->  > >  >  > >  RHEL 5.1 kexec linus kernel: works
->  > >  >  > >  linus (after -rc2) kexec linus tree: works:
->  > >  >  > >  linus  (after -rc2) kexec RHEL 5.1 : forcedeth will not come up
->  > >  >  > >  linus ( before -rc2 include rc2) kexec RHEL 5.1 works
->  > >  >  > >
->  > >  >  > the forcedeth can not get IP address...
->  > >  >
->  > >  >  Sounds like you are not getting any interrupts when you receive a
->  > >  >  packet.  (i.e. The interrupt line is staying disabled).
->  > >  >
->  > >  >  Is MSI an option here?  I'm wondering if we disable the MSI and
->  > >  >  something is not enabling it.
->  > >
->  > >
->  > >
->  > >  after
->  > >  setpci -s 0x00:08.0 0x60.b=0xfe
->  > >
->  > >  the eth0 can get ip address with ifup eth0.
->  >
->  > it is RHEL 5.1 problem...with msi.
->  >
->  > somehow msi entry msi_attrib_maskbit=is_mask_bit_support always get
->  > 0...., and use msi_irq_wo_maskbit_type instead of
->  > msi_irq_w_maskbit_type
->  >
->  > so when load that directly without kexec
->  > that 0x60 always to 0x00.
->  >
->  > and this time kernel after 2.6.25-rc2 ( not included) really shutdown
->  > the msi with 0xff the all maskbit...
+>  > > (Or at least I hope so... it was somewhat too easy.)
 >  >
 >
->  So... where did this end up?   It's a post-2.6.24 regression, isn't it?
+> > OK, I'm late to the party...what is this stuff going into
+>  > drivers/net/wireless?
+>
+>  Actually you are about month early to the party ;-). We are trying to
+>  clean up winbond usb wireless driver, so that it can think about
+>  inclusion in kernel.
+>
+>  http://code.google.com/p/winbondport/
+>
+>  Unfortunately, original driver carries its own 802.11 stack with it;
+>  that needs to be stripped down. (And then code needs to be rewritten
+>  due to horrible coding style).
+>                                                                 Pavel
+>
 
-between 2.6.25-rc2 and 2.6.25-rc3 by one patch from Thomas regarding
-genirq to solve one long standing spurious problem...
-looks like the irq is ioapic or pic, right?
+Hi!
 
-YH
+Last weekend we have started to rewrite the whole code based on
+rtl8187's softmac driver.
+The wlan0 device init with it's own mac is ok, but thats all so far. I
+think it would be more sane to just drop the
+old driver now (it would take more work the correct the old one), and
+create a new svn branch for the softmac
+only brand new one.
+
+KK
