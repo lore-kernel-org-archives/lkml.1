@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbYDOWIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbYDOWLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933109AbYDOWIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 18:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbYDOWIE
+	id S932225AbYDOWLY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 18:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbYDOWLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 18:08:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59904 "EHLO mx3.mail.elte.hu"
+	Tue, 15 Apr 2008 18:11:15 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58374 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756664AbYDOWID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 18:08:03 -0400
-Date: Wed, 16 Apr 2008 00:07:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       travis@sgi.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
-Message-ID: <20080415220721.GA11579@elte.hu>
-References: <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu> <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com> <20080415205820.GC31645@elte.hu> <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com> <20080415211953.GA4243@elte.hu> <Pine.LNX.4.64.0804151420430.3252@schroedinger.engr.sgi.com> <20080415212301.GA5428@elte.hu> <Pine.LNX.4.64.0804151423460.3252@schroedinger.engr.sgi.com> <20080415212833.GA6180@elte.hu>
+	id S1754107AbYDOWLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 18:11:14 -0400
+Date: Wed, 16 Apr 2008 01:10:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [2.6 patch] PCMCIA mustn't select HAVE_IDE
+Message-ID: <20080415221002.GL1677@cs181133002.pp.htv.fi>
+References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080414175344.GA15028@uranus.ravnborg.org> <200804152215.34904.bzolnier@gmail.com> <20080415212326.GF1677@cs181133002.pp.htv.fi> <20080415212822.GE5676@flint.arm.linux.org.uk> <20080415214203.GF5676@flint.arm.linux.org.uk> <20080415215223.GK1677@cs181133002.pp.htv.fi> <20080415220344.GG5676@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080415212833.GA6180@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080415220344.GG5676@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 15, 2008 at 11:03:45PM +0100, Russell King wrote:
+> On Wed, Apr 16, 2008 at 12:52:23AM +0300, Adrian Bunk wrote:
+>...
+> So this is a only impacting ARM wrt. PCMCIA, and given that ARM supplies
+> an asm/ide.h, it's _entirely_ reasonable that if a platform has PCMCIA
+> then it supports IDE.
+> 
+> > We could simply always select HAVE_IDE on arm instead of manually 
+> > setting which platforms could possibly get IDE support (e.g. are there
+> > any boards with PCI slots for which HAVE_IDE is currently not 
+> > selected?).
+> 
+> You could, if there was a demand for it.  As no one has added that,
+> I conclude that its less common for people to stick an IDE controller
+> into a PCI backplane.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+People can always enable code for stuff they don't use.
 
-> +++ linux/arch/x86/kernel/vmlinux_32.lds.S
-> @@ -186,6 +186,7 @@ SECTIONS
->  	__per_cpu_start = .;
->  	*(.data.percpu)
->  	*(.data.percpu.shared_aligned)
-> +	. = . + 65536;
->  	__per_cpu_end = .;
->    }
->    . = ALIGN(PAGE_SIZE);
+But instead of having 14 ARM platforms plus PCMCIA (which is offered 
+unconditionally on all ARM platforms...) select HAVE_IDE it's simpler
+to select it once for all ARM platforms.
 
-this seems to have the intended effect of +0x10000 padding at the end of 
-the percpu area:
+> In fact, there are only three classes of ARM platforms which have PCI
+> selected but not HAVE_IDE - IOP13xx, IXP2000, and Orion.  I suspect
+> the only reason they don't select it because they now use the ATA code
+> rather than the old IDE code - that's certainly true of Orion.
 
- c0b927d0 D per_cpu__cpu_info
- c0b92880 d per_cpu__runqueues
- c0ba2d00 D __per_cpu_end
- c0ba3000 B __bss_start
+The libata options are offered unconditionally on all platforms...
 
-it still crashes though, with an very similar crash pattern to the 
-previous ones.
+cu
+Adrian
 
-	Ingo
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
