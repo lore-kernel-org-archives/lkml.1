@@ -1,66 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764749AbYDOUEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbYDOUE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764749AbYDOUEB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbYDOUDw
+	id S1765222AbYDOUE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761634AbYDOUD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:03:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46691 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755100AbYDOUDv (ORCPT
+	Tue, 15 Apr 2008 16:03:56 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:57359 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760940AbYDOUDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:03:51 -0400
-Date: Tue, 15 Apr 2008 13:03:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
-In-Reply-To: <20080415195430.GA23015@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com>
-References: <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com>
- <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
- <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com>
- <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com>
- <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
- <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org>
- <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
- <20080415195430.GA23015@elte.hu>
+	Tue, 15 Apr 2008 16:03:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iYc01NMhM++d2npCSbjyBTZ863W+xa2fDdfgGoXc/3/HIheAanytpBDQY/xdjjUf3iEEnoJtpsrNcDeV+6QmciEdJK7jRd7njpvfzoJF/GG1NCB5N7FKqn//mY6H19ZVrI+YOjCUFnpiJkFlks5O6w6vKzFPwdIgB9/hPRP7sAs=
+Message-ID: <86802c440804151303k29295e9bp70c1046b8c9dca76@mail.gmail.com>
+Date: Tue, 15 Apr 2008 13:03:53 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
+Cc: "Ingo Molnar" <mingo@elte.hu>, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, ak@suse.de, clameter@sgi.com,
+       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <87mynuhp0o.fsf@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
+	 <20080415071120.GB15499@elte.hu> <87hce3i8mq.fsf@saeurebad.de>
+	 <86802c440804151157m5baab2efla7f35a8f98ac76b7@mail.gmail.com>
+	 <87mynuhp0o.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Apr 2008, Ingo Molnar wrote:
+On Tue, Apr 15, 2008 at 12:55 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+> Hi,
+>
+>
+>
+>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>  > On Tue, Apr 15, 2008 at 5:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>  >> Hi Ingo,
+>  >>
+>  >>
+>  >>
+>  >>  Ingo Molnar <mingo@elte.hu> writes:
+>  >>
+>  >>  > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+>  >>  >
+>  >>  >> Subject: bootmem: node-setup agnostic free_bootmem()
+>  >>  >> From: Johannes Weiner <hannes@saeurebad.de>
+>  >>  >>
+>  >>  >> Make free_bootmem() look up the node holding the specified address
+>  >>  >> range which lets it work transparently on single-node and multi-node
+>  >>  >> configurations.
+>  >>  >
+>  >>  > this patch does not fix the bug Yinghai's (now dropped) patches solved:
+>  >>  > reserve_early() allocations. So NAK until the full problem has been
+>  >>  > sorted out ...
+>  >>
+>  >>  Okay, NAK on -mm and -x86 for sure.  The patch was meant for mainline
+>  >>  where there is no need for free_bootmem() going across nodes, right?
+>  >>
+>  >>  But I still object to the way Yinghai implemented it.
+>  >>  free_bootmem_core() should not be twisted like this.
+>  >>
+>  >>  How about the following (untested, even uncompiled, but you should get
+>  >>  the idea) proposal which would replace the patch discussed in this
+>  >>  thread:
+>  >>
+>  >>  --- tree-linus.orig/mm/bootmem.c
+>  >>  +++ tree-linus/mm/bootmem.c
+>  >>  @@ -421,7 +421,25 @@ int __init reserve_bootmem(unsigned long
+>  >>
+>  >>
+>  >>   void __init free_bootmem(unsigned long addr, unsigned long size)
+>  >>   {
+>  >>  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
+>  >>  +       bootmem_data_t *bdata;
+>  >>  +
+>  >>  +       list_for_each_entry(bdata, &bdata_list, list) {
+>  >>  +               unsigned long remainder = 0;
+>  >>
+>  >> +
+>  >>  +               if (addr < bdata->node_boot_start)
+>  >>  +                       continue;
+>  >>  +
+>  >>  +               if (PFN_DOWN(addr + size) > bdata->node_low_pfn)
+>  >>  +                       remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
+>  >>  +
+>  >>  +               size -= PFN_PHYS(remainder);
+>  >>
+>  >> +               free_bootmem_core(bdata, addr, size)
+>  >>  +
+>  >>  +               if (!remainder)
+>  >>  +                       break;
+>  >>  +
+>  >>  +               addr = PFN_PHYS(bdata->node_low_pfn + 1);
+>  >>  +       }
+>  >>
+>  >>  }
+>  >>
+>  >>   unsigned long __init free_all_bootmem(void)
+>  >
+>  > how about
+>  > 1. bdata is not sorted?
+>
+>  They are kept in a sorted list.  How could they be unsorted?
+>
+>
+>  > 2. intel cross node box: node0: 0g-2g, 4g-6g, node1: 2g-4g, 6g-8g. i
+>  > don't think they have two bdata struct for every node.
+>
+>  How do the bdata structures represent this setup right now?  Are you
+>  sure that there is not a node descriptor for every contiguous region?
 
-> Pretty please, could you pay more than cursory attention to this bug i 
-> already spent two full days on and which is blocking the v2.6.25 
-> release?
+http://lkml.org/lkml/2008/3/25/233
 
-Yeah trying to get to understand how exactly sparsemem works and how the 
-32 bit highmem stuff interacts with it... Sorry not code that I am an 
-expert in nor the platform that I am familiar with. Code mods there 
-required heavy review from multiple parties with expertise in various 
-subjects.
+Subject	[patch] srat, x86_64: Add support for nodes spanning other nodes
 
-> I'm just guessing my way around, but right now my impression is that the 
-> current early memory setup code is unrobust, over-complex, occasionally 
-> butt-ugly to read code in high need of cleanups, simplifications and 
-> debug facilities, visibly plagued by hit-and-run changes with frequent 
-> typos and everything else you normally dont want to see in the core 
-> kernel. (Did i get your attention now? ;-)
+For example, If the physical address layout on a two node system with 8 GB
+memory is something like:
+node 0: 0-2GB, 4-6GB
+node 1: 2-4GB, 6-8GB
 
-I thought the NR_SECTIONS stuff would trigger some memories. Adding apw 
-who seemed to be most familiar with the material in the past 
-(AFAICT NODE_NOT_IN_PAGE_FLAGS is there for IBM NUMAQ etc) and Kame-san.
+Current kernels fail to boot/detect this NUMA topology.
 
-Andy, Kame-san could you have a look at the sparsemem config issue with 
-32 bit !PAE? This is SPARSEMEM_STATIC.
+ACPI SRAT tables can expose such a topology which needs to be supported.
 
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
+YH
