@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYDOCHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbYDOCH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbYDOCHT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 22:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761271AbYDOCHE
+	id S1764150AbYDOCH6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 22:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761279AbYDOCHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 22:07:04 -0400
-Received: from exch-gw.rose-hulman.edu ([137.112.8.200]:29763 "EHLO
-	EXCH-GW.rose-hulman.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761080AbYDOCHB (ORCPT
+	Mon, 14 Apr 2008 22:07:49 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:31482 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761271AbYDOCHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 22:07:01 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Apr 2008 22:07:01 EDT
-Date: Tue, 15 Apr 2008 01:51:50 +0000
-From: Andy Spencer <spenceal@rose-hulman.edu>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] i8k support for Dell Precisions
-Message-ID: <20080415015150.GA5297@a.dhcp.rose-hulman.edu>
+	Mon, 14 Apr 2008 22:07:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=NBWvpd666NWkegu6/W55HQUf8JmgrQY/x2WGugCQvtuE4KshUw2zF1dal7XdpUclrcZ/BZ/2stFXzx54M2FI0+JsTWgspdkbMHbcqF4x7IeWRlvxRLcI6Yj5RAN3LwyYdfvJFvQJff2hIGu2u1E6Z/Sfwp4J7dwu4SP8358ZKy8=
+Message-ID: <48040DEE.30005@gmail.com>
+Date: Tue, 15 Apr 2008 11:07:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 15 Apr 2008 01:51:50.0403 (UTC) FILETIME=[458CBD30:01C89E9B]
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] libata-acpi.c: remove unneeded #if's
+References: <20080414184040.GC6695@cs181133002.pp.htv.fi>
+In-Reply-To: <20080414184040.GC6695@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a small patch to make i8k work on Dell Precisions. I have been
-using this on my Dell Precision M70 for a while and haven't noticed any
-problems.
+Adrian Bunk wrote:
+> These #if's are unneeded since they:
+> - did anyway not handle the CONFIG_ACPI_DOCK_MODULE case correctly and
+> - this is already handled in include/acpi/acpi_drivers.h and
+> - it's now correctly handled in kconfig.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Please CC me on responses.
+The lesser ifdefs the better.  Acked-by: Tejun Heo <htejun@gmail.com>
 
+Thank you.
 
-diff --git a/drivers/char/i8k.c b/drivers/char/i8k.c
-index 8609b82..78c42b2 100644
---- a/drivers/char/i8k.c
-+++ b/drivers/char/i8k.c
-@@ -480,6 +480,13 @@ static struct dmi_system_id __initdata i8k_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "MP061"),
- 		},
- 	},
-+	{
-+		.ident = "Dell Precision",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Precision"),
-+		},
-+	},
- 	{ }
- };
-
+-- 
+tejun
