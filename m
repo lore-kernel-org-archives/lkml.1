@@ -1,60 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765653AbYDOWCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbYDOWE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765653AbYDOWCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 18:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbYDOWCb
+	id S932733AbYDOWE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 18:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760403AbYDOWES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 18:02:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55783 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755763AbYDOWCb (ORCPT
+	Tue, 15 Apr 2008 18:04:18 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42859 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759902AbYDOWER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 18:02:31 -0400
-Date: Tue, 15 Apr 2008 15:01:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] tty: fix routine name in ptmx_open()
-Message-Id: <20080415150143.e19bb518.akpm@linux-foundation.org>
-In-Reply-To: <4803FD15.6030006@ct.jp.nec.com>
-References: <4803FD15.6030006@ct.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 15 Apr 2008 18:04:17 -0400
+Date: Tue, 15 Apr 2008 23:03:45 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [2.6 patch] PCMCIA mustn't select HAVE_IDE
+Message-ID: <20080415220344.GG5676@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080414175344.GA15028@uranus.ravnborg.org> <200804152215.34904.bzolnier@gmail.com> <20080415212326.GF1677@cs181133002.pp.htv.fi> <20080415212822.GE5676@flint.arm.linux.org.uk> <20080415214203.GF5676@flint.arm.linux.org.uk> <20080415215223.GK1677@cs181133002.pp.htv.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415215223.GK1677@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 17:55:49 -0700
-Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Wed, Apr 16, 2008 at 12:52:23AM +0300, Adrian Bunk wrote:
+> On Tue, Apr 15, 2008 at 10:42:03PM +0100, Russell King wrote:
+> > On Tue, Apr 15, 2008 at 10:28:22PM +0100, Russell King wrote:
+> > > On Wed, Apr 16, 2008 at 12:23:26AM +0300, Adrian Bunk wrote:
+> > > > On Tue, Apr 15, 2008 at 10:15:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > > On Monday 14 April 2008, Sam Ravnborg wrote:
+> > > > > > On Mon, Apr 14, 2008 at 05:16:59PM +0300, Adrian Bunk wrote:
+> > > > > > > It's plain wrong for PCMCIA to select HAVE_IDE that implies e.g. the 
+> > > > > > > availability of an asm/ide.h
+> > > > > > > 
+> > > > > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > > > > > 
+> > > > > > > ---
+> > > > > > > 9cdb66112488bc0c6e1d528444d3ba30d5b0487f diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
+> > > > > > > index 8b22281..519b4ff 100644
+> > > > > > > --- a/drivers/pcmcia/Kconfig
+> > > > > > > +++ b/drivers/pcmcia/Kconfig
+> > > > > > > @@ -38,7 +38,6 @@ config PCMCIA_DEBUG
+> > > > > > >  config PCMCIA
+> > > > > > >  	tristate "16-bit PCMCIA support"
+> > > > > > >  	select CRC32
+> > > > > > > -	select HAVE_IDE
+> > > > > > >  	default y
+> > > > > > 
+> > > > > > I did this when introducing HAVE_IDE.
+> > > > > > But I do not recall why and the rationale for removing it
+> > > > > > seems fine to me.
+> > > > > 
+> > > > > IIRC it was needed for some arm platforms which don't select HAVE_IDE
+> > > > > explicetely but I don't know if this is still the case, pinging Russell.
+> > > > 
+> > > > It's definitely bogus since it can cause compile breakage on 
+> > > > architectures like avr32.
+> > > > 
+> > > > And whatever it should have fixed should be fixed properly.
+> > > 
+> > > I'd suggest backing out the entire change which introduced HAVE_IDE then -
+> > > rather than doing it piecemeal and bringing up questions about it which
+> > > are unanswerable (which is the case of Bart's question of me.)
+> > 
+> > Looking back at the original change:
+> > 
+> > -if PCMCIA || ARCH_CLPS7500 || ARCH_IOP32X || ARCH_IOP33X || ARCH_IXP4XX \
+> > -       || ARCH_L7200 || ARCH_LH7A40X || ARCH_PXA || ARCH_RPC \
+> > -       || ARCH_S3C2410 || ARCH_SA1100 || ARCH_SHARK || FOOTBRIDGE \
+> > -       || ARCH_IXP23XX
+> >  source "drivers/ide/Kconfig"
+> > -endif
+> > 
+> > was what was done to ARM's Kconfig.  So, if we're going to be doing
+> > anything with the 'select HAVE_IDE', it should be:
+> > 
+> >  config PCMCIA
+> >         tristate "16-bit PCMCIA support"
+> >         select CRC32
+> > -	select HAVE_IDE
+> > +	select HAVE_IDE if ARM
+> >...
 > 
-> At ptmx_open(), the 2nd parameter for check_tty_count() should
-> be "ptmx_open".
+> The commit that added the PCMCIA dependency was:
 > 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  drivers/char/tty_io.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index 613ec81..546217d 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -2774,7 +2774,7 @@ static int ptmx_open(struct inode *inode, struct file *filp)
->  	if (devpts_pty_new(tty->link))
->  		goto out1;
->  
-> -	check_tty_count(tty, "tty_open");
-> +	check_tty_count(tty, "ptmx_open");
->  	retval = ptm_driver->open(tty, filp);
->  	if (!retval) {
->  		tty_audit_opening();
+> commit bb011b8e8eded247cb71cb6d10e47517aacbd542
+> Author: David Brownell <david-b@net.rmk.(none)>
+> Date:   Sun Jun 12 23:26:05 2005 +0100
 
-Of course, using __func__ prevents this sort of bitrot.
+Did you look at the patch?
 
-Or even #define check_tty_count(tty) __check_tty_count(tty, __func__)
+-if ARCH_CLPS7500 || ARCH_IOP3XX || ARCH_IXP4XX || ARCH_L7200 || ARCH_LH7A40X || ARCH_PXA || ARCH_RPC || ARCH_S3C2410 || ARCH_SA1100 || ARCH_SHARK || FOOTBRIDGE
++if PCMCIA || ARCH_CLPS7500 || ARCH_IOP3XX || ARCH_IXP4XX \
++       || ARCH_L7200 || ARCH_LH7A40X || ARCH_PXA || ARCH_RPC \
++       || ARCH_S3C2410 || ARCH_SA1100 || ARCH_SHARK || FOOTBRIDGE
+ source "drivers/ide/Kconfig"
+ endif
 
+So this is a only impacting ARM wrt. PCMCIA, and given that ARM supplies
+an asm/ide.h, it's _entirely_ reasonable that if a platform has PCMCIA
+then it supports IDE.
 
+> We could simply always select HAVE_IDE on arm instead of manually 
+> setting which platforms could possibly get IDE support (e.g. are there
+> any boards with PCI slots for which HAVE_IDE is currently not 
+> selected?).
+
+You could, if there was a demand for it.  As no one has added that,
+I conclude that its less common for people to stick an IDE controller
+into a PCI backplane.
+
+In fact, there are only three classes of ARM platforms which have PCI
+selected but not HAVE_IDE - IOP13xx, IXP2000, and Orion.  I suspect
+the only reason they don't select it because they now use the ATA code
+rather than the old IDE code - that's certainly true of Orion.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
