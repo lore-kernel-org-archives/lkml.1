@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763980AbYDOF0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763769AbYDOFij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763980AbYDOF0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 01:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYDOF0f
+	id S1763769AbYDOFij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 01:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYDOFid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 01:26:35 -0400
-Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:50740 "EHLO
-	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753635AbYDOF0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 01:26:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=f1HHp2Jq1/VMA/hVSIzr74ZPRpW/jvo+hASEq6TvfCF3R0pqd6yWMZq7dGKG1MB9;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Tue, 15 Apr 2008 01:25:33 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, w@1wt.eu, david@lang.hm,
-       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-Message-Id: <20080415012533.832db7ed.billfink@mindspring.com>
-In-Reply-To: <878wzgwyyw.fsf@basil.nowhere.org>
-References: <20080413232441.e216a02c.akpm@linux-foundation.org>
-	<20080414072328.GW9785@ZenIV.linux.org.uk>
-	<20080414010412.c42dc560.akpm@linux-foundation.org>
-	<20080414.013058.149905948.davem@davemloft.net>
-	<878wzgwyyw.fsf@basil.nowhere.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+	Tue, 15 Apr 2008 01:38:33 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47394 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753941AbYDOFic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 01:38:32 -0400
+Date: Tue, 15 Apr 2008 07:38:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and fix MIPS
+Message-ID: <20080415053859.GA20813@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com> <20080414133213.82a5b76e.akpm@linux-foundation.org> <Pine.LNX.4.64.0804141456410.8740@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d3abc4c2fc79d9de2dba9bc6b49639829350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.48.212.104
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804141456410.8740@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008, Andi Kleen wrote:
-
-> David Miller <davem@davemloft.net> writes:
-> >
-> > It's still largely free form, loose, and flexible. 
+On Mon, Apr 14, 2008 at 02:58:14PM -0700, Christoph Lameter wrote:
+> On Mon, 14 Apr 2008, Andrew Morton wrote:
 > 
-> I think Al's point was that we need far more "free form, loose and
-> flexible" work for reviewing code. As in people going over trees and
-> just checking it for anything suspicious and going over existing code
-> and checking it for anything suspicious and going also over mailing
-> list patch posts. And also maintainers who appreciate such review.
+> > afaict this change is not dependent upon the other page-flags changes and
+> > can and should be merged ahead of the page-flags patches to preserve mips
+> > bisectability, yes?
 > 
-> And checking it for anything suspicious does not mean running
-> only checkpatch.pl or even just sparse, but actually reading it
-> and trying to make sense of it.
+> It could be merged before yes. There may be a conflict with the earlier 
+> kbuild fixes though. Sam?
 
-If you really want to get more such review, then it would be very
-useful when someone asks about some obtuse portion of kernel code
-or makes a suggested improvement, that the reviewer then not be
-flamed as being dense for not understanding the code or some kernel
-coding concept.  It would be much better to treat it as an oppurtunity
-to educate rather than belittle, thus eventually enlarging the base
-of people who can assist with various aspects of kernel development.
-For what's supposed to be an open, engaging community, and which
-generally is, there sometimes seems to be some level of dismissal
-of newcomers (not sure it's intended that way but nevertheless it
-can tend to discourage newcomers from getting more involved).
+Please apply this. I am buried in day-time job atm so my
+kbuild maintainer job is kept on loow priority.
 
-						-Bill
+	Sam
