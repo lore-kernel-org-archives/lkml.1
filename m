@@ -1,67 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763468AbYDONSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbYDONS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763468AbYDONSe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 09:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbYDONS0
+	id S1764924AbYDONS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 09:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764781AbYDONSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 09:18:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52528 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753210AbYDONS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 09:18:26 -0400
-Date: Tue, 15 Apr 2008 15:17:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080415131744.GA5248@elte.hu>
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208264190.6395.21.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 15 Apr 2008 09:18:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:63243 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637AbYDONSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 09:18:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
+        b=hMLoMwcr0X1kfrtwsIKwEyJvcnOkknCoiKSCpQ9uJYksSWe3jBjlBcp9HDJA2gn9rjwbD4SYTfkq+zHWeHQCNu01zcSwE8pKgLe+C+Vq44LxfyVMYwiyBSp6PySDFrY4H786ZdT9PdJ+XpQ/8ejoJX1TUKo8hi/GIMgGLlk4toI=
+Subject: Work WAS(Re: Reporting bugs and bisection
+From: jamal <hadi@cyberus.ca>
+Reply-To: hadi@cyberus.ca
+To: Willy Tarreau <w@1wt.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jmorris@namei.org,
+       viro@ZenIV.linux.org.uk, david@lang.hm, sclark46@earthlink.net,
+       johnpol@2ka.mipt.ru, rjw@sisk.pl, tilman@imap.cc,
+       Valdis.Kletnieks@vt.edu, lkml@rtr.ca, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20080415045541.GA611@1wt.eu>
+References: <20080413232441.e216a02c.akpm@linux-foundation.org>
+	 <20080414072328.GW9785@ZenIV.linux.org.uk>
+	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+	 <20080414.150105.101568769.davem@davemloft.net>
+	 <20080414160513.9f57e5ba.akpm@linux-foundation.org>
+	 <20080415045541.GA611@1wt.eu>
+Content-Type: text/plain
+Date: Tue, 15 Apr 2008 09:18:36 -0400
+Message-Id: <1208265516.4419.125.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-15-04 at 06:55 +0200, Willy Tarreau wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> And if Dave speaks about these stats : http://lwn.net/Articles/237768/
+> then Al does not even appear in it, which proves your point.
 
-> > Because we extract the field names and types, we can create tracer 
-> > plugins that would hook on field names rather than expect a specific 
-> > number of fields and fixed field types. It makes it possible to 
-> > tolerate missing fields pretty easily. But yes, tracer tools might 
-> > have to be adapted to internal kernel changes, since they must 
-> > follow kernel structure changes. However, staying as close as 
-> > possible to a canonical representation of event fields, staying far 
-> > from the specific implemetation, would help to lessen the 
-> > inter-dependency. On the other hand, it would probably hurt trace 
-> > compactness and efficiency.
-> 
-> See, these tracer tools are my nightmare as member of an enterprise 
-> linux team. They'll make an already hard job even harder, no thanks!
+Stats such as those above, while useful, are flawed.
+IMO James Morris has (probably more than anybody else) hit on the core
+issue. To extend his view: theres more than just code review that
+deserves respect. Testing is one. Commenting, not necessarily on code,
+but on architecture is another. Documenting. Yes, running sparse or even
+Lindent or checkpatch.
+In the old/current Linux thinking (pun intended) work equates to
+churning code. That thought process derives from Linus actually then
+propagates down stream to other folks.
+I think the Linus approach is still excellent - but its definition of
+"work" is no longer valid. Work must include all these other things
+and visible credit is important if the revolution is to continue.
 
-i'm clearly NAK-ing all futex trace hooks until the true impact of the 
-whole marker facility is better understood. I've tried them for the 
-scheduler and they were a clear failure: too bloated and too persistent.
+If you look at it from a software engineering or production resource
+management, the Linux development model has gotta be one of the most
+inefficient[1] - with a reward system geared to developers mostly.
+If you want to look it from an investment of time (ROI perspective),
+developers get way too much credit riding on everybody elses back.
+Why should Mark Lord report another bug to us?
+Put yourself in his shoes:
+- he is a clever guy who has already worked around the bug. So a proper
+fix is only a convinience for him.
+- Blessed as he was - he got to do more and more work after reporting.
+- he got slapped for claiming he had to go and get lunch and therefore
+didnt have time to do more bisect for a bug that wasnt just unique to
+his setup.
+- he spent a gazillion electrons responding to people and justifying his
+stance
+- he got no credit for his time whatsoever when the bug was fixed (he
+wont be showing up on lwn list).
 
-but more importantly, as things stand today i've yet to see a _any_ 
-bugreport where these 'tracer' tools that are being referred to were 
-actually used in the field to fix something. The latency tracers (and 
-the other tracer variants in -rt) on the other hand have a documented 
-track record of being useful in fixing bugs and instrumenting the 
-kernel.
+I think perspective and credit for peoples time needs to change.
 
-	Ingo
+cheers,
+jamal
+
+[1] With current momentum, theres an infinite resources of developers
+and testers and documenters in Linux, i.e
+resource management is only valid as a metric if you had finite
+resources. So the point i am making is moot - but I do strongly believe
+the momentum will dampen if current trend of defining work continues.
+
