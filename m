@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764850AbYDOOnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbYDOOpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764850AbYDOOnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 10:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758462AbYDOOnD
+	id S1765071AbYDOOpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 10:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759583AbYDOOpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 10:43:03 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1501 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757752AbYDOOnB (ORCPT
+	Tue, 15 Apr 2008 10:45:38 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49882 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758462AbYDOOph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 10:43:01 -0400
-Date: Tue, 15 Apr 2008 15:42:50 +0100
+	Tue, 15 Apr 2008 10:45:37 -0400
+Date: Tue, 15 Apr 2008 15:45:35 +0100
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] wm97xx-core: Only schedule interrupt handler if not already scheduled
-Message-ID: <20080415144250.GB5203@sirena.org.uk>
-Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080414173841.GA2213@rakim.wolfsonmicro.main> <1208194775-4293-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080414140832.ZZRA012@mailhub.coreip.homeip.net> <20080415084819.GA24498@rakim.wolfsonmicro.main> <20080415085946.ZZRA012@mailhub.coreip.homeip.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, Dmitry Torokhov <dtor@mail.ru>,
+       Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: WM97xx touchscreen updates
+Message-ID: <20080415144535.GA20619@rakim.wolfsonmicro.main>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <david-b@pacbell.net>,
+	Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080415085946.ZZRA012@mailhub.coreip.homeip.net>
-X-Cookie: Bus error -- driver executed.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 09:02:35AM -0400, Dmitry Torokhov wrote:
-> On Tue, Apr 15, 2008 at 09:48:19AM +0100, Mark Brown wrote:
+This patch series updates the WM97xx touchscreen drivers with a couple
+of small cleanups and the addition of support for use of the WM97xx
+touchpanels to wake up from suspend.  Since the last submission I have:
 
-> > As well as not queuing the work it ensures that the calls to
-> > irq_enable() are balanced which helps with implementing that operation.
+ - Updated the commit message for scheduling of the interrupt handler. 
+ - Hooked the touchscreen into the driver model wakeup infrastructure.
 
-> Hmm... another question then - what would fire up wm97xx_pen_interrupt()
-> again, before wm97xx_pen_irq_worker had a chance to run, if the very
-> first thing we do after getting interrupt is irq_enable(wm, 0)?
+It is also available in the git repository at:
 
-Normally nothing - in most systems the interrupt will not be shared
-and/or the board irq_enable() operation will completely disable the IRQ
-line.  The main use case would be if the interrupt is shared and the
-board irq_enable() operation doesn't affect other sources, though boards
-may also decide that they can do without disabling the interrupt.
+  git://opensource.wolfsonmicro.com/linux-2.6-touch upstream
+
+Mark Brown (3):
+      wm97xx-core: Only schedule interrupt handler if not already scheduled
+      wm97xx-core: Use IRQF_SAMPLE_RANDOM
+      wm97xx-core: Support use as a wakeup source
+
+ drivers/input/touchscreen/wm97xx-core.c |   56 ++++++++++++++++++++++++++----
+ include/linux/wm97xx.h                  |    3 ++
+ 2 files changed, 51 insertions(+), 8 deletions(-)
