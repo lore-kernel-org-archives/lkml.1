@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbYDODGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763994AbYDODL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763615AbYDODGr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 23:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761279AbYDODGh
+	id S1763994AbYDODL2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 23:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbYDODLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 23:06:37 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:45984 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1758961AbYDODGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 23:06:36 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Tue, 15 Apr 2008 13:06:23 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       orenl@cs.columbia.edu
-Subject: Re: [RFC][PATCH 0/4] Object creation with a specified id
-Message-ID: <20080415030623.GA8171@tull.net>
-References: <20080404145129.637145000@bull.net>
+	Mon, 14 Apr 2008 23:11:19 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:60422 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761574AbYDODLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 23:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=VJMYTcxsS3+mCXgULGXTrHBXwwUl2kkZhk7k2LFDL4L6uZsoDRn1vgAySniOl0NLzHL57RdpMydPXVAhhXxhShXbQBsnGA/sbBMwr4mWS4YGO4q5g1eWx2F1cZOzfSnuotAOFwXGO32adWEWAb0ZVwfPqSG0vry906cJAdmDTVw=
+Message-ID: <48041CC1.1030909@gmail.com>
+Date: Tue, 15 Apr 2008 12:10:57 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080404145129.637145000@bull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: libata errors with smartctl on 2.6.24, WD3200AAKS and nVidia
+ AHCI
+References: <200804092130.07149.tvrtko@ursulin.net> <480179D3.8070707@gmail.com> <200804130834.14257.tvrtko@ursulin.net>
+In-Reply-To: <200804130834.14257.tvrtko@ursulin.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 04, 2008 at 04:51:29PM +0200, Nadia.Derbey@bull.net wrote:
->    . echo "LONG XX" > /proc/self/next_id
->      next object to be created will have an id set to XX
->    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/next_id
->      next object to be created will have its ids set to XX0, ... X<n-1>
->      This is particularly useful for processes that may have several ids if
->      they belong to nested namespaces.
+Tvrtko A. Ursulin wrote:
+> On Sunday 13 April 2008 04:11:15 Tejun Heo wrote:
+>> Is auto spindown configured for the drive?
+> 
+> I don't think so - it's a 3.5" drive with no special PM features - but how to 
+> tell?
 
-How do you handle race conditions, i.e. you specify the ID for the
-next object to be created, and then some other thread goes and creates
-an object before your thread creates one?
+Hmm... Can you please post the result of "smartctl --version" and 
+"smartctl -a > out 2>&1" and dmesg after the smartctl command?
 
-Nick.
+Thanks.
+
 -- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+tejun
