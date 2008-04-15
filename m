@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbYDOGsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYDOGtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756200AbYDOGsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 02:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYDOGsD
+	id S1756747AbYDOGtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 02:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDOGtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 02:48:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39149 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYDOGsB (ORCPT
+	Tue, 15 Apr 2008 02:49:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42031 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752132AbYDOGtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 02:48:01 -0400
-Subject: Re: [PATCH] Replace completions with semaphores
-From: Peter Zijlstra <peterz@infradead.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com>
-References: <20080411210022.GJ11962@parisc-linux.org>
-	 <20080412204748.GN11962@parisc-linux.org> <20080413070833.GC19773@elte.hu>
-	 <20080413125758.GQ11962@parisc-linux.org> <20080414153928.GA22259@elte.hu>
-	 <adafxtoqvgh.fsf@cisco.com> <1208190749.7375.10.camel@twins>
-	 <87d4osuy6r.fsf@basil.nowhere.org> <1208195673.7164.2.camel@twins>
-	 <4803AD91.5020001@firstfloor.org>
-	 <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 08:46:56 +0200
-Message-Id: <1208242017.7053.4.camel@lappy>
+	Tue, 15 Apr 2008 02:49:16 -0400
+Date: Mon, 14 Apr 2008 23:48:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: s2ram: warn when interrupts should be disabled but are not
+Message-Id: <20080414234840.917594ea.akpm@linux-foundation.org>
+In-Reply-To: <20080412095311.GA1729@elf.ucw.cz>
+References: <20080412095311.GA1729@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 08:18 +0200, Bart Van Assche wrote:
-> On Mon, Apr 14, 2008 at 9:16 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> >  For me it sounds like you just want to rename semaphores to some other
-> >  name that people don't use them for normal locking?
+On Sat, 12 Apr 2008 11:53:11 +0200 Pavel Machek <pavel@ucw.cz> wrote:
+
 > 
-> Would it really be a good idea to give a synchronization concept that
-> behaves exactly like a semaphore another name than "semaphore" ? The
-> semaphore concept is well known and is taught in every computer
-> science course.
+> sysdevs should be suspended/resumed with IRQs disabled; if something
+> reenables them by mistake, we want to know early.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> ---
+> commit fc3bccaf69e6c05464e7154369639bd5c96ccdc1
+> tree bf960093ddb840242a00b4ec456ec79472b1c2ad
+> parent 308e9d5309f378209e931f63f729806ec0a4d9f1
+> author Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
+> committer Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
+> 
+>  drivers/ata/ahci.c |    2 +-
+>  drivers/base/sys.c |    3 +++
+>  2 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> index 8e13fd9..e214467 100644
+> --- a/drivers/base/sys.c
+> +++ b/drivers/base/sys.c
+> @@ -22,6 +22,7 @@ #include <linux/string.h>
+>  #include <linux/pm.h>
+>  #include <linux/device.h>
+>  #include <linux/mutex.h>
+> +#include <linux/hardirq.h>
+>  
+>  #include "base.h"
+>  
+> @@ -367,6 +368,7 @@ int sysdev_suspend(pm_message_t state)
+>  			/* Call auxillary drivers first */
+>  			list_for_each_entry(drv, &cls->drivers, entry) {
+>  				if (drv->suspend) {
+> +					WARN_ON(!irqs_disabled());
+>  					ret = drv->suspend(sysdev, state);
+>  					if (ret)
+>  						goto aux_driver;
 
-Are the ramifications wrt priority inversion taught? Is it made clear
-that its hard to validate because there is no clear resource owner?
+Is this warning ever triggers I expect we'll really really wish that
+we'd done the check _after_ calling drv->suspend, and that we had also
+done a print_symbol(drv->suspend).  No?
 
-Afaik, non of these subjects are touched upon in the CS-101 courses and
-that is exactly the problem. So you can say they are not well know, they
-are just widely misunderstood.
 
-And yes, if there are more hand a very few such users it doesn't make
-sense to keep them open coded.
+> @@ -442,6 +444,7 @@ int sysdev_resume(void)
+>  		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
+>  			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
+>  
+> +			WARN_ON(!irqs_disabled());
+>  			__sysdev_resume(sysdev);
+>  		}
+>  	}
 
+Perhaps here too.
