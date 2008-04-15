@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbYDOV1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbYDOV3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933146AbYDOV1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbYDOV1g
+	id S933055AbYDOV3J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 17:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYDOV2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:27:36 -0400
-Received: from nn7.de ([85.214.94.156]:58404 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933104AbYDOV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:27:35 -0400
-Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs on boot
-	-dual-core Sony Vaio
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@kernel.org>,
-       "Carlos R\. Mafra" <crmafra2@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
-	 <200804152233.39079.rjw@sisk.pl>
-	 <20080415204500.GD1677@cs181133002.pp.htv.fi>
-	 <200804152303.45320.rjw@sisk.pl>
-	 <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com>
-	 <1208294294.7851.109.camel@localhost>
-	 <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 15 Apr 2008 21:27:21 +0000
-Message-Id: <1208294841.7851.119.camel@localhost>
+	Tue, 15 Apr 2008 17:28:55 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46936 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028AbYDOV2y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 17:28:54 -0400
+Date: Tue, 15 Apr 2008 22:28:22 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [2.6 patch] PCMCIA mustn't select HAVE_IDE
+Message-ID: <20080415212822.GE5676@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080414175344.GA15028@uranus.ravnborg.org> <200804152215.34904.bzolnier@gmail.com> <20080415212326.GF1677@cs181133002.pp.htv.fi>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415212326.GF1677@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 14:24 -0700, Pallipadi, Venkatesh wrote:
+On Wed, Apr 16, 2008 at 12:23:26AM +0300, Adrian Bunk wrote:
+> On Tue, Apr 15, 2008 at 10:15:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Monday 14 April 2008, Sam Ravnborg wrote:
+> > > On Mon, Apr 14, 2008 at 05:16:59PM +0300, Adrian Bunk wrote:
+> > > > It's plain wrong for PCMCIA to select HAVE_IDE that implies e.g. the 
+> > > > availability of an asm/ide.h
+> > > > 
+> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > > 
+> > > > ---
+> > > > 9cdb66112488bc0c6e1d528444d3ba30d5b0487f diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
+> > > > index 8b22281..519b4ff 100644
+> > > > --- a/drivers/pcmcia/Kconfig
+> > > > +++ b/drivers/pcmcia/Kconfig
+> > > > @@ -38,7 +38,6 @@ config PCMCIA_DEBUG
+> > > >  config PCMCIA
+> > > >  	tristate "16-bit PCMCIA support"
+> > > >  	select CRC32
+> > > > -	select HAVE_IDE
+> > > >  	default y
+> > > 
+> > > I did this when introducing HAVE_IDE.
+> > > But I do not recall why and the rationale for removing it
+> > > seems fine to me.
+> > 
+> > IIRC it was needed for some arm platforms which don't select HAVE_IDE
+> > explicetely but I don't know if this is still the case, pinging Russell.
 > 
-> >-----Original Message-----
-> >From: Soeren Sonnenburg [mailto:kernel@nn7.de] 
-> >Sent: Tuesday, April 15, 2008 2:18 PM
-> >To: Pallipadi, Venkatesh
-> >Cc: Rafael J. Wysocki; Adrian Bunk; Carlos R. Mafra; Linux 
-> >Kernel Mailing List
-> >Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs 
-> >on boot -dual-core Sony Vaio
-> >
-> >On Tue, 2008-04-15 at 14:09 -0700, Pallipadi, Venkatesh wrote:
-[...]
-> >> Both of them probabilistically hang early in the boot.
-> >> On both !CPUIDLE and hpet=disable seems to be working around the
-> >> problem.
-> >> Both are Core 2 Duo based with 64 bit kernel.
-> >> 
-> >> One difference I saw was that #10377 fails on battery. That may be
-> >> because when on battery CPUs may be running at lower freq during boot
-> >> and that is probably helping this problem in terms of timing.
-> >
-> >FWIW, this macbook pro1,1 has only a core 1 duo, so x86 == 32bit...
-> >Soeren
-> >
+> It's definitely bogus since it can cause compile breakage on 
+> architectures like avr32.
 > 
-> Sorry. When I said Core 2, I was referring to Carlos and his updates on
-> #10117.
+> And whatever it should have fixed should be fixed properly.
 
-Sorry, I meant that this could be something general and not a amd64
-specific change... which I thought could be useful in tracing this...
+I'd suggest backing out the entire change which introduced HAVE_IDE then -
+rather than doing it piecemeal and bringing up questions about it which
+are unanswerable (which is the case of Bart's question of me.)
 
-Soeren
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
