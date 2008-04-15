@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbYDOChW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764178AbYDOChp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763947AbYDOChW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 22:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbYDOChJ
+	id S1764178AbYDOChp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 22:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYDOChf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 22:37:09 -0400
-Received: from mail.queued.net ([207.210.101.209]:3334 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758998AbYDOChJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 22:37:09 -0400
-Date: Mon, 14 Apr 2008 22:39:15 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 3/3] OLPC: gxfb/lxfb: add DCON panel modes to
- framebuffer drivers
-Message-ID: <20080414223915.411e424f@ephemeral>
-In-Reply-To: <20080414182112.848bcb64.akpm@linux-foundation.org>
-References: <20080414035302.794dcd7a@ephemeral>
-	<20080414182112.848bcb64.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 22:37:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:23291 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759821AbYDOChe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 22:37:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=f91liQ4xxOxH8ltLR3hDUuV9I+9F+k/InT0Z+6FxotCxKAN02YLJOLuZ7HMV8oNa90+Ti59JvcgMDbxODBZiFyZlEFp8IaJBP931RaMooBQC9cl3WnfKdPN8wiLSgVpceCDKCFpw3sq4kl53b8yThodceKoW8S/SiNPH+HHMZHo=
+Message-ID: <480414E6.2090205@gmail.com>
+Date: Tue, 15 Apr 2008 11:37:26 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Frans Pop <elendil@planet.nl>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
+References: <200804021524.27222.elendil@planet.nl>	<200804021820.04610.elendil@planet.nl>	<20080402194938.GI24237@csclub.uwaterloo.ca>	<200804031947.07674.elendil@planet.nl>	<48017248.4030600@gmail.com>	<20080414134734.GB7385@csclub.uwaterloo.ca> <20080414145302.4239b0b9@core>
+In-Reply-To: <20080414145302.4239b0b9@core>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 18:21:12 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 14 Apr 2008 03:53:02 -0400 Andres Salomon <dilinger@queued.net> wrote:
+Alan Cox wrote:
+>> If a driver supports a device with dual interfaces, then it better
+>> reserve both sets of ports to prevent the generic driver from trying to
+>> use them.
 > 
-> > 
-> > Since there's no way to autodetect panel modes, we're forced to hardcode
-> > them in the driver and add a big fat #ifdef.  The OLPC DCON needs a
-> > specific mode line (at 1200x900).  This adds it to both gxfb and lxfb.
-> > 
-> > ...
-> >
-> > +static const struct fb_videomode gx_dcon_modedb[] __initdata = {
-> > +const struct fb_videomode olpc_dcon_modedb[] __initdata = {
-
-Hm, that one should be static as well.  Will fix in the following patch.
-
+> That isn't the problem. The generic driver doesn't know if there is
+> another valid driver for the ports - how can it - and the other driver
+> may not be loaded first so cannot reserve the ports. If you load the
+> generic driver last then you should be fine, and the link order for IDE
+> and libata puts acpi, pci generic and legacy at the end for good reason.
 > 
-> include/linux/init.h:38 points out that `const' and `__initdata' should
-> not be mixed.
-> 
-> I forget which architecture/compiler versions explode when we do this.  But
-> it's not x86, iirc.
-> 
-> Still, it's poor form and, err, I don't immediately recall which tag we
-> _should_ use, and the comments in there are unhelpful.  It might be
-> __initconst, but that has exactly zero users.  Help.
-> 
+> Libata pata_legacy has some smarts in this area but they are only good
+> for the common cases.
 
+Always loading generic or ata_generic used to be safe.  It's still 
+pretty safe but not as much as before.  Nowadays, there are good number 
+of controllers which have dual interfaces.  Usually an ahci interface 
+and a legacy one but there are other controllers which also implement 
+dual interface.
 
-My guess would be __initconst or __devinitconst?  That would put it in
-.{init,devinit}.rodata rather than .{init,devinit}.data.
+Because PCI BARs usually contain IO regions for legacy interface in PCI 
+BAR 0-4, the native driver can work it out by claiming all PCI BARs on 
+attach, which I learned the hard way after seeing the generic driver 
+borking the native one on certain configurations.  The thing I'm worried 
+about is that there are a lot of vendors making this type of controllers 
+nowadays and a lot of BIOS implementations for each of them.  And of 
+course each BIOS implementation has its own many ways of configuring the 
+dual mode (or more thanks to fake RAIDs) controller.
 
-Alternatively, I could just remove the 'const'.
+I wouldn't be too surprised if one of those plethora of configurations 
+gets the compatible IO port and BAR configurations mismatched. 
+Especially when the controller is put into native mode.  It's entirely 
+possible to leave the compatible IO ports enabled while not setting the 
+PCI BARs accordingly.  Some of them might even think that's better to 
+prevent IDE drivers from attaching to it.
 
-Documentation for this stuff would be awesome.  :/
-
-
+So, I don't really want to depend on that.  I don't know.  Do I sound 
+paranoid?
 
 -- 
-Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
+tejun
