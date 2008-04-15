@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbYDOSmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbYDOSnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbYDOSmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYDOSmh
+	id S1760739AbYDOSnX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYDOSnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:42:37 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:43534 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbYDOSmg (ORCPT
+	Tue, 15 Apr 2008 14:43:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53458 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752776AbYDOSnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:42:36 -0400
-Message-ID: <4804F717.4000200@colorfullife.com>
-Date: Tue, 15 Apr 2008 20:42:31 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [PATCH 2/2] fix sys_unshare()+SEM_UNDO: perform an implicit CLONE_SYSVSEM
- in CLONE_NEWIPC
-References: <200804130848.m3D8mdo2007124@mail.q-ag.de> <20080414150057.GB15667@sergelap.austin.ibm.com> <4803A512.2070405@colorfullife.com> <20080414192326.GA27930@sergelap.austin.ibm.com>
-In-Reply-To: <20080414192326.GA27930@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 15 Apr 2008 14:43:14 -0400
+Date: Tue, 15 Apr 2008 11:42:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zan Lynx <zlynx@acm.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc8-mm2: Observed problems: Not a detailed bug report
+Message-Id: <20080415114228.d379f996.akpm@linux-foundation.org>
+In-Reply-To: <1208278829.7230.14.camel@localhost>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	<1208278829.7230.14.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
->
->> Thus all apps right now call unshare(CLONE_NEWIPC|&~CLONE_SYSVSEM).
->> This combination doesn't make much sense. Even worse - it easily causes a 
->> kernel oops.
->> Thus my fix is twofold:
->> - add support for unshare(CLONE_SYSVSEM).
->> - implicitely add CLONE_SYSVSEM to all calls that set CLONE_NEWIPC.
->>     
->
-> Right but your fix ignores the fact that you can achieve the same
-> result as unshare(CLONE_NEWIPC&~CLONE_SYSVSEM) by doing
-> clone(CLONE_NEWIPC|CLONE_SYSVSEM).
->   
-Duh, I overlooked that part. You are right.
-Hmm - what's the best fix? Implicitely add CLONE_SYSVSEM or return 
--EINVAL if CLONE_SYSVSEM is not set?
-I don't care.
-Could you write a patch? I probably won't have enough time until the 
-next weekend.
+On Tue, 15 Apr 2008 11:00:29 -0600 Zan Lynx <zlynx@acm.org> wrote:
 
->> I have decided against that, it breaks the current ABI.
->> And we gain virtually nothing - most if not all unshare users will be 
->> single threaded apps that do not use sysvsem at all, and even most sysvsem 
->> users do not use SEM_UNDO.
->>     
->
-> And most importantly sharing your semundo list but not your sems with
-> your parent is silly!
-It's only 99% silly: a task might want to have not-yet undone changes in its parent's namespace.
-As soon as the task exit, they are undone. Probably the most complex way to implement wait4().
+> On Thu, 2008-04-10 at 20:33 -0700, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
+> 
+> I figured that I would post these without details just so they're out
+> there.  I've had trouble getting netconsole to dump anything when I need
+> it to.  I've also had trouble convincing myself to spend the off-work
+> hours I need to narrow it down.
+> 
+> The general environment is a AMD64 laptop running 64-bit Gentoo, GCC
+> 4.3.
+> 
+> Problem #1:
+> Compiling with the stack protector option crashes right after initramfs
+> loads.  I think it might be dying while attempting to mount root.
+> Simple work around: Don't compile with stack protector.
 
+Yes, there have been a couple of reports of stack-protector problems.
 
---
-Manfred
+> Problem #2:
+> Resume from STR.  The laptop suspends and goes into suspend state with
+> the blinking power indicator.  On resume, it simply boots normally
+> instead of resuming.  No idea how to debug this one.
+
+hm.  I figured that if suspend worked on the Vaio, it'll work on
+everything ;)
+
+>  Bisect I guess.
+
+If you have the time, please.
