@@ -1,192 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762684AbYDOAfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbYDOAk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762684AbYDOAfr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 20:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757588AbYDOAfk
+	id S1762973AbYDOAk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 20:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYDOAkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 20:35:40 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47982 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757113AbYDOAfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 20:35:39 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 14 Apr 2008 17:35:33 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@ftp.linux.org.uk>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [patch] F_GETPATH implementation (rev 2)
-Message-ID: <Pine.LNX.4.64.0804141700010.6238@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Apr 2008 20:40:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51305 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757645AbYDOAkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 20:40:19 -0400
+Date: Tue, 15 Apr 2008 10:40:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Pageflags: Standardize comment inclusion in asm-offsets.h and
+ fix MIPS
+Message-Id: <20080415104006.81b94170.sfr@canb.auug.org.au>
+In-Reply-To: <20080414162924.da6360a4.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0804141140430.7154@schroedinger.engr.sgi.com>
+	<20080414133213.82a5b76e.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0804141456410.8740@schroedinger.engr.sgi.com>
+	<20080414162924.da6360a4.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_Apr_2008_10_40_06_+1000_e9AR80UIzqEr6Ara"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a small patch to support BSD's F_GETPATH on Linux.
-IMO the simplicity of the patch and the portability advantages makes it 
-worth it. I'll leave to others to further comments it.
-Built and tested on my box against 2.6.25-rc9. Simple test program here:
+--Signature=_Tue__15_Apr_2008_10_40_06_+1000_e9AR80UIzqEr6Ara
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-http://www.xmailserver.org/fgetpath-test.c
+Hi Andrew,
 
-Changes from the initial post:
+On Mon, 14 Apr 2008 16:29:24 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> > AFACIT the powerpc=20
+> > config is borked because section size is set too low for 64K pages.
+>=20
+> Yes, the above allmodconfig error was caused by git-powerpc.
 
-- Removed the un-needed export (Arnd)
+I posted a fix the other day ...
 
-- Moved F_GETPATH definition inside the Linux specific range (Linus)
+http://patchwork.ozlabs.org/linuxppc/patch?id=3D17819
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__15_Apr_2008_10_40_06_+1000_e9AR80UIzqEr6Ara
+Content-Type: application/pgp-signature
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFIA/luTgG2atn1QN8RAuR3AJ4v6Goqs6IPdwXzTu7xGqziyOiqDQCggk7Q
+D7QhGwjXMdYJpaplrdVefB4=
+=RUZS
+-----END PGP SIGNATURE-----
 
-
-- Davide
-
-
----
- fs/fcntl.c            |   26 ++++++++++++++++++++++++++
- fs/proc/base.c        |   26 +-------------------------
- include/linux/fcntl.h |   13 ++++++++-----
- include/linux/fs.h    |    1 +
- 4 files changed, 36 insertions(+), 30 deletions(-)
-
-Index: linux-2.6.mod/fs/fcntl.c
-===================================================================
---- linux-2.6.mod.orig/fs/fcntl.c	2008-04-14 13:17:37.000000000 -0700
-+++ linux-2.6.mod/fs/fcntl.c	2008-04-14 16:01:32.000000000 -0700
-@@ -316,6 +316,28 @@
- 	return pid;
- }
- 
-+int fcntl_getpath(struct path *fpath, char __user *path, int maxsize)
-+{
-+	int size;
-+	char *buf, *pathname;
-+
-+	buf = (char *) __get_free_page(GFP_TEMPORARY);
-+	if (!buf)
-+		return -ENOMEM;
-+	pathname = d_path(fpath, buf, PAGE_SIZE);
-+	size = PTR_ERR(pathname);
-+	if (IS_ERR(pathname))
-+		goto error;
-+	size = buf + PAGE_SIZE - 1 - pathname;
-+	if (size > maxsize)
-+		size = maxsize;
-+	if (copy_to_user(path, pathname, size))
-+		size = -EFAULT;
-+error:
-+	free_page((unsigned long) buf);
-+	return size;
-+}
-+
- static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
- 		struct file *filp)
- {
-@@ -381,6 +403,10 @@
- 	case F_NOTIFY:
- 		err = fcntl_dirnotify(fd, filp, arg);
- 		break;
-+	case F_GETPATH:
-+		err = fcntl_getpath(&filp->f_path, (char __user *) arg,
-+				    PATH_MAX);
-+		break;
- 	default:
- 		break;
- 	}
-Index: linux-2.6.mod/fs/proc/base.c
-===================================================================
---- linux-2.6.mod.orig/fs/proc/base.c	2008-04-14 13:17:37.000000000 -0700
-+++ linux-2.6.mod/fs/proc/base.c	2008-04-14 16:01:32.000000000 -0700
-@@ -1192,30 +1192,6 @@
- 	return ERR_PTR(error);
- }
- 
--static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
--{
--	char *tmp = (char*)__get_free_page(GFP_TEMPORARY);
--	char *pathname;
--	int len;
--
--	if (!tmp)
--		return -ENOMEM;
--
--	pathname = d_path(path, tmp, PAGE_SIZE);
--	len = PTR_ERR(pathname);
--	if (IS_ERR(pathname))
--		goto out;
--	len = tmp + PAGE_SIZE - 1 - pathname;
--
--	if (len > buflen)
--		len = buflen;
--	if (copy_to_user(buffer, pathname, len))
--		len = -EFAULT;
-- out:
--	free_page((unsigned long)tmp);
--	return len;
--}
--
- static int proc_pid_readlink(struct dentry * dentry, char __user * buffer, int buflen)
- {
- 	int error = -EACCES;
-@@ -1230,7 +1206,7 @@
- 	if (error)
- 		goto out;
- 
--	error = do_proc_readlink(&path, buffer, buflen);
-+	error = fcntl_getpath(&path, buffer, buflen);
- 	path_put(&path);
- out:
- 	return error;
-Index: linux-2.6.mod/include/linux/fs.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/fs.h	2008-04-14 13:17:37.000000000 -0700
-+++ linux-2.6.mod/include/linux/fs.h	2008-04-14 16:01:32.000000000 -0700
-@@ -960,6 +960,7 @@
- /* only for net: no internal synchronization */
- extern void __kill_fasync(struct fasync_struct *, int, int);
- 
-+extern int fcntl_getpath(struct path *fpath, char __user *path, int maxsize);
- extern int __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
- extern int f_setown(struct file *filp, unsigned long arg, int force);
- extern void f_delown(struct file *filp);
-Index: linux-2.6.mod/include/linux/fcntl.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/fcntl.h	2008-04-14 16:04:31.000000000 -0700
-+++ linux-2.6.mod/include/linux/fcntl.h	2008-04-14 16:06:31.000000000 -0700
-@@ -7,6 +7,12 @@
- #define F_GETLEASE	(F_LINUX_SPECIFIC_BASE + 1)
- 
- /*
-+ * Request nofications on a directory.
-+ * See below for events that may be notified.
-+ */
-+#define F_NOTIFY	(F_LINUX_SPECIFIC_BASE+2)
-+
-+/*
-  * Cancel a blocking posix lock; internal use only until we expose an
-  * asynchronous lock api to userspace:
-  */
-@@ -15,11 +21,8 @@
- /* Create a file descriptor with FD_CLOEXEC set. */
- #define F_DUPFD_CLOEXEC	(F_LINUX_SPECIFIC_BASE + 6)
- 
--/*
-- * Request nofications on a directory.
-- * See below for events that may be notified.
-- */
--#define F_NOTIFY	(F_LINUX_SPECIFIC_BASE+2)
-+/* Retrieve the path associated with the file descriptor */
-+#define F_GETPATH	(F_LINUX_SPECIFIC_BASE+7)
- 
- /*
-  * Types of directory notifications that may be requested.
+--Signature=_Tue__15_Apr_2008_10_40_06_+1000_e9AR80UIzqEr6Ara--
