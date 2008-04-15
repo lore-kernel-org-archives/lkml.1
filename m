@@ -1,137 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbYDOUE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765480AbYDOUEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765222AbYDOUE1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761634AbYDOUD4
+	id S1765480AbYDOUEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764895AbYDOUEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:03:56 -0400
-Received: from rv-out-0708.google.com ([209.85.198.241]:57359 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760940AbYDOUDy (ORCPT
+	Tue, 15 Apr 2008 16:04:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34635 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761910AbYDOUEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:03:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iYc01NMhM++d2npCSbjyBTZ863W+xa2fDdfgGoXc/3/HIheAanytpBDQY/xdjjUf3iEEnoJtpsrNcDeV+6QmciEdJK7jRd7njpvfzoJF/GG1NCB5N7FKqn//mY6H19ZVrI+YOjCUFnpiJkFlks5O6w6vKzFPwdIgB9/hPRP7sAs=
-Message-ID: <86802c440804151303k29295e9bp70c1046b8c9dca76@mail.gmail.com>
-Date: Tue, 15 Apr 2008 13:03:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
-Cc: "Ingo Molnar" <mingo@elte.hu>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, ak@suse.de, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87mynuhp0o.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Apr 2008 16:04:13 -0400
+Date: Tue, 15 Apr 2008 13:02:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: hch@infradead.org, bunk@kernel.org, dwmw2@infradead.org, miklos@szeredi.hu,
+       me@bobcopeland.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-Id: <20080415130240.1b9b7662.akpm@linux-foundation.org>
+In-Reply-To: <20080415195330.17f63348@the-village.bc.nu>
+References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	<20080413080130.GA9622@infradead.org>
+	<20080413012001.8d7967f4.akpm@linux-foundation.org>
+	<20080413082815.GA20108@infradead.org>
+	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	<1208121358.2700.4.camel@shinybook.infradead.org>
+	<20080413154459.4b2f125d.akpm@linux-foundation.org>
+	<20080413234920.63711ca7@core>
+	<20080413161014.cb06964c.akpm@linux-foundation.org>
+	<20080415151643.GD2454@cs181133002.pp.htv.fi>
+	<20080415165727.GA8783@infradead.org>
+	<20080415113452.e9eacb54.akpm@linux-foundation.org>
+	<20080415195330.17f63348@the-village.bc.nu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
-	 <20080415071120.GB15499@elte.hu> <87hce3i8mq.fsf@saeurebad.de>
-	 <86802c440804151157m5baab2efla7f35a8f98ac76b7@mail.gmail.com>
-	 <87mynuhp0o.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 12:55 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi,
->
->
->
->  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->  > On Tue, Apr 15, 2008 at 5:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->  >> Hi Ingo,
->  >>
->  >>
->  >>
->  >>  Ingo Molnar <mingo@elte.hu> writes:
->  >>
->  >>  > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
->  >>  >
->  >>  >> Subject: bootmem: node-setup agnostic free_bootmem()
->  >>  >> From: Johannes Weiner <hannes@saeurebad.de>
->  >>  >>
->  >>  >> Make free_bootmem() look up the node holding the specified address
->  >>  >> range which lets it work transparently on single-node and multi-node
->  >>  >> configurations.
->  >>  >
->  >>  > this patch does not fix the bug Yinghai's (now dropped) patches solved:
->  >>  > reserve_early() allocations. So NAK until the full problem has been
->  >>  > sorted out ...
->  >>
->  >>  Okay, NAK on -mm and -x86 for sure.  The patch was meant for mainline
->  >>  where there is no need for free_bootmem() going across nodes, right?
->  >>
->  >>  But I still object to the way Yinghai implemented it.
->  >>  free_bootmem_core() should not be twisted like this.
->  >>
->  >>  How about the following (untested, even uncompiled, but you should get
->  >>  the idea) proposal which would replace the patch discussed in this
->  >>  thread:
->  >>
->  >>  --- tree-linus.orig/mm/bootmem.c
->  >>  +++ tree-linus/mm/bootmem.c
->  >>  @@ -421,7 +421,25 @@ int __init reserve_bootmem(unsigned long
->  >>
->  >>
->  >>   void __init free_bootmem(unsigned long addr, unsigned long size)
->  >>   {
->  >>  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->  >>  +       bootmem_data_t *bdata;
->  >>  +
->  >>  +       list_for_each_entry(bdata, &bdata_list, list) {
->  >>  +               unsigned long remainder = 0;
->  >>
->  >> +
->  >>  +               if (addr < bdata->node_boot_start)
->  >>  +                       continue;
->  >>  +
->  >>  +               if (PFN_DOWN(addr + size) > bdata->node_low_pfn)
->  >>  +                       remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
->  >>  +
->  >>  +               size -= PFN_PHYS(remainder);
->  >>
->  >> +               free_bootmem_core(bdata, addr, size)
->  >>  +
->  >>  +               if (!remainder)
->  >>  +                       break;
->  >>  +
->  >>  +               addr = PFN_PHYS(bdata->node_low_pfn + 1);
->  >>  +       }
->  >>
->  >>  }
->  >>
->  >>   unsigned long __init free_all_bootmem(void)
->  >
->  > how about
->  > 1. bdata is not sorted?
->
->  They are kept in a sorted list.  How could they be unsorted?
->
->
->  > 2. intel cross node box: node0: 0g-2g, 4g-6g, node1: 2g-4g, 6g-8g. i
->  > don't think they have two bdata struct for every node.
->
->  How do the bdata structures represent this setup right now?  Are you
->  sure that there is not a node descriptor for every contiguous region?
+On Tue, 15 Apr 2008 19:53:30 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-http://lkml.org/lkml/2008/3/25/233
+> > You can continue to ignore my logic, but that won't go unnoticed.
+> > 
+> > Just as a thought exercise: should we merge a small and well-written
+> > driver which has zero users?
+> 
+> We've previously merged ones that fit this category and have one user.
 
-Subject	[patch] srat, x86_64: Add support for nodes spanning other nodes
+Probably incorrectly.
 
-For example, If the physical address layout on a two node system with 8 GB
-memory is something like:
-node 0: 0-2GB, 4-6GB
-node 1: 2-4GB, 6-8GB
+> If
+> the driver doesn't disrupt core code and is useful to help other people
+> write drivers then I think we should. It may also get more users as a
+> result.
 
-Current kernels fail to boot/detect this NUMA topology.
+Maybe.
 
-ACPI SRAT tables can expose such a topology which needs to be supported.
+> This is a free software project not a business enterprise.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+And the same principles apply, don't they?  We seek to minimise overhead
+and to use our kernel development hours as effectively as we can.
 
-YH
+This is particularly important when person A is thrusting additional work
+onto persons B, C, and D.
+
