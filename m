@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbYDOIpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYDOIrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759937AbYDOIpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYDOIpW
+	id S1760691AbYDOIrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 04:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbYDOIrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:45:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44394 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbYDOIpU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:45:20 -0400
-Subject: Re: [PATCH] Replace completions with semaphores
-From: Peter Zijlstra <peterz@infradead.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com>
-References: <20080411210022.GJ11962@parisc-linux.org>
-	 <20080413125758.GQ11962@parisc-linux.org> <20080414153928.GA22259@elte.hu>
-	 <adafxtoqvgh.fsf@cisco.com> <1208190749.7375.10.camel@twins>
-	 <87d4osuy6r.fsf@basil.nowhere.org> <1208195673.7164.2.camel@twins>
-	 <4803AD91.5020001@firstfloor.org>
-	 <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com>
-	 <1208242017.7053.4.camel@lappy>
-	 <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 10:44:48 +0200
-Message-Id: <1208249088.7124.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 04:47:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34716 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755284AbYDOIrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 04:47:17 -0400
+Date: Tue, 15 Apr 2008 10:46:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: yhlu.kernel@gmail.com
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+Message-ID: <20080415084643.GA21586@elte.hu>
+References: <20080411074145.GA4944@elte.hu> <84144f020804142341ic4621c9o6de06d68eee74871@mail.gmail.com> <20080415070811.GA15499@elte.hu> <200804150131.18469.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804150131.18469.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 09:17 +0200, Bart Van Assche wrote:
-> On Tue, Apr 15, 2008 at 8:46 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Tue, 2008-04-15 at 08:18 +0200, Bart Van Assche wrote:
-> >  > Would it really be a good idea to give a synchronization concept that
-> >  > behaves exactly like a semaphore another name than "semaphore" ? The
-> >  > semaphore concept is well known and is taught in every computer
-> >  > science course.
-> >
-> >  Are the ramifications wrt priority inversion taught? Is it made clear
-> >  that its hard to validate because there is no clear resource owner?
-> >
-> >  Afaik, non of these subjects are touched upon in the CS-101 courses and
-> >  that is exactly the problem. So you can say they are not well know, they
-> >  are just widely misunderstood.
-> >
-> >  And yes, if there are more hand a very few such users it doesn't make
-> >  sense to keep them open coded.
+
+* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+
+> > why are there no good debug logs possible in this area? To debug 
+> > such bugs we'd need an early dump of the precise layout of all 
+> > memory maps, what points where, how large it is, where it is 
+> > allocated - and then compare it with how the rest of the system is 
+> > layed out - looking at possible overlaps or other bugs. This 8-way 
+> > box is a pain to debug on, it takes a long time to boot it up, etc. 
+> > etc.
 > 
-> Regarding semaphores and priority inversion: I have never recommended
-> the use of semaphores over mutexes, all I recommended is to keep the
-> name "semaphore" for something that behaves like a semaphore. There
-> might be better ways to discourage the use of the semaphore API, e.g.
-> letting the compiler print a warning every time a semaphore function
-> is called unless one or another #define has been enabled.
+> so same config 64 bit with SLUB works and only 32bit is broken? or it 
+> 2.6.24 with 32bit + sparse + slub is broken already?
 
-That sounds horrible; I really prefer targeted replacements like
-completions that make it clear what they're supposed to be used for.
+this is a 32-bit-only box.
 
-> Regarding priority inheritance: does the above mean that you consider
-> priority inheritance as an optimal solution for realizing real-time
-> behavior in the kernel ? Are you aware of the fundamental problems
-> associated with priority inheritance ? These issues are well explained
-> in Victor Yodaiken's paper "Against priority inheritance". See also
-> http://www.linuxdevices.com/files/misc/yodaiken-july02.pdf .
-
-Priority inheritance isn't ideal, but comming from a general purpose
-kernel that wasn't build from scratch to accomodate hard realtime its
-basically the only option.
-
-Also things like lockdep are a real help to a lot of developers - loads
-of locking bugs never make it into the kernel because of it.
-
+	Ingo
