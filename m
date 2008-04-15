@@ -1,177 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbYDOToZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbYDOTtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764915AbYDOToZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 15:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbYDOToS
+	id S1762708AbYDOTtd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 15:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbYDOTtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 15:44:18 -0400
-Received: from saeurebad.de ([85.214.36.134]:38294 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbYDOToR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 15:44:17 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
-References: <20080412223319.372887160@symbol.fehenstaub.lan>
-	<20080412225850.704752615@symbol.fehenstaub.lan>
-	<87lk3hwv52.fsf@basil.nowhere.org>
-	<20080414232308.ffa4e269.akpm@linux-foundation.org>
-	<86802c440804150004w1c94b2dci520e0ffb8b60632f@mail.gmail.com>
-	<20080415001512.60cb784d.akpm@linux-foundation.org>
-	<86802c440804150028t33fabd7fn40d3d47d0482bfc1@mail.gmail.com>
-	<20080415003647.922a9a05.akpm@linux-foundation.org>
-	<87wsmzibf7.fsf@saeurebad.de>
-	<86802c440804151152i1db7bff8n4b64eba8b912d49f@mail.gmail.com>
-Date: Tue, 15 Apr 2008 21:43:59 +0200
-In-Reply-To: <86802c440804151152i1db7bff8n4b64eba8b912d49f@mail.gmail.com>
-	(Yinghai Lu's message of "Tue, 15 Apr 2008 11:52:14 -0700")
-Message-ID: <87ve2ihpj4.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 15 Apr 2008 15:49:24 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55753 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755472AbYDOTtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 15:49:23 -0400
+Date: Tue, 15 Apr 2008 15:49:22 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080415194922.GT7385@csclub.uwaterloo.ca>
+References: <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca> <20080414190308.GJ15824@duck.suse.cz> <20080414192928.GM7385@csclub.uwaterloo.ca> <20080415085740.GA7603@atrey.karlin.mff.cuni.cz> <20080415153221.GD7387@csclub.uwaterloo.ca> <20080415173430.GB4994@elf.ucw.cz> <20080415182453.GR7385@csclub.uwaterloo.ca> <20080415191238.GC4994@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <20080415191238.GC4994@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Apr 15, 2008 at 09:12:38PM +0200, Pavel Machek wrote:
+> It does not say "repositions the offset to the random number" nor
+> "under certain conditions repositions the offsets" nor "it repositions
+> the offset unless you are unlucky and hit kernel race". More
+> seriously, it does not contain note "not safe from multithreaded
+> programs" nor "multithreaded behaviour is undefined".
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+And if you debug it on a 64bit system then it won't be able to do that.
+So not exactly a useful thing to try, and even trying 1000 times you are
+unlikely to hit it, so you can't know for sure unless you happen to be
+lucky and hit it.
 
-> On Tue, Apr 15, 2008 at 4:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->> Hi,
->>
->>
->>
->>  Andrew Morton <akpm@linux-foundation.org> writes:
->>
->>  > On Tue, 15 Apr 2008 00:28:34 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->>  >
->>  >> On Tue, Apr 15, 2008 at 12:15 AM, Andrew Morton
->>  >> <akpm@linux-foundation.org> wrote:
->>  >> >
->>  >> > On Tue, 15 Apr 2008 00:04:03 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->>  >> >
->>  >> >  > On Mon, Apr 14, 2008 at 11:23 PM, Andrew Morton
->>  >> >  > <akpm@linux-foundation.org> wrote:
->>  >> >  > >
->>  >> >  > > On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
->>  >> >  > >
->>  >> >  > >  > Johannes Weiner <hannes@saeurebad.de> writes:
->>  >> >  > >  >
->>  >> >  > >  > > Make free_bootmem() look up the node holding the specified address
->>  >> >  > >  > > range which lets it work transparently on single-node and multi-node
->>  >> >  > >  > > configurations.
->>  >> >  > >  >
->>  >> >  > >  > Acked-by: Andi Kleen <andi@firstfloor.org>
->>  >> >  > >  >
->>  >> >  > >  > This is far better than the original change it replaces and which
->>  >> >  > >  > I also objected to in review.
->>  >> >  > >  >
->>  >> >  > >
->>  >> >  > >  So...  do we think these two patches are sufficiently safe and important for
->>  >> >  > >  2.6.25?
->>  >> >  >
->>  >> >  > the patch is wrong
->>  >> >  >
->>  >> >
->>  >> >  The last I saw was this:
->>  >> >
->>  >> >
->>  >> >  On Sun, 13 Apr 2008 12:57:22 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
->>  >> >
->>  >> >  > Hi,
->>  >> >  >
->>  >> >  > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>  >> >  >
->>  >> >  > > On Sat, Apr 12, 2008 at 3:33 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->>  >> >  > > ...
->>  >> >
->>  >> > > >
->>  >> >  > > could have chance that bootmem with reserved_early that is crossing
->>  >> >  > > the nodes.
->>  >> >  >
->>  >> >  > Upstream reserve_bootmem_core() would BUG() on a caller trying to cross
->>  >> >  > nodes, so I don't see where this chance could come from.
->>  >> >
->>  >> >  Is that what you're referring to?
->>  >> >
->>  >> >  Was Johannes observation incorrect?  If so, why?
->>  >>
->>  >> my patch with free_bootmem will make sure free_bootmem_core only free
->>  >> bootmem in the bdata scope.
->>  >> so free_bootmem can handle the cross_node bootmem that is done by
->>  >> reserve_early ( done in another patch, is dropped by you because took
->>  >> Jonannes).
->>  >>
->>  >> in setup_arch for x86_64 there is one free_bootmem that is used when
->>  >> ramdisk is falled out of ram map. that could be crossed by bootloader
->>  >> and kexec, and kernel or second kernel is memmap=NN@SS to execlue some
->>  >> memory.
->>  >>
->>  >> anyway that is extrem case, but my patch could handle that.
->>
->>  Has this case ever occured?  If this could become real, I have no
->>  objections to implement a way to handle it (why would I?), but until now
->>  you just said that in some time in the future, this could be useful.
->>
->>
->>  >>
->>  >> I wonder if any regression caused by my previous patch? maybe on other platform?
->>  >>
->>  >
->>  > Not that I'm aware of.
->>
->>  It papers over buggy usage of free_bootmem().  If its arguments are
->>  bogus, it will just return again where it BUG()ed out before.  The pages
->>  might be never marked free and therefor never reach the buddy allocator.
->>
->>
->>  > I restored mm-make-reserve_bootmem-can-crossed-the-nodes.patch.  Johannes,
->>  > can you please check 2.6.28-rc8-mm2, see if it looks OK?
->>
->>  I object to the way it is implemented.  If it is really needed, that
->>  should be done properly:
->>
->>         - remove the double loop over the area on the likely succeeding
->>           path and unroll the reserving on the unlikely path as it was
->>           done before.  Better to punish exceptional branches than
->>           the working paths.
->>         - make reserve_bootmem_core be strict with its arguments.  If
->>           you want to iterate over the bdata list, you should not just
->>           throw every item at the _core functions and let them work it
->>           out for themselves.  The correct parameters should be
->>           calculated in advance and then passed to a strict
->>           _bootmem_core() function that BUG()s on failure.
->>
->>  But still, Yinghai, you never brought in practical reasons for this
->>  whole thing.  You talked about extreme and theoretical cases and I don't
->>  think that this justifies breaking API or pessimizing code at all.
->
-> free_bootmem(ramdisk_image, ramdisk_size) is sitting in setup_arch of
-> x86_64. or make that panic directly.
->
-> what i needed is: free_bootmem can free bootmem cross the nodes.
->
-> on numa
-> alloc_bootmem always return blocks on same nodes. but some via
-> reserve_early and then to bootmem via early_res_to_bootmem could be
-> crossing nodes.
->
-> BTW, can you look at patches in -mm about make reserve_bootmem cross
-> the nodes?
+> So this pretty clearly is application bug.
 
-Yep, already looked at them.  My patches were initially against Linus'
-tree which does not allow bootmem to act across node boundaries yet.
+> Really? I see an application to detecting if I'm being debugged. Try
+> to hit the race 1000 times, if you hit it, you are probably not
+> debugged (because debugger would be very likely to make that race hard
+> to hit). Will only work on multicores, but...
 
-Regarding node-crossing, what do you think about my idea in
-http://lkml.org/lkml/2008/4/15/139?  That way we could preserve the core
-functions and keep them clean.  The design could of course be applied to
-the other node-crossing functions too.
+If lseek not being atomic breaks your application, then your application
+would be broken already.  Any weird debug detection you might be able to
+do using the fact is isn't atomic could I suppose be considered a kernel
+bug if you think being able to do such detection is a bug.  Nothing
+prevents the debuger from preloading an override to the access to lseek
+that uses it's own locks to make the call atomic and hence prevent such
+use.
 
-	Hannes
+So other than that, is there any case in which lseek being not atomic
+can cause an application to break if it wasn't already broken (due to
+having a race condition by trying to do 2 or more seeks on the same file
+handle at the same time)?  If not, I think adding any kind of locking to
+seek in the kernel (which would I think have to cause a slight slow
+down) is a bad move.  But hey that's just my opinion. :)  I won't be
+upset either way.
+
+> [Plus, there's "strace seen it writing to either offset A or offset B,
+> but I see the data at offset C, WTF?]
+
+Most likely it would also be a program where you see it randomly seek to
+A and write or seek to A then B then write depending on how it happens
+to get scheduled when you run it.  Already the program is clearly doing
+something unreliable.  And C only happens to vary from B if A and B
+differ in the upper 32 bits of the file position.
+
+> I'm not saying this kernel bug is likely to hit in practice. It is
+> still a kernel bug.
+> 
+> Is the slowdown of lseek worth getting rid of this minor bug? Not
+> sure, probably yes.
+
+I think a slow down is the worse choice.  Adding a note to the
+documentation saying that "By the way, on 32bit systems the seek call is
+not atomic for 64bit file offsets, so if you happen to issue two at the
+same time to the same file pointer to offsets that differ in the upper
+32bits, then the result of the seek might not be either of A or B but
+will contain the upper 32bits of either A or B and the lower 32bits of
+ether A or B.  You should of course use locking for your file access to
+ensure you know where your threads end up writing so this should be a
+non issue."
+
+-- 
+Len Sorensen
