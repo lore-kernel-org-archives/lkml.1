@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbYDOJHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761960AbYDOJKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762512AbYDOJHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYDOJHa
+	id S1761960AbYDOJKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbYDOJKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:07:30 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59605 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761378AbYDOJH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:07:29 -0400
-Date: Tue, 15 Apr 2008 12:06:19 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] avr32: don't offer CONFIG_GEN_RTC
-Message-ID: <20080415090619.GA2454@cs181133002.pp.htv.fi>
-References: <20080414141644.GC6695@cs181133002.pp.htv.fi> <426764.23035.qm@web65609.mail.ac4.yahoo.com>
+	Tue, 15 Apr 2008 05:10:39 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:27446 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753075AbYDOJKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 05:10:38 -0400
+Message-ID: <480470C6.6050908@panasas.com>
+Date: Tue, 15 Apr 2008 12:09:26 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <426764.23035.qm@web65609.mail.ac4.yahoo.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Andy Whitcroft <apw@shadowen.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       SL Baur <steve@xemacs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [patch] checkpatch: relax spacing and line length
+References: <alpine.LNX.1.10.0804060653020.30794@fbirervta.pbzchgretzou.qr> <20080408171257.GF17915@shadowen.org> <47FCB458.3070403@panasas.com> <20080409132548.GM17915@shadowen.org> <47FCF6AF.8010703@panasas.com> <20080412002652.GM9785@ZenIV.linux.org.uk> <4801D82C.7000901@panasas.com> <20080413151845.GP9785@ZenIV.linux.org.uk>
+In-Reply-To: <20080413151845.GP9785@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Apr 2008 09:09:31.0700 (UTC) FILETIME=[6A80A740:01C89ED8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 09:08:16PM -0400, Paul Gortmaker wrote:
+On Apr. 13, 2008, 18:18 +0300, Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> On Sun, Apr 13, 2008 at 12:53:48PM +0300, Benny Halevy wrote:
 > 
-> --- Adrian Bunk <bunk@kernel.org> wrote:
+>>> Sorry.  I'm not going to change perfectly working editing habits *or* to patch
+>> That's working well for you but apparently not so well for everybody else.
 > 
-> > This patch fixes the following compile error:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC [M]  drivers/char/genrtc.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/genrtc.c:58:21:
-> > error: asm/rtc.h: No such file or directory
-> > ...
-> > make[3]: *** [drivers/char/genrtc.o] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Nice turn of a phrase, that.
 > 
-> I'm assuming this must be a randconfig error, as at
-> a glance, nothing in arch/avr32/configs/* is setting
-> GEN_RTC.
->...
+>>> nvi to satisfy an annoying wunch of bankers.  HAND, GAFL.
+>>> --
+>> Thanks for the insightful and mature comment, Al.
+> 
+> Oh, for the...
+> 
+>> I really hate to spend more time on this topic but folks did find merits in it.
+>> There's no need to change anybody's editing habits if we allow this indentation
+>> style in the CodingStyle document and in checkpatch.pl in addition to the
+>> existing convention.
+> 
+> "Allow" is such a nice word, isn't it?  Let's take a closer look:
+> 	* nobody prohibits lines satisfying your constraints ("tabs only for
+> indent level"), so "allowing" that is meaningless
 
-Not randconfig, I tried allmodconfig.
+Currently checkpatch.pl prints an error if I use 8 or more spaces in the
+indentation string and Documentation/CodingStyle says:
 
-cu
-Adrian
+"Outside of comments, documentation and except in Kconfig, spaces are never
+used for indentation"
 
--- 
+Although CodingStyle and checkpatch just provide guidance and the final
+word is the maintainer's I consider these recommendations as "disallowing",
+or at least "discouraging". So did others that commented on patches I sent
+in the past.  If that wasn't the case I wouldn't have come up with this
+silly initiative in the first place.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> 	* "indentation style" in the above refers to editor settings.
+> To "allow" that, you advocate prohibiting the lines _NOT_ satisfying your
+> constraints.  Which, by definition, means extra work for people submitting
+> patches, no matter how you spin it.
+
+I'm certainly not advocating to prohibit the current indentation style,
+just to relax the rules to allow a superset of it.
+
+Basically, I'd like checkpatch to allow /^\+\t* *\S/
+and, since Andy says that checkpatch knows "the indent to some degree",
+it can warn if the number of leading tabs is smaller than that.
+
+> 
+> BTW, while we are talking about conventions, would you mind keeping lines
+> in your mail shorter than 79 columns to avoid wraparounds in quoted text?
+> Unlike your proposal, that one actually _is_ a common convention...
+
+No, I don't mind.
+
+[Though it is a bit of a pain to keep that when automatic wrapping of long
+lines is turned off in my mail program so I can easily quote patches or
+code snippets.]
+
+Benny
 
