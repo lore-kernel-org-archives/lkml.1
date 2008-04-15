@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765793AbYDOUMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765792AbYDOUNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765793AbYDOUMv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbYDOUMj
+	id S1765792AbYDOUNY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbYDOUNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:12:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51823 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbYDOUMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:12:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>
-Subject: Re: 2.6.25-rc8-mm2: Observed problems: Not a detailed bug report
-Date: Tue, 15 Apr 2008 22:12:52 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <1208278829.7230.14.camel@localhost> <20080415114228.d379f996.akpm@linux-foundation.org>
-In-Reply-To: <20080415114228.d379f996.akpm@linux-foundation.org>
+	Tue, 15 Apr 2008 16:13:13 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:42322 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758468AbYDOUNM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 16:13:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=YHIBtuBo6tidYaZop7IRvM+BSsswI+1rloHeJ5xzzs3x42jnx7upOIGSVV67xGZPDp8lPLwFxbJRQs9dOWlFr9p5tW+Sr3xTDxdrgHF/uy+Ogj9R0c7NRqIp7aBlAjpaNYocP9kh6+bqK4OI3Boyy1WmqGUQEsS7+m/4hj2av6w=
+Message-ID: <ae1c82500804151313h7339b5b1ufc02790544898e50@mail.gmail.com>
+Date: Tue, 15 Apr 2008 22:13:08 +0200
+From: "Robert Obryk" <robryk@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Changing vma's vm_file
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804152212.52976.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 15 of April 2008, Andrew Morton wrote:
-> On Tue, 15 Apr 2008 11:00:29 -0600 Zan Lynx <zlynx@acm.org> wrote:
-> 
-> > On Thu, 2008-04-10 at 20:33 -0700, Andrew Morton wrote:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/
-> > 
-> > I figured that I would post these without details just so they're out
-> > there.  I've had trouble getting netconsole to dump anything when I need
-> > it to.  I've also had trouble convincing myself to spend the off-work
-> > hours I need to narrow it down.
-> > 
-> > The general environment is a AMD64 laptop running 64-bit Gentoo, GCC
-> > 4.3.
-> > 
-> > Problem #1:
-> > Compiling with the stack protector option crashes right after initramfs
-> > loads.  I think it might be dying while attempting to mount root.
-> > Simple work around: Don't compile with stack protector.
-> 
-> Yes, there have been a couple of reports of stack-protector problems.
-> 
-> > Problem #2:
-> > Resume from STR.  The laptop suspends and goes into suspend state with
-> > the blinking power indicator.  On resume, it simply boots normally
-> > instead of resuming.  No idea how to debug this one.
-> 
-> hm.  I figured that if suspend worked on the Vaio, it'll work on
-> everything ;)
-> 
-> >  Bisect I guess.
-> 
-> If you have the time, please.
+Hello everyone,
 
-Zan, can you please try the latest x86.git tree first?  The bug may be fixed
-there.  If that still fails, please bisect, if you can.
+Can a file_ops mmap routine change the vm_file in the vma? I assume
+the file_ops of the substituted file won't break -- question is
+whether anything else can.
 
-Thanks,
-Rafael
+The only thing during mmap syscall I can notice to depend on the value
+of vm_file prior to call to f_op->mmap is the whole VM_DENYWRITE
+stuff. It confuses me somewhat, while it appears to do something,
+while manual for mmap states that MAP_DENYWRITE is ignored. What does
+it do now?
+
+The problem I am trying to solve is creating a file which will, upon
+being mmaped, duplicate a mapping belonging to a different process. I
+plan to do this by substituting vm_file and calling proper f_op->mmap
+in my file's f_op->mmap.
+
+Thanks in advance for any advice,
+Robert Obryk
