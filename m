@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbYDOIDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYDOIG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbYDOIDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYDOIDU
+	id S1757364AbYDOIG2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 04:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYDOIGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:03:20 -0400
-Received: from rv-out-0708.google.com ([209.85.198.246]:12703 "EHLO
+	Tue, 15 Apr 2008 04:06:12 -0400
+Received: from rv-out-0708.google.com ([209.85.198.243]:14167 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751063AbYDOIDQ (ORCPT
+	with ESMTP id S1752726AbYDOIGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:03:16 -0400
+	Tue, 15 Apr 2008 04:06:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xxqQvPZ0+XGdkGDYImbka2WvGByKKyQz2JvloVBMkPO0NKtSTFaxhhnMt8oN2hvceGYqQYB+jxmu8ca1nBGlvvlLHEI9LnN3v6FCvQj9A8fNKPRNBmiXBD0oDxZYcRL8tvf9MNjdnSE9BGu7i3sfU1tHSrBN3RWzZRdvbEO4/XQ=
-Message-ID: <86802c440804150103s59f6fe16ncf08a3154c03d2bb@mail.gmail.com>
-Date: Tue, 15 Apr 2008 01:03:15 -0700
+        b=EAKfBJjwABXxWeM1FsyIedFPJj8q9pDiumFjzqE+8QH2IhuhIrArZrL5kanVIi2iCfKy4Os4pQvyxGAGcFljFgn8gfAp6muavVXW5zEvdU2E0LlOSQnWcmZWo+//QxdBA3RQMSe0OWIyUridfsxLTB0tA6MSntppMF+X/WSQ8kA=
+Message-ID: <86802c440804150106p42b2befax349c24b6ff476238@mail.gmail.com>
+Date: Tue, 15 Apr 2008 01:06:10 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
 Subject: Re: regression caused by: genirq: do not leave interupts enabled on free_irq
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, "Ingo Molnar" <mingo@elte.hu>,
        "Jeff Garzik" <jeff@garzik.org>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
        LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 In-Reply-To: <20080415004400.bb941191.akpm@linux-foundation.org>
@@ -100,29 +100,9 @@ On Tue, Apr 15, 2008 at 12:44 AM, Andrew Morton
 >  >
 >
 >  So... where did this end up?   It's a post-2.6.24 regression, isn't it?
->
->  Do we think it's a bug in the RHEL 5.1 kernel?  Even so, that's a problem
->  for the 2.6.25 kernel.
 
-it is RHEL 5.1 kernel problem, it has code for maskbit with msi there,
-but that does work...
-
-I sent out patch for 2.6.25 so it can be used to kexec old kernel that
-doesn't support maskbit for MSI.
-
-please comment...
-
-[PATCH] x86_64: restore mask_bits in msi shutdown
-
-
-for MSI, default_shutdown will call mask_bit for msi device. so all
-mask bits will
-left disabled after free_irq.
-then if kexec next kernel that only can use msi_enable bit.
-all device's MSI can not be used.
-
-So try to restore MSI mask bits that is saved before using msi in first kernel.
-
-http://lkml.org/lkml/2008/4/11/369
+between 2.6.25-rc2 and 2.6.25-rc3 by one patch from Thomas regarding
+genirq to solve one long standing spurious problem...
+looks like the irq is ioapic or pic, right?
 
 YH
