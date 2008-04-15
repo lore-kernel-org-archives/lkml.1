@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764652AbYDORYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765548AbYDORYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764652AbYDORYY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 13:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYDORYL
+	id S1765548AbYDORYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 13:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764515AbYDORYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 13:24:11 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:37372 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757721AbYDORYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 13:24:09 -0400
-Date: Wed, 16 Apr 2008 02:23:33 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.25
-Message-ID: <20080415172333.GA29489@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 15 Apr 2008 13:24:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38614 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764611AbYDORYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 13:24:42 -0400
+Date: Tue, 15 Apr 2008 10:23:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+In-Reply-To: <20080415161532.GA15088@elte.hu>
+Message-ID: <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org>
+References: <20080411074145.GA4944@elte.hu> <84144f020804110121l8444aafl4631071b34c458fe@mail.gmail.com> <84144f020804110150q367260f6k473380a1309db878@mail.gmail.com> <20080411085411.GA10181@elte.hu> <84144f020804110205u3d073e76lbcdd36ec293a169b@mail.gmail.com>
+ <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org> <20080415161532.GA15088@elte.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.25.git
 
-Which contains:
+On Tue, 15 Apr 2008, Ingo Molnar wrote:
+> 
+> btw., now with a second full day spent on this regression, i have 
+> figured out a workaround the hard way: increasing SECTION_SIZE_BITS in 
+> include/asm-x86/sparsemem.h from 26 to 27 makes it go away.
 
-Adrian Bunk (1):
-      sh64: add missing #include <asm/fpu.h>'s
+Interesting.
 
-Andrew Morton (2):
-      sh: arch/sh/kernel/traps_32.c needs asm/fpu.h
-      sh: export empty_zero_page
+I wonder..
 
-Manuel Lauss (1):
-      sh: fix compressed kernel build
+So since you don't have NUMA, you have NODES_SHIFT == 0.
 
- arch/sh/boot/compressed/head_32.S |    1 -
- arch/sh/boot/compressed/head_64.S |    1 -
- arch/sh/kernel/process_64.c       |    1 +
- arch/sh/kernel/ptrace_64.c        |    1 +
- arch/sh/kernel/sh_ksyms_32.c      |    1 +
- arch/sh/kernel/sh_ksyms_64.c      |    1 +
- arch/sh/kernel/signal_64.c        |    1 +
- arch/sh/kernel/traps_32.c         |    1 +
- arch/sh/kernel/traps_64.c         |    1 +
- 9 files changed, 7 insertions(+), 2 deletions(-)
+That in turn means that NODE_NOT_IN_PAGE_FLAGS is _not_ set.
+
+That, in turn, means that ZONEID_SHIFT does *not* contain SECTIONS_SHIFT.
+Is that really what is supposed to happen?
+
+Because then "page_is_buddy()" will not even test the section, as far as I 
+can tell.
+
+But I'm probably missing something. Why would we not need to test the 
+section in page_zone_id() when the node ID is in the page flags (but has 
+zero size)?
+
+		Linus
