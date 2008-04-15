@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbYDOJOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbYDOJVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763031AbYDOJOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbYDOJOG
+	id S1762063AbYDOJVO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYDOJU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:14:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45582 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756446AbYDOJOF (ORCPT
+	Tue, 15 Apr 2008 05:20:57 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35886 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbYDOJUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:14:05 -0400
-Date: Tue, 15 Apr 2008 11:14:03 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: K?roly Kasza <kaszak@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       kernel list <linux-kernel@vger.kernel.org>, lcostantino@gmail.com,
-       someone@dunanet.hu
-Subject: Re: w35und: add softmac interface
-Message-ID: <20080415091403.GA32652@atrey.karlin.mff.cuni.cz>
-References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz> <544ab8580804150110x2f1841b4m7ebd43f1a6441458@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 15 Apr 2008 05:20:55 -0400
+Date: Tue, 15 Apr 2008 12:20:52 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] smb.h: uses struct timespec but didn't include linux/time.h
+In-Reply-To: <20080415021057.9bdff72f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0804151212310.17123@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0804151202390.17123@wrl-59.cs.helsinki.fi>
+ <20080415021057.9bdff72f.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <544ab8580804150110x2f1841b4m7ebd43f1a6441458@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 15 Apr 2008, Andrew Morton wrote:
 
-> >  > > This adds softmac interface to w35und driver... so it becomes monster
-> >  > > driver with _two_ interfaces.
-> >  > >
-> >  > > If you initialize hardmac interface, then softmac starts to
-> >  > > works... it associates to AP, and can even ping.
-> >  > >
-> >  > > (Or at least I hope so... it was somewhat too easy.)
-> >  >
-> >
-> > > OK, I'm late to the party...what is this stuff going into
-> >  > drivers/net/wireless?
-> >
-> >  Actually you are about month early to the party ;-). We are trying to
-> >  clean up winbond usb wireless driver, so that it can think about
-> >  inclusion in kernel.
-> >
-> >  http://code.google.com/p/winbondport/
-> >
-> >  Unfortunately, original driver carries its own 802.11 stack with it;
-> >  that needs to be stripped down. (And then code needs to be rewritten
-> >  due to horrible coding style).
-
+> On Tue, 15 Apr 2008 12:04:04 +0300 (EEST) "Ilpo J__rvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 > 
-> Last weekend we have started to rewrite the whole code based on
-> rtl8187's softmac driver.
+> > 
+> > Signed-off-by: Ilpo J__rvinen <ilpo.jarvinen@helsinki.fi>
+> > ---
+> >  include/linux/smb.h |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/smb.h b/include/linux/smb.h
+> > index f098dff..caa43b2 100644
+> > --- a/include/linux/smb.h
+> > +++ b/include/linux/smb.h
+> > @@ -11,6 +11,7 @@
+> >  
+> >  #include <linux/types.h>
+> >  #include <linux/magic.h>
+> > +#include <linux/time.h>
+> >  
+> >  enum smb_protocol { 
+> >  	SMB_PROTOCOL_NONE, 
+> 
+> Did this actually cause a compilation error?
 
-Hmm, I used adm* code as a template.
+No and yes, none I know of in mainline but with my uninlining tool, if 
+that counts :-), it did until I work-around the number of compilation 
+failures I got if I just include a single header file to a uninlined.c by 
+taking an existing compilation unit's list of headers (and hoping for the 
+best), which worked most of time (this case include). ...I'm not sure 
+should they all be fixed or not (not to speak of how). Finding most of 
+them seems relatively easy to automate by include alone + compile.
 
-> The wlan0 device init with it's own mac is ok, but thats all so far. I
-> think it would be more sane to just drop the
-> old driver now (it would take more work the correct the old one), and
-> create a new svn branch for the softmac
-> only brand new one.
 
-Really take a look at those patches. I believe I'm pretty close to
-dropping those upper layer code... Then, we'll be able to proceed
-incrementally.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ i.
