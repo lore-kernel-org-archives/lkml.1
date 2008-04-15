@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765364AbYDOU2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbYDOU24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765364AbYDOU2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 16:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYDOU23
+	id S1760520AbYDOU24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 16:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765271AbYDOU2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 16:28:29 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46942 "EHLO smtp5.pp.htv.fi"
+	Tue, 15 Apr 2008 16:28:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52314 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752179AbYDOU22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 16:28:28 -0400
-Date: Tue, 15 Apr 2008 23:27:15 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hch@infradead.org, alan@lxorguk.ukuu.org.uk, dwmw2@infradead.org,
-       miklos@szeredi.hu, me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-Message-ID: <20080415202715.GC1677@cs181133002.pp.htv.fi>
-References: <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <1208121358.2700.4.camel@shinybook.infradead.org> <20080413154459.4b2f125d.akpm@linux-foundation.org> <20080413234920.63711ca7@core> <20080413161014.cb06964c.akpm@linux-foundation.org> <20080415151643.GD2454@cs181133002.pp.htv.fi> <20080415165727.GA8783@infradead.org> <20080415113452.e9eacb54.akpm@linux-foundation.org> <20080415192432.GB1677@cs181133002.pp.htv.fi> <20080415131120.f1bab12a.akpm@linux-foundation.org>
+	id S1765028AbYDOU2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 16:28:37 -0400
+Date: Tue, 15 Apr 2008 22:28:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+Message-ID: <20080415202805.GA26880@elte.hu>
+References: <84144f020804110208m41414c0h2ed71b85efbb426c@mail.gmail.com> <84144f020804110211w4ae41414od24cf2de72453e13@mail.gmail.com> <20080415062534.GA9172@elte.hu> <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org> <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080415131120.f1bab12a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080415201734.GA25628@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 01:11:20PM -0700, Andrew Morton wrote:
-> On Tue, 15 Apr 2008 22:24:32 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> - we have a special loop for highmem pages in arch/x86/mm/init_32.c,
+>   set_highmem_pages_init(). This just goes through the PFNs one by one 
+>   and does an explicit __free_page() on all RAM pages that are in the 
+>   mem_map[] and which are non-reserved.
 > 
-> > > Look, I have repeatedly described the reason why it is probable a poor
-> > > tradeoff to merge code such as this.  The only response has been "well
-> > > we've done it before", which is largely a non-reason.
-> > >...
-> > 
-> > It seems you missed the first point in my email:
-> > 
-> > We do not have a stable API for external modules, and part of the deal 
-> > is that external modules have the chance of entering the kernel where 
-> > they will get API changes automatically.
-> > 
-> > 
-> > Plus my other point that one might argue that OMFS adds support for some 
-> > hardware in which case a recent commandment by Linus would require it 
-> > has to be merged...
-> 
-> That's lawyerly trickery, sorry.  Take some set of guidelines and then say
-> "you are thereby committed to doing X".
-> 
-> We're not committed to doing anything and it would be bad if we were. 
-> Let's apply common sense and judgement to each case on its own.
+> and that's it roughly.
 
-My favorite gems from the stuff even checkpatch finds in the 
-INFINIBAND_NES driver, for which Linus has stated explicitely that 
-merging it in this state in 2.6.25 was correct, can be seen with
+btw., highmem shouldnt matter because it does not influence how we 
+allocate our key data structures.
 
-  grep -C4 volatile drivers/infiniband/hw/nes/nes_nic.c
+i confirmed that by turning set_highmem_pages_init() into a NOP - the 
+kernel still crashed with just lowmem memory being around.
 
-
-When we have the resources to maintain this kind of code, how could a 
-small filesystem be a problem?
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
