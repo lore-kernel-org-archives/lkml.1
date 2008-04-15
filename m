@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbYDOXbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbYDOXcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760139AbYDOXbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 19:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYDOXbi
+	id S1760709AbYDOXcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 19:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYDOXcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 19:31:38 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:30155 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753239AbYDOXbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 19:31:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PynW3tV1emn+KE6SLNnZGaKOSd4wvx/DmohU9Ev2dKRcXM8t1hRRcYnww8X2zaASAF5GIS9OB3EDRtLsRkP/r8Ghb6igQyK8c8qPfVkO68OieJ1lEO+aeI3umfrkyAzNCvHW4UgezjGo7A0YdXqv00HhLw8TyqZKwAvjKO7R5TM=
-Message-ID: <48053AD1.8010007@gmail.com>
-Date: Wed, 16 Apr 2008 08:31:29 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 15 Apr 2008 19:32:12 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:55270 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751304AbYDOXcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 19:32:11 -0400
+Date: Tue, 15 Apr 2008 16:32:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+In-Reply-To: <20080415232711.GA22679@elte.hu>
+Message-ID: <Pine.LNX.4.64.0804151628420.5108@schroedinger.engr.sgi.com>
+References: <20080415204025.GA29784@elte.hu>
+ <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org>
+ <20080415211359.GA1531@elte.hu> <20080415212430.GA5467@elte.hu>
+ <Pine.LNX.4.64.0804151437300.3252@schroedinger.engr.sgi.com>
+ <20080415215504.GA9066@elte.hu> <Pine.LNX.4.64.0804151455520.4038@schroedinger.engr.sgi.com>
+ <20080415221314.GA12094@elte.hu> <Pine.LNX.4.64.0804151517530.4038@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0804151609510.5018@schroedinger.engr.sgi.com>
+ <20080415232711.GA22679@elte.hu>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
-References: <200804021524.27222.elendil@planet.nl> <200804021820.04610.elendil@planet.nl> <20080402194938.GI24237@csclub.uwaterloo.ca> <200804031947.07674.elendil@planet.nl> <48017248.4030600@gmail.com> <20080414134734.GB7385@csclub.uwaterloo.ca> <20080414145302.4239b0b9@core> <480414E6.2090205@gmail.com> <20080415144748.GO7385@csclub.uwaterloo.ca>
-In-Reply-To: <20080415144748.GO7385@csclub.uwaterloo.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 16 Apr 2008, Ingo Molnar wrote:
 
-Lennart Sorensen wrote:
-> Yes.  After all you would quickly see a problem if you built a kernel
-> with all the IDE drivers built in, which some people do.  In that case
-> ide generic is always activated last and anything bad that would happen
-> with loading a module would happen built in too.
+> ... in the thread i've already explained that it's because on PAE we use 
+> 1GB sparse chunks (shift 30) which masks the bug.
 
-Yeah, pick the right configuration.  You can make it malfunction.
-
-> I think it is the wrong place to worry about problems.  If a native
-> driver takes control of a chip, it is that drivers responsibility to
-> reserve any relevant ports on that chip sufficiently to prevent another
-> driver from messing with it that doesn't know anything about that chip.
-> If the native driver doesn't load at all, then ide-generic ought to try
-> and drive the chip if it has legacy ports.
-
-I'm not too sure whether that will be always possible and I'm less sure 
-we'll get enough test coverage over this kind of stuff.
-
-> So my opinion is that making life easy to those machines with legacy ide
-> ports is a good thing, while trying to be overly paranoid about one
-> driver potentially hitting a bug in another driver is just silly.  Why
-> couldn't two native ide drivers potentially go looking for the same
-> ports too?  Are you sure no native driver uses the legacy IDE port
-> numbers to control a chip in native mode?  Finding bugs is good since
-> then they can be fixed.  Trying to prevent hitting bugs (which shouldn't
-> be there in the first place) doesn't seem useful.
-
-Yeah, theoretically, you're right.  The problem is that what breaks when 
-things go wrong.  If you don't probe generic ports by default, harddisks 
-won't be detected on some legacy systems but you can always prompt the 
-user about loading the generic driver.  If you probe generic ports by 
-default, when things go wrong, you break modern machines in an 
-unrecoverable (w/o reset) way.  I'd rather choose bothering the user on 
-legacy machines.
-
-thanks.
-
--- 
-tejun
+Ahh. Right. That is the same situation as HIGHMEM_64G. I was able to 
+enable PAE without HIGHMEM_64G. Thought that would keep things as is.
