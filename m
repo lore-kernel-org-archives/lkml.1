@@ -1,263 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYDOSPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbYDOSQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYDOSPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYDOSPi
+	id S1758846AbYDOSQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYDOSQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:15:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36956 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbYDOSPh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:15:37 -0400
-Date: Tue, 15 Apr 2008 15:15:25 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Toralf =?UTF-8?B?RsO2cnN0ZXI=?= <toralf.foerster@gmx.de>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: build issue #469 for v2.6.25-rc8-166-g6fdf5e6 in pms.c :
- undefined reference to `video_usercopy'
-Message-ID: <20080415151525.23e54de2@gaivota>
-In-Reply-To: <200804151958.39524.toralf.foerster@gmx.de>
-References: <200804061448.42888.toralf.foerster@gmx.de>
-	<20080415135933.1a85fd2e@gaivota>
-	<200804151958.39524.toralf.foerster@gmx.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Tue, 15 Apr 2008 14:16:04 -0400
+Received: from filter2.host.bg ([87.120.40.156]:39675 "EHLO filter2.host.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752265AbYDOSQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 14:16:01 -0400
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Apr 2008 14:16:01 EDT
+Subject: Bad network performance over 2Gbps
+From: Anton Titov <a.titov@host.bg>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Hosting Ltd.
+Date: Tue, 15 Apr 2008 21:06:44 +0300
+Message-Id: <1208282804.23631.27.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Apr 2008 19:58:39 +0200
-Toralf Förster <toralf.foerster@gmx.de> wrote:
+I use Linux for serving a huge amount of static web on few servers. When
+network traffic goes above 2Gbit/sec ksoftirqd/5 (not every time 5, but
+every time just one) starts using exactly 100% CPU time and packet
+packet loss starts preventing traffic from going up. When the network
+traffic is lower than 1.9Gbit ksoftirqds use 0% CPU according to top.
 
-> At Tuesday 15 April 2008 18:59:33 Mauro Carvalho Chehab wrote :
-> > Hi Toralf,
-> > Please try the enclosed patch. It should fix the issue.
-> ...
-> > ---
-> > Fix build when CONFIG_VIDEO_PMS=y and VIDEO_V4L2_COMMON=m
-> > 
-> > Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-> > 
-> > 
-> > Cheers,
-> > Mauro
-> 
-> The patch works, thx :)
+Uplink is 6 gigabit Intel cards bonded together using 802.3ad algorithm
+with xmit_hash_policy set to layer3+4. On the other side is Cisco 2960
+switch. Machine is with two quad core Intel Xeons @2.33GHz.
 
-Thanks for testing.
-> 
-> However I had to change the files manually b/c the patch utility didn't
-> accepted your input, therefore here's the diff output from my side:
+Here goes a screen snapshot of "top" command. The described behavior
+have nothing to do with 13% io-wait. It happens even if it is 0%
+io-wait.
+http://www.titov.net/misc/top-snap.png
 
-Ah, sorry. The patch were generated with -p2 format (in fact, it is against our
-development tree).
+kernel configuration:
+http://www.titov.net/misc/config.gz
 
-If this patch works, the more complete one I've just sent should also work. It
-just fixes the symbol checks inside a few drivers.
+/proc/interrupts, lspci, dmesg (nothing intresting there), ifconfig,
+uname -a:
+http://www.titov.net/misc/misc.txt.gz
 
-Ok, this time with -p1 format, against "devel" branch of V4L/DVB (should
-equally apply well at linux-next and at mainstream).
+Is it a Linux bug or some hardware limitation?
 
-Cheers,
-Mauro
+Regards,
+Anton Titov
 
----
-
-Fix build that occurs when CONFIG_VIDEO_PMS=y and VIDEO_V4L2_COMMON=m
-
-This patch removes zoran checks for VIDEO_V4L2, since this API is always
-present, when V4L is selected.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
----
-
-diff -upNr oldtree/drivers/media/Kconfig linux/drivers/media/Kconfig
---- oldtree/drivers/media/Kconfig	2008-04-15 15:14:04.000000000 -0300
-+++ linux/drivers/media/Kconfig	2008-04-15 15:14:01.000000000 -0300
-@@ -30,7 +30,7 @@ config VIDEO_V4L2_COMMON
- 	depends on (I2C || I2C=n) && VIDEO_DEV
- 	default (I2C || I2C=n) && VIDEO_DEV
- 
--config VIDEO_V4L1
-+config VIDEO_ALLOW_V4L1
- 	bool "Enable Video For Linux API 1 (DEPRECATED)"
- 	depends on VIDEO_DEV && VIDEO_V4L2_COMMON
- 	default VIDEO_DEV && VIDEO_V4L2_COMMON
-@@ -59,10 +59,15 @@ config VIDEO_V4L1_COMPAT
- 	  If you are unsure as to whether this is required, answer Y.
- 
- config VIDEO_V4L2
--	bool
-+	tristate
- 	depends on VIDEO_DEV && VIDEO_V4L2_COMMON
- 	default VIDEO_DEV && VIDEO_V4L2_COMMON
- 
-+config VIDEO_V4L1
-+	tristate
-+	depends on VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
-+	default VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
-+
- source "drivers/media/video/Kconfig"
- 
- source "drivers/media/radio/Kconfig"
-diff -upNr oldtree/drivers/media/video/msp3400-driver.c linux/drivers/media/video/msp3400-driver.c
---- oldtree/drivers/media/video/msp3400-driver.c	2008-04-15 15:14:06.000000000 -0300
-+++ linux/drivers/media/video/msp3400-driver.c	2008-04-15 15:14:02.000000000 -0300
-@@ -366,7 +366,7 @@ int msp_sleep(struct msp_state *state, i
- }
- 
- /* ------------------------------------------------------------------------ */
--#ifdef CONFIG_VIDEO_V4L1
-+#ifdef CONFIG_VIDEO_ALLOW_V4L1
- static int msp_mode_v4l2_to_v4l1(int rxsubchans, int audmode)
- {
- 	if (rxsubchans == V4L2_TUNER_SUB_MONO)
-@@ -514,7 +514,7 @@ static int msp_command(struct i2c_client
- 	/* --- v4l ioctls --- */
- 	/* take care: bttv does userspace copying, we'll get a
- 	   kernel pointer here... */
--#ifdef CONFIG_VIDEO_V4L1
-+#ifdef CONFIG_VIDEO_ALLOW_V4L1
- 	case VIDIOCGAUDIO:
- 	{
- 		struct video_audio *va = arg;
-diff -upNr oldtree/drivers/media/video/tuner-core.c linux/drivers/media/video/tuner-core.c
---- oldtree/drivers/media/video/tuner-core.c	2008-04-15 15:14:06.000000000 -0300
-+++ linux/drivers/media/video/tuner-core.c	2008-04-15 15:14:03.000000000 -0300
-@@ -758,7 +758,7 @@ static int tuner_command(struct i2c_clie
- 		if (analog_ops->standby)
- 			analog_ops->standby(&t->fe);
- 		break;
--#ifdef CONFIG_VIDEO_V4L1
-+#ifdef CONFIG_VIDEO_ALLOW_V4L1
- 	case VIDIOCSAUDIO:
- 		if (check_mode(t, "VIDIOCSAUDIO") == EINVAL)
- 			return 0;
-diff -upNr oldtree/drivers/media/video/zoran_driver.c linux/drivers/media/video/zoran_driver.c
---- oldtree/drivers/media/video/zoran_driver.c	2008-04-15 15:14:05.000000000 -0300
-+++ linux/drivers/media/video/zoran_driver.c	2008-04-15 15:14:02.000000000 -0300
-@@ -85,7 +85,6 @@
- #include "zoran_device.h"
- #include "zoran_card.h"
- 
--#ifdef CONFIG_VIDEO_V4L2
- 	/* we declare some card type definitions here, they mean
- 	 * the same as the v4l1 ZORAN_VID_TYPE above, except it's v4l2 */
- #define ZORAN_V4L2_VID_FLAGS ( \
-@@ -94,19 +93,15 @@
- 				V4L2_CAP_VIDEO_OUTPUT |\
- 				V4L2_CAP_VIDEO_OVERLAY \
- 			      )
--#endif
- 
- #include <asm/byteorder.h>
- 
--#if defined(CONFIG_VIDEO_V4L2) && defined(CONFIG_VIDEO_V4L1_COMPAT)
-+#if defined(CONFIG_VIDEO_V4L1_COMPAT)
- #define ZFMT(pal, fcc, cs) \
- 	.palette = (pal), .fourcc = (fcc), .colorspace = (cs)
--#elif defined(CONFIG_VIDEO_V4L2)
--#define ZFMT(pal, fcc, cs) \
--	.fourcc = (fcc), .colorspace = (cs)
- #else
- #define ZFMT(pal, fcc, cs) \
--	.palette = (pal)
-+	.fourcc = (fcc), .colorspace = (cs)
- #endif
- 
- const struct zoran_format zoran_formats[] = {
-@@ -209,7 +204,6 @@ static int lock_norm;	/* 0 = default 1 =
- module_param(lock_norm, int, 0644);
- MODULE_PARM_DESC(lock_norm, "Prevent norm changes (1 = ignore, >1 = fail)");
- 
--#ifdef CONFIG_VIDEO_V4L2
- 	/* small helper function for calculating buffersizes for v4l2
- 	 * we calculate the nearest higher power-of-two, which
- 	 * will be the recommended buffersize */
-@@ -232,7 +226,6 @@ zoran_v4l2_calc_bufsize (struct zoran_jp
- 		return 8192;
- 	return result;
- }
--#endif
- 
- /* forward references */
- static void v4l_fbuffer_free(struct file *file);
-@@ -1709,7 +1702,6 @@ setup_overlay (struct file *file,
- 	return wait_grab_pending(zr);
- }
- 
--#ifdef CONFIG_VIDEO_V4L2
- 	/* get the status of a buffer in the clients buffer queue */
- static int
- zoran_v4l2_buffer_status (struct file        *file,
-@@ -1815,7 +1807,6 @@ zoran_v4l2_buffer_status (struct file   
- 
- 	return 0;
- }
--#endif
- 
- static int
- zoran_set_norm (struct zoran *zr,
-@@ -2624,8 +2615,6 @@ zoran_do_ioctl (struct inode *inode,
- 	}
- 		break;
- 
--#ifdef CONFIG_VIDEO_V4L2
--
- 		/* The new video4linux2 capture interface - much nicer than video4linux1, since
- 		 * it allows for integrating the JPEG capturing calls inside standard v4l2
- 		 */
-@@ -4197,7 +4186,6 @@ zoran_do_ioctl (struct inode *inode,
- 		return 0;
- 	}
- 		break;
--#endif
- 
- 	default:
- 		dprintk(1, KERN_DEBUG "%s: UNKNOWN ioctl cmd: 0x%x\n",
-@@ -4657,9 +4645,7 @@ static const struct file_operations zora
- struct video_device zoran_template __devinitdata = {
- 	.name = ZORAN_NAME,
- 	.type = ZORAN_VID_TYPE,
--#ifdef CONFIG_VIDEO_V4L2
- 	.type2 = ZORAN_V4L2_VID_FLAGS,
--#endif
- 	.fops = &zoran_fops,
- 	.release = &zoran_vdev_release,
- 	.minor = -1
-diff -upNr oldtree/drivers/media/video/zoran.h linux/drivers/media/video/zoran.h
---- oldtree/drivers/media/video/zoran.h	2008-04-15 15:14:06.000000000 -0300
-+++ linux/drivers/media/video/zoran.h	2008-04-15 15:14:02.000000000 -0300
-@@ -243,10 +243,8 @@ struct zoran_format {
- #ifdef CONFIG_VIDEO_V4L1_COMPAT
- 	int palette;
- #endif
--#ifdef CONFIG_VIDEO_V4L2
- 	__u32 fourcc;
- 	int colorspace;
--#endif
- 	int depth;
- 	__u32 flags;
- 	__u32 vfespfr;
-@@ -271,8 +269,6 @@ struct zoran_v4l_settings {
- 	const struct zoran_format *format;	/* capture format */
- };
- 
--/* whoops, this one is undeclared if !v4l2 */
--#ifndef CONFIG_VIDEO_V4L2
- struct v4l2_jpegcompression {
- 	int quality;
- 	int APPn;
-@@ -283,7 +279,6 @@ struct v4l2_jpegcompression {
- 	__u32 jpeg_markers;
- 	__u8 reserved[116];
- };
--#endif
- 
- /* jpg-capture/-playback settings */
- struct zoran_jpg_settings {
