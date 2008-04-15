@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbYDOIYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbYDOIZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbYDOIYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYDOIY0
+	id S1762168AbYDOIZY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 04:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYDOIZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:24:26 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:13139 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754695AbYDOIYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:24:25 -0400
-From: Vitaliy Gusev <vgusev@openvz.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC][PATCH][NET] Fix never pruned tcp out-of-order queue
-Date: Tue, 15 Apr 2008 12:26:47 +0400
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: andi@firstfloor.org, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org
-References: <87mynvtuoj.fsf@basil.nowhere.org> <87iqyjttz3.fsf@basil.nowhere.org> <20080415.011810.178212948.davem@davemloft.net>
-In-Reply-To: <20080415.011810.178212948.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 15 Apr 2008 04:25:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49389 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753933AbYDOIZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 04:25:08 -0400
+Subject: Re: [DOC PATCH] semaphore documentation
+From: David Woodhouse <dwmw2@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+In-Reply-To: <20080412141250.GK11962@parisc-linux.org>
+References: <20080410143403.c03757e5.akpm@linux-foundation.org>
+	 <20080410220816.GY11962@parisc-linux.org>
+	 <20080410151907.91f11c74.akpm@linux-foundation.org>
+	 <20080411192153.GH11962@parisc-linux.org>
+	 <20080411132754.b1c1fd8f.randy.dunlap@oracle.com>
+	 <20080411220911.3e7ab3e4.akpm@linux-foundation.org>
+	 <20080412141250.GK11962@parisc-linux.org>
+Content-Type: text/plain
+Date: Tue, 15 Apr 2008 09:24:29 +0100
+Message-Id: <1208247869.2648.27.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804151226.47729.vgusev@openvz.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 April 2008 12:18:10 David Miller wrote:
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: Tue, 15 Apr 2008 10:14:56 +0200
-> 
-> > The main difference seems to be that
-> > sk_rmem_schedule/__sk_mem_schedule is called more often, but it is 
-> > unclear how this affects the ooo pruning which only checks
-> > the queue length anyways.
-> 
-> tcp_data_queue() would not do the tcp_prune_ofo_queue() in some
-> cases, it's the whole point of the patch.
+On Sat, 2008-04-12 at 08:12 -0600, Matthew Wilcox wrote:
+> As I wrote in one of the comments, we have places in the kernel which
+> know that even though they're in a non-sleeping context, there is at
+> least one more token left in the semaphore.  One place this bit me was
+> in start_kernel().  We disable interrupts and then call lock_kernel()
+> which calls down().  Since we're in start_kernel(), we know there's
+> nothing else running and this is perfectly safe.  But a might_sleep()
+> would warn bogusly.
 
-Yes, if second sk_rmem_schedule() failed then tcp_prune_ofo_queue() is force called
-and try sk_rmem_schedule() again.
-
+I would have thought they'd use down_trylock() in that case.
 
 -- 
-Thank,
-Vitaliy Gusev
+dwmw2
+
