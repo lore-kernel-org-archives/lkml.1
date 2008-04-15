@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYDOHos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYDOHrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYDOHos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYDOHok
+	id S1758146AbYDOHrB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYDOHqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:44:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52155 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752410AbYDOHoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:44:39 -0400
-Date: Tue, 15 Apr 2008 00:44:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jeff Garzik" <jeff@garzik.org>, "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: regression caused by: genirq: do not leave interupts enabled on
- free_irq
-Message-Id: <20080415004400.bb941191.akpm@linux-foundation.org>
-In-Reply-To: <86802c440804111248je6dfa99va8eec42531f4b689@mail.gmail.com>
-References: <86802c440804102313k4546cd73s7bffb30a14239472@mail.gmail.com>
-	<alpine.LFD.1.10.0804110841370.3261@apollo.tec.linutronix.de>
-	<86802c440804110014j44b32d16ubfaa0f327c3a384f@mail.gmail.com>
-	<86802c440804110017y62938d90x7e3e32df25a60d1@mail.gmail.com>
-	<1207899030.15605.1.camel@x61.ebiederm.org>
-	<86802c440804111122x5c106779g60f1c04ae21fed94@mail.gmail.com>
-	<86802c440804111248je6dfa99va8eec42531f4b689@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 03:46:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51288 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752983AbYDOHqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 03:46:50 -0400
+Date: Tue, 15 Apr 2008 09:46:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Erik Bosman <ebn310@few.vu.nl>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
+Message-ID: <20080415074630.GA16721@elte.hu>
+References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl> <20080415002918.6a3b40b6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415002918.6a3b40b6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 12:48:43 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 
-> On Fri, Apr 11, 2008 at 11:22 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > On Fri, Apr 11, 2008 at 12:30 AM, Eric W. Biederman
-> >  <ebiederm@xmission.com> wrote:
-> >  >
-> >  >
-> >
-> >
-> > >  On Fri, 2008-04-11 at 00:17 -0700, Yinghai Lu wrote:
-> >  >  > On Fri, Apr 11, 2008 at 12:14 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >  >  > > On Fri, Apr 11, 2008 at 12:01 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >  >  > >  > On Thu, 10 Apr 2008, Yinghai Lu wrote:
-> >  >  > >  >  > last week found:
-> >  >  > >  >  > after latest kernel kexec RHEL 5.1 or other stack kernel, the nvidia
-> >  >  > >  >  > forcedeth doesn't work anymore.
-> >  >  > >  >  >
-> >  >  > >  >  > I stared at forcedeth.c two days. and revert every patches about that
-> >  >  > >  >  > doesn't help.
-> >  >  > >  >
-> >  >  > >  >  So forcedeth does not come up again, when you kexec from linus.git
-> >  >  > >  >  into an older distro kernel. Or is it the other way round ?
-> >  >  > >  RHEL 5.1 kexec RHEL 5.1 : works
-> >  >  > >  RHEL 5.1 kexec linus kernel: works
-> >  >  > >  linus (after -rc2) kexec linus tree: works:
-> >  >  > >  linus  (after -rc2) kexec RHEL 5.1 : forcedeth will not come up
-> >  >  > >  linus ( before -rc2 include rc2) kexec RHEL 5.1 works
-> >  >  > >
-> >  >  > the forcedeth can not get IP address...
-> >  >
-> >  >  Sounds like you are not getting any interrupts when you receive a
-> >  >  packet.  (i.e. The interrupt line is staying disabled).
-> >  >
-> >  >  Is MSI an option here?  I'm wondering if we disable the MSI and
-> >  >  something is not enabling it.
-> >
-> >
-> >
-> >  after
-> >  setpci -s 0x00:08.0 0x60.b=0xfe
-> >
-> >  the eth0 can get ip address with ifup eth0.
-> 
-> it is RHEL 5.1 problem...with msi.
-> 
-> somehow msi entry msi_attrib_maskbit=is_mask_bit_support always get
-> 0...., and use msi_irq_wo_maskbit_type instead of
-> msi_irq_w_maskbit_type
-> 
-> so when load that directly without kexec
-> that 0x60 always to 0x00.
-> 
-> and this time kernel after 2.6.25-rc2 ( not included) really shutdown
-> the msi with 0xff the all maskbit...
-> 
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-So... where did this end up?   It's a post-2.6.24 regression, isn't it?
+> > --- a/arch/x86/kernel/process_32.c
+> > +++ b/arch/x86/kernel/process_32.c
+> > @@ -36,6 +36,7 @@
+> >  #include <linux/personality.h>
+> >  #include <linux/tick.h>
+> >  #include <linux/percpu.h>
+> > +#include <linux/prctl.h>
+> > 
+> >  #include <asm/uaccess.h>
+> >  #include <asm/pgtable.h>
+> > @@ -528,11 +529,12 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
+> >  }
+> >  EXPORT_SYMBOL_GPL(start_thread);
+> > 
+> > -#ifdef CONFIG_SECCOMP
+> > +#ifdef CONFIG_DISABLE_TSC
+> >  static void hard_disable_TSC(void)
+> >  {
+> >  	write_cr4(read_cr4() | X86_CR4_TSD);
+> >  }
+> 
+> Won't this break this build if CONFIG_DISABLE_TSC=n and 
+> CONFIG_SECCOMP=y?
 
-Do we think it's a bug in the RHEL 5.1 kernel?  Even so, that's a problem
-for the 2.6.25 kernel.
+it would break - but there was an update patch to this 2/3 patch which 
+was the one i picked up into x86.git yesterday and which worked fine in 
+500 overnight randconfig build and bootup tests.
 
+	Ingo
