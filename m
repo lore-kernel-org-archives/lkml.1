@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYDOHLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYDOHQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756913AbYDOHLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYDOHLj
+	id S1755944AbYDOHQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYDOHQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:11:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47352 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbYDOHLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:11:38 -0400
-Date: Tue, 15 Apr 2008 09:11:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, hannes@saeurebad.de, ak@suse.de,
-       clameter@sgi.com, kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
-       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm
-	tree
-Message-ID: <20080415071120.GB15499@elte.hu>
-References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 15 Apr 2008 03:16:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40978 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752883AbYDOHQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 03:16:00 -0400
+Date: Tue, 15 Apr 2008 00:15:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
+Message-Id: <20080415001512.60cb784d.akpm@linux-foundation.org>
+In-Reply-To: <86802c440804150004w1c94b2dci520e0ffb8b60632f@mail.gmail.com>
+References: <20080412223319.372887160@symbol.fehenstaub.lan>
+	<20080412225850.704752615@symbol.fehenstaub.lan>
+	<87lk3hwv52.fsf@basil.nowhere.org>
+	<20080414232308.ffa4e269.akpm@linux-foundation.org>
+	<86802c440804150004w1c94b2dci520e0ffb8b60632f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 15 Apr 2008 00:04:03 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-
-> Subject: bootmem: node-setup agnostic free_bootmem()
-> From: Johannes Weiner <hannes@saeurebad.de>
+> On Mon, Apr 14, 2008 at 11:23 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> >
+> > On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+> >
+> >  > Johannes Weiner <hannes@saeurebad.de> writes:
+> >  >
+> >  > > Make free_bootmem() look up the node holding the specified address
+> >  > > range which lets it work transparently on single-node and multi-node
+> >  > > configurations.
+> >  >
+> >  > Acked-by: Andi Kleen <andi@firstfloor.org>
+> >  >
+> >  > This is far better than the original change it replaces and which
+> >  > I also objected to in review.
+> >  >
+> >
+> >  So...  do we think these two patches are sufficiently safe and important for
+> >  2.6.25?
 > 
-> Make free_bootmem() look up the node holding the specified address 
-> range which lets it work transparently on single-node and multi-node 
-> configurations.
+> the patch is wrong
+> 
 
-this patch does not fix the bug Yinghai's (now dropped) patches solved: 
-reserve_early() allocations. So NAK until the full problem has been 
-sorted out ...
+The last I saw was this:
 
-	Ingo
+On Sun, 13 Apr 2008 12:57:22 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
+
+> Hi,
+> 
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> 
+> > On Sat, Apr 12, 2008 at 3:33 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+> > ...
+> >
+> > could have chance that bootmem with reserved_early that is crossing
+> > the nodes.
+> 
+> Upstream reserve_bootmem_core() would BUG() on a caller trying to cross
+> nodes, so I don't see where this chance could come from.
+
+Is that what you're referring to?
+
+Was Johannes observation incorrect?  If so, why?
