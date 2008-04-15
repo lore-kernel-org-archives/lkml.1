@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYDOI5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYDOJET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbYDOI5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbYDOI5m
+	id S1760251AbYDOJET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbYDOJEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:57:42 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:34058 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754767AbYDOI5m (ORCPT
+	Tue, 15 Apr 2008 05:04:08 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52514 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbYDOJEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:57:42 -0400
-Date: Tue, 15 Apr 2008 10:57:41 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
-       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080415085740.GA7603@atrey.karlin.mff.cuni.cz>
-References: <ah66A-4Nk-7@gated-at.bofh.it> <ah7vN-7Wz-9@gated-at.bofh.it> <E1JkIJ0-0000tG-LV@be1.7eggert.dyndns.org> <20080411135544.GG2160@csclub.uwaterloo.ca> <20080414162031.GD15824@duck.suse.cz> <20080414162202.GB7387@csclub.uwaterloo.ca> <20080414165354.GF15824@duck.suse.cz> <20080414170613.GI7385@csclub.uwaterloo.ca> <20080414190308.GJ15824@duck.suse.cz> <20080414192928.GM7385@csclub.uwaterloo.ca>
+	Tue, 15 Apr 2008 05:04:07 -0400
+Date: Tue, 15 Apr 2008 12:04:04 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] smb.h: uses struct timespec but didn't include linux/time.h
+Message-ID: <Pine.LNX.4.64.0804151202390.17123@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414192928.GM7385@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1069186259-1208250244=:17123"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Apr 14, 2008 at 09:03:09PM +0200, Jan Kara wrote:
-> >   Why would it be doing locking? If some nasty user runs the process, he
-> > *wants* his two threads to race as much as possible and trigger the race.
-> > And then use corrupted f_pos.
-> 
-> Why would you want to?  You can already set the filepointer explicitly
-> to any value you want if you have the filehandle.
-> 
-> If you had a file with some security checks for whether the user could
-> read from it implemented based on locations then you would check it when
-> you read/write not when you seek, since after all you could just keep
-> reading until you get to the desired position.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Not if you tried to do checking from ptrace monitor.
+---696208474-1069186259-1208250244=:17123
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-And heck, yes, it is very confusing to see
 
-seek(somewhere)
-write()
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ include/linux/smb.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-ond ptrace and write going somewhere else.
-									Pavel
+diff --git a/include/linux/smb.h b/include/linux/smb.h
+index f098dff..caa43b2 100644
+--- a/include/linux/smb.h
++++ b/include/linux/smb.h
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/magic.h>
++#include <linux/time.h>
+ 
+ enum smb_protocol { 
+ 	SMB_PROTOCOL_NONE, 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.2.2
+
+---696208474-1069186259-1208250244=:17123--
