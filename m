@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762937AbYDOMhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763640AbYDOMnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762937AbYDOMhv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 08:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbYDOMhi
+	id S1763640AbYDOMnF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 08:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbYDOMmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 08:37:38 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:41898 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758240AbYDOMhh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 08:37:37 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAEo+BEhMQWoK/2dsb2JhbACBXqsl
-Date: Tue, 15 Apr 2008 08:32:34 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080415123233.GA19797@Krystal>
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins>
-Mime-Version: 1.0
+	Tue, 15 Apr 2008 08:42:54 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1675 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754740AbYDOMmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 08:42:54 -0400
+Date: Tue, 15 Apr 2008 14:42:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paolo.valente@unimore.it
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080415124247.GL12774@kernel.dk>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080415082236.GD12774@kernel.dk> <20080415091139.GC29846@gandalf.sssup.it>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208260942.6395.6.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:10:41 up 46 days,  8:21,  4 users,  load average: 0.11, 0.20,
-	0.23
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080415091139.GC29846@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> On Tue, 2008-04-15 at 17:23 +0530, K. Prasad wrote:
+On Tue, Apr 15 2008, Fabio Checconi wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Tue, Apr 15, 2008 10:22:36AM +0200
+> >
+> > On Tue, Apr 01 2008, Fabio Checconi wrote:
+> ...
+> > > We would greatly appreciate any sort of feedback from you, comments,
+> > > suggestions, corrections and so on.  Thank you for your attention.
+> > 
+> > Fabio, I've merged the scheduler for some testing. Overall the code
+> > looks great, you've done a good job!
+> > 
 > 
-> > +	trace_mark(futex_wait_called, "uaddr:%p fshared:%p val:%u "
-> > +			"abs_time:%p bitset:%d",
-> > +			uaddr, fshared, val, abs_time, bitset);
+> thank you very much :)
 > 
-> This is some seriuosly ugly looking gunk, why would we want stuff like
-> that scattered across the code?
 > 
+> > I didn't touch patches 2 and 3, but I rewrote #1 somewhat. See the
+> > result here:
+> > 
+> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=973a02c4ea1c324c41e45b69c074b13d3bfa97de;hp=a985aabe4d7a720b109c2b63549f8641676a9c88
+> > 
+> > I'm sure you'll agree with the hlist_sched_*() functions. I also killed
+> > the ->bfq_ioprio_changed modification, what exactly was the purpose of
+> > that?
+> > 
+> 
+> of course the hlist_sched_*() functions are much better than what was
+> in the patch (the idea behind the patch was to not touch at all cfq code).
 
-I don't really see how it differs so much from printks, which kernel
-developers are already familiar with.
+As long as the changes at that point are straight forward and 'obviously
+correct', there's no harm done. Have you thought about merging bfq and
+cfq?
 
-> What is wrong with a few simple hooks like:
+> the ->bfq_ioprio_changed was there to avoid that a process/ioc doing
+> i/o on multiple devices managed by cfq and bfq would see ioprio
+> changes only for one of the two schedulers.
 > 
->   trace_futex_wait(uaddr, fshares, val, abs_time, bitset);
+> cfq_ioc_set_ioprio() (and its bfq counterpart bfq_ioc_set_ioprio())
+> unconditionally assign 0 to (bfq_)ioprio_changed, so the first
+> scheduler that sees the ioprio change eats the new priority values.
+> of course I may be wrong, but I think it (or some better mechanism
+> to avoid the problem) is necessary.
+
+I see. If we can and will merge bfq and cfq, then it's not really an
+issue. Otherwise, I'd suggest using bits 0 of ioprio_changed for cfq and
+1 for bfq and so on. That avoids adding another int to the io context.
+
+> > The code is now in the 'bfq' branch of the block git repo.
+> > 
 > 
-> and then deal with that.
-> 
+> of course we'll be glad to help in testing in any way you can find useful.
 
-If any of your variable type changes, then you are exporting an unknown
-data structure to user-space. _That_ would break a userspace tracer
-whenever you change any of these kernel variables and you don't want
-that.
-
-Exporting the field names and variable types helps to identify the
-variables by their given names rather than their respective order.
-Having the field type insures binary compatibility.
-
-Clearly we can turn your trace_futex_wait(uaddr, fshares, val, abs_time,
-bitset); into a trace_mark() with a simple define, and I don't see any
-problem with that. I just want to make sure the event name, field names
-and field types are exported, and this is done by markers. However, I
-wonder why none of the kernel printk() are turned into specialized
-defines to make the code "cleaner".. maybe it's because it is useful to
-have everything declared in one spot after all.
-
-> Also, you seem to expose way too much futex internals; do you really
-> need that? People will go use this marker crap like ABI and further
-> restrain us from changing the code.
-> 
-
-Because we extract the field names and types, we can create tracer
-plugins that would hook on field names rather than expect a specific
-number of fields and fixed field types. It makes it possible to tolerate
-missing fields pretty easily. But yes, tracer tools might have to be
-adapted to internal kernel changes, since they must follow kernel
-structure changes. However, staying as close as possible to a canonical
-representation of event fields, staying far from the specific
-implemetation, would help to lessen the inter-dependency. On the other
-hand, it would probably hurt trace compactness and efficiency.
-
-Mathieu
-
-> /me unhappy.
-> 
-> 
-> 
+I'll push it to the for-akpm branch as well, so it should show up in the
+next -mm and get some testing there.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jens Axboe
+
