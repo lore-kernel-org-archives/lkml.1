@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYDON6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbYDON7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763397AbYDON6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 09:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYDON6O
+	id S1764898AbYDON7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 09:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYDON7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 09:58:14 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:40975 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751795AbYDON6O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 09:58:14 -0400
-X-YMail-OSG: HOQ5rJ4VM1kreKPB63vhvC0Aye7uIpYgh9GE1qovwgmCa8PTQi8eNMWNnq7GyQohvyAQmg--
-X-Mailer: YahooMailRC/902.40 YahooMailWebService/0.7.185
-Date: Tue, 15 Apr 2008 06:58:12 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: User space automounter problems after upgrade to 2.6.25-rc9
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-kernel@vger.kernel.org, am-utils <am-utils@am-utils.org>
+	Tue, 15 Apr 2008 09:59:22 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2439 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752390AbYDON7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 09:59:21 -0400
+Date: Tue, 15 Apr 2008 09:28:45 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com
+Subject: Re: w35und: add softmac interface
+Message-ID: <20080415132845.GA11789@tuxdriver.com>
+References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <914095.44950.qm@web32604.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20080415070923.GA13767@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Trond Myklebust <trond.myklebust@fys.uio.no>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: linux-kernel@vger.kernel.org; am-utils <am-utils@am-utils.org>
-> Sent: Tuesday, April 15, 2008 2:57:26 PM
-> Subject: Re: User space automounter problems after upgrade to 2.6.25-rc9
+On Tue, Apr 15, 2008 at 09:22:41AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> 
-> On Tue, 2008-04-15 at 04:28 -0700, Martin Knoblauch wrote:
-> > Hi,
+> > > This adds softmac interface to w35und driver... so it becomes monster
+> > > driver with _two_ interfaces.
+> > > 
+> > > If you initialize hardmac interface, then softmac starts to
+> > > works... it associates to AP, and can even ping.
+> > > 
+> > > (Or at least I hope so... it was somewhat too easy.)
 > > 
-> >  after booting a newly built 2.6.25-rc9 kernel, I see the following messages 
-> and the user space automounter fails to work. Last good kernel for me is 2.6.24, 
-> as -rc9 is my first attempt at 2.6.25. Extremely sorry for being late to the 
-> game :-(
-> > 
-> > [   13.776876] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   11.996757] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   14.504927] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   13.636860] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   14.504927] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   13.636860] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   14.505079] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   11.996757] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   13.636860] Invalid hostname "pid4302@lpsdm60:/home" in NFS lock request
-> > [   12.688801] Invalid hostname "pid4302@lpsdm60:/soft" in NFS lock request
-> > 
-> > am-utils version is 6.1.5, config is attached
+> > OK, I'm late to the party...what is this stuff going into
+> > drivers/net/wireless?
 > 
-> Already reported in:
->    http://bugzilla.kernel.org/show_bug.cgi?id=10349
-> and
->    https://bugzilla.am-utils.org/show_bug.cgi?id=612
+> Actually you are about month early to the party ;-). We are trying to
+> clean up winbond usb wireless driver, so that it can think about
+> inclusion in kernel.
 > 
-> The problem is due to known bugs in the am-utils mount code (no,
-> 'pid4302@lpsdm60:/soft' is not and has never been a valid server
-> hostname).
+> http://code.google.com/p/winbondport/
 > 
+> Unfortunately, original driver carries its own 802.11 stack with it;
+> that needs to be stripped down. (And then code needs to be rewritten
+> due to horrible coding style).
 
- I always wondered, but never asked :-) Apparently the kernel did never care until recently.
+I see...OK.
 
-> The workaround should be to turn off locking by adding the 'nolock'
-> mount flag.
-> 
+Did you get any legal advice regarding whether or not
+MODULE_LICENSE("GPL") was sufficient to proclaim the driver as covered
+by the GPL?
 
- Not sure what kind of side effects that will have. Probably better to stay at 2.6.24 and wait for a fix in am-utils.
-
-Cheers
-
-Martin
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
