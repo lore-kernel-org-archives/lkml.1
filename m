@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYDOSeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYDOSg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYDOSeP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYDOSeE
+	id S1759797AbYDOSg3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYDOSgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:34:04 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:64042 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbYDOSeB (ORCPT
+	Tue, 15 Apr 2008 14:36:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54865 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751304AbYDOSgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:34:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ezwKE8hTbmqLwAXNrpZXC1BHWxfqbfszynW2sVx45RZvY2bDZUwRzoCzGdoXQaz5yNoBI9402jaDva1PJYduii0gWSOYh7SMlQHr1Bev8Ipg0B5cH3uF03oQ2K0oLzD157lc5lB2axhn+21zRjJO6Mt4HdG9SnIEJjgXlKiPauo=
-Message-ID: <b6c5339f0804151133j42f5b676t6093def2c006be2@mail.gmail.com>
-Date: Tue, 15 Apr 2008 14:33:35 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH 2/7] omfs: add inode routines
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <E1JlpVW-0000Qy-JJ@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Apr 2008 14:36:18 -0400
+Date: Tue, 15 Apr 2008 11:34:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, me@bobcopeland.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+Message-Id: <20080415113452.e9eacb54.akpm@linux-foundation.org>
+In-Reply-To: <20080415165727.GA8783@infradead.org>
+References: <20080412205544.5e12a7d4.akpm@linux-foundation.org>
+	<20080413080130.GA9622@infradead.org>
+	<20080413012001.8d7967f4.akpm@linux-foundation.org>
+	<20080413082815.GA20108@infradead.org>
+	<E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
+	<1208121358.2700.4.camel@shinybook.infradead.org>
+	<20080413154459.4b2f125d.akpm@linux-foundation.org>
+	<20080413234920.63711ca7@core>
+	<20080413161014.cb06964c.akpm@linux-foundation.org>
+	<20080415151643.GD2454@cs181133002.pp.htv.fi>
+	<20080415165727.GA8783@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1208041121-26787-3-git-send-email-me@bobcopeland.com>
-	 <E1JlpVW-0000Qy-JJ@pomaz-ex.szeredi.hu>
-X-Google-Sender-Auth: 137f60b507327ad9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 2:03 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> Hmm, looks like error handling needs a makeover if this is really to
->  become example code.  See comments inline.
+On Tue, 15 Apr 2008 12:57:27 -0400 Christoph Hellwig <hch@infradead.org> wrote:
 
-Thanks for the review Miklos.
+> On Tue, Apr 15, 2008 at 06:16:43PM +0300, Adrian Bunk wrote:
+> > We are talking about a filesystem even Christoph considers OK.
+> > 
+> > And who asked about the costs of merging crap like 
+> > drivers/infiniband/hw/nes/ ?
+> > 
+> > Speaking about the latter, with Linus' logic one might argue that OMFS 
+> > must not be rejected since it adds support for some hardware...
+> 
+> Excatly.  I find it very strange to even consider rejecting a rather
+> small and very well written driver for let's say "political" reasons.
 
->  > +     mark_buffer_dirty(bh);
->  > +     if (wait) {
->  > +             sync_dirty_buffer(bh);
->  > +             if (buffer_req(bh) && !buffer_uptodate(bh))
->  > +                     ret = -EIO;
->
->  Hmm, here it sets ret, but doesn't exit.  Deliberate?
+"economic" would be a far more accurate term.
 
-It was - if sync fails, it should still try writing the mirrors.  Plus
-bh and bh2 get released subsequently.
+Look, I have repeatedly described the reason why it is probable a poor
+tradeoff to merge code such as this.  The only response has been "well
+we've done it before", which is largely a non-reason.
 
->  > +             iget_failed(inode);
->  > +             return ERR_PTR(-EIO);
->
->  Should be:
->
->         if (!bh)
->                 goto iget_failed;
+You can continue to ignore my logic, but that won't go unnoticed.
 
-Nod.
-
->  > +out:
->  > +     ret = -EINVAL;
->  > +
-
->  > +     if (bh)
->  > +             brelse(bh);
->
->  This is weird.  This should be done by jumping to the proper label
->  between the brleses.
-
-Hrm, brelse(NULL) is allowed so the check is suspect anyway.  I did
-this in a couple of other places, so I'll fix those up too.
-
-Thanks!
-
--- 
-Bob Copeland %% www.bobcopeland.com
+Just as a thought exercise: should we merge a small and well-written
+driver which has zero users?
