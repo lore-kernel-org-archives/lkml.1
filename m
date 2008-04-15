@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbYDOQIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYDOQPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759539AbYDOQIm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 12:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYDOQIb
+	id S1761319AbYDOQPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 12:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbYDOQPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 12:08:31 -0400
-Received: from pat.uio.no ([129.240.10.15]:42660 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYDOQIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 12:08:30 -0400
-Subject: Re: User space automounter problems after upgrade to 2.6.25-rc9
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Cc: linux-kernel@vger.kernel.org, am-utils <am-utils@am-utils.org>
-In-Reply-To: <914095.44950.qm@web32604.mail.mud.yahoo.com>
-References: <914095.44950.qm@web32604.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 12:08:27 -0400
-Message-Id: <1208275707.10759.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: 2E9814C0110088373DB66A50EA8CEFAB137900D3
-X-UiO-SR-test: 47D71AC88D2F6EE3B5A712C01F3097D345CA62E0
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 127 total 7902759 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Tue, 15 Apr 2008 12:15:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50637 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751668AbYDOQPk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 12:15:40 -0400
+Date: Tue, 15 Apr 2008 09:09:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Daniel Walker <dwalker@mvista.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Replace completions with semaphores
+In-Reply-To: <1208249088.7124.7.camel@twins>
+Message-ID: <alpine.LFD.1.00.0804150907080.2879@woody.linux-foundation.org>
+References: <20080411210022.GJ11962@parisc-linux.org>  <20080413125758.GQ11962@parisc-linux.org> <20080414153928.GA22259@elte.hu>  <adafxtoqvgh.fsf@cisco.com> <1208190749.7375.10.camel@twins>  <87d4osuy6r.fsf@basil.nowhere.org> <1208195673.7164.2.camel@twins>
+  <4803AD91.5020001@firstfloor.org>  <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com>  <1208242017.7053.4.camel@lappy>  <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com> <1208249088.7124.7.camel@twins>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-04-15 at 06:58 -0700, Martin Knoblauch wrote:
 
->  Not sure what kind of side effects that will have. Probably better to stay at 2.6.24 and wait for a fix in am-utils.
+On Tue, 15 Apr 2008, Peter Zijlstra wrote:
+> 
+> That sounds horrible; I really prefer targeted replacements like
+> completions that make it clear what they're supposed to be used for.
 
-2.6.24 has exactly the same problem. It is just that the kernel will
-report it much later (essentially the first time that you try to lock a
-file).
+I agree. I'd rather _keep_ the completions, and get rid of the semaphores, 
+so I think the whole fundamental patch here under discussion is broken.
 
-Trond
+We should do:
+ - continue replacing semaphores that are used purely for mutual exclusion 
+   with mutexes.
+ - probably add support for completions to do counting
+ - and then eventually just do the _reverse_ of what the current patch 
+   does, namely replace the existing counting semaphore usage with 
+   completions.
 
+Hmm?
+
+		Linus
