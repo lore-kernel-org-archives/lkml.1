@@ -1,62 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbYDOLP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763318AbYDOLTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763663AbYDOLP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 07:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbYDOLPM
+	id S1763318AbYDOLTp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 07:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYDOLTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 07:15:12 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52234 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbYDOLPK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 07:15:10 -0400
-Date: Tue, 15 Apr 2008 16:44:59 +0530
-From: "K. Prasad" <prasad@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: dwilder@us.ibm.com, mathieu.desnoyers@polymtl.ca, hunt@redhat.com
-Subject: [RFC Patch 0/1] Enhancements to 'trace' infrastructure
-Message-ID: <20080415111459.GB5295@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Tue, 15 Apr 2008 07:19:38 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36035 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757348AbYDOLTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 07:19:37 -0400
+Date: Tue, 15 Apr 2008 14:19:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       Jeff Dike <jdike@addtoit.com>
+Subject: s/PF_BORROWED_MM/PF_KTHREAD/ (was: kernel warning: tried to kill an mm-less task!)
+Message-ID: <20080415101905.GB89@tv-sign.ru>
+References: <4803030D.3070906@cn.fujitsu.com> <48030F69.7040801@linux.vnet.ibm.com> <48031090.5050002@cn.fujitsu.com> <48042539.8050009@cn.fujitsu.com> <20080415061716.GA89@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080415061716.GA89@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-	Please review the following patch which introduces two new
-interfaces to output data using 'trace' infrastructure. These interfaces
-can be used to print directly onto a debugfs mount. Since it uses 'trace'
-interface underneath the directory and file structures are as created by
-'trace'.
+On 04/15, Oleg Nesterov wrote:
+>
+> 	+struct mm_struct *__get_task_mm(struct task_struct *tsk)
+> 	+{
+> 	+	struct mm_struct *mm = tsk->mm;
+> 	+	smp_rmb();
+> 	+	if (tsk->flags & PF_BORROWED_MM)
+> 	+		mm = NULL;
+> 	+	return mm;
+> 	+}
 
-The proposed debugfs_* interfaces are meant to overcome the need to
-setup/tear-down 'trace' infrastructure by the user. In addition to this
-the patches help in:
+No, this is racy wrt unuse_mm(), we still need task_lock().
 
-a) Printing out data into a debugfs mounted file without bothering about
-creating/re-using debugfs files, sizes of intermediate buffers, etc.
-(This is achieved through the functions init_trace_interface() and
-trace_exists()).
-b) Provide interfaces to do i)string output or ii)binary dump of data
-c) Tear-down of the trace infrastructure through a single function call
-using its parent directory name, and unmindful of the internal data
-structures such as 'struct trace_info'.(using trace_cleanup_all)
-d) The debugfs_printk_data may be further enhanced to provide features
-suh as the ability to invoke pre- and post- printing callback functions
-For e.g. A callback function to obtain a given lock before printing out
-a given data, etc.
+Actually, I think PF_BORROWED_MM should die, and PF_I_AM_A_KERNEL_THREAD
+is better, see the "patch" below.
+
+First, include/asm-um/mmu_context.h:activate_mm() doesn't look right to me,
+use_mm() does switch_mm(), not activate_mm(), so I think we can do
+
+	--- include/asm-um/mmu_context.h	2008-02-17 23:40:08.000000000 +0300
+	+++ -	2008-04-15 13:35:34.089295980 +0400
+	@@ -29,7 +29,7 @@ static inline void activate_mm(struct mm
+		 * host. Since they're very expensive, we want to avoid that as far as
+		 * possible.
+		 */
+	-	if (old != new && (current->flags & PF_BORROWED_MM))
+	+	if (old != new)
+			__switch_mm(&new->context.id);
+	 
+		arch_dup_mmap(old, new);
+
+With this + patch below, we can make a simple helper,
+
+	/* The result must not be dereferenced !!! */
+	struct mm_struct *__get_task_mm(struct task_struct *tsk)
+	{
+		if (tsk->flags & PF_KTHREAD)
+			return NULL;
+		return tsk->mm;
+	}
+
+it could ve used by oom_kill/coredump/ptrace_attach instead of "->mm != NULL"
+which doesn't really work. Note also that ecard_task() runs with mm != NULL,
+but it is the kernel thread without PF_BORROWED_MM.
+
+daemonize() is racy, but it is hopeless anyway.
+
+Oleg.
+
+--- include/linux/sched.h	2008-02-17 23:40:09.000000000 +0300
++++ -	2008-04-15 11:38:46.892847693 +0400
+@@ -1458,7 +1458,7 @@ static inline void put_task_struct(struc
+ #define PF_KSWAPD	0x00040000	/* I am kswapd */
+ #define PF_SWAPOFF	0x00080000	/* I am in swapoff */
+ #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+-#define PF_BORROWED_MM	0x00200000	/* I am a kthread doing use_mm */
++#define PF_KTHREAD	0x00200000	/* I am a kernel thread */
+ #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
+ #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
+ #define PF_SPREAD_PAGE	0x01000000	/* Spread page cache over cpuset */
+--- kernel/power/process.c	2008-02-17 23:40:09.000000000 +0300
++++ -	2008-04-15 11:41:13.044031366 +0400
+@@ -93,7 +93,7 @@ static void send_fake_signal(struct task
  
-A quick look at samples/trace/fork_trace.c would help understand what is
-required to get data out using the 'trace' infrastructure (vs the
-proposed interfaces which have been exemplified in
-samples/trace/fork_new_trace.c).
-
-The patches are based against 2.6.25-rc8-mm1 and have been tested on an
-i386 machine.
-
-Thanks,
-K.Prasad
+ static int has_mm(struct task_struct *p)
+ {
+-	return (p->mm && !(p->flags & PF_BORROWED_MM));
++	return (p->mm && !(p->flags & PF_KTHREAD));
+ }
+ 
+ /**
+--- fs/aio.c	2008-02-17 23:40:07.000000000 +0300
++++ -	2008-04-15 11:44:11.100698248 +0400
+@@ -578,15 +578,10 @@ static void use_mm(struct mm_struct *mm)
+ 	struct task_struct *tsk = current;
+ 
+ 	task_lock(tsk);
+-	tsk->flags |= PF_BORROWED_MM;
+ 	active_mm = tsk->active_mm;
+ 	atomic_inc(&mm->mm_count);
+ 	tsk->mm = mm;
+ 	tsk->active_mm = mm;
+-	/*
+-	 * Note that on UML this *requires* PF_BORROWED_MM to be set, otherwise
+-	 * it won't work. Update it accordingly if you change it here
+-	 */
+ 	switch_mm(active_mm, mm, tsk);
+ 	task_unlock(tsk);
+ 
+@@ -606,7 +601,6 @@ static void unuse_mm(struct mm_struct *m
+ 	struct task_struct *tsk = current;
+ 
+ 	task_lock(tsk);
+-	tsk->flags &= ~PF_BORROWED_MM;
+ 	tsk->mm = NULL;
+ 	/* active_mm is still 'mm' */
+ 	enter_lazy_tlb(mm, tsk);
+--- kernel/fork.c	2008-02-17 23:40:09.000000000 +0300
++++ -	2008-04-15 11:48:24.539070614 +0400
+@@ -424,7 +424,7 @@ EXPORT_SYMBOL_GPL(mmput);
+ /**
+  * get_task_mm - acquire a reference to the task's mm
+  *
+- * Returns %NULL if the task has no mm.  Checks PF_BORROWED_MM (meaning
++ * Returns %NULL if the task has no mm.  Checks PF_KTHREAD (meaning
+  * this kernel workthread has transiently adopted a user mm with use_mm,
+  * to do its AIO) is not set and if so returns a reference to it, after
+  * bumping up the use count.  User must release the mm via mmput()
+@@ -437,7 +437,7 @@ struct mm_struct *get_task_mm(struct tas
+ 	task_lock(task);
+ 	mm = task->mm;
+ 	if (mm) {
+-		if (task->flags & PF_BORROWED_MM)
++		if (task->flags & PF_KTHREAD)
+ 			mm = NULL;
+ 		else
+ 			atomic_inc(&mm->mm_users);
+--- kernel/kthread.c	2008-02-17 23:40:09.000000000 +0300
++++ -	2008-04-15 11:51:06.014085477 +0400
+@@ -234,7 +234,7 @@ int kthreadd(void *unused)
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+ 	set_cpus_allowed(tsk, CPU_MASK_ALL);
+ 
+-	current->flags |= PF_NOFREEZE;
++	current->flags |= (PF_NOFREEZE | PF_KTHREAD);
+ 
+ 	for (;;) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+--- fs/exec.c	2008-02-17 23:40:07.000000000 +0300
++++ -	2008-04-15 12:33:10.854945536 +0400
+@@ -1328,6 +1328,7 @@ int do_execve(char * filename,
+ 		goto out;
+ 	bprm->argv_len = env_p - bprm->p;
+ 
++	current->flags &= ~PF_KTHREAD;
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
+ 		/* execve success */
+--- kernel/exit.c	2008-02-17 23:40:09.000000000 +0300
++++ -	2008-04-15 13:49:30.916850385 +0400
+@@ -382,7 +382,7 @@ void daemonize(const char *name, ...)
+ 	 * We don't want to have TIF_FREEZE set if the system-wide hibernation
+ 	 * or suspend transition begins right now.
+ 	 */
+-	current->flags |= PF_NOFREEZE;
++	current->flags |= (PF_NOFREEZE | PF_KTHREAD);
+ 
+ 	if (current->nsproxy != &init_nsproxy) {
+ 		get_nsproxy(&init_nsproxy);
 
