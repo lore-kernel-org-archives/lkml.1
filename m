@@ -1,75 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYDOHRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYDOHRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbYDOHRW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYDOHRN
+	id S1758489AbYDOHRw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYDOHRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:17:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:11962 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbYDOHRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:17:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kV2wo3VNbcP7xJ8NCCR2ApTQEMxdKL5y3yVLInKWKCPeffWX8TSXu7ua0iubkAssIkxvUOcLwG4UxBPcBZfR5KvsJ60ikzqvYovvo2MVOlq64vuQUOY7xUNiBFQnSJUBKHP91tubXdoqHkJGC5ABX55e4QXKQk2lz/7OgidnkbY=
-Message-ID: <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com>
-Date: Tue, 15 Apr 2008 09:17:09 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH] Replace completions with semaphores
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Roland Dreier" <rdreier@cisco.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Matthew Wilcox" <matthew@wil.cx>,
-       "Ingo Oeser" <ioe-lkml@rameria.de>,
-       "Daniel Walker" <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@osdl.org>
-In-Reply-To: <1208242017.7053.4.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 03:17:43 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35546 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434AbYDOHRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 03:17:43 -0400
+Date: Tue, 15 Apr 2008 10:17:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: kernel warning: tried to kill an mm-less task!
+Message-ID: <20080415061716.GA89@tv-sign.ru>
+References: <4803030D.3070906@cn.fujitsu.com> <48030F69.7040801@linux.vnet.ibm.com> <48031090.5050002@cn.fujitsu.com> <48042539.8050009@cn.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080411210022.GJ11962@parisc-linux.org>
-	 <20080413125758.GQ11962@parisc-linux.org>
-	 <20080414153928.GA22259@elte.hu> <adafxtoqvgh.fsf@cisco.com>
-	 <1208190749.7375.10.camel@twins> <87d4osuy6r.fsf@basil.nowhere.org>
-	 <1208195673.7164.2.camel@twins> <4803AD91.5020001@firstfloor.org>
-	 <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com>
-	 <1208242017.7053.4.camel@lappy>
+In-Reply-To: <48042539.8050009@cn.fujitsu.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 8:46 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Tue, 2008-04-15 at 08:18 +0200, Bart Van Assche wrote:
->  > Would it really be a good idea to give a synchronization concept that
->  > behaves exactly like a semaphore another name than "semaphore" ? The
->  > semaphore concept is well known and is taught in every computer
->  > science course.
->
->  Are the ramifications wrt priority inversion taught? Is it made clear
->  that its hard to validate because there is no clear resource owner?
->
->  Afaik, non of these subjects are touched upon in the CS-101 courses and
->  that is exactly the problem. So you can say they are not well know, they
->  are just widely misunderstood.
->
->  And yes, if there are more hand a very few such users it doesn't make
->  sense to keep them open coded.
+(cc Roland)
 
-Regarding semaphores and priority inversion: I have never recommended
-the use of semaphores over mutexes, all I recommended is to keep the
-name "semaphore" for something that behaves like a semaphore. There
-might be better ways to discourage the use of the semaphore API, e.g.
-letting the compiler print a warning every time a semaphore function
-is called unless one or another #define has been enabled.
+On 04/15, Li Zefan wrote:
+>
+> Li Zefan wrote:
+> > Balbir Singh wrote:
+> >> Li Zefan wrote:
+> >>> When I ran the same test program I described in a previous patch,
+> >>> I got the following warning:
+> >>>
+> >>> WARNING: at mm/oom_kill.c:320 __oom_kill_task+0x6d/0x101()
+> >>> Modules linked in: 
+> >>>
+> 
+> I Added 2 printk()s:
+> 
+>  static void __oom_kill_task(struct task_struct *p, int verbose)
+>  {
+> +       printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
+> +
+>         if (is_global_init(p)) {
+>                 WARN_ON(1);
+>                 printk(KERN_WARNING "tried to kill init!\n");
+> @@ -319,6 +320,7 @@ static void __oom_kill_task(struct task_struct *p, int verbo
+> 
+>         if (!p->mm) {
+>                 WARN_ON(1);
+> +               printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
+>                 printk(KERN_WARNING "tried to kill an mm-less task!\n");
+>                 return;
+>         }
+> 
+> got this:
+> 
+> pid = 3817, flags = 400140
+> ------------[ cut here ]------------
+> WARNING: at mm/oom_kill.c:322 __oom_kill_task+0x74/0xf1()
+> ...
+> ---[ end trace bb92f2fd8fe6c7c5 ]---
+> pid = 3817, flags = 400144
+> tried to kill an mm-less task!
+> 
+> So PF_EXITING may be set during the call of oom_kill_task(), and I notice
+> the comment in oom_kill_task():
+> 
+> 	 * Furthermore, even if mm contains a non-NULL value, p->mm may
+> 	 * change to NULL at any time since we do not hold task_lock(p).
+> 	 * However, this is of no concern to us.
+> 
+> Is this warning just harmless so that we can just ignore it ?
 
-Regarding priority inheritance: does the above mean that you consider
-priority inheritance as an optimal solution for realizing real-time
-behavior in the kernel ? Are you aware of the fundamental problems
-associated with priority inheritance ? These issues are well explained
-in Victor Yodaiken's paper "Against priority inheritance". See also
-http://www.linuxdevices.com/files/misc/yodaiken-july02.pdf .
+Yes sure, tasklist_lock can't prevent the task exiting, it only protects
+from release_task(). And task->mm == NULL after do_exit()->exit_mm().
+Perhaps we can check "!p->mm && !PF_EXITING".
 
-Bart.
+I don't think we should check PF_BORROWED_MM in __oom_kill_task(), it is
+too late.
+
+Perhaps,
+
+	--- fs/aio.c	2008-02-17 23:40:07.000000000 +0300
+	+++ fs/aio.c	2008-04-15 09:31:23.841202187 +0400
+	@@ -579,6 +579,7 @@ static void use_mm(struct mm_struct *mm)
+	 
+		task_lock(tsk);
+		tsk->flags |= PF_BORROWED_MM;
+	+	smp_wmb();
+		active_mm = tsk->active_mm;
+		atomic_inc(&mm->mm_count);
+		tsk->mm = mm;
+	@@ -606,13 +607,23 @@ static void unuse_mm(struct mm_struct *m
+		struct task_struct *tsk = current;
+	 
+		task_lock(tsk);
+	-	tsk->flags &= ~PF_BORROWED_MM;
+		tsk->mm = NULL;
+	+	smp_wmb();
+	+	tsk->flags &= ~PF_BORROWED_MM;
+		/* active_mm is still 'mm' */
+		enter_lazy_tlb(mm, tsk);
+		task_unlock(tsk);
+	 }
+	 
+	+struct mm_struct *__get_task_mm(struct task_struct *tsk)
+	+{
+	+	struct mm_struct *mm = tsk->mm;
+	+	smp_rmb();
+	+	if (tsk->flags & PF_BORROWED_MM)
+	+		mm = NULL;
+	+	return mm;
+	+}
+	+
+	 /*
+	  * Queue up a kiocb to be retried. Assumes that the kiocb
+	  * has already been marked as kicked, and places it on
+
+Now oom_kill_task/select_bad_process/etc can use __get_task_mm() to avoid
+killing the kernel thread.
+
+Off-topic: why ->oomkilladj is per thread, not per process? All threads share
+the same ->mm. Note oom_kill_process(), it shouldn't use do_each_thread(),
+it actually needs for_each_process().
+
+
+Roland, what do you think about the coredump? Looks like we have the ancient
+bug, zap_threads() can hit the kernel thread.
+
+How about
+
+	--- fs/exec.c	2008-02-17 23:40:07.000000000 +0300
+	+++ fs/exec.c	2008-04-15 10:07:08.998518272 +0400
+	@@ -1547,7 +1547,7 @@ static inline int zap_threads(struct tas
+			p = g;
+			do {
+				if (p->mm) {
+	-				if (p->mm == mm) {
+	+				if (__get_task_mm(p) == mm) {
+						/*
+						 * p->sighand can't disappear, but
+						 * may be changed by de_thread()
+
+?
+
+Oleg.
+
