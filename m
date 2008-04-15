@@ -1,57 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYDOSud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbYDOSwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbYDOSud (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 14:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYDOSuZ
+	id S1760036AbYDOSwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 14:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYDOSwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 14:50:25 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49664 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbYDOSuZ (ORCPT
+	Tue, 15 Apr 2008 14:52:16 -0400
+Received: from rv-out-0708.google.com ([209.85.198.250]:20928 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754113AbYDOSwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 14:50:25 -0400
-Date: Tue, 15 Apr 2008 12:50:08 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Roland Dreier <rdreier@cisco.com>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080415185008.GE9191@parisc-linux.org>
-References: <1208195673.7164.2.camel@twins> <4803AD91.5020001@firstfloor.org> <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com> <1208242017.7053.4.camel@lappy> <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com> <1208249088.7124.7.camel@twins> <alpine.LFD.1.00.0804150907080.2879@woody.linux-foundation.org> <4804D779.6070907@firstfloor.org> <alpine.LFD.1.00.0804150952300.2879@woody.linux-foundation.org> <20080415170556.GA16417@elte.hu>
+	Tue, 15 Apr 2008 14:52:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FCdm1PzUBxBmcDHjja00URpoq9ojDZgju+FmGJleftkLGoJxrVHXI+x5O7wn7S9NIaQhDAQ0wKNnkE5ZJS46f7lU4msxMSA6fzr6I/KpbIbjpOUlPdyEXLqgz8fbtIy250UayjJVFabt3q0GaQuTi34DvTUXe4vAAq1SVXjtJFA=
+Message-ID: <86802c440804151152i1db7bff8n4b64eba8b912d49f@mail.gmail.com>
+Date: Tue, 15 Apr 2008 11:52:14 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <87wsmzibf7.fsf@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080415170556.GA16417@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080412223319.372887160@symbol.fehenstaub.lan>
+	 <20080412225850.704752615@symbol.fehenstaub.lan>
+	 <87lk3hwv52.fsf@basil.nowhere.org>
+	 <20080414232308.ffa4e269.akpm@linux-foundation.org>
+	 <86802c440804150004w1c94b2dci520e0ffb8b60632f@mail.gmail.com>
+	 <20080415001512.60cb784d.akpm@linux-foundation.org>
+	 <86802c440804150028t33fabd7fn40d3d47d0482bfc1@mail.gmail.com>
+	 <20080415003647.922a9a05.akpm@linux-foundation.org>
+	 <87wsmzibf7.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 07:05:56PM +0200, Ingo Molnar wrote:
-> i very much agree with the "get rid of semaphores" argument - the reason 
-> why i initially supported the "move to generic semaphores" step was 
-> because i saw it basically as the precursor to full removal: it is the 
-> removal of semaphores from all architectures - with a small generic 
-> compatibility wrapper to handle the remaining few uses of semaphores.
+On Tue, Apr 15, 2008 at 4:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+> Hi,
+>
+>
+>
+>  Andrew Morton <akpm@linux-foundation.org> writes:
+>
+>  > On Tue, 15 Apr 2008 00:28:34 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>  >
+>  >> On Tue, Apr 15, 2008 at 12:15 AM, Andrew Morton
+>  >> <akpm@linux-foundation.org> wrote:
+>  >> >
+>  >> > On Tue, 15 Apr 2008 00:04:03 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>  >> >
+>  >> >  > On Mon, Apr 14, 2008 at 11:23 PM, Andrew Morton
+>  >> >  > <akpm@linux-foundation.org> wrote:
+>  >> >  > >
+>  >> >  > > On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+>  >> >  > >
+>  >> >  > >  > Johannes Weiner <hannes@saeurebad.de> writes:
+>  >> >  > >  >
+>  >> >  > >  > > Make free_bootmem() look up the node holding the specified address
+>  >> >  > >  > > range which lets it work transparently on single-node and multi-node
+>  >> >  > >  > > configurations.
+>  >> >  > >  >
+>  >> >  > >  > Acked-by: Andi Kleen <andi@firstfloor.org>
+>  >> >  > >  >
+>  >> >  > >  > This is far better than the original change it replaces and which
+>  >> >  > >  > I also objected to in review.
+>  >> >  > >  >
+>  >> >  > >
+>  >> >  > >  So...  do we think these two patches are sufficiently safe and important for
+>  >> >  > >  2.6.25?
+>  >> >  >
+>  >> >  > the patch is wrong
+>  >> >  >
+>  >> >
+>  >> >  The last I saw was this:
+>  >> >
+>  >> >
+>  >> >  On Sun, 13 Apr 2008 12:57:22 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
+>  >> >
+>  >> >  > Hi,
+>  >> >  >
+>  >> >  > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>  >> >  >
+>  >> >  > > On Sat, Apr 12, 2008 at 3:33 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>  >> >  > > ...
+>  >> >
+>  >> > > >
+>  >> >  > > could have chance that bootmem with reserved_early that is crossing
+>  >> >  > > the nodes.
+>  >> >  >
+>  >> >  > Upstream reserve_bootmem_core() would BUG() on a caller trying to cross
+>  >> >  > nodes, so I don't see where this chance could come from.
+>  >> >
+>  >> >  Is that what you're referring to?
+>  >> >
+>  >> >  Was Johannes observation incorrect?  If so, why?
+>  >>
+>  >> my patch with free_bootmem will make sure free_bootmem_core only free
+>  >> bootmem in the bdata scope.
+>  >> so free_bootmem can handle the cross_node bootmem that is done by
+>  >> reserve_early ( done in another patch, is dropped by you because took
+>  >> Jonannes).
+>  >>
+>  >> in setup_arch for x86_64 there is one free_bootmem that is used when
+>  >> ramdisk is falled out of ram map. that could be crossed by bootloader
+>  >> and kexec, and kernel or second kernel is memmap=NN@SS to execlue some
+>  >> memory.
+>  >>
+>  >> anyway that is extrem case, but my patch could handle that.
+>
+>  Has this case ever occured?  If this could become real, I have no
+>  objections to implement a way to handle it (why would I?), but until now
+>  you just said that in some time in the future, this could be useful.
+>
+>
+>  >>
+>  >> I wonder if any regression caused by my previous patch? maybe on other platform?
+>  >>
+>  >
+>  > Not that I'm aware of.
+>
+>  It papers over buggy usage of free_bootmem().  If its arguments are
+>  bogus, it will just return again where it BUG()ed out before.  The pages
+>  might be never marked free and therefor never reach the buddy allocator.
+>
+>
+>  > I restored mm-make-reserve_bootmem-can-crossed-the-nodes.patch.  Johannes,
+>  > can you please check 2.6.28-rc8-mm2, see if it looks OK?
+>
+>  I object to the way it is implemented.  If it is really needed, that
+>  should be done properly:
+>
+>         - remove the double loop over the area on the likely succeeding
+>           path and unroll the reserving on the unlikely path as it was
+>           done before.  Better to punish exceptional branches than
+>           the working paths.
+>         - make reserve_bootmem_core be strict with its arguments.  If
+>           you want to iterate over the bdata list, you should not just
+>           throw every item at the _core functions and let them work it
+>           out for themselves.  The correct parameters should be
+>           calculated in advance and then passed to a strict
+>           _bootmem_core() function that BUG()s on failure.
+>
+>  But still, Yinghai, you never brought in practical reasons for this
+>  whole thing.  You talked about extreme and theoretical cases and I don't
+>  think that this justifies breaking API or pessimizing code at all.
 
-Hm.  I thought you initially supported it because it deleted so much
-code.  I don't want to go and add down_killable() to each architecture
-again, and you were pretty enthusiastic about adding down_killable().
+free_bootmem(ramdisk_image, ramdisk_size) is sitting in setup_arch of
+x86_64. or make that panic directly.
 
-> i got thoroughly surprised by the "increase the scope of semaphores" 
-> angle to the patchset though, and in hindsight i'd rather see neither of 
-> those generalizations and see semaphores die a slow but sure natural 
-> death than to see their prolongation :-/
+what i needed is: free_bootmem can free bootmem cross the nodes.
 
-I'm fully in favour of reducing the number of semaphore users, and
-eventually eliminating them.  Arjan and I discussed a way to do that
-just now ... I'll write some code, see how it looks.
+on numa
+alloc_bootmem always return blocks on same nodes. but some via
+reserve_early and then to bootmem via early_res_to_bootmem could be
+crossing nodes.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+BTW, can you look at patches in -mm about make reserve_bootmem cross the nodes?
+
+YH
