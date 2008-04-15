@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbYDOCj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764238AbYDOCkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbYDOCj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 22:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYDOCjU
+	id S1764238AbYDOCkw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 22:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760426AbYDOCkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 22:39:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42231 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759221AbYDOCjT (ORCPT
+	Mon, 14 Apr 2008 22:40:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:29665 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759827AbYDOCkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 22:39:19 -0400
-Date: Mon, 14 Apr 2008 19:38:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: "Peter Zijlstra" <peterz@infradead.org>, "Paul Menage" <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.25-rc8-mm2 -- kernel/sched.c:8294: error: unknown field
- =?UTF-8?Q?=E2=80=98read=5Fuint=E2=80=99?= specified in initializer
-Message-Id: <20080414193855.74ea0d88.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0804141928p2fbf4006j5d365918e3b8073e@mail.gmail.com>
-References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
-	<1207932902.7157.4.camel@twins>
-	<6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
-	<1207940124.7427.1.camel@twins>
-	<a44ae5cd0804141928p2fbf4006j5d365918e3b8073e@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 22:40:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fI1UwxUFwKhit8EGbTzJw30p3g9o8mfuc54RVVcfa7t6HRcOSCUgAZv0/B3dBhBpbj2347Zo/ADifi9FDy14bsJzrmP9X6Zdvn/BVQ2Ok0oU6Do5dOx+7JR4NvrraVCHTQXWUrYevqU8wV4scKsHLxkXocTUyhaJ4fZIM9unRog=
+Message-ID: <480415A1.9090004@gmail.com>
+Date: Tue, 15 Apr 2008 11:40:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: Rich West <Rich.West@wesmo.com>, Jeff Garzik <jeff@garzik.org>,
+       Wander Winkelhorst <w.winkelhorst@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Peter Gervai <grinapo@gmail.com>, Marin Mitov <mitov@issp.bas.bg>
+Subject: Re: sata_via
+References: <47F694C8.8020507@wesmo.com> <47F6A5E8.1030602@garzik.org>	 <47F6BD55.3090708@wesmo.com>	 <5699f8f00804050015kb1ebb1cpf3ab8b587580fffd@mail.gmail.com>	 <47F7982E.5080701@wesmo.com> <47F7F463.2060402@garzik.org>	 <480173CB.5070805@gmail.com> <480189DB.9050900@wesmo.com>	 <48018DC0.6080407@wesmo.com>  <1208133587.2755.8.camel@htj.dyndns.org> <1208160803.1784.14.camel@queen.suse.de>
+In-Reply-To: <1208160803.1784.14.camel@queen.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 22:28:27 -0400 "Miles Lane" <miles.lane@gmail.com> wrote:
-
-> Hmm.  This is showing up in 2.6.25-rc9 and looks related to the
-> problem in 2.6.25-rc9-mm2:
+Thomas Renninger wrote:
+> ----------------------------------------------
+> Peter Gervai posted a similar report recently, Elias Oltmanns had an
+> idea (on linux-ide or linux-acpi list):
+> Subject: Re: Hard freeze / interrupt-related death / instability
+> Wed, 09 Apr 2008
 > 
->   CC      kernel/sched.o
-> kernel/sched.c:7988: error: unknown field 'read_u64' specified in initializer
-> kernel/sched.c:7988: error: 'cpu_shares_read_u64' undeclared here (not
-> in a function)
-> kernel/sched.c:7989: error: unknown field 'write_u64' specified in initializer
-> kernel/sched.c:7989: error: 'cpu_shares_write_u64' undeclared here
-> (not in a function)
-> kernel/sched.c:7995: error: unknown field 'read_s64' specified in initializer
-> kernel/sched.c:7995: warning: initialization makes integer from
-> pointer without a cast
-> kernel/sched.c:7996: error: unknown field 'write_s64' specified in initializer
-> kernel/sched.c:7996: warning: initialization from incompatible pointer type
-> kernel/sched.c:8000: error: 'cpu_rt_period_read_uint' undeclared here
-> (not in a function)
-> kernel/sched.c:8001: error: 'cpu_rt_period_write_uint' undeclared here
-> (not in a function)
+> (but Tejun was already involved into that, at least in the link posted
+> there, but reading it up might be worth it).
+> Is this the same problem?
 
-I'm suspecting that you applied the -mm patch, then you applied
-cgroup-api-files-rename-read-write_uint-methods-to-read_write_u64-fix.patch,
-then you reverted the -mm patch but didn't revert
-cgroup-api-files-rename-read-write_uint-methods-to-read_write_u64-fix.patch.
+Can't really tell.  Didn't look like a low level driver problem tho.
+
+-- 
+tejun
