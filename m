@@ -1,113 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbYDOTzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbYDOTzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932127AbYDOTzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 15:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbYDOTzW
+	id S1763857AbYDOTzs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 15:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbYDOTzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 15:55:22 -0400
-Received: from saeurebad.de ([85.214.36.134]:38753 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756080AbYDOTzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 15:55:21 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, ak@suse.de, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
-References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
-	<20080415071120.GB15499@elte.hu> <87hce3i8mq.fsf@saeurebad.de>
-	<86802c440804151157m5baab2efla7f35a8f98ac76b7@mail.gmail.com>
-Date: Tue, 15 Apr 2008 21:55:03 +0200
-In-Reply-To: <86802c440804151157m5baab2efla7f35a8f98ac76b7@mail.gmail.com>
-	(Yinghai Lu's message of "Tue, 15 Apr 2008 11:57:42 -0700")
-Message-ID: <87mynuhp0o.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 15 Apr 2008 15:55:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49148 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932112AbYDOTzb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 15:55:31 -0400
+Date: Tue, 15 Apr 2008 21:56:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com
+Subject: Re: w35und: add softmac interface
+Message-ID: <20080415195603.GE4994@elf.ucw.cz>
+References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz> <20080415132845.GA11789@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <20080415132845.GA11789@tuxdriver.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> > Actually you are about month early to the party ;-). We are trying to
+> > clean up winbond usb wireless driver, so that it can think about
+> > inclusion in kernel.
+> > 
+> > http://code.google.com/p/winbondport/
+> > 
+> > Unfortunately, original driver carries its own 802.11 stack with it;
+> > that needs to be stripped down. (And then code needs to be rewritten
+> > due to horrible coding style).
+> 
+> I see...OK.
+> 
+> Did you get any legal advice regarding whether or not
+> MODULE_LICENSE("GPL") was sufficient to proclaim the driver as covered
+> by the GPL?
 
-> On Tue, Apr 15, 2008 at 5:51 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->> Hi Ingo,
->>
->>
->>
->>  Ingo Molnar <mingo@elte.hu> writes:
->>
->>  > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
->>  >
->>  >> Subject: bootmem: node-setup agnostic free_bootmem()
->>  >> From: Johannes Weiner <hannes@saeurebad.de>
->>  >>
->>  >> Make free_bootmem() look up the node holding the specified address
->>  >> range which lets it work transparently on single-node and multi-node
->>  >> configurations.
->>  >
->>  > this patch does not fix the bug Yinghai's (now dropped) patches solved:
->>  > reserve_early() allocations. So NAK until the full problem has been
->>  > sorted out ...
->>
->>  Okay, NAK on -mm and -x86 for sure.  The patch was meant for mainline
->>  where there is no need for free_bootmem() going across nodes, right?
->>
->>  But I still object to the way Yinghai implemented it.
->>  free_bootmem_core() should not be twisted like this.
->>
->>  How about the following (untested, even uncompiled, but you should get
->>  the idea) proposal which would replace the patch discussed in this
->>  thread:
->>
->>  --- tree-linus.orig/mm/bootmem.c
->>  +++ tree-linus/mm/bootmem.c
->>  @@ -421,7 +421,25 @@ int __init reserve_bootmem(unsigned long
->>
->>
->>   void __init free_bootmem(unsigned long addr, unsigned long size)
->>   {
->>  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->>  +       bootmem_data_t *bdata;
->>  +
->>  +       list_for_each_entry(bdata, &bdata_list, list) {
->>  +               unsigned long remainder = 0;
->>
->> +
->>  +               if (addr < bdata->node_boot_start)
->>  +                       continue;
->>  +
->>  +               if (PFN_DOWN(addr + size) > bdata->node_low_pfn)
->>  +                       remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
->>  +
->>  +               size -= PFN_PHYS(remainder);
->>
->> +               free_bootmem_core(bdata, addr, size)
->>  +
->>  +               if (!remainder)
->>  +                       break;
->>  +
->>  +               addr = PFN_PHYS(bdata->node_low_pfn + 1);
->>  +       }
->>
->>  }
->>
->>   unsigned long __init free_all_bootmem(void)
->
-> how about
-> 1. bdata is not sorted?
+I dislike talking to lawyers, do not have any easily physically
+reachable, and believe the case is pretty clear...
 
-They are kept in a sorted list.  How could they be unsorted?
-
-> 2. intel cross node box: node0: 0g-2g, 4g-6g, node1: 2g-4g, 6g-8g. i
-> don't think they have two bdata struct for every node.
-
-How do the bdata structures represent this setup right now?  Are you
-sure that there is not a node descriptor for every contiguous region?
-
-	Hannes
+...plus, we plan to rewrite the driver, anyway...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
