@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYDOMvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbYDOMvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbYDOMvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 08:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYDOMvN
+	id S1763643AbYDOMvu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 08:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYDOMvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 08:51:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:31252 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761452AbYDOMvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 08:51:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=qYqnyfgdHMk4WFKY6GiqLb59cLwUqFFed4qN+0DUnEOHBaxAshfTmCTe0CeqO5KKK
-	ieUVmAMB+xSZos1EYc1Pw==
-Message-ID: <d43160c70804150547v7896e813t4bb1bafd932c30ec@mail.gmail.com>
-Date: Tue, 15 Apr 2008 08:47:37 -0400
-From: "Ross Biro" <rossb@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] MM: Make page tables relocatable -- conditional flush (rc9)
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20080414155702.ca7eb622.akpm@linux-foundation.org>
+	Tue, 15 Apr 2008 08:51:40 -0400
+Received: from saeurebad.de ([85.214.36.134]:55681 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753414AbYDOMvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 08:51:39 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, ak@suse.de,
+       clameter@sgi.com, kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
+       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
+References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
+	<20080415071120.GB15499@elte.hu>
+Date: Tue, 15 Apr 2008 14:51:25 +0200
+In-Reply-To: <20080415071120.GB15499@elte.hu> (Ingo Molnar's message of "Tue,
+	15 Apr 2008 09:11:20 +0200")
+Message-ID: <87hce3i8mq.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080414163933.A9628DCA48@localhost>
-	 <20080414155702.ca7eb622.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 6:57 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+Hi Ingo,
+
+Ingo Molnar <mingo@elte.hu> writes:
+
+> * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
 >
->  This patchset doesn't apply to the 2.6.26 queue because of the ongoing x86
->  shell game: the arch/x86/kernel/smp_??.c files were consolidated.
-
-It's probably best to just wait until the smoke clears on 2.6.26 then.
- I'll add some comments, however I usually get in trouble for adding
-too verbose comments, so I've learned to go the other way.  If you
-prefer comments though, I'll add them.
-
->  - Must ->page_table_relocation_lock be a semaphore?  mutexes are
->   preferred.
-
-Not any more.  It used to require a semaphore, but I can switch it
-back to a mutex now.  I can even replace the mutex with an atomic
-inc/dec which might be even better since it will work at interrupt
-time as well.
-
->  - The patch adds a number of largeish inlined functions.  There's rarely
->   a need for this, and it can lead to large icache footprint which will, we
->   expect, produce slower code.
-
-If these are the ones I'm thinking of, they are in the fast path on
-page faults.  So they should be inlined.  However, I could easily
-change it to a small macro or inline function and a regular function
-call that would rarely be taken.  This should be a win from the icache
-point of view and only a loss in a case we really don't care much
-about.
-
->  - The patch adds a lot of macros which look like they could have been
->   implemented as inlines.  Inlines are preferred, please.  They look nicer,
->   they provide typechecking, they avoid accidental
->   multiple-reference-to-arguments bugs and they help to avoid
->   unused-variable warnings.
-
-Here I disagree.  The only added function-like #define's I see are
-either just aliasing functions, or the case when any function that
-does nothing.  I guess the later could be replaced by inlines to avoid
-warnings.
-
->  - Doing PAGE_SIZE memcpy under spin_lock_irqsave() might get a bit
->   expensive from an interrupt-latency POV.  It could (I think?) result in
->   large periods of time where interrupts are almost always disabled, which
->   might disrupt some device drivers.
-
-Here I'm just being stupid.  There is no reason to have interrupts
-disabled at this point.
-
+>> Subject: bootmem: node-setup agnostic free_bootmem()
+>> From: Johannes Weiner <hannes@saeurebad.de>
+>> 
+>> Make free_bootmem() look up the node holding the specified address 
+>> range which lets it work transparently on single-node and multi-node 
+>> configurations.
 >
->  - Why is this code doing spin_lock_irqsave() on page_table_lock?  The
->   rest of mm/ doesn't disable IRQs for that lock.  This implies that
+> this patch does not fix the bug Yinghai's (now dropped) patches solved: 
+> reserve_early() allocations. So NAK until the full problem has been 
+> sorted out ...
 
-Laziness.  I didn't feel like figuring this out if the irqsave was
-necessary when I started, and forgot to go back and fix it later.
-There is no reason.
+Okay, NAK on -mm and -x86 for sure.  The patch was meant for mainline
+where there is no need for free_bootmem() going across nodes, right?
 
+But I still object to the way Yinghai implemented it.
+free_bootmem_core() should not be twisted like this.
 
->  - I haven't checked, but if the code is taking KM_USER0 from interrupt
->   context then that would be a bug.  Switching to KM_IRQ0 would fix that.
+How about the following (untested, even uncompiled, but you should get
+the idea) proposal which would replace the patch discussed in this
+thread:
 
-KM_USER0 is currently correct.  For memory hotplug, we may need to
-change this in the future.
-
-
-     Ross
+--- tree-linus.orig/mm/bootmem.c
++++ tree-linus/mm/bootmem.c
+@@ -421,7 +421,25 @@ int __init reserve_bootmem(unsigned long
+ 
+ void __init free_bootmem(unsigned long addr, unsigned long size)
+ {
+-	free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
++	bootmem_data_t *bdata;
++
++	list_for_each_entry(bdata, &bdata_list, list) {
++		unsigned long remainder = 0;
++
++		if (addr < bdata->node_boot_start)
++			continue;
++
++		if (PFN_DOWN(addr + size) > bdata->node_low_pfn)
++			remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
++
++		size -= PFN_PHYS(remainder);
++		free_bootmem_core(bdata, addr, size)
++
++		if (!remainder)
++			break;
++
++		addr = PFN_PHYS(bdata->node_low_pfn + 1);
++	}
+ }
+ 
+ unsigned long __init free_all_bootmem(void)
+---
+	Hannes
