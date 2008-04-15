@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764788AbYDOMCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbYDOMOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764788AbYDOMCl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 08:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761275AbYDOMCd
+	id S1763885AbYDOMOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 08:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYDOMOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 08:02:33 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:36588 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYDOMCd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 08:02:33 -0400
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: prasad@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       mathieu.desnoyers@polymtl.ca
-In-Reply-To: <20080415115314.GA6975@in.ibm.com>
-References: <20080415115058.GA6788@in.ibm.com>
-	 <20080415115314.GA6975@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 14:02:22 +0200
-Message-Id: <1208260942.6395.6.camel@twins>
+	Tue, 15 Apr 2008 08:14:05 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:41077 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751829AbYDOMOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 08:14:05 -0400
+X-Greylist: delayed 853 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Apr 2008 08:14:04 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=O4nJIan6O+73OJ2JizaCajzcTVVUVoSf70mYmRS2QbuFO040UKc4Za6RtJI5nDV2u3IGSiraER5aNJ3O9rU4ySZCzRYSnokz/Rnbc5YrxyjiCRiMUg+IMM1KVFERv2kItL8iYtmcwnMIYqocBId7PCQOo/JVuFjHJwDATAISq18=;
+Date: Tue, 15 Apr 2008 15:59:24 +0400
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vitaliy Gusev <vgusev@openvz.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][NET] Fix never pruned tcp out-of-order queue
+Message-ID: <20080415115924.GA1550@ms2.inr.ac.ru>
+References: <87mynvtuoj.fsf@basil.nowhere.org> <87iqyjttz3.fsf@basil.nowhere.org> <20080415.011810.178212948.davem@davemloft.net> <200804151226.47729.vgusev@openvz.org> <480467AA.2050808@firstfloor.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480467AA.2050808@firstfloor.org>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-15 at 17:23 +0530, K. Prasad wrote:
+Hello!
 
-> +	trace_mark(futex_wait_called, "uaddr:%p fshared:%p val:%u "
-> +			"abs_time:%p bitset:%d",
-> +			uaddr, fshared, val, abs_time, bitset);
+> I still think the guards are pretty much the same as before, sorry:)
 
-This is some seriuosly ugly looking gunk, why would we want stuff like
-that scattered across the code?
+Guards inside tcp_prune_queue() are the same exactly.
 
-What is wrong with a few simple hooks like:
+But the patch adds the second point where out-of-order queue is discarded.
+It is when the socket is under rcvbuf, but nevertheless skb cannot
+be queued due to system-wide limit. In that case out-of-order queue
+is dropped and the limits are rechecked.
 
-  trace_futex_wait(uaddr, fshares, val, abs_time, bitset);
 
-and then deal with that.
+> But why not repeat the whole prune for all cases in this case then?
 
-Also, you seem to expose way too much futex internals; do you really
-need that? People will go use this marker crap like ABI and further
-restrain us from changing the code.
+Collapsing and tuning rcv_ssthresh was done once, they are not guarded
+by rcvbuf check. So, repeating those steps would be useless.
 
-/me unhappy.
+The only thing is:
+
+> e.g. you should probably at least repeat the third step (setting
+> pred_flags to 0) too.
+
+Formally, this is correct. But this is not necessary, pred_flags reset
+is redundant even in the first place. The fast path is not so fast,
+memory limit is checked explicitly there.
+
+
+The patch is not perfect. F.e. tcp_prune_ofo_queue() could see empty
+out-of-order queue, in this case the second sk_stream_rmem_schedule()
+is useless and could be skipped. But it is the second order effect.
+
+I think this will work.
+
+
+
 
 
 
