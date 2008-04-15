@@ -1,75 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764605AbYDODzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYDOEBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764605AbYDODzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 23:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762626AbYDODzd
+	id S1753556AbYDOEBg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 00:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbYDOEBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 23:55:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:35361 "EHLO
+	Tue, 15 Apr 2008 00:01:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:50436 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762514AbYDODzc (ORCPT
+	with ESMTP id S1750696AbYDOEBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 23:55:32 -0400
+	Tue, 15 Apr 2008 00:01:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qRZvjVDJ8JYA5tVPGA3cWonCX+XGNd6J/hAyp8WPWy+zhAdI3Cnx/F8538ccnDd13os/ebrLJ0+FKHlON0kXyRHGLO8nkC9Q3SxwKWOPWL8uo1dqgi9mQs03qwMbV6vwUf8+aeAUF1ulUUGs8F8ZVXQcJm4UW/82FXUatxvkNAI=
-Message-ID: <a44ae5cd0804142055tb955431ne904862043a01d6d@mail.gmail.com>
-Date: Mon, 14 Apr 2008 23:55:32 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: =?WINDOWS-1252?Q?Re:_2.6.25-rc8-mm2_--_kernel/sched.c:8294:_error:_?= =?WINDOWS-1252?Q?unknown_field_=91read=5Fuint=92_specified_in_initializer?=
-Cc: "Peter Zijlstra" <peterz@infradead.org>, "Paul Menage" <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20080414193855.74ea0d88.akpm@linux-foundation.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=ibI1+QoVrrfFrooc1hGtaiVlI3cjPf/MsdnK7m0jSEtZYcSoQAJzU13sFdqsIKkDnoXd+aTtNwBh3mI14ACbWhJeigsHTLGCwGgqYgtYH9R18+0CnztZ2YE7n64oPJ2SknhHLRdXm8JB2OLuZTk0OjKycNS+p97Xb/kuOMoYPvA=
+Message-ID: <4804288D.5090504@gmail.com>
+Date: Tue, 15 Apr 2008 13:01:17 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0804110648g3256805fob917f31eeff4f6db@mail.gmail.com>
-	 <1207932902.7157.4.camel@twins>
-	 <6599ad830804111146k2c3db442y3708f95a3fbee83@mail.gmail.com>
-	 <1207940124.7427.1.camel@twins>
-	 <a44ae5cd0804141928p2fbf4006j5d365918e3b8073e@mail.gmail.com>
-	 <20080414193855.74ea0d88.akpm@linux-foundation.org>
+To: Paul Collins <paul@burly.ondioline.org>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: ata2: SATA link down (SStatus 611 SControl 300)
+References: <87od8cxg45.fsf@burly.wgtn.ondioline.org>	<48040AB5.6050300@gmail.com> <87hce3yhmi.fsf@burly.wgtn.ondioline.org>	<480419B6.1050309@gmail.com> <87d4oryf4u.fsf@burly.wgtn.ondioline.org>
+In-Reply-To: <87d4oryf4u.fsf@burly.wgtn.ondioline.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------010902090507090508060605"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 10:38 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 14 Apr 2008 22:28:27 -0400 "Miles Lane" <miles.lane@gmail.com> wrote:
->
->  > Hmm.  This is showing up in 2.6.25-rc9 and looks related to the
->  > problem in 2.6.25-rc9-mm2:
->  >
->  >   CC      kernel/sched.o
->  > kernel/sched.c:7988: error: unknown field 'read_u64' specified in initializer
->  > kernel/sched.c:7988: error: 'cpu_shares_read_u64' undeclared here (not
->  > in a function)
->  > kernel/sched.c:7989: error: unknown field 'write_u64' specified in initializer
->  > kernel/sched.c:7989: error: 'cpu_shares_write_u64' undeclared here
->  > (not in a function)
->  > kernel/sched.c:7995: error: unknown field 'read_s64' specified in initializer
->  > kernel/sched.c:7995: warning: initialization makes integer from
->  > pointer without a cast
->  > kernel/sched.c:7996: error: unknown field 'write_s64' specified in initializer
->  > kernel/sched.c:7996: warning: initialization from incompatible pointer type
->  > kernel/sched.c:8000: error: 'cpu_rt_period_read_uint' undeclared here
->  > (not in a function)
->  > kernel/sched.c:8001: error: 'cpu_rt_period_write_uint' undeclared here
->  > (not in a function)
->
->  I'm suspecting that you applied the -mm patch, then you applied
->  cgroup-api-files-rename-read-write_uint-methods-to-read_write_u64-fix.patch,
->  then you reverted the -mm patch but didn't revert
->  cgroup-api-files-rename-read-write_uint-methods-to-read_write_u64-fix.patch.
->
+This is a multi-part message in MIME format.
+--------------010902090507090508060605
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hmm.  Bizarro.  I have no recollection of applying such a patch, but maybe
-I need to get some more sleep.  I just downloaded the whole 2.6.25-rc9
-tarball and lo and behold, it worked.
+Paul Collins wrote:
+> Tejun Heo <htejun@gmail.com> writes:
+> 
+>> Can you please do the followings?
+>>
+>> 1. With the previous patch applied, do cold reboot.  Power off the
+>> machine.  If possible turn off the master switch on the power
+>> supply. What ten secs.  Boot and see if anything is different.
+> 
+> No difference observed.
+> 
+>> 2. If that doesn't make any difference, with the previous patch backed
+>> out (patch -R -p1) and the new patch attached here applied, do cold
+>> boot and post the log.
 
-Sorry for the noise,
+Thanks for testing.
 
-        Miles
+> ata2: XXX about to resume
+> ata2: SATA link down (SStatus 611 SControl 0)
+
+The link is already in slumber mode before the driver doing anything to 
+it.  Is there any related setting in BIOS?
+
+Also, can you please give a shot at the attached patch?
+
+-- 
+tejun
+
+--------------010902090507090508060605
+Content-Type: text/x-patch;
+ name="ata_piix-debug-2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ata_piix-debug-2.patch"
+
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index fae8404..4bca85d 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -1161,9 +1161,12 @@ static int piix_sidpr_scr_write(struct ata_port *ap, unsigned int reg, u32 val)
+ 		return -EINVAL;
+ 
+ 	piix_sidpr_write(&ap->link.device[0], reg, val);
++	ata_port_printk(ap, KERN_INFO, "XXX SCR WRITE master %d:%x\n", reg, val);
+ 
+-	if (ap->flags & ATA_FLAG_SLAVE_POSS)
++	if (ap->flags & ATA_FLAG_SLAVE_POSS) {
+ 		piix_sidpr_write(&ap->link.device[1], reg, val);
++		ata_port_printk(ap, KERN_INFO, "XXX SCR WRITE slave %d:%x\n", reg, val);
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index be95fdb..0350bec 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3966,7 +3966,13 @@ int ata_std_prereset(struct ata_link *link, unsigned long deadline)
+ 
+ 	/* if SATA, resume link */
+ 	if (ap->flags & ATA_FLAG_SATA) {
++		ata_link_printk(link, KERN_INFO, "XXX about to resume\n");
++		sata_print_link_status(link);
+ 		rc = sata_link_resume(link, timing, deadline);
++		ata_link_printk(link, KERN_INFO, "XXX after resume\n");
++		sata_print_link_status(link);
++		ssleep(1);
++		sata_print_link_status(link);
+ 		/* whine about phy resume failure but proceed */
+ 		if (rc && rc != -EOPNOTSUPP)
+ 			ata_link_printk(link, KERN_WARNING, "failed to resume "
+@@ -7172,7 +7178,7 @@ int ata_host_register(struct ata_host *host, struct scsi_host_template *sht)
+ 			ehi->probe_mask =
+ 				(1 << ata_link_max_devices(&ap->link)) - 1;
+ 			ehi->action |= ATA_EH_SOFTRESET;
+-			ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
++			ehi->flags |= ATA_EHI_NO_AUTOPSY/* | ATA_EHI_QUIET*/;
+ 
+ 			ap->pflags &= ~ATA_PFLAG_INITIALIZING;
+ 			ap->pflags |= ATA_PFLAG_LOADING;
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index a583032..6514157 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -2191,6 +2191,7 @@ int ata_eh_reset(struct ata_link *link, int classify,
+ 	}
+ 
+ 	/* prereset() might have modified ehc->i.action */
++	ehc->i.action |= ATA_EH_HARDRESET;
+ 	if (ehc->i.action & ATA_EH_HARDRESET)
+ 		reset = hardreset;
+ 	else if (ehc->i.action & ATA_EH_SOFTRESET)
+diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
+
+--------------010902090507090508060605--
