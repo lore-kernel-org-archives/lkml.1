@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbYDOTQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbYDOTUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbYDOTQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 15:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYDOTQG
+	id S1761697AbYDOTUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 15:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYDOTU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 15:16:06 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:29878 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754742AbYDOTQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 15:16:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=shZEZxJCV67HZm5qkmKJpSFqKJS/E0mVOxndwDxsjWj64b8Q14kEaIRFPh2+8CteBEaaLvAxXmrkFuse7p+NPX5KUrPTis+65iyr9XsImTPGBz+htbOddH6hKp0bh5hka0gj94X4hVKtIKOE05Zv0++3Kp2U6OMEvpjRF67vGOM=
-Subject: [PATCH] crypto: padlock-aes.c replace private copy of bit rotation
-	routines
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 12:16:03 -0700
-Message-Id: <1208286963.11920.90.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 15:20:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:54647 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753211AbYDOTU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 15:20:28 -0400
+Date: Tue, 15 Apr 2008 12:13:33 -0700
+From: Greg KH <gregkh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: pci: add to global list before sysfs?
+Message-ID: <20080415191333.GA28671@suse.de>
+References: <20080404191350.7f0183a5@mjolnir.drzeus.cx> <20080404210132.GA14418@suse.de> <1208122538.6958.57.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208122538.6958.57.camel@pasglop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the generic kernel implementation of the bit-rotation routines.
-The generic routines to not shift by mod 32, but all callers in the
-file pass constant values less than 32 making this a non-issue.
+On Mon, Apr 14, 2008 at 07:35:38AM +1000, Benjamin Herrenschmidt wrote:
+> 
+> On Fri, 2008-04-04 at 14:01 -0700, Greg KH wrote:
+> > As I mention above, the "global list" is now gone, so it's going to be
+> > a
+> > bit harder to do this.  We now only keep one list of all PCI devices,
+> > and that is with the driver core mechanisms as the duplicate list was
+> > just sitting there doing nothing for the past 4 years.
+> > 
+> > So is the problem that your driver need to bind to multiple pci
+> > devices
+> > at the same time in order to work properly?
+> > 
+> > Or is this just really broken hardware?
+> 
+> Haven't had a chance to look at your changes yet, but I have memories of
+> being pretty happy with having that 2 step mechanism in PCI where the
+> driver core would only see the devices after fixup.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/crypto/padlock-aes.c |   19 +++----------------
- 1 files changed, 3 insertions(+), 16 deletions(-)
+No, that is left alone, I just dropped the duplicate device list that
+was linked within the PCI devices themselves.  The only user of it was
+the "reorder the PCI devices" code for some Dell machines, and that was
+just doing it to be safe (it was also reordering the driver core list of
+PCI devices, which is what really mattered.)
 
-diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
-index 2f3ad3f..84adbc0 100644
---- a/drivers/crypto/padlock-aes.c
-+++ b/drivers/crypto/padlock-aes.c
-@@ -45,6 +45,7 @@
- 
- #include <crypto/algapi.h>
- #include <crypto/aes.h>
-+#include <linux/bitops.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/types.h>
-@@ -86,22 +87,8 @@ struct aes_ctx {
- 
- /* ====== Key management routines ====== */
- 
--static inline uint32_t
--generic_rotr32 (const uint32_t x, const unsigned bits)
--{
--	const unsigned n = bits % 32;
--	return (x >> n) | (x << (32 - n));
--}
--
--static inline uint32_t
--generic_rotl32 (const uint32_t x, const unsigned bits)
--{
--	const unsigned n = bits % 32;
--	return (x << n) | (x >> (32 - n));
--}
--
--#define rotl generic_rotl32
--#define rotr generic_rotr32
-+#define rotl rol32
-+#define rotr ror32
- 
- /*
-  * #define byte(x, nr) ((unsigned char)((x) >> (nr*8))) 
--- 
-1.5.5.144.g3e42
+So everything should still be fine.
 
+thanks,
 
-
+greg k-h
