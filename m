@@ -1,90 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYDOWza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYDOXEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbYDOWza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 18:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYDOWzT
+	id S1754149AbYDOXEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 19:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYDOXEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 18:55:19 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:58640 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbYDOWzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 18:55:18 -0400
-Date: Tue, 15 Apr 2008 19:54:11 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Soeren Sonnenburg <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Lord <lkml@rtr.ca>
-Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot
-	-dual-core Sony Vaio
-Message-ID: <20080415225411.GA10041@localhost.ift.unesp.br>
-Mail-Followup-To: Adrian Bunk <bunk@stusta.de>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Soeren Sonnenburg <kernel@nn7.de>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Mark Lord <lkml@rtr.ca>
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <200804152233.39079.rjw@sisk.pl> <20080415204500.GD1677@cs181133002.pp.htv.fi> <200804152303.45320.rjw@sisk.pl> <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com> <1208294294.7851.109.camel@localhost> <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com> <20080415212949.GG1677@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080415212949.GG1677@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 15 Apr 2008 19:04:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60111 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752401AbYDOXEd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 19:04:33 -0400
+Date: Tue, 15 Apr 2008 16:03:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com,
+       axboe@kernel.dk, andmike@linux.vnet.ibm.com
+Subject: Re: bdev size not updated correctly after underlying device is
+ resized
+Message-Id: <20080415160314.11e9b7e1.akpm@linux-foundation.org>
+In-Reply-To: <1207783782.31821.80.camel@bluto.andrew>
+References: <1207783782.31821.80.camel@bluto.andrew>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 16.Apr'08 at  0:29:49 +0300, Adrian Bunk wrote:
-> On Tue, Apr 15, 2008 at 02:24:35PM -0700, Pallipadi, Venkatesh wrote:
-> >...
-> > >> Both of them probabilistically hang early in the boot.
-> > >> On both !CPUIDLE and hpet=disable seems to be working around the
-> > >> problem.
-> > >> Both are Core 2 Duo based with 64 bit kernel.
-> > >> 
-> > >> One difference I saw was that #10377 fails on battery. That may be
-> > >> because when on battery CPUs may be running at lower freq during boot
-> > >> and that is probably helping this problem in terms of timing.
-> > >
-> > >FWIW, this macbook pro1,1 has only a core 1 duo, so x86 == 32bit...
-> > >Soeren
-> > 
-> > Sorry. When I said Core 2, I was referring to Carlos and his updates on
-> > #10117.
+On Wed, 09 Apr 2008 17:29:42 -0600
+Andrew Patterson <andrew.patterson@hp.com> wrote:
+
+> I ran into this problem while trying to resize a mounted file-system
+> after growing/shrinking the size of the underlying block device (in this
+> case, a fibre-channel LUN). The kernel recognizes the device size change
+> when revalidate_disk() is called, but the bdev->bd_inode->i_size will
+> not be updated for any new openers if there are already openers of the
+> device.  In my case I was using LVM thusly:
 > 
-> This bug tracks Soerens problem.
+>      1. Create a volume group with a physical volume on something that
+>         can be resized (usually some sort of SCSI RAID device).
+>      2. Create a logical volume on that VG.  This holds the underlying
+>         PV block device open as long at the LV is activated
+>      3. Run blockdev --getsize <block dev>
+>      4. Resize the underlying block device.
+>      5. Get the OS to notice the change.  For fibre-channel LUN's you
+>         can use /sys/class/scsi_device/<device>/device/rescan.
+>      6. Size is correctly changed in /dev/block/<device>/size
+>      7. Run blockdev --getsize again (no change in size reported)
+>      8. Inactivate the LV (there are now no longer any openers on the
+>         block device)
+>      9. Run blockdev --getsize again.  Size is now correct as there are
+>         no openers on the device when blockdev is run.
+> 
+> This problem has been reported before at:
+> 
+>   http://lkml.org/lkml/2007/7/3/83
+> 
+> The following patch is a suggestion on how to fix this problem.  It is
+> not a complete solution as it is probably a bad thing to change other
+> openers device size without at least protecting the change with a lock.
+> And user-apps and other sub-systems might not like the reported device
+> size being changed underneath them. It looks like the following
+> sub-systems access this value:
+> 
+> ndb
+> dm
+> md
+> affs
+> hfs
+> jfs
+> reiserfs
+> udf
+> 
+> 
+> Subject: [PATCH] Reset bdev size regardless of other openers.
+> 
+> A block device may be resized while online.  If the revalidate_disk
+> routine is called after the resize, the gendisk->capacity value is
+> updated for the device.  However, the bdev->bd_inode->i_size is not
+> updated when the block device is opened if there are any other openers
+> on the device.  This means that apps like LVM are unlikely to see the
+> size change as they tend to keep their block devices open.  There is a
+> discussion of this problem at:
+> 
+>   http://lkml.org/lkml/2007/7/3/83
+> 
+> This patch changes block_dev.c:do_open() to call bd_set_size()
+> regardless if there are other openers on the device.  It should not be
+> applied in its existing state as changing i_size should be protected by
+> a lock. Also, there needs to be some analysis on the effects of changing
+> the device size underneath an app.
+> 
+> Andrew Patterson
+> 
+> Subject: [PATCH] Reset bdev size regardless of other openers.
+> 
+> A block device may be resized while online.  If the revalidate_disk
+> routine is called after the resize, the gendisk->capacity value is
+> updated for the device.  However, the bdev->bd_inode->i_size is not
+> updated when the block device is opened if there are any other openers
+> on the device.  This means that apps like LVM are unlikely to see the
+> size change as they tend to keep their block devices open.  There is a
+> discussion of this problem at:
+> 
+>   http://lkml.org/lkml/2007/7/3/83
+> 
+> This patch changes block_dev.c:do_open() to call bd_set_size()
+> regardless if there are other openers on the device.  It should not be
+> applied in its existing state as changing i_size should be protected by
+> a lock. Also, there needs to be some analysis on the effects of changing
+> the device size underneath an app.
 
-Ok, sorry then. I know something odd happened with bug #10117 as
-you so aggressively pointed out. 
+hm, tricky.
 
-In my defense I must say that I was about to report the hang with
-"ACPI: Processor [CPU1] (supports 8 throttling states)" to lkml 
-when I read Soeren's post in this list.
-Then I did _not_ send the "me too" email and kept on following
-what was going on.
+I don't know what problems a change like this might cause - probably few,
+given the rarity and slowness of block device resizing.
 
-So when I read that Soeren's bug was closed I wrote in the
-bugzilla that I was still seeing the same issue, and that
-I wanted to reopen it. I should not have done that and it
-won't happen again.
+Presumably increasing the device size will cause les problems than
+decreasing it would.  Do we even support device shrinking?
 
-> And the fact that Carlos and Mark discuss their different problems in 
-> the same bug is just plain wrong.
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index 7d822fa..d13a4e5 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+>  				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
+>  				if (ret)
+>  					goto out;
+> +				/* device may have been resized with revalidate_disk */
+> +				if (!part)
+> +					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
+>  			}
+>  			if (bdev->bd_invalidated)
+>  				rescan_partitions(bdev->bd_disk, bdev);
 
-You are saying it is a different problem, but it may be the same.
-Sometimes I had to reboot 30+ times before the hang could happen!
-And the last messages were _exactly_ the same.
-
-But let's not argue about that, I just wanted to help by pointing
-out that maybe the bug was being closed too early. In trying to
-help I just caused more confusion, for which I appologize.
-
-> We must learn to more aggressively point people at reporting their 
-> issues in own bugs, instead of hijacking an already existing similar
-> looking bug (that might be for a different issue).
-
-I understand now, but you made me feel bad about it.
+I'd have thought that an appropriate way to fix all this would be to
+perform the i_size update between freeze_bdev() and thaw_bdev(), when the
+fs is quiesced.  But it's not really in my comfort zone.
 
 
