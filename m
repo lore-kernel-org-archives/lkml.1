@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYDOHrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbYDOHrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758146AbYDOHrB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYDOHqv
+	id S1760120AbYDOHrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbYDOHrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:46:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51288 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752983AbYDOHqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:46:50 -0400
-Date: Tue, 15 Apr 2008 09:46:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Erik Bosman <ebn310@few.vu.nl>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrea Arcangeli <andrea@cpushare.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
-Message-ID: <20080415074630.GA16721@elte.hu>
-References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl> <20080415002918.6a3b40b6.akpm@linux-foundation.org>
+	Tue, 15 Apr 2008 03:47:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50552 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755969AbYDOHq6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 03:46:58 -0400
+Message-ID: <48045D6C.1010508@firstfloor.org>
+Date: Tue, 15 Apr 2008 09:46:52 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080415002918.6a3b40b6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Johannes Weiner <hannes@saeurebad.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 2/2] bootmem: Node-setup agnostic free_bootmem()
+References: <20080412223319.372887160@symbol.fehenstaub.lan>	<20080412225850.704752615@symbol.fehenstaub.lan>	<87lk3hwv52.fsf@basil.nowhere.org> <20080414232308.ffa4e269.akpm@linux-foundation.org>
+In-Reply-To: <20080414232308.ffa4e269.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > --- a/arch/x86/kernel/process_32.c
-> > +++ b/arch/x86/kernel/process_32.c
-> > @@ -36,6 +36,7 @@
-> >  #include <linux/personality.h>
-> >  #include <linux/tick.h>
-> >  #include <linux/percpu.h>
-> > +#include <linux/prctl.h>
-> > 
-> >  #include <asm/uaccess.h>
-> >  #include <asm/pgtable.h>
-> > @@ -528,11 +529,12 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
-> >  }
-> >  EXPORT_SYMBOL_GPL(start_thread);
-> > 
-> > -#ifdef CONFIG_SECCOMP
-> > +#ifdef CONFIG_DISABLE_TSC
-> >  static void hard_disable_TSC(void)
-> >  {
-> >  	write_cr4(read_cr4() | X86_CR4_TSD);
-> >  }
+Andrew Morton wrote:
+> On Sun, 13 Apr 2008 18:56:57 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Won't this break this build if CONFIG_DISABLE_TSC=n and 
-> CONFIG_SECCOMP=y?
+>> Johannes Weiner <hannes@saeurebad.de> writes:
+>>
+>>> Make free_bootmem() look up the node holding the specified address
+>>> range which lets it work transparently on single-node and multi-node
+>>> configurations.
+>> Acked-by: Andi Kleen <andi@firstfloor.org>
+>>
+>> This is far better than the original change it replaces and which 
+>> I also objected to in review.
+>>
+> 
+> So...  do we think these two patches are sufficiently safe and important for
+> 2.6.25?
 
-it would break - but there was an update patch to this 2/3 patch which 
-was the one i picked up into x86.git yesterday and which worked fine in 
-500 overnight randconfig build and bootup tests.
+It's only strictly needed for .26 I think for some (also slightly
+dubious) changes queued in git-x86.
 
-	Ingo
+-Andi
+
+
