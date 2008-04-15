@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbYDOIPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYDOIQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760726AbYDOIPs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 04:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYDOIPg
+	id S1759453AbYDOIQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 04:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYDOIQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 04:15:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34027 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754404AbYDOIPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 04:15:35 -0400
-Date: Tue, 15 Apr 2008 10:15:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: yhlu.kernel@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64/mm: check and print vmemmap allocation
-	continuous -fix
-Message-ID: <20080415081516.GA19452@elte.hu>
-References: <200804120119.24868.yhlu.kernel@gmail.com> <20080414235348.a5ddffee.akpm@linux-foundation.org> <200804150111.21990.yhlu.kernel@gmail.com>
+	Tue, 15 Apr 2008 04:16:27 -0400
+Received: from [88.44.60.11] ([88.44.60.11]:4434 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754675AbYDOIQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 04:16:25 -0400
+To: David Miller <davem@davemloft.net>
+Cc: vgusev@openvz.org, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][NET] Fix never pruned tcp out-of-order queue
+From: Andi Kleen <andi@firstfloor.org>
+References: <200804142121.53860.vgusev@openvz.org>
+	<87mynvtuoj.fsf@basil.nowhere.org>
+	<20080415.010131.156668601.davem@davemloft.net>
+Date: Tue, 15 Apr 2008 10:14:56 +0200
+In-Reply-To: <20080415.010131.156668601.davem@davemloft.net> (David Miller's message of "Tue, 15 Apr 2008 01:01:31 -0700 (PDT)")
+Message-ID: <87iqyjttz3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804150111.21990.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2250]
+X-OriginalArrivalTime: 15 Apr 2008 08:08:10.0349 (UTC) FILETIME=[D83F11D0:01C89ECF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller <davem@davemloft.net> writes:
 
-thanks Yinghai, applied.
+> From: Andi Kleen <andi@firstfloor.org>
+> Date: Tue, 15 Apr 2008 09:59:40 +0200
+>
+>> Vitaliy Gusev <vgusev@openvz.org> writes:
+>> 
+>> > Hello!
+>> >
+>> > tcp_prune_queue() doesn't prune an out-of-order queue at all.
+>> 
+>> Why are you saying this? It has code to prune the ooo queue. You're even
+>> moving it in your patch.
+>> 
+>> You're saying that the code doesn't work? If yes why? 
+>
+> There are inappropriate guards there, and it didn't get invoked
+> from another important code path.
+>
+> That's what his change is fixing.
 
-	Ingo
+Perhaps I'm dense, but I don't see the inappropiate guards. The 
+guards are pretty much the same as before.
+
+The main difference seems to be that
+sk_rmem_schedule/__sk_mem_schedule is called more often, but it is 
+unclear how this affects the ooo pruning which only checks
+the queue length anyways.
+
+-Andi
+
