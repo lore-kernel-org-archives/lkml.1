@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYDOHTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYDOHV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbYDOHTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 03:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYDOHTa
+	id S1756602AbYDOHV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 03:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYDOHVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 03:19:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44845 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753414AbYDOHT2 (ORCPT
+	Tue, 15 Apr 2008 03:21:21 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:59396 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbYDOHVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 03:19:28 -0400
-Date: Tue, 15 Apr 2008 00:18:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Tejun Heo" <htejun@gmail.com>, "Mark Lord" <lkml@rtr.ca>,
-       "Greg KH" <gregkh@suse.de>, "Jens Axboe" <axboe@kernel.dk>,
-       "Jeff Garzik" <jgarzik@pobox.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-Id: <20080415001828.b0c9ed64.akpm@linux-foundation.org>
-In-Reply-To: <e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>
-References: <47E875AD.1000901@rtr.ca>
-	<47E88A13.70808@zytor.com>
-	<47E90019.3050006@rtr.ca>
-	<47E90458.7030801@zytor.com>
-	<47E9383F.3050908@rtr.ca>
-	<20080325192515.GA24234@suse.de>
-	<47E99A02.7040903@rtr.ca>
-	<47E99EBE.7010708@gmail.com>
-	<3ae72650803271229h6e188de1t81ccfb64e5d3a214@mail.gmail.com>
-	<47EBF7D0.6000901@zytor.com>
-	<e9c3a7c20804111625w68b21b24p6fbd85864713d62f@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Apr 2008 03:21:20 -0400
+Date: Tue, 15 Apr 2008 09:21:18 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk, alan@redhat.com, borntraeger@de.ibm.com,
+       peter.oberparleiter@de.ibm.com, schwidefsky@de.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: + s390-tty-prepare-for-put_char-to-return-success-fail.patch
+	added to -mm tree
+Message-ID: <20080415072117.GA4177@osiris.boeblingen.de.ibm.com>
+References: <200804150204.m3F24GdU005600@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804150204.m3F24GdU005600@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Apr 2008 16:25:32 -0700 "Dan Williams" <dan.j.williams@intel.com> wrote:
+>   * NOTE: include/linux/tty_driver.h specifies that a character should be
+>   * ignored if there is no room in the queue. This driver implements a different
+>   * semantic in that it will block when there is no more room left.
+> + *
+> + * FIXME: putchar can currently be called from BH and other non blocking
+> + * handlers so  this semantic isn't a good idea.
+>   */
+> -static void
+> +static int
+>  sclp_vt220_put_char(struct tty_struct *tty, unsigned char ch)
+>  {
+>  	__sclp_vt220_write(&ch, 1, 0, 0, 1);
+> +	return 1;
 
-> >  It doesn't really seem to be to belong under class at all.  I would suggest
-> > /sys/dev/char/ and /sys/dev/block/, for char and block respectively.
-> >
-> 
-> This thread fizzled out without a patch... here goes:
-> 
-> ...
->
-> sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
-
-Crickets are chirping and I can't remember what the conclusion to all this
-was.  In fact the thread was more than ten-deep so I probably fell asleep.
-
-I queued it up so that others cannot do the same ;)
+Uh, oh... the comment above used to mean "block if in schedulable context or
+busy wait otherwise". Figuring out which context we were in was done via
+in_atomic(), which was broken on !SMP anyway, so that had to go.
+So the last parameter for __sclp_vt220_write is now an indicator if scheduling
+is allowed or not (1 means yes). Somebody told me that the put_char routine
+will only be called from schedulable context, which now doesn't seem to be
+true?!
+For the console functions we pass indeed 0 to __sclp_vt220_write since printk
+may be called within any context. Is that also true for the tty put_char
+routine?
