@@ -1,128 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765050AbYDOOBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765301AbYDOOBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765050AbYDOOBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 10:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbYDOOB3
+	id S1765301AbYDOOBw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 10:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765029AbYDOOBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 10:01:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58782 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752883AbYDOOB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 10:01:28 -0400
-Date: Tue, 15 Apr 2008 09:01:27 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] reduce calls to hrtimer_get_softirq_time
-Message-ID: <20080415140127.GA32476@sgi.com>
+	Tue, 15 Apr 2008 10:01:37 -0400
+Received: from saeurebad.de ([85.214.36.134]:57306 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764829AbYDOOBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 10:01:35 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, ak@suse.de, clameter@sgi.com,
+       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com,
+       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: + bootmem-node-setup-agnostic-free_bootmem.patch added to -mm tree
+References: <200804150623.m3F6NInZ014509@imap1.linux-foundation.org>
+	<20080415071120.GB15499@elte.hu> <87hce3i8mq.fsf@saeurebad.de>
+	<4804B091.8010406@tiscali.nl>
+Date: Tue, 15 Apr 2008 16:01:21 +0200
+In-Reply-To: <4804B091.8010406@tiscali.nl> (Roel Kluin's message of "Tue, 15
+	Apr 2008 15:41:37 +0200")
+Message-ID: <87d4ori5e6.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that hrtimer_run_queues() is calling hrtimer_get_softirq_time()
-more often than it needs to.  This can cause frequent contention on
-systems with large numbers of processors/cores.
+Hi,
 
-With this patch, hrtimer_run_queues only calls hrtimer_get_softirq_time()
-if there is a pending timer in one of the hrtimer bases, and only once.
+Roel Kluin <12o3l@tiscali.nl> writes:
 
-This also combines hrtimer_run_queues() and the inline run_hrtimer_queue()
-into one function.
+> Johannes Weiner wrote:
+>
+>> How about the following (untested, even uncompiled, but you should get
+>> the idea) proposal which would replace the patch discussed in this
+>> thread:
+>> 
+>> --- tree-linus.orig/mm/bootmem.c
+>> +++ tree-linus/mm/bootmem.c
+>> @@ -421,7 +421,25 @@ int __init reserve_bootmem(unsigned long
+>>  
+>>  void __init free_bootmem(unsigned long addr, unsigned long size)
+>>  {
+>> -	free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
+>> +	bootmem_data_t *bdata;
+>> +
+>> +	list_for_each_entry(bdata, &bdata_list, list) {
+>> +		unsigned long remainder = 0;
+>> +
+>> +		if (addr < bdata->node_boot_start)
+>> +			continue;
+>> +
+>> +		if (PFN_DOWN(addr + size) > bdata->node_low_pfn)
+>> +			remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
+>> +
+>> +		size -= PFN_PHYS(remainder);
+>> +		free_bootmem_core(bdata, addr, size)
+> Missing semicolon here -----------------------------^
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Yes.  Intentional compiler trap for untested code *cough*
 
-Index: linux/kernel/hrtimer.c
-===================================================================
---- linux.orig/kernel/hrtimer.c	2008-04-14 14:03:08.000000000 -0500
-+++ linux/kernel/hrtimer.c	2008-04-14 15:35:19.594941220 -0500
-@@ -1238,51 +1238,52 @@ void hrtimer_run_pending(void)
- /*
-  * Called from hardirq context every jiffy
-  */
--static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
--				     int index)
-+void hrtimer_run_queues(void)
- {
- 	struct rb_node *node;
--	struct hrtimer_clock_base *base = &cpu_base->clock_base[index];
-+	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
-+	struct hrtimer_clock_base *base;
-+	int index;
-+	int gst = 1;
- 
--	if (!base->first)
-+	if (hrtimer_hres_active())
- 		return;
- 
--	if (base->get_softirq_time)
--		base->softirq_time = base->get_softirq_time();
-+	for (index = 0; index < HRTIMER_MAX_CLOCK_BASES; index++) {
-+		base = &cpu_base->clock_base[index];
- 
--	spin_lock(&cpu_base->lock);
--
--	while ((node = base->first)) {
--		struct hrtimer *timer;
--
--		timer = rb_entry(node, struct hrtimer, node);
--		if (base->softirq_time.tv64 <= timer->expires.tv64)
--			break;
--
--		if (timer->cb_mode == HRTIMER_CB_SOFTIRQ) {
--			__remove_hrtimer(timer, base, HRTIMER_STATE_PENDING, 0);
--			list_add_tail(&timer->cb_entry,
--					&base->cpu_base->cb_pending);
-+		if (!base->first)
- 			continue;
-+
-+		if (gst) {
-+			hrtimer_get_softirq_time(cpu_base);
-+			gst = 0;
- 		}
- 
--		__run_hrtimer(timer);
--	}
--	spin_unlock(&cpu_base->lock);
--}
-+		if (base->get_softirq_time)
-+			base->softirq_time = base->get_softirq_time();
- 
--void hrtimer_run_queues(void)
--{
--	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
--	int i;
-+		spin_lock(&cpu_base->lock);
- 
--	if (hrtimer_hres_active())
--		return;
-+		while ((node = base->first)) {
-+			struct hrtimer *timer;
- 
--	hrtimer_get_softirq_time(cpu_base);
-+			timer = rb_entry(node, struct hrtimer, node);
-+			if (base->softirq_time.tv64 <= timer->expires.tv64)
-+				break;
-+
-+			if (timer->cb_mode == HRTIMER_CB_SOFTIRQ) {
-+				__remove_hrtimer(timer, base,
-+					HRTIMER_STATE_PENDING, 0);
-+				list_add_tail(&timer->cb_entry,
-+					&base->cpu_base->cb_pending);
-+				continue;
-+			}
- 
--	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++)
--		run_hrtimer_queue(cpu_base, i);
-+			__run_hrtimer(timer);
-+		}
-+		spin_unlock(&cpu_base->lock);
-+	}
- }
- 
- /*
+>> +
+>> +		if (!remainder)
+>> +			break;
+>> +
+>> +		addr = PFN_PHYS(bdata->node_low_pfn + 1);
+>> +	}
+>>  }
+>
+> This should do the same as (untested):
+>
+> void __init free_bootmem(unsigned long addr, unsigned long size)
+> {
+> 	bootmem_data_t *bdata;
+>
+> 	list_for_each_entry(bdata, &bdata_list, list) {
+> 		unsigned long remainder;
+                ^^^^^^^^
+>
+> 		if (addr < bdata->node_boot_start)
+> 			continue;
+>
+> 		remainder = PFN_DOWN(addr + size) - bdata->node_low_pfn;
+>
+> 		if (remainder <= 0) {
+
+Boom.
+
+> 			free_bootmem_core(bdata, addr, size);
+> 			return;
+> 		}
+>
+> 		size -= PFN_PHYS(remainder);
+> 		free_bootmem_core(bdata, addr, size);
+> 		addr = PFN_PHYS(bdata->node_low_pfn + 1);
+> 	}
+> }
+
+	Hannes
