@@ -1,226 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbYDOAHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYDOAKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbYDOAHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 20:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYDOAHk
+	id S1762189AbYDOAKq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 20:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYDOAKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 20:07:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33981 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752286AbYDOAHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 20:07:39 -0400
-Date: Mon, 14 Apr 2008 17:07:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, serue@us.ibm.com, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
-Message-Id: <20080414170709.736819b6.akpm@linux-foundation.org>
-In-Reply-To: <48036677.3010807@linux.vnet.ibm.com>
-References: <48036677.3010807@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Apr 2008 20:10:36 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:3588 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755222AbYDOAKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 20:10:35 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Date: Mon, 14 Apr 2008 17:12:07 -0700
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Tony Battersby" <tonyb@cybernetics.com>
+cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Michael Chan" <mchan@broadcom.com>,
+       "David Miller" <davem@davemloft.net>, netdev <netdev@vger.kernel.org>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+Message-ID: <20080415001207.GA11852@localdomain>
+References: <47BA0984.2070306@cybernetics.com>
+ <1203381120.13495.78.camel@dell>
+ <20080218.163554.74130592.davem@davemloft.net>
+ <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com>
+ <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com>
+ <20080220034515.GC22703@gondor.apana.org.au>
+ <47BC44E2.9060301@cybernetics.com>
+MIME-Version: 1.0
+In-Reply-To: <47BC44E2.9060301@cybernetics.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 15 Apr 2008 00:10:11.0565 (UTC)
+ FILETIME=[125BE9D0:01C89E8D]
+X-WSS-ID: 641D2DE63M89592086-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008 19:43:11 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Hi Tony.  Sorry for the radio silence.
 
-> 1. Add mm->owner change callbacks using cgroups
+Michael and I have discussed this problem a bit.  Another possibility is
+that the chip may be having difficulty with non-dword aligned TX buffers.
+Since we already know the RX side has the same problem, it isn't so
+far-fetched to think that perhaps it can affect the TX side too.  Can
+you give the following patch a try and see if the corruption still
+happens?
+
+
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 96043c5..810c711 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -4135,11 +4135,20 @@ static int tigon3_dma_hwbug_workaround(struct tg3 *tp, struct sk_buff *skb,
+ 				       u32 last_plus_one, u32 *start,
+ 				       u32 base_flags, u32 mss)
+ {
+-	struct sk_buff *new_skb = skb_copy(skb, GFP_ATOMIC);
++	struct sk_buff *new_skb;
+ 	dma_addr_t new_addr = 0;
+ 	u32 entry = *start;
+ 	int i, ret = 0;
+ 
++	if (GET_ASIC_REV(tp->pci_chip_rev_id) != ASIC_REV_5701)
++		new_skb = skb_copy(skb, GFP_ATOMIC);
++	else {
++		int more_headroom = 4 - (skb->mac_header & 3);
++
++		new_skb = skb_copy_expand(skb, skb_headroom(skb) + more_headroom,
++					  skb_tailroom(skb), GFP_ATOMIC);
++	}
++
+ 	if (!new_skb) {
+ 		ret = -1;
+ 	} else {
+@@ -4465,6 +4474,10 @@ static int tg3_start_xmit_dma_bug(struct sk_buff *skb, struct net_device *dev)
+ 	if (tg3_4g_overflow_test(mapping, len))
+ 		would_hit_hwbug = 1;
+ 
++	/* Force the 5701 into the double copy path. */
++	if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701)
++		would_hit_hwbug = 1;
++
+ 	tg3_set_txd(tp, entry, mapping, len, base_flags,
+ 		    (skb_shinfo(skb)->nr_frags == 0) | (mss << 1));
+ 
+
+
+On Wed, Feb 20, 2008 at 10:18:58AM -0500, Tony Battersby wrote:
+> Herbert Xu wrote:
+> > On Tue, Feb 19, 2008 at 05:14:26PM -0500, Tony Battersby wrote:
+> >   
+> >> Update: when I revert Herbert's patch in addition to applying your
+> >> patch, the iSCSI performance goes back up to 115 MB/s again in both
+> >> directions.  So it looks like turning off SG for TX didn't itself cause
+> >> the performance drop, but rather that the performance drop is just
+> >> another manifestation of whatever bug is causing the data corruption.
+> >>     
+> >
+> > Interesting.  So the workload that regressed is mostly RX with a
+> > little TX traffic? Can you try to reproduce this with something
+> > like netperf to eliminate other variables?
+> >
+> > This is all very puzzling since the patch in question shouldn't
+> > change an RX load at all.
+> >
+> > Thanks,
+> >   
+> We have established that the slowdown was caused by TCP checksum errors
+> and retransmits.  I assume that the slowdown in my test was due to the
+> light TX rather than the heavy RX.  I am no TCP protocol expert, but
+> perhaps heavy TX (such as iperf) might not be affected as much because
+> the wire stays busy while waiting for the retransmit, whereas with my
+> light TX iSCSI load, the wire goes idle while waiting for the retransmit
+> because the iSCSI state machine is stalled.
 > 
-> This patch removes the mem_cgroup member from mm_struct and instead adds
-> an owner. This approach was suggested by Paul Menage. The advantage of
-> this approach is that, once the mm->owner is known, using the subsystem
-> id, the cgroup can be determined. It also allows several control groups
-> that are virtually grouped by mm_struct, to exist independent of the memory
-> controller i.e., without adding mem_cgroup's for each controller,
-> to mm_struct.
+> Tony
 > 
-> A new config option CONFIG_MM_OWNER is added and the memory resource
-> controller selects this config option.
-> 
-> This patch also adds cgroup callbacks to notify subsystems when mm->owner
-> changes. The mm_cgroup_changed callback is called with the task_lock()
-> of the new task held and is called just prior to changing the mm->owner.
-> 
-> I am indebted to Paul Menage for the several reviews of this patchset
-> and helping me make it lighter and simpler.
-> 
-> This patch was tested on a powerpc box, it was compiled with both the
-> MM_OWNER config turned on and off.
-> 
-> After the thread group leader exits, it's moved to init_css_state by
-> cgroup_exit(), thus all future charges from runnings threads would
-> be redirected to the init_css_set's subsystem.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  fs/exec.c                  |    1
->  include/linux/cgroup.h     |   15 ++++++++
->  include/linux/memcontrol.h |   16 +-------
->  include/linux/mm_types.h   |    5 +-
->  include/linux/sched.h      |   13 +++++++
->  init/Kconfig               |    7 +++
->  init/main.c                |    1
->  kernel/cgroup.c            |   30 ++++++++++++++++
->  kernel/exit.c              |   83 +++++++++++++++++++++++++++++++++++++++++++++
->  kernel/fork.c              |   11 ++++-
->  mm/memcontrol.c            |   24 +------------
->  11 files changed, 167 insertions(+), 39 deletions(-)
-> 
-> diff -puN fs/exec.c~memory-controller-add-mm-owner fs/exec.c
-> --- linux-2.6.25-rc8/fs/exec.c~memory-controller-add-mm-owner	2008-04-08
-> 17:23:20.000000000 +0530
-> +++ linux-2.6.25-rc8-balbir/fs/exec.c	2008-04-08 17:23:20.000000000 +0530
-
-Rather a lot of wordwrapping here, but the patch applied OK nonetheless. 
-This means that all the code was within 80 columns ;)
-
-> diff -puN kernel/cgroup.c~memory-controller-add-mm-owner kernel/cgroup.c
-> --- linux-2.6.25-rc8/kernel/cgroup.c~memory-controller-add-mm-owner	2008-04-08
-> 17:23:20.000000000 +0530
-> +++ linux-2.6.25-rc8-balbir/kernel/cgroup.c	2008-04-08 17:29:45.000000000 +0530
-> @@ -118,6 +118,7 @@ static int root_count;
->   * be called.
->   */
->  static int need_forkexit_callback;
-> +static int need_mm_owner_callback __read_mostly;
-> 
->  /* convenient tests for these bits */
->  inline int cgroup_is_removed(const struct cgroup *cgrp)
-> @@ -2485,6 +2486,7 @@ static void __init cgroup_init_subsys(st
->  	}
-> 
->  	need_forkexit_callback |= ss->fork || ss->exit;
-> +	need_mm_owner_callback |= !!ss->mm_owner_changed;
-
-I assume this trick is here to minimise runtime overhead on systems which
-never use cgroups?
-
-It'd be nice if the changelog were to describe what that overhead is.
-
-Then I'd know whether to ask whether we should look at clearing
-need_mm_owner_callback when the system stops using cgroups.  Somehow.
-
-> 
-> +#ifdef CONFIG_MM_OWNER
-> +/*
-> + * Task p is exiting and it owned mm, lets find a new owner for it
-
-"let's"
-
-> + */
-> +static inline int
-> +mm_need_new_owner(struct mm_struct *mm, struct task_struct *p)
-> +{
-> +	/*
-> +	 * If there are other users of the mm and the owner (us) is exiting
-> +	 * we need to find a new owner to take on the responsibility.
-> +	 */
-
-But this comment rather duplicates the above one.
-
-> +	if (!mm)
-> +		return 0;
-> +	if (atomic_read(&mm->mm_users) <= 1)
-> +		return 0;
-> +	if (mm->owner != p)
-> +		return 0;
-> +	return 1;
-> +}
-> +
-> +void mm_update_next_owner(struct mm_struct *mm)
-> +{
-> +	struct task_struct *c, *g, *p = current;
-> +
-> +retry:
-> +	if (!mm_need_new_owner(mm, p))
-> +		return;
-> +
-> +	read_lock(&tasklist_lock);
-> +	/*
-> +	 * Search in the children
-> +	 */
-> +	list_for_each_entry(c, &p->children, sibling) {
-> +		if (c->mm == mm)
-> +			goto assign_new_owner;
-> +	}
-> +
-> +	/*
-> +	 * Search in the siblings
-> +	 */
-> +	list_for_each_entry(c, &p->parent->children, sibling) {
-> +		if (c->mm == mm)
-> +			goto assign_new_owner;
-> +	}
-> +
-> +	/*
-> +	 * Search through everything else. We should not get
-> +	 * here often
-> +	 */
-> +	do_each_thread(g, c) {
-> +		if (c->mm == mm)
-> +			goto assign_new_owner;
-> +	} while_each_thread(g, c);
-> +
-> +	read_unlock(&tasklist_lock);
-
-Potentially-long tasklist_lock hold times are a concern.  I don't suppose
-rcu can save us?
-
-Some additional commentary fleshing out "We should not get here often"
-might set minds at ease.  How not-often?  Under which circumstances?
-
-> +	return;
-> +
-> +assign_new_owner:
-> +	BUG_ON(c == p);
-> +	get_task_struct(c);
-> +	/*
-> +	 * The task_lock protects c->mm from changing.
-> +	 * We always want mm->owner->mm == mm
-> +	 */
-> +	task_lock(c);
-> +	/*
-> +	 * Delay read_unlock() till we have the task_lock()
-> +	 * to ensure that c does not slip away underneath us
-> +	 */
-> +	read_unlock(&tasklist_lock);
-> +	if (c->mm != mm) {
-> +		task_unlock(c);
-> +		put_task_struct(c);
-> +		goto retry;
-> +	}
-> +	cgroup_mm_owner_callbacks(mm->owner, c);
-
-afaict no callbacks are implemented in this patch?  What's the plan here? 
-Should be covered in the changelog, please.
-
-> +	mm->owner = c;
-> +	task_unlock(c);
-> +	put_task_struct(c);
-> +}
-> +#endif /* CONFIG_MM_OWNER */
-> +
->
-> ...
->
->  static inline int page_cgroup_locked(struct page *page)
->  {
->  	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
-> @@ -478,6 +464,7 @@ unsigned long mem_cgroup_isolate_pages(u
->  	int zid = zone_idx(z);
->  	struct mem_cgroup_per_zone *mz;
-> 
-> +	BUG_ON(!mem_cont);
->  	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
-
-The mem_cgroup_zoneinfo() will immediately and reliably oops if mem_cont is
-NULL, won't it?  If so, the BUG_ON() is redundant?
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
