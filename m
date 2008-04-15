@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765212AbYDOOET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765249AbYDOOF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765212AbYDOOET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 10:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbYDOOEG
+	id S1765249AbYDOOF0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 10:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762835AbYDOOFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 10:04:06 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:33110 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754800AbYDOOEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 10:04:05 -0400
-Message-ID: <4804B5D5.4090404@davidnewall.com>
-Date: Tue, 15 Apr 2008 23:34:05 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 15 Apr 2008 10:05:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45025 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760759AbYDOOFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 10:05:12 -0400
+Date: Tue, 15 Apr 2008 16:04:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
+Message-ID: <20080415140430.GA6576@elte.hu>
+References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415131744.GA5248@elte.hu> <20080415134705.GB22351@Krystal>
 MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-CC: James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Reporting bugs and bisection
-References: <47FEADCB.7070104@rtr.ca> <20080413205406.GA9190@2ka.mipt.ru>	 <48028830.6020703@earthlink.net>	 <alpine.DEB.1.10.0804131546370.9318@asgard>	 <20080414043939.GA6862@1wt.eu>	 <20080414053943.GU9785@ZenIV.linux.org.uk>	 <20080413232441.e216a02c.akpm@linux-foundation.org>	 <20080414072328.GW9785@ZenIV.linux.org.uk>	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>	 <4804765B.2070300@davidnewall.com> <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com>
-In-Reply-To: <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415134705.GB22351@Krystal>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
-> On 4/15/08, David Newall <davidn@davidnewall.com> wrote:
->   
->> James Morris wrote:
->>  > I don't know how to solve this, but suspect that encouraging the use of
->>  > reviewed-by and also including it in things like analysis of who is
->>  > contributing, selection for kernel summit invitations etc. would be a
->>  > start.  At least, better than nothing.
->>
->> Would it be hard to keep count of the number of errors introduced by
->>  author and reviewer?
->>     
->
-> I've found quite a few errors in kernel-userland APIs, but I'm not
-> sure that this sort of negative statistic would be helpful -- e.g.,
-> more productive developers probably also introduce more errors.
 
-We can already see which developers are more active.  What we can't see
-is who is careless, which would be useful to know.  It would also be
-useful to know who is careless in approving changes, because they share
-responsibility for those changes.  It would be a good thing if this
-highlighted that some people are behind frequent buggy changes.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > See, these tracer tools are my nightmare as member of an 
+> > > enterprise linux team. They'll make an already hard job even 
+> > > harder, no thanks!
+> > 
+> > i'm clearly NAK-ing all futex trace hooks until the true impact of 
+> > the whole marker facility is better understood. I've tried them for 
+> > the scheduler and they were a clear failure: too bloated and too 
+> > persistent.
+> 
+> I have not seen any counter argument for the in-depth analysis of the 
+> instruction cache impact of the optimized markers I've done. Arguing 
+> that the markers are "bloated" based only on "size kernel/sched.o" 
+> output is a bit misleading.
+
+uhm, i'm not sure what you mean - how else would you quantify bloat than 
+to look at the size of the affected subsystem?
+
+	Ingo
