@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbYDOLO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbYDOLP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762281AbYDOLO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 07:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYDOLOq
+	id S1763663AbYDOLP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 07:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbYDOLPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 07:14:46 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49466 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756107AbYDOLOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 07:14:45 -0400
-To: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
-       casey@schaufler-ca.com
-Cc: serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
-	<484889.77284.qm@web36604.mail.mud.yahoo.com>
-In-Reply-To: <484889.77284.qm@web36604.mail.mud.yahoo.com>
-Message-Id: <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Tue, 15 Apr 2008 20:14:41 +0900
+	Tue, 15 Apr 2008 07:15:12 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52234 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756811AbYDOLPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 07:15:10 -0400
+Date: Tue, 15 Apr 2008 16:44:59 +0530
+From: "K. Prasad" <prasad@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: dwilder@us.ibm.com, mathieu.desnoyers@polymtl.ca, hunt@redhat.com
+Subject: [RFC Patch 0/1] Enhancements to 'trace' infrastructure
+Message-ID: <20080415111459.GB5295@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> The question of protections on the object named /etc/passwd came
-> up time and time again. The notion that /etc/passwd could be a
-> symlink to /home/smalley/heeheehee really gave evaluators the
-> whillies. As did the chroot environment, where /roots/crispin/etc/passwd
-> could magicly become /etc/passwd.
-Why do people continue speaking symlinks and chroots?
-To avoid the effect of symlinks and chroots, AppArmor and TOMOYO Linux
-derive pathnames from dentry and vfsmount.
-If /etc/passwd was a symlink, the derived pathname will be /home/smalley/heeheehee.
-If accessed from inside a chroot, the derived pathname will be /roots/crispin/etc/passwd.
+Hi All,
+	Please review the following patch which introduces two new
+interfaces to output data using 'trace' infrastructure. These interfaces
+can be used to print directly onto a debugfs mount. Since it uses 'trace'
+interface underneath the directory and file structures are as created by
+'trace'.
 
-It is true that namespace may differ between processes,
-but I think that that is the matter of how to restrict namespace manipulation operations.
-As I said, a system can't survive if namespace is madly manipulated.
-To keep the system workable, /bin/ must be the directory for binary programs,
-/etc/ must be the directory for configuration files, and so on in all namespaces.
+The proposed debugfs_* interfaces are meant to overcome the need to
+setup/tear-down 'trace' infrastructure by the user. In addition to this
+the patches help in:
 
-It is true that the pathname may change while traversing up the dentry/vfsmount trees.
-But the change does not occur infinitely.
-As I said, a system can't survive if files and directories are madly renamed.
-The possible changes are bounded by the policy.
+a) Printing out data into a debugfs mounted file without bothering about
+creating/re-using debugfs files, sizes of intermediate buffers, etc.
+(This is achieved through the functions init_trace_interface() and
+trace_exists()).
+b) Provide interfaces to do i)string output or ii)binary dump of data
+c) Tear-down of the trace infrastructure through a single function call
+using its parent directory name, and unmindful of the internal data
+structures such as 'struct trace_info'.(using trace_cleanup_all)
+d) The debugfs_printk_data may be further enhanced to provide features
+suh as the ability to invoke pre- and post- printing callback functions
+For e.g. A callback function to obtain a given lock before printing out
+a given data, etc.
+ 
+A quick look at samples/trace/fork_trace.c would help understand what is
+required to get data out using the 'trace' infrastructure (vs the
+proposed interfaces which have been exemplified in
+samples/trace/fork_new_trace.c).
 
-At least, I want people not to speak symlinks and chroots when talking about
-AppArmor and TOMOYO Linux.
+The patches are based against 2.6.25-rc8-mm1 and have been tested on an
+i386 machine.
 
-Regards.
+Thanks,
+K.Prasad
+
