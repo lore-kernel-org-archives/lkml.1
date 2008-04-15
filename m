@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYDOJET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYDOJHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbYDOJET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 05:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbYDOJEI
+	id S1760855AbYDOJHY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 05:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYDOJHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 05:04:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52514 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755528AbYDOJEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 05:04:07 -0400
-Date: Tue, 15 Apr 2008 12:04:04 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] smb.h: uses struct timespec but didn't include linux/time.h
-Message-ID: <Pine.LNX.4.64.0804151202390.17123@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1069186259-1208250244=:17123"
+	Tue, 15 Apr 2008 05:07:11 -0400
+Received: from smtp2.sssup.it ([193.205.80.100]:46874 "EHLO smtp2.sssup.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755630AbYDOJHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 05:07:10 -0400
+Date: Tue, 15 Apr 2008 11:11:39 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, paolo.valente@unimore.it
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080415091139.GC29846@gandalf.sssup.it>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080415082236.GD12774@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415082236.GD12774@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Tue, Apr 15, 2008 10:22:36AM +0200
+>
+> On Tue, Apr 01 2008, Fabio Checconi wrote:
+...
+> > We would greatly appreciate any sort of feedback from you, comments,
+> > suggestions, corrections and so on.  Thank you for your attention.
+> 
+> Fabio, I've merged the scheduler for some testing. Overall the code
+> looks great, you've done a good job!
+> 
 
----696208474-1069186259-1208250244=:17123
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+thank you very much :)
 
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- include/linux/smb.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I didn't touch patches 2 and 3, but I rewrote #1 somewhat. See the
+> result here:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=973a02c4ea1c324c41e45b69c074b13d3bfa97de;hp=a985aabe4d7a720b109c2b63549f8641676a9c88
+> 
+> I'm sure you'll agree with the hlist_sched_*() functions. I also killed
+> the ->bfq_ioprio_changed modification, what exactly was the purpose of
+> that?
+> 
 
-diff --git a/include/linux/smb.h b/include/linux/smb.h
-index f098dff..caa43b2 100644
---- a/include/linux/smb.h
-+++ b/include/linux/smb.h
-@@ -11,6 +11,7 @@
- 
- #include <linux/types.h>
- #include <linux/magic.h>
-+#include <linux/time.h>
- 
- enum smb_protocol { 
- 	SMB_PROTOCOL_NONE, 
--- 
-1.5.2.2
+of course the hlist_sched_*() functions are much better than what was
+in the patch (the idea behind the patch was to not touch at all cfq code).
 
----696208474-1069186259-1208250244=:17123--
+the ->bfq_ioprio_changed was there to avoid that a process/ioc doing
+i/o on multiple devices managed by cfq and bfq would see ioprio
+changes only for one of the two schedulers.
+
+cfq_ioc_set_ioprio() (and its bfq counterpart bfq_ioc_set_ioprio())
+unconditionally assign 0 to (bfq_)ioprio_changed, so the first
+scheduler that sees the ioprio change eats the new priority values.
+of course I may be wrong, but I think it (or some better mechanism
+to avoid the problem) is necessary.
+
+
+> The code is now in the 'bfq' branch of the block git repo.
+> 
+
+of course we'll be glad to help in testing in any way you can find useful.
+
+thank you!
