@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYDUNac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbYDUNa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYDUNac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760192AbYDUNTg
+	id S933063AbYDUNa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760228AbYDUNTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:19:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:9129 "EHLO
+	Mon, 21 Apr 2008 09:19:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:8449 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760191AbYDUNTe (ORCPT
+	with ESMTP id S1759668AbYDUNTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:19:34 -0400
+	Mon, 21 Apr 2008 09:19:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:in-reply-to:references:date:subject:cc:from;
-        b=cEio89t2X8yCuzy/UKRrQqHcBIjtXaMu7JDVzW4bM0Yy0Gv6eMdr5KipNfsfIzjkeA2Ej+Ut65DbBAO5MYnRczGfV2NzUZ/e0OntiG1xnKvjpXzB4SrOheAEwYJfpLGE+UrO0lVxf/rcEl17lafGOFrcVFvEQhySo8w1kQPCLz8=
-Message-Id: <76d057ce5a48034c97f604a0a25a87093e072c71.1208783694.git.dmitry.torokhov@gmail.com>
+        b=s/O/zCVFPkS21AHBx+fG+to751O5+Lpm1l7XzRkZ94K3lYbGKiyGeTgfjW931xngctBy1DESwpATKPvrp3VaGVRtrBNPIl6Yq8tkdlTZ6q1SvKy7MsF2YqY5s0IyguoPW5S0gFcYY+ZLY9pmOm7dI4VahAxZnLCnAsRpTM6a0xo=
+Message-Id: <0beb4f6f294b0f2dde07fa9da9c00abd4f9c8b50.1208783694.git.dmitry.torokhov@gmail.com>
 In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
 References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-Date: Fri, 4 Apr 2008 15:31:47 -0400
-Subject: [PATCH 20/37] Input: usbtouchscreen - don't use DMA on stack
+Date: Tue, 15 Apr 2008 01:30:32 -0400
+Subject: [PATCH 21/37] Input: put ledstate in the keyboard notifier
 Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-From: Oliver Neukum <dmitry.torokhov@gmail.com>
+From: Karl Dahlke <dmitry.torokhov@gmail.com>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DMA on the stack is not allowed. The buffer must be kmalloced.
+Led state should be part of the key event, like shiftstate, and not
+grabbed asynchronously after the fact.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+[samuel.thibault@ens-lyon.org: various fixes]
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
- drivers/input/touchscreen/usbtouchscreen.c |   31 +++++++++++++++++----------
- 1 files changed, 19 insertions(+), 12 deletions(-)
+ drivers/char/keyboard.c  |    2 ++
+ include/linux/keyboard.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
-index 63f9664..3a0a8ca 100644
---- a/drivers/input/touchscreen/usbtouchscreen.c
-+++ b/drivers/input/touchscreen/usbtouchscreen.c
-@@ -396,9 +396,12 @@ static int gunze_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- static int dmc_tsc10_init(struct usbtouch_usb *usbtouch)
- {
- 	struct usb_device *dev = usbtouch->udev;
--	int ret;
--	unsigned char buf[2];
-+	int ret = -ENOMEM;
-+	unsigned char *buf;
+diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+index 4dbd342..59608e3 100644
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1237,6 +1237,7 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ 	}
  
-+	buf = kmalloc(2, GFP_KERNEL);
-+	if (!buf)
-+		goto err_nobuf;
- 	/* reset */
- 	buf[0] = buf[1] = 0xFF;
- 	ret = usb_control_msg(dev, usb_rcvctrlpipe (dev, 0),
-@@ -406,9 +409,11 @@ static int dmc_tsc10_init(struct usbtouch_usb *usbtouch)
- 	                      USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
- 	                      0, 0, buf, 2, USB_CTRL_SET_TIMEOUT);
- 	if (ret < 0)
--		return ret;
--	if (buf[0] != 0x06 || buf[1] != 0x00)
--		return -ENODEV;
-+		goto err_out;
-+	if (buf[0] != 0x06 || buf[1] != 0x00) {
-+		ret = -ENODEV;
-+		goto err_out;
-+	}
+ 	param.shift = shift_final = (shift_state | kbd->slockstate) ^ kbd->lockstate;
++	param.ledstate = kbd->ledflagstate;
+ 	key_map = key_maps[shift_final];
  
- 	/* set coordinate output rate */
- 	buf[0] = buf[1] = 0xFF;
-@@ -417,20 +422,22 @@ static int dmc_tsc10_init(struct usbtouch_usb *usbtouch)
- 	                      USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
- 	                      TSC10_RATE_150, 0, buf, 2, USB_CTRL_SET_TIMEOUT);
- 	if (ret < 0)
--		return ret;
-+		goto err_out;
- 	if ((buf[0] != 0x06 || buf[1] != 0x00) &&
--	    (buf[0] != 0x15 || buf[1] != 0x01))
--		return -ENODEV;
-+	    (buf[0] != 0x15 || buf[1] != 0x01)) {
-+		ret = -ENODEV;
-+		goto err_out;
-+	}
+ 	if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_KEYCODE, &param) == NOTIFY_STOP || !key_map) {
+@@ -1285,6 +1286,7 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
  
- 	/* start sending data */
- 	ret = usb_control_msg(dev, usb_rcvctrlpipe (dev, 0),
- 	                      TSC10_CMD_DATA1,
- 	                      USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
- 	                      0, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
--	if (ret < 0)
--		return ret;
--
--	return 0;
-+err_out:
-+	kfree(buf);
-+err_nobuf:
-+	return ret;
- }
+ 	(*k_handler[type])(vc, keysym & 0xff, !down);
  
++	param.ledstate = kbd->ledflagstate;
+ 	atomic_notifier_call_chain(&keyboard_notifier_list, KBD_POST_KEYSYM, &param);
+ 
+ 	if (type != KT_SLOCK)
+diff --git a/include/linux/keyboard.h b/include/linux/keyboard.h
+index 65c2d70..a3c984d 100644
+--- a/include/linux/keyboard.h
++++ b/include/linux/keyboard.h
+@@ -33,6 +33,7 @@ struct keyboard_notifier_param {
+ 	struct vc_data *vc;	/* VC on which the keyboard press was done */
+ 	int down;		/* Pressure of the key? */
+ 	int shift;		/* Current shift mask */
++	int ledstate;		/* Current led state */
+ 	unsigned int value;	/* keycode, unicode value or keysym */
+ };
  
 -- 
 1.5.5.rc2.6.gf58d
