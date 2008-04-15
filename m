@@ -1,111 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764110AbYDODlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764144AbYDODsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764110AbYDODlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 23:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762337AbYDODlH
+	id S1764144AbYDODsd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 23:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbYDODsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 23:41:07 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:33792 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762279AbYDODlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 23:41:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=Ki7qYQO+q2x1mPzvmfn4o/9LKlW+yPk0O7lkPtxWEYn9LzYqogEEN3C9XBzkGFE73xifp772tYY6waEy+wR5kswCi51cKHLTh0yG8u+8pNW0XTRtnTBf/yVwoF4TdHRUpCwP8oniwNvDKPJZ9MbgcjZQZDmb8DwaL27TEwCpq6s=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86_64: allocate gart aperture from 512M
-Date: Mon, 14 Apr 2008 20:40:37 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>
+	Mon, 14 Apr 2008 23:48:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56387 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1761870AbYDODsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Apr 2008 23:48:23 -0400
+Message-ID: <48042539.8050009@cn.fujitsu.com>
+Date: Tue, 15 Apr 2008 11:47:05 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: balbir@linux.vnet.ibm.com
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: kernel warning: tried to kill an mm-less task!
+References: <4803030D.3070906@cn.fujitsu.com> <48030F69.7040801@linux.vnet.ibm.com> <48031090.5050002@cn.fujitsu.com>
+In-Reply-To: <48031090.5050002@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804142040.37701.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86_64: allocate gart aperture from 512M
+CC: Oleg Nesterov <oleg@tv-sign.ru>
 
-because we try to reserve dma32 early, so we have chance to get aperture
-from 64M
+Li Zefan wrote:
+> Balbir Singh wrote:
+>> Li Zefan wrote:
+>>> When I ran the same test program I described in a previous patch,
+>>> I got the following warning:
+>>>
+>>> WARNING: at mm/oom_kill.c:320 __oom_kill_task+0x6d/0x101()
+>>> Modules linked in: 
+>>>
+>>> Pid: 3856, comm: a.out Not tainted 2.6.25-rc8-mm2 #37
+>>>  [<ffffffff80243941>] warn_on_slowpath+0x64/0xa2
+>>>  [<ffffffff80244e16>] printk+0x5e/0x7b
+>>>  [<ffffffff8022b096>] page_count+0x25/0x49
+>>>  [<ffffffff8022b2cd>] show_mem+0x125/0x15a
+>>>  [<ffffffff8028f00f>] __oom_kill_task+0x6d/0x101
+>>>  [<ffffffff8028f319>] oom_kill_process+0x16c/0x22e
+>>>  [<ffffffff8028f72c>] select_bad_process+0xb0/0x122
+>>>  [<ffffffff8028f8d3>] mem_cgroup_out_of_memory+0x65/0x8a
+>>>  [<ffffffff802bee84>] mem_cgroup_charge_common+0xf8/0x215
+>>>  [<ffffffff802a14ac>] handle_mm_fault+0x216/0x6c8
+>>>  [<ffffffff8029ebca>] follow_page+0x191/0x27d
+>>>  [<ffffffff80234155>] need_resched+0x31/0x4f
+>>>  [<ffffffff802a1c53>] get_user_pages+0x2f5/0x3eb
+>>>  [<ffffffff802a1f64>] make_pages_present+0x9e/0xca
+>>>  [<ffffffff802a51fc>] mmap_region+0x38c/0x452
+>>>  [<ffffffff802119c4>] arch_get_unmapped_area_topdown+0x1bf/0x2a7
+>>>  [<ffffffff802a5971>] do_mmap_pgoff+0x321/0x39b
+>>>  [<ffffffff805037ee>] _cond_resched+0x1c/0x5f
+>>>  [<ffffffff80211715>] sys_mmap+0xf5/0x138
+>>>  [<ffffffff8020c6d2>] tracesys+0xd5/0xda
+>>> ---[ end trace fe959fb2f0473e7c ]---
+>>> tried to kill an mm-less task!
+>>>
+>>> This showed up several times in some seconds, but then didn't appear
+>>> any more. And it's reproducable in a x86_64 box, but doesn't happen
+>>> in a x86_32 one.
+>>>
+>>> And this happens both with and without the oops fixing.
+>>>
+>> Could we get some more details on which task was chosen to be killed? It will be
+>> nice to see the task flags as well to see if PF_EXITING is set.
+>>
+>> oom_kill_task() has a big WARNING in the comment
+>>
+>>         /* WARNING: mm may not be dereferenced since we did not obtain its
+>>          * value from get_task_mm(p).  This is OK since all we need to do is
+>>          * compare mm to q->mm below.
+>>
+>>
+>> I want to see the flags to see if
+>>
+>> PF_BORROWED_MM or PF_EXIT* is set.
+>>
+>>
+> 
+> OK, I'll try.
+> 
+> --
 
-with some sequence aperture allocated from RAM, could become E820_RESERVED.
+I Added 2 printk()s:
 
-and then if folling up one kexec one big kernel that uncompressed size is above
+ static void __oom_kill_task(struct task_struct *p, int verbose)
+ {
++       printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
++
+        if (is_global_init(p)) {
+                WARN_ON(1);
+                printk(KERN_WARNING "tried to kill init!\n");
+@@ -319,6 +320,7 @@ static void __oom_kill_task(struct task_struct *p, int verbo
 
-64M could have conflict with still using gart.
+        if (!p->mm) {
+                WARN_ON(1);
++               printk(KERN_WARNING "pid = %d, flags = %x\n", p->pid, p->flags);
+                printk(KERN_WARNING "tried to kill an mm-less task!\n");
+                return;
+        }
 
-So allocate gart aperture from 512M instead.
+got this:
 
-Also change the fallback_aper_order to 5, because we don't have chance to get
-2G or 4G aperture.
+pid = 3817, flags = 400140
+------------[ cut here ]------------
+WARNING: at mm/oom_kill.c:322 __oom_kill_task+0x74/0xf1()
+...
+---[ end trace bb92f2fd8fe6c7c5 ]---
+pid = 3817, flags = 400144
+tried to kill an mm-less task!
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+So PF_EXITING may be set during the call of oom_kill_task(), and I notice
+the comment in oom_kill_task():
 
-Index: linux-2.6/arch/x86/kernel/aperture_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/aperture_64.c
-+++ linux-2.6/arch/x86/kernel/aperture_64.c
-@@ -55,8 +55,9 @@ static u32 __init allocate_aperture(void
- 	u32 aper_size;
- 	void *p;
- 
--	if (fallback_aper_order > 7)
--		fallback_aper_order = 7;
-+	/* aper_size should <= 1G */
-+	if (fallback_aper_order > 5)
-+		fallback_aper_order = 5;
- 	aper_size = (32 * 1024 * 1024) << fallback_aper_order;
- 
- 	/*
-@@ -65,7 +66,20 @@ static u32 __init allocate_aperture(void
- 	 * memory. Unfortunately we cannot move it up because that would
- 	 * make the IOMMU useless.
- 	 */
--	p = __alloc_bootmem_nopanic(aper_size, aper_size, 0);
-+	/*
-+	 * using 512M as goal, in case kexec will load kernel_big
-+	 * that will do the on position decompress, and  could overlap with
-+	 * that positon with gart that is used.
-+	 * sequende:
-+	 * kernel_small
-+	 * ==> kexec (with kdump trigger path or previous doesn't shutdown gart)
-+	 * ==> kernel_small(gart area become e820_reserved)
-+	 * ==> kexec (with kdump trigger path or previous doesn't shutdown gart)
-+	 * ==> kerne_big (uncompressed size will be big than 64M or 128M)
-+	 * so don't use 512M below as gart iommu, leave the space for kernel
-+	 * code for safe
-+	 */
-+	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
- 	if (!p || __pa(p)+aper_size > 0xffffffff) {
- 		printk(KERN_ERR
- 			"Cannot allocate aperture memory hole (%p,%uK)\n",
-Index: linux-2.6/arch/x86/kernel/pci-dma.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/pci-dma.c
-+++ linux-2.6/arch/x86/kernel/pci-dma.c
-@@ -77,10 +77,14 @@ void __init dma32_reserve_bootmem(void)
- 	if (end_pfn <= MAX_DMA32_PFN)
- 		return;
- 
-+	/*
-+	 * check aperture_64.c allocate_aperture() for reason about
-+	 * using 512M as goal
-+	 */
- 	align = 64ULL<<20;
- 	size = round_up(dma32_bootmem_size, align);
- 	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
--				 __pa(MAX_DMA_ADDRESS));
-+				 512ULL<<20);
- 	if (dma32_bootmem_ptr)
- 		dma32_bootmem_size = size;
- 	else
+	 * Furthermore, even if mm contains a non-NULL value, p->mm may
+	 * change to NULL at any time since we do not hold task_lock(p).
+	 * However, this is of no concern to us.
+
+Is this warning just harmless so that we can just ignore it ?
