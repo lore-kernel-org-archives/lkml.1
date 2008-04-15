@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbYDOV1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933087AbYDOV1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932992AbYDOV1B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760111AbYDOV0w
+	id S933087AbYDOV1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 17:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbYDOV1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:26:52 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46928 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759516AbYDOV0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:26:51 -0400
-Date: Tue, 15 Apr 2008 22:26:16 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org
-Subject: Re: [2.6 patch] PCMCIA mustn't select HAVE_IDE
-Message-ID: <20080415212616.GD5676@flint.arm.linux.org.uk>
-Mail-Followup-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080414175344.GA15028@uranus.ravnborg.org> <200804152215.34904.bzolnier@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804152215.34904.bzolnier@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 15 Apr 2008 17:27:18 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59495 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760318AbYDOV1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 17:27:17 -0400
+Message-ID: <48051DB1.8080102@sgi.com>
+Date: Tue, 15 Apr 2008 14:27:13 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+References: <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <20080415202805.GA26880@elte.hu> <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu> <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com> <20080415205820.GC31645@elte.hu> <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com> <20080415211953.GA4243@elte.hu>
+In-Reply-To: <20080415211953.GA4243@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 10:15:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Monday 14 April 2008, Sam Ravnborg wrote:
-> > On Mon, Apr 14, 2008 at 05:16:59PM +0300, Adrian Bunk wrote:
-> > > It's plain wrong for PCMCIA to select HAVE_IDE that implies e.g. the 
-> > > availability of an asm/ide.h
-> > > 
-> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > 
-> > > ---
-> > > 9cdb66112488bc0c6e1d528444d3ba30d5b0487f diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-> > > index 8b22281..519b4ff 100644
-> > > --- a/drivers/pcmcia/Kconfig
-> > > +++ b/drivers/pcmcia/Kconfig
-> > > @@ -38,7 +38,6 @@ config PCMCIA_DEBUG
-> > >  config PCMCIA
-> > >  	tristate "16-bit PCMCIA support"
-> > >  	select CRC32
-> > > -	select HAVE_IDE
-> > >  	default y
-> > 
-> > I did this when introducing HAVE_IDE.
-> > But I do not recall why and the rationale for removing it
-> > seems fine to me.
+Ingo Molnar wrote:
+> * Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> IIRC it was needed for some arm platforms which don't select HAVE_IDE
-> explicetely but I don't know if this is still the case, pinging Russell.
+>> On Tue, 15 Apr 2008, Ingo Molnar wrote:
+>>
+>>> and the bug pattern seems to be memory corruption - not memory 
+>>> exhaustion.
+>> SLUB does not do a memory allocation where it fails here but simply 
+>> accesses per cpu information that is expected to be already zeroed.
+>>
+>>> i.e. we allocated RAM but it got corrupted after allocation.
+>> In some situations we are screwing up the per cpu data handling on 32 
+>> bit x86? Adding Mike. This looks like the per cpu area overlaps with 
+>> something else?
+> 
+> yep, that was my other theory - and i doubled CONFIG_NR_CPUS to reduce 
+> that chance.
+> 
+> in hindsight ... that wont save us from any overlap, right?
+> 
+> what's the best way to artificially increase the size of the allocated 
+> per cpu area? (say double it)
+> 
+> 	Ingo
 
-If that is so then it is so - the only way to find out is work out
-why we ended up with HAVE_IDE and what it was transformed from.
+I don't know that there is a boot option.  If modules are defined it
+adds an extra 8k.  The size is defined in include/linux/percpu.h 
+(PERCPU_ENOUGH_ROOM).
 
-To just ask me whether it's still the case, I've absolutely no idea -
-there's no way in hell for me to be able to track these kinds of
-dependencies.
+Otherwise define a really large per_cpu variable...?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-Mike
