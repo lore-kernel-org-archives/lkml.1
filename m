@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbYDOBZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbYDOB1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763300AbYDOBZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Apr 2008 21:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbYDOBZT
+	id S1763481AbYDOB1G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Apr 2008 21:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbYDOB04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Apr 2008 21:25:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42277 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393AbYDOBZS (ORCPT
+	Mon, 14 Apr 2008 21:26:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38884 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757073AbYDOB0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Apr 2008 21:25:18 -0400
-Message-ID: <480403DE.4070901@zytor.com>
-Date: Mon, 14 Apr 2008 18:24:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Marc Perkel <mperkel@yahoo.com>, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AMD Quad Core clock problem?
-References: <47FFD3F3.50107@redhat.com>	<821384.64293.qm@web52504.mail.re2.yahoo.com>	<20080411213843.GH2160@csclub.uwaterloo.ca>	<4802608A.3040901@zytor.com>	<20080414151222.GF7385@csclub.uwaterloo.ca> <m3prsrj51j.fsf@maximus.localdomain>
-In-Reply-To: <m3prsrj51j.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 Apr 2008 21:26:55 -0400
+Date: Tue, 15 Apr 2008 10:31:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [-mm] Add an owner to the mm_struct (v9)
+Message-Id: <20080415103110.049e7fd9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080410091602.4472.32172.sendpatchset@localhost.localdomain>
+References: <20080410091602.4472.32172.sendpatchset@localhost.localdomain>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> lsorense@csclub.uwaterloo.ca (Lennart Sorensen) writes:
+On Thu, 10 Apr 2008 14:46:02 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+
+> After the thread group leader exits, it's moved to init_css_state by
+> cgroup_exit(), thus all future charges from runnings threads would
+> be redirected to the init_css_set's subsystem.
 > 
->> True, but usually they give you an option to turn it off in the BIOS to
->> make the system actually work with things like NTP.
->>
->> Maybe I should have said "Any system with spread spectrum enabled".
-> 
-> I haven't investigated those spread spectrums at all but sometimes
-> there are options: "center" (the frequency is centered around the
-> nominal value, I guess) and "below" (or something like that). If done
-> correctly, "center" shouldn't have visible effect on NTP, should it?
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-It shouldn't really matter, since "below" produces a similar spectrum at 
-a slightly lower frequency.
+Seems works well under my test. 
 
-The main issue is how slow the frequency slew really is; typically the 
-slew should well average out to zero over the timescale that NTP cares 
-about.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> The other important question is "what frequency has spread spectrum
-> enabled"? CPU (= TSC), HPET, RAM, something else?
-
-In PCs, the TSC and RAM will be affected; the HPET, PMTMR and PIT are 
-fed from the 14.31818 MHz timekeeping crystal which is generally *not* 
-spread.
-
-	-hpa
