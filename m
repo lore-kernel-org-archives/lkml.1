@@ -1,175 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbYDOVWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbYDOVXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932830AbYDOVWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbYDOVWT
+	id S932809AbYDOVXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 17:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYDOVX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:22:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:56790 "EHLO mga01.intel.com"
+	Tue, 15 Apr 2008 17:23:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39334 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756062AbYDOVWS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:22:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,661,1199692800"; 
-   d="scan'208";a="553034577"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1755395AbYDOVXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 17:23:25 -0400
+Date: Tue, 15 Apr 2008 23:23:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
+       travis@sgi.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
+Message-ID: <20080415212301.GA5428@elte.hu>
+References: <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <20080415202805.GA26880@elte.hu> <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu> <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com> <20080415205820.GC31645@elte.hu> <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com> <20080415211953.GA4243@elte.hu> <Pine.LNX.4.64.0804151420430.3252@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs on boot -dual-core Sony Vaio
-Date: Tue, 15 Apr 2008 14:24:35 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <1208294294.7851.109.camel@localhost>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Bug #10117] 2.6.25-current-git sometimes hangs on boot -dual-core Sony Vaio
-Thread-Index: AcifPj+gfCtscRpDR3a8DqCGPKuP+AAAKfVg
-References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <200804152233.39079.rjw@sisk.pl> <20080415204500.GD1677@cs181133002.pp.htv.fi> <200804152303.45320.rjw@sisk.pl> <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com> <1208294294.7851.109.camel@localhost>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Adrian Bunk" <bunk@kernel.org>,
-       "Carlos R. Mafra" <crmafra2@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Apr 2008 21:22:16.0788 (UTC) FILETIME=[C7BCB140:01C89F3E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804151420430.3252@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: Soeren Sonnenburg [mailto:kernel@nn7.de] 
->Sent: Tuesday, April 15, 2008 2:18 PM
->To: Pallipadi, Venkatesh
->Cc: Rafael J. Wysocki; Adrian Bunk; Carlos R. Mafra; Linux 
->Kernel Mailing List
->Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs 
->on boot -dual-core Sony Vaio
->
->On Tue, 2008-04-15 at 14:09 -0700, Pallipadi, Venkatesh wrote:
->> 
->> >-----Original Message-----
->> >From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
->> >Sent: Tuesday, April 15, 2008 2:04 PM
->> >To: Adrian Bunk
->> >Cc: Carlos R. Mafra; Linux Kernel Mailing List; Soeren 
->> >Sonnenburg; Pallipadi, Venkatesh
->> >Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs 
->> >on boot - dual-core Sony Vaio
->> >
->> >On Tuesday, 15 of April 2008, Adrian Bunk wrote:
->> >> On Tue, Apr 15, 2008 at 10:33:38PM +0200, Rafael J. Wysocki wrote:
->> >> > On Tuesday, 15 of April 2008, Carlos R. Mafra wrote:
->> >> > > On Sun 13.Apr'08 at 17:25:45 -0300, Carlos R. Mafra wrote:
->> >> > > > On Sun 13.Apr'08 at 20:56:41 +0200, Rafael J. Wysocki wrote:
->> >> > > > > This message has been generated automatically as a 
->> >part of a report
->> >> > > > > of recent regressions.
->> >> > > > > 
->> >> > > > > The following bug entry is on the current list of 
->> >known regressions
->> >> > > > > from 2.6.24.  Please verify if it still should be listed.
->> >> > > > > 
->> >> > > > > 
->> >> > > > > Bug-Entry	: 
->> >http://bugzilla.kernel.org/show_bug.cgi?id=10117
->> >> > > > > Subject		: 2.6.25-current-git sometimes 
->> >hangs on boot - dual-core Sony Vaio
->> >> > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
->> >> > > > > Date		: 2008-02-23 18:55 (51 days old)
->> >> > > > > References	: http://lkml.org/lkml/2008/2/23/263
->> >> > > > > 		  http://lkml.org/lkml/2008/4/4/41
->> >> > > > > 		  http://lkml.org/lkml/2008/4/9/69
->> >> > > > 
->> >> > > > Soeren said it no longer happens to him in 
->> >http://lkml.org/lkml/2008/4/9/53
->> >> > > > but unfortunately it still happens with me using -rc9. 
->> >So I kidnapped his 
->> >> > > > bugzilla report :-)
->> >> > > > 
->> >> > > > In the bugzilla entry I said earlier today that 
->> >"hpet=disable" apparently
->> >> > > > makes the problem go away (42 boots OK so far, whereas 
->> >without this
->> >> > > > boot option it hangs ~90% using vga=6 and ~10% using 
->> >vga=0x0364)
->> >> > > > 
->> >> > > > I tried to bisect it, but sometimes in pre 2.6.25-rc1 
->> >kernels it takes
->> >> > > > 30 boots before the first hang to occur. So bisection 
->> >is not reliable...
->> >> > > > 
->> >> > > > If someone proposes a patch I will be glad to test it!
->> >> > > > 
->> >> > > > PS: The similar bug in buzilla 10377 also appears 
->to be "fixed"
->> >> > > > by using hpet=disable, see comment #17 in that bug.
->> >> > > 
->> >> > > 
->> >> > > From what Mark Lord said in his comments #33 to #35 in 
->> >> > > http://bugzilla.kernel.org/show_bug.cgi?id=10117
->> >> > > it appears that this is a much older regression, from 
->april 2007.
->> >> > > 
->> >> > > So this is a regression, but not from 2.6.24 (although somehow
->> >> > > it never hit me before). I don't know about the 
->policy of closing
->> >> > > regressions that come from way before the previous 
->> >kernel version, 
->> >> > > if there is any. Then I will let you manage the 
->bugzilla #10117
->> >> > > as you see fit (but I will be "there" to hopefuly test any 
->> >> > > proposed patches).
->> >> > 
->> >> > I dropped the bug from the list of recent regressions, so 
->> >it doesn't block
->> >> > bug #9832 any more.  However, this still is a bug and 
->> >regression, so the
->> >> > bugzilla entry remains open.
->> >> 
->> >> Soerens original report was a 2.6.25 regression.
->> >> 
->> >> And #10377 that was closed as a duplicate of #10117 was also 
->> >reported as 
->> >> a 2.6.25 regression.
->> >> 
->> >> #10117 seems to suffer from the common disease of people 
->> >hijacking an 
->> >> existing bug, but Soeren's issue that was what was 
->> >originally tracked in 
->> >> #10117 is (or was) a 2.6.25 regression.
->> >
->> >Well, I'm really not 100% sure it was a regression from 2.6.24 
->> >and I'm not
->> >sure bug #10377 should have been marked as a duplicate.
->> >
->> >I made bug #10117 block bug #9832 again, but it would be nice 
->> >to sort this out.
->> >
->> >Why do we think that the cause of bugs #10117 and #10377 is 
->the same?
->> >
->> >Rafael
->> >
->> 
->> Both of them probabilistically hang early in the boot.
->> On both !CPUIDLE and hpet=disable seems to be working around the
->> problem.
->> Both are Core 2 Duo based with 64 bit kernel.
->> 
->> One difference I saw was that #10377 fails on battery. That may be
->> because when on battery CPUs may be running at lower freq during boot
->> and that is probably helping this problem in terms of timing.
->
->FWIW, this macbook pro1,1 has only a core 1 duo, so x86 == 32bit...
->Soeren
->
+* Christoph Lameter <clameter@sgi.com> wrote:
 
-Sorry. When I said Core 2, I was referring to Carlos and his updates on
-#10117.
+> On Tue, 15 Apr 2008, Ingo Molnar wrote:
+> 
+> > what's the best way to artificially increase the size of the allocated 
+> > per cpu area? (say double it)
+> 
+> Add a big  per cpu declaration?
+> 
+> static DEFINE_PER_CPU(char, dummy)[10000];
 
-Thanks,
-Venki
+what's the guarantee that it's at the end of the section? I'd like to 
+pad the per cpu areas at their end. (doubling their size is a good way 
+to achieve that)
+
+	Ingo
