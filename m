@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933087AbYDOV1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbYDOV1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933087AbYDOV1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 17:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbYDOV1S
+	id S933146AbYDOV1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 17:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbYDOV1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 17:27:18 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:59495 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760318AbYDOV1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 17:27:17 -0400
-Message-ID: <48051DB1.8080102@sgi.com>
-Date: Tue, 15 Apr 2008 14:27:13 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [bug] SLUB + mm/slab.c boot crash in -rc9
-References: <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <20080415202805.GA26880@elte.hu> <20080415203405.GA27958@elte.hu> <20080415204208.GA30432@elte.hu> <Pine.LNX.4.64.0804151344340.1785@schroedinger.engr.sgi.com> <20080415205820.GC31645@elte.hu> <Pine.LNX.4.64.0804151405120.3252@schroedinger.engr.sgi.com> <20080415211953.GA4243@elte.hu>
-In-Reply-To: <20080415211953.GA4243@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Apr 2008 17:27:36 -0400
+Received: from nn7.de ([85.214.94.156]:58404 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933104AbYDOV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 17:27:35 -0400
+Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs on boot
+	-dual-core Sony Vaio
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@kernel.org>,
+       "Carlos R\. Mafra" <crmafra2@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik>
+	 <200804152233.39079.rjw@sisk.pl>
+	 <20080415204500.GD1677@cs181133002.pp.htv.fi>
+	 <200804152303.45320.rjw@sisk.pl>
+	 <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com>
+	 <1208294294.7851.109.camel@localhost>
+	 <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 15 Apr 2008 21:27:21 +0000
+Message-Id: <1208294841.7851.119.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Christoph Lameter <clameter@sgi.com> wrote:
+On Tue, 2008-04-15 at 14:24 -0700, Pallipadi, Venkatesh wrote:
 > 
->> On Tue, 15 Apr 2008, Ingo Molnar wrote:
->>
->>> and the bug pattern seems to be memory corruption - not memory 
->>> exhaustion.
->> SLUB does not do a memory allocation where it fails here but simply 
->> accesses per cpu information that is expected to be already zeroed.
->>
->>> i.e. we allocated RAM but it got corrupted after allocation.
->> In some situations we are screwing up the per cpu data handling on 32 
->> bit x86? Adding Mike. This looks like the per cpu area overlaps with 
->> something else?
+> >-----Original Message-----
+> >From: Soeren Sonnenburg [mailto:kernel@nn7.de] 
+> >Sent: Tuesday, April 15, 2008 2:18 PM
+> >To: Pallipadi, Venkatesh
+> >Cc: Rafael J. Wysocki; Adrian Bunk; Carlos R. Mafra; Linux 
+> >Kernel Mailing List
+> >Subject: RE: [Bug #10117] 2.6.25-current-git sometimes hangs 
+> >on boot -dual-core Sony Vaio
+> >
+> >On Tue, 2008-04-15 at 14:09 -0700, Pallipadi, Venkatesh wrote:
+[...]
+> >> Both of them probabilistically hang early in the boot.
+> >> On both !CPUIDLE and hpet=disable seems to be working around the
+> >> problem.
+> >> Both are Core 2 Duo based with 64 bit kernel.
+> >> 
+> >> One difference I saw was that #10377 fails on battery. That may be
+> >> because when on battery CPUs may be running at lower freq during boot
+> >> and that is probably helping this problem in terms of timing.
+> >
+> >FWIW, this macbook pro1,1 has only a core 1 duo, so x86 == 32bit...
+> >Soeren
+> >
 > 
-> yep, that was my other theory - and i doubled CONFIG_NR_CPUS to reduce 
-> that chance.
-> 
-> in hindsight ... that wont save us from any overlap, right?
-> 
-> what's the best way to artificially increase the size of the allocated 
-> per cpu area? (say double it)
-> 
-> 	Ingo
+> Sorry. When I said Core 2, I was referring to Carlos and his updates on
+> #10117.
 
-I don't know that there is a boot option.  If modules are defined it
-adds an extra 8k.  The size is defined in include/linux/percpu.h 
-(PERCPU_ENOUGH_ROOM).
+Sorry, I meant that this could be something general and not a amd64
+specific change... which I thought could be useful in tracing this...
 
-Otherwise define a really large per_cpu variable...?
-
--Mike
+Soeren
