@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbYDPCMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760602AbYDPCNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759459AbYDPCMw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 22:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYDPCMo
+	id S1760602AbYDPCNZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 22:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYDPCNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 22:12:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53107 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbYDPCMn (ORCPT
+	Tue, 15 Apr 2008 22:13:17 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:11143 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753361AbYDPCNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 22:12:43 -0400
-Message-ID: <48055FC7.2020100@zytor.com>
-Date: Tue, 15 Apr 2008 19:09:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 15 Apr 2008 22:13:16 -0400
+Date: Tue, 15 Apr 2008 20:13:15 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: pbadari@us.ibm.com, linux-kernel@vger.kernel.org, linas@austin.ibm.com
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+Message-ID: <20080416021314.GA3333@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
+	linux-kernel@vger.kernel.org, linas@austin.ibm.com
+References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop> <20080407234255.GA22514@ldl.fc.hp.com> <20080415173656.218a6080.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Daniel Barkalow <barkalow@iabervon.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Alexia Death <alexiadeath@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
-References: <200804132326.07713.alexiadeath@gmail.com> <200804140245.33171.arnd@arndb.de> <200804140749.57049.alexiadeath@gmail.com> <200804140848.39226.arnd@arndb.de> <480343F2.3040401@zytor.com> <alpine.LNX.1.00.0804151910100.19665@iabervon.org>
-In-Reply-To: <alpine.LNX.1.00.0804151910100.19665@iabervon.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415173656.218a6080.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow wrote:
+* Andrew Morton <akpm@linux-foundation.org>:
+> Alex Chiang <achiang@hp.com> wrote:
 > 
-> Somewhat unsurprisingly, not all manufacturers took into account the 
-> possibility that a card would use a different block size than what all of 
-> the cards of the time used.
+> > This patch is a complete guess on my part (since I've not been
+> > able to understand pseries architecture) but I think it should
+> > fix your issue.
+> > 
+> > Can you give it a try and let me know? It applies on top of the
+> > -mm tree that includes my physical pci_slot series.
+> > 
+> > Also, I'm hoping Linas will speak up and let me know what the
+> > real answer might be. ;)
 > 
+> Did we hear back from Badari on this?
 
-What's really kind of pathetic is that designed, in 2000, a that broke 
-at 1 GB...
+Haven't heard a peep. :(
 
-	-hpa
+Badari? Did it help?
+
+Thanks.
+
+/ac
+
