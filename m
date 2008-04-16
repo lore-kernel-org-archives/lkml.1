@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbYDPJQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYDPJaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbYDPJQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 05:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYDPJQG
+	id S1760275AbYDPJaP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 05:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbYDPJaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 05:16:06 -0400
-Received: from elvis.franken.de ([193.175.24.41]:55474 "EHLO elvis.franken.de"
+	Wed, 16 Apr 2008 05:30:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34306 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296AbYDPJQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 05:16:05 -0400
-Date: Wed, 16 Apr 2008 11:15:54 +0200
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/6] MIPS: ip27-timer: fix unsigned irq < 0
-Message-ID: <20080416091554.GA6026@alpha.franken.de>
-References: <480559DC.2060807@tiscali.nl>
+	id S1754298AbYDPJaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 05:30:00 -0400
+Date: Wed, 16 Apr 2008 11:29:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: yhlu.kernel@gmail.com
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: allocate gart aperture from 512M
+Message-ID: <20080416092948.GF5343@elte.hu>
+References: <200804142040.37701.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <480559DC.2060807@tiscali.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+In-Reply-To: <200804142040.37701.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 03:43:56AM +0200, Roel Kluin wrote:
-> irq is unsigned, cast to signed to evaluate the allocate_irqno() return value,
->     
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---   
-> diff --git a/arch/mips/sgi-ip27/ip27-timer.c b/arch/mips/sgi-ip27/ip27-timer.c
-> index 25d3baf..3c08afd 100644
-> --- a/arch/mips/sgi-ip27/ip27-timer.c
-> +++ b/arch/mips/sgi-ip27/ip27-timer.c
-> @@ -222,19 +222,19 @@ static void __init hub_rt_clock_event_global_init(void)
->  	unsigned int irq;
->  
->  	do {
->  		smp_wmb();
->  		irq = rt_timer_irq;
->  		if (irq)
->  			break;
->  
->  		irq = allocate_irqno();
-> -		if (irq < 0)
-> +		if ((int) irq < 0)
 
-Why don't you just make irq and rt_timer_irq an int ?
+* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
 
-Thomas.
+> [PATCH] x86_64: allocate gart aperture from 512M
+> 
+> because we try to reserve dma32 early, so we have chance to get 
+> aperture from 64M
+> 
+> with some sequence aperture allocated from RAM, could become 
+> E820_RESERVED.
+> 
+> and then if folling up one kexec one big kernel that uncompressed size 
+> is above
+> 
+> 64M could have conflict with still using gart.
+> 
+> So allocate gart aperture from 512M instead.
+> 
+> Also change the fallback_aper_order to 5, because we don't have chance 
+> to get 2G or 4G aperture.
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
+thanks, applied.
+
+	Ingo
