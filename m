@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYDPIY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbYDPIdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762056AbYDPIY1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 04:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYDPIYO
+	id S1762009AbYDPIdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 04:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYDPIdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 04:24:14 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:24469 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbYDPIYL (ORCPT
+	Wed, 16 Apr 2008 04:33:05 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:60577 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753521AbYDPIdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 04:24:11 -0400
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>,
-       Alexander Kjeldaas <astor@fast.no>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-From: Andi Kleen <andi@firstfloor.org>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com>
-	<20080416073108.GA13494@Chamillionaire.breakpoint.cc>
-	<1208333949.4322.5.camel@caritas-dev.intel.com>
-Date: Wed, 16 Apr 2008 10:23:04 +0200
-In-Reply-To: <1208333949.4322.5.camel@caritas-dev.intel.com> (Ying Huang's message of "Wed, 16 Apr 2008 16:19:09 +0800")
-Message-ID: <87r6d65huf.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 16 Apr 2008 04:33:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=VWFCLl344XoXPYYqLtPh8ccyNwoEREgqlgHK9FigYOfq3cVaUECOcB1/oSp5jBO9rAX2B18kGHBa8kD/7eZBUncUZDfPWfPDKaaJlnTow2pyF3oE8grnlHhU5+oXcKjQxnEge6MVF7Gp4rkRpMhxIbD/VR4336ZIXVR9fRYyrZg=
+Message-ID: <84144f020804160133ye2327b8wb3774e1e0ccf6ff8@mail.gmail.com>
+Date: Wed, 16 Apr 2008 11:33:01 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Masami Hiramatsu" <mhiramat@redhat.com>
+Subject: Re: [PATCH -mm] relayfs: support larger relay buffer
+Cc: "David Wilder" <dwilder@us.ibm.com>, "Tom Zanussi" <zanussi@comcast.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4804C95F.2080204@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Apr 2008 08:16:18.0211 (UTC) FILETIME=[2572A730:01C89F9A]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4804C95F.2080204@redhat.com>
+X-Google-Sender-Auth: 9ad713c5dab51cb3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+On Tue, Apr 15, 2008 at 6:27 PM, Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> Use vmalloc() and memset() instead of kcalloc() to allocate a page* array
+>  when the array size is bigger than one page. This enables relayfs to support
+>  bigger relay buffers than 64MB on 4k-page system, 512MB on 16k-page system.
 >
-> En. I have no AMD machine. So I have not tested the patch on it. Maybe
-> there are some pipeline or load/store unit difference between Intel and
-> AMD CPUs. Tomorrow I can split the patch into a set of small patches,
-> with one patch for one small step. Can you help me to test these patches
-> to find out the reason for degradation on AMD CPU.
+>  Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>  ---
+>  @@ -130,7 +138,10 @@ static void *relay_alloc_buf(struct rcha
+>   depopulate:
+>         for (j = 0; j < i; j++)
+>                 __free_page(buf->page_array[j]);
+>  -       kfree(buf->page_array);
+>  +       if (pa_size > PAGE_SIZE)
 
-It would be also quite possible to use two different implementations,
-one for AMD another for Intel.  crypto frame work should have no
-problems dealing with that.
+You can use is_vmalloc_addr() here.
 
--Andi
+>  +               vfree(buf->page_array);
+>  +       else
+>  +               kfree(buf->page_array);
+>         return NULL;
+>   }
+>
