@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYDPTFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYDPTHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758762AbYDPTFl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYDPTFe
+	id S1753961AbYDPTHf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDPTH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:05:34 -0400
-Received: from hu-out-0506.google.com ([72.14.214.234]:22589 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYDPTFd (ORCPT
+	Wed, 16 Apr 2008 15:07:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48007 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbYDPTH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:05:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sEXcohk0Y5FYzUt/2k/YW9FyGGThKgZfiHzZGC0LncK3f5D0Nyp4RsNGNfKy8Xx73lFflAlBRwpcQxB0+YxyhHcBLnnLhsaSjRudVfBhgki1eRRdU1i3iT2xsf5YD0Po8iFBEqfdgHRLcfat+0t7cEjXlF5XE8/99Cu3/0UVSGs=
-Date: Wed, 16 Apr 2008 23:00:57 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: Current git tree broke busybox start-stop-daemon
-Message-ID: <20080416190057.GA4666@martell.zuzino.mipt.ru>
-References: <1208366702.5911.119.camel@gentoo-jocke.transmode.se>
+	Wed, 16 Apr 2008 15:07:27 -0400
+Date: Wed, 16 Apr 2008 15:07:25 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       vegard.nossum@gmail.com, nouveau@lists.freedesktop.org
+Subject: Re: [BUG/PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
+In-Reply-To: <20080416183258.GA30490@elte.hu>
+Message-ID: <Pine.LNX.4.58.0804161506300.30154@gandalf.stny.rr.com>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
+ <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu>
+ <20080414210242.2329997d@daedalus.pq.iki.fi> <20080416114609.GA20054@elte.hu>
+ <20080416205902.6186d349@daedalus.pq.iki.fi> <20080416183258.GA30490@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208366702.5911.119.camel@gentoo-jocke.transmode.se>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 07:25:02PM +0200, Joakim Tjernlund wrote:
-> open("/proc/1/stat", O_RDONLY|O_LARGEFILE) = 4
-> _llseek(4, 0, 0xbfb94898, SEEK_END)     = -1 EINVAL (Invalid argument)
 
-> So it appears that lseek is no longer allowed for /proc/1/stat
-> Bug or feature?
-> start-stop-daemon works fine in 2.6.23
 
-That's what happens when switching ->llseek method from NULL
-(effectively, default_llseek), to seq_lseek (which rejects SEEK_END).
+On Wed, 16 Apr 2008, Ingo Molnar wrote:
+>
+> so lets fix those preemptability bugs. They show that the
+> cpu-up/cpu-down ops are called from atomic context - it should normally
+> be straightforward to sort out - there's no particular reason why the
+> ->open()/->close() methods of an ftrace plugin should run in atomic
+> context. Steve, any ideas where the atomicity might come from?
+>
 
-commit be614086a4aff163d5aa0dc160638d1193b59cde
-commit ee992744ea53db0a90c986fd0a70fbbf91e7f8bd
+They shouldn't be called in an atomic section. The only thing I do to
+protect them is call mutex_lock/unlock. Those should allow preemption to
+take place.
 
-Al, do you remember why SEEK_END was omitted back then?
+-- Steve
 
