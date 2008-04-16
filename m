@@ -1,88 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763244AbYDPUES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbYDPUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763244AbYDPUES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYDPUEA
+	id S1762790AbYDPUQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYDPUQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:04:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49654 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753094AbYDPUD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:03:59 -0400
-Date: Wed, 16 Apr 2008 13:03:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: benh@kernel.crashing.org, pbadari@us.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-Message-Id: <20080416130343.a82702f0.akpm@linux-foundation.org>
-In-Reply-To: <20080416171127.GA18290@ldl.fc.hp.com>
-References: <1207331616.5916.15.camel@badari-desktop>
-	<20080404180518.GA12642@ldl.fc.hp.com>
-	<1207340371.5916.23.camel@badari-desktop>
-	<20080404224227.GA31436@ldl.fc.hp.com>
-	<1207352128.5916.26.camel@badari-desktop>
-	<20080407234255.GA22514@ldl.fc.hp.com>
-	<20080416031712.GB3333@ldl.fc.hp.com>
-	<1208331916.6958.270.camel@pasglop>
-	<20080416171127.GA18290@ldl.fc.hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Apr 2008 16:16:11 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:3986 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756269AbYDPUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:16:09 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Date: Wed, 16 Apr 2008 13:17:59 -0700
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: tonyb@cybernetics.com
+cc: "David Miller" <davem@davemloft.net>, "Michael Chan" <mchan@broadcom.com>,
+       "Matthew Carlson" <mcarlson@broadcom.com>, herbert@gondor.apana.org.au,
+       netdev@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+Message-ID: <20080416201759.GB19724@localdomain>
+References: <20080415.203108.55491723.davem@davemloft.net>
+ <1551EAE59135BE47B544934E30FC4FC002AABC73@nt-irva-0751.brcm.ad.broadcom.com>
+MIME-Version: 1.0
+In-Reply-To: <1551EAE59135BE47B544934E30FC4FC002AABC73@nt-irva-0751.brcm.ad.broadcom.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 16 Apr 2008 20:15:57.0044 (UTC)
+ FILETIME=[AE09B340:01C89FFE]
+X-WSS-ID: 641881F43M813599571-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008 11:11:27 -0600
-Alex Chiang <achiang@hp.com> wrote:
-
-> Hi Ben,
+On Wed, Apr 16, 2008 at 08:40:25AM -0700, Michael Chan wrote:
+> David Miller wrote:
 > 
-> * Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+> > Matt, skb->mac_header is either a pointer or an integer offset
+> > depending upon whether we are building 32-bit or 64-bit.
 > > 
-> > On Tue, 2008-04-15 at 21:17 -0600, Alex Chiang wrote:
-> > > 
-> > > Could you take a look at this patch and tell me what I'm doing
-> > > wrong?
+> > Testing skb->mac_header is therefore wrong, because it's an
+> > offset from a pointer in the 64-bit case and therefore it's
+> > alignment does not indicate correctly the actual final alignment
+> > of skb->head + skb->max_header.
 > > 
-> > Hrm, I'll have a look but I'd need some context first... This is to fix
-> > a problem introduced by another serie of patches ? Can you give me some
-> > pointers here ?
+> > Therefore you should test skb_mac_header(skb) and cast it with
+> > (unsigned long).
 > 
-> Thanks for taking a look. The patch series that got accepted into
-> -mm is here:
+> Isn't it better to test for skb->data?  That's where we tell
+> the hardware to start transmitting.
 > 
-> 	http://lkml.org/lkml/2008/3/25/228
+> > 
+> > Please respin this fix with that correction so I can apply it
+> > and get this bug fixed, thanks!
+> > 
+> > 
 > 
-> There have been several fixes on top of that series. I'm not sure
-> what the canonical way to refer to -mm patches is, but if you
-> navigate to this URL:
+> We think that this problem is unique in Tony's environment because
+> of the PCIE-to-PCI bridge that he is using.  We therefore want to
+> test for that bridge and apply the workaround only when it's present.
+> We've never seen this problem in the last 6 or 7 years during the
+> lifetime of the 5701.
 > 
-> 	http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/patch-list
+> We'll try to get this done ASAP.
 > 
-> You'll also need to apply:
-> 
-> 	pci-hotplug-introduce-pci_slot-fix.patch
-> 	pci-hotplug-introduce-pci_slot-fix-fix.patch
-> 	pci-hotplug-introduce-pci_slot-fix-2.patch
-> 	pci-hotplug-introduce-pci_slot-fix-99.patch
-> 	pci-hotplug-introduce-pci_slot-fix-3.patch
-> 	pci-hotplug-acpi-pci-slot-detection-driver-fix.patch
-> 	drivers-acpi-pci_slotc-fix-build-with-config_dmi=n.patch
+> Thanks.
 
-I folded it all down to two patches.  Unfortunately they don't apply very
-well to mainline:
+Tony,
 
-1 out of 4 hunks FAILED -- saving rejects to file drivers/pci/hotplug/acpiphp_core.c.rej
-2 out of 3 hunks FAILED -- saving rejects to file drivers/pci/hotplug/acpiphp_ibm.c.rej
-1 out of 6 hunks FAILED -- saving rejects to file drivers/pci/hotplug/pciehp_core.c.rej
-1 out of 4 hunks FAILED -- saving rejects to file drivers/pci/hotplug/shpchp_core.c.rej
-1 out of 5 hunks FAILED -- saving rejects to file include/linux/pci.h.rej
+Below is a patch that attempts to limit the workaround to the bridge you
+have on your system.  Can you test it and verify that the workaround is
+still enabled?
 
-I guess because I reworked everything to fit on Greg's tree(s).
 
-fwiw, http://userweb.kernel.org/~akpm/bh.gz (agains -rc9) contains all of
--mm up to and including pci-hotplug-acpi-pci-slot-detection-driver.patch
-and is suitable for review/repair/etc.
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 96043c5..52a44c6 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -4135,11 +4135,21 @@ static int tigon3_dma_hwbug_workaround(struct tg3 *tp, struct sk_buff *skb,
+ 				       u32 last_plus_one, u32 *start,
+ 				       u32 base_flags, u32 mss)
+ {
+-	struct sk_buff *new_skb = skb_copy(skb, GFP_ATOMIC);
++	struct sk_buff *new_skb;
+ 	dma_addr_t new_addr = 0;
+ 	u32 entry = *start;
+ 	int i, ret = 0;
+ 
++	if (GET_ASIC_REV(tp->pci_chip_rev_id) != ASIC_REV_5701)
++		new_skb = skb_copy(skb, GFP_ATOMIC);
++	else {
++		int more_headroom = 4 - ((unsigned long)skb->data & 3);
++
++		new_skb = skb_copy_expand(skb,
++					  skb_headroom(skb) + more_headroom,
++					  skb_tailroom(skb), GFP_ATOMIC);
++	}
++
+ 	if (!new_skb) {
+ 		ret = -1;
+ 	} else {
+@@ -4462,7 +4472,9 @@ static int tg3_start_xmit_dma_bug(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	would_hit_hwbug = 0;
+ 
+-	if (tg3_4g_overflow_test(mapping, len))
++	if (tp->tg3_flags3 & TG3_FLG3_5701_DMA_BUG)
++		would_hit_hwbug = 1;
++	else if (tg3_4g_overflow_test(mapping, len))
+ 		would_hit_hwbug = 1;
+ 
+ 	tg3_set_txd(tp, entry, mapping, len, base_flags,
+@@ -11339,6 +11351,41 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
+ 		}
+ 	}
+ 
++	if ((GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701)) {
++		static struct tg3_dev_id {
++			u32	vendor;
++			u32	device;
++		} bridge_chipsets[] = {
++			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_0 },
++			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_1 },
++			{ },
++		};
++		struct tg3_dev_id *pci_id = &bridge_chipsets[0];
++		struct pci_dev *bridge = NULL;
++
++		while (pci_id->vendor != 0 &&
++		       !(tp->tg3_flags3 & TG3_FLG3_5701_DMA_BUG)) {
++			while (1) {
++				bridge = pci_get_device(pci_id->vendor,
++							pci_id->device,
++							bridge);
++				if (!bridge) {
++					pci_id++;
++					break;
++				}
++				if (bridge->subordinate &&
++				    (bridge->subordinate->number <=
++				     tp->pdev->bus->number) &&
++				    (bridge->subordinate->subordinate >=
++				     tp->pdev->bus->number)) {
++					tp->tg3_flags3 |= TG3_FLG3_5701_DMA_BUG;
++					pci_dev_put(bridge);
++					break;
++				}
++			}
++		}
++	}
++
+ 	/* The EPB bridge inside 5714, 5715, and 5780 cannot support
+ 	 * DMA addresses > 40-bit. This bridge may have other additional
+ 	 * 57xx devices behind it in some 4-port NIC designs for example.
+diff --git a/drivers/net/tg3.h b/drivers/net/tg3.h
+index c1075a7..c688c3a 100644
+--- a/drivers/net/tg3.h
++++ b/drivers/net/tg3.h
+@@ -2476,6 +2476,7 @@ struct tg3 {
+ #define TG3_FLG3_NO_NVRAM_ADDR_TRANS	0x00000001
+ #define TG3_FLG3_ENABLE_APE		0x00000002
+ #define TG3_FLG3_5761_5784_AX_FIXES	0x00000004
++#define TG3_FLG3_5701_DMA_BUG		0x00000008
+ 
+ 	struct timer_list		timer;
+ 	u16				timer_counter;
+
 
