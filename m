@@ -1,130 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbYDPK3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762228AbYDPKmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762640AbYDPK3G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 06:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbYDPK24
+	id S1762228AbYDPKmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 06:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbYDPKmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 06:28:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:38630 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756960AbYDPK2z (ORCPT
+	Wed, 16 Apr 2008 06:42:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49015 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757163AbYDPKmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 06:28:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:cc:subject:references:in-reply-to:content-type;
-        b=Zo05vfl65U+Dhic8MgM8gLrPCsCm/OnMVzRziLssgHY2UMa/x+ObfS3ALxcWA1sgouR5bwdXMrQFF8fOsaaOWbuGT2VUr+Cj9cV1OdbkN6uSEUVWKLkbzQMIRVKL5NaJip8vlwxofIHy0hwYtGsrTgdSXmWTFenAnGaE+msQMqM=
-Message-ID: <4805D5E1.1070906@gmail.com>
-Date: Wed, 16 Apr 2008 06:33:05 -0400
-From: Scott Lovenberg <scott.lovenberg@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 16 Apr 2008 06:42:22 -0400
+Date: Wed, 16 Apr 2008 12:42:57 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       marcel@holtmann.org, maxk@qualcomm.com, linux-bluetooth@vger.kernel.org
+Subject: hci_usb: remove macro code obfuscation
+Message-ID: <20080416104257.GA1621@elf.ucw.cz>
 MIME-Version: 1.0
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: Self-snapshotting in Linux
-References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
-In-Reply-To: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------010609010506010200050509"
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010609010506010200050509
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Peter Teoh wrote:
-> Sorry if this is a a crazy idea.....just be forewarned....
->
-> First, I would like to make a reference to VMWare's snapshot (name not
-> important, emphasize the idea) feature - hopefully u are familiar with
-> it.   This is a feature whereby u can freeze the entire OS (kernel +
-> userspace application running) and then later reload itself next time,
-> continuing where it left off, without reboot from ground zero.
->
-> Next, can I ask, is such a feature useful in Linux?   Ie, able to
-> restart the kernel + userspace application from where u left off, the
-> last time round.    Not JUST the normal suspend/resume feature, but
-> more important able to CHOOSE among the different available images for
-> u to resume on.   Eg, u want to freeze the current 2.6.25-rc6 kernel,
-> save it, and then restore back the 2.6.23-rc5 image, work on it, save
-> it, and then restore the previous image again.   All done without
-> virtualization as in the VMWare sense - which really is CPU intensive
-> and slow things  down a lot.   Now we can directly execute each OS
-> kernel image on the CPU, and since saving and restoring is quite fast
-> (eg, zipping up the entire physical memory before saving into
-> permanent storage) - I supposed this will be much faster than the
-> normal initialization/fsck work done normally....or did I missed out
-> anything?
->
-> Essentially, to reiterate the key idea:   able to snapshot the current
-> kernel+userspace permanent.....restore from another snapshot....and
-> then switch back again if needed etc.....will the implementation be
-> difficult...if not impossible????
->
->   
-Hrm... well, the kernel has the ability since 2.6.20 (although its in 
-testing AFAIK) to relocate itself on a crash.  Reference:
+I had trouble figuring out what the code does. atomic_inc/dec
+management is actually pretty simple, but it is needlessly obfuscated
+with macros. Fix that.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+I had trouble figuring out what the code does. atomic_inc/dec
+management is actually pretty simple, but it is needlessly obfuscated
+with macros. Fix that.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+---
+commit 88c139ba08abddb52636e0ac25af0cabf8345e54
+tree 30f9fd7c7051e63edaaa24a93ad9686492a0bc63
+parent 43cfc0427c14f482e36adac447409c82b5cbbe09
+author Pavel <pavel@amd.ucw.cz> Wed, 16 Apr 2008 12:42:32 +0200
+committer Pavel <pavel@amd.ucw.cz> Wed, 16 Apr 2008 12:42:32 +0200
+
+ drivers/bluetooth/hci_usb.c |   41 ++++++++++++++++++-----------------------
+ 1 files changed, 18 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
+index 2597f63..6e0efc7 100644
+--- a/drivers/bluetooth/hci_usb.c
++++ b/drivers/bluetooth/hci_usb.c
+@@ -201,14 +201,9 @@ static struct _urb *_urb_dequeue(struct 
+ static void hci_usb_rx_complete(struct urb *urb);
+ static void hci_usb_tx_complete(struct urb *urb);
+ 
+-#define __pending_tx(husb, type)  (&husb->pending_tx[type-1])
+-#define __pending_q(husb, type)   (&husb->pending_q[type-1])
+-#define __completed_q(husb, type) (&husb->completed_q[type-1])
+-#define __transmit_q(husb, type)  (&husb->transmit_q[type-1])
+-
+ static inline struct _urb *__get_completed(struct hci_usb *husb, int type)
+ {
+-	return _urb_dequeue(__completed_q(husb, type)); 
++	return _urb_dequeue(&husb->completed_q[type-1]); 
+ }
+ 
+ #ifdef CONFIG_BT_HCIUSB_SCO
+@@ -254,7 +249,7 @@ static int hci_usb_intr_rx_submit(struct
+ 		return -ENOMEM;
+ 	}
+ 	_urb->type = HCI_EVENT_PKT;
+-	_urb_queue_tail(__pending_q(husb, _urb->type), _urb);
++	_urb_queue_tail(&husb->pending_q[_urb->type-1], _urb);
+ 
+ 	urb = &_urb->urb;
+ 	pipe     = usb_rcvintpipe(husb->udev, husb->intr_in_ep->desc.bEndpointAddress);
+@@ -289,7 +284,7 @@ static int hci_usb_bulk_rx_submit(struct
+ 		return -ENOMEM;
+ 	}
+ 	_urb->type = HCI_ACLDATA_PKT;
+-	_urb_queue_tail(__pending_q(husb, _urb->type), _urb);
++	_urb_queue_tail(&husb->pending_q[_urb->type-1], _urb);
+ 
+ 	urb  = &_urb->urb;
+ 	pipe = usb_rcvbulkpipe(husb->udev, husb->bulk_in_ep->desc.bEndpointAddress);
+@@ -330,7 +325,7 @@ static int hci_usb_isoc_rx_submit(struct
+ 		return -ENOMEM;
+ 	}
+ 	_urb->type = HCI_SCODATA_PKT;
+-	_urb_queue_tail(__pending_q(husb, _urb->type), _urb);
++	_urb_queue_tail(&husb->pending_q[_urb->type-1], _urb);
+ 
+ 	urb = &_urb->urb;
+ 
+@@ -423,7 +418,7 @@ static void hci_usb_unlink_urbs(struct h
+ 			BT_DBG("%s unlinking _urb %p type %d urb %p", 
+ 					husb->hdev->name, _urb, _urb->type, urb);
+ 			usb_kill_urb(urb);
+-			_urb_queue_tail(__completed_q(husb, _urb->type), _urb);
++			_urb_queue_tail(&husb->completed_q[_urb->type-1], _urb);
+ 		}
+ 
+ 		/* Release completed requests */
+@@ -474,15 +469,15 @@ static int __tx_submit(struct hci_usb *h
+ 
+ 	BT_DBG("%s urb %p type %d", husb->hdev->name, urb, _urb->type);
+ 
+-	_urb_queue_tail(__pending_q(husb, _urb->type), _urb);
++	_urb_queue_tail(&husb->pending_q[_urb->type-1], _urb);
+ 	err = usb_submit_urb(urb, GFP_ATOMIC);
+ 	if (err) {
+ 		BT_ERR("%s tx submit failed urb %p type %d err %d",
+ 				husb->hdev->name, urb, _urb->type, err);
+ 		_urb_unlink(_urb);
+-		_urb_queue_tail(__completed_q(husb, _urb->type), _urb);
++		_urb_queue_tail(&husb->completed_q[_urb->type-1], _urb);
+ 	} else
+-		atomic_inc(__pending_tx(husb, _urb->type));
++		atomic_inc(&husb->pending_tx[_urb->type-1]);
+ 
+ 	return err;
+ }
+@@ -594,8 +589,8 @@ static void hci_usb_tx_process(struct hc
+ 		clear_bit(HCI_USB_TX_WAKEUP, &husb->state);
+ 
+ 		/* Process command queue */
+-		q = __transmit_q(husb, HCI_COMMAND_PKT);
+-		if (!atomic_read(__pending_tx(husb, HCI_COMMAND_PKT)) &&
++		q = &husb->transmit_q[HCI_COMMAND_PKT-1];
++		if (!atomic_read(&husb->pending_tx[HCI_COMMAND_PKT-1]) &&
+ 				(skb = skb_dequeue(q))) {
+ 			if (hci_usb_send_ctrl(husb, skb) < 0)
+ 				skb_queue_head(q, skb);
+@@ -603,8 +598,8 @@ static void hci_usb_tx_process(struct hc
+ 
+ #ifdef CONFIG_BT_HCIUSB_SCO
+ 		/* Process SCO queue */
+-		q = __transmit_q(husb, HCI_SCODATA_PKT);
+-		if (atomic_read(__pending_tx(husb, HCI_SCODATA_PKT)) < HCI_MAX_ISOC_TX &&
++		q = &husb->transmit_q[HCI_SCODATA_PKT-1];
++		if (atomic_read(&husb->pending_tx[HCI_SCODATA_PKT-1]) < HCI_MAX_ISOC_TX &&
+ 				(skb = skb_dequeue(q))) {
+ 			if (hci_usb_send_isoc(husb, skb) < 0)
+ 				skb_queue_head(q, skb);
+@@ -612,8 +607,8 @@ #ifdef CONFIG_BT_HCIUSB_SCO
+ #endif
+ 
+ 		/* Process ACL queue */
+-		q = __transmit_q(husb, HCI_ACLDATA_PKT);
+-		while (atomic_read(__pending_tx(husb, HCI_ACLDATA_PKT)) < HCI_MAX_BULK_TX &&
++		q = &husb->transmit_q[HCI_ACLDATA_PKT-1];
++		while (atomic_read(&husb->pending_tx[HCI_ACLDATA_PKT-1]) < HCI_MAX_BULK_TX &&
+ 				(skb = skb_dequeue(q))) {
+ 			if (hci_usb_send_bulk(husb, skb) < 0) {
+ 				skb_queue_head(q, skb);
+@@ -675,7 +670,7 @@ #endif
+ 
+ 	read_lock(&husb->completion_lock);
+ 
+-	skb_queue_tail(__transmit_q(husb, bt_cb(skb)->pkt_type), skb);
++	skb_queue_tail(&husb->transmit_q[bt_cb(skb)->pkt_type-1], skb);
+ 	hci_usb_tx_wakeup(husb);
+ 
+ 	read_unlock(&husb->completion_lock);
+@@ -752,7 +747,7 @@ static void hci_usb_tx_complete(struct u
+ 		return;
+ 
+ 	/* _urb may have been already cleared by hci_usb_unlink_urbs */
+-	atomic_dec(__pending_tx(husb, _urb->type));
++	atomic_dec(&husb->pending_tx[_urb->type-1]);
+ 
+ 	urb->transfer_buffer = NULL;
+ 	kfree_skb((struct sk_buff *) _urb->priv);
+@@ -765,7 +760,7 @@ static void hci_usb_tx_complete(struct u
+ 	read_lock(&husb->completion_lock);
+ 
+ 	_urb_unlink(_urb);
+-	_urb_queue_tail(__completed_q(husb, _urb->type), _urb);
++	_urb_queue_tail(&husb->completed_q[_urb->type-1], _urb);
+ 
+ 	hci_usb_tx_wakeup(husb);
+ 
 
 
-      Relocatable kernel support for x86
-
-This feature (enabled with CONFIG_RELOCATABLE) isn't very noticeable for 
-end-users but it's quite interesting from a kernel POV. Until now, it 
-was a requirement that a i386 kernel was loaded at a fixed memory 
-address in order to work, loading it in a different place wouldn't work. 
-This feature allows to compile a kernel that can be loaded at different 
-4K-aligned addresses, but always below 1 GB, with no runtime overhead. 
-Kdump users (a feature introduced in 2.6.13 
-<http://kernelnewbies.org/Linux_2_6_13> that triggers kexec 
-<http://lwn.net/Articles/108595/> in a kernel crash in order to boot a 
-kernel that has been previously loaded at an 'empty' address, then runs 
-that kernel, saves the memory where the crashed kernel was placed, dumps 
-it in a file and continues booting the system) will benefit from this 
-because until now the "rescue kernel" needed to be compiled with 
-different configuration options in order to make it bootable at a 
-different address. With a relocatable kernel, the same kernel can be 
-booted at different addresses. (commit 1 
-<http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=968de4f02621db35b8ae5239c8cfc6664fb872d8>, 
-2 
-<http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e69f202d0a1419219198566e1c22218a5c71a9a6>, 
-3 
-<http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=be274eeaf20b4c7155242645d5e2c48b023e609b>, 
-4) 
-<http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fd593d12770d4a0d1ff095d44b96436c18479ee8>
-
-
-
-Maybe you load up another kernel to handle the snapshot, and then hand 
-the system back to it afterwards?  What do you think?
-
---------------010609010506010200050509
-Content-Type: text/x-vcard; charset=utf-8;
- name="scott_lovenberg.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="scott_lovenberg.vcf"
-
-begin:vcard
-fn:Scott Lovenberg
-n:Lovenberg;Scott
-org:The CleftStone Works
-adr:;;;Kutztown;PA;19530;USA
-email;internet:scott.lovenberg@gmail.com
-tel;cell:570-856-2999
-note;quoted-printable:Interests:=0D=0A=
-	Programming, *NIX, Slackware, Samba, C/C++, Perl, Java, .NET, Kernel Hack=
-	ing, Virtual Machines, FOSS, Security, Operating Systems, Various Softwar=
-	e Stacks.  =
-	=0D=0A=
-	=0D=0A=
-	Always have time for "shop talk"; feel free to drop me a line.
-x-mozilla-html:TRUE
-url:www.cleftstoneworks.com
-version:2.1
-end:vcard
-
-
---------------010609010506010200050509--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
