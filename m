@@ -1,54 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbYDPCub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbYDPDJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761041AbYDPCub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 22:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYDPCuY
+	id S1759019AbYDPDJQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 23:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYDPDJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 22:50:24 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:6331 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbYDPCuX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 22:50:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Y+l/KwTCzt5tCJFxWuMQ7hO3uEJGOD/Ql2eEP7SMrgw05LnSAIyjrWg8o9IK3Oq860lyscG93o6wmJ8JdGVUyU9OFKJSEgdLAteu0mUsuEs2Utltv25QAGyWzItdOxOHMumdu6/99Xt5ei2OxGNhkL4m7bWw2mvWGRiaQI5XLOY=
-Message-ID: <48056942.5010106@gmail.com>
-Date: Tue, 15 Apr 2008 21:49:38 -0500
-From: Roger Heflin <rogerheflin@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 15 Apr 2008 23:09:03 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43825 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753285AbYDPDJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 23:09:02 -0400
+Message-ID: <48056DC8.6040909@us.ibm.com>
+Date: Tue, 15 Apr 2008 20:08:56 -0700
+From: Badari Pulavarty <pbadari@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Daniel Barkalow <barkalow@iabervon.org>, Arnd Bergmann <arnd@arndb.de>,
-       Alexia Death <alexiadeath@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problem: non-SDHC 2GB SD cards are unreadable
-References: <200804132326.07713.alexiadeath@gmail.com> <200804140245.33171.arnd@arndb.de> <200804140749.57049.alexiadeath@gmail.com> <200804140848.39226.arnd@arndb.de> <480343F2.3040401@zytor.com> <alpine.LNX.1.00.0804151910100.19665@iabervon.org> <48055FC7.2020100@zytor.com>
-In-Reply-To: <48055FC7.2020100@zytor.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
+       anton@au1.ibm.com
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop> <20080407234255.GA22514@ldl.fc.hp.com> <20080415173656.218a6080.akpm@linux-foundation.org>
+In-Reply-To: <20080415173656.218a6080.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Daniel Barkalow wrote:
+Andrew Morton wrote:
+> On Mon, 7 Apr 2008 17:42:55 -0600
+> Alex Chiang <achiang@hp.com> wrote:
+>
+>   
+>> Hi Badari,
 >>
->> Somewhat unsurprisingly, not all manufacturers took into account the 
->> possibility that a card would use a different block size than what all 
->> of the cards of the time used.
+>>     
+>>>>> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+>>>>> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+>>>>> rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
+>>>>> Unable to handle kernel paging request for data at address 0x00000070
+>>>>>           
+>>>> Hrm, this is a little more information, but still not quite
+>>>> enough. I'm going to take a stab in the dark and say I'm probably
+>>>> doing something wrong on this line, maybe dereferencing a pointer
+>>>> incorrectly:
+>>>>
+>>>>         retval = pci_hp_register(php_slot, slot->bus,
+>>>> 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+>>>>         
+>>> Sorry. I thought you knew this already. Disassembly clearly showed
+>>> that slot->dn->child is NULL. 
+>>>
+>>> I confirmed it by adding printk also.
+>>>       
+>> This patch is a complete guess on my part (since I've not been
+>> able to understand pseries architecture) but I think it should
+>> fix your issue.
 >>
-> 
-> What's really kind of pathetic is that designed, in 2000, a that broke 
-> at 1 GB...
-> 
->     -hpa
+>> Can you give it a try and let me know? It applies on top of the
+>> -mm tree that includes my physical pci_slot series.
+>>
+>> Also, I'm hoping Linas will speak up and let me know what the
+>> real answer might be. ;)
+>>
+>> Thanks.
+>>
+>> /ac
+>>
+>> From: Alex Chiang <achiang@hp.com>
+>> Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
+>>
+>> Unpopulated device_node slots do not have children, and
+>> attempting to dereference them will result in a panic.
+>>
+>> Instead, attempt to derive the PCI slot number from the bus
+>> itself, and failing that, default to 0.
+>>
+>> Signed-off-by: Alex Chiang <achiang@hp.com>
+>> ---
+>> diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+>> index 0d4cfc7..91ce6a6 100644
+>> --- a/drivers/pci/hotplug/rpaphp_slot.c
+>> +++ b/drivers/pci/hotplug/rpaphp_slot.c
+>> @@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
+>>  {
+>>  	struct hotplug_slot *php_slot = slot->hotplug_slot;
+>>  	int retval;
+>> +	int slot_nr;
+>>  
+>>  	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
+>>  		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
+>> @@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
+>>  		return -EAGAIN;
+>>  	}	
+>>  
+>> -	retval = pci_hp_register(php_slot, slot->bus,
+>> -				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+>> +	if (slot->bus->self)
+>> +		slot_nr = PCI_SLOT(slot->bus->self->devfn);
+>> +	else
+>> +		slot_nr = 0;
+>> +	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
+>>  	if (retval) {
+>>  		err("pci_hp_register failed with error %d\n", retval);
+>>  		return retval;
+>>     
+>
+> Did we hear back from Badari on this?
+>
+> Thanks.
+>   
+No. It didn't help. I had to hack "slot_nr = 0" all the time to boot my 
+machine.
 
-I have used 2 different 2GB cards, one works with a reader that it came with, 
-the other won't work with the reader the other card came with, I did not try the 
-switch the other way, but it appears that the cheap readers included with the 
-cards are not interchangeable as they cut too many corners in the testing to 
-make them nice and cheap.
+I was trying to get some ppc expert to review the patch, as Alex was not
+comfortable with the fix/hack. Linas is no longer with IBM :(
 
-                                 Roger
+Thanks,
+Badari
 
