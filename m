@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYDPTxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbYDPTzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbYDPTxP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYDPTxA
+	id S1758961AbYDPTzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYDPTzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:53:00 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:31574 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYDPTw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:52:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=aWGRSaLW2HZVNRFVnKMsaa1zA3rGa4DQePxaF6uLKhkf4UoFV2GmmXd5ypwRs872tX0aYhlsHgbrc9zIKWhb0PHGPmz3UhMtYAUupJS+rzBfQQpplKnqvCQiIncEpd77dZnW9IqClHHg/Xm6+UtQ4SXRonF92pvGilTsp9fvrpw=
-Message-ID: <4806583B.5080305@gmail.com>
-Date: Wed, 16 Apr 2008 21:49:15 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 16 Apr 2008 15:55:13 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41188 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751576AbYDPTzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:55:10 -0400
+Date: Wed, 16 Apr 2008 22:55:03 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sverre@rabbelier.nl, git@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jmorris@namei.org, viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
+       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
+       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
+       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416195503.GR1677@cs181133002.pp.htv.fi>
+References: <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416120247.c665859c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
-References: <20080416175135.GN1677@cs181133002.pp.htv.fi> <20080416192306.GA3090@uranus.ravnborg.org> <20080416193102.GA16981@elte.hu>
-In-Reply-To: <20080416193102.GA16981@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080416120247.c665859c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar pisze:
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
+On Wed, Apr 16, 2008 at 12:02:47PM -0700, Andrew Morton wrote:
+> On Wed, 16 Apr 2008 16:26:34 +0300
+> Adrian Bunk <bunk@kernel.org> wrote:
 > 
->> I would prefer we were down to less than 5 warnings so we could enable 
->> it in kconfig but maybe after next merge window.
+> > On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
+> > > I'm not subscribed to the kernel mailing list, so please include me in
+> > > the cc if you don't reply to the git list (which I am subscribed to).
+> > > 
+> > > Git is participating in Google Summer of Code this year and I've
+> > > proposed to write a 'git statistics' command. This command would allow
+> > > the user to gather data about a repository, ranging from "how active
+> > > is dev x" to "what did x work on in the last 3 weeks". It's main
+> > > feature however, would be an algorithm that ranks commits as being
+> > > either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
+> > > that can aid in determining this, a commit msg along the lines of
+> > > "fixes ..." being the most obvious.)
+> > >...
 > 
-> they get regenerated. More than 1 out of every 100 new patches. Quite 
-> expensive feature (in terms of maintenance overhead) for a rather 
-> theoretical memory saving benefit.
+> Sounds like an interesting project.
+> 
+> > At least with the data we have currently in git it's impossible to 
+> > figure that out automatically.
+> > 
+> > E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
+> > (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
+> > automatically that it is a bugfix, and the commit that introduced
+> > the bug?
+> > 
+> > You can always get some data, but if you want to get usable statistics 
+> > you need explicit tags in the commits, not some algorithm that tries 
+> > to guess.
+> 
+> Well yes.  One outcome of the project would be to tell us what changes we'd
+> need to make to our processes to make such data gathering more effective.
+> 
+> Of course, we may not actually implement such changes.  That would depend
+> upon how useful the output is to us.
 
-Ok, that's why this should be done in places where we are sure that given
-function is called once and none should call more. So in general this should
-result in removing few(?) annotations not in adding it everywhere where mismatch
-appears.
+That you can add this information through tags is clear, but according
+to his SoC application that's not what he wants to do.
 
--Jacek
+According to his application he wants to determine automatically whether 
+a commit was a fix or whether a commit introduced a bug by doing stuff 
+like tracking whether a changed line was modified again shortly after a 
+commit.
+
+This plan of him will simply not result in accurate numbers.
+
+Sure, you will get some numbers, but if anyone would e.g. wrongly accuse 
+me that 2% of my commits last year introduced bugs I would get 
+***really*** angry.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
