@@ -1,79 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbYDPUBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYDPUQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761749AbYDPUBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYDPUB0
+	id S1757523AbYDPUQQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYDPUP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:01:26 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:1153 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbYDPUBZ (ORCPT
+	Wed, 16 Apr 2008 16:15:59 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:44967 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751359AbYDPUP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:01:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=laTNlR6r9uZ1lUEuqnX0MTBdodwxvJEL965Ki+GMS5PyOcMd6aJ96iqhW3iRRNRIHDnO/NeV/Laaizq8en0502/SoJDHzaKw1KjZs2If7BGmBlF1Rdr65MK0JW4vpGa5xWs3YaWYzn72bjsL3OcxTmP0SqvzNw/QI9Nlak8O714=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: don't call pxm_to_node again
-Date: Wed, 16 Apr 2008 13:01:05 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 16 Apr 2008 16:15:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAF/7BUhMROPA/2dsb2JhbACBYKx9
+Date: Wed, 16 Apr 2008 16:10:45 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: text_poke, vmap and vmalloc on x86_64
+Message-ID: <20080416201045.GA31199@Krystal>
+References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415131744.GA5248@elte.hu> <20080415134705.GB22351@Krystal> <20080415164814.GA15842@elte.hu> <20080415213832.GC7873@Krystal> <20080416131751.GI6304@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804161301.06090.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+In-Reply-To: <20080416131751.GI6304@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:06:44 up 47 days, 16:17,  5 users,  load average: 0.27, 0.27,
+	0.35
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-also make bus_numa work even ACPI_NUMA is not defined.
+Hi,
 
-don't call pxm_to_node again, and use node directly.
+I am trying to figure out why the following code seems to work fine on
+x86_32, but the update fails to happen on x86_64. Any idea why ? From
+what I see the memcpy seems to fall in a memory area which is not the
+same as the one I test at the end of the function. It only fails for
+module addresses, which are vmalloc'd. Once I fix this, I'll be able to
+send the patchset.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+(from my own alternative.c) :
 
-diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-index 9a1cad0..3e1fd80 100644
---- a/arch/x86/pci/acpi.c
-+++ b/arch/x86/pci/acpi.c
-@@ -171,11 +171,11 @@ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_device *device, int do
- 	if (node != -1)
- 		set_mp_bus_to_node(busnum, node);
- 	else
-+#endif
- 		node = get_mp_bus_to_node(busnum);
- 
- 	if (node != -1 && !node_online(node))
- 		node = -1;
--#endif
- 
- 	/* Allocate per-root-bus (not per bus) arch-specific data.
- 	 * TODO: leak; this memory is never freed.
-@@ -207,14 +207,16 @@ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_device *device, int do
- 	if (!bus)
- 		kfree(sd);
- 
-+	if (bus && node != -1) {
- #ifdef CONFIG_ACPI_NUMA
--	if (bus) {
--		if (pxm >= 0) {
-+		if (pxm >= 0)
- 			printk(KERN_DEBUG "bus %02x -> pxm %d -> node %d\n",
--				busnum, pxm, pxm_to_node(pxm));
--		}
--	}
-+				busnum, pxm, node);
-+#else
-+		printk(KERN_DEBUG "bus %02x -> node %d\n",
-+			busnum, node);
- #endif
-+	}
- 
- 	if (bus && (pci_probe & PCI_USE__CRS))
- 		get_current_resources(device, busnum, bus);
+void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+{
+        unsigned long flags;
+        char *vaddr;
+        int nr_pages = 2;
+        struct page *pages[2];
+        int i;
+
+        if (*((uint8_t *)addr - 1) != BREAKPOINT_INSTRUCTION) {
+                BUG_ON(len > sizeof(long));
+                BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
+                        - ((long)addr & ~(sizeof(long) - 1)));
+        }
+        if (is_vmalloc_addr(addr)) {
+                pages[0] = vmalloc_to_page(addr);
+                pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+        } else {
+                pages[0] = virt_to_page(addr);
+                pages[1] = virt_to_page(addr + PAGE_SIZE);
+        }
+        BUG_ON(!pages[0]);
+        if (!pages[1])
+                nr_pages = 1;
+        vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+        BUG_ON(!vaddr);
+        local_irq_save(flags);
+        memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+        local_irq_restore(flags);
+        vunmap(vaddr);
+        sync_core();
+        /* Could also do a CLFLUSH here to speed up CPU recovery; but
+           that causes hangs on some VIA CPUs. */
+        for (i = 0; i < len; i++)
+                BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
+        return addr;
+}
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
