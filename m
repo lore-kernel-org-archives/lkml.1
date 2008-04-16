@@ -1,174 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbYDPRLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932651AbYDPRMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765973AbYDPRLk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 13:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbYDPRLa
+	id S932651AbYDPRMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 13:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYDPRMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 13:11:30 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16542 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbYDPRL3 (ORCPT
+	Wed, 16 Apr 2008 13:12:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55323 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757179AbYDPRMg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 13:11:29 -0400
-Date: Wed, 16 Apr 2008 11:11:27 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-Message-ID: <20080416171127.GA18290@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop> <20080407234255.GA22514@ldl.fc.hp.com> <20080416031712.GB3333@ldl.fc.hp.com> <1208331916.6958.270.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208331916.6958.270.camel@pasglop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 16 Apr 2008 13:12:36 -0400
+Date: Wed, 16 Apr 2008 10:08:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Oliver Neukum <oliver@neukum.org>, Ingo Oeser <ioe-lkml@rameria.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Replace completions with semaphores
+Message-ID: <20080416100849.01a742aa@laptopd505.fenrus.org>
+In-Reply-To: <20080416165811.GO9191@parisc-linux.org>
+References: <4803AD91.5020001@firstfloor.org>
+	<200804161807.25582.ioe-lkml@rameria.de>
+	<20080416161652.GK9191@parisc-linux.org>
+	<200804161831.10510.oliver@neukum.org>
+	<20080416095026.658bdd21@laptopd505.fenrus.org>
+	<20080416165811.GO9191@parisc-linux.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Wed, 16 Apr 2008 10:58:11 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> 
-> On Tue, 2008-04-15 at 21:17 -0600, Alex Chiang wrote:
+> On Wed, Apr 16, 2008 at 09:50:26AM -0700, Arjan van de Ven wrote:
+> > yup. For kcounters there is a clear owner for each "slot".
+> > [This is the part that makes it debugable again)
 > > 
-> > Could you take a look at this patch and tell me what I'm doing
-> > wrong?
+> > Now for non-debug builds, the space taken for the token can be..
+> > zero depending on how we define the types for it.
 > 
-> Hrm, I'll have a look but I'd need some context first... This is to fix
-> a problem introduced by another serie of patches ? Can you give me some
-> pointers here ?
-
-Thanks for taking a look. The patch series that got accepted into
--mm is here:
-
-	http://lkml.org/lkml/2008/3/25/228
-
-There have been several fixes on top of that series. I'm not sure
-what the canonical way to refer to -mm patches is, but if you
-navigate to this URL:
-
-	http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc8/2.6.25-rc8-mm2/patch-list
-
-You'll also need to apply:
-
-	pci-hotplug-introduce-pci_slot-fix.patch
-	pci-hotplug-introduce-pci_slot-fix-fix.patch
-	pci-hotplug-introduce-pci_slot-fix-2.patch
-	pci-hotplug-introduce-pci_slot-fix-99.patch
-	pci-hotplug-introduce-pci_slot-fix-3.patch
-	pci-hotplug-acpi-pci-slot-detection-driver-fix.patch
-	drivers-acpi-pci_slotc-fix-build-with-config_dmi=n.patch
-
-[wow, that's bad on me :( ]
-
-
-> The pSeries PCI stuff can be tricky so I'll need some time tomorrow to
-> context switch and remind myself of everything involved :-) So I'd like
-> to make sure by that time, I have all the elements.
-
-The basic idea, which I keep botching on pSeries, is that when we
-make a call to pci_hp_register, we now need to pass it:
-
-pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
-
-I am having trouble figuring out the slot_nr argument. Basically,
-I want to get the devfn of the slot we're looking at.
-
-Thanks again.
-
-/ac
-
-> Thanks,
-> Ben.
+> Hm.  That might be worth changing the API for.  Right now, I'm
+> overloading the return value of kcounter_claim with an errno and a
+> cookie.  Maybe we should go for:
 > 
-> > Thanks.
-> > 
-> > /ac
-> > 
-> > * Alex Chiang <achiang@hp.com>:
-> > > Hi Badari,
-> > > 
-> > > > > > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> > > > > > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-> > > > > > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
-> > > > > > Unable to handle kernel paging request for data at address 0x00000070
-> > > > > 
-> > > > > Hrm, this is a little more information, but still not quite
-> > > > > enough. I'm going to take a stab in the dark and say I'm probably
-> > > > > doing something wrong on this line, maybe dereferencing a pointer
-> > > > > incorrectly:
-> > > > > 
-> > > > >         retval = pci_hp_register(php_slot, slot->bus,
-> > > > > 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
-> > > > 
-> > > > Sorry. I thought you knew this already. Disassembly clearly showed
-> > > > that slot->dn->child is NULL. 
-> > > > 
-> > > > I confirmed it by adding printk also.
-> > > 
-> > > This patch is a complete guess on my part (since I've not been
-> > > able to understand pseries architecture) but I think it should
-> > > fix your issue.
-> > > 
-> > > Can you give it a try and let me know? It applies on top of the
-> > > -mm tree that includes my physical pci_slot series.
-> > > 
-> > > Also, I'm hoping Linas will speak up and let me know what the
-> > > real answer might be. ;)
-> > > 
-> > > Thanks.
-> > > 
-> > > /ac
-> > > 
-> > > From: Alex Chiang <achiang@hp.com>
-> > > Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
-> > > 
-> > > Unpopulated device_node slots do not have children, and
-> > > attempting to dereference them will result in a panic.
-> > > 
-> > > Instead, attempt to derive the PCI slot number from the bus
-> > > itself, and failing that, default to 0.
-> > > 
-> > > Signed-off-by: Alex Chiang <achiang@hp.com>
-> > > ---
-> > > diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-> > > index 0d4cfc7..91ce6a6 100644
-> > > --- a/drivers/pci/hotplug/rpaphp_slot.c
-> > > +++ b/drivers/pci/hotplug/rpaphp_slot.c
-> > > @@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
-> > >  {
-> > >  	struct hotplug_slot *php_slot = slot->hotplug_slot;
-> > >  	int retval;
-> > > +	int slot_nr;
-> > >  
-> > >  	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
-> > >  		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
-> > > @@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
-> > >  		return -EAGAIN;
-> > >  	}	
-> > >  
-> > > -	retval = pci_hp_register(php_slot, slot->bus,
-> > > -				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
-> > > +	if (slot->bus->self)
-> > > +		slot_nr = PCI_SLOT(slot->bus->self->devfn);
-> > > +	else
-> > > +		slot_nr = 0;
-> > > +	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
-> > >  	if (retval) {
-> > >  		err("pci_hp_register failed with error %d\n", retval);
-> > >  		return retval;
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > 
+> extern int __must_check kcounter_claim(struct kcounter *kc,
+> kcounter_cookie_t *resource);
 > 
+> with the return value being 0 or errno and on success, kcounter_claim
+> writes a cookie to 'resource'?
+
+or we return a cookie, and define some sort of "cookie_is_error()" thing
+
+> 
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
