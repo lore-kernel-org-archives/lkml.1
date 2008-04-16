@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765434AbYDPRhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbYDPRpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765434AbYDPRhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 13:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYDPRhj
+	id S1754111AbYDPRpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 13:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYDPRpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 13:37:39 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:59050 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758136AbYDPRhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 13:37:39 -0400
-Date: Wed, 16 Apr 2008 19:36:37 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make mmc_wait_for_app_cmd() static
-Message-ID: <20080416193637.46772cde@mjolnir.drzeus.cx>
-In-Reply-To: <20080413181555.GJ2182@cs181133002.pp.htv.fi>
-References: <20080413181555.GJ2182@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Wed, 16 Apr 2008 13:45:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:28370 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbYDPRpE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 13:45:04 -0400
+Date: Wed, 16 Apr 2008 10:44:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>
+Subject: [PATCH -next] x86/trace: uses/depends on PCI
+Message-Id: <20080416104418.4fb7f1de.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Apr 2008 21:15:55 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> This patch makes the needlessly global mmc_wait_for_app_cmd() static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
+Don't try to build mmiotrace when CONFIG_PCI=n.
 
-Now this one I'm going to have to NAK. We've discussed this one before
-and I want to keep it around as part of the API so people don't go
-doing silly reimplementations. The embedded crowd tends to work a bit
-too much outside mainline, so I want to at least try to nudge them in
-directions that keeps their code mergeable.
+next-20080416/kernel/trace/trace_mmiotrace.c: In function 'mmio_print_pcidev':
+next-20080416/kernel/trace/trace_mmiotrace.c:62: error: implicit declaration of function 'pci_dev_driver'
 
-Rgds
--- 
-     -- Pierre Ossman
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/Kconfig.debug |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+--- next-20080416.orig/arch/x86/Kconfig.debug
++++ next-20080416/arch/x86/Kconfig.debug
+@@ -186,7 +186,7 @@ config MMIOTRACE_HOOKS
+ 
+ config MMIOTRACE
+ 	bool "Memory mapped IO tracing"
+-	depends on DEBUG_KERNEL
++	depends on DEBUG_KERNEL && PCI
+ 	select TRACING
+ 	select MMIOTRACE_HOOKS
+ 	default y
+@@ -194,7 +194,7 @@ config MMIOTRACE
+ 	  Mmiotrace traces Memory Mapped I/O access and is meant for
+ 	  debugging and reverse engineering. It is called from the ioremap
+ 	  implementation and works via page faults. Tracing is disabled by
+-	  default and can be enabled run-time.
++	  default and can be enabled at run-time.
+ 
+ 	  See Documentation/tracers/mmiotrace.txt.
+ 	  If you are not helping to develop drivers, say N.
