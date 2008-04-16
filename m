@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYDPHbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYDPHbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbYDPHbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 03:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYDPHbP
+	id S1759524AbYDPHbv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 03:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYDPHbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 03:31:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:52693 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYDPHbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 03:31:14 -0400
+	Wed, 16 Apr 2008 03:31:39 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:37997 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755997AbYDPHb2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 03:31:28 -0400
+Date: Wed, 16 Apr 2008 09:31:08 +0200
+From: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Adam J. Richter" <adam@yggdrasil.com>,
+       Alexander Kjeldaas <astor@fast.no>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
+Message-ID: <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
+References: <1207723262.18313.37.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18437.43836.175638.137415@cargo.ozlabs.ibm.com>
-Date: Wed, 16 Apr 2008 17:31:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: monstr@seznam.cz
-Cc: benh@kernel.crashing.org, Arnd Bergmann <arnd@arndb.de>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
-Subject: Re: Microblaze Linux release
-In-Reply-To: <48059B92.7080601@seznam.cz>
-References: <48020A21.4000404@seznam.cz>
-	<200804140801.57464.arnd@arndb.de>
-	<4804A59B.5040909@seznam.cz>
-	<200804151532.11619.arnd@arndb.de>
-	<1208296358.6958.237.camel@pasglop>
-	<48059B92.7080601@seznam.cz>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1207723262.18313.37.camel@caritas-dev.intel.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Simek writes:
+* Huang, Ying | 2008-04-09 14:41:02 [+0800]:
 
-> I think so. Sharing code among archs looks nice and this way is definitely
-> right. But starting with communication with PowerPC guys that this code I want
-> to use in case that this code is not in vanilla. This is not good start for
-> doing this.
+>This patch increases the performance of AES x86-64 implementation. The
+>average increment is more than 6.3% and the max increment is
+>more than 10.2% on Intel CORE 2 CPU. The performance increment is
+>gained via the following methods:
+>
+>- Two additional temporary registers are used to hold the subset of
+>  the state, so that the dependency between instructions is reduced.
+>
+>- The expanded key is loaded via 2 64bit load instead of 4 32-bit load.
+>
 
-I have a commit queued up that moves lmb.c into the top-level lib
-directory so other architectures can use it easily.  Dave Miller
-wanted this so he could use it for sparc64.  That will go into Linus'
-tree when the merge window opens and will be in 2.6.26.  So I don't
-see any reason why microblaze couldn't use the LMB stuff.
+>From your description I would assume that the performance can only
+increase. However, on my
+|model name      : AMD Athlon(tm) 64 Processor 3200+
+the opposite is the case [1], [2]. I dunno why and I didn't mixup
+patched & unpached :). I checked this patch on
+|model name      : Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
+and the performance really increases [3], [4].
 
-Paul.
+[1] http://download.breakpoint.cc/aes_patch/patched.txt
+[2] http://download.breakpoint.cc/aes_patch/unpatched.txt
+[3] http://download.breakpoint.cc/aes_patch/perf_patched.txt
+[4] http://download.breakpoint.cc/aes_patch/perf_originall.txt
+
+>---
+> arch/x86/crypto/aes-x86_64-asm_64.S |  101 ++++++++++++++++++++----------------
+> include/crypto/aes.h                |    1 
+> 2 files changed, 58 insertions(+), 44 deletions(-)
+>
+>--- a/include/crypto/aes.h
+>+++ b/include/crypto/aes.h
+>@@ -19,6 +19,7 @@
+> 
+> struct crypto_aes_ctx {
+> 	u32 key_length;
+>+	u32 _pad1;
+
+Why is this pad required? Do you want special alignment of the keys?
+
+> 	u32 key_enc[AES_MAX_KEYLENGTH_U32];
+> 	u32 key_dec[AES_MAX_KEYLENGTH_U32];
+> };
+>
+
+Sebastian
