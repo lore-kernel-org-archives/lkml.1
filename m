@@ -1,104 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYDPRzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYDPR6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbYDPRzO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 13:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYDPRzB
+	id S1754069AbYDPR6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 13:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYDPR5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 13:55:01 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:30639 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbYDPRzA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 13:55:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cWR/ZyLEK53YKvQHyC8VzN3eVl/lzosQ7Syylc6CF5QzodwOyitDnxxYSIU7xoTSmhHsU/LOKs5A8BaRq16dlUwxr0HouxOttQBZFDvLZBqW9JU4LQ4yyoTPN6hM6+Zxtur7xWYce9kmrmvVlcfMaqGXJZbDyldNvHiSA6nnONo=
-Message-ID: <86802c440804161054h6f0cfc3dmde49006afb7889b2@mail.gmail.com>
-Date: Wed, 16 Apr 2008 10:54:57 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [RFC][patch 2/5] mm: Node-setup agnostic free_bootmem()
-Cc: LKML <linux-kernel@vger.kernel.org>, "Linux MM" <linux-mm@kvack.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080416113719.092060936@skyscraper.fehenstaub.lan>
+	Wed, 16 Apr 2008 13:57:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:56670 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbYDPR5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 13:57:52 -0400
+Message-ID: <48063E19.9090701@goop.org>
+Date: Wed, 16 Apr 2008 10:57:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v3)
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu> <20080416162810.GA20450@Krystal>
+In-Reply-To: <20080416162810.GA20450@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080416113629.947746497@skyscraper.fehenstaub.lan>
-	 <20080416113719.092060936@skyscraper.fehenstaub.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 4:36 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Make free_bootmem() look up the node holding the specified address
->  range which lets it work transparently on single-node and multi-node
->  configurations.
->
->  If the address range exceeds the node range, it well be marked free
->  across node boundaries, too.
->
->  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->  CC: Ingo Molnar <mingo@elte.hu>
->  CC: Andi Kleen <andi@firstfloor.org>
->  CC: Yinghai Lu <yhlu.kernel@gmail.com>
->  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
->  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->  CC: Christoph Lameter <clameter@sgi.com>
->  CC: Andrew Morton <akpm@linux-foundation.org>
->  ---
->   mm/bootmem.c |   10 +++++++++-
->   1 files changed, 9 insertions(+), 1 deletions(-)
->
->  Index: tree-linus/mm/bootmem.c
->  ===================================================================
->  --- tree-linus.orig/mm/bootmem.c
->  +++ tree-linus/mm/bootmem.c
->  @@ -421,7 +421,32 @@ int __init reserve_bootmem(unsigned long
->
->   void __init free_bootmem(unsigned long addr, unsigned long size)
->   {
->  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->  +       bootmem_data_t *bdata;
->  +       unsigned long pos = addr;
->  +       unsigned long partsize = size;
->  +
->  +       list_for_each_entry(bdata, &bdata_list, list) {
->  +               unsigned long remainder = 0;
->  +
->  +               if (pos < bdata->node_boot_start)
->  +                       continue;
->  +
->  +               if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
->  +                       remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
->  +                       partsize -= remainder;
->  +               }
->  +
->  +               free_bootmem_core(bdata, pos, partsize);
->  +
->  +               if (!remainder)
->  +                       return;
->  +
->  +               pos = PFN_PHYS(bdata->node_low_pfn + 1);
->  +       }
->  +       printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
->  +                       "state: pos=%lx, partsize=%lx\n", addr, size,
->  +                       pos, partsize);
->  +       BUG();
->   }
->
->   unsigned long __init free_all_bootmem(void)
->
->  --
+Mathieu Desnoyers wrote:
+> "This way lies madness. Don't go there."
+>   
 
-Yes, it should work well with cross nodes case.
+It is a large amount of... stuff.  This immediate values thing makes a 
+big improvement then?
 
-but please add boundary check on free_bootmem_node too.
+> Index: linux-2.6-lttng/include/linux/hardirq.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/hardirq.h	2008-04-16 11:25:18.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/hardirq.h	2008-04-16 11:29:30.000000000 -0400
+> @@ -22,10 +22,13 @@
+>   * PREEMPT_MASK: 0x000000ff
+>   * SOFTIRQ_MASK: 0x0000ff00
+>   * HARDIRQ_MASK: 0x0fff0000
+> + * HARDNMI_MASK: 0x40000000
+>   */
+>  #define PREEMPT_BITS	8
+>  #define SOFTIRQ_BITS	8
+>  
+> +#define HARDNMI_BITS	1
+> +
+>  #ifndef HARDIRQ_BITS
+>  #define HARDIRQ_BITS	12
+>  
+> @@ -45,16 +48,19 @@
+>  #define PREEMPT_SHIFT	0
+>  #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
+>  #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
+> +#define HARDNMI_SHIFT	(30)
+>   
 
-YH
+Why at 30, rather than HARDIRQ_SHIFT+HARDIRQ_BITS?
+
+>  
+>  #define __IRQ_MASK(x)	((1UL << (x))-1)
+>  
+>  #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
+>  #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
+>  #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
+> +#define HARDNMI_MASK	(__IRQ_MASK(HARDNMI_BITS) << HARDNMI_SHIFT)
+>  
+>  #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
+>  #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
+>  #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
+> +#define HARDNMI_OFFSET	(1UL << HARDNMI_SHIFT)
+>  
+>  #if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
+>  #error PREEMPT_ACTIVE is too low!
+> @@ -63,6 +69,7 @@
+>  #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+>  #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+>  #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
+> +#define hardnmi_count()	(preempt_count() & HARDNMI_MASK)
+>  
+>  /*
+>   * Are we doing bottom half or hardware interrupt processing?
+> @@ -71,6 +78,7 @@
+>  #define in_irq()		(hardirq_count())
+>  #define in_softirq()		(softirq_count())
+>  #define in_interrupt()		(irq_count())
+> +#define in_nmi()		(hardnmi_count())
+>  
+>  /*
+>   * Are we running in atomic context?  WARNING: this macro cannot
+> @@ -159,7 +167,19 @@ extern void irq_enter(void);
+>   */
+>  extern void irq_exit(void);
+>  
+> -#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
+> -#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
+> +#define nmi_enter()					\
+> +	do {						\
+> +		lockdep_off();				\
+> +		BUG_ON(hardnmi_count());		\
+> +		add_preempt_count(HARDNMI_OFFSET);	\
+> +		__irq_enter();				\
+> +	} while (0)
+> +
+> +#define nmi_exit()					\
+> +	do {						\
+> +		__irq_exit();				\
+> +		sub_preempt_count(HARDNMI_OFFSET);	\
+> +		lockdep_on();				\
+> +	} while (0)
+>  
+>  #endif /* LINUX_HARDIRQ_H */
+> Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2008-04-16 11:25:18.000000000 -0400
+> +++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2008-04-16 12:06:30.000000000 -0400
+> @@ -79,7 +79,6 @@ VM_MASK		= 0x00020000
+>  #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
+>  #else
+>  #define preempt_stop(clobbers)
+> -#define resume_kernel		restore_nocheck
+>  #endif
+>  
+>  .macro TRACE_IRQS_IRET
+> @@ -265,6 +264,8 @@ END(ret_from_exception)
+>  #ifdef CONFIG_PREEMPT
+>  ENTRY(resume_kernel)
+>  	DISABLE_INTERRUPTS(CLBR_ANY)
+> +	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
+> +	jnz return_to_nmi
+>  	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
+>  	jnz restore_nocheck
+>  need_resched:
+> @@ -276,6 +277,12 @@ need_resched:
+>  	call preempt_schedule_irq
+>  	jmp need_resched
+>  END(resume_kernel)
+> +#else
+> +ENTRY(resume_kernel)
+> +	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
+>   
+
+HARDNMI_MASK?
+
+> +	jnz return_to_nmi
+> +	jmp restore_nocheck
+> +END(resume_kernel)
+>  #endif
+>  	CFI_ENDPROC
+>  
+> @@ -411,6 +418,22 @@ restore_nocheck_notrace:
+>  	CFI_ADJUST_CFA_OFFSET -4
+>  irq_return:
+>  	INTERRUPT_RETURN
+> +return_to_nmi:
+> +	testl $X86_EFLAGS_TF, PT_EFLAGS(%esp)
+> +	jnz restore_nocheck		/*
+> +					 * If single-stepping an NMI handler,
+> +					 * use the normal iret path instead of
+> +					 * the popf/lret because lret would be
+> +					 * single-stepped. It should not
+> +					 * happen : it will reactivate NMIs
+> +					 * prematurely.
+> +					 */
+> +	TRACE_IRQS_IRET
+> +	RESTORE_REGS
+> +	addl $4, %esp			# skip orig_eax/error_code
+> +	CFI_ADJUST_CFA_OFFSET -4
+> +	INTERRUPT_RETURN_NMI_SAFE
+> +
+>  .section .fixup,"ax"
+>  iret_exc:
+>  	pushl $0			# no error code
+> Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2008-04-16 11:25:18.000000000 -0400
+> +++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2008-04-16 12:06:31.000000000 -0400
+> @@ -581,12 +581,27 @@ retint_restore_args:	/* return to kernel
+>  	 * The iretq could re-enable interrupts:
+>  	 */
+>  	TRACE_IRQS_IRETQ
+> +	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
+>   
+
+HARDNMI_MASK?  (ditto below)
+
+> +	jnz return_to_nmi
+>  restore_args:
+>  	RESTORE_ARGS 0,8,0
+>  
+>  irq_return:
+>  	INTERRUPT_RETURN
+>  
+> +return_to_nmi:				/*
+> +					 * If single-stepping an NMI handler,
+> +					 * use the normal iret path instead of
+> +					 * the popf/lret because lret would be
+> +					 * single-stepped. It should not
+> +					 * happen : it will reactivate NMIs
+> +					 * prematurely.
+> +					 */
+> +	bt $8,EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
+>   
+
+test[bwl] is a bit more usual; then you can use X86_EFLAGS_TF.
+
+> +	jc restore_args
+> +	RESTORE_ARGS 0,8,0
+> +	INTERRUPT_RETURN_NMI_SAFE
+> +
+>  	.section __ex_table, "a"
+>  	.quad irq_return, bad_iret
+>  	.previous
+> @@ -802,6 +817,10 @@ END(spurious_interrupt)
+>  	.macro paranoidexit trace=1
+>  	/* ebx:	no swapgs flag */
+>  paranoid_exit\trace:
+> +	GET_THREAD_INFO(%rcx)
+> +	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
+> +	jnz paranoid_return_to_nmi\trace
+> +paranoid_exit_no_nmi\trace:
+>  	testl %ebx,%ebx				/* swapgs needed? */
+>  	jnz paranoid_restore\trace
+>  	testl $3,CS(%rsp)
+> @@ -814,6 +833,18 @@ paranoid_swapgs\trace:
+>  paranoid_restore\trace:
+>  	RESTORE_ALL 8
+>  	jmp irq_return
+> +paranoid_return_to_nmi\trace:		/*
+> +					 * If single-stepping an NMI handler,
+> +					 * use the normal iret path instead of
+> +					 * the popf/lret because lret would be
+> +					 * single-stepped. It should not
+> +					 * happen : it will reactivate NMIs
+> +					 * prematurely.
+> +					 */
+> +	bt $8,EFLAGS-0(%rsp)		/* trap flag? */
+> +	jc paranoid_exit_no_nmi\trace
+> +	RESTORE_ALL 8
+> +	INTERRUPT_RETURN_NMI_SAFE
+>   
+
+Does this need to be repeated verbatim?
+
+>  paranoid_userspace\trace:
+>  	GET_THREAD_INFO(%rcx)
+>  	movl threadinfo_flags(%rcx),%ebx
+> Index: linux-2.6-lttng/include/asm-x86/irqflags.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-x86/irqflags.h	2008-04-16 11:25:18.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-x86/irqflags.h	2008-04-16 11:29:30.000000000 -0400
+> @@ -138,12 +138,73 @@ static inline unsigned long __raw_local_
+>  
+>  #ifdef CONFIG_X86_64
+>  #define INTERRUPT_RETURN	iretq
+> +
+> +/*
+> + * Only returns from a trap or exception to a NMI context (intra-privilege
+> + * level near return) to the same SS and CS segments. Should be used
+> + * upon trap or exception return when nested over a NMI context so no iret is
+> + * issued. It takes care of modifying the eflags, rsp and returning to the
+> + * previous function.
+> + *
+> + * The stack, at that point, looks like :
+> + *
+> + * 0(rsp)  RIP
+> + * 8(rsp)  CS
+> + * 16(rsp) EFLAGS
+> + * 24(rsp) RSP
+> + * 32(rsp) SS
+> + *
+> + * Upon execution :
+> + * Copy EIP to the top of the return stack
+> + * Update top of return stack address
+> + * Pop eflags into the eflags register
+> + * Make the return stack current
+> + * Near return (popping the return address from the return stack)
+> + */
+> +#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
+> +					pushq %rbx;		\
+> +					movq 40(%rsp), %rax;	\
+> +					movq 16(%rsp), %rbx;	\
+>   
+
+Use X+16(%rsp) notation here, so that the offsets correspond to the 
+comment above.
+
+> +					subq $8, %rax;		\
+> +					movq %rbx, (%rax);	\
+> +					movq %rax, 40(%rsp);	\
+> +					popq %rbx;		\
+> +					popq %rax;		\
+> +					addq $16, %rsp;		\
+> +					popfq;			\
+> +					movq (%rsp), %rsp;	\
+> +					ret;			\
+>   
+
+How about something like
+
+	pushq	%rax
+	mov	%rsp, %rax		/* old stack */
+	mov	24+8(%rax), %rsp	/* switch stacks */
+	pushq	 0+8(%rax)		/* push return rip */
+	pushq	16+8(%rax)		/* push return rflags */
+	movq	(%rax), %rax		/* restore %rax */
+	popfq				/* restore flags */
+	ret				/* restore rip */
+
+
+> +
+>  #define ENABLE_INTERRUPTS_SYSCALL_RET			\
+>  			movq	%gs:pda_oldrsp, %rsp;	\
+>  			swapgs;				\
+>  			sysretq;
+>  #else
+>  #define INTERRUPT_RETURN		iret
+> +
+> +/*
+> + * Protected mode only, no V8086. Implies that protected mode must
+> + * be entered before NMIs or MCEs are enabled. Only returns from a trap or
+> + * exception to a NMI context (intra-privilege level far return). Should be used
+> + * upon trap or exception return when nested over a NMI context so no iret is
+> + * issued.
+> + *
+> + * The stack, at that point, looks like :
+> + *
+> + * 0(esp) EIP
+> + * 4(esp) CS
+> + * 8(esp) EFLAGS
+> + *
+> + * Upon execution :
+> + * Copy the stack eflags to top of stack
+> + * Pop eflags into the eflags register
+> + * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
+> + */
+> +#define INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
+> +					popfl;		\
+> +					.byte 0xCA;	\
+> +					.word 4;
+>   
+
+Why not "lret $4"?
+
+    J
