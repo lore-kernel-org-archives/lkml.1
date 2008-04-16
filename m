@@ -1,166 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbYDPQdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbYDPQe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbYDPQdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 12:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbYDPQdE
+	id S932619AbYDPQe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 12:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760969AbYDPQeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 12:33:04 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:34385 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758060AbYDPQdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 12:33:00 -0400
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <48043648.1000502@crispincowan.com>
-References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
-	 <20080404122408.986477936@I-love.SAKURA.ne.jp>
-	 <200804071140.59247.paul.moore@hp.com> <47FC8052.9070409@nttdata.co.jp>
-	 <20080409131151.GK11962@parisc-linux.org>
-	 <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp>
-	 <20080411143013.GB11962@parisc-linux.org>
-	 <20080413163658.GC7010@sergelap.austin.ibm.com>
-	 <4802BBDC.1030707@crispincowan.com>
-	 <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
-	 <48043648.1000502@crispincowan.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 16 Apr 2008 12:31:59 -0400
-Message-Id: <1208363519.18883.232.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 12:34:16 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52588 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759092AbYDPQeP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 12:34:15 -0400
+Date: Wed, 16 Apr 2008 10:34:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Replace completions with semaphores
+Message-ID: <20080416163413.GL9191@parisc-linux.org>
+References: <4803AD91.5020001@firstfloor.org> <200804161807.25582.ioe-lkml@rameria.de> <20080416161652.GK9191@parisc-linux.org> <200804161831.10510.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804161831.10510.oliver@neukum.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-04-14 at 21:59 -0700, Crispin Cowan wrote:
-> Stephen Smalley wrote:
-> > On Sun, 2008-04-13 at 19:05 -0700, Crispin Cowan wrote:
-> >   
-> >> Things that pathname-based access control is good at:
-> >>
-> >>     * *System Integrity:* Many of the vital components of a UNIX system
-> >>       are stored in files with Well Known Names such as /etc/shadow,
-> >>       /var/www/htdocs/index.html and /home/crispin/.ssh/known_hosts. The
-> >>       contents of the actual data blocks is less important than the
-> >>       integrity of what some random process gets when it asks for these
-> >>       resources by name. Preserving the integrity of what responds to
-> >>       the Well Known Name is thus easier if you restrict access based on
-> >>       the name.
-> >>     
-> > I think some might argue that the integrity of the data in /etc/shadow
-> > and your .ssh files is very important, not just their names.
-> I understand how the confidentiality of secrets like the contents of 
-> /etc/shadow and your .ssh files is important, but how can the integrity 
-> of these data objects be important? Back them up if you care ...
-
-If you aren't concerned with unauthorized data flow into
-your /etc/shadow and .ssh files, then I think we'll just have to stop
-right there in our discussion, as we evidently don't have a common point
-of reference in what we mean by "security".  Personally I'd be troubled
-if an unauthorized entity can ultimately feed data to such files, even
-if indirectly by tricking a privileged process into conveying the data
-to its ultimate target, a not-so-uncommon pattern.
-
-> >   And as
-> > names are themselves just data contained by directories, the integrity
-> > of the names is a particular case of the data integrity problem.
-> That's just access control for the containing directory, and/or access 
-> control to the raw partition, which is also  controlled by name-based 
-> access control to /dev
+On Wed, Apr 16, 2008 at 06:31:08PM +0200, Oliver Neukum wrote:
+> Am Mittwoch, 16. April 2008 18:16:52 schrieb Matthew Wilcox:
+> > The basic idea is that you get back a cookie from the kcounter_claim()
+> > which you have to hand to the kcounter_release() function so it
+> > knows which one you released. ?It's similar to mutex debugging except
 > 
-> >   And
-> > ultimately data integrity requires information flow control to preserve.
-> >   
-> You've argued that before, and I've never been convinced. Rather, it 
-> looked a lot like a stretched definition trying really hard to turn 
-> integrity into an information flow problem.The most information flow 
-> that I will buy in the integrity problem is taint analysis of software 
-> inputs; that software should validate inputs before acting on it.
+> So in addition to the kcounter we need to save a token in a data structure?
+> In fact, there must be a data structure that can house that token. So you
+> can no longer live with a pointer just to a device descriptor, but every
+> individual use of a resource must have an associated data structure?
 
-In some cases, you can simply prohibit a security-relevant process from
-taking untrustworthy inputs.  Like blocking privileged processes from
-following untrustworthy symlinks to counter malicious symlink attacks or
-from reading any files other than ones created by the admin.  In other
-cases, you need to allow untrustworthy inputs to ultimately flow to the
-security-relevant process, but you want to force them through some kind
-of validation as you say above, which you can do by enforcing a
-processing pipeline that forces the data to go through a subsystem that
-performs validation and/or sanitization before it ever reaches the
-security-relevant process.  That's how integrity is an information flow
-problem.  And this isn't a new idea, btw, it is one that was expressed
-long ago in the Biba model, a variant of which happens to be implemented
-and used in Vista, and is more usefully achievable via Type Enforcement
-since there we can control the processing flow precisely and bind the
-validation/sanitization subsystem to specific code.
-
-> >  - anything further is misleading as the
-> > server or device won't ensure any finer grained separation for us.
-> I don't understand this issue. The enforcement here is t contain the 
-> program executing on the NFS *client* to permit it to only mangle the 
-> parts of the NFS mount that you want it to mangle. That the server won't 
-> enforce anything for you is irrelevant when the threat is the confined 
-> application.
-
-Except that you have to consider what is happening on the server too,
-given that the files are visible to local processes there, and what
-happens on all of the clients.  And the aliasing problem that exists in
-the local filesystem case becomes exacerbated in the NFS environment.
-
-> > - no uniform abstraction for handling objects (not everything has a
-> > pathname), leading to inconsistent or incomplete control,
-> >   
-> *Strawman* argument: AppArmor doesn't try to apply pathnames to 
-> everything, just the file system. The "uniform abstraction" is to 
-> specify security policy in the native terms of the resource being 
-> mediated. Files are named as /path/to/some/files/*.html and network 
-> resources are named in terms of ports and network addresses reminiscent 
-> of firewall rules.
-> 
-> In contrast, SELinux *does* apply the labeled model to everything. That 
-> has the strength that you are dealing with the same abstraction all the 
-> time, and the weakness that the mapping from the label abstraction to 
-> the stuff that admins and users have to actually deal with is arcane.
-
-It isn't a strawman argument.  I know that AppArmor doesn't try to apply
-pathnames to non-files.  Which leads it down the first case of
-inconsistent" control - at the end of the day in looking at an AppArmor
-policy you can't say anything about how information may have ultimately
-flowed in violation of your confidentiality or integrity goals because
-you have a lossy abstraction.  Whereas we can convey the same uniform
-control over files, network IPC, local IPC, etc and make such
-statements.
-
-> > - forcing policy to be written in terms of individual objects and
-> > filesystem layout rather than security properties.
-> >   
-> Name-based access control makes the overt assumption that the name of an 
-> object corresponds to its security properties. If your data layout does 
-> *not* make such an assumption, then you have some very strange data 
-> layout putting highly sensitive objects next to non-sensitive objects.
-> 
-> Note also that the SELinux restorecon mechanism also makes the 
-> assumption that path names correspond to security properties: in fact, 
-> that is precisely its function, to take a path name and use it to apply 
-> a security property (a label). Naturally I have no objection to 
-> inferring a security property from the path name :) I just object to the 
-> racy way that restorecon does it, combined with the complaint that 
-> AppArmor is wrong for doing exactly the same thing in a different way.
-
-Making that inference when a file is first installed (as from rpm) is
-reasonable.  restorecon (the utility) is for the filesystem to the
-initial install-time labeling state, which is why it uses the same
-mapping.  Making that inference on every access in complete ignorance of
-the actual runtime state of the system is what I object to.
+That's right.  Do you have an example where this would be inconvenient?
+I couldn't find one.  For example, with USB, you could place one in the
+struct urb.
 
 -- 
-Stephen Smalley
-National Security Agency
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
