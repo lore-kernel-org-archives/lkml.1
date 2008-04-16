@@ -1,140 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbYDPVlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbYDPVl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932964AbYDPVlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765715AbYDPVgg
+	id S933245AbYDPVl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765731AbYDPVgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:36:36 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53208 "EHLO smtp.polymtl.ca"
+	Wed, 16 Apr 2008 17:36:37 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53222 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765655AbYDPVgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:36:33 -0400
-Message-Id: <20080416213548.179054543@polymtl.ca>
+	id S1765671AbYDPVge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:36:34 -0400
+Message-Id: <20080416213555.748355843@polymtl.ca>
 References: <20080416213426.298498397@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 17:34:30 -0400
+Date: Wed, 16 Apr 2008 17:34:47 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, hch@infradead.org,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [RFC patch 04/27] Kprobes - use a mutex to protect the instruction pages list.
-Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:48 +0000
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@muc.de>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: [RFC patch 21/27] Add __discard section to x86
+Content-Disposition: inline; filename=add-discard-section-to-x86.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect the instruction pages list by a specific insn pages mutex, called in 
-get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
-not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
+Add a __discard sectionto the linker script. Code produced in this section will
+not be put in the vmlinux file. This is useful when we have to calculate the
+size of an instruction before actually declaring it (for alignment purposes for
+instance). This is used by the immediate values.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-CC: hch@infradead.org
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+CC: Andi Kleen <ak@muc.de>
+CC: Chuck Ebbert <cebbert@redhat.com>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
 ---
- kernel/kprobes.c |   27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+ arch/x86/kernel/vmlinux_32.lds.S |    1 +
+ arch/x86/kernel/vmlinux_64.lds.S |    1 +
+ 2 files changed, 2 insertions(+)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+Index: linux-2.6-sched-devel/arch/x86/kernel/vmlinux_32.lds.S
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-27 11:48:58.000000000 -0400
-@@ -95,6 +95,10 @@ enum kprobe_slot_state {
- 	SLOT_USED = 2,
- };
- 
-+/*
-+ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
-+ */
-+static DEFINE_MUTEX(kprobe_insn_mutex);
- static struct hlist_head kprobe_insn_pages;
- static int kprobe_garbage_slots;
- static int collect_garbage_slots(void);
-@@ -131,7 +135,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
- {
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos;
-+	kprobe_opcode_t *ret;
- 
-+	mutex_lock(&kprobe_insn_mutex);
-  retry:
- 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
- 		if (kip->nused < INSNS_PER_PAGE) {
-@@ -140,7 +146,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 				if (kip->slot_used[i] == SLOT_CLEAN) {
- 					kip->slot_used[i] = SLOT_USED;
- 					kip->nused++;
--					return kip->insns + (i * MAX_INSN_SIZE);
-+					ret = kip->insns + (i * MAX_INSN_SIZE);
-+					goto end;
- 				}
- 			}
- 			/* Surprise!  No unused slots.  Fix kip->nused. */
-@@ -154,8 +161,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+--- linux-2.6-sched-devel.orig/arch/x86/kernel/vmlinux_32.lds.S	2008-04-16 11:07:19.000000000 -0400
++++ linux-2.6-sched-devel/arch/x86/kernel/vmlinux_32.lds.S	2008-04-16 11:17:04.000000000 -0400
+@@ -213,6 +213,7 @@ SECTIONS
+   /* Sections to be discarded */
+   /DISCARD/ : {
+ 	*(.exitcall.exit)
++	*(__discard)
  	}
- 	/* All out of space.  Need to allocate a new page. Use slot 0. */
- 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
--	if (!kip)
--		return NULL;
-+	if (!kip) {
-+		ret = NULL;
-+		goto end;
-+	}
  
- 	/*
- 	 * Use module_alloc so this page is within +/- 2GB of where the
-@@ -165,7 +174,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 	kip->insns = module_alloc(PAGE_SIZE);
- 	if (!kip->insns) {
- 		kfree(kip);
--		return NULL;
-+		ret = NULL;
-+		goto end;
+   STABS_DEBUG
+Index: linux-2.6-sched-devel/arch/x86/kernel/vmlinux_64.lds.S
+===================================================================
+--- linux-2.6-sched-devel.orig/arch/x86/kernel/vmlinux_64.lds.S	2008-04-16 11:07:19.000000000 -0400
++++ linux-2.6-sched-devel/arch/x86/kernel/vmlinux_64.lds.S	2008-04-16 11:17:04.000000000 -0400
+@@ -246,6 +246,7 @@ SECTIONS
+   /DISCARD/ : {
+ 	*(.exitcall.exit)
+ 	*(.eh_frame)
++	*(__discard)
  	}
- 	INIT_HLIST_NODE(&kip->hlist);
- 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
-@@ -173,7 +183,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
- 	kip->slot_used[0] = SLOT_USED;
- 	kip->nused = 1;
- 	kip->ngarbage = 0;
--	return kip->insns;
-+	ret = kip->insns;
-+end:
-+	mutex_unlock(&kprobe_insn_mutex);
-+	return ret;
- }
  
- /* Return 1 if all garbages are collected, otherwise 0. */
-@@ -207,7 +220,7 @@ static int __kprobes collect_garbage_slo
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos, *next;
- 
--	/* Ensure no-one is preepmted on the garbages */
-+	/* Ensure no-one is preempted on the garbages */
- 	if (check_safety() != 0)
- 		return -EAGAIN;
- 
-@@ -231,6 +244,7 @@ void __kprobes free_insn_slot(kprobe_opc
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos;
- 
-+	mutex_lock(&kprobe_insn_mutex);
- 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
- 		if (kip->insns <= slot &&
- 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
-@@ -247,6 +261,7 @@ void __kprobes free_insn_slot(kprobe_opc
- 
- 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
- 		collect_garbage_slots();
-+	mutex_unlock(&kprobe_insn_mutex);
- }
- #endif
- 
+   STABS_DEBUG
 
 -- 
 Mathieu Desnoyers
