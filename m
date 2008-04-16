@@ -1,94 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbYDPTzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbYDPTzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbYDPTzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYDPTzN
+	id S1760806AbYDPTzs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbYDPTzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:55:13 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41188 "EHLO smtp6.pp.htv.fi"
+	Wed, 16 Apr 2008 15:55:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57570 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbYDPTzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:55:10 -0400
-Date: Wed, 16 Apr 2008 22:55:03 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sverre@rabbelier.nl, git@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jmorris@namei.org, viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
-       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080416195503.GR1677@cs181133002.pp.htv.fi>
-References: <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416120247.c665859c.akpm@linux-foundation.org>
+	id S1757434AbYDPTza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:55:30 -0400
+Date: Wed, 16 Apr 2008 21:55:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
+Message-ID: <20080416195504.GA2408@elte.hu>
+References: <20080416175135.GN1677@cs181133002.pp.htv.fi> <20080416192306.GA3090@uranus.ravnborg.org> <20080416193102.GA16981@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080416120247.c665859c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080416193102.GA16981@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 12:02:47PM -0700, Andrew Morton wrote:
-> On Wed, 16 Apr 2008 16:26:34 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> > On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
-> > > I'm not subscribed to the kernel mailing list, so please include me in
-> > > the cc if you don't reply to the git list (which I am subscribed to).
-> > > 
-> > > Git is participating in Google Summer of Code this year and I've
-> > > proposed to write a 'git statistics' command. This command would allow
-> > > the user to gather data about a repository, ranging from "how active
-> > > is dev x" to "what did x work on in the last 3 weeks". It's main
-> > > feature however, would be an algorithm that ranks commits as being
-> > > either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
-> > > that can aid in determining this, a commit msg along the lines of
-> > > "fixes ..." being the most obvious.)
-> > >...
+> > I would prefer we were down to less than 5 warnings so we could 
+> > enable it in kconfig but maybe after next merge window.
 > 
-> Sounds like an interesting project.
-> 
-> > At least with the data we have currently in git it's impossible to 
-> > figure that out automatically.
-> > 
-> > E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
-> > (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
-> > automatically that it is a bugfix, and the commit that introduced
-> > the bug?
-> > 
-> > You can always get some data, but if you want to get usable statistics 
-> > you need explicit tags in the commits, not some algorithm that tries 
-> > to guess.
-> 
-> Well yes.  One outcome of the project would be to tell us what changes we'd
-> need to make to our processes to make such data gathering more effective.
-> 
-> Of course, we may not actually implement such changes.  That would depend
-> upon how useful the output is to us.
+> they get regenerated. More than 1 out of every 100 new patches. Quite 
+> expensive feature (in terms of maintenance overhead) for a rather 
+> theoretical memory saving benefit.
 
-That you can add this information through tags is clear, but according
-to his SoC application that's not what he wants to do.
+in v2.6.24 we had at least 200 section fixes:
 
-According to his application he wants to determine automatically whether 
-a commit was a fix or whether a commit introduced a bug by doing stuff 
-like tracking whether a changed line was modified again shortly after a 
-commit.
+  $ git-log v2.6.24.. | egrep -c 'WARNING:.*Section mismatch'
+  198
 
-This plan of him will simply not result in accurate numbers.
+for 12671 commits - that's 1 section type fix for every 60 commits. Even 
+considering that in v2.6.24 you did a titanic effort of fixing tons of 
+section matches - chances are that we'll still see about 1 section fix 
+for every 100 commits in the future too. That's more than 100 section 
+mismatch fixes for v2.6.26. That's _much_ more maintenance overhead than 
+a lot of _big_ features - and there's no end in sight. x86.git has more 
+than 10 section mismatch fixes for about 1000 new patches - that matches 
+the 1% cost approximately.
 
-Sure, you will get some numbers, but if anyone would e.g. wrongly accuse 
-me that 2% of my commits last year introduced bugs I would get 
-***really*** angry.
+and 90% of the problems could be reduced via the very simple patch below 
+...
 
-cu
-Adrian
+so ... why shouldnt we say that if someone wants to have this feature, 
+it should be done all automatically, in the link space. There's no 
+reason why the dependencies couldnt be figured out all automatically.
 
--- 
+	Ingo
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+------------------->
+Subject: x86: force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
+From: Andi Kleen <ak@suse.de>
 
+This avoids the requirement to mark a lot of initialization functions not
+__cpuinit just for resume from RAM.
+
+More functions could be converted now, didn't do all.
+
+Cc: rjw@sisk.pl
+Cc: pavel@suse.cz
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/Kconfig                |    5 +++++
+ arch/x86/kernel/cpu/mtrr/main.c |    2 +-
+ arch/x86/kernel/trampoline_64.S |    2 +-
+ include/linux/init.h            |    2 +-
+ 4 files changed, 8 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig
++++ linux/arch/x86/Kconfig
+@@ -130,6 +130,11 @@ config GENERIC_PENDING_IRQ
+ 	depends on GENERIC_HARDIRQS && SMP
+ 	default y
+ 
++config PM_CPUINIT
++	bool
++	depends on PM
++	default y
++
+ config X86_SMP
+ 	bool
+ 	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
+Index: linux/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux/arch/x86/kernel/cpu/mtrr/main.c
+@@ -712,7 +712,7 @@ void __init mtrr_bp_init(void)
+ 	}
+ }
+ 
+-void mtrr_ap_init(void)
++void __cpuinit mtrr_ap_init(void)
+ {
+ 	unsigned long flags;
+ 
+Index: linux/arch/x86/kernel/trampoline_64.S
+===================================================================
+--- linux.orig/arch/x86/kernel/trampoline_64.S
++++ linux/arch/x86/kernel/trampoline_64.S
+@@ -34,7 +34,7 @@
+ #include <asm/segment.h>
+ 
+ /* We can free up trampoline after bootup if cpu hotplug is not supported. */
+-#ifndef CONFIG_HOTPLUG_CPU
++#if !defined(CONFIG_HOTPLUG_CPU) && !defined(CONFIG_PM_CPUINIT)
+ .section .init.data, "aw", @progbits
+ #else
+ .section .rodata, "a", @progbits
+Index: linux/include/linux/init.h
+===================================================================
+--- linux.orig/include/linux/init.h
++++ linux/include/linux/init.h
+@@ -266,7 +266,7 @@ void __init parse_early_param(void);
+ #define __devexitdata __exitdata
+ #endif
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
++#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_PM_CPUINIT)
+ #define __cpuinit
+ #define __cpuinitdata
+ #define __cpuexit
