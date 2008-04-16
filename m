@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbYDPHrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbYDPHtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbYDPHrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 03:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYDPHrl
+	id S1758095AbYDPHtJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 03:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYDPHs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 03:47:41 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:65349 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbYDPHrl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 03:47:41 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mackerras <paulus@samba.org>
+	Wed, 16 Apr 2008 03:48:56 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39955 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341AbYDPHs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 03:48:56 -0400
 Subject: Re: Microblaze Linux release
-Date: Wed, 16 Apr 2008 09:44:41 +0200
-User-Agent: KMail/1.9.9
-Cc: monstr@seznam.cz, benh@kernel.crashing.org,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: monstr@seznam.cz
+Cc: Arnd Bergmann <arnd@arndb.de>,
        Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
        John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
        John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
        Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
-References: <48020A21.4000404@seznam.cz> <48059B92.7080601@seznam.cz> <18437.43836.175638.137415@cargo.ozlabs.ibm.com>
-In-Reply-To: <18437.43836.175638.137415@cargo.ozlabs.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804160944.42734.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19fK4JUaYLgqrnXSxjR8KNCLgqwKqBedR2RY+8
- RbNr7WWBYgfjx4NrST+Zh3NhMRLE4NZNtEQDUaeVoZsF71zIPq
- vQEfv1cv+axxttJIbnJdw==
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       paulus@samba.org
+In-Reply-To: <48059B92.7080601@seznam.cz>
+References: <48020A21.4000404@seznam.cz> <200804140801.57464.arnd@arndb.de>
+	 <4804A59B.5040909@seznam.cz>  <200804151532.11619.arnd@arndb.de>
+	 <1208296358.6958.237.camel@pasglop>  <48059B92.7080601@seznam.cz>
+Content-Type: text/plain
+Date: Wed, 16 Apr 2008 17:45:58 +1000
+Message-Id: <1208331959.6958.272.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, Paul Mackerras wrote:
-> Michal Simek writes:
-> 
-> > I think so. Sharing code among archs looks nice and this way is definitely
-> > right. But starting with communication with PowerPC guys that this code I want
-> > to use in case that this code is not in vanilla. This is not good start for
-> > doing this.
-> 
-> I have a commit queued up that moves lmb.c into the top-level lib
-> directory so other architectures can use it easily.  Dave Miller
-> wanted this so he could use it for sparc64.  That will go into Linus'
-> tree when the merge window opens and will be in 2.6.26.  So I don't
-> see any reason why microblaze couldn't use the LMB stuff.
-> 
 
-Right, fair enough. I was mostly objecting to the idea of creating another
-copy of the lmb code when bootmem should be sufficient for what microblaze
-needs. Using the code from lib/lmb.c sounds fair enough when it's already
-there.
+On Wed, 2008-04-16 at 08:24 +0200, Michal Simek wrote:
+> Hi Ben,
+> 
+> >> I'd recommend splitting prom.c into code that can be shared between powerpc
+> >> and microblaze and architecture specific code. Anything that deals with
+> >> LMB should go into powerpc, and you can simply use the alloc_bootmem
+> >> mechanism for your architecture.
+> > 
+> > That is non trivial... the unflatten DT code among others relies heavily
+> > on the LMB's to allocate the objects.
+> 
+> I think so. Sharing code among archs looks nice and this way is definitely
+> right. But starting with communication with PowerPC guys that this code I want
+> to use in case that this code is not in vanilla. This is not good start for
+> doing this.
+> I think if Microblaze will be in vanilla we can talked about separation MB and
+> PPC part to kernel folder and shared code move to shared folder.
 
-One more reason for the microblaze kernel to base on top of linux-next
-instead of mainline.
+Well, LMB code is moving to generic anyway... So we may as well move
+more stuff there ;-)
 
-	Arnd <><
+Cheers,
+Ben.
+
+
