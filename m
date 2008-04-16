@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbYDPCav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760422AbYDPCfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbYDPCav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 22:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYDPCal
+	id S1760422AbYDPCfV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 22:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYDPCfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 22:30:41 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60755 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbYDPCak (ORCPT
+	Tue, 15 Apr 2008 22:35:03 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:33211 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752951AbYDPCfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 22:30:40 -0400
-Date: Wed, 16 Apr 2008 11:30:55 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Tom May" <tom@tommay.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
-References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com> <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
-Message-Id: <20080416113003.A8BE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 15 Apr 2008 22:35:01 -0400
+Message-ID: <480565D3.6000100@davidnewall.com>
+Date: Wed, 16 Apr 2008 12:04:59 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>, James Morris <jmorris@namei.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+References: <47FEADCB.7070104@rtr.ca> <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com> <4804B5D5.4090404@davidnewall.com> <200804152251.51308.rjw@sisk.pl>
+In-Reply-To: <200804152251.51308.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here's a test program that allocates memory and frees on notification.
->  It takes an argument which is the number of pages to use; use a
-> number considerably higher than the amount of memory in the system.
-> I'm running this on a system without swap.  Each time it gets a
-> notification, it frees memory and writes out the /proc/meminfo
-> contents.  What I see is that Cached gradually decreases, then Mapped
-> decreases, and eventually the kernel invokes the oom killer.  It may
-> be necessary to tune some of the constants that control the allocation
-> and free rates and latency; these values work for my system.
-
-really thanks!
-I'll test soon :)
-
-
+Rafael J. Wysocki wrote:
+> Well, even if someone introduces bugs relatively frequently, but then also
+> works with the reporters and fixes the bugs timely, it's about okay IMO.
+>   
+This really is not okay.  Even if bugs are fixed a version or two later,
+the impact those bugs have on users makes the system look bad and drives
+them away.  We do not, I believe, want Linux to top the list for "most
+bugs".  It's unprofessional, unreliable and quite undesirable.
