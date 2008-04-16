@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbYDPDeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYDPDtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbYDPDeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 23:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYDPDeG
+	id S1758238AbYDPDtI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 23:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYDPDs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 23:34:06 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40339 "EHLO mx1.suse.de"
+	Tue, 15 Apr 2008 23:48:57 -0400
+Received: from mail.lang.hm ([64.81.33.126]:49333 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753445AbYDPDeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 23:34:05 -0400
-Subject: Re: [PATCH] increment nr_tasks in io_context when CLONE_IO is set
-From: Nikanth Karthikesan <knikanth@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4804A6CF.BANGALORE.BLR.100.174746A.1.15A79.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-References: <1208231425.27984.9.camel@zero100.blr.novell.com>
-	 <4804A6CF.BANGALORE.BLR.100.174746A.1.15A79.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-Content-Type: text/plain
-Date: Wed, 16 Apr 2008 09:05:11 +0530
-Message-Id: <1208316911.1588.0.camel@zero100.blr.novell.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	id S1754435AbYDPDs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 23:48:56 -0400
+Date: Tue, 15 Apr 2008 20:53:27 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: David Newall <davidn@davidnewall.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+In-Reply-To: <480565D3.6000100@davidnewall.com>
+Message-ID: <alpine.DEB.1.10.0804152042320.15483@asgard>
+References: <47FEADCB.7070104@rtr.ca> <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com> <4804B5D5.4090404@davidnewall.com> <200804152251.51308.rjw@sisk.pl> <480565D3.6000100@davidnewall.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 Apr 2008, David Newall wrote:
 
-On Tue, 2008-04-15 at 09:24 +0200, Jens Axboe wrote:
-> On Tue, Apr 15 2008, Nikanth Karthikesan wrote:
-> > Increment the nr_tasks associated with the io_context when CLONE_IO flag
-> > is set.
-> > 
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> > 
-> > --
-> > diff --git a/kernel/fork.c b/kernel/fork.c
-> > index dd249c3..01e843b 100644
-> > --- a/kernel/fork.c
-> > +++ b/kernel/fork.c
-> > @@ -812,6 +812,7 @@ static int copy_io(unsigned long clone_f
-> >  		tsk->io_context = ioc_task_link(ioc);
-> >  		if (unlikely(!tsk->io_context))
-> >  			return -ENOMEM;
-> > +		atomic_inc(&tsk->io_context->nr_tasks);
-> >  	} else if (ioprio_valid(ioc->ioprio)) {
-> >  		tsk->io_context = alloc_io_context(GFP_KERNEL, -1);
-> >  		if (unlikely(!tsk->io_context))
-> 
-> Fix is correct, however it would be more appropriate in ioc_task_link()
-> instead.
+> Rafael J. Wysocki wrote:
+>> Well, even if someone introduces bugs relatively frequently, but then also
+>> works with the reporters and fixes the bugs timely, it's about okay IMO.
+>>
+> This really is not okay.  Even if bugs are fixed a version or two later,
+> the impact those bugs have on users makes the system look bad and drives
+> them away.  We do not, I believe, want Linux to top the list for "most
+> bugs".  It's unprofessional, unreliable and quite undesirable.
 
-Yes. Thanks.
+timely frequently means the code was merged in -rc1/2 and was fixed before 
+the final release of the same version.
 
-> 
-> diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-> index cac4b36..2b7a118 100644
-> --- a/include/linux/iocontext.h
-> +++ b/include/linux/iocontext.h
-> @@ -91,8 +91,10 @@ static inline struct io_context *ioc_task_link(struct io_context *ioc)
->  	 * if ref count is zero, don't allow sharing (ioc is going away, it's
->  	 * a race).
->  	 */
-> -	if (ioc && atomic_inc_not_zero(&ioc->refcount))
-> +	if (ioc && atomic_inc_not_zero(&ioc->refcount)) {
-> +		atomic_inc(&ioc->nr_tasks);
->  		return ioc;
-> +	}
->  
->  	return NULL;
->  }
-> 
+given the huge variety of hardware and workloads, it's just too easy for 
+there to be cases where any trade-off you make (code size, performance, 
+memory usage, common case definitions) can turn around and bite you. In 
+addition frequently hardware doesn't work quite the way the design specs 
+say that it should (completely ignoring the fact that many drivers are 
+reverse engineered). what's most important is that when a case shows up it 
+gets addressed promptly
 
+I'd rather have a developer/maintainer who introduces and fixed 100 bug, 
+but fixes them promptly, as opposed to one who only introduces one bug, 
+but refuses to consider fixing the code 'because they don't make mistakes 
+like that' (usadly a common attitude from people who produce very 
+good code much of the time)
+
+best of all is a developer/maintainer who writes very good code and is 
+willing to accept the fact that they make mistakes and fixes the code 
+promptly, but those people are extremely rare, and usually they emerge 
+from the pool of people who make more mistakes and fix them promptly, 
+which is an added reason I'm more tolerant of that group.
+
+David Lang
