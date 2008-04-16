@@ -1,80 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbYDPMij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762791AbYDPMmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762402AbYDPMij (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 08:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYDPMia
+	id S1762791AbYDPMmo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 08:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbYDPMmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 08:38:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59106 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756089AbYDPMia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 08:38:30 -0400
-Date: Wed, 16 Apr 2008 14:37:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Roland Dreier <rdreier@cisco.com>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Replace completions with semaphores
-Message-ID: <20080416123732.GA32527@elte.hu>
-References: <4803AD91.5020001@firstfloor.org> <e2e108260804142318m19cf55c7p9973d3500de18120@mail.gmail.com> <1208242017.7053.4.camel@lappy> <e2e108260804150017u7d0aad8do9b26f7531a3a5226@mail.gmail.com> <1208249088.7124.7.camel@twins> <alpine.LFD.1.00.0804150907080.2879@woody.linux-foundation.org> <4804D779.6070907@firstfloor.org> <alpine.LFD.1.00.0804150952300.2879@woody.linux-foundation.org> <20080415170556.GA16417@elte.hu> <20080415185008.GE9191@parisc-linux.org>
+	Wed, 16 Apr 2008 08:42:36 -0400
+Received: from elasmtp-junco.atl.sa.earthlink.net ([209.86.89.63]:46537 "EHLO
+	elasmtp-junco.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755678AbYDPMmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 08:42:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=nrsN4sZoGNm0h0isHuYHvoFPzA4/77uOw7SMTa27uISrhrW7rUsSZ8rdCEJbOYWe;
+  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <4805F402.1020603@earthlink.net>
+Date: Wed, 16 Apr 2008 08:41:38 -0400
+From: Stephen Clark <sclark46@earthlink.net>
+Reply-To: sclark46@earthlink.net
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080415185008.GE9191@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: david@lang.hm
+CC: David Newall <davidn@davidnewall.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+References: <47FEADCB.7070104@rtr.ca> <517f3f820804150254w491cdf85s28f1d15696db8d96@mail.gmail.com> <4804B5D5.4090404@davidnewall.com> <200804152251.51308.rjw@sisk.pl> <480565D3.6000100@davidnewall.com> <alpine.DEB.1.10.0804152042320.15483@asgard>
+In-Reply-To: <alpine.DEB.1.10.0804152042320.15483@asgard>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79cb627b4d525c59a20cfef712fb0894c2350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 24.144.77.185
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Tue, Apr 15, 2008 at 07:05:56PM +0200, Ingo Molnar wrote:
->
-> > i very much agree with the "get rid of semaphores" argument - the 
-> > reason why i initially supported the "move to generic semaphores" 
-> > step was because i saw it basically as the precursor to full 
-> > removal: it is the removal of semaphores from all architectures - 
-> > with a small generic compatibility wrapper to handle the remaining 
-> > few uses of semaphores.
+david@lang.hm wrote:
+> On Wed, 16 Apr 2008, David Newall wrote:
 > 
-> Hm.  I thought you initially supported it because it deleted so much 
-> code. [...]
-
-... sorry, but i always thought of semaphores to be removed completely.
-
-> [...]  I don't want to go and add down_killable() to each architecture 
-> again, and you were pretty enthusiastic about adding down_killable().
-
-... the killable sleeps should and are already propagated everywhere - i 
-never thought of them as a semaphore-only feature.
-
-killable sleeps are probably the next best thing to true 
-interruptability.
-
-btw., has anyone thought about killable sync/fsync syscalls - would that 
-surprise too many programs?
-
-> > i got thoroughly surprised by the "increase the scope of semaphores" 
-> > angle to the patchset though, and in hindsight i'd rather see 
-> > neither of those generalizations and see semaphores die a slow but 
-> > sure natural death than to see their prolongation :-/
+>> Rafael J. Wysocki wrote:
+>>> Well, even if someone introduces bugs relatively frequently, but then 
+>>> also
+>>> works with the reporters and fixes the bugs timely, it's about okay IMO.
+>>>
+>> This really is not okay.  Even if bugs are fixed a version or two later,
+>> the impact those bugs have on users makes the system look bad and drives
+>> them away.  We do not, I believe, want Linux to top the list for "most
+>> bugs".  It's unprofessional, unreliable and quite undesirable.
 > 
-> I'm fully in favour of reducing the number of semaphore users, and 
-> eventually eliminating them.  Arjan and I discussed a way to do that 
-> just now ... I'll write some code, see how it looks.
+> timely frequently means the code was merged in -rc1/2 and was fixed 
+> before the final release of the same version.
+> 
+> given the huge variety of hardware and workloads, it's just too easy for 
+> there to be cases where any trade-off you make (code size, performance, 
+> memory usage, common case definitions) can turn around and bite you. In 
+> addition frequently hardware doesn't work quite the way the design specs 
+> say that it should (completely ignoring the fact that many drivers are 
+> reverse engineered). what's most important is that when a case shows up 
+> it gets addressed promptly
+> 
+> I'd rather have a developer/maintainer who introduces and fixed 100 bug, 
+> but fixes them promptly, as opposed to one who only introduces one bug, 
+> but refuses to consider fixing the code 'because they don't make 
+> mistakes like that' (usadly a common attitude from people who produce 
+> very good code much of the time)
+> 
+> best of all is a developer/maintainer who writes very good code and is 
+> willing to accept the fact that they make mistakes and fixes the code 
+> promptly, but those people are extremely rare, and usually they emerge 
+> from the pool of people who make more mistakes and fix them promptly, 
+> which is an added reason I'm more tolerant of that group.
+> 
+> David Lang
+> 
+Having been a Linux user since the late 90's the problem I see is that
+developers decide to re-design stuff that is already working and then things
+that used to work don't work anymore.
 
-cool!
+Libata is a good example. I had an older laptop that eventually got working
+again - but the old ide stuff wasn't studied enough to find out what had to be
+brought forward and supported in libata.
 
-	Ingo
+Regards,
+Steve
+-- 
+
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty
+decreases."  (Thomas Jefferson)
+
+
