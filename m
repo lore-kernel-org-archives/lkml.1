@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYDPATU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759800AbYDPATi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbYDPATU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 20:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYDPATJ
+	id S1759800AbYDPATi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 20:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYDPAT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 20:19:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54736 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753404AbYDPATI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 20:19:08 -0400
-Date: Tue, 15 Apr 2008 17:19:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-In-Reply-To: <20080416000356.GA24737@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804151718140.5705@schroedinger.engr.sgi.com>
-References: <alpine.LFD.1.00.0804150838161.2879@woody.linux-foundation.org>
- <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org>
- <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
- <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com>
- <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi>
- <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org>
- <20080416000356.GA24737@elte.hu>
+	Tue, 15 Apr 2008 20:19:27 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54956 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756109AbYDPAT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 20:19:27 -0400
+Date: Wed, 16 Apr 2008 03:19:25 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Soeren Sonnenburg <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot
+	-dual-core Sony Vaio
+Message-ID: <20080416001925.GM1677@cs181133002.pp.htv.fi>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <200804152233.39079.rjw@sisk.pl> <20080415204500.GD1677@cs181133002.pp.htv.fi> <200804152303.45320.rjw@sisk.pl> <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com> <1208294294.7851.109.camel@localhost> <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com> <20080415212949.GG1677@cs181133002.pp.htv.fi> <20080415225411.GA10041@localhost.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080415225411.GA10041@localhost.ift.unesp.br>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008, Ingo Molnar wrote:
+On Tue, Apr 15, 2008 at 07:54:11PM -0300, Carlos R. Mafra wrote:
+> On Wed 16.Apr'08 at  0:29:49 +0300, Adrian Bunk wrote:
+>...
+> > We must learn to more aggressively point people at reporting their 
+> > issues in own bugs, instead of hijacking an already existing similar
+> > looking bug (that might be for a different issue).
+> 
+> I understand now, but you made me feel bad about it.
 
-> if a !PAE x86 kernel is booted on a 32-bit system with more than
-> 4GB of RAM, then we call memory_present() with a start/end that
-> goes outside the scope of MAX_PHYSMEM_BITS.
+Sorry for my wording, it was not meant personally.
 
-Well okay this fixes it but is this the right fix? The arch should not 
-call memory_present() with an invalid pfn.
+It's a general problem in bug trackers that one person reports one 
+issue, and other people say "I have the same bug" and start discussing 
+their problem, which might or might not turn out to be the same.
+
+And the result was e.g. here that Venki marked #10377 as a duplicate of 
+#10117 saying "Both are Core 2 Duo based with 64 bit kernel." although 
+this is not true for the bug #10117 was originally created for.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
