@@ -1,84 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765709AbYDPVgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYDPVgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765709AbYDPVgf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYDPVgE
+	id S1754584AbYDPVgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYDPVgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:36:04 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:34941 "EHLO smtp.polymtl.ca"
+	Wed, 16 Apr 2008 17:36:05 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:34945 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181AbYDPVgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753488AbYDPVgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Apr 2008 17:36:00 -0400
-Message-Id: <20080416213426.298498397@polymtl.ca>
+Message-Id: <20080416213557.462377071@polymtl.ca>
+References: <20080416213426.298498397@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 17:34:26 -0400
+Date: Wed, 16 Apr 2008 17:34:51 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [RFC patch 00/27] Jump-based NMI-safe immediate values and markers for sched-devel.git
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:47 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 25/27] Linux Kernel Markers - Use Immediate Values
+Content-Disposition: inline; filename=linux-kernel-markers-immediate-values.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:57 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Make markers use immediate values.
 
-Here is the patchset you requested. I did not port the marker reintegration
-to your sched-devel tree though, because many changes happened since you have
-done the original work.
+Changelog :
+- Use imv_* instead of immediate_*.
 
-It applies on top of sched-devel.git latest.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ Documentation/markers.txt |   17 +++++++++++++----
+ include/linux/marker.h    |   16 ++++++++++++----
+ kernel/marker.c           |    8 ++++++--
+ kernel/module.c           |    1 +
+ 4 files changed, 32 insertions(+), 10 deletions(-)
 
-You will notice that I implemented what we discussed yesterday : using nops and
-jump for the heavily optimized version of markers. Comments are welcome. Running
-this with my ~120 LTTng markers on x86_32 detects 97% of the sites. 4 out of 120
-did had to fall back on the standard immediate values because they have been
-manipulated by gcc optimizations. The sched-devel.git port has been tested
-on x86_32. Patches before the port are tested on x86_32 and x86_64.
-
-Note that some folding of the immediate values patches could eventually be
-required. At that point, add-all-cpus-option-to-stop-machine-run.patch would
-become useless.
-
-The series order is the following :
-
-make-marker_debug-static.patch # in -mm
-x86-nmi-safe-int3-and-page-fault.patch
-check-for-breakpoint-in-text-poke-to-eliminate-bug-on.patch
-#Kprobes mutex cleanup
-kprobes-use-mutex-for-insn-pages.patch
-kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-kprobes-declare-kprobes-mutex-static.patch
-#Text Edit Lock (depends on Enhance DEBUG_RODATA and kprobes mutex cleanup)
-text-edit-lock-architecture-independent-code.patch
-text-edit-lock-kprobes-architecture-independent-support.patch
-#
-#Immediate Values
-add-all-cpus-option-to-stop-machine-run.patch
-immediate-values-architecture-independent-code.patch
-immediate-values-kconfig-menu-in-embedded.patch
-immediate-values-x86-optimization.patch
-add-text-poke-and-sync-core-to-powerpc.patch
-immediate-values-powerpc-optimization.patch
-immediate-values-documentation.patch
-immediate-values-support-init.patch
-#
-scheduler-profiling-use-immediate-values.patch
-#
-markers-remove-extra-format-argument.patch
-markers-define-non-optimized-marker.patch
-#
-immediate-values-move-kprobes-x86-restore-interrupt-to-kdebug-h.patch
-add-discard-section-to-x86.patch
-immediate-values-x86-optimization-nmi-mce-support.patch
-immediate-values-powerpc-optimization-nmi-mce-support.patch
-immediate-values-use-arch-nmi-mce-support.patch
-linux-kernel-markers-immediate-values.patch
-#
-immediate-values-jump.patch
-markers-use-imv-jump.patch
-
-
-Mathieu
+Index: linux-2.6-sched-devel/include/linux/marker.h
+===================================================================
+--- linux-2.6-sched-devel.orig/include/linux/marker.h	2008-04-16 11:30:51.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/marker.h	2008-04-16 11:30:55.000000000 -0400
+@@ -12,6 +12,7 @@
+  * See the file COPYING for more details.
+  */
+ 
++#include <linux/immediate.h>
+ #include <linux/types.h>
+ 
+ struct module;
+@@ -42,7 +43,7 @@ struct marker {
+ 	const char *format;	/* Marker format string, describing the
+ 				 * variable argument list.
+ 				 */
+-	char state;		/* Marker state. */
++	DEFINE_IMV(char, state);/* Immediate value state. */
+ 	char ptype;		/* probe type : 0 : single, 1 : multi */
+ 				/* Probe wrapper */
+ 	void (*call)(const struct marker *mdata, void *call_private, ...);
+@@ -74,9 +75,16 @@ struct marker {
+ 		0, 0, marker_probe_cb,					\
+ 		{ __mark_empty_function, NULL}, NULL };			\
+ 		__mark_check_format(format, ## args);			\
+-		if (unlikely(__mark_##name.state)) {			\
+-			(*__mark_##name.call)				\
+-				(&__mark_##name, call_private, ## args);\
++		if (!generic) {						\
++			if (unlikely(imv_read(__mark_##name.state)))	\
++				(*__mark_##name.call)			\
++					(&__mark_##name, call_private,	\
++					## args);			\
++		} else {						\
++			if (unlikely(_imv_read(__mark_##name.state)))	\
++				(*__mark_##name.call)			\
++					(&__mark_##name, call_private,	\
++					## args);			\
+ 		}							\
+ 	} while (0)
+ 
+Index: linux-2.6-sched-devel/kernel/marker.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/marker.c	2008-04-16 11:30:51.000000000 -0400
++++ linux-2.6-sched-devel/kernel/marker.c	2008-04-16 11:30:51.000000000 -0400
+@@ -23,6 +23,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/marker.h>
+ #include <linux/err.h>
++#include <linux/immediate.h>
+ 
+ extern struct marker __start___markers[];
+ extern struct marker __stop___markers[];
+@@ -542,7 +543,7 @@ static int set_marker(struct marker_entr
+ 	 */
+ 	smp_wmb();
+ 	elem->ptype = (*entry)->ptype;
+-	elem->state = active;
++	elem->state__imv = active;
+ 
+ 	return 0;
+ }
+@@ -556,7 +557,7 @@ static int set_marker(struct marker_entr
+ static void disable_marker(struct marker *elem)
+ {
+ 	/* leave "call" as is. It is known statically. */
+-	elem->state = 0;
++	elem->state__imv = 0;
+ 	elem->single.func = __mark_empty_function;
+ 	/* Update the function before setting the ptype */
+ 	smp_wmb();
+@@ -620,6 +621,9 @@ static void marker_update_probes(void)
+ 	marker_update_probe_range(__start___markers, __stop___markers);
+ 	/* Markers in modules. */
+ 	module_update_markers();
++	/* Update immediate values */
++	core_imv_update();
++	module_imv_update();
+ }
+ 
+ /**
+Index: linux-2.6-sched-devel/Documentation/markers.txt
+===================================================================
+--- linux-2.6-sched-devel.orig/Documentation/markers.txt	2008-04-16 11:30:32.000000000 -0400
++++ linux-2.6-sched-devel/Documentation/markers.txt	2008-04-16 11:30:51.000000000 -0400
+@@ -15,10 +15,12 @@ provide at runtime. A marker can be "on"
+ (no probe is attached). When a marker is "off" it has no effect, except for
+ adding a tiny time penalty (checking a condition for a branch) and space
+ penalty (adding a few bytes for the function call at the end of the
+-instrumented function and adds a data structure in a separate section).  When a
+-marker is "on", the function you provide is called each time the marker is
+-executed, in the execution context of the caller. When the function provided
+-ends its execution, it returns to the caller (continuing from the marker site).
++instrumented function and adds a data structure in a separate section). The
++immediate values are used to minimize the impact on data cache, encoding the
++condition in the instruction stream. When a marker is "on", the function you
++provide is called each time the marker is executed, in the execution context of
++the caller. When the function provided ends its execution, it returns to the
++caller (continuing from the marker site).
+ 
+ You can put markers at important locations in the code. Markers are
+ lightweight hooks that can pass an arbitrary number of parameters,
+@@ -69,6 +71,13 @@ a printk warning which identifies the in
+ "Format mismatch for probe probe_name (format), marker (format)"
+ 
+ 
++* Optimization for a given architecture
++
++To force use of a non-optimized version of the markers, _trace_mark() should be
++used. It takes the same parameters as the normal markers, but it does not use
++the immediate values based on code patching.
++
++
+ * Probe / marker example
+ 
+ See the example provided in samples/markers/src
+Index: linux-2.6-sched-devel/kernel/module.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/module.c	2008-04-16 11:30:51.000000000 -0400
++++ linux-2.6-sched-devel/kernel/module.c	2008-04-16 11:30:51.000000000 -0400
+@@ -2053,6 +2053,7 @@ static struct module *load_module(void _
+ 			mod->markers + mod->num_markers);
+ #endif
+ #ifdef CONFIG_IMMEDIATE
++		/* Immediate values must be updated after markers */
+ 		imv_update_range(mod->immediate,
+ 			mod->immediate + mod->num_immediate);
+ #endif
 
 -- 
 Mathieu Desnoyers
