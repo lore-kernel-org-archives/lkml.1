@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbYDPJtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbYDPJun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761999AbYDPJtW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 05:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbYDPJtM
+	id S1762198AbYDPJun (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 05:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbYDPJuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 05:49:12 -0400
-Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:10133
-	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756408AbYDPJtM (ORCPT
+	Wed, 16 Apr 2008 05:50:35 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:44071 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756453AbYDPJue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 05:49:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhYBAKdoBUh8qMMq/2dsb2JhbAAIrkc
-X-IronPort-AV: E=Sophos;i="4.25,664,1199631600"; 
-   d="scan'208";a="302955609"
-Subject: Re: RFC: Self-snapshotting in Linux
-From: Ben Nizette <bn@niasdigital.com>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Kernel Newbies <kernelnewbies@nl.linux.org>
-In-Reply-To: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
-References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Wed, 16 Apr 2008 19:49:07 +1000
-Message-Id: <1208339347.3361.35.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 05:50:34 -0400
+Date: Wed, 16 Apr 2008 17:50:09 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "Adam J. Richter" <adam@yggdrasil.com>,
+       Alexander Kjeldaas <astor@fast.no>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
+Message-ID: <20080416095009.GA28629@gondor.apana.org.au>
+References: <1207723262.18313.37.camel@caritas-dev.intel.com> <20080416073108.GA13494@Chamillionaire.breakpoint.cc> <1208333949.4322.5.camel@caritas-dev.intel.com> <87r6d65huf.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r6d65huf.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-04-16 at 16:44 +0800, Peter Teoh wrote:
-> Essentially, to reiterate the key idea:   able to snapshot the current
-> kernel+userspace permanent.....restore from another snapshot....and
-> then switch back again if needed etc.....will the implementation be
-> difficult...if not impossible????
+On Wed, Apr 16, 2008 at 10:23:04AM +0200, Andi Kleen wrote:
 > 
+> It would be also quite possible to use two different implementations,
+> one for AMD another for Intel.  crypto frame work should have no
+> problems dealing with that.
 
-As I see it the main thing is that VMWare doesn't have to worry about
-trying to put hardware in to (and pull out of) low power modes.  VMWare
-hardware is never left in an undefined state by poorly written drivers
-etc.
+Yes that would definitely be an option.
 
-I think hibernation is about what you want; snapshotting as you describe
-it should fall down for about the same reasons :-)
-
-	--Ben.
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
