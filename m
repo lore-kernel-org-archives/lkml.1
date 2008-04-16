@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYDPUgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762005AbYDPUhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbYDPUgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYDPUgc
+	id S1762005AbYDPUhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYDPUhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:36:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:8511 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYDPUgc (ORCPT
+	Wed, 16 Apr 2008 16:37:32 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:39391 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbYDPUhb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:36:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=Do9qC9yEpDy9keakI2dG4FcUpc6p0F09mkRl6nuPkVPib1nrNbGcBuOfDRPX/96vsr7Z60prnWMA+xWU01hHyQpjJBQikPgoXMDDlCn1kiUGnkNnGfcnhBOfNMbKOaone0ZkVXddry48W7oNFu8IO1PN//OWNCtCXJae3/d6VcU=
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [GIT PATCH] rfkill support for r/w and r/o rfkill switches
-Date: Wed, 16 Apr 2008 22:40:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <200804162126.43771.IvDoorn@gmail.com> <20080416195822.GA25066@tuxdriver.com>
-In-Reply-To: <20080416195822.GA25066@tuxdriver.com>
+	Wed, 16 Apr 2008 16:37:31 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+References: <20080416202338.GA6007@elte.hu>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Apr 2008 13:37:30 -0700
+In-Reply-To: <20080416202338.GA6007@elte.hu> (Ingo Molnar's message of "Wed,
+	16 Apr 2008 22:23:38 +0200")
+Message-ID: <adar6d5ilit.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804162240.38704.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Apr 2008 20:37:30.0654 (UTC) FILETIME=[B116EBE0:01C8A001]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, John W. Linville wrote:
-> On Wed, Apr 16, 2008 at 09:26:43PM +0200, Ivo van Doorn wrote:
-> > On Wednesday 16 April 2008, John W. Linville wrote:
-> 
-> > > If they are coming to me, please collect Ivo's ACKs and resend them
-> > > to linux-wireless@vger.kernel.org with me CC'ed as well.
-> > 
-> > I am going to setup a rfkill git tree from where rfkill can be managed,
-> > but I still had to look into the correct git tree to branch from.
-> > 
-> > We should sort out how the rfkill patch flow should go,
-> > directly into net-2.6 or to wireless-2.6/wireless-testing
-> > Although rfkill is a wireless tool, one could argue that linux-wireless
-> > is mostly aimed at the 802.11 protocol, whereas rfkill applies to
-> > irda and bluetooth as well.
-> 
-> I suppose you could manage it as a separate tree.  Before this round of
-> patches, that would have seemed like overkill. :-)  My only argument
-> would be that there are probably more users of rfkill in the wireless
-> (i.e. wireless LAN) trees than in the Bluetooth, UWB, or WiMAX trees.
-> But honestly, it is up to you and Dave.  I'm happy to take the patches
-> in my trees or you guys can arrange something else.
+ >  - PAT support - first step towards phasing out MTRR's for cache 
+ >    attribute control
 
-Dave, do you want the rfkill patches directly, or should they go through
-the wireless tree first?
+I just grabbed your tree and I see that there is no
+pgprot_writecombine() for x86.  I see that pci_mmap_page_range() handles
+write combining but there's no way for a PCI driver to allow userspace
+to mmap() part of a BAR with WC enabled.  Doing this gives a big
+performance boost for running low-latency apps on InfiniBand hardware
+driven by the mlx4 driver (look for the FIXME about it in
+drivers/infiniband/hw/mlx4/main.c).  Are there any plans to handle this
+somehow?
 
-> Just let me know if you want me to merge them.  Otherwise, I'll drop
-> them from my queue.
-
-Well the patches from Henrique shouldn't be applied yet,
-since he is reworking several of those patches.
-
-Ivo
+Thanks,
+  Roland
