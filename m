@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYDPE1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbYDPEh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbYDPE1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 00:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYDPE1W
+	id S1756433AbYDPEh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 00:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYDPEhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 00:27:22 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39227 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYDPE1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 00:27:21 -0400
-Date: Tue, 15 Apr 2008 22:27:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: x86 git tree broken (bisected)
-In-reply-to: <fa.qs5oa+YMIJd6h2hpuGCULc8ODY4@ifi.uio.no>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Message-id: <48058023.7080501@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.2mJjVaMdmV5IWp3mQiYHE1u4pHU@ifi.uio.no>
- <fa.SO/I64FxJXD1oLBH54BTs4pc56c@ifi.uio.no>
- <fa.fJC0A/aGr6H8XE94NUuvl1ixoc0@ifi.uio.no>
- <fa.qs5oa+YMIJd6h2hpuGCULc8ODY4@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 16 Apr 2008 00:37:09 -0400
+Received: from 1wt.eu ([62.212.114.60]:3123 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbYDPEhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 00:37:08 -0400
+Date: Wed, 16 Apr 2008 06:27:42 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Anton Titov <a.titov@host.bg>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-net@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: Bad network performance over 2Gbps
+Message-ID: <20080416042742.GA25188@1wt.eu>
+References: <1208282804.23631.27.camel@localhost> <20080415201441.GE8474@1wt.eu> <480512BD.3060407@intel.com> <1208298996.23631.43.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208298996.23631.43.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 14 of April 2008, Yinghai Lu wrote:
->> On Mon, Apr 14, 2008 at 1:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>> On Monday, 14 of April 2008, Yinghai Lu wrote:
->>>  > On Sun, Apr 13, 2008 at 5:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>  > >
->>>  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
->>>  > >  > On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>  > >  > >
->>>  > >  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
->>>  > >  > >  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>  > >  > >  > ...
->>>  > >  > >  > >  > can you try to apply the patch i sent to you about agp bridge order
->>>  > >  > >  > >  > reading for buggy silicon?
->>>  > >  > >  > >  >
->>>  > >  > >  > >  > Please boot kernel with "debug"...
->>>  > >  > >  > >  >
->>>  > >  > >  > >  > I want to verify if you can get
->>>  > >  > >  > >  >
->>>  > >  > >  > >  > "
->>>  > >  > >  > >  > Aperture conflicts with PCI mapping.
->>>  > >  > >  > >  > "
->>>  > >  > >  > >  >
->>>  > >  > >  > >  > in your boot log...
->>>  > >  > >  > >
->>>  > >  > >  > >  It's not present in there:
->>>  > >  > >  > >
->>>  > >  > >  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
->>>  > >  > >  > >  Aperture too small (32 MB)
->>>  > >  > >  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
->>>  > >  > >  > >  Aperture too small (0 MB)
->>>  > >  > >  > >  agpgart: Aperture pointing to RAM
->>>  > >  > >  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
->>>  > >  > >  > >  agpgart: Aperture too small (0 MB)
->>>  > >  > >  > >
->>>  > >  > >  > >  Full dmesg output attached.
->>>  > >  > >  >
->>>  > >  > >  > please check attached debug patch. and check if you can change GART
->>>  > >  > >  > size in your BIOS setup to 64M instead of 32M
->>>  > >  > >
->>>  > >  > >  Hm, what tree am I supposed to apply it too:
->>>  > >  > >  (1) current x86 git
->>>  > >  > >  (2) current x86 git w/ some of your previous patches (which ones in this case)
->>>  > >  > >  (3) failing (old) x86 git
->>>  > >  > >  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
->>>  > >  > >     case)?
->>>  > >  >
->>>  > >  > (1) current x86.git
->>>  > >
->>>  > >  Attached is dmesg output from current x86.git with debug_gart_checking.patch
->>>  > >  applied.
->>>  >
->>>  > please test the final one ... ...
->>>  >
->>>  > You should get back 64M memory back.
->>>
->>>  Tested (current x86.git), dmesg output attached.
->> thanks.
->>
->> looks good. as expected...
->>
->> Checking aperture...
->> AGP bridge at 00:04:00
->> Aperture from AGP @ de000000 old size 32 MB
->> Aperture size 4096 MB (APSIZE 0) is not right, using settings from NB
->> Aperture from AGP @ de000000 size 32 MB (APSIZE 0)
->> Node 0: aperture @ de000000 size 32 MB
->> Aperture too small (32 MB) than (64 MB)
->> ...
->> agpgart: Detected AGP bridge 20
->> Setting up ULi AGP.
->> agpgart: AGP aperture is 32M @ 0xde000000
+On Wed, Apr 16, 2008 at 01:36:36AM +0300, Anton Titov wrote:
+> On Tue, 2008-04-15 at 13:40 -0700, Kok, Auke wrote:
+> > Willy Tarreau wrote:
+> > 1) turn the in-kernel IRQBALANCE option off !
+> Actually it may be already removed. I remember it being under "Processor
+> type and features" and I currently cannot find it there for x86_64
 > 
-> BTW, what exactly would be the benefit of increasing the aperture size, given
-> that I use a PCI Express graphics adapter?
+> > 2) use either the userspace `irqbalance` daemon or
+> > 3) set smp_affinity manually
+> 
+> I tried echoing 3 (assuming that CPU0 and CPU1 will share their cache,
+> as advised in other mails) into smp_affinity of all ethX interrupts and
+> no positive result was observed.
 
-The kernel uses the AGP GART aperture as an IOMMU. If you have >4GB of 
-RAM and lots of devices with DMA addressing limits, more GART space 
-would help prevent the IOMMU space from being exhausted.
+But have you disabled irqbalance before doing this ? (you must reboot
+and pass "noirqbalance" on the command line for this).
+
+Also, if you are running on quad-core intel CPUs, I'm told that they're
+simply two standard dual-core CPUs in the same case, so there is no
+shared cache between any core. You should try to assign all irqs to
+CPU0 for a test. It *must* make a difference, in either direction.
+
+> I will try disabling NAPI and limiting e1000 interrupts tomorrow.
+
+I found the parameter name I was speaking about : InterruptThrottleRate.
+Beware it's an array with one entry per NIC, so you have to set as many
+values as you have NICs. I have always observed huge performance boosts
+when using the tunables the driver provides.
+
+Willy
+
