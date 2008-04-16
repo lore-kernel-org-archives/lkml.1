@@ -1,148 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbYDPUHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763554AbYDPU16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761002AbYDPUHQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYDPUHE
+	id S1763554AbYDPU16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYDPU1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:07:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:37585 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbYDPUHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:07:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=WL091uEL1TAOTUSFM1mUpHOiW90y9C2cheXow2hYnSlfI/idx7ljBnpPTHJT6K5IQATqrAJrA8L4sEL2X+1lFjvzHDSo36AijwvzLeEwMEdrUpsMTeNHPNbUozKX4sBP7YKfvod4RhW6z/kppm9GBU4Ksezx5uXV+RWUnnRK3dQ=
-Message-ID: <48065D52.9060708@gmail.com>
-Date: Wed, 16 Apr 2008 16:10:58 -0400
-From: Scott Lovenberg <scott.lovenberg@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: RFC: Self-snapshotting in Linux
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it> <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com> <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com> <20080416195053.GB27967@redhat.com> <48065C64.7010808@gmail.com>
-In-Reply-To: <48065C64.7010808@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 16:27:48 -0400
+Received: from 1wt.eu ([62.212.114.60]:3166 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbYDPU1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:27:46 -0400
+Date: Wed, 16 Apr 2008 22:04:08 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: sverre@rabbelier.nl, git@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
+       David Newall <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416200408.GA7764@1wt.eu>
+References: <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080416132634.GA545@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Lovenberg wrote:
-> Vivek Goyal wrote:
->> On Wed, Apr 16, 2008 at 11:06:05PM +0800, Peter Teoh wrote:
->>   
->>> On 4/16/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
->>>     
->>>> Scott Lovenberg wrote:
->>>>
->>>>       
->>>>> Peter Teoh wrote:
->>>>>         
->>>>  > Maybe you load up another kernel to handle the snapshot, and then hand
->>>>  > the system back to it afterwards?  What do you think?
->>>>
->>>>
->>>> Isn't that just what Ying Huans kexec-based hibernation does?
->>>>
->>>>       
->>> This list is awesome.   After I read up on this kexec-based hibernation thing:
->>>
->>> http://kerneltrap.org/node/11756
->>>
->>> I realized it is about the same idea.   Some differences though:
->>>
->>> My original starting point was VMWare's snapshot idea.   Drawing an
->>> analogy from there, the idea is to freeze and restore back entire
->>> kernel + userspace application.   For integrity reason, filesystem
->>> should be included in the frozen image as well.
->>>
->>> Currently, what we are doing now is to have a bank of Norton
->>> Ghost-based images of the entire OS and just selectively restoring
->>> back the OS we want to work on.   Very fast - less than 30secs the
->>> entire OS can be restored back.   But problem is that it need to be
->>> boot up - which is very slow.   And there userspace state cannot be
->>> frozen and restored back.
->>>
->>> VMWare images is slow, and cannot meet bare-metal CPU/direct hardware
->>> access requirements.   There goes Xen's virtualization approach as
->>> well.
->>>
->>> Another approach is this (from an email by Scott Lovenberg) - using
->>> RELOCATABLE kernel (or may be not?????I really don't know, but idea is
->>> below):
->>>
->>> a.   Assuming we have 32G (64bit hardware can do that) of memory, but
->>> we want to have 7 32-bit OS running (not concurrently) - so then
->>> memory is partition into 8 x 4GB each - the lowest 4GB reserved for
->>> the current running OS.   Each OS will be housed into each 4G of
->>> memory.   When each OS is running, it will access its own partition on
->>> the harddisk/memory, security concerns put aside.   Switching from one
->>> OS to another OS is VOLUNTARILY done by the user - equivalent to that
->>> of "desktop" feature in Solaris CDE. Restoring back essentially is
->>> just copying from each of the 4GB into the lowest 4GB memory range.
->>> Because only the lowest 4gb is used, only 32 bit instruction is
->>> needed, 64bit is needed only when copying from one 4GB memory
->>> partition into the lowest 4GB region, and vice versa.   And together
->>> with using  partitioning of harddisk for each OS, switching among the
->>> different OS kernel should be in seconds, much less than 1 minute,
->>> correct?
->>>
->>>     
->>
->> [CCing Huang and Eric]
->>
->> I think Huang is doing something very similar in kexec based hibernation
->> and probably that idea can be extended to achive above.
->>
->> Currently if system has got 4G of memory then one can reserve some
->> amount of RAM, lets say 128 MB (with in 4G) and load the kernel there
->> and let it run from there. Huang's implementation is also targetting
->> the same thing where more than one kernel be in RAM at the same time
->> (in mutually exclusive RAM locations) and one can switch between those
->> kernels using kexec techniques.
->>
->> To begin with, he is targetting co-existence of just two kernels and
->> second kernel can be used to save/resume the hibernated image.
->>
->> In fact, because of RELOCATABLE nature of kernel, you don't have to
->> copy the kernel to lower 4GB of memory (Assuming all 64bit kernels
->> running). At max one might require first 640 KB of memory and that
->> can be worked out, if need be.
->>
->> This will indeed need to put devices into some kind of sleep state so
->> that next kernel can resume it.
->>
->> So I think a variant of above is possible where on a large memory system
->> multiple kernels can coexist (while accessing separate disk partitions)
->> and one ought to be able to switch between kernels.
->>
->> Technically, there are few important pieces. kexec, relocatable kernel,
->> hibernation, kexec based hibernation. First three pieces are already
->> in place and fourth one is under development and after that I think
->> it is just a matter of putting everything together.
->>
->> Thanks
->> Vivek
->>   
-Let's try this again, without the HTML ;)
-> What about the way that the kernel does interrupt masks on CPUs during 
-> a critical section of code on SMP machines?  It basically flushes the 
-> TLB, and the cache, moves the process in critical section to a (now) 
-> isolated CPU, and reroutes interrupts to another CPU.  If you took 
-> that basic model and applied it to kernels instead of CPUs, you could 
-> probably get the desired hand off of freezing one after flushing its 
-> caches back (or sideways and then back in SMP) and moving the mm to 
-> your unfrozen kernel and routing the processes there. After 
-> snapshotting, flush the cache back again, and reroute each process to 
-> the once again unfrozen kernel, handing them back again?  Would this 
-> basic model work for isolation and snapshotting and then transitioning 
-> back?  Oh, yeah, and block each process so it doesn't try to run 
-> anything during snapshot :-).  Or, save PCs and then load them back 
-> again, I guess... although that's a waste, and a disaster waiting to 
-> happen... not that I've let that deter me before :-).  Unfortunately, 
-> this is so far out of my skill range and knowledge base, that I can't 
-> speak intelligently on it at any lower level.  Can someone fill in the 
-> gaps for me?
+On Wed, Apr 16, 2008 at 04:26:34PM +0300, Adrian Bunk wrote:
+> On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
+> > I'm not subscribed to the kernel mailing list, so please include me in
+> > the cc if you don't reply to the git list (which I am subscribed to).
+> > 
+> > Git is participating in Google Summer of Code this year and I've
+> > proposed to write a 'git statistics' command. This command would allow
+> > the user to gather data about a repository, ranging from "how active
+> > is dev x" to "what did x work on in the last 3 weeks". It's main
+> > feature however, would be an algorithm that ranks commits as being
+> > either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
+> > that can aid in determining this, a commit msg along the lines of
+> > "fixes ..." being the most obvious.)
+> >...
+> 
+> At least with the data we have currently in git it's impossible to 
+> figure that out automatically.
+> 
+> E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
+> (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
+> automatically that it is a bugfix, and the commit that introduced
+> the bug?
+> 
+> You can always get some data, but if you want to get usable statistics 
+> you need explicit tags in the commits, not some algorithm that tries 
+> to guess.
+
+yes, and doing that would get back to the bureaucracy some people are
+trying to reduce in order to save time to do the real work.
+
+However, in another project of mine, I've got used to systematically
+indicate the type of change in the subject line. It does not get any
+slower for the author, and it appears in shortlogs. And quite amazingly
+the principle has immediately been adopted by several contributors :
+
+-----
+Note to contributors: it's very handy when patches comes with a properly
+formated subject. Try to put one of the following words between brackets
+to indicate the importance of the patch followed by a short description:
+
+[MINOR]    minor fix, very low risk of impact
+[MEDIUM]   medium risk, may cause unexpected regressions of low importance or
+           which may quickly be discovered
+[MAJOR]    major risk of hidden regression. This happens when I rearrange large
+           parts of code, when I play with timeouts, with variable
+           initializations, etc...
+[BUG]      fix for a minor or medium-level bug.
+[CRITICAL] medium-term reliability or security is at risk, an upgrade is
+           absolutely required.
+[RELEASE]  release a new version
+[BUILD]    fix build issues. If you could build, no upgrade required.
+[CLEANUP]  code cleanup, silence of warnings, etc... theorically no impact
+[TESTS]    added regression testing configuration files or scripts
+[DOC]      documentation updates, no need to upgrade
+[LICENSE]  licensing updates (may impact distro packagers)
+
+Example: "[DOC] document options forwardfor to logasap"
+-----
+
+Nothing is mandatory, and I (as the maintainer) can still choose to
+adjust the prefix if I want. But in fact, I only had to to it when
+contributors did not classify their patch themselves. Several other
+tags may be added for LKML, such as "RFC" which is already used,
+etc...
+
+The advantages of this usage are multiple. Nothing needs to be changed
+in the tools, no header needs to be added, it's still very compatible
+with the mailing-list usages (and helps focusing on specific patches),
+it's absolutely not mandatory and easily tweakable.
+
+I'd like people in this thread not to forget that what we need is not
+a fantastic tool to work around some developers' weaknesses, but cheap
+(if any) help from the developers to help reviewers. I think that such
+a proposal falls exactly in this category.
+
+I'm quite ready to use it already (though I do not post often), and
+think that it would still feel natural to many developers since most
+of them are already used to such a format. I think it just requires
+a few starters to get most of us to progressively use such a scheme
+by default.
+
+Regards,
+Willy
 
