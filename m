@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbYDPS5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYDPS7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbYDPS5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 14:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYDPS5V
+	id S1754730AbYDPS7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 14:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYDPS7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 14:57:21 -0400
-Received: from mail.inp.cl ([163.247.62.33]:37874 "EHLO mail.inp.cl"
+	Wed, 16 Apr 2008 14:59:11 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3882 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbYDPS5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 14:57:20 -0400
-X-Greylist: delayed 1417 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Apr 2008 14:57:20 EDT
-Message-ID: <3807.77.220.4.253.1208370939.squirrel@webmail.inp.gob.cl>
-Date: Wed, 16 Apr 2008 14:35:39 -0400 (CLT)
-Subject: Notice From Earlham College (Please Read)
-From: "Earlham College" <webeditor_earlhamedu@yahoo.com>
-Reply-To: webeditor_earlhamedu@yahoo.com
-User-Agent: SquirrelMail/1.4.4
+	id S1751146AbYDPS7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 14:59:10 -0400
+Date: Wed, 16 Apr 2008 14:37:05 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, ivdoorn@gmail.com
+Subject: Re: [GIT PATCH] rfkill support for r/w and r/o rfkill switches
+Message-ID: <20080416183705.GA16123@tuxdriver.com>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 1 (Highest)
-Importance: High
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Earlham College Webmail Subscribers,
+On Fri, Apr 11, 2008 at 05:37:16PM -0300, Henrique de Moraes Holschuh wrote:
+> 
+> This patch series (based on v2.6.25-rc8-mm2) has several improvements to
+> the rfkill class that I need for thinkpad-acpi, plus two fluff and
+> documentation fixes.
 
-This is to formally notify you that we are presently working on the
-Earlham College web, and this can close your webmail account with Earlham
-College completely.
+Who is handling these rfkill patches?  I think in the past they have
+gone through me, but some may have gone directly to Dave M.
 
-To avoid this, please send your
-Surname:
-Password:
-to Earlham College  customer care email
-address:webeditor_earlhamedu@yahoo.com
+If they are coming to me, please collect Ivo's ACKs and resend them
+to linux-wireless@vger.kernel.org with me CC'ed as well.
 
-Please do this,so your Earlham College Webmail account can be protected
-from being close from spam emails.
+Thanks,
 
-Your immediate response is highly needed.
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
