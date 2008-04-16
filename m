@@ -1,242 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbYDPXBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbYDPXP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759518AbYDPXBz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 19:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYDPXBl
+	id S1756239AbYDPXP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 19:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYDPXPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 19:01:41 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:47592 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753357AbYDPXBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 19:01:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=djgQRLqlt7iBH5nRY9dt7CeUD+xrDxezlYZlUxJw9eL5Vetxm2TxtvFf7oVKzpiiZyhnPwNbg4H5kBV3PN2dkznE6+eeULQSKsm2x58nWDob2eRl8oeTUTrs4vI5M5BHRLzOTmoZUNShFy0+eHyNq1r+ci7EZ0rPwE5jleQtcWc=
-From: Thiago Galesi <thiagogalesi@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: Remove use of lock_kernel / unlock_kernel in fbmem
-Date: Wed, 16 Apr 2008 20:00:59 -0300
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-References: <200804131150.07601.thiagogalesi@gmail.com> <20080415221707.82da3d42.akpm@linux-foundation.org>
-In-Reply-To: <20080415221707.82da3d42.akpm@linux-foundation.org>
+	Wed, 16 Apr 2008 19:15:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:37359 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbYDPXPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 19:15:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804162000.59587.thiagogalesi@gmail.com>
+Message-ID: <18438.34621.508450.720068@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Apr 2008 09:09:49 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC patch 23/27] Immediate Values - Powerpc Optimization NMI MCE support
+In-Reply-To: <20080416213556.704299869@polymtl.ca>
+References: <20080416213426.298498397@polymtl.ca>
+	<20080416213556.704299869@polymtl.ca>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathieu Desnoyers writes:
 
+> Use an atomic update for immediate values.
 
+What is meant by an "atomic" update in this context?  AFAICS you are
+using memcpy, which is not in any way guaranteed to be atomic.
 
-
-This patch removes lock_kernel(), unlock_kernel() usage in fbmem.c and replaces it with a mutex
-
-Signed-off-by: Thiago Galesi <thiagogalesi@gmail.com>
-
----
-
-Ok, 2nd try
-
-The only thing I don't like is the name of fb_ioctl, but I don't have a better idea, so...
-
-
----
-
-Index: linux-2.6.23.1/drivers/video/fbmem.c
-===================================================================
---- linux-2.6.23.1.orig/drivers/video/fbmem.c
-+++ linux-2.6.23.1/drivers/video/fbmem.c
-@@ -987,7 +987,7 @@ fb_blank(struct fb_info *info, int blank
- }
- 
- static int 
--fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+__fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 	 unsigned long arg)
- {
- 	int fbidx = iminor(inode);
-@@ -1085,6 +1085,28 @@ fb_ioctl(struct inode *inode, struct fil
- 	}
- }
- 
-+static int
-+fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+	 unsigned long arg)
-+{
-+	int fbidx = iminor(inode);
-+	struct fb_info *info = registered_fb[fbidx];
-+	int ret;
-+
-+	mutex_lock(&info->hwlock);
-+	ret = __fb_ioctl(inode, file, cmd, arg);
-+	mutex_unlock(&info->hwlock);
-+	return ret;
-+}
-+
-+static long
-+fb_unlocked_ioctl(struct file *file, unsigned int cmd,
-+	 unsigned long arg)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	return fb_ioctl(inode, file, cmd, arg);
-+}
-+
- #ifdef CONFIG_COMPAT
- struct fb_fix_screeninfo32 {
- 	char			id[16];
-@@ -1136,7 +1158,7 @@ static int fb_getput_cmap(struct inode *
- 	    put_user(compat_ptr(data), &cmap->transp))
- 		return -EFAULT;
- 
--	err = fb_ioctl(inode, file, cmd, (unsigned long) cmap);
-+	err = __fb_ioctl(inode, file, cmd, (unsigned long) cmap);
- 
- 	if (!err) {
- 		if (copy_in_user(&cmap32->start,
-@@ -1190,7 +1212,7 @@ static int fb_get_fscreeninfo(struct ino
- 
- 	old_fs = get_fs();
- 	set_fs(KERNEL_DS);
--	err = fb_ioctl(inode, file, cmd, (unsigned long) &fix);
-+	err = __fb_ioctl(inode, file, cmd, (unsigned long) &fix);
- 	set_fs(old_fs);
- 
- 	if (!err)
-@@ -1208,7 +1230,7 @@ fb_compat_ioctl(struct file *file, unsig
- 	struct fb_ops *fb = info->fbops;
- 	long ret = -ENOIOCTLCMD;
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	switch(cmd) {
- 	case FBIOGET_VSCREENINFO:
- 	case FBIOPUT_VSCREENINFO:
-@@ -1217,7 +1239,7 @@ fb_compat_ioctl(struct file *file, unsig
- 	case FBIOPUT_CON2FBMAP:
- 		arg = (unsigned long) compat_ptr(arg);
- 	case FBIOBLANK:
--		ret = fb_ioctl(inode, file, cmd, arg);
-+		ret = __fb_ioctl(inode, file, cmd, arg);
- 		break;
- 
- 	case FBIOGET_FSCREENINFO:
-@@ -1234,7 +1256,7 @@ fb_compat_ioctl(struct file *file, unsig
- 			ret = fb->fb_compat_ioctl(info, cmd, arg);
- 		break;
- 	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return ret;
- }
- #endif
-@@ -1256,13 +1278,13 @@ fb_mmap(struct file *file, struct vm_are
- 		return -ENODEV;
- 	if (fb->fb_mmap) {
- 		int res;
--		lock_kernel();
-+		mutex_lock(&info->hwlock);
- 		res = fb->fb_mmap(info, vma);
--		unlock_kernel();
-+		mutex_unlock(&info->hwlock);
- 		return res;
- 	}
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 
- 	/* frame buffer memory */
- 	start = info->fix.smem_start;
-@@ -1271,13 +1293,13 @@ fb_mmap(struct file *file, struct vm_are
- 		/* memory mapped io */
- 		off -= len;
- 		if (info->var.accel_flags) {
--			unlock_kernel();
-+			mutex_unlock(&info->hwlock);
- 			return -EINVAL;
- 		}
- 		start = info->fix.mmio_start;
- 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
- 	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	start &= PAGE_MASK;
- 	if ((vma->vm_end - vma->vm_start + off) > len)
- 		return -EINVAL;
-@@ -1323,25 +1345,25 @@ fb_release(struct inode *inode, struct f
- {
- 	struct fb_info * const info = file->private_data;
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	if (info->fbops->fb_release)
- 		info->fbops->fb_release(info,1);
- 	module_put(info->fbops->owner);
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return 0;
- }
- 
- static const struct file_operations fb_fops = {
--	.owner =	THIS_MODULE,
--	.read =		fb_read,
--	.write =	fb_write,
--	.ioctl =	fb_ioctl,
-+	.owner =		THIS_MODULE,
-+	.read =			fb_read,
-+	.write =		fb_write,
-+	.unlocked_ioctl =	fb_unlocked_ioctl,
- #ifdef CONFIG_COMPAT
--	.compat_ioctl = fb_compat_ioctl,
-+	.compat_ioctl = 	fb_compat_ioctl,
- #endif
--	.mmap =		fb_mmap,
--	.open =		fb_open,
--	.release =	fb_release,
-+	.mmap =			fb_mmap,
-+	.open =			fb_open,
-+	.release =		fb_release,
- #ifdef HAVE_ARCH_FB_UNMAPPED_AREA
- 	.get_unmapped_area = get_fb_unmapped_area,
- #endif
-@@ -1413,6 +1435,8 @@ register_framebuffer(struct fb_info *fb_
- 
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
-+
-+	mutex_init(&fb_info->hwlock);
- 	return 0;
- }
- 
-@@ -1464,6 +1488,7 @@ unregister_framebuffer(struct fb_info *f
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
-+	mutex_destroy(&fb_info.hwlock);
- done:
- 	return ret;
- }
-Index: linux-2.6.23.1/include/linux/fb.h
-===================================================================
---- linux-2.6.23.1.orig/include/linux/fb.h
-+++ linux-2.6.23.1/include/linux/fb.h
-@@ -802,6 +802,7 @@ struct fb_info {
- 	struct list_head modelist;      /* mode list */
- 	struct fb_videomode *mode;	/* current mode */
- 
-+	struct mutex hwlock;		/* mutex for protecting hw ops */
- #ifdef CONFIG_FB_BACKLIGHT
- 	/* assigned backlight device */
- 	/* set before framebuffer registration, 
-
-
-
-
-
-
+Paul.
