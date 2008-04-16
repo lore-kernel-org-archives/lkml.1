@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYDPJaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbYDPJf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbYDPJaP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 05:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbYDPJaB
+	id S1761029AbYDPJf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 05:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYDPJfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 05:30:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34306 "EHLO mx3.mail.elte.hu"
+	Wed, 16 Apr 2008 05:35:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33500 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbYDPJaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 05:30:00 -0400
-Date: Wed, 16 Apr 2008 11:29:48 +0200
+	id S1752179AbYDPJfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 05:35:20 -0400
+Date: Wed, 16 Apr 2008 11:35:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: yhlu.kernel@gmail.com
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: allocate gart aperture from 512M
-Message-ID: <20080416092948.GF5343@elte.hu>
-References: <200804142040.37701.yhlu.kernel@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] x86: cleanup early per cpu variables/accesses v2
+Message-ID: <20080416093505.GG5343@elte.hu>
+References: <20080415233551.964024000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804142040.37701.yhlu.kernel@gmail.com>
+In-Reply-To: <20080415233551.964024000@polaris-admin.engr.sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,26 +35,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> [PATCH] x86_64: allocate gart aperture from 512M
+>   * Introduce a new PER_CPU macro called "EARLY_PER_CPU".  This is
+>     used by some per_cpu variables that are initialized and accessed 
+>     before there are per_cpu areas allocated.
 > 
-> because we try to reserve dma32 early, so we have chance to get 
-> aperture from 64M
-> 
-> with some sequence aperture allocated from RAM, could become 
-> E820_RESERVED.
-> 
-> and then if folling up one kexec one big kernel that uncompressed size 
-> is above
-> 
-> 64M could have conflict with still using gart.
-> 
-> So allocate gart aperture from 512M instead.
-> 
-> Also change the fallback_aper_order to 5, because we don't have chance 
-> to get 2G or 4G aperture.
+>   * Small change in kernel/sched.c to remove another 512 bytes from 
+>   the stack.
 
-thanks, applied.
+thanks Mike, i have picked your patches up.
 
 	Ingo
