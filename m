@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYDPAlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbYDPApB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbYDPAlB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 20:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYDPAkx
+	id S1759692AbYDPApB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 20:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYDPAow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 20:40:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50531 "EHLO mx3.mail.elte.hu"
+	Tue, 15 Apr 2008 20:44:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40026 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773AbYDPAkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 20:40:52 -0400
-Date: Wed, 16 Apr 2008 02:40:10 +0200
+	id S1752951AbYDPAow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 20:44:52 -0400
+Date: Wed, 16 Apr 2008 02:44:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
        Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
        Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Joe Perches <joe@perches.com>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, apw@shadowen.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-Message-ID: <20080416004010.GA26776@elte.hu>
-References: <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi> <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org> <20080416000356.GA24737@elte.hu> <20080416003449.GA26633@elte.hu>
+Message-ID: <20080416004430.GA26928@elte.hu>
+References: <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi> <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org> <20080416000356.GA24737@elte.hu> <20080416001816.GA26295@elte.hu> <86802c440804151732j519a541t9d8e4f6b49a53313@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080416003449.GA26633@elte.hu>
+In-Reply-To: <86802c440804151732j519a541t9d8e4f6b49a53313@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,78 +40,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> small addendum to the changelog:
+> >  +       unsigned long max_arch_pfn = 1ULL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
+> >
+> >  and also check my analysis whether it is correct and whether it 
+> >  matches the reported bug patterns. But otherwise the fix looks like 
+> >  a safe fix for v2.6.25-final to me - it only filters out values 
+> >  from sparsemem input that are nonsensical in the sparsemem 
+> >  framework anyway.
+> 
+> can you check why find_max_pfn() e820_32.c need to call 
+> memory_present? wonder if it can be removed.
 
-Joe Perches pointed out that the ULL was superfluous (i typoed it, i 
-knew it's a pfn). Updated patch below.
+this is the only call to memory_present() we do in 32-bit arch setup, so 
+it's required.
+
+(the function find_max_pfn() is woefully misnamed, but that's a cleanup 
+- i just fixed this in x86.git.)
 
 	Ingo
-
--------------------------->
-Subject: mm: sparsemem memory_present() fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Apr 16 01:40:00 CEST 2008
-
-fix memory corruption and crash on 32-bit x86 systems.
-
-if a !PAE x86 kernel is booted on a 32-bit system with more than
-4GB of RAM, then we call memory_present() with a start/end that
-goes outside the scope of MAX_PHYSMEM_BITS.
-
-that causes this loop to happily walk over the limit of the
-sparse memory section map:
-
-    for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
-                unsigned long section = pfn_to_section_nr(pfn);
-                struct mem_section *ms;
-
-                sparse_index_init(section, nid);
-                set_section_nid(section, nid);
-
-                ms = __nr_to_section(section);
-                if (!ms->section_mem_map)
-                        ms->section_mem_map = sparse_encode_early_nid(nid) |
-			                                SECTION_MARKED_PRESENT;
-
-'ms' will be out of bounds and we'll corrupt a small amount of memory by
-encoding the node ID and writing SECTION_MARKED_PRESENT (==0x1) over it.
-
-the fix is to sanity check anything the architecture passes to sparsemem.
-
-this bug seems to be rather old (as old as sparsemem support itself),
-but the exact incarnation depended on random details like configs,
-which made this bug more prominent in v2.6.25-to-be.
-
-an additional enhancement might be to print a warning about ignored
-or trimmed memory ranges.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- mm/sparse.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux/mm/sparse.c
-===================================================================
---- linux.orig/mm/sparse.c
-+++ linux/mm/sparse.c
-@@ -149,8 +149,18 @@ static inline int sparse_early_nid(struc
- /* Record a memory area against a node. */
- void __init memory_present(int nid, unsigned long start, unsigned long end)
- {
-+	unsigned long max_arch_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
- 	unsigned long pfn;
- 
-+	/*
-+	 * Sanity checks - do not allow an architecture to pass
-+	 * in larger pfns than the maximum scope of sparsemem:
-+	 */
-+	if (start >= max_arch_pfn)
-+		return;
-+	if (end >= max_arch_pfn)
-+		end = max_arch_pfn;
-+
- 	start &= PAGE_SECTION_MASK;
- 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
- 		unsigned long section = pfn_to_section_nr(pfn);
