@@ -1,419 +1,508 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbYDPVnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbYDPVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933121AbYDPVnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765888AbYDPVgk
+	id S933407AbYDPVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765973AbYDPVgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:36:40 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53238 "EHLO smtp.polymtl.ca"
+	Wed, 16 Apr 2008 17:36:43 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53250 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765730AbYDPVgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:36:37 -0400
-Message-Id: <20080416213547.368742837@polymtl.ca>
+	id S1765904AbYDPVgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:36:40 -0400
+Message-Id: <20080416213556.129757324@polymtl.ca>
 References: <20080416213426.298498397@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 17:34:28 -0400
+Date: Wed, 16 Apr 2008 17:34:48 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [RFC patch 02/27] x86 NMI-safe INT3 and Page Fault
-Content-Disposition: inline; filename=x86-nmi-safe-int3-and-page-fault.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:47 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@muc.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: [RFC patch 22/27] Immediate Values - x86 Optimization NMI and MCE support
+Content-Disposition: inline; filename=immediate-values-x86-optimization-nmi-mce-support.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implements an alternative iret with popf and return so trap and exception
-handlers can return to the NMI handler without issuing iret. iret would cause
-NMIs to be reenabled prematurely. x86_32 uses popf and far return. x86_64 has to
-copy the return instruction pointer to the top of the previous stack, issue a
-popf, loads the previous esp and issue a near return (ret).
+x86 optimization of the immediate values which uses a movl with code patching
+to set/unset the value used to populate the register used as variable source.
+It uses a breakpoint to bypass the instruction being changed, which lessens the
+interrupt latency of the operation and protects against NMIs and MCE.
 
-It allows placing immediate values (and therefore optimized trace_marks) in NMI
-code since returning from a breakpoint would be valid. Accessing vmalloc'd
-memory, which allows executing module code or accessing vmapped or vmalloc'd
-areas from NMI context, would also be valid. This is very useful to tracers like
-LTTng.
+- More reentrant immediate value : uses a breakpoint. Needs to know the
+  instruction's first byte. This is why we keep the "instruction size"
+  variable, so we can support the REX prefixed instructions too.
 
-This patch makes all faults, traps and exception safe to be called from NMI
-context *except* single-stepping, which requires iret to restore the TF (trap
-flag) and jump to the return address in a single instruction. Sorry, no kprobes
-support in NMI handlers because of this limitation.  We cannot single-step an
-NMI handler, because iret must set the TF flag and return back to the
-instruction to single-step in a single instruction. This cannot be emulated with
-popf/lret, because lret would be single-stepped. It does not apply to immediate
-values because they do not use single-stepping. This code detects if the TF
-flag is set and uses the iret path for single-stepping, even if it reactivates
-NMIs prematurely.
-
-alpha and avr32 use the active count bit 31. This patch moves them to 28.
-
-TODO : test alpha and avr32 active count modification
-
-tested on x86_32 (tests implemented in a separate patch) :
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-- tested vmalloc faults in NMI handler by placing a non-optimized marker in the
-  NMI handler (so no breakpoint is executed) and connecting a probe which
-  touches every pages of a 20MB vmalloc'd buffer. It executes trough the return
-  path without problem.
-- Tested with and without preemption
-
-tested on x86_64
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-
-To test on x86_64 :
-- Test without preemption
-- Test vmalloc faults
-- Test on Intel 64 bits CPUs.
-
-"This way lies madness. Don't go there."
-- Andi
-
-Changelog since v1 :
-- x86_64 fixes.
-Changelog since v2 :
-- paravirt support
+Changelog:
+- Change the immediate.c update code to support variable length opcodes.
+- Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
+  non atomic writes to a code region only touched by us (nobody can execute it
+  since we are protected by the imv_mutex).
+- Add x86_64 support, ready for i386+x86_64 -> x86 merge.
+- Use asm-x86/asm.h.
+- Change the immediate.c update code to support variable length opcodes.
+- Use imv_* instead of immediate_*.
+- Use kernel_wp_disable/enable instead of save/restore.
+- Fix 1 byte immediate value so it declares its instruction size.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: akpm@osdl.org
-CC: mingo@elte.hu
+CC: Andi Kleen <ak@muc.de>
 CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: Chuck Ebbert <cebbert@redhat.com>
+CC: Christoph Hellwig <hch@infradead.org>
 CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
 ---
- arch/x86/kernel/entry_32.S      |   25 +++++++++++++++-
- arch/x86/kernel/entry_64.S      |   31 ++++++++++++++++++++
- include/asm-alpha/thread_info.h |    2 -
- include/asm-avr32/thread_info.h |    2 -
- include/asm-x86/irqflags.h      |   61 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/paravirt.h      |    2 +
- include/linux/hardirq.h         |   24 ++++++++++++++-
- 7 files changed, 142 insertions(+), 5 deletions(-)
+ arch/x86/kernel/Makefile    |    1 
+ arch/x86/kernel/immediate.c |  291 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/traps_32.c  |    9 -
+ include/asm-x86/immediate.h |   48 ++++++-
+ 4 files changed, 339 insertions(+), 10 deletions(-)
 
-Index: linux-2.6-sched-devel/include/linux/hardirq.h
+Index: linux-2.6-sched-devel/include/asm-x86/immediate.h
 ===================================================================
---- linux-2.6-sched-devel.orig/include/linux/hardirq.h	2008-04-16 12:29:24.000000000 -0400
-+++ linux-2.6-sched-devel/include/linux/hardirq.h	2008-04-16 12:29:42.000000000 -0400
-@@ -22,10 +22,13 @@
-  * PREEMPT_MASK: 0x000000ff
-  * SOFTIRQ_MASK: 0x0000ff00
-  * HARDIRQ_MASK: 0x0fff0000
-+ * HARDNMI_MASK: 0x40000000
+--- linux-2.6-sched-devel.orig/include/asm-x86/immediate.h	2008-04-16 12:01:00.000000000 -0400
++++ linux-2.6-sched-devel/include/asm-x86/immediate.h	2008-04-16 12:01:01.000000000 -0400
+@@ -12,6 +12,18 @@
+ 
+ #include <asm/asm.h>
+ 
++struct __imv {
++	unsigned long var;	/* Pointer to the identifier variable of the
++				 * immediate value
++				 */
++	unsigned long imv;	/*
++				 * Pointer to the memory location of the
++				 * immediate value within the instruction.
++				 */
++	unsigned char size;	/* Type size. */
++	unsigned char insn_size;/* Instruction size. */
++} __attribute__ ((packed));
++
+ /**
+  * imv_read - read immediate variable
+  * @name: immediate value name
+@@ -26,6 +38,11 @@
+  * what will generate an instruction with 8 bytes immediate value (not the REX.W
+  * prefixed one that loads a sign extended 32 bits immediate value in a r64
+  * register).
++ *
++ * Create the instruction in a discarded section to calculate its size. This is
++ * how we can align the beginning of the instruction on an address that will
++ * permit atomic modification of the immediate value without knowing the size of
++ * the opcode used by the compiler. The operand size is known in advance.
   */
- #define PREEMPT_BITS	8
- #define SOFTIRQ_BITS	8
+ #define imv_read(name)							\
+ 	({								\
+@@ -33,9 +50,14 @@
+ 		BUILD_BUG_ON(sizeof(value) > 8);			\
+ 		switch (sizeof(value)) {				\
+ 		case 1:							\
+-			asm(".section __imv,\"aw\",@progbits\n\t"	\
++			asm(".section __discard,\"\",@progbits\n\t"	\
++				"1:\n\t"				\
++				"mov $0,%0\n\t"				\
++				"2:\n\t"				\
++				".previous\n\t"				\
++				".section __imv,\"aw\",@progbits\n\t"	\
+ 				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
+-				".byte %c2\n\t"				\
++				".byte %c2, (2b-1b)\n\t"		\
+ 				".previous\n\t"				\
+ 				"mov $0,%0\n\t"				\
+ 				"3:\n\t"				\
+@@ -45,10 +67,16 @@
+ 			break;						\
+ 		case 2:							\
+ 		case 4:							\
+-			asm(".section __imv,\"aw\",@progbits\n\t"	\
++			asm(".section __discard,\"\",@progbits\n\t"	\
++				"1:\n\t"				\
++				"mov $0,%0\n\t"				\
++				"2:\n\t"				\
++				".previous\n\t"				\
++				".section __imv,\"aw\",@progbits\n\t"	\
+ 				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
+-				".byte %c2\n\t"				\
++				".byte %c2, (2b-1b)\n\t"		\
+ 				".previous\n\t"				\
++				".org . + ((-.-(2b-1b)) & (%c2-1)), 0x90\n\t" \
+ 				"mov $0,%0\n\t"				\
+ 				"3:\n\t"				\
+ 				: "=r" (value)				\
+@@ -60,10 +88,16 @@
+ 				value = name##__imv;			\
+ 				break;					\
+ 			}						\
+-			asm(".section __imv,\"aw\",@progbits\n\t"	\
++			asm(".section __discard,\"\",@progbits\n\t"	\
++				"1:\n\t"				\
++				"mov $0xFEFEFEFE01010101,%0\n\t"	\
++				"2:\n\t"				\
++				".previous\n\t"				\
++				".section __imv,\"aw\",@progbits\n\t"	\
+ 				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
+-				".byte %c2\n\t"				\
++				".byte %c2, (2b-1b)\n\t"		\
+ 				".previous\n\t"				\
++				".org . + ((-.-(2b-1b)) & (%c2-1)), 0x90\n\t" \
+ 				"mov $0xFEFEFEFE01010101,%0\n\t" 	\
+ 				"3:\n\t"				\
+ 				: "=r" (value)				\
+@@ -74,4 +108,6 @@
+ 		value;							\
+ 	})
  
-+#define HARDNMI_BITS	1
++extern int arch_imv_update(const struct __imv *imv, int early);
 +
- #ifndef HARDIRQ_BITS
- #define HARDIRQ_BITS	12
- 
-@@ -45,16 +48,19 @@
- #define PREEMPT_SHIFT	0
- #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
- #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-+#define HARDNMI_SHIFT	(30)
- 
- #define __IRQ_MASK(x)	((1UL << (x))-1)
- 
- #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
- #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
- #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
-+#define HARDNMI_MASK	(__IRQ_MASK(HARDNMI_BITS) << HARDNMI_SHIFT)
- 
- #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
- #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
- #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
-+#define HARDNMI_OFFSET	(1UL << HARDNMI_SHIFT)
- 
- #if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
- #error PREEMPT_ACTIVE is too low!
-@@ -63,6 +69,7 @@
- #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
- #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
- #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
-+#define hardnmi_count()	(preempt_count() & HARDNMI_MASK)
- 
- /*
-  * Are we doing bottom half or hardware interrupt processing?
-@@ -71,6 +78,7 @@
- #define in_irq()		(hardirq_count())
- #define in_softirq()		(softirq_count())
- #define in_interrupt()		(irq_count())
-+#define in_nmi()		(hardnmi_count())
- 
- /*
-  * Are we running in atomic context?  WARNING: this macro cannot
-@@ -159,7 +167,19 @@ extern void irq_enter(void);
-  */
- extern void irq_exit(void);
- 
--#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
--#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
-+#define nmi_enter()					\
-+	do {						\
-+		lockdep_off();				\
-+		BUG_ON(hardnmi_count());		\
-+		add_preempt_count(HARDNMI_OFFSET);	\
-+		__irq_enter();				\
-+	} while (0)
-+
-+#define nmi_exit()					\
-+	do {						\
-+		__irq_exit();				\
-+		sub_preempt_count(HARDNMI_OFFSET);	\
-+		lockdep_on();				\
-+	} while (0)
- 
- #endif /* LINUX_HARDIRQ_H */
-Index: linux-2.6-sched-devel/arch/x86/kernel/entry_32.S
+ #endif /* _ASM_X86_IMMEDIATE_H */
+Index: linux-2.6-sched-devel/arch/x86/kernel/traps_32.c
 ===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/kernel/entry_32.S	2008-04-16 12:29:25.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/kernel/entry_32.S	2008-04-16 12:29:42.000000000 -0400
-@@ -72,7 +72,6 @@
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
- #define preempt_stop(clobbers)
--#define resume_kernel		restore_nocheck
- #endif
+--- linux-2.6-sched-devel.orig/arch/x86/kernel/traps_32.c	2008-04-16 12:01:00.000000000 -0400
++++ linux-2.6-sched-devel/arch/x86/kernel/traps_32.c	2008-04-16 12:01:01.000000000 -0400
+@@ -592,7 +592,7 @@ void do_##name(struct pt_regs *regs, lon
+ }
  
- .macro TRACE_IRQS_IRET
-@@ -258,6 +257,8 @@ END(ret_from_exception)
- #ifdef CONFIG_PREEMPT
- ENTRY(resume_kernel)
- 	DISABLE_INTERRUPTS(CLBR_ANY)
-+	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
- 	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
- 	jnz restore_nocheck
- need_resched:
-@@ -269,6 +270,12 @@ need_resched:
- 	call preempt_schedule_irq
- 	jmp need_resched
- END(resume_kernel)
-+#else
-+ENTRY(resume_kernel)
-+	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
-+	jmp restore_nocheck
-+END(resume_kernel)
+ DO_VM86_ERROR_INFO(0, SIGFPE,  "divide error", divide_error, FPE_INTDIV, regs->ip)
+-#ifndef CONFIG_KPROBES
++#if !defined(CONFIG_KPROBES) && !defined(CONFIG_IMMEDIATE)
+ DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
  #endif
- 	CFI_ENDPROC
+ DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+@@ -857,7 +857,7 @@ void restart_nmi(void)
+ 	acpi_nmi_enable();
+ }
  
-@@ -408,6 +415,22 @@ restore_nocheck_notrace:
- 	CFI_ADJUST_CFA_OFFSET -4
- irq_return:
- 	INTERRUPT_RETURN
-+return_to_nmi:
-+	testl $X86_EFLAGS_TF, PT_EFLAGS(%esp)
-+	jnz restore_nocheck		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	TRACE_IRQS_IRET
-+	RESTORE_REGS
-+	addl $4, %esp			# skip orig_eax/error_code
-+	CFI_ADJUST_CFA_OFFSET -4
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- .section .fixup,"ax"
- ENTRY(iret_exc)
- 	pushl $0			# no error code
-Index: linux-2.6-sched-devel/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/kernel/entry_64.S	2008-04-16 12:29:25.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/kernel/entry_64.S	2008-04-16 12:29:42.000000000 -0400
-@@ -681,12 +681,27 @@ retint_restore_args:	/* return to kernel
- 	 * The iretq could re-enable interrupts:
+-#ifdef CONFIG_KPROBES
++#if defined(CONFIG_KPROBES) || defined(CONFIG_IMMEDIATE)
+ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
+ 	trace_hardirqs_fixup();
+@@ -866,9 +866,10 @@ void __kprobes do_int3(struct pt_regs *r
+ 			== NOTIFY_STOP)
+ 		return;
+ 	/*
+-	 * This is an interrupt gate, because kprobes wants interrupts
+-	 * disabled. Normal trap handlers don't.
++	 * This is an interrupt gate, because kprobes and immediate values wants
++	 * interrupts disabled.  Normal trap handlers don't.
  	 */
- 	TRACE_IRQS_IRETQ
-+	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
-+	jnz return_to_nmi
- restore_args:
- 	RESTORE_ARGS 0,8,0
- 
- irq_return:
- 	INTERRUPT_RETURN
- 
-+return_to_nmi:				/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	bt $8,EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
-+	jc restore_args
-+	RESTORE_ARGS 0,8,0
-+	INTERRUPT_RETURN_NMI_SAFE
 +
- 	.section __ex_table, "a"
- 	.quad irq_return, bad_iret
- 	.previous
-@@ -902,6 +917,10 @@ END(spurious_interrupt)
- 	.macro paranoidexit trace=1
- 	/* ebx:	no swapgs flag */
- paranoid_exit\trace:
-+	GET_THREAD_INFO(%rcx)
-+	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
-+	jnz paranoid_return_to_nmi\trace
-+paranoid_exit_no_nmi\trace:
- 	testl %ebx,%ebx				/* swapgs needed? */
- 	jnz paranoid_restore\trace
- 	testl $3,CS(%rsp)
-@@ -914,6 +933,18 @@ paranoid_swapgs\trace:
- paranoid_restore\trace:
- 	RESTORE_ALL 8
- 	jmp irq_return
-+paranoid_return_to_nmi\trace:		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	bt $8,EFLAGS-0(%rsp)		/* trap flag? */
-+	jc paranoid_exit_no_nmi\trace
-+	RESTORE_ALL 8
-+	INTERRUPT_RETURN_NMI_SAFE
- paranoid_userspace\trace:
- 	GET_THREAD_INFO(%rcx)
- 	movl threadinfo_flags(%rcx),%ebx
-Index: linux-2.6-sched-devel/include/asm-x86/irqflags.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/asm-x86/irqflags.h	2008-04-16 12:29:24.000000000 -0400
-+++ linux-2.6-sched-devel/include/asm-x86/irqflags.h	2008-04-16 12:29:42.000000000 -0400
-@@ -112,12 +112,73 @@ static inline unsigned long __raw_local_
+ 	restore_interrupts(regs);
  
- #ifdef CONFIG_X86_64
- #define INTERRUPT_RETURN	iretq
+ 	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
+Index: linux-2.6-sched-devel/arch/x86/kernel/Makefile
+===================================================================
+--- linux-2.6-sched-devel.orig/arch/x86/kernel/Makefile	2008-04-16 12:01:00.000000000 -0400
++++ linux-2.6-sched-devel/arch/x86/kernel/Makefile	2008-04-16 12:01:01.000000000 -0400
+@@ -68,6 +68,7 @@ obj-y				+= vsmp_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
++obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o
+Index: linux-2.6-sched-devel/arch/x86/kernel/immediate.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-sched-devel/arch/x86/kernel/immediate.c	2008-04-16 12:01:20.000000000 -0400
+@@ -0,0 +1,291 @@
++/*
++ * Immediate Value - x86 architecture specific code.
++ *
++ * Rationale
++ *
++ * Required because of :
++ * - Erratum 49 fix for Intel PIII.
++ * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
++ *   Centrino Duo Processor Technology Specification Update, AH33.
++ *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
++ *   Instruction Execution Results.
++ *
++ * Permits immediate value modification by XMC with correct serialization.
++ *
++ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
++ * location that has preemption enabled because it involves no temporary or
++ * reused data structure.
++ *
++ * Quoting Richard J Moore, source of the information motivating this
++ * implementation which differs from the one proposed by Intel which is not
++ * suitable for kernel context (does not support NMI and would require disabling
++ * interrupts on every CPU for a long period) :
++ *
++ * "There is another issue to consider when looking into using probes other
++ * then int3:
++ *
++ * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
++ * practice of modifying code on one processor where another has prefetched
++ * the unmodified version of the code. Intel states that unpredictable general
++ * protection faults may result if a synchronizing instruction (iret, int,
++ * int3, cpuid, etc ) is not executed on the second processor before it
++ * executes the pre-fetched out-of-date copy of the instruction.
++ *
++ * When we became aware of this I had a long discussion with Intel's
++ * microarchitecture guys. It turns out that the reason for this erratum
++ * (which incidentally Intel does not intend to fix) is because the trace
++ * cache - the stream of micro-ops resulting from instruction interpretation -
++ * cannot be guaranteed to be valid. Reading between the lines I assume this
++ * issue arises because of optimization done in the trace cache, where it is
++ * no longer possible to identify the original instruction boundaries. If the
++ * CPU discoverers that the trace cache has been invalidated because of
++ * unsynchronized cross-modification then instruction execution will be
++ * aborted with a GPF. Further discussion with Intel revealed that replacing
++ * the first opcode byte with an int3 would not be subject to this erratum.
++ *
++ * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
++ *
++ * Overall design
++ *
++ * The algorithm proposed by Intel applies not so well in kernel context: it
++ * would imply disabling interrupts and looping on every CPUs while modifying
++ * the code and would not support instrumentation of code called from interrupt
++ * sources that cannot be disabled.
++ *
++ * Therefore, we use a different algorithm to respect Intel's erratum (see the
++ * quoted discussion above). We make sure that no CPU sees an out-of-date copy
++ * of a pre-fetched instruction by 1 - using a breakpoint, which skips the
++ * instruction that is going to be modified, 2 - issuing an IPI to every CPU to
++ * execute a sync_core(), to make sure that even when the breakpoint is removed,
++ * no cpu could possibly still have the out-of-date copy of the instruction,
++ * modify the now unused 2nd byte of the instruction, and then put back the
++ * original 1st byte of the instruction.
++ *
++ * It has exactly the same intent as the algorithm proposed by Intel, but
++ * it has less side-effects, scales better and supports NMI, SMI and MCE.
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ */
++
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <linux/notifier.h>
++#include <linux/module.h>
++#include <linux/immediate.h>
++#include <linux/kdebug.h>
++#include <linux/rcupdate.h>
++#include <linux/kprobes.h>
++#include <linux/io.h>
++
++#include <asm/cacheflush.h>
++
++#define BREAKPOINT_INSTRUCTION  0xcc
++#define BREAKPOINT_INS_LEN	1
++#define NR_NOPS			10
++
++static unsigned long target_after_int3;	/* EIP of the target after the int3 */
++static unsigned long bypass_eip;	/* EIP of the bypass. */
++static unsigned long bypass_after_int3;	/* EIP after the end-of-bypass int3 */
++static unsigned long after_imv;	/*
++					 * EIP where to resume after the
++					 * single-stepping.
++					 */
 +
 +/*
-+ * Only returns from a trap or exception to a NMI context (intra-privilege
-+ * level near return) to the same SS and CS segments. Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued. It takes care of modifying the eflags, rsp and returning to the
-+ * previous function.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(rsp)  RIP
-+ * 8(rsp)  CS
-+ * 16(rsp) EFLAGS
-+ * 24(rsp) RSP
-+ * 32(rsp) SS
-+ *
-+ * Upon execution :
-+ * Copy EIP to the top of the return stack
-+ * Update top of return stack address
-+ * Pop eflags into the eflags register
-+ * Make the return stack current
-+ * Near return (popping the return address from the return stack)
++ * Internal bypass used during value update. The bypass is skipped by the
++ * function in which it is inserted.
++ * No need to be aligned because we exclude readers from the site during
++ * update.
++ * Layout is:
++ * (10x nop) int3
++ * (maximum size is 2 bytes opcode + 8 bytes immediate value for long on x86_64)
++ * The nops are the target replaced by the instruction to single-step.
++ * Align on 16 bytes to make sure the nops fit within a single page so remapping
++ * it can be done easily.
 + */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
-+					pushq %rbx;		\
-+					movq 40(%rsp), %rax;	\
-+					movq 16(%rsp), %rbx;	\
-+					subq $8, %rax;		\
-+					movq %rbx, (%rax);	\
-+					movq %rax, 40(%rsp);	\
-+					popq %rbx;		\
-+					popq %rax;		\
-+					addq $16, %rsp;		\
-+					popfq;			\
-+					movq (%rsp), %rsp;	\
-+					ret;			\
++static inline void _imv_bypass(unsigned long *bypassaddr,
++	unsigned long *breaknextaddr)
++{
++		asm volatile("jmp 2f;\n\t"
++				".align 16;\n\t"
++				"0:\n\t"
++				".space 10, 0x90;\n\t"
++				"1:\n\t"
++				"int3;\n\t"
++				"2:\n\t"
++				"mov $(0b),%0;\n\t"
++				"mov $((1b)+1),%1;\n\t"
++				: "=r" (*bypassaddr),
++				  "=r" (*breaknextaddr));
++}
 +
- #define ENABLE_INTERRUPTS_SYSCALL_RET			\
- 			movq	%gs:pda_oldrsp, %rsp;	\
- 			swapgs;				\
- 			sysretq;
- #else
- #define INTERRUPT_RETURN		iret
++static void imv_synchronize_core(void *info)
++{
++	sync_core();	/* use cpuid to stop speculative execution */
++}
 +
 +/*
-+ * Protected mode only, no V8086. Implies that protected mode must
-+ * be entered before NMIs or MCEs are enabled. Only returns from a trap or
-+ * exception to a NMI context (intra-privilege level far return). Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(esp) EIP
-+ * 4(esp) CS
-+ * 8(esp) EFLAGS
-+ *
-+ * Upon execution :
-+ * Copy the stack eflags to top of stack
-+ * Pop eflags into the eflags register
-+ * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
++ * The eip value points right after the breakpoint instruction, in the second
++ * byte of the movl.
++ * Disable preemption in the bypass to make sure no thread will be preempted in
++ * it. We can then use synchronize_sched() to make sure every bypass users have
++ * ended.
 + */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
-+					popfl;		\
-+					.byte 0xCA;	\
-+					.word 4;
++static int imv_notifier(struct notifier_block *nb,
++	unsigned long val, void *data)
++{
++	enum die_val die_val = (enum die_val) val;
++	struct die_args *args = data;
 +
- #define ENABLE_INTERRUPTS_SYSCALL_RET	sti; sysexit
- #define GET_CR0_INTO_EAX		movl %cr0, %eax
- #endif
-Index: linux-2.6-sched-devel/include/asm-alpha/thread_info.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/asm-alpha/thread_info.h	2008-04-16 12:29:24.000000000 -0400
-+++ linux-2.6-sched-devel/include/asm-alpha/thread_info.h	2008-04-16 12:29:42.000000000 -0400
-@@ -57,7 +57,7 @@ register struct thread_info *__current_t
- 
- #endif /* __ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags:
-Index: linux-2.6-sched-devel/include/asm-avr32/thread_info.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/asm-avr32/thread_info.h	2008-04-16 12:29:24.000000000 -0400
-+++ linux-2.6-sched-devel/include/asm-avr32/thread_info.h	2008-04-16 12:29:42.000000000 -0400
-@@ -70,7 +70,7 @@ static inline struct thread_info *curren
- 
- #endif /* !__ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags
-Index: linux-2.6-sched-devel/include/asm-x86/paravirt.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/asm-x86/paravirt.h	2008-04-16 11:07:24.000000000 -0400
-+++ linux-2.6-sched-devel/include/asm-x86/paravirt.h	2008-04-16 12:29:42.000000000 -0400
-@@ -1385,6 +1385,8 @@ static inline unsigned long __raw_local_
- 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_iret), CLBR_NONE,	\
- 		  jmp *%cs:pv_cpu_ops+PV_CPU_iret)
- 
-+#define INTERRUPT_RETURN_NMI_SAFE INTERRUPT_RETURN
++	if (!args->regs || user_mode_vm(args->regs))
++		return NOTIFY_DONE;
 +
- #define DISABLE_INTERRUPTS(clobbers)					\
- 	PARA_SITE(PARA_PATCH(pv_irq_ops, PV_IRQ_irq_disable), clobbers, \
- 		  PV_SAVE_REGS;			\
++	if (die_val == DIE_INT3) {
++		if (args->regs->ip == target_after_int3) {
++			preempt_disable();
++			args->regs->ip = bypass_eip;
++			return NOTIFY_STOP;
++		} else if (args->regs->ip == bypass_after_int3) {
++			args->regs->ip = after_imv;
++			preempt_enable();
++			return NOTIFY_STOP;
++		}
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block imv_notify = {
++	.notifier_call = imv_notifier,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
++/**
++ * arch_imv_update - update one immediate value
++ * @imv: pointer of type const struct __imv to update
++ * @early: early boot (1) or normal (0)
++ *
++ * Update one immediate value. Must be called with imv_mutex held.
++ */
++__kprobes int arch_imv_update(const struct __imv *imv, int early)
++{
++	int ret;
++	unsigned char opcode_size = imv->insn_size - imv->size;
++	unsigned long insn = imv->imv - opcode_size;
++	unsigned long len;
++	char *vaddr;
++	struct page *pages[1];
++
++#ifdef CONFIG_KPROBES
++	/*
++	 * Fail if a kprobe has been set on this instruction.
++	 * (TODO: we could eventually do better and modify all the (possibly
++	 * nested) kprobes for this site if kprobes had an API for this.
++	 */
++	if (unlikely(!early
++			&& *(unsigned char *)insn == BREAKPOINT_INSTRUCTION)) {
++		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
++				    "Variable at %p, "
++				    "instruction at %p, size %hu\n",
++				    (void *)imv->imv,
++				    (void *)imv->var, imv->size);
++		return -EBUSY;
++	}
++#endif
++
++	/*
++	 * If the variable and the instruction have the same value, there is
++	 * nothing to do.
++	 */
++	switch (imv->size) {
++	case 1:	if (*(uint8_t *)imv->imv
++				== *(uint8_t *)imv->var)
++			return 0;
++		break;
++	case 2:	if (*(uint16_t *)imv->imv
++				== *(uint16_t *)imv->var)
++			return 0;
++		break;
++	case 4:	if (*(uint32_t *)imv->imv
++				== *(uint32_t *)imv->var)
++			return 0;
++		break;
++#ifdef CONFIG_X86_64
++	case 8:	if (*(uint64_t *)imv->imv
++				== *(uint64_t *)imv->var)
++			return 0;
++		break;
++#endif
++	default:return -EINVAL;
++	}
++
++	if (!early) {
++		/* bypass is 10 bytes long for x86_64 long */
++		WARN_ON(imv->insn_size > 10);
++		_imv_bypass(&bypass_eip, &bypass_after_int3);
++
++		after_imv = imv->imv + imv->size;
++
++		/*
++		 * Using the _early variants because nobody is executing the
++		 * bypass code while we patch it. It is protected by the
++		 * imv_mutex. Since we modify the instructions non atomically
++		 * (for nops), we have to use the _early variant.
++		 * We must however deal with RO pages.
++		 * Use a single page : 10 bytes are aligned on 16 bytes
++		 * boundaries.
++		 */
++		pages[0] = virt_to_page((void *)bypass_eip);
++		vaddr = vmap(pages, 1, VM_MAP, PAGE_KERNEL);
++		BUG_ON(!vaddr);
++		text_poke_early(&vaddr[bypass_eip & ~PAGE_MASK],
++			(void *)insn, imv->insn_size);
++		/*
++		 * Fill the rest with nops.
++		 */
++		len = NR_NOPS - imv->insn_size;
++		add_nops((void *)
++			&vaddr[(bypass_eip & ~PAGE_MASK) + imv->insn_size],
++			len);
++		vunmap(vaddr);
++
++		target_after_int3 = insn + BREAKPOINT_INS_LEN;
++		/* register_die_notifier has memory barriers */
++		register_die_notifier(&imv_notify);
++		/* The breakpoint will single-step the bypass */
++		text_poke((void *)insn,
++			((unsigned char[]){BREAKPOINT_INSTRUCTION}), 1);
++		/*
++		 * Make sure the breakpoint is set before we continue (visible
++		 * to other CPUs and interrupts).
++		 */
++		wmb();
++		/*
++		 * Execute serializing instruction on each CPU.
++		 */
++		ret = on_each_cpu(imv_synchronize_core, NULL, 1, 1);
++		BUG_ON(ret != 0);
++
++		text_poke((void *)(insn + opcode_size), (void *)imv->var,
++				imv->size);
++		/*
++		 * Make sure the value can be seen from other CPUs and
++		 * interrupts.
++		 */
++		wmb();
++		text_poke((void *)insn, (unsigned char *)bypass_eip, 1);
++		/*
++		 * Wait for all int3 handlers to end (interrupts are disabled in
++		 * int3). This CPU is clearly not in a int3 handler, because
++		 * int3 handler is not preemptible and there cannot be any more
++		 * int3 handler called for this site, because we placed the
++		 * original instruction back.  synchronize_sched has memory
++		 * barriers.
++		 */
++		synchronize_sched();
++		unregister_die_notifier(&imv_notify);
++		/* unregister_die_notifier has memory barriers */
++	} else
++		text_poke_early((void *)imv->imv, (void *)imv->var,
++			imv->size);
++	return 0;
++}
 
 -- 
 Mathieu Desnoyers
