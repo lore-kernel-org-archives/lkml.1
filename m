@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbYDPOak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbYDPObd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762295AbYDPOak (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 10:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYDPOad
+	id S1764195AbYDPObd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 10:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYDPObZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 10:30:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38097 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbYDPOac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 10:30:32 -0400
-Date: Wed, 16 Apr 2008 16:29:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080416142951.GF24383@elte.hu>
-References: <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415131744.GA5248@elte.hu> <20080415134705.GB22351@Krystal> <20080415164814.GA15842@elte.hu> <20080415213832.GC7873@Krystal> <20080416131751.GI6304@elte.hu> <20080416064630.22428aea@laptopd505.fenrus.org> <20080416140009.GA13968@Krystal> <20080416072416.7b9ff3d2@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080416072416.7b9ff3d2@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 16 Apr 2008 10:31:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49301 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbYDPObY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 10:31:24 -0400
+Date: Wed, 16 Apr 2008 07:31:10 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Denys Vlasenko <vda.linux@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Does process need to have a kernel-side stack all the time?
+Message-ID: <20080416073110.1a46063f@laptopd505.fenrus.org>
+In-Reply-To: <48060625.4040509@firstfloor.org>
+References: <200804141547.57719.vda.linux@googlemail.com>
+	<87hce4uya8.fsf@basil.nowhere.org>
+	<20080416124728.GA5050@elte.hu>
+	<20080416065451.78329e12@laptopd505.fenrus.org>
+	<48060625.4040509@firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 Apr 2008 15:59:01 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> > Not only does the compare and jmp need to be consecutive, but the 
-> > movb $0x0,%al also does. I *could* try to detect specific code 
-> > inserted in between, but I really have to make sure I don't get 
-> > burned by the compiler inserting a jmp there.
 > 
-> I wonder if just sticking in 2 barriers around your code make gcc stop 
-> moving stuff too much
+> > well that and the fact that RH had customers who had major issues
+> > at fewer threads with 8Kb versus fragmentation.
+> > on 32 bit with a bunch of ram, there's just not enough lowmem
+> > around to not have it fragmented to hell and back.
+> 
+> 2.6 VM has much more aggressive defrag heuristics than 2.4. That is
+> what I meant with likely obsolete.
 
-hm, an extra optimization barrier might have worse effects than even an 
-extra instruction. I think if the detection and patching can be made 
-100% safe, we dont care about the remaining 4% of markers that gcc 
-somehow reorders.
+it's a question of very simple math though; both the space and the
+amount of other pinnings mean you run into a wall.
 
-and in parallel gcc folks might want to start helping us achieve 
-single-instruction branch points? Currently there's no way to get flags 
-values out of inline assembly, except via a register intermediary which 
-adds another instruction. For flags that are unaffected by gcc's 
-input/output constraint generation code it would make sense to allow 
-them to be exported out of inline assembly.
+2.6 is no doubt better, for sure it's better in freeing up memory etc.
+It just can't be good enough.
 
-	Ingo
+(just to be clear, customers do run 30k threads workloads on 16Mb machines that
+also have a sizable inode and dentry cache. you just cannot defragment that to the point
+that you can use 8k stacks).
+
+
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
