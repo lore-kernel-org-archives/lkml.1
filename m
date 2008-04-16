@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932957AbYDPQsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932618AbYDPQvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932957AbYDPQsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 12:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759747AbYDPQr6
+	id S932618AbYDPQvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 12:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758319AbYDPQvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 12:47:58 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:38691 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760091AbYDPQr5 (ORCPT
+	Wed, 16 Apr 2008 12:51:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35457 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757899AbYDPQvQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 12:47:57 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Oliver Neukum <oliver@neukum.org>, Ingo Oeser <ioe-lkml@rameria.de>,
+	Wed, 16 Apr 2008 12:51:16 -0400
+Date: Wed, 16 Apr 2008 09:50:26 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Ingo Oeser <ioe-lkml@rameria.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
        Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Replace completions with semaphores
+Message-ID: <20080416095026.658bdd21@laptopd505.fenrus.org>
+In-Reply-To: <200804161831.10510.oliver@neukum.org>
 References: <4803AD91.5020001@firstfloor.org>
+	<200804161807.25582.ioe-lkml@rameria.de>
+	<20080416161652.GK9191@parisc-linux.org>
 	<200804161831.10510.oliver@neukum.org>
-	<20080416163413.GL9191@parisc-linux.org>
-	<200804161842.52739.oliver@neukum.org>
-	<20080416164404.GM9191@parisc-linux.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 16 Apr 2008 09:47:55 -0700
-In-Reply-To: <20080416164404.GM9191@parisc-linux.org> (Matthew Wilcox's
-	message of "Wed, 16 Apr 2008 10:44:04 -0600")
-Message-ID: <adafxtllpac.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Apr 2008 16:47:55.0889 (UTC) FILETIME=[9EB09610:01C89FE1]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The cookies aren't checked by the kcounter implementation if
- > CONFIG_DEBUG_KCOUNTER isn't set.  So you can avoid storing them if it's
- > *really* that important to shrink your data structures.
+On Wed, 16 Apr 2008 18:31:08 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-I guess if anyone cared we could have something analogous to
-DECLARE_PCI_UNMAP_ADDR() et al that compiles to nothing if
-CONFIG_DEBUG_KCOUNTER isn't set.  But I'm not sure it's worth it.
-Certainly for the mthca/mlx4 cases of semaphore use there's no problem
-holding onto a cookie.
+> Am Mittwoch, 16. April 2008 18:16:52 schrieb Matthew Wilcox:
+> > The basic idea is that you get back a cookie from the
+> > kcounter_claim() which you have to hand to the kcounter_release()
+> > function so it knows which one you released.  It's similar to mutex
+> > debugging except
+> 
+> So in addition to the kcounter we need to save a token in a data
+> structure? In fact, there must be a data structure that can house
+> that token. So you can no longer live with a pointer just to a device
+> descriptor, but every individual use of a resource must have an
+> associated data structure?
 
- - R.
+yup. For kcounters there is a clear owner for each "slot".
+[This is the part that makes it debugable again)
+
+Now for non-debug builds, the space taken for the token can be.. zero 
+depending on how we define the types for it.
+
+> 
+> 	Regards
+> 		Oliver
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
