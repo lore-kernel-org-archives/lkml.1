@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbYDPP1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbYDPP2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbYDPP1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 11:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYDPP1j
+	id S932540AbYDPP2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 11:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYDPP2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 11:27:39 -0400
-Received: from service1.sh.cvut.cz ([147.32.127.214]:39149 "EHLO
-	service1.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbYDPP1j (ORCPT
+	Wed, 16 Apr 2008 11:28:00 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:57837 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbYDPP17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 11:27:39 -0400
-X-Spam-Score: -102.141
-Message-ID: <48061B36.20800@seznam.cz>
-Date: Wed, 16 Apr 2008 17:28:54 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 16 Apr 2008 11:27:59 -0400
+Message-ID: <48061AFC.9050106@tiscali.nl>
+Date: Wed, 16 Apr 2008 17:27:56 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
-Subject: Re: Microblaze Linux release
-References: <48020A21.4000404@seznam.cz> <48059B92.7080601@seznam.cz> <18437.43836.175638.137415@cargo.ozlabs.ibm.com> <200804160944.42734.arnd@arndb.de>
-In-Reply-To: <200804160944.42734.arnd@arndb.de>
+To: a.zummo@towertech.it
+CC: rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] MIPS: irixelf: fix test unsigned var < 0
+References: <480558CA.7090800@tiscali.nl>
+In-Reply-To: <480558CA.7090800@tiscali.nl>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> I think so. Sharing code among archs looks nice and this way is definitely
->>> right. But starting with communication with PowerPC guys that this code I want
->>> to use in case that this code is not in vanilla. This is not good start for
->>> doing this.
->> I have a commit queued up that moves lmb.c into the top-level lib
->> directory so other architectures can use it easily.  Dave Miller
->> wanted this so he could use it for sparc64.  That will go into Linus'
->> tree when the merge window opens and will be in 2.6.26.  So I don't
->> see any reason why microblaze couldn't use the LMB stuff.
->>
->
-> Right, fair enough. I was mostly objecting to the idea of creating another
-> copy of the lmb code when bootmem should be sufficient for what microblaze
-> needs. Using the code from lib/lmb.c sounds fair enough when it's already
-> there.
->
-> One more reason for the microblaze kernel to base on top of linux-next
-> instead of mainline.
+New_alarm is unsigned so the test didn't work.
+    
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 45bda18..119bdc9 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -216,16 +216,16 @@ static int ds1374_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
+ 	rtc_tm_to_time(&alarm->time, &new_alarm);
+ 	rtc_tm_to_time(&now, &itime);
+ 
+-	new_alarm -= itime;
+-
+ 	/* This can happen due to races, in addition to dates that are
+ 	 * truly in the past.  To avoid requiring the caller to check for
+ 	 * races, dates in the past are assumed to be in the recent past
+ 	 * (i.e. not something that we'd rather the caller know about via
+ 	 * an error), and the alarm is set to go off as soon as possible.
+ 	 */
+-	if (new_alarm <= 0)
++	if (new_alarm <= itime)
+ 		new_alarm = 1;
++	else
++		new_alarm -= itime;
+ 
+ 	mutex_lock(&ds1374->mutex);
+ 
 
-For me is not difficult to use lmb from microblaze/mm or from lib if the files
-are the same.
-
-Michal Simek
