@@ -1,119 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbYDPTvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYDPTxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbYDPTvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYDPTvA
+	id S1758188AbYDPTxP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYDPTxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:51:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59765 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbYDPTu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:50:59 -0400
-Date: Wed, 16 Apr 2008 15:50:53 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Scott Lovenberg <scott.lovenberg@gmail.com>,
-       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: RFC: Self-snapshotting in Linux
-Message-ID: <20080416195053.GB27967@redhat.com>
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it> <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com> <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com>
+	Wed, 16 Apr 2008 15:53:00 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:31574 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbYDPTw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:52:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=aWGRSaLW2HZVNRFVnKMsaa1zA3rGa4DQePxaF6uLKhkf4UoFV2GmmXd5ypwRs872tX0aYhlsHgbrc9zIKWhb0PHGPmz3UhMtYAUupJS+rzBfQQpplKnqvCQiIncEpd77dZnW9IqClHHg/Xm6+UtQ4SXRonF92pvGilTsp9fvrpw=
+Message-ID: <4806583B.5080305@gmail.com>
+Date: Wed, 16 Apr 2008 21:49:15 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
+References: <20080416175135.GN1677@cs181133002.pp.htv.fi> <20080416192306.GA3090@uranus.ravnborg.org> <20080416193102.GA16981@elte.hu>
+In-Reply-To: <20080416193102.GA16981@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 11:06:05PM +0800, Peter Teoh wrote:
-> On 4/16/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
-> > Scott Lovenberg wrote:
-> >
-> > > Peter Teoh wrote:
-> >  > Maybe you load up another kernel to handle the snapshot, and then hand
-> >  > the system back to it afterwards?  What do you think?
-> >
-> >
-> > Isn't that just what Ying Huans kexec-based hibernation does?
-> >
+Ingo Molnar pisze:
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> This list is awesome.   After I read up on this kexec-based hibernation thing:
+>> I would prefer we were down to less than 5 warnings so we could enable 
+>> it in kconfig but maybe after next merge window.
 > 
-> http://kerneltrap.org/node/11756
-> 
-> I realized it is about the same idea.   Some differences though:
-> 
-> My original starting point was VMWare's snapshot idea.   Drawing an
-> analogy from there, the idea is to freeze and restore back entire
-> kernel + userspace application.   For integrity reason, filesystem
-> should be included in the frozen image as well.
-> 
-> Currently, what we are doing now is to have a bank of Norton
-> Ghost-based images of the entire OS and just selectively restoring
-> back the OS we want to work on.   Very fast - less than 30secs the
-> entire OS can be restored back.   But problem is that it need to be
-> boot up - which is very slow.   And there userspace state cannot be
-> frozen and restored back.
-> 
-> VMWare images is slow, and cannot meet bare-metal CPU/direct hardware
-> access requirements.   There goes Xen's virtualization approach as
-> well.
-> 
-> Another approach is this (from an email by Scott Lovenberg) - using
-> RELOCATABLE kernel (or may be not?????I really don't know, but idea is
-> below):
-> 
-> a.   Assuming we have 32G (64bit hardware can do that) of memory, but
-> we want to have 7 32-bit OS running (not concurrently) - so then
-> memory is partition into 8 x 4GB each - the lowest 4GB reserved for
-> the current running OS.   Each OS will be housed into each 4G of
-> memory.   When each OS is running, it will access its own partition on
-> the harddisk/memory, security concerns put aside.   Switching from one
-> OS to another OS is VOLUNTARILY done by the user - equivalent to that
-> of "desktop" feature in Solaris CDE. Restoring back essentially is
-> just copying from each of the 4GB into the lowest 4GB memory range.
-> Because only the lowest 4gb is used, only 32 bit instruction is
-> needed, 64bit is needed only when copying from one 4GB memory
-> partition into the lowest 4GB region, and vice versa.   And together
-> with using  partitioning of harddisk for each OS, switching among the
-> different OS kernel should be in seconds, much less than 1 minute,
-> correct?
-> 
+> they get regenerated. More than 1 out of every 100 new patches. Quite 
+> expensive feature (in terms of maintenance overhead) for a rather 
+> theoretical memory saving benefit.
 
-[CCing Huang and Eric]
+Ok, that's why this should be done in places where we are sure that given
+function is called once and none should call more. So in general this should
+result in removing few(?) annotations not in adding it everywhere where mismatch
+appears.
 
-I think Huang is doing something very similar in kexec based hibernation
-and probably that idea can be extended to achive above.
-
-Currently if system has got 4G of memory then one can reserve some
-amount of RAM, lets say 128 MB (with in 4G) and load the kernel there
-and let it run from there. Huang's implementation is also targetting
-the same thing where more than one kernel be in RAM at the same time
-(in mutually exclusive RAM locations) and one can switch between those
-kernels using kexec techniques.
-
-To begin with, he is targetting co-existence of just two kernels and
-second kernel can be used to save/resume the hibernated image.
-
-In fact, because of RELOCATABLE nature of kernel, you don't have to
-copy the kernel to lower 4GB of memory (Assuming all 64bit kernels
-running). At max one might require first 640 KB of memory and that
-can be worked out, if need be.
-
-This will indeed need to put devices into some kind of sleep state so
-that next kernel can resume it.
-
-So I think a variant of above is possible where on a large memory system
-multiple kernels can coexist (while accessing separate disk partitions)
-and one ought to be able to switch between kernels.
-
-Technically, there are few important pieces. kexec, relocatable kernel,
-hibernation, kexec based hibernation. First three pieces are already
-in place and fourth one is under development and after that I think
-it is just a matter of putting everything together.
-
-Thanks
-Vivek
+-Jacek
