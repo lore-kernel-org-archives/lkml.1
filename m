@@ -1,94 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYDPUQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764841AbYDPUYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbYDPUQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYDPUP7
+	id S1764841AbYDPUYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYDPUYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:15:59 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:44967 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751359AbYDPUP7 (ORCPT
+	Wed, 16 Apr 2008 16:24:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:19951 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYDPUYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:15:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAF/7BUhMROPA/2dsb2JhbACBYKx9
-Date: Wed, 16 Apr 2008 16:10:45 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: text_poke, vmap and vmalloc on x86_64
-Message-ID: <20080416201045.GA31199@Krystal>
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415131744.GA5248@elte.hu> <20080415134705.GB22351@Krystal> <20080415164814.GA15842@elte.hu> <20080415213832.GC7873@Krystal> <20080416131751.GI6304@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Apr 2008 16:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SoFTY6IpahOwcpfMADvj9tfCp9uUJ/Asz6Qwuhm346k85CK/+DoUT52fn69YMZ+d0ic+8PSupxmiOWa2L6Yea0TN/DtFR+Y458YEayUsm5zrE6foFvZOPI6Ol4SGXZ992Iek4A7Get5F8J8FcTHlnYZae9EZz7LxSYWhQytDSXw=
+Message-ID: <aa79d98a0804161324k734d22f9o4c1d0730c724880c@mail.gmail.com>
+Date: Thu, 17 Apr 2008 00:24:00 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: [patch 1/3] NFS: fix potential NULL pointer dereference
+Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
+       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1208372123.5376.43.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080416131751.GI6304@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:06:44 up 47 days, 16:17,  5 users,  load average: 0.27, 0.27,
-	0.35
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20080416174421.442716301@gmail.com>
+	 <48063bc9.2234440a.747d.09ea@mx.google.com>
+	 <1208369492.5376.9.camel@heimdal.trondhjem.org>
+	 <20080416181336.GA7657@cvg>
+	 <1208372123.5376.43.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Btw, may be you meant to perform 'near' check for rest of nfs code?
+But that wold requare much more code to change...
 
-I am trying to figure out why the following code seems to work fine on
-x86_32, but the update fails to happen on x86_64. Any idea why ? From
-what I see the memcpy seems to fall in a memory area which is not the
-same as the one I test at the end of the function. It only fails for
-module addresses, which are vmalloc'd. Once I fix this, I'll be able to
-send the patchset.
-
-(from my own alternative.c) :
-
-void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-{
-        unsigned long flags;
-        char *vaddr;
-        int nr_pages = 2;
-        struct page *pages[2];
-        int i;
-
-        if (*((uint8_t *)addr - 1) != BREAKPOINT_INSTRUCTION) {
-                BUG_ON(len > sizeof(long));
-                BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
-                        - ((long)addr & ~(sizeof(long) - 1)));
-        }
-        if (is_vmalloc_addr(addr)) {
-                pages[0] = vmalloc_to_page(addr);
-                pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
-        } else {
-                pages[0] = virt_to_page(addr);
-                pages[1] = virt_to_page(addr + PAGE_SIZE);
-        }
-        BUG_ON(!pages[0]);
-        if (!pages[1])
-                nr_pages = 1;
-        vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-        BUG_ON(!vaddr);
-        local_irq_save(flags);
-        memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-        local_irq_restore(flags);
-        vunmap(vaddr);
-        sync_core();
-        /* Could also do a CLFLUSH here to speed up CPU recovery; but
-           that causes hangs on some VIA CPUs. */
-        for (i = 0; i < len; i++)
-                BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
-        return addr;
-}
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+On 4/16/08, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+>
+> On Wed, 2008-04-16 at 22:13 +0400, Cyrill Gorcunov wrote:
+> > [Trond Myklebust - Wed, Apr 16, 2008 at 02:11:31PM -0400]
+> > |
+> > | On Wed, 2008-04-16 at 21:44 +0400, Cyrill Gorcunov wrote:
+> > | > plain text document attachment (nfs-kstrdup-nul-fix)
+> > | > It's possible to get NULL pointer dereference
+> > | > if kstrndup failed
+> > | >
+> > | > Here is a possible scenario
+> > | >
+> > | > nfs4_get_sb
+> > | >   nfs4_validate_mount_data
+> > | >     o kstrndup failed so args->nfs_server.export_path = NULL
+> > | >   nfs4_create_server
+> > | >     nfs4_path_walk(..., NULL) -> Oops!
+> > | >
+> > | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > |
+> > | Why fix only the one case? What about the other kstrdup/kstrndup cases
+> > | in super.c that appear to be unchecked?
+> > |
+> > | Trond
+> > |
+> > | > ---
+> > | >
+> > | > Index: linux-2.6.git/fs/nfs/super.c
+> > | > ===================================================================
+> > | > --- linux-2.6.git.orig/fs/nfs/super.c	2008-04-15 23:01:30.000000000
+> +0400
+> > | > +++ linux-2.6.git/fs/nfs/super.c	2008-04-16 20:01:44.000000000 +0400
+> > | > @@ -1858,6 +1858,8 @@ static int nfs4_validate_mount_data(void
+> > | >  		if (len > NFS4_MAXPATHLEN)
+> > | >  			return -ENAMETOOLONG;
+> > | >  		args->nfs_server.export_path = kstrndup(c, len, GFP_KERNEL);
+> > | > +		if (!args->nfs_server.export_path)
+> > | > +			return -ENOMEM;
+> > | >
+> > | >  		dprintk("NFS: MNTPATH: '%s'\n", args->nfs_server.export_path);
+> > | >
+> > |
+> >
+> > This one is leading to NULL deref, others - don't
+>
+> So? The defensive coding principle is that you perform validity checks
+> when the pointer is created. Otherwise, we could equally well have added
+> the NULL deref check to nfs4_path_walk()...
+>
+>   Trond
+>
+>
