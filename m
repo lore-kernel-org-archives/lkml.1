@@ -1,144 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764786AbYDPNwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764045AbYDPNwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764786AbYDPNwg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 09:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763297AbYDPNwV
+	id S1764045AbYDPNwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 09:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763968AbYDPNw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 09:52:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34346 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763689AbYDPNwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 09:52:20 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: linux-mm@kvack.org
-Cc: Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Message-Id: <20080416135218.1346.41125.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20080416135058.1346.65546.sendpatchset@skynet.skynet.ie>
-References: <20080416135058.1346.65546.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 4/4] Make defencive checks around PFN values registered for memory usage
-Date: Wed, 16 Apr 2008 14:52:18 +0100 (IST)
+	Wed, 16 Apr 2008 09:52:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45622 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764656AbYDPNwZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 09:52:25 -0400
+Date: Wed, 16 Apr 2008 06:52:17 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Neal Becker <ndbecker2@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [newb] mmap pci
+Message-ID: <20080416065217.22691d34@laptopd505.fenrus.org>
+In-Reply-To: <fu4njh$4aa$1@ger.gmane.org>
+References: <fu4njh$4aa$1@ger.gmane.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 Apr 2008 07:23:29 -0400
+Neal Becker <ndbecker2@gmail.com> wrote:
 
-There are a number of different views to how much memory is currently
-active. There is the arch-independent zone-sizing view, the bootmem allocator
-and SPARSEMEMs view.  Architectures register this information at different
-times and is not necessarily in sync particularly with view to some SPARSEMEM
-limitations.
+> We have a device - an FPGA board on PCI bus.  It has a range of
+> internal memory mapped to PCI.  I want to expose this to user via
+> mmap.  Is there some example code someone could point me to?
+> 
+> If this is not the best forum for such questions, what would be a
+> better choice?
 
-This patch introduces mminit_validate_physlimits() which is able to validate
-and correct PFN ranges with respect to SPARSEMEM limitations. Ordinarily
-they will be fixed silently but if mminit_debug_level is MMINIT_VERIFY or
-higher, a message will be printed to dmesg.
+Hi,
 
-This fixes the same problem as fixed by "[patch] mm: sparsemem
-memory_present() memory corruption fix" in a slightly different way. This
-patch would obviously be rebased on top of that fix.
+if it's just a PCI bar, you can already memory map it without even writing a driver!
+You can just use the sysfs files for this, for example
+/sys/devices/pci0000:00/0000:00:02.0/resource1
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
+There's also a way to do this via the /proc representation of the PCI device..
 
- mm/bootmem.c    |    1 +
- mm/internal.h   |    9 +++++++++
- mm/page_alloc.c |    2 ++
- mm/sparse.c     |   24 ++++++++++++++++++++++++
- 4 files changed, 36 insertions(+)
+Greetings,
+   Arjan van de Ven
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0030_display_zonelist/mm/bootmem.c linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/bootmem.c
---- linux-2.6.25-rc9-0030_display_zonelist/mm/bootmem.c	2008-04-11 21:32:29.000000000 +0100
-+++ linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/bootmem.c	2008-04-16 14:45:08.000000000 +0100
-@@ -91,6 +91,7 @@ static unsigned long __init init_bootmem
- 	bootmem_data_t *bdata = pgdat->bdata;
- 	unsigned long mapsize;
- 
-+	mminit_validate_physlimits(&start, &end);
- 	bdata->node_bootmem_map = phys_to_virt(PFN_PHYS(mapstart));
- 	bdata->node_boot_start = PFN_PHYS(start);
- 	bdata->node_low_pfn = end;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0030_display_zonelist/mm/internal.h linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/internal.h
---- linux-2.6.25-rc9-0030_display_zonelist/mm/internal.h	2008-04-16 14:44:46.000000000 +0100
-+++ linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/internal.h	2008-04-16 14:45:08.000000000 +0100
-@@ -67,6 +67,15 @@ enum mminit_levels {
- 	MMINIT_TRACE
- };
- 
-+#ifdef CONFIG_SPARSEMEM
-+extern void mminit_validate_physlimits(unsigned long *start_pfn,
-+				unsigned long *end_pfn);
-+#else
-+static inline void mminit_validate_physlimits(unsigned long *start_pfn,
-+				unsigned long *end_pfn)
-+{
-+}
-+#endif /* CONFIG_SPARSEMEM */
- extern void mminit_verify_zonelist(void);
- extern void mminit_verify_pageflags(void);
- extern void mminit_verify_page_links(struct page *page, enum zone_type zone,
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0030_display_zonelist/mm/page_alloc.c linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/page_alloc.c
---- linux-2.6.25-rc9-0030_display_zonelist/mm/page_alloc.c	2008-04-16 14:44:46.000000000 +0100
-+++ linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/page_alloc.c	2008-04-16 14:45:08.000000000 +0100
-@@ -3511,6 +3511,8 @@ void __init add_active_range(unsigned in
- 			  nid, start_pfn, end_pfn,
- 			  nr_nodemap_entries, MAX_ACTIVE_REGIONS);
- 
-+	mminit_validate_physlimits(&start_pfn, &end_pfn);
-+
- 	/* Merge with existing active regions if possible */
- 	for (i = 0; i < nr_nodemap_entries; i++) {
- 		if (early_node_map[i].nid != nid)
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0030_display_zonelist/mm/sparse.c linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/sparse.c
---- linux-2.6.25-rc9-0030_display_zonelist/mm/sparse.c	2008-04-11 21:32:29.000000000 +0100
-+++ linux-2.6.25-rc9-0040_defensive_pfn_checks/mm/sparse.c	2008-04-16 14:45:08.000000000 +0100
-@@ -11,6 +11,7 @@
- #include <asm/dma.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-+#include "internal.h"
- 
- /*
-  * Permanent SPARSEMEM data:
-@@ -146,12 +147,34 @@ static inline int sparse_early_nid(struc
- 	return (section->section_mem_map >> SECTION_NID_SHIFT);
- }
- 
-+/* Validate the physical addressing limitations of the model */
-+void __meminit mminit_validate_physlimits(unsigned long *start_pfn,
-+						unsigned long *end_pfn)
-+{
-+	unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
-+	if (*start_pfn > max_sparsemem_pfn) {
-+		mminit_debug_printk(MMINIT_VERIFY, "pfnvalidation",
-+			"Start of range %lu -> %lu exceeds SPARSEMEM max %lu\n",
-+			*start_pfn, *end_pfn, max_sparsemem_pfn);
-+		*start_pfn = max_sparsemem_pfn;
-+		*end_pfn = max_sparsemem_pfn;
-+	}
-+
-+	if (*end_pfn > max_sparsemem_pfn) {
-+		mminit_debug_printk(MMINIT_VERIFY, "pfnvalidation",
-+			"End of range %lu -> %lu exceeds SPARSEMEM max %lu\n",
-+			*start_pfn, *end_pfn, max_sparsemem_pfn);
-+		*end_pfn = max_sparsemem_pfn;
-+	}
-+}
-+
- /* Record a memory area against a node. */
- void __init memory_present(int nid, unsigned long start, unsigned long end)
- {
- 	unsigned long pfn;
- 
- 	start &= PAGE_SECTION_MASK;
-+	mminit_validate_physlimits(&start, &end);
- 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
- 		unsigned long section = pfn_to_section_nr(pfn);
- 		struct mem_section *ms;
-@@ -176,6 +199,7 @@ unsigned long __init node_memmap_size_by
- 	unsigned long pfn;
- 	unsigned long nr_pages = 0;
- 
-+	mminit_validate_physlimits(&start_pfn, &end_pfn);
- 	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
- 		if (nid != early_pfn_to_nid(pfn))
- 			continue;
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
