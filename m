@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbYDPIPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbYDPIVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbYDPIPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 04:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbYDPIPF
+	id S1761563AbYDPIVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 04:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYDPIUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 04:15:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:55929 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYDPIPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 04:15:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,664,1199692800"; 
-   d="scan'208";a="270979306"
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>,
-       Alexander Kjeldaas <astor@fast.no>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-In-Reply-To: <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com>
-	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
+	Wed, 16 Apr 2008 04:20:52 -0400
+Received: from viefep32-int.chello.at ([62.179.121.50]:45596 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbYDPIUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 04:20:50 -0400
+Subject: Re: file offset corruption on 32-bit machines?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Jan Kara <jack@suse.cz>,
+       Bodo Eggert <7eggert@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, Michal Hocko <mhocko@suse.cz>,
+       Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080416081523.GB5105@elf.ucw.cz>
+References: <20080414190308.GJ15824@duck.suse.cz>
+	 <20080414192928.GM7385@csclub.uwaterloo.ca>
+	 <20080415085740.GA7603@atrey.karlin.mff.cuni.cz>
+	 <20080415153221.GD7387@csclub.uwaterloo.ca>
+	 <20080415173430.GB4994@elf.ucw.cz>
+	 <20080415182453.GR7385@csclub.uwaterloo.ca>
+	 <20080415191238.GC4994@elf.ucw.cz>
+	 <20080415194922.GT7385@csclub.uwaterloo.ca>
+	 <20080415200647.GF4994@elf.ucw.cz> <1208291336.7053.16.camel@lappy>
+	 <20080416081523.GB5105@elf.ucw.cz>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Apr 2008 16:19:09 +0800
-Message-Id: <1208333949.4322.5.camel@caritas-dev.intel.com>
+Date: Wed, 16 Apr 2008 10:20:28 +0200
+Message-Id: <1208334028.6395.65.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 16 Apr 2008 08:14:52.0325 (UTC) FILETIME=[F2417D50:01C89F99]
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-04-16 at 09:31 +0200, Sebastian Siewior wrote:
-> * Huang, Ying | 2008-04-09 14:41:02 [+0800]:
-> 
-> >This patch increases the performance of AES x86-64 implementation. The
-> >average increment is more than 6.3% and the max increment is
-> >more than 10.2% on Intel CORE 2 CPU. The performance increment is
-> >gained via the following methods:
-> >
-> >- Two additional temporary registers are used to hold the subset of
-> >  the state, so that the dependency between instructions is reduced.
-> >
-> >- The expanded key is loaded via 2 64bit load instead of 4 32-bit load.
-> >
-> 
-> From your description I would assume that the performance can only
-> increase. However, on my
-> |model name      : AMD Athlon(tm) 64 Processor 3200+
-> the opposite is the case [1], [2]. I dunno why and I didn't mixup
-> patched & unpached :). I checked this patch on
-
-En. I have no AMD machine. So I have not tested the patch on it. Maybe
-there are some pipeline or load/store unit difference between Intel and
-AMD CPUs. Tomorrow I can split the patch into a set of small patches,
-with one patch for one small step. Can you help me to test these patches
-to find out the reason for degradation on AMD CPU.
-
-> |model name      : Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
-> and the performance really increases [3], [4].
-> 
-> [1] http://download.breakpoint.cc/aes_patch/patched.txt
-> [2] http://download.breakpoint.cc/aes_patch/unpatched.txt
-> [3] http://download.breakpoint.cc/aes_patch/perf_patched.txt
-> [4] http://download.breakpoint.cc/aes_patch/perf_originall.txt
-> 
-> >---
-> > arch/x86/crypto/aes-x86_64-asm_64.S |  101 ++++++++++++++++++++----------------
-> > include/crypto/aes.h                |    1 
-> > 2 files changed, 58 insertions(+), 44 deletions(-)
-> >
-> >--- a/include/crypto/aes.h
-> >+++ b/include/crypto/aes.h
-> >@@ -19,6 +19,7 @@
+On Wed, 2008-04-16 at 10:15 +0200, Pavel Machek wrote:
+> On Tue 2008-04-15 22:28:55, Peter Zijlstra wrote:
+> > On Tue, 2008-04-15 at 22:06 +0200, Pavel Machek wrote:
 > > 
-> > struct crypto_aes_ctx {
-> > 	u32 key_length;
-> >+	u32 _pad1;
+> > > > > I'm not saying this kernel bug is likely to hit in practice. It is
+> > > > > still a kernel bug.
+> > > > > 
+> > > > > Is the slowdown of lseek worth getting rid of this minor bug? Not
+> > > > > sure, probably yes.
+> > > > 
+> > > > I think a slow down is the worse choice.  Adding a note to the
+> > > > documentation saying that "By the way, on 32bit systems the seek call is
+> > > > not atomic for 64bit file offsets, so if you happen to issue two at
+> > > 
+> > > That would be very wrong addition to documentation. If you really
+> > > wanted to do something like this, you would probably want to say
+> > > something like
+> > > 
+> > > "Doing concurrent seeks on one file is undefined. Kernel may end up
+> > > with seeking to some other place."
+> > > 
+> > > Unfortunately, you'd have to get this addition into POSIX standard...
+> > 
+> > Is not treating the point not similar to undefined? And undefined
+> > semantics cover pretty much anything, including the current behaviour.
+> > 
+> > FWIW I really think this issue is a non-issue; one cannot expect sane
+> > behaviour of unsynchronized usage of a shared resource.
 > 
-> Why is this pad required? Do you want special alignment of the keys?
+> Why not? Kernel syscalls are traditionally atomic, and Lennard seems
+> to have found sentence in POSIX that says so.
 
-Because the key is loaded in 64bit in this patch, I want to align the
-key with 64bit address.
-
-> > 	u32 key_enc[AES_MAX_KEYLENGTH_U32];
-> > 	u32 key_dec[AES_MAX_KEYLENGTH_U32];
-> > };
-> >
-
-Best Regards,
-Huang Ying
+Ah, ok missed that part.
 
