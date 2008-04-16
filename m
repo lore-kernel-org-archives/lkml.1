@@ -1,67 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYDPWQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbYDPWRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbYDPWQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 18:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYDPWQN
+	id S1758652AbYDPWRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 18:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYDPWR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 18:16:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53134 "EHLO gate.crashing.org"
+	Wed, 16 Apr 2008 18:17:26 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52898 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbYDPWQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 18:16:12 -0400
-Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alex Chiang <achiang@hp.com>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080416171127.GA18290@ldl.fc.hp.com>
-References: <1207331616.5916.15.camel@badari-desktop>
-	 <20080404180518.GA12642@ldl.fc.hp.com>
-	 <1207340371.5916.23.camel@badari-desktop>
-	 <20080404224227.GA31436@ldl.fc.hp.com>
-	 <1207352128.5916.26.camel@badari-desktop>
-	 <20080407234255.GA22514@ldl.fc.hp.com>
-	 <20080416031712.GB3333@ldl.fc.hp.com> <1208331916.6958.270.camel@pasglop>
-	 <20080416171127.GA18290@ldl.fc.hp.com>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 08:15:53 +1000
-Message-Id: <1208384153.6958.302.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1752407AbYDPWR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 18:17:26 -0400
+Date: Wed, 16 Apr 2008 15:17:23 -0700
+From: sukadev@us.ibm.com
+To: Andrew Morton <akpm@osdl.org>
+Cc: serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       hpa@zytor.com, Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH]: Factor out PTY index allocation
+Message-ID: <20080416221723.GB7112@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We noticed this while working on pts namespaces and believe this might
+be an useful change even as we rework our pts/device namespace approach.
 
-> The basic idea, which I keep botching on pSeries, is that when we
-> make a call to pci_hp_register, we now need to pass it:
-> 
-> pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
-> 
-> I am having trouble figuring out the slot_nr argument. Basically,
-> I want to get the devfn of the slot we're looking at.
+---
 
-I haven't looked in details yet, but I can already tell that things on
-pSeries aren't that simple because we don't necessarily know in advance
-about "slots"...
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: [PATCH]: Factor out PTY index allocation
 
-When you add a physical PCI device to a partition, things can range from:
+Factor out the code used to allocate/free a pts index into new interfaces,
+devpts_new_index() and devpts_kill_index().  This localizes the external
+data structures used in managing the pts indices.
 
- - A device gets added to an existing bridge (ie. slot)
- - A whole P2P brigde gets added with that device below it (that's a slot too)
- - A whole PCI host bridge gets added with that device below it (or with
-   a P2P bridge below it and the device below that).
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Signed-off-by: Serge Hallyn<serue@us.ibm.com>
+Signed-off-by: Matt Helsley<matthltc@us.ibm.com>
 
-In the later case, it's hard to have any concept of slot since you don't
-know anything about the host bridge before it gets added to your partition :-)
+---
+ drivers/char/tty_io.c     |   40 ++++++----------------------------------
+ fs/devpts/inode.c         |   42 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/devpts_fs.h |    4 ++++
+ 3 files changed, 51 insertions(+), 35 deletions(-)
 
-So I'm not sure how much we can use of your slot infrastructure, I'll have
-to look, I suspect it can cover some cases but not all of them.
-
-Cheers,
-Ben.
-
-
+Index: 2.6.25-rc8-mm2/include/linux/devpts_fs.h
+===================================================================
+--- 2.6.25-rc8-mm2.orig/include/linux/devpts_fs.h	2008-01-26 09:49:16.000000000 -0800
++++ 2.6.25-rc8-mm2/include/linux/devpts_fs.h	2008-04-16 09:51:15.000000000 -0700
+@@ -17,6 +17,8 @@
+ 
+ #ifdef CONFIG_UNIX98_PTYS
+ 
++int devpts_new_index(void);
++void devpts_kill_index(int idx);
+ int devpts_pty_new(struct tty_struct *tty);      /* mknod in devpts */
+ struct tty_struct *devpts_get_tty(int number);	 /* get tty structure */
+ void devpts_pty_kill(int number);		 /* unlink */
+@@ -24,6 +26,8 @@ void devpts_pty_kill(int number);		 /* u
+ #else
+ 
+ /* Dummy stubs in the no-pty case */
++static inline int devpts_new_index(void) { return -EINVAL; }
++static inline void devpts_kill_index(int idx) { }
+ static inline int devpts_pty_new(struct tty_struct *tty) { return -EINVAL; }
+ static inline struct tty_struct *devpts_get_tty(int number) { return NULL; }
+ static inline void devpts_pty_kill(int number) { }
+Index: 2.6.25-rc8-mm2/drivers/char/tty_io.c
+===================================================================
+--- 2.6.25-rc8-mm2.orig/drivers/char/tty_io.c	2008-04-16 09:51:11.000000000 -0700
++++ 2.6.25-rc8-mm2/drivers/char/tty_io.c	2008-04-16 09:51:15.000000000 -0700
+@@ -91,7 +91,6 @@
+ #include <linux/module.h>
+ #include <linux/smp_lock.h>
+ #include <linux/device.h>
+-#include <linux/idr.h>
+ #include <linux/wait.h>
+ #include <linux/bitops.h>
+ #include <linux/delay.h>
+@@ -137,9 +136,6 @@ EXPORT_SYMBOL(tty_mutex);
+ 
+ #ifdef CONFIG_UNIX98_PTYS
+ extern struct tty_driver *ptm_driver;	/* Unix98 pty masters; for /dev/ptmx */
+-extern int pty_limit;			/* Config limit on Unix98 ptys */
+-static DEFINE_IDR(allocated_ptys);
+-static DEFINE_MUTEX(allocated_ptys_lock);
+ static int ptmx_open(struct inode *, struct file *);
+ #endif
+ 
+@@ -2636,15 +2632,9 @@ static void release_dev(struct file *fil
+ 	 */
+ 	release_tty(tty, idx);
+ 
+-#ifdef CONFIG_UNIX98_PTYS
+ 	/* Make this pty number available for reallocation */
+-	if (devpts) {
+-		mutex_lock(&allocated_ptys_lock);
+-		idr_remove(&allocated_ptys, idx);
+-		mutex_unlock(&allocated_ptys_lock);
+-	}
+-#endif
+-
++	if (devpts)
++		devpts_kill_index(idx);
+ }
+ 
+ /**
+@@ -2800,29 +2790,13 @@ static int ptmx_open(struct inode *inode
+ 	struct tty_struct *tty;
+ 	int retval;
+ 	int index;
+-	int idr_ret;
+ 
+ 	nonseekable_open(inode, filp);
+ 
+ 	/* find a device that is not in use. */
+-	mutex_lock(&allocated_ptys_lock);
+-	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+-		mutex_unlock(&allocated_ptys_lock);
+-		return -ENOMEM;
+-	}
+-	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+-	if (idr_ret < 0) {
+-		mutex_unlock(&allocated_ptys_lock);
+-		if (idr_ret == -EAGAIN)
+-			return -ENOMEM;
+-		return -EIO;
+-	}
+-	if (index >= pty_limit) {
+-		idr_remove(&allocated_ptys, index);
+-		mutex_unlock(&allocated_ptys_lock);
+-		return -EIO;
+-	}
+-	mutex_unlock(&allocated_ptys_lock);
++	index = devpts_new_index();
++	if (index < 0)
++		return index;
+ 
+ 	mutex_lock(&tty_mutex);
+ 	retval = init_dev(ptm_driver, index, &tty);
+@@ -2847,9 +2821,7 @@ out1:
+ 	release_dev(filp);
+ 	return retval;
+ out:
+-	mutex_lock(&allocated_ptys_lock);
+-	idr_remove(&allocated_ptys, index);
+-	mutex_unlock(&allocated_ptys_lock);
++	devpts_kill_index(index);
+ 	return retval;
+ }
+ #endif
+Index: 2.6.25-rc8-mm2/fs/devpts/inode.c
+===================================================================
+--- 2.6.25-rc8-mm2.orig/fs/devpts/inode.c	2008-02-27 15:17:59.000000000 -0800
++++ 2.6.25-rc8-mm2/fs/devpts/inode.c	2008-04-16 09:51:15.000000000 -0700
+@@ -17,6 +17,7 @@
+ #include <linux/namei.h>
+ #include <linux/mount.h>
+ #include <linux/tty.h>
++#include <linux/idr.h>
+ #include <linux/devpts_fs.h>
+ #include <linux/parser.h>
+ #include <linux/fsnotify.h>
+@@ -26,6 +27,10 @@
+ 
+ #define DEVPTS_DEFAULT_MODE 0600
+ 
++extern int pty_limit;			/* Config limit on Unix98 ptys */
++static DEFINE_IDR(allocated_ptys);
++static DECLARE_MUTEX(allocated_ptys_lock);
++
+ static struct vfsmount *devpts_mnt;
+ static struct dentry *devpts_root;
+ 
+@@ -171,9 +176,44 @@ static struct dentry *get_node(int num)
+ 	return lookup_one_len(s, root, sprintf(s, "%d", num));
+ }
+ 
++int devpts_new_index(void)
++{
++	int index;
++	int idr_ret;
++
++retry:
++	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
++		return -ENOMEM;
++	}
++
++	down(&allocated_ptys_lock);
++	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
++	if (idr_ret < 0) {
++		up(&allocated_ptys_lock);
++		if (idr_ret == -EAGAIN)
++			goto retry;
++		return -EIO;
++	}
++
++	if (index >= pty_limit) {
++		idr_remove(&allocated_ptys, index);
++		up(&allocated_ptys_lock);
++		return -EIO;
++	}
++	up(&allocated_ptys_lock);
++	return index;
++}
++
++void devpts_kill_index(int idx)
++{
++	down(&allocated_ptys_lock);
++	idr_remove(&allocated_ptys, idx);
++	up(&allocated_ptys_lock);
++}
++
+ int devpts_pty_new(struct tty_struct *tty)
+ {
+-	int number = tty->index;
++	int number = tty->index; /* tty layer puts index from devpts_new_index() in here */
+ 	struct tty_driver *driver = tty->driver;
+ 	dev_t device = MKDEV(driver->major, driver->minor_start+number);
+ 	struct dentry *dentry;
