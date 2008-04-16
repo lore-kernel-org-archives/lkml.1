@@ -1,107 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764683AbYDPTUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbYDPTWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764683AbYDPTUX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764195AbYDPTUA
+	id S1764827AbYDPTWB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYDPTVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:20:00 -0400
-Received: from saeurebad.de ([85.214.36.134]:42331 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764156AbYDPTT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:19:58 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Linux MM" <linux-mm@kvack.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC][patch 2/5] mm: Node-setup agnostic free_bootmem()
-References: <20080416113629.947746497@skyscraper.fehenstaub.lan>
-	<20080416113719.092060936@skyscraper.fehenstaub.lan>
-	<86802c440804161054h6f0cfc3dmde49006afb7889b2@mail.gmail.com>
-Date: Wed, 16 Apr 2008 21:19:33 +0200
-In-Reply-To: <86802c440804161054h6f0cfc3dmde49006afb7889b2@mail.gmail.com>
-	(Yinghai Lu's message of "Wed, 16 Apr 2008 10:54:57 -0700")
-Message-ID: <873aplfvzu.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Wed, 16 Apr 2008 15:21:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49540 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751320AbYDPTVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:21:52 -0400
+Date: Wed, 16 Apr 2008 12:02:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: sverre@rabbelier.nl, git@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jmorris@namei.org, viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
+       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
+       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
+       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
+Subject: Re: Reporting bugs and bisection
+Message-Id: <20080416120247.c665859c.akpm@linux-foundation.org>
+In-Reply-To: <20080416132634.GA545@cs181133002.pp.htv.fi>
+References: <20080413205406.GA9190@2ka.mipt.ru>
+	<48028830.6020703@earthlink.net>
+	<alpine.DEB.1.10.0804131546370.9318@asgard>
+	<20080414043939.GA6862@1wt.eu>
+	<20080414053943.GU9785@ZenIV.linux.org.uk>
+	<20080413232441.e216a02c.akpm@linux-foundation.org>
+	<20080414072328.GW9785@ZenIV.linux.org.uk>
+	<Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+	<4804765B.2070300@davidnewall.com>
+	<bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
+	<20080416132634.GA545@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 16 Apr 2008 16:26:34 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
+> > I'm not subscribed to the kernel mailing list, so please include me in
+> > the cc if you don't reply to the git list (which I am subscribed to).
+> > 
+> > Git is participating in Google Summer of Code this year and I've
+> > proposed to write a 'git statistics' command. This command would allow
+> > the user to gather data about a repository, ranging from "how active
+> > is dev x" to "what did x work on in the last 3 weeks". It's main
+> > feature however, would be an algorithm that ranks commits as being
+> > either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
+> > that can aid in determining this, a commit msg along the lines of
+> > "fixes ..." being the most obvious.)
+> >...
 
-> On Wed, Apr 16, 2008 at 4:36 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->> Make free_bootmem() look up the node holding the specified address
->>  range which lets it work transparently on single-node and multi-node
->>  configurations.
->>
->>  If the address range exceeds the node range, it well be marked free
->>  across node boundaries, too.
->>
->>  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->>  CC: Ingo Molnar <mingo@elte.hu>
->>  CC: Andi Kleen <andi@firstfloor.org>
->>  CC: Yinghai Lu <yhlu.kernel@gmail.com>
->>  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
->>  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>  CC: Christoph Lameter <clameter@sgi.com>
->>  CC: Andrew Morton <akpm@linux-foundation.org>
->>  ---
->>   mm/bootmem.c |   10 +++++++++-
->>   1 files changed, 9 insertions(+), 1 deletions(-)
->>
->>  Index: tree-linus/mm/bootmem.c
->>  ===================================================================
->>  --- tree-linus.orig/mm/bootmem.c
->>  +++ tree-linus/mm/bootmem.c
->>  @@ -421,7 +421,32 @@ int __init reserve_bootmem(unsigned long
->>
->>   void __init free_bootmem(unsigned long addr, unsigned long size)
->>   {
->>  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->>  +       bootmem_data_t *bdata;
->>  +       unsigned long pos = addr;
->>  +       unsigned long partsize = size;
->>  +
->>  +       list_for_each_entry(bdata, &bdata_list, list) {
->>  +               unsigned long remainder = 0;
->>  +
->>  +               if (pos < bdata->node_boot_start)
->>  +                       continue;
->>  +
->>  +               if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
->>  +                       remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
->>  +                       partsize -= remainder;
->>  +               }
->>  +
->>  +               free_bootmem_core(bdata, pos, partsize);
->>  +
->>  +               if (!remainder)
->>  +                       return;
->>  +
->>  +               pos = PFN_PHYS(bdata->node_low_pfn + 1);
->>  +       }
->>  +       printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
->>  +                       "state: pos=%lx, partsize=%lx\n", addr, size,
->>  +                       pos, partsize);
->>  +       BUG();
->>   }
->>
->>   unsigned long __init free_all_bootmem(void)
->>
->>  --
->
-> Yes, it should work well with cross nodes case.
->
-> but please add boundary check on free_bootmem_node too.
+Sounds like an interesting project.
 
-Alright, I will.
+> At least with the data we have currently in git it's impossible to 
+> figure that out automatically.
+> 
+> E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
+> (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
+> automatically that it is a bugfix, and the commit that introduced
+> the bug?
+> 
+> You can always get some data, but if you want to get usable statistics 
+> you need explicit tags in the commits, not some algorithm that tries 
+> to guess.
 
-	Hannes
+Well yes.  One outcome of the project would be to tell us what changes we'd
+need to make to our processes to make such data gathering more effective.
+
+Of course, we may not actually implement such changes.  That would depend
+upon how useful the output is to us.
