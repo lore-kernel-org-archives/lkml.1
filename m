@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbYDPWS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbYDPWVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763606AbYDPWS1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 18:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYDPWST
+	id S1758763AbYDPWVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 18:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYDPWVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 18:18:19 -0400
-Received: from mga09.intel.com ([134.134.136.24]:1455 "EHLO mga09.intel.com"
+	Wed, 16 Apr 2008 18:21:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:60359 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbYDPWSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 18:18:18 -0400
+	id S1753081AbYDPWVF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 18:21:05 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,666,1199692800"; 
-   d="scan'208";a="317925321"
-Date: Wed, 16 Apr 2008 15:18:17 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080416221817.GE14062@linux-os.sc.intel.com>
-References: <20080416202338.GA6007@elte.hu> <adar6d5ilit.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adar6d5ilit.fsf@cisco.com>
-User-Agent: Mutt/1.4.1i
+   d="scan'208";a="373335458"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Mapping PCI BAR through /sys/devices/pci* sets cache-disable andwrite-through
+Date: Wed, 16 Apr 2008 15:23:25 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEE5CEA9@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <1208367626.5245.5.camel@koto.keithp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Mapping PCI BAR through /sys/devices/pci* sets cache-disable andwrite-through
+Thread-Index: Acif7PKL4pIW/qjVROW4LKzgE+b+4wAIpSFA
+References: <1208367626.5245.5.camel@koto.keithp.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Keith Packard" <keithp@keithp.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+X-OriginalArrivalTime: 16 Apr 2008 22:21:03.0083 (UTC) FILETIME=[27FC5BB0:01C8A010]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 01:37:30PM -0700, Roland Dreier wrote:
->  >  - PAT support - first step towards phasing out MTRR's for cache 
->  >    attribute control
-> 
-> I just grabbed your tree and I see that there is no
-> pgprot_writecombine() for x86.  I see that pci_mmap_page_range() handles
-> write combining but there's no way for a PCI driver to allow userspace
-> to mmap() part of a BAR with WC enabled.  Doing this gives a big
-> performance boost for running low-latency apps on InfiniBand hardware
-> driven by the mlx4 driver (look for the FIXME about it in
-> drivers/infiniband/hw/mlx4/main.c).  Are there any plans to handle this
-> somehow?
+ 
 
-Yes. We are planning to fix this by tracking the attribute usage specified
-in the pgprot field of remap_pfn_range(). Once the attribute is tracked
-properly, we can add pgprot_writecombine() for WC case.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Keith Packard
+>Sent: Wednesday, April 16, 2008 10:40 AM
+>To: linux-kernel
+>Subject: Mapping PCI BAR through /sys/devices/pci* sets 
+>cache-disable andwrite-through
+>
+>The X server recently (within the last year) switched from mapping the
+>frame buffer from /dev/mem to using /sys/devices/pci*. This caused a
+>significant memory bandwidth reduction for writes, similar to 
+>the effect
+>caused when the associated MTRR is set to UC instead of WC.
+>
+>Looking at the code path, we find, in i386:pci_mmap_page_range:
+>
+>        prot = pgprot_val(vma->vm_page_prot);
+>        if (boot_cpu_data.x86 > 3)
+>                prot |= _PAGE_PCD | _PAGE_PWT;
+>        vma->vm_page_prot = __pgprot(prot);
+>
+>Which is to say, on any CPU which supports it, force the cache-disable
+>and write-through bits on.
+>
+>Is there some reason this is there? Surely applications should be
+>expected to set these attributes correctly, currently using MTRR and in
+>the future, using PAT directly.
+>
 
-This should also help the other drivers like video fb etc which specify
-the UC/WC attribute for user level mmap.
+Setting flags "_PAGE_PCD | _PAGE_PWT" maps to PAT_3 which is "UC". So,
+the mapping X server will get is UC and if X sets MTRR to WC, it will
+not have any effect on this mapping, which will be still UC. There may
+be apps which depend on this /sys/ interface giving UC mapping always...
 
-thanks,
-suresh
+With PAT patches, we now have /sys/devices/pci*resource_wc (in addition
+to resource) for any PREFETCHABLE region. So, X has to change to use
+that new interface to get WC mapping.
+
+Thanks,
+Venki
