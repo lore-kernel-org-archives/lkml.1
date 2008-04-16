@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbYDPVFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbYDPVI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbYDPVFe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYDPVFU
+	id S1759928AbYDPVI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYDPVIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:05:20 -0400
-Received: from el-out-1112.google.com ([209.85.162.182]:8140 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbYDPVFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:05:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CTFOPurnpymdCxf4F97uCkjgSL7A8jbr3wzEo0WWdVAsgxDHHGvFC0dmxBCeQZ9kWzOyQNiGOIT7XxfSu5HETIdyMl18sQPhszQO153SWTb7eXiWWnsxHVCeyxT1rdPR1bTvfE6YrXZ16WrCIjV9FjL9GYp/MFveCUsgv5NVycs=
-Message-ID: <bd6139dc0804161405j28470914u488568b565b68a0b@mail.gmail.com>
-Date: Wed, 16 Apr 2008 23:05:17 +0200
-From: "Sverre Rabbelier" <alturin@gmail.com>
-Reply-To: sverre@rabbelier.nl
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: Reporting bugs and bisection
-Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
-       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Tilman Schmidt" <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, "Mark Lord" <lkml@rtr.ca>,
-       "David Miller" <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
-       "David Newall" <davidn@davidnewall.com>
-In-Reply-To: <20080416205333.GT1677@cs181133002.pp.htv.fi>
+	Wed, 16 Apr 2008 17:08:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60577 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752278AbYDPVIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:08:48 -0400
+Date: Wed, 16 Apr 2008 23:08:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
+Message-ID: <20080416210838.GA27459@elte.hu>
+References: <20080416175135.GN1677@cs181133002.pp.htv.fi> <20080416192306.GA3090@uranus.ravnborg.org> <20080416193102.GA16981@elte.hu> <20080416195504.GA2408@elte.hu> <20080416205230.GA4129@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080414043939.GA6862@1wt.eu>
-	 <20080413232441.e216a02c.akpm@linux-foundation.org>
-	 <20080414072328.GW9785@ZenIV.linux.org.uk>
-	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-	 <4804765B.2070300@davidnewall.com>
-	 <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
-	 <20080416132634.GA545@cs181133002.pp.htv.fi>
-	 <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
-	 <20080416201606.GS1677@cs181133002.pp.htv.fi>
-	 <20080416205333.GT1677@cs181133002.pp.htv.fi>
+In-Reply-To: <20080416205230.GA4129@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 10:53 PM, Adrian Bunk <bunk@kernel.org> wrote:
->  To avoid any misunderstandings:
->
->  This is not in any way meant against you personally.
 
-Thanks for pointing it out, I wasn't quite sure, but assumed that :).
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
->  But saying things like " X% of your commits introduced bugs" is not a
->  friendly thing, and wrong data could be quite hurting.
+> On Wed, Apr 16, 2008 at 09:55:04PM +0200, Ingo Molnar wrote:
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > * Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > 
+> > > > I would prefer we were down to less than 5 warnings so we could 
+> > > > enable it in kconfig but maybe after next merge window.
+> > > 
+> > > they get regenerated. More than 1 out of every 100 new patches. Quite 
+> > > expensive feature (in terms of maintenance overhead) for a rather 
+> > > theoretical memory saving benefit.
+> > 
+> > in v2.6.24 we had at least 200 section fixes:
+> > 
+> >   $ git-log v2.6.24.. | egrep -c 'WARNING:.*Section mismatch'
+> >   198
+> > 
+> > for 12671 commits - that's 1 section type fix for every 60 commits.
+> Please get your numbers right. What you count is the number of Section 
+> mismatch warnings that has been fixed. Sometime fixing up one line of 
+> code fixes >5 section mismatch warnings.
 
-Yes, it could be, and I agree that conclusions shouldn't be based on
-the details, but on the bigger picture. Also, I think it should (at
-first) be used mainly as an indicator, of where attention might be
-required. I mean, if it points out that one contributor almost always
-commits buggy code, you don't have to present them with those
-statistics right away. Instead you can ask the program where it bases
-it's conclusions on, and research them yourself. If it does indeed
-turn out that they are slacking that much you have good ground to have
-a talk with them.
+the revised number is: at least 84 commits that fixed section bugs. 
+That's still rather large.
 
->  Especially in the open source world where much motivation comes from
->  people being proud of their work.
+> > and 90% of the problems could be reduced via the very simple patch 
+> > below ...
+> > 
+> > so ... why shouldnt we say that if someone wants to have this 
+> > feature, it should be done all automatically, in the link space. 
+> > There's no reason why the dependencies couldnt be figured out all 
+> > automatically.
+> 
+> Or we could fix the blatant misuse of __cpuinit. If has replaced a 
+> proper separation of code that is only relevant for CPU hotplug and 
+> code that is used with and without CPUHOTPLUG.
+> 
+> I question that we have 580 functions that is used duing init in 
+> normal cases and during CPU hotplug.
 
-Yes, that is very true, I very much agree with that, but on the other
-hand it might also point out contributors that are particularly
-skillful in a certain section that was previously not noted. As with
-all statistics, it's up to interpretation, misinterpreting statistics
-could -always- have bad effects.
+sure, if you can solve it, please do - but the stream of new section 
+warnings and seems somewhat worrying for the long run.
 
->  Even correct data can do harm.
->
->  And bad data can have really bad effects.
-
-True, both, but as said, if properly interpreted it could be very useful.
-
-Cheers,
-
-Sverre Rabbelier
+	Ingo
