@@ -1,97 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbYDPVks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbYDPVlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932878AbYDPVks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYDPVge
+	id S933080AbYDPVlN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765700AbYDPVgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:36:34 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53207 "EHLO smtp.polymtl.ca"
+	Wed, 16 Apr 2008 17:36:35 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53209 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765644AbYDPVgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:36:32 -0400
-Message-Id: <20080416213555.135857909@polymtl.ca>
+	id S1755247AbYDPVgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:36:33 -0400
+Message-Id: <20080416213549.810025929@polymtl.ca>
 References: <20080416213426.298498397@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 17:34:46 -0400
+Date: Wed, 16 Apr 2008 17:34:34 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [RFC patch 20/27] Immediate Values - Move Kprobes x86 restore_interrupt to kdebug.h
-Content-Disposition: inline; filename=immediate-values-move-kprobes-x86-restore-interrupt-to-kdebug-h.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:56 +0000
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Roel Kluin <12o3l@tiscali.nl>
+Subject: [RFC patch 08/27] Text Edit Lock - kprobes architecture independent support
+Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent-support.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the breakpoint handler is useful both to kprobes and immediate values, it
-makes sense to make the required restore_interrupt() available through
-asm-i386/kdebug.h.
+Use the mutual exclusion provided by the text edit lock in the kprobes code. It
+allows coherent manipulation of the kernel code by other subsystems.
+
+Changelog:
+
+Move the kernel_text_lock/unlock out of the for loops.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: Christoph Hellwig <hch@infradead.org>
+CC: ananth@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
+CC: Roel Kluin <12o3l@tiscali.nl>
 ---
- include/asm-x86/kdebug.h  |   12 ++++++++++++
- include/asm-x86/kprobes.h |    9 ---------
- 2 files changed, 12 insertions(+), 9 deletions(-)
+ kernel/kprobes.c |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-x86/kdebug.h
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/kdebug.h	2008-03-25 08:56:54.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/kdebug.h	2008-03-25 09:00:17.000000000 -0400
-@@ -3,6 +3,9 @@
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2008-04-09 10:52:51.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2008-04-09 10:52:57.000000000 -0400
+@@ -43,6 +43,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
+ #include <linux/kdebug.h>
++#include <linux/memory.h>
  
- #include <linux/notifier.h>
+ #include <asm-generic/sections.h>
+ #include <asm/cacheflush.h>
+@@ -577,9 +578,10 @@ static int __kprobes __register_kprobe(s
+ 		goto out;
+ 	}
  
-+#include <linux/ptrace.h>
-+#include <asm/system.h>
-+
- struct pt_regs;
++	kernel_text_lock();
+ 	ret = arch_prepare_kprobe(p);
+ 	if (ret)
+-		goto out;
++		goto out_unlock_text;
  
- /* Grossly misnamed. */
-@@ -34,4 +37,13 @@ extern void show_regs(struct pt_regs *re
- extern unsigned long oops_begin(void);
- extern void oops_end(unsigned long, struct pt_regs *, int signr);
+ 	INIT_HLIST_NODE(&p->hlist);
+ 	hlist_add_head_rcu(&p->hlist,
+@@ -587,7 +589,8 @@ static int __kprobes __register_kprobe(s
  
-+/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
-+ * if necessary, before executing the original int3/1 (trap) handler.
-+ */
-+static inline void restore_interrupts(struct pt_regs *regs)
-+{
-+	if (regs->flags & X86_EFLAGS_IF)
-+		local_irq_enable();
-+}
-+
- #endif
-Index: linux-2.6-lttng/include/asm-x86/kprobes.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/kprobes.h	2008-03-25 08:56:54.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/kprobes.h	2008-03-25 09:00:17.000000000 -0400
-@@ -82,15 +82,6 @@ struct kprobe_ctlblk {
- 	struct prev_kprobe prev_kprobe;
- };
- 
--/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
-- * if necessary, before executing the original int3/1 (trap) handler.
-- */
--static inline void restore_interrupts(struct pt_regs *regs)
--{
--	if (regs->flags & X86_EFLAGS_IF)
--		local_irq_enable();
--}
+ 	if (kprobe_enabled)
+ 		arch_arm_kprobe(p);
 -
- extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
- extern int kprobe_exceptions_notify(struct notifier_block *self,
- 				    unsigned long val, void *data);
++out_unlock_text:
++	kernel_text_unlock();
+ out:
+ 	mutex_unlock(&kprobe_mutex);
+ 
+@@ -630,8 +633,11 @@ valid_p:
+ 		 * enabled - otherwise, the breakpoint would already have
+ 		 * been removed. We save on flushing icache.
+ 		 */
+-		if (kprobe_enabled)
++		if (kprobe_enabled) {
++			kernel_text_lock();
+ 			arch_disarm_kprobe(p);
++			kernel_text_unlock();
++		}
+ 		hlist_del_rcu(&old_p->hlist);
+ 		cleanup_p = 1;
+ 	} else {
+@@ -729,7 +735,6 @@ static int __kprobes pre_handler_kretpro
+ 		}
+ 
+ 		arch_prepare_kretprobe(ri, regs);
+-
+ 		/* XXX(hch): why is there no hlist_move_head? */
+ 		hlist_del(&ri->uflist);
+ 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
+@@ -951,11 +956,13 @@ static void __kprobes enable_all_kprobes
+ 	if (kprobe_enabled)
+ 		goto already_enabled;
+ 
++	kernel_text_lock();
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist)
+ 			arch_arm_kprobe(p);
+ 	}
++	kernel_text_unlock();
+ 
+ 	kprobe_enabled = true;
+ 	printk(KERN_INFO "Kprobes globally enabled\n");
+@@ -980,6 +987,7 @@ static void __kprobes disable_all_kprobe
+ 
+ 	kprobe_enabled = false;
+ 	printk(KERN_INFO "Kprobes globally disabled\n");
++	kernel_text_lock();
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist) {
+@@ -987,6 +995,7 @@ static void __kprobes disable_all_kprobe
+ 				arch_disarm_kprobe(p);
+ 		}
+ 	}
++	kernel_text_unlock();
+ 
+ 	mutex_unlock(&kprobe_mutex);
+ 	/* Allow all currently running kprobes to complete */
 
 -- 
 Mathieu Desnoyers
