@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYDPRvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYDPRzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYDPRvt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 13:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYDPRvl
+	id S1753698AbYDPRzO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 13:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYDPRzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 13:51:41 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:57684 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbYDPRvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 13:51:41 -0400
-Date: Wed, 16 Apr 2008 20:51:35 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: sam@ravnborg.org
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: 2.6.25 and DEBUG_SECTION_MISMATCH
-Message-ID: <20080416175135.GN1677@cs181133002.pp.htv.fi>
+	Wed, 16 Apr 2008 13:55:01 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:30639 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbYDPRzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 13:55:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cWR/ZyLEK53YKvQHyC8VzN3eVl/lzosQ7Syylc6CF5QzodwOyitDnxxYSIU7xoTSmhHsU/LOKs5A8BaRq16dlUwxr0HouxOttQBZFDvLZBqW9JU4LQ4yyoTPN6hM6+Zxtur7xWYce9kmrmvVlcfMaqGXJZbDyldNvHiSA6nnONo=
+Message-ID: <86802c440804161054h6f0cfc3dmde49006afb7889b2@mail.gmail.com>
+Date: Wed, 16 Apr 2008 10:54:57 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: [RFC][patch 2/5] mm: Node-setup agnostic free_bootmem()
+Cc: LKML <linux-kernel@vger.kernel.org>, "Linux MM" <linux-mm@kvack.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080416113719.092060936@skyscraper.fehenstaub.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080416113629.947746497@skyscraper.fehenstaub.lan>
+	 <20080416113719.092060936@skyscraper.fehenstaub.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Wed, Apr 16, 2008 at 4:36 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+> Make free_bootmem() look up the node holding the specified address
+>  range which lets it work transparently on single-node and multi-node
+>  configurations.
+>
+>  If the address range exceeds the node range, it well be marked free
+>  across node boundaries, too.
+>
+>  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>  CC: Ingo Molnar <mingo@elte.hu>
+>  CC: Andi Kleen <andi@firstfloor.org>
+>  CC: Yinghai Lu <yhlu.kernel@gmail.com>
+>  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
+>  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>  CC: Christoph Lameter <clameter@sgi.com>
+>  CC: Andrew Morton <akpm@linux-foundation.org>
+>  ---
+>   mm/bootmem.c |   10 +++++++++-
+>   1 files changed, 9 insertions(+), 1 deletions(-)
+>
+>  Index: tree-linus/mm/bootmem.c
+>  ===================================================================
+>  --- tree-linus.orig/mm/bootmem.c
+>  +++ tree-linus/mm/bootmem.c
+>  @@ -421,7 +421,32 @@ int __init reserve_bootmem(unsigned long
+>
+>   void __init free_bootmem(unsigned long addr, unsigned long size)
+>   {
+>  -       free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
+>  +       bootmem_data_t *bdata;
+>  +       unsigned long pos = addr;
+>  +       unsigned long partsize = size;
+>  +
+>  +       list_for_each_entry(bdata, &bdata_list, list) {
+>  +               unsigned long remainder = 0;
+>  +
+>  +               if (pos < bdata->node_boot_start)
+>  +                       continue;
+>  +
+>  +               if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
+>  +                       remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
+>  +                       partsize -= remainder;
+>  +               }
+>  +
+>  +               free_bootmem_core(bdata, pos, partsize);
+>  +
+>  +               if (!remainder)
+>  +                       return;
+>  +
+>  +               pos = PFN_PHYS(bdata->node_low_pfn + 1);
+>  +       }
+>  +       printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
+>  +                       "state: pos=%lx, partsize=%lx\n", addr, size,
+>  +                       pos, partsize);
+>  +       BUG();
+>   }
+>
+>   unsigned long __init free_all_bootmem(void)
+>
+>  --
 
-although DEBUG_SECTION_MISMATCH allows to also find exotig things like 
-finding bugs only present when using gcc < 3.4 and CONFIG_HOTPLUG=n at 
-the same time, the problem is that we print
-    WARNING: modpost: Found 13 section mismatch(es).
-    To see full details build your kernel with:
-    'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-but CONFIG_DEBUG_SECTION_MISMATCH is not offered in 2.6.25.
+Yes, it should work well with cross nodes case.
 
-The options seem to be:
-- going back to the worse but for most practical purposes usable
-  warnings in 2.6.24
-- don't show these warnings during modpost for 2.6.25
+but please add boundary check on free_bootmem_node too.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+YH
