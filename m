@@ -1,126 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYDPT43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYDPT7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbYDPT43 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYDPT4Q
+	id S1759925AbYDPT7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYDPT7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:56:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60453 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752127AbYDPT4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:56:15 -0400
-Message-ID: <480658DC.6030507@redhat.com>
-Date: Wed, 16 Apr 2008 15:51:56 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 16 Apr 2008 15:59:40 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:23938 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbYDPT7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:59:39 -0400
+Date: Wed, 16 Apr 2008 13:59:33 -0600
+From: Alex Chiang <achiang@hp.com>
+To: ben@kernel.crashing.org
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       anton@au1.ibm.com
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+Message-ID: <20080416195933.GB18290@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	ben@kernel.crashing.org, Badari Pulavarty <pbadari@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, anton@au1.ibm.com
+References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop> <20080407234255.GA22514@ldl.fc.hp.com> <20080415173656.218a6080.akpm@linux-foundation.org> <48056DC8.6040909@us.ibm.com> <20080416031828.GC3333@ldl.fc.hp.com> <1208374375.17986.1.camel@badari-desktop>
 MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>, Tom Zanussi <zanussi@comcast.net>,
-       David Wilder <dwilder@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, tzanussi@gmail.com
-Subject: [PATCH -mm] relayfs: support larger relay buffer take 3
-References: <4804C95F.2080204@redhat.com> <1208319769.7893.16.camel@charm-linux> <48063F80.9060404@redhat.com> <Pine.LNX.4.64.0804162110070.19171@sbz-30.cs.Helsinki.FI> <480646B2.9000905@redhat.com>
-In-Reply-To: <480646B2.9000905@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208374375.17986.1.camel@badari-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use vmalloc() and memset() instead of kcalloc() to allocate a page* array
-when the array size is bigger than one page. This enables relayfs to support
-bigger relay buffers than 64MB on 4k-page system, 512MB on 16k-page system.
+Hi Badari,
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
-Changes from take2 to take3:
- - Use struct page ** instead of struct page *.
- - move functions to the place before relay_mmap_buf.
- - add comments.
+* Badari Pulavarty <pbadari@us.ibm.com>:
+> 
+> On Tue, 2008-04-15 at 21:18 -0600, Alex Chiang wrote:
+> > >>> +	if (slot->bus->self)
+> > >>> +		slot_nr = PCI_SLOT(slot->bus->self->devfn);
+> > >>> +	else
+> > >>> +		slot_nr = 0;
+> > >>> +	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
+> > >>>  	if (retval) {
+> > >>>  		err("pci_hp_register failed with error %d\n", retval);
+> > >>>  		return retval;
+> > >
+> > > No. It didn't help. I had to hack "slot_nr = 0" all the time to boot my  
+> > > machine.
+> > 
+> > It didn't help because you're still getting a NULL deref? Or are
+> > you seeing some other failure mode?
+> > 
+> 
+> I verified this patch again. It seem to have worked this time :(
+> I am not able to reproduce the problem with this problem (tried many
+> times). 
+>  
+> Sorry for the false alarm :(
 
-This is useful for a 64-bit system which has a plenty of memory (tens of
-giga bytes) and a large kernel memory space.
+Thanks for testing. Please do let me know if you see any more
+problems.
 
-I tested it on x86-64 and ia64.
+Ben, I would still appreciate a code review on:
 
- kernel/relay.c |   35 ++++++++++++++++++++++++++++++++---
- 1 file changed, 32 insertions(+), 3 deletions(-)
+	http://lkml.org/lkml/2008/4/7/319
 
-Index: 2.6.25-rc8-mm2/kernel/relay.c
-===================================================================
---- 2.6.25-rc8-mm2.orig/kernel/relay.c
-+++ 2.6.25-rc8-mm2/kernel/relay.c
-@@ -65,6 +65,35 @@ static struct vm_operations_struct relay
- 	.close = relay_file_mmap_close,
- };
+Thanks!
 
-+/*
-+ * allocate an array of pointers of struct page
-+ */
-+static struct page **relay_alloc_page_array(unsigned int n_pages)
-+{
-+	struct page **array;
-+	unsigned int pa_size = n_pages * sizeof(struct page *);
-+
-+	if (pa_size > PAGE_SIZE) {
-+		array = vmalloc(pa_size);
-+		if (array)
-+			memset(array, 0, pa_size);
-+	} else {
-+		array = kcalloc(n_pages, sizeof(struct page *), GFP_KERNEL);
-+	}
-+	return array;
-+}
-+
-+/*
-+ * free an array of pointers of struct page
-+ */
-+static void relay_free_page_array(struct page **array)
-+{
-+	if (is_vmalloc_addr(array))
-+		vfree(array);
-+	else
-+		kfree(array);
-+}
-+
- /**
-  *	relay_mmap_buf: - mmap channel buffer to process address space
-  *	@buf: relay channel buffer
-@@ -109,7 +138,7 @@ static void *relay_alloc_buf(struct rcha
- 	*size = PAGE_ALIGN(*size);
- 	n_pages = *size >> PAGE_SHIFT;
-
--	buf->page_array = kcalloc(n_pages, sizeof(struct page *), GFP_KERNEL);
-+	buf->page_array = relay_alloc_page_array(n_pages);
- 	if (!buf->page_array)
- 		return NULL;
-
-@@ -130,7 +159,7 @@ static void *relay_alloc_buf(struct rcha
- depopulate:
- 	for (j = 0; j < i; j++)
- 		__free_page(buf->page_array[j]);
--	kfree(buf->page_array);
-+	relay_free_page_array(buf->page_array);
- 	return NULL;
- }
-
-@@ -189,7 +218,7 @@ static void relay_destroy_buf(struct rch
- 		vunmap(buf->start);
- 		for (i = 0; i < buf->page_count; i++)
- 			__free_page(buf->page_array[i]);
--		kfree(buf->page_array);
-+		relay_free_page_array(buf->page_array);
- 	}
- 	chan->buf[buf->cpu] = NULL;
- 	kfree(buf->padding);
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+/ac
 
