@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbYDPJ72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYDPKHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762307AbYDPJ72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 05:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYDPJ7S
+	id S1761719AbYDPKHU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 06:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYDPKHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 05:59:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57251 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756107AbYDPJ7R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 05:59:17 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-To: Anton Altaparmakov <aia21@cam.ac.uk>,
-       Szabolcs Szakacsits <szaka@ntfs-3g.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, dwmw2@infradead.org,
-       hch@infradead.org, me@bobcopeland.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Reply-To: 7eggert@gmx.de
-Date: Wed, 16 Apr 2008 11:56:43 +0200
-References: <aiwLk-3mc-3@gated-at.bofh.it> <aiwLk-3mc-5@gated-at.bofh.it> <aiwLk-3mc-1@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Jm4Ng-0000su-2j@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19sbveyvWI4uSQb4fA2f191xKC4oDHKt95Bnyp
- R/3nDC0F4w38ZEPGZAnB0vr6LLAebsYLsruXHZoa4df09XER/H
- bYNRrkuBAZimb5Q78tPSw==
+	Wed, 16 Apr 2008 06:07:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44212 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756543AbYDPKHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 06:07:09 -0400
+Date: Wed, 16 Apr 2008 20:07:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 16
+Message-Id: <20080416200703.92289f91.sfr@canb.auug.org.au>
+In-Reply-To: <20080416195809.4701a86c.sfr@canb.auug.org.au>
+References: <20080416195809.4701a86c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__16_Apr_2008_20_07_03_+1000_iL6Ve4HgcG78Sxx8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Altaparmakov <aia21@cam.ac.uk> wrote:
-> On 14 Apr 2008, at 13:46, Szabolcs Szakacsits wrote:
->> On Mon, 14 Apr 2008 Anton Altaparmakov wrote:
+--Signature=_Wed__16_Apr_2008_20_07_03_+1000_iL6Ve4HgcG78Sxx8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->>> (and under no-one I include the OOM killer for example!)
->>
->> The OOM killer can be configured and if the fs still uses too much
->> memory
->> then probably it's better to be killed/restarted with journaling
->> support.
->> The important here would be the kernel finally fixing the non-sync
->> behavior
->> when it clams to do so (see recent kernel threads).
-> 
-> You don't get the point.  Any process in the system can be using too
-> much memory and trigger the OOM killer even when the FS is behaving
-> just fine...
+Hi all,
 
-Just set /proc/$pid/oom_adj to -17.
+The next linux-next tree will not be created until Monday April 21
+(unless Linus decides to release 2.6.25 before then :-))
 
+Do Not Panic and sorry for the inconvenience.  :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__16_Apr_2008_20_07_03_+1000_iL6Ve4HgcG78Sxx8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIBc/LTgG2atn1QN8RAsI0AJ9LPKHrF7OC0JXlX9eQpeZRj35ITwCfUdvh
+Ib9xTrnxl8B8GSt2G+KkwWw=
+=aqJD
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__16_Apr_2008_20_07_03_+1000_iL6Ve4HgcG78Sxx8--
