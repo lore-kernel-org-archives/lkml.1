@@ -1,65 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760422AbYDPDKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbYDPDRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760422AbYDPDKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 23:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbYDPDKe
+	id S1759803AbYDPDRX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 23:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYDPDRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 23:10:34 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:56765 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754798AbYDPDKd (ORCPT
+	Tue, 15 Apr 2008 23:17:14 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:19371 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753104AbYDPDRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 23:10:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xQCMHSmWTGsOzQd0BldfL2bZMlmB+DPCywZeSXwoHOj4AwbrmhYnsQOeAzoFDnb85pCDJf4EimIvuxkfJ7Ow2Wl9FsIdNcOkkouYnSf05X2jOlpnycELiW6wLCCNprWeF6aW68HvDomEkeVD560oBI0J/nS6ExVGLxHeAUxbtYM=
-Message-ID: <af3ea28a0804152010g5a234640o94f39bbecf0d4637@mail.gmail.com>
-Date: Wed, 16 Apr 2008 11:10:31 +0800
-From: "ye janboe" <janboe.ye@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH]kbuild: add arm, mips and i386 macros
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <af3ea28a0804092038q59a5b907ndb3d9fa33a6be834@mail.gmail.com>
+	Tue, 15 Apr 2008 23:17:13 -0400
+Date: Tue, 15 Apr 2008 21:17:12 -0600
+From: Alex Chiang <achiang@hp.com>
+To: benh@kernel.crashing.org
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+Message-ID: <20080416031712.GB3333@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	benh@kernel.crashing.org, Badari Pulavarty <pbadari@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <1207331616.5916.15.camel@badari-desktop> <20080404180518.GA12642@ldl.fc.hp.com> <1207340371.5916.23.camel@badari-desktop> <20080404224227.GA31436@ldl.fc.hp.com> <1207352128.5916.26.camel@badari-desktop> <20080407234255.GA22514@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <af3ea28a0804092038q59a5b907ndb3d9fa33a6be834@mail.gmail.com>
+In-Reply-To: <20080407234255.GA22514@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No one think this patch is needed?
+Hi Ben,
 
-2008/4/10, ye janboe <janboe.ye@gmail.com>:
-> commit a80cc2fe14ce7e7a6de70b5927b9c0a6ee530805
->  Author: janboe <janboe.ye@gmail.com>
->  Date:   Thu Apr 10 11:18:03 2008 +0800
->
->     the commits 56a974fa2d595fe6ebe433c525b8232ead539b76 and
->  ae4ac12323c0ff80528cac3269151d580e23f923
->     involved additional macros but not available on cygwin.
->  Signed-off-by: Janboe Ye <janboe.ye@gmail.com>
->  diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
->  index 09f58e3..f864ab8 100644
->  --- a/scripts/mod/modpost.h
->  +++ b/scripts/mod/modpost.h
->  @@ -42,6 +42,16 @@
->   #define ELF_R_SYM   ELF64_R_SYM
->   #define ELF_R_TYPE  ELF64_R_TYPE
->   #endif
->  +#define R_386_32           1            /* Direct 32 bit  */
->  +#define R_386_PC32         2            /* PC relative 32 bit */
->  +
->  +#define R_ARM_PC24              1       /* PC relative 26 bit branch */
->  +#define R_ARM_ABS32             2       /* Direct 32 bit  */
->  +
->  +#define R_MIPS_32               2       /* Direct 32 bit */
->  +#define R_MIPS_26               4       /* Direct 26 bit shifted */
->  +#define R_MIPS_HI16             5       /* High 16 bit */
->  +#define R_MIPS_LO16             6       /* Low 16 bit */
->
->   /* The 64-bit MIPS ELF ABI uses an unusual reloc format. */
->   typedef struct
->
+Could you take a look at this patch and tell me what I'm doing
+wrong?
+
+Thanks.
+
+/ac
+
+* Alex Chiang <achiang@hp.com>:
+> Hi Badari,
+> 
+> > > > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > > > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> > > > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
+> > > > Unable to handle kernel paging request for data at address 0x00000070
+> > > 
+> > > Hrm, this is a little more information, but still not quite
+> > > enough. I'm going to take a stab in the dark and say I'm probably
+> > > doing something wrong on this line, maybe dereferencing a pointer
+> > > incorrectly:
+> > > 
+> > >         retval = pci_hp_register(php_slot, slot->bus,
+> > > 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+> > 
+> > Sorry. I thought you knew this already. Disassembly clearly showed
+> > that slot->dn->child is NULL. 
+> > 
+> > I confirmed it by adding printk also.
+> 
+> This patch is a complete guess on my part (since I've not been
+> able to understand pseries architecture) but I think it should
+> fix your issue.
+> 
+> Can you give it a try and let me know? It applies on top of the
+> -mm tree that includes my physical pci_slot series.
+> 
+> Also, I'm hoping Linas will speak up and let me know what the
+> real answer might be. ;)
+> 
+> Thanks.
+> 
+> /ac
+> 
+> From: Alex Chiang <achiang@hp.com>
+> Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
+> 
+> Unpopulated device_node slots do not have children, and
+> attempting to dereference them will result in a panic.
+> 
+> Instead, attempt to derive the PCI slot number from the bus
+> itself, and failing that, default to 0.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+> index 0d4cfc7..91ce6a6 100644
+> --- a/drivers/pci/hotplug/rpaphp_slot.c
+> +++ b/drivers/pci/hotplug/rpaphp_slot.c
+> @@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
+>  {
+>  	struct hotplug_slot *php_slot = slot->hotplug_slot;
+>  	int retval;
+> +	int slot_nr;
+>  
+>  	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
+>  		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
+> @@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
+>  		return -EAGAIN;
+>  	}	
+>  
+> -	retval = pci_hp_register(php_slot, slot->bus,
+> -				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+> +	if (slot->bus->self)
+> +		slot_nr = PCI_SLOT(slot->bus->self->devfn);
+> +	else
+> +		slot_nr = 0;
+> +	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
+>  	if (retval) {
+>  		err("pci_hp_register failed with error %d\n", retval);
+>  		return retval;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
