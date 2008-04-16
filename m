@@ -1,63 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751489AbYDPSav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYDPSbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751489AbYDPSav (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 14:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYDPS3p
+	id S1757242AbYDPSbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 14:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYDPSb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 14:29:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34005 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752187AbYDPS3o (ORCPT
+	Wed, 16 Apr 2008 14:31:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:59844 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYDPSb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 14:29:44 -0400
-Date: Wed, 16 Apr 2008 11:29:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org, marcel@holtmann.org,
-       maxk@qualcomm.com, linux-bluetooth@vger.kernel.org
-Subject: Re: hci_usb: remove macro code obfuscation
-Message-Id: <20080416112909.505fe619.akpm@linux-foundation.org>
-In-Reply-To: <35fbaa3e0804160351g1795b47bh6dbb2c8d596d0129@mail.gmail.com>
-References: <20080416104257.GA1621@elf.ucw.cz>
-	<35fbaa3e0804160351g1795b47bh6dbb2c8d596d0129@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Apr 2008 14:31:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CxfGjt7K4z011UrJlp0+nZ38Wvi0E1l/2hQbVF8NCVZ4q1nQoVenpk1kJoeEXG4h2BHYI0FWTD/f5nrc949tLuyjUYc08Geq16SIKY6MhQhYKuwrU53muU1loRPTBvIHy2dad5jnwGQ+lm9T9Z8DPejRmvhNGE/rho19NzWqujk=
+Message-ID: <87f94c370804161131x300d5a9eyb3341a8fe21e5275@mail.gmail.com>
+Date: Wed, 16 Apr 2008 14:31:23 -0400
+From: "Greg Freemyer" <greg.freemyer@gmail.com>
+To: "Peter Teoh" <htmldeveloper@gmail.com>
+Subject: Re: RFC: Self-snapshotting in Linux
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Kernel Newbies" <kernelnewbies@nl.linux.org>
+In-Reply-To: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008 13:51:37 +0300
-"Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
+On Wed, Apr 16, 2008 at 4:44 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> Sorry if this is a a crazy idea.....just be forewarned....
+>
+>  First, I would like to make a reference to VMWare's snapshot (name not
+>  important, emphasize the idea) feature - hopefully u are familiar with
+>  it.   This is a feature whereby u can freeze the entire OS (kernel +
+>  userspace application running) and then later reload itself next time,
+>  continuing where it left off, without reboot from ground zero.
+>
+>  Next, can I ask, is such a feature useful in Linux?   Ie, able to
+>  restart the kernel + userspace application from where u left off, the
+>  last time round.    Not JUST the normal suspend/resume feature, but
+>  more important able to CHOOSE among the different available images for
+>  u to resume on.   Eg, u want to freeze the current 2.6.25-rc6 kernel,
+>  save it, and then restore back the 2.6.23-rc5 image, work on it, save
+>  it, and then restore the previous image again.   All done without
+>  virtualization as in the VMWare sense - which really is CPU intensive
+>  and slow things  down a lot.   Now we can directly execute each OS
+>  kernel image on the CPU, and since saving and restoring is quite fast
+>  (eg, zipping up the entire physical memory before saving into
+>  permanent storage) - I supposed this will be much faster than the
+>  normal initialization/fsck work done normally....or did I missed out
+>  anything?
+>
+>  Essentially, to reiterate the key idea:   able to snapshot the current
+>  kernel+userspace permanent.....restore from another snapshot....and
+>  then switch back again if needed etc.....will the implementation be
+>  difficult...if not impossible????
+>
+>  --
+>  Regards,
+>  Peter Teoh
 
-> On Wed, Apr 16, 2008 at 1:42 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >
-> >  I had trouble figuring out what the code does. atomic_inc/dec
-> >  management is actually pretty simple, but it is needlessly obfuscated
-> >  with macros. Fix that.
-> >
-> >  Signed-off-by: Pavel Machek <pavel@suse.cz>
-> >
-> >  I had trouble figuring out what the code does. atomic_inc/dec
-> >  management is actually pretty simple, but it is needlessly obfuscated
-> >  with macros. Fix that.
-> >
-> >  Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> 
-> Got it from the first time;)
-> 
-> Do you think that now code looks better? As for me it's not...
-> 
+By using LVM-2 snapshots you can already do this with data drives.
 
-Yes, I expect that the original code was easier to work with and it is not
-obfuscated I don't think.  Sometimes these things take a few minutes for
-new readers to become comfortable with but are good for people who work on
-the code regularly.
+So if you setup a XEN setup where the DomU boot drives are Dom0 LVs
+you should be golden.
 
-Although it's a mystery why __pending_tx() and friends
+Ie. from Dom0 you can create/restore your snapshots of your DomU instances.
 
-a) have leading underscores and
+It may also be possible to make LVM snapshots work with the root
+partition of the physical boot drive, but that would take initrd magic
+I have never tried.
 
-b) are implemented in cpp, when C is available.
+Greg
+-- 
+Greg Freemyer
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+First 99 Days Litigation White Paper -
+http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
