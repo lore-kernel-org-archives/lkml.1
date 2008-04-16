@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbYDPVAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765790AbYDPVAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761426AbYDPVAQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYDPVAE
+	id S1765790AbYDPVAl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYDPVA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:00:04 -0400
-Received: from main.gmane.org ([80.91.229.2]:55827 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbYDPVAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:00:03 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jakub Narebski <jnareb@gmail.com>
-Subject: Re: Reporting bugs and bisection
-Followup-To: gmane.comp.version-control.git
-Date: Wed, 16 Apr 2008 22:55:24 +0200
-Organization: At home
-Message-ID: <fu5p3i$96n$1@ger.gmane.org>
-References: <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416200408.GA7764@1wt.eu>
+	Wed, 16 Apr 2008 17:00:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56813 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751871AbYDPVA1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:00:27 -0400
+Date: Wed, 16 Apr 2008 13:48:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: penberg@cs.helsinki.fi, zanussi@comcast.net, dwilder@us.ibm.com,
+       systemtap@sources.redhat.com, linux-kernel@vger.kernel.org,
+       tzanussi@gmail.com
+Subject: Re: [PATCH -mm] relayfs: support larger relay buffer take 3
+Message-Id: <20080416134805.fdd139c1.akpm@linux-foundation.org>
+In-Reply-To: <480658DC.6030507@redhat.com>
+References: <4804C95F.2080204@redhat.com>
+	<1208319769.7893.16.camel@charm-linux>
+	<48063F80.9060404@redhat.com>
+	<Pine.LNX.4.64.0804162110070.19171@sbz-30.cs.Helsinki.FI>
+	<480646B2.9000905@redhat.com>
+	<480658DC.6030507@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: abwk183.neoplus.adsl.tpnet.pl
-Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
-User-Agent: KNode/0.10.2
-Cc: git@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
+On Wed, 16 Apr 2008 15:51:56 -0400
+Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-> Note to contributors: it's very handy when patches comes with a properly
-> formated subject. Try to put one of the following words between brackets
-> to indicate the importance of the patch followed by a short description:
-> 
-> [MINOR]    minor fix, very low risk of impact
-> [MEDIUM]   medium risk, may cause unexpected regressions of low importance or
->            which may quickly be discovered
+> +static struct page **relay_alloc_page_array(unsigned int n_pages)
+> +{
+> +	struct page **array;
+> +	unsigned int pa_size = n_pages * sizeof(struct page *);
+> +
+> +	if (pa_size > PAGE_SIZE) {
+> +		array = vmalloc(pa_size);
+> +		if (array)
+> +			memset(array, 0, pa_size);
+> +	} else {
+> +		array = kcalloc(n_pages, sizeof(struct page *), GFP_KERNEL);
+> +	}
+> +	return array;
+> +}
 
-[...]
+It's a bit odd to multiply n_pages*sizeof() and to then call kcalloc(),
+which needs to do the same multiplication.
 
-And git-am strips such prefixes because of [PATCH] and [PATCH n/m] which
-should be stripped.
+The compiler will presumably optimise that away, but still, how about this?
 
--- 
-Jakub Narebski
-Warsaw, Poland
-ShadeHawk on #git
+--- a/kernel/relay.c~relayfs-support-larger-relay-buffer-take-3-cleanup
++++ a/kernel/relay.c
+@@ -71,14 +71,14 @@ static struct vm_operations_struct relay
+ static struct page **relay_alloc_page_array(unsigned int n_pages)
+ {
+ 	struct page **array;
+-	unsigned int pa_size = n_pages * sizeof(struct page *);
++	size_t pa_size = n_pages * sizeof(struct page *);
+ 
+ 	if (pa_size > PAGE_SIZE) {
+ 		array = vmalloc(pa_size);
+ 		if (array)
+ 			memset(array, 0, pa_size);
+ 	} else {
+-		array = kcalloc(n_pages, sizeof(struct page *), GFP_KERNEL);
++		array = kzalloc(pa_size, GFP_KERNEL);
+ 	}
+ 	return array;
+ }
+_
 
+
+size_t is strictly the correct type for pa_size here.  Even though
+vmalloc() takes a ulong.
 
