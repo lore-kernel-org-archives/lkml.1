@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbYDPPKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbYDPPLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764675AbYDPPKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 11:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759030AbYDPPKH
+	id S1766016AbYDPPLg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 11:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759030AbYDPPL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 11:10:07 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:33379 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758316AbYDPPKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 11:10:06 -0400
-Message-ID: <480616C6.3080203@tiscali.nl>
-Date: Wed, 16 Apr 2008 17:09:58 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 16 Apr 2008 11:11:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43243 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756433AbYDPPL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 11:11:28 -0400
+Date: Wed, 16 Apr 2008 17:10:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
+Message-ID: <20080416151054.GA32456@elte.hu>
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu>
 MIME-Version: 1.0
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-CC: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/6 v2] MIPS: ip27-timer: unsigned irq to evaluate allocate_irqno()
-References: <480559DC.2060807@tiscali.nl> <20080416091554.GA6026@alpha.franken.de>
-In-Reply-To: <20080416091554.GA6026@alpha.franken.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080416130605.GG6304@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Bogendoerfer wrote:
-> On Wed, Apr 16, 2008 at 03:43:56AM +0200, Roel Kluin wrote:
->> irq is unsigned, cast to signed to evaluate the allocate_irqno() return value,
- 
->> +		if ((int) irq < 0)
-> 
-> Why don't you just make irq and rt_timer_irq an int ?
 
-Ok, thanks, It should be right, but I cannot test this (no hardware).
----
-when allocate_irqno() returns a negative error value, but is stored in an
-unsigned variable 'irq', the test '(irq < 0)' won't work.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/mips/sgi-ip27/ip27-timer.c b/arch/mips/sgi-ip27/ip27-timer.c
-index 25d3baf..9cebc9e 100644
---- a/arch/mips/sgi-ip27/ip27-timer.c
-+++ b/arch/mips/sgi-ip27/ip27-timer.c
-@@ -158,7 +158,7 @@ static void rt_set_mode(enum clock_event_mode mode,
- 	}
- }
- 
--unsigned int rt_timer_irq;
-+int rt_timer_irq;
- 
- static irqreturn_t hub_rt_counter_handler(int irq, void *dev_id)
- {
-@@ -219,7 +219,7 @@ static void __cpuinit hub_rt_clock_event_init(void)
- 
- static void __init hub_rt_clock_event_global_init(void)
- {
--	unsigned int irq;
-+	int irq;
- 
- 	do {
- 		smp_wmb();
+> thanks Mathieu, i've picked this up into x86.git for more testing.
 
+... but had to drop it due to missing PARAVIRT support which broke the 
+build. I guess on paravirt we could just initially define 
+INTERRUPT_RETURN_NMI_SAFE to iret, etc.?
+
+	Ingo
