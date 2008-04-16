@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764841AbYDPUYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbYDPUBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764841AbYDPUYh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYDPUYI
+	id S1752793AbYDPUBx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbYDPUBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:24:08 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:19951 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYDPUYC (ORCPT
+	Wed, 16 Apr 2008 16:01:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34965 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762254AbYDPUBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:24:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SoFTY6IpahOwcpfMADvj9tfCp9uUJ/Asz6Qwuhm346k85CK/+DoUT52fn69YMZ+d0ic+8PSupxmiOWa2L6Yea0TN/DtFR+Y458YEayUsm5zrE6foFvZOPI6Ol4SGXZ992Iek4A7Get5F8J8FcTHlnYZae9EZz7LxSYWhQytDSXw=
-Message-ID: <aa79d98a0804161324k734d22f9o4c1d0730c724880c@mail.gmail.com>
-Date: Thu, 17 Apr 2008 00:24:00 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: [patch 1/3] NFS: fix potential NULL pointer dereference
-Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
-       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1208372123.5376.43.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Apr 2008 16:01:38 -0400
+Date: Wed, 16 Apr 2008 13:01:08 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, sverre@rabbelier.nl, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jmorris@namei.org,
+       viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
+       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
+       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
+       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416130108.4eda6c2c@laptopd505.fenrus.org>
+In-Reply-To: <20080416120247.c665859c.akpm@linux-foundation.org>
+References: <20080413205406.GA9190@2ka.mipt.ru>
+	<48028830.6020703@earthlink.net>
+	<alpine.DEB.1.10.0804131546370.9318@asgard>
+	<20080414043939.GA6862@1wt.eu>
+	<20080414053943.GU9785@ZenIV.linux.org.uk>
+	<20080413232441.e216a02c.akpm@linux-foundation.org>
+	<20080414072328.GW9785@ZenIV.linux.org.uk>
+	<Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+	<4804765B.2070300@davidnewall.com>
+	<bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
+	<20080416132634.GA545@cs181133002.pp.htv.fi>
+	<20080416120247.c665859c.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080416174421.442716301@gmail.com>
-	 <48063bc9.2234440a.747d.09ea@mx.google.com>
-	 <1208369492.5376.9.camel@heimdal.trondhjem.org>
-	 <20080416181336.GA7657@cvg>
-	 <1208372123.5376.43.camel@heimdal.trondhjem.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Btw, may be you meant to perform 'near' check for rest of nfs code?
-But that wold requare much more code to change...
+On Wed, 16 Apr 2008 12:02:47 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On 4/16/08, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
->
-> On Wed, 2008-04-16 at 22:13 +0400, Cyrill Gorcunov wrote:
-> > [Trond Myklebust - Wed, Apr 16, 2008 at 02:11:31PM -0400]
-> > |
-> > | On Wed, 2008-04-16 at 21:44 +0400, Cyrill Gorcunov wrote:
-> > | > plain text document attachment (nfs-kstrdup-nul-fix)
-> > | > It's possible to get NULL pointer dereference
-> > | > if kstrndup failed
-> > | >
-> > | > Here is a possible scenario
-> > | >
-> > | > nfs4_get_sb
-> > | >   nfs4_validate_mount_data
-> > | >     o kstrndup failed so args->nfs_server.export_path = NULL
-> > | >   nfs4_create_server
-> > | >     nfs4_path_walk(..., NULL) -> Oops!
-> > | >
-> > | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> > |
-> > | Why fix only the one case? What about the other kstrdup/kstrndup cases
-> > | in super.c that appear to be unchecked?
-> > |
-> > | Trond
-> > |
-> > | > ---
-> > | >
-> > | > Index: linux-2.6.git/fs/nfs/super.c
-> > | > ===================================================================
-> > | > --- linux-2.6.git.orig/fs/nfs/super.c	2008-04-15 23:01:30.000000000
-> +0400
-> > | > +++ linux-2.6.git/fs/nfs/super.c	2008-04-16 20:01:44.000000000 +0400
-> > | > @@ -1858,6 +1858,8 @@ static int nfs4_validate_mount_data(void
-> > | >  		if (len > NFS4_MAXPATHLEN)
-> > | >  			return -ENAMETOOLONG;
-> > | >  		args->nfs_server.export_path = kstrndup(c, len, GFP_KERNEL);
-> > | > +		if (!args->nfs_server.export_path)
-> > | > +			return -ENOMEM;
-> > | >
-> > | >  		dprintk("NFS: MNTPATH: '%s'\n", args->nfs_server.export_path);
-> > | >
-> > |
-> >
-> > This one is leading to NULL deref, others - don't
->
-> So? The defensive coding principle is that you perform validity checks
-> when the pointer is created. Otherwise, we could equally well have added
-> the NULL deref check to nfs4_path_walk()...
->
->   Trond
->
->
+> 
+> > At least with the data we have currently in git it's impossible to 
+> > figure that out automatically.
+> > 
+> > E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
+> > (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
+> > automatically that it is a bugfix, and the commit that introduced
+> > the bug?
+> > 
+> > You can always get some data, but if you want to get usable
+> > statistics you need explicit tags in the commits, not some
+> > algorithm that tries to guess.
+> 
+> Well yes.  One outcome of the project would be to tell us what
+> changes we'd need to make to our processes to make such data
+> gathering more effective.
+
+also.. "what is a bugfix" is an interesting thing... for some things it's very easy.
+For others.. it's really hard to draw a solid line where bugs stop and features start.
+(for example, is a missing cpu id in oprofile a bugfix ("oprofile doesn't work") or 
+a feature ("new cpu support"). This one is one of the more simple ones even...)
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
