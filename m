@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYDQANv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYDQAe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbYDQANv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 20:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYDQANn
+	id S1756713AbYDQAe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 20:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYDQAeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 20:13:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59346 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYDQANm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 20:13:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Subject: Re: APM lockups since 2.6.25
-Date: Thu, 17 Apr 2008 02:14:25 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162239560.25729@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162243550.25729@artax.karlin.mff.cuni.cz>
-In-Reply-To: <Pine.LNX.4.64.0804162243550.25729@artax.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 16 Apr 2008 20:34:17 -0400
+Received: from [85.114.38.90] ([85.114.38.90]:37358 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753892AbYDQAeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 20:34:12 -0400
+X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Apr 2008 20:34:12 EDT
+Date: Wed, 16 Apr 2008 11:54:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: file offset corruption on 32-bit machines?
+Message-ID: <20080416115441.5c40c3c4@the-village.bc.nu>
+In-Reply-To: <20080416081523.GB5105@elf.ucw.cz>
+References: <20080414190308.GJ15824@duck.suse.cz>
+	<20080414192928.GM7385@csclub.uwaterloo.ca>
+	<20080415085740.GA7603@atrey.karlin.mff.cuni.cz>
+	<20080415153221.GD7387@csclub.uwaterloo.ca>
+	<20080415173430.GB4994@elf.ucw.cz>
+	<20080415182453.GR7385@csclub.uwaterloo.ca>
+	<20080415191238.GC4994@elf.ucw.cz>
+	<20080415194922.GT7385@csclub.uwaterloo.ca>
+	<20080415200647.GF4994@elf.ucw.cz>
+	<1208291336.7053.16.camel@lappy>
+	<20080416081523.GB5105@elf.ucw.cz>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804170214.26368.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 16 of April 2008, Mikulas Patocka wrote:
-> > So it didn't help, I just got this (2.6.25-rc8):
-> > 
-> > (I have turned lockdep on few days ago, and it seems to try to release a 
-> > lock that's not held ... and then reacquire that lock again and deadlock)
-> 
-> BTW. the first one message happened immediatelly after APM resume, the 
-> second message 2 minutes later.
-> 
-> APMD didn't set time after resume, it's completely locked up.
+> Why not? Kernel syscalls are traditionally atomic, and Lennard seems
+> to have found sentence in POSIX that says so.
 
-Well, unfortunately, APM uses the generic code for suspending and resuming
-devices, but it doesn't use the freezing of tasks, so it's not very reliable in
-its present form.
+Almost no call is atomic or has atomicity guarantees. There are specific
+rules for certain disk access and pipe queueing but almost nothing else.
+The same is as true (often more true) for all Unix systems
 
-Thanks,
-Rafael
+Alan
