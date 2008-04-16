@@ -1,83 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765436AbYDPPEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765788AbYDPPGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765436AbYDPPEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 11:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYDPPEa
+	id S1765788AbYDPPGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 11:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYDPPGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 11:04:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56777 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYDPPEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 11:04:30 -0400
-Date: Wed, 16 Apr 2008 17:03:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-Message-ID: <20080416150353.GA26740@elte.hu>
-References: <20080415161532.GA15088@elte.hu> <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi> <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org> <20080416000356.GA24737@elte.hu>
+	Wed, 16 Apr 2008 11:06:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:15075 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755252AbYDPPGG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 11:06:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mE1vOwbcFyVZkgUP0d06QCTXGFIrasNO/d92SHHJdaJGf5Kht4/lR2XESvsxceRDijxMGYSy2zlfMzGVzOFKpTkUH2ts4v2a70SnygUCrInvDrrTY/N7QkIGDYVLyNoJ/V4TOg0M0EfWpG0quwePPvQvyTxX9u/9FYqv5rnioCk=
+Message-ID: <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com>
+Date: Wed, 16 Apr 2008 23:06:05 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
+Subject: Re: RFC: Self-snapshotting in Linux
+Cc: "Scott Lovenberg" <scott.lovenberg@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080416000356.GA24737@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it>
+	 <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/16/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+> Scott Lovenberg wrote:
+>
+> > Peter Teoh wrote:
+>  > Maybe you load up another kernel to handle the snapshot, and then hand
+>  > the system back to it afterwards?  What do you think?
+>
+>
+> Isn't that just what Ying Huans kexec-based hibernation does?
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This list is awesome.   After I read up on this kexec-based hibernation thing:
 
-> ps. anyone who can correctly guess the method with which i found the
->     exact place that corrupted memory will get a free beer next time 
->     we meet :-)
+http://kerneltrap.org/node/11756
 
-the method was to notice that the slub_debug_slabs SLUB variable got 
-corrupted from an expected value of 0 to a value of 0x1.
+I realized it is about the same idea.   Some differences though:
 
-Then i added a simple brute-force function-tracer hook (in sched-devel) 
-that checked when slub_debug_slabs went from 0 to 1, and which then 
-printed a backtrace.
+My original starting point was VMWare's snapshot idea.   Drawing an
+analogy from there, the idea is to freeze and restore back entire
+kernel + userspace application.   For integrity reason, filesystem
+should be included in the frozen image as well.
 
-Since under CONFIG_FTRACE=y every kernel function calls this callback, 
-it triggered immediately after the value got corrupted:
+Currently, what we are doing now is to have a bank of Norton
+Ghost-based images of the entire OS and just selectively restoring
+back the OS we want to work on.   Very fast - less than 30secs the
+entire OS can be restored back.   But problem is that it need to be
+boot up - which is very slow.   And there userspace state cannot be
+frozen and restored back.
 
-[    0.000000] console [earlyser0] enabled
-[    0.000000] BUG: slub_debug_slabs: 00000001
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.25-rc9-sched-devel.git-x86-latest.git #982
-[    0.000000]  [<c0177fba>] print_slub_debug_slabs+0x3a/0x40
-[    0.000000]  [<c01050f7>] trace+0x8/0x11
-[    0.000000]  [<c0cc929e>] ? mtrr_bp_init+0xe/0x320
-[    0.000000]  [<c01050f7>] ? trace+0x8/0x11
-[    0.000000]  [<c0cd7369>] ? memory_present+0x9/0x50
-[    0.000000]  [<c0cc7a09>] ? find_max_pfn+0x99/0xb0
-[    0.000000]  [<c0cc6af7>] setup_arch+0x217/0x470
-[    0.000000]  [<c012c59b>] ? printk+0x1b/0x20
-[    0.000000]  [<c0cc2b46>] start_kernel+0x96/0x3f0
-[    0.000000]  [<c0cc22fd>] i386_start_kernel+0xd/0x10
-[    0.000000]  =======================
-[    0.000000] x86: PAT support disabled.
+VMWare images is slow, and cannot meet bare-metal CPU/direct hardware
+access requirements.   There goes Xen's virtualization approach as
+well.
 
-and the backtrace had all the guilty parties on stack - memory_present() 
-[which was just called] and find_max_pfn()/setup_arch() - thanks to the 
-new fuzzy "?" backtrace entries we print out in v2.6.25.
+Another approach is this (from an email by Scott Lovenberg) - using
+RELOCATABLE kernel (or may be not?????I really don't know, but idea is
+below):
 
-(i could also have printed out the current ftrace buffer as well, 
-showing the history of all recent function calls that the kernel 
-executed.)
+a.   Assuming we have 32G (64bit hardware can do that) of memory, but
+we want to have 7 32-bit OS running (not concurrently) - so then
+memory is partition into 8 x 4GB each - the lowest 4GB reserved for
+the current running OS.   Each OS will be housed into each 4G of
+memory.   When each OS is running, it will access its own partition on
+the harddisk/memory, security concerns put aside.   Switching from one
+OS to another OS is VOLUNTARILY done by the user - equivalent to that
+of "desktop" feature in Solaris CDE. Restoring back essentially is
+just copying from each of the 4GB into the lowest 4GB memory range.
+Because only the lowest 4gb is used, only 32 bit instruction is
+needed, 64bit is needed only when copying from one 4GB memory
+partition into the lowest 4GB region, and vice versa.   And together
+with using  partitioning of harddisk for each OS, switching among the
+different OS kernel should be in seconds, much less than 1 minute,
+correct?
 
-	Ingo
+Technically, does the above sound feasible?
+
+
+-- 
+Regards,
+Peter Teoh
