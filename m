@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbYDPHtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbYDPHtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbYDPHtJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 03:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYDPHs4
+	id S1761325AbYDPHtz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 03:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYDPHtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 03:48:56 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39955 "EHLO gate.crashing.org"
+	Wed, 16 Apr 2008 03:49:45 -0400
+Received: from mr1.bfh.ch ([147.87.250.50]:55227 "EHLO mr1.bfh.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbYDPHs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 03:48:56 -0400
-Subject: Re: Microblaze Linux release
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: monstr@seznam.cz
-Cc: Arnd Bergmann <arnd@arndb.de>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       paulus@samba.org
-In-Reply-To: <48059B92.7080601@seznam.cz>
-References: <48020A21.4000404@seznam.cz> <200804140801.57464.arnd@arndb.de>
-	 <4804A59B.5040909@seznam.cz>  <200804151532.11619.arnd@arndb.de>
-	 <1208296358.6958.237.camel@pasglop>  <48059B92.7080601@seznam.cz>
-Content-Type: text/plain
-Date: Wed, 16 Apr 2008 17:45:58 +1000
-Message-Id: <1208331959.6958.272.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1750931AbYDPHto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 03:49:44 -0400
+Message-ID: <4805AF93.90209@bfh.ch>
+Date: Wed, 16 Apr 2008 09:49:39 +0200
+From: Seewer Philippe <philippe.seewer@bfh.ch>
+Organization: BFH
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Francis Moreau <francis.moro@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Disk geometry from /sys
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>	 <480354C9.1050600@bfh.ch> <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>
+In-Reply-To: <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Apr 2008 07:49:39.0947 (UTC) FILETIME=[6CCEEBB0:01C89F96]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wed, 2008-04-16 at 08:24 +0200, Michal Simek wrote:
-> Hi Ben,
+Francis Moreau wrote:
+> Hi Seewer,
 > 
-> >> I'd recommend splitting prom.c into code that can be shared between powerpc
-> >> and microblaze and architecture specific code. Anything that deals with
-> >> LMB should go into powerpc, and you can simply use the alloc_bootmem
-> >> mechanism for your architecture.
-> > 
-> > That is non trivial... the unflatten DT code among others relies heavily
-> > on the LMB's to allocate the objects.
+> On Mon, Apr 14, 2008 at 2:57 PM, Seewer Philippe <philippe.seewer@bfh.ch> wrote:
+>>  As you've problably seen from the other answers, disk geometry is (except
+>> for a few older devices) unneeded inside the Linux kernel.
 > 
-> I think so. Sharing code among archs looks nice and this way is definitely
-> right. But starting with communication with PowerPC guys that this code I want
-> to use in case that this code is not in vanilla. This is not good start for
-> doing this.
-> I think if Microblaze will be in vanilla we can talked about separation MB and
-> PPC part to kernel folder and shared code move to shared folder.
+> Yes but I'm doing userspace stuff and that's the reason I was asking for the
+> sysfs thing.
+> 
+>> I'd say thats the
+>> reason why there's no sysfs export and I'd further guess disk geometry is an
+>> artifact most would like to get rid of (or pushed into userspace).
+>>
+> 
+> Well, I looked at sfdisk(8) and parted(8) source code and they all need the
+> geometry description. If I understood correctly the reason why is that it
+> 'prefers' to align partition sizes/starts on a cylinder boundary because some
+> bootloaders probably use CHS addressing, but I'm really not sure.
+Yes indeed, mainly in the (w)intel world though.
 
-Well, LMB code is moving to generic anyway... So we may as well move
-more stuff there ;-)
+> 
+>>  Anyway, if you really need it, try the patch below. Should apply cleanly to
+>> version 2.6.23.1 and gives you a geometry/ directory for each block device
+>> providing the getgeo function. It adds a setgeo counterpart for some
+>> subsystems as well, allowing 'echo something > ...' so please be careful.
+>>
+> 
+> Thanks but I probably won't use it. Using sfdisk, for example, is a
+> more portable
+> way to get the geometry from a script.
 
-Cheers,
-Ben.
+Correct. Though be really careful which geometry you are requesting:
 
+root@local:/# sfdisk -g /dev/sda
+/dev/sda: 7296 cylinders, 255 heads, 63 sectors/track
+root@local:/# sfdisk -G /dev/sda
+/dev/sda: 116280 cylinders, 16 heads, 63 sectors/track
+
+The first one is the kernels idea of a disks geometry which is probably 
+as often correct as it's just plain wrong, versus the second one which 
+tries to guess a disks geometry by looking at the current partition 
+table. Which might be just as wrong since its only necessary for bios 
+and/or bootloader. Really depends on what you need.
+
+Cheers
+Philippe
 
