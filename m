@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbYDPQ7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765948AbYDPRFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932291AbYDPQ7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 12:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYDPQ7p
+	id S1765948AbYDPRFE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 13:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760456AbYDPREx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 12:59:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57272 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYDPQ7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 12:59:44 -0400
-Date: Wed, 16 Apr 2008 09:59:38 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: X or AF_UNIX and order 3 allocation
-Message-Id: <20080416095938.66d798e4.zaitcev@redhat.com>
-In-Reply-To: <20080416085213.1e55bd1e@extreme>
-References: <20080415211055.882e67fe.zaitcev@redhat.com>
-	<20080415.215144.87148045.davem@davemloft.net>
-	<20080416085213.1e55bd1e@extreme>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 13:04:53 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:40325 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752260AbYDPREw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 13:04:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5prrhIND1XXC5G9jzNjEHqX3OeoFUyzmzH/V3rGTeoaQVO7GP8lYTs4M4hLbql8FiOnPwN02Tc5tt8D5ZACNHw12yqlJ2l2H179nhvE4d+3iXp+XvJg9GzR+wQIqdoKwMyCAf9RGvQGxFs7LLZMCpt9aD0aY6heuGTRCNB2iebU=  ;
+X-YMail-OSG: wknE3doVM1kI2Yxn.BngNBUfYLUWuwrDu_y.5OCkxVrZVwCDYfkHmVZZlvPzv7a6v5f.QN4wug--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [patch 2.6.25-rc8] omap_rng minor updates
+Date: Wed, 16 Apr 2008 10:04:49 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>
+References: <200804102132.03907.david-b@pacbell.net> <20080416112517.GA29220@gondor.apana.org.au>
+In-Reply-To: <20080416112517.GA29220@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200804161004.50075.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008 08:52:13 -0700, Stephen Hemminger <shemminger@vyatta.com> wrote:
+On Wednesday 16 April 2008, Herbert Xu wrote:
+> > Minor cleanups to the OMAP RNG:
+> 
+> Thanks.  I've picked this up in cryptodev-2.6.
 
-> > > Not sure if the problem is caused by X or kernel, but this is what
-> > 
-> > It seems to be the b44 driver doing a large huge order allocation.
-> > 
-> > That driver only asks for (1536 + 30 + 64) bytes, so I suppose part of
-> > the problem is that SLAB is using an order 3 allocation to satisfy
-> > that.
+Is that where the RNG stuff is now getting maintained?
 
-> The chip needs memory below 1G for DMA, perhaps low memory is getting
-> exhausted.
 
-The failure corresponds to memory pressure (from yum), but the real issue
-is the lack of order 3 areas. We're talking a 32KB chunk! Why would anyone
-need that much? Crazy!
+If so, I wonder what should be done with some other
+RNG changes sitting in one of my trees.  Briefly,
+their initializations come late ... and after kernel
+code has already started to use the kernel pool.  So
+attacks based on known RNG patterns are possible at
+that time.
 
-Apr 13 18:19:14 niphredil kernel: Xorg: page allocation failure. order:3, mode:0x4020
+So the patch I had -- needs reworking -- moves the
+RNG driver initializations earlier, and uses the
+first one to seed the kernel pool.  Cryptographically
+that would be no worse than the current situation (even
+if you don't wholly trust the RNG), and in most cases
+would be a distinct improvement.
 
-I blame SLUB. Things like the above never happened with SLAB.
+- Dave
 
--- Pete
