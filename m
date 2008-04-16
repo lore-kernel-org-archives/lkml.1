@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765293AbYDPTWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765593AbYDPTXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765293AbYDPTWq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYDPTWh
+	id S1765593AbYDPTXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYDPTWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:22:37 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38855 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbYDPTWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:22:36 -0400
-Date: Wed, 16 Apr 2008 21:23:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
-Message-ID: <20080416192306.GA3090@uranus.ravnborg.org>
-References: <20080416175135.GN1677@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Apr 2008 15:22:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:47886 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764932AbYDPTWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=bYN1UX2aWfo1UjNu5++tpj4Jq3RfoVKP03G8907H8HsZf2p89FdgZttdLsYVfKwhWENaA9Af56suSkAfJ1hI1hidCU4zqhPUcT1crSUJf3FkNm9J/J4LLAk/ekKCIZ8v4ghVaSOvz8W2cVeFc8z14lRHrQtdUB01VuaNyrMaHXk=
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [GIT PATCH] rfkill support for r/w and r/o rfkill switches
+Date: Wed, 16 Apr 2008 21:26:43 +0200
+User-Agent: KMail/1.9.9
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+References: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br> <20080416183705.GA16123@tuxdriver.com>
+In-Reply-To: <20080416183705.GA16123@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080416175135.GN1677@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200804162126.43771.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian.
-
-On Wed, Apr 16, 2008 at 08:51:35PM +0300, Adrian Bunk wrote:
-> Hi Sam,
+On Wednesday 16 April 2008, John W. Linville wrote:
+> On Fri, Apr 11, 2008 at 05:37:16PM -0300, Henrique de Moraes Holschuh wrote:
+> > 
+> > This patch series (based on v2.6.25-rc8-mm2) has several improvements to
+> > the rfkill class that I need for thinkpad-acpi, plus two fluff and
+> > documentation fixes.
 > 
-> although DEBUG_SECTION_MISMATCH allows to also find exotig things like 
-> finding bugs only present when using gcc < 3.4 and CONFIG_HOTPLUG=n at 
-> the same time, the problem is that we print
->     WARNING: modpost: Found 13 section mismatch(es).
->     To see full details build your kernel with:
->     'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+> Who is handling these rfkill patches?  I think in the past they have
+> gone through me, but some may have gone directly to Dave M.
 
-So we print exact instructions how to get more info.
-And several people has posted list of section mismatch warnings recently,
-so the instructions are understood.
-I fail to see any problem with that.
+Yes initial rfkill introduction went through wireless, but subsequent patches
+seemed to have gone directly into net-2.6.
+I must admit I am not sure what the correct flow for rkfill should be. :S
 
-Obviously it would be better if we bailed out with a big fat warning
-if someone _adds_ a new section mismatch warning.
+> If they are coming to me, please collect Ivo's ACKs and resend them
+> to linux-wireless@vger.kernel.org with me CC'ed as well.
 
-> but CONFIG_DEBUG_SECTION_MISMATCH is not offered in 2.6.25.
-If you by "not offered" try to say that the CONFIG option
-is not available in kconfig then you are correct.
-But you are in the instructions above asked to supply it
-on the command line to make - not to enable it in the
-kconfig configuration.
+I am going to setup a rfkill git tree from where rfkill can be managed,
+but I still had to look into the correct git tree to branch from.
 
-I would prefer we were down to less than 5 warnings so we could
-enable it in kconfig but maybe after next merge window.
+We should sort out how the rfkill patch flow should go,
+directly into net-2.6 or to wireless-2.6/wireless-testing
+Although rfkill is a wireless tool, one could argue that linux-wireless
+is mostly aimed at the 802.11 protocol, whereas rfkill applies to
+irda and bluetooth as well.
 
-	Sam
+Ivo
