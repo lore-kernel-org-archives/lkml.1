@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbYDPLMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbYDPLOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbYDPLMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 07:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbYDPLMi
+	id S1762712AbYDPLOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 07:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYDPLOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 07:12:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41409 "EHLO
+	Wed, 16 Apr 2008 07:14:14 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49430 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756735AbYDPLMi (ORCPT
+	with ESMTP id S1757258AbYDPLON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 07:12:38 -0400
-Date: Wed, 16 Apr 2008 13:12:37 +0200
+	Wed, 16 Apr 2008 07:14:13 -0400
+Date: Wed, 16 Apr 2008 13:14:12 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Ben Nizette <bn@niasdigital.com>, linux-kernel@vger.kernel.org
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Kernel Newbies <kernelnewbies@nl.linux.org>
 Subject: Re: RFC: Self-snapshotting in Linux
-Message-ID: <20080416111237.GA32432@atrey.karlin.mff.cuni.cz>
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajcri-65w-13@gated-at.bofh.it> <da08e304-eb95-4ace-a069-de1a57b86e9f@e39g2000hsf.googlegroups.com>
+Message-ID: <20080416111412.GB32432@atrey.karlin.mff.cuni.cz>
+References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <da08e304-eb95-4ace-a069-de1a57b86e9f@e39g2000hsf.googlegroups.com>
+In-Reply-To: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ben Nizette wrote:
-> > On Wed, 2008-04-16 at 16:44 +0800, Peter Teoh wrote:
-> > > Essentially, to reiterate the key idea:   able to snapshot the current
-> > > kernel+userspace permanent.....restore from another snapshot....and
-> > > then switch back again if needed etc.....will the implementation be
-> > > difficult...if not impossible????
-> > >
-> >
-> > As I see it the main thing is that VMWare doesn't have to worry about
-> > trying to put hardware in to (and pull out of) low power modes.  VMWare
-> > hardware is never left in an undefined state by poorly written drivers
-> > etc.
-> >
-> > I think hibernation is about what you want; snapshotting as you describe
-> > it should fall down for about the same reasons
+> Sorry if this is a a crazy idea.....just be forewarned....
 > 
-> I guess there is the hardware / drivers issue.  I would like to claim
-> I've found hibernation to be reliable but unfortunately that's not
-> 100% true.  
+> First, I would like to make a reference to VMWare's snapshot (name not
+> important, emphasize the idea) feature - hopefully u are familiar with
+> it.   This is a feature whereby u can freeze the entire OS (kernel +
+> userspace application running) and then later reload itself next time,
+> continuing where it left off, without reboot from ground zero.
+> 
+> Next, can I ask, is such a feature useful in Linux?   Ie, able to
+> restart the kernel + userspace application from where u left off, the
+> last time round.    Not JUST the normal suspend/resume feature, but
+> more important able to CHOOSE among the different available images
+> for
+> u to resume on.   Eg, u want to freeze the current 2.6.25-rc6
+> kernel,
 
-So debug it, it is open source after all. Or at least file a bugs.
+Could we use english on this list?
+
+Anyway, hibernate, cp /dev/root /somewhere/root.1; cp /dev/swap
+/somewhere/swap.1
+
+If you want to resume selected version, copy back that set of devices,
+and proceed normally.
 
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
