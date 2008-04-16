@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764671AbYDPO7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765139AbYDPPDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764671AbYDPO7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 10:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbYDPO7n
+	id S1765139AbYDPPDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 11:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbYDPPDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 10:59:43 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:57331 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756320AbYDPO7n (ORCPT
+	Wed, 16 Apr 2008 11:03:23 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54264 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754405AbYDPPDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 10:59:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EABSxBUhMROPA/2dsb2JhbACBYK0x
-Date: Wed, 16 Apr 2008 10:54:40 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [TEST PATCH] Test NMI kprobe modules
-Message-ID: <20080416145440.GB15554@Krystal>
-References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416134735.GA13399@Krystal> <20080416143408.GG24383@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 11:03:22 -0400
+Message-Id: <1208358201.900.1248216803@webmail.messagingengine.com>
+X-Sasl-Enc: DU+Aan1MilLClzyu2UsGzRIIPjmSCX1438dxzkq+5vKh 1208358201
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Ingo Molnar" <mingo@elte.hu>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
 Content-Disposition: inline
-In-Reply-To: <20080416143408.GG24383@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:52:07 up 47 days, 11:03,  4 users,  load average: 0.42, 0.39,
-	0.35
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1208191719.12568.1247788911@webmail.messagingengine.com>
+   <20080416125724.GC6304@elte.hu>
+   <20080416135508.GA16439@mailshack.com>
+   <20080416144051.GH24383@elte.hu>
+Subject: Re: [PATCH] x86: fix find_next_bit breakage on ppc and powerpc
+In-Reply-To: <20080416144051.GH24383@elte.hu>
+Date: Wed, 16 Apr 2008 17:03:21 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+
+On Wed, 16 Apr 2008 16:40:51 +0200, "Ingo Molnar" <mingo@elte.hu> said:
 > 
-> * Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
 > 
-> > +long debug_eip, debug_cs, debug_eflags, debug_extra, debug_extra2, debug_extra3, debug_extra4;
-> > +long debugo_eip, debugo_cs, debugo_eflags, debugo_extra, debugo_extra2, debugo_extra3, debugo_extra4;
-> > +EXPORT_SYMBOL(debug_eip);
-> > +EXPORT_SYMBOL(debug_cs);
-> > +EXPORT_SYMBOL(debug_eflags);
-> > +EXPORT_SYMBOL(debug_extra);
-> > +EXPORT_SYMBOL(debug_extra2);
-> > +EXPORT_SYMBOL(debug_extra3);
-> > +EXPORT_SYMBOL(debug_extra4);
-> > +EXPORT_SYMBOL(debugo_eip);
-> > +EXPORT_SYMBOL(debugo_cs);
-> > +EXPORT_SYMBOL(debugo_eflags);
-> > +EXPORT_SYMBOL(debugo_extra);
-> > +EXPORT_SYMBOL(debugo_extra2);
-> > +EXPORT_SYMBOL(debugo_extra3);
-> > +EXPORT_SYMBOL(debugo_extra4);
+> > Powerpc (and ppc) have their have some code in their bitops.h which 
+> > used to be exacly the same as asm-generic/bitops/find.h. Include this 
+> > header instead.
+> > 
+> > This should also fix the compile problems due to the generic 
+> > find_next_bit changes. Those were fixed by Thomas Gleixner in 
+> > asm-generic/bitops/find.h earlier.
+> > 
+> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 > 
-> ok, while this is a test patch of yours, lets make one thing sure: all 
-> things hook-alike instrumentation _MUST_ and will stay stay GPL 
-> exported. It's all very internal, and there will be no automatic, 
-> programmable interface stability guarantees for any of the markers that 
-> kabi crap could come and shackle the kernel with ... (it will all be 
-> stable to SystemTap of course - but SystemTap is a kernel-internal 
-> entity in that regard)
+> thanks, applied. I dropped:
 > 
+>   Subject: powerpc: fix powerpc build
+>   From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> and i'm keeping:
+> 
+>   Subject: generic: find_next_bit() fix
+>   From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> should i also drop:
+> 
+>   Subject: find_first_bit() ppc fix
+>   From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> ?
+
+Yes, that problem should be fixed by my patch.
+
+Thanks,
+    Alexander
+
 > 	Ingo
-> 
-
-Yes, I agree. This patch is just an ugly test-hack. :)
-
-I already designed my LTTng tracer so it follows changes to the internal
-kernel structures as easily as possible, but yes, it is kernel internal
-too.
-
-Mathieu
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+http://www.fastmail.fm - Does exactly what it says on the tin
+
