@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbYDPLZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbYDPLln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762805AbYDPLZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 07:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbYDPLZe
+	id S1762402AbYDPLln (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 07:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbYDPLle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 07:25:34 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:33360 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757617AbYDPLZd (ORCPT
+	Wed, 16 Apr 2008 07:41:34 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:37562
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757976AbYDPLld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 07:25:33 -0400
-Date: Wed, 16 Apr 2008 19:25:17 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [patch 2.6.25-rc8] omap_rng minor updates
-Message-ID: <20080416112517.GA29220@gondor.apana.org.au>
-References: <200804102132.03907.david-b@pacbell.net>
+	Wed, 16 Apr 2008 07:41:33 -0400
+Message-ID: <4805E5E9.4080402@qumranet.com>
+Date: Wed, 16 Apr 2008 14:41:29 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804102132.03907.david-b@pacbell.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: weigelt@metux.de
+CC: linux kernel list <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Izik Eidus <izike@qumranet.com>
+Subject: Re: Automatic page sharing/consolidation
+References: <20080416013033.GA3057@nibiru.local>
+In-Reply-To: <20080416013033.GA3057@nibiru.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 11, 2008 at 04:32:03AM +0000, David Brownell wrote:
-> Minor cleanups to the OMAP RNG:
+Enrico Weigelt wrote:
+> Hi folks,
+>
+> I'm using dozens of VE's / jails to separate applications
+> (even complete webapps w/ their own httpd) for easier maintenance
+> and better security. But this tends to consume a lot of memory,
+> since code sharing (.so's) cannot take effect here (each jail/VE
+> has it's completely own tree). 
+>
+> Now I wonder if it might be possible to let the kernel automatically
+> find out equal pages and map them together. 
+>
+> A little compasion showed up that at least 50% of the code could be
+> shared (maybe more with some tuning, and maybe even data). So it's
+> (IMHO) really worth it.
+>
+> Would this be possible ? What had to be done for this ?
+>   
 
-Thanks.  I've picked this up in cryptodev-2.6.
+Izik (copied) is working on this for kvm.  Results so far are very 
+encouraging, but currently merged pages are not swappable.
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+error compiling committee.c: too many arguments to function
+
