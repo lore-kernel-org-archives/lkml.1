@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYDPVZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751320AbYDPV0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbYDPVZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYDPVZ1
+	id S1751320AbYDPV0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYDPV0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:25:27 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59716 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbYDPVZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:25:26 -0400
-Message-ID: <48066EBE.3040608@us.ibm.com>
-Date: Wed, 16 Apr 2008 14:25:18 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
+	Wed, 16 Apr 2008 17:26:03 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36858 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752591AbYDPV0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:26:01 -0400
+Date: Thu, 17 Apr 2008 00:25:54 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: sverre@rabbelier.nl
+Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
+       David Newall <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416212554.GV1677@cs181133002.pp.htv.fi>
+References: <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com> <20080416201606.GS1677@cs181133002.pp.htv.fi> <20080416205333.GT1677@cs181133002.pp.htv.fi> <bd6139dc0804161405j28470914u488568b565b68a0b@mail.gmail.com>
 MIME-Version: 1.0
-To: prasad@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       hunt@redhat.com
-Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
-References: <20080415111459.GB5295@in.ibm.com> <20080415112603.GA5770@in.ibm.com>
-In-Reply-To: <20080415112603.GA5770@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <bd6139dc0804161405j28470914u488568b565b68a0b@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K. Prasad wrote:
->
+On Wed, Apr 16, 2008 at 11:05:17PM +0200, Sverre Rabbelier wrote:
+> On Wed, Apr 16, 2008 at 10:53 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> >  To avoid any misunderstandings:
+> >
+> >  This is not in any way meant against you personally.
+> 
+> Thanks for pointing it out, I wasn't quite sure, but assumed that :).
 
-> +
-> +struct debugfs_printk_data {
-> +	char *parent_dir;
-> +	char *dir;
-> +	int exists;
-> +	int buf_size;
-> +	int sub_buf_size;
-> +};
+Sorry, I was a bit overreacting since I see too often people putting 
+some data into some statistics or graph and drawing conclusins without 
+paying attention to whether their data allows these conclusions at all.
 
-How about adding a "flags" field here to hold the trace channel flags. 
-Pass the flags through to trace_setup().  This way the caller can 
-control the trace options.
+> >  But saying things like " X% of your commits introduced bugs" is not a
+> >  friendly thing, and wrong data could be quite hurting.
+> 
+> Yes, it could be, and I agree that conclusions shouldn't be based on
+> the details, but on the bigger picture. Also, I think it should (at
+> first) be used mainly as an indicator, of where attention might be
+> required. I mean, if it points out that one contributor almost always
+> commits buggy code,
 
-Add a description of debugfs_printk() and debugfs_dump() to 
-Documentation/trace.txt.
+I would assume that in all projects the main maintainers already have an 
+impression of how good the quality of the patches of each main 
+contributor is.
+
+In much more complex ways than a number could express.
+
+> you don't have to present them with those
+> statistics right away. Instead you can ask the program where it bases
+> it's conclusions on, and research them yourself.
+
+Sooner or later someone will run the program for the Linux kernel, 
+write a paper about the results, and publish his research somewhere.
+
+>...
+> Cheers,
+> 
+> Sverre Rabbelier
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
