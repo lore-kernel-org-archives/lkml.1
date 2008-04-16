@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763599AbYDPNC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763541AbYDPNGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763599AbYDPNC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 09:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbYDPNCW
+	id S1763541AbYDPNGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 09:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbYDPNGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 09:02:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34416 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754713AbYDPNCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 09:02:21 -0400
-Message-ID: <4805F8D0.7000203@firstfloor.org>
-Date: Wed, 16 Apr 2008 15:02:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 16 Apr 2008 09:06:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41202 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755808AbYDPNGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 09:06:32 -0400
+Date: Wed, 16 Apr 2008 15:06:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
+Message-ID: <20080416130605.GG6304@elte.hu>
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Does process need to have a kernel-side stack all the time?
-References: <200804141547.57719.vda.linux@googlemail.com> <87hce4uya8.fsf@basil.nowhere.org> <20080416124728.GA5050@elte.hu>
-In-Reply-To: <20080416124728.GA5050@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080414230530.GB16061@Krystal>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> no, the primary motivation Arjan and me started working on 4K stacks and 
-> implemented it was what Denys mentioned: i had a testcase that ran 
-> 50,000 threads before it ran out of memory - i wanted it to run 100,000 
-> threads. The improved order-0 behavior was just icing on the cake.
+* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-I checked the original changelog and it mentions both with the
-dumb reason covered in one sentence and the stall issue deserving
-a full paragraph.
+> Implements an alternative iret with popf and return so trap and 
+> exception handlers can return to the NMI handler without issuing iret. 
+> iret would cause NMIs to be reenabled prematurely. x86_32 uses popf 
+> and far return. x86_64 has to copy the return instruction pointer to 
+> the top of the previous stack, issue a popf, loads the previous esp 
+> and issue a near return (ret).
 
-Well frankly that was a dumb reason then.  Ok I hadn't imagined you
-both really spent time on something dumb :) The stall reason
-at least made some sense, although I suspect it is obsolete by now.
+thanks Mathieu, i've picked this up into x86.git for more testing.
 
-My objection to the 100k threads would be less that they
-shouldn't be needed (we all know that user space does dumb things), but
-that when you have them either with 4k stacks (or 50k threads with 8k
-stack) you're dangerously near lowmem exhaustion on 32bit and then
-sooner or later the system will have trouble anyways from low lowmem.
-It's fundamentally not a reliable setup.
+note that this also fixes an oprofile regression: when oprofile is used 
+to generate stack-backtraces, we can fault on address resolution from 
+NMI context and currently we do an IRET - with your fixes it should work 
+fine. Obscure case but still worth fixing.
 
--Andi
-
+	Ingo
