@@ -1,39 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760463AbYDPV5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYDPV74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760463AbYDPV5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYDPV52
+	id S1758036AbYDPV74 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYDPV7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:57:28 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48860 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754529AbYDPV51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:57:27 -0400
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: Anthony Liguori <aliguori@us.ibm.com>
-Subject: Re: [PATCH] add virtio disk geometry feature
-Date: Wed, 16 Apr 2008 16:57:24 -0500
-User-Agent: KMail/1.9.9
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ryan Harper <ryanh@us.ibm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       kvm-devel@lists.sourceforge.net
-References: <1208372197-20815-1-git-send-email-ryanh@us.ibm.com> <200804170715.55041.rusty@rustcorp.com.au> <4806706E.10701@us.ibm.com>
-In-Reply-To: <4806706E.10701@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Disposition: inline
-Message-Id: <200804161657.24454.hollisb@us.ibm.com>
+	Wed, 16 Apr 2008 17:59:47 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:16148 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754755AbYDPV7q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:59:46 -0400
+Subject: Re: bdev size not updated correctly after underlying device is
+	resized
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dm-devel@redhat.com,
+       axboe@kernel.dk, andmike@linux.vnet.ibm.com, linux-scsi@vger.kernel.org
+In-Reply-To: <1208301719.24092.21.camel@bluto.andrew>
+References: <1207783782.31821.80.camel@bluto.andrew>
+	 <20080415160314.11e9b7e1.akpm@linux-foundation.org>
+	 <1208301719.24092.21.camel@bluto.andrew>
+Content-Type: text/plain
+Date: Wed, 16 Apr 2008 15:59:45 -0600
+Message-Id: <1208383185.3859.24.camel@bluto.andrew>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3GLlREB013889
 
-On Wednesday 16 April 2008 16:32:30 Anthony Liguori wrote:> > diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c> > --- a/drivers/block/virtio_blk.c> > +++ b/drivers/block/virtio_blk.c> > @@ -157,10 +157,25 @@ static int virtblk_ioctl(struct inode *i> >  /* We provide getgeo only to please some old bootloader/partitioning tools */> >  static int virtblk_getgeo(struct block_device *bd, struct hd_geometry *geo)> >  {> > -     /* some standard values, similar to sd */> > -     geo->heads = 1 << 6;> > -     geo->sectors = 1 << 5;> > -     geo->cylinders = get_capacity(bd->bd_disk) >> 11;> > +     struct virtio_blk *vblk = bd->bd_disk->private_data;> > +     struct virtio_blk_geometry vgeo;> > +     int err;> > +> > +     /* see if the host passed in geometry config */> > +     err = virtio_config_val(vblk->vdev, VIRTIO_BLK_F_GEOMETRY,> > +                             offsetof(struct virtio_blk_config, geometry),> > +                             &vgeo);> > +> > +     if (!err) {> > +             geo->heads = vgeo.heads;> > +             geo->sectors = vgeo.sectors;> > +             geo->cylinders = vgeo.cylinders;> > +     } else {> > +             /* some standard values, similar to sd */> > +             geo->heads = 1 << 6;> > +             geo->sectors = 1 << 5;> > +             geo->cylinders = get_capacity(bd->bd_disk) >> 11;> > +     }> >       return 0;> >  }> >   > > You're probably breaking PPC since the values in the config space are in > little endian format.  virtio_config_val does automagic endianness > conversion if the size is 2, 4, or 8.  In this case, the structure size > is 4 so the endianness conversion will do the wrong thing.
-Good catch; byte-swapping an entire structure is a terrible terrible idea.
-> Magic endianness conversion based on read size is looking pretty evil to > me... Perhaps we need explicit *_val[8,16,32,64]?
-Implicit byteswapping based on access size is the standard way of implementing accessors.
-In this case, reading each structure member individually will do the right implicit swapping, rather than trying to load the whole thing as a single access.
--- Hollis BlanchardIBM Linux Technology Center���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Tue, 2008-04-15 at 17:21 -0600, Andrew Patterson wrote:
+> On Tue, 2008-04-15 at 16:03 -0700, Andrew Morton wrote:
+> > On Wed, 09 Apr 2008 17:29:42 -0600
+> > .
+> > > Subject: [PATCH] Reset bdev size regardless of other openers.
+> > > 
+> > > A block device may be resized while online.  If the revalidate_disk
+> > > routine is called after the resize, the gendisk->capacity value is
+> > > updated for the device.  However, the bdev->bd_inode->i_size is not
+> > > updated when the block device is opened if there are any other openers
+> > > on the device.  This means that apps like LVM are unlikely to see the
+> > > size change as they tend to keep their block devices open.  There is a
+> > > discussion of this problem at:
+> > > 
+> > >   http://lkml.org/lkml/2007/7/3/83
+> > > 
+> > > This patch changes block_dev.c:do_open() to call bd_set_size()
+> > > regardless if there are other openers on the device.  It should not be
+> > > applied in its existing state as changing i_size should be protected by
+> > > a lock. Also, there needs to be some analysis on the effects of changing
+> > > the device size underneath an app.
+> > 
+> > hm, tricky.
+> > 
+> > I don't know what problems a change like this might cause - probably few,
+> > given the rarity and slowness of block device resizing.
+> 
+> I have been looking through code where this might be a problem.  The
+> sort of things I was worried about is where something might try and do a
+> calculation based on the i_size and write/read data from there after it
+> has been resized, possibly corrupting data.  The COW code in dm seems to
+> come the closest, but then if you are resizing the device that has
+> snapshots on it, you might be getting what you deserve.
+> 
+> > 
+> > Presumably increasing the device size will cause les problems than
+> > decreasing it would. 
+> 
+> Agreed.
+> 
+> >  Do we even support device shrinking?
+> 
+> Yes, this common with LVM at least.  Whether it is a good idea to do
+> this with a mounted file-system on it is another matter.
+> 
+> > 
+> > > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > > index 7d822fa..d13a4e5 100644
+> > > --- a/fs/block_dev.c
+> > > +++ b/fs/block_dev.c
+> > > @@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+> > >  				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
+> > >  				if (ret)
+> > >  					goto out;
+> > > +				/* device may have been resized with revalidate_disk */
+> > > +				if (!part)
+> > > +					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
+> > >  			}
+> > >  			if (bdev->bd_invalidated)
+> > >  				rescan_partitions(bdev->bd_disk, bdev);
+> > 
+> > I'd have thought that an appropriate way to fix all this would be to
+> > perform the i_size update between freeze_bdev() and thaw_bdev(), when the
+> > fs is quiesced.  But it's not really in my comfort zone.
+> 
+> Except that this is not only done with file-systems.  In my case I am
+> just trying to extend an LVM logical volume after a resize but cannot
+> because it is open (activated). In practice, however, it is probably
+> only useful to do this with an online file-system.  Otherwise you could
+> just close all openers and the resize will work fine.
+> 
+> > 
+> 
+
+Adding linux-scsi.  
+
+
+
