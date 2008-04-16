@@ -1,60 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbYDPT0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbYDPT3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbYDPT0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDPT0E
+	id S1752305AbYDPT3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYDPT2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:26:04 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:54280 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbYDPT0B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:26:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Vzw1EH/Gimen1gTBp2ZTiWOlQeVVNBGkgrO2hrJEi/ymMh5uIao15LlrIsQ/DKuXzx0TIvX6HftxqLGn4duBRtRnJ4gXQgRWCSHOhePRSZI1+hN5j/7ojrG9uAVZLem6oAeW+Y5Qf1/EOsjawPssBFqwkQok6JAMRHMC6Nd8gwQ=
-Message-ID: <480651E2.4060907@gmail.com>
-Date: Wed, 16 Apr 2008 21:22:10 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 16 Apr 2008 15:28:51 -0400
+Received: from csmtp3.one.com ([195.47.247.213]:56102 "EHLO csmtp3.b-one.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbYDPT2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:28:50 -0400
+X-Greylist: delayed 1437 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Apr 2008 15:28:50 EDT
+Reply-To: <joakim.tjernlund@transmode.se>
+From: <tjernlund@tjerlund.se>
+To: "'Linux-Kernel'" <linux-kernel@vger.kernel.org>,
+       "'Joakim Tjernlund'" <joakim.tjernlund@transmode.se>
+Subject: Current git tree broke busybox start-stop-daemon
+Date: Wed, 16 Apr 2008 21:04:38 +0200
+Organization: Transmode AB
+Message-ID: <061e01c89ff4$b837cb40$28a761c0$@se>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
-References: <20080416175135.GN1677@cs181133002.pp.htv.fi>
-In-Reply-To: <20080416175135.GN1677@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.3 
+Thread-Index: Acif5s2OPyw4gkgxREKuMDNI84DyFw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+root@localhost:~# start-stop-daemon --stop --name eq_ppp_mgr
+start-stop-daemon: lseek: Invalid argument
 
-> Hi Sam,
-> 
-> although DEBUG_SECTION_MISMATCH allows to also find exotig things like 
-> finding bugs only present when using gcc < 3.4 and CONFIG_HOTPLUG=n at 
-> the same time, the problem is that we print
->     WARNING: modpost: Found 13 section mismatch(es).
->     To see full details build your kernel with:
->     'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-> but CONFIG_DEBUG_SECTION_MISMATCH is not offered in 2.6.25.
+root@localhost:~# strace start-stop-daemon --stop --name eq_ppp_mgr
+execve("/sbin/start-stop-daemon", ["start-stop-daemon", "--stop", "--name", "eq_ppp_mgr"], [/* 12 vars */]) = 0
+uname({sys="Linux", node="localhost.localdomain", ...}) = 0
+brk(0)                                  = 0x1007c000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x48017000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/opt/appl/executing/lib/tls/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/executing/lib/tls/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/executing/lib/tls/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/executing/lib/tls", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/executing/lib/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/executing/lib/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/executing/lib/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/executing/lib", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+open("/opt/appl/started/lib/tls/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/started/lib/tls/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/started/lib/tls/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/started/lib/tls", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/started/lib/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/started/lib/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/started/lib/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/started/lib", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+open("/opt/appl/next/lib/tls/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/next/lib/tls/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/next/lib/tls/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/next/lib/tls", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/next/lib/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/next/lib/ppc603", 0xbfb940a0) = -1 ENOENT (No such file or directory)
+open("/opt/appl/next/lib/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/opt/appl/next/lib", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=64, ...}) = 0
+mmap(NULL, 64, PROT_READ, MAP_PRIVATE, 3, 0) = 0x48018000
+close(3)                                = 0
+open("/lib/tls/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/lib/tls/ppc603", 0xbfb940a0)   = -1 ENOENT (No such file or directory)
+open("/lib/tls/libc.so.6", O_RDONLY)    = -1 ENOENT (No such file or directory)
+stat64("/lib/tls", 0xbfb940a0)          = -1 ENOENT (No such file or directory)
+open("/lib/ppc603/libc.so.6", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat64("/lib/ppc603", 0xbfb940a0)       = -1 ENOENT (No such file or directory)
+open("/lib/libc.so.6", O_RDONLY)        = 3
+read(3, "\177ELF\1\2\1\0\0\0\0\0\0\0\0\0\0\3\0\24\0\0\0\1\0\1\314"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0755, st_size=1345728, ...}) = 0
+mmap(0xfea7000, 1346452, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xfea7000
+madvise(0xfea7000, 1346452, MADV_SEQUENTIAL|0x1) = 0
+mprotect(0xffd8000, 97172, PROT_NONE)   = 0
+mmap(0xffe8000, 24576, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x131000) = 0xffe8000
+mmap(0xffee000, 7060, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffee000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x48019000
+mprotect(0xffe8000, 8192, PROT_READ)    = 0
+mprotect(0x48026000, 4096, PROT_READ)   = 0
+munmap(0x48018000, 64)                  = 0
+open("/dev/urandom", O_RDONLY)          = 3
+read(3, "a\25\24G", 4)                  = 4
+close(3)                                = 0
+getuid()                                = 0
+open("/proc", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
+fstat64(3, {st_mode=S_IFDIR|0555, st_size=0, ...}) = 0
+fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
+brk(0)                                  = 0x1007c000
+brk(0x1009d000)                         = 0x1009d000
+getdents64(3, /* 35 entries */, 1024)   = 1024
+getdents64(3, /* 40 entries */, 1024)   = 1024
+open("/proc/1/stat", O_RDONLY|O_LARGEFILE) = 4
+_llseek(4, 0, 0xbfb94898, SEEK_END)     = -1 EINVAL (Invalid argument)
+write(2, "start-stop-daemon: lseek: Invali"..., 43start-stop-daemon: lseek: Invalid argument
+) = 43
+exit_group(1)                           = ?
+Process 555 detached
 
-Most of those ,,old mismatches'' where already fixed, so ...
 
-> The options seem to be:
-> - going back to the worse but for most practical purposes usable
->   warnings in 2.6.24
-> - don't show these warnings during modpost for 2.6.25
+So it appears that lseek is no longer allowed for /proc/1/stat
+Bug or feature?
+start-stop-daemon works fine in 2.6.23
 
-... IMO it would be better to not show modpost warnings. It will result in great
-number of reports from users. Sam is here a boss.
+  Jocke
 
-There's also second part of the story around inline functions which may be
-reported while running with CONFIG_DEBUG_SECTION_MISMATCH.
-
-Greats,
-	Jacek
