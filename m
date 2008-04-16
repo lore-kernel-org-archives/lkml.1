@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbYDPUQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764912AbYDPUSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764277AbYDPUQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYDPUQR
+	id S1764912AbYDPUSE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYDPURw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:16:17 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38303 "EHLO smtp5.pp.htv.fi"
+	Wed, 16 Apr 2008 16:17:52 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45646 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756779AbYDPUQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:16:12 -0400
-Date: Wed, 16 Apr 2008 23:16:06 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: sverre@rabbelier.nl
-Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
-       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
-       David Newall <davidn@davidnewall.com>
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080416201606.GS1677@cs181133002.pp.htv.fi>
-References: <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
+	id S1751320AbYDPURv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:17:51 -0400
+Date: Wed, 16 Apr 2008 21:16:52 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] Verify the page links and memory model
+Message-ID: <20080416201651.GD13968@csn.ul.ie>
+References: <20080416135058.1346.65546.sendpatchset@skynet.skynet.ie> <20080416135138.1346.87095.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0804161211140.14635@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.64.0804161211140.14635@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 09:39:41PM +0200, Sverre Rabbelier wrote:
-> On Wed, Apr 16, 2008 at 3:26 PM, Adrian Bunk <bunk@kernel.org> wrote:
->...
-> >  E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11
-> >  (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine
-> >  automatically that it is a bugfix, and the commit that introduced
-> >  the bug?
+On (16/04/08 12:12), Christoph Lameter didst pronounce:
+> On Wed, 16 Apr 2008, Mel Gorman wrote:
 > 
-> Well, a dead giveaway would be:
-> "http://bugzilla.kernel.org/show_bug.cgi?id=10124"
-
-Which could be "There is no driver for my TV card in the kernel."
-
-> >  You can always get some data, but if you want to get usable statistics
-> >  you need explicit tags in the commits, not some algorithm that tries
-> >  to guess.
+> > +		FLAGS_RESERVED);
 > 
-> As said above, I don't agree, you can 'guess' very reliably on a large
-> dataset. Also, most commits are already 'tagged' in some way or
-> another. The trick is to find the pattern in this tagging and use it.
+> FLAGS_RESERVED no longer exists in mm. Its dynamically calculated.
 > 
-> I hope this clears things up a bit,
-
-I hope you are aware of the non-technical implications if the results 
-don't match reality?
-
-E.g. I am proud that my commits do virtually never introduce bugs, so 
-any results someone publishes about what I do should better be right
-or my first thoughts are somewhere between "fist" and "lawyer". [1]
-
-> Cheers,
+> It may be useful to print out NR_PAGEFLAGS instead and show the area in 
+> the middle of page flags that is left unused and that may be used by 
+> arches such as sparc64.
 > 
-> Sverre Rabbelier
 
-cu
-Adrian
+That's a good point. I'll do that on a version I rebase to -mm. V2 will
+still be based on mainline.
 
-[1] my actual reaction might only be an angry email, but I hope you
-    get the point that wrong results can really piss off people
+Thanks.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
