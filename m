@@ -1,435 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765411AbYDPQ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765668AbYDPQ2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765411AbYDPQ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 12:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYDPQ2Q
+	id S1765668AbYDPQ2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 12:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760652AbYDPQ2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 12:28:16 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:46292 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753433AbYDPQ2O (ORCPT
+	Wed, 16 Apr 2008 12:28:34 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42118 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758793AbYDPQ2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 12:28:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAO7FBUhMROPA/2dsb2JhbACBYK0Tgio
-Date: Wed, 16 Apr 2008 12:28:10 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v3)
-Message-ID: <20080416162810.GA20450@Krystal>
-References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080416151054.GA32456@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:26:34 up 47 days, 12:37,  5 users,  load average: 1.18, 0.57,
-	0.26
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 16 Apr 2008 12:28:32 -0400
+To: bfields@fieldses.org
+CC: miklos@szeredi.hu, trond.myklebust@fys.uio.no, eshel@almaden.ibm.com,
+       neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080415185856.GI32218@fieldses.org> (bfields@fieldses.org)
+Subject: Re: nfs: infinite loop in fcntl(F_SETLKW)
+References: <E1JjcgO-0004q2-VJ@pomaz-ex.szeredi.hu> <E1Jk2oI-0007UX-MS@pomaz-ex.szeredi.hu> <1207861339.8180.14.camel@heimdal.trondhjem.org> <1207861661.8180.18.camel@heimdal.trondhjem.org> <1207862436.8180.30.camel@heimdal.trondhjem.org> <20080410215410.GF22324@fieldses.org> <E1JkxZI-0003Bc-9C@pomaz-ex.szeredi.hu> <20080414171909.GE15950@fieldses.org> <E1JlW1p-0006vZ-NW@pomaz-ex.szeredi.hu> <20080415185856.GI32218@fieldses.org>
+Message-Id: <E1JmAUP-0002VA-9g@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 16 Apr 2008 18:28:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(added PARAVIRT support, simple mapping of INTERRUPT_RETURN_NMI_SAFE to
-INTERRUPT_RETURN)
+> > > The behavior of lockd will still depend to some degree on the exact
+> > > error returned from the filesystem--e.g. if you return -EAGAIN from
+> > > ->lock() without later calling ->fl_grant() it will cause some
+> > > unexpected delays.  (Though again clients will eventually give up and
+> > > poll for the lock.)
+> > 
+> > OK, so the semantics of vfs_lock_file() are now:
+> 
+> Not quite; the original idea was that we didn't care about the blocking
+> lock case, since there's already a lock manager callback for that.
+> (It's arguably a minor abuse for us to return NLM_LCK_BLOCKED and then
+> do a grant later even in the case where there's no conflict, but it
+> works.)  So we only changed the nonblocking case.
+> 
+> Which may be sacrificing elegance for expediency, and I'm not opposed to
+> fixing that in whatever way seems best.  As a start, we could document
+> this better.  So:
+> 
+> > 
+> > 1) if !FL_SLEEP, then return 0 if granted, -EAGAIN on contention
+> > 2) if FL_SLEEP and fl_grant == NULL, then return 0 if granted, block on
+> >    contention
+> > 3) if FL_SLEEP and fl_grant != NULL, then return 0 if granted, on
+> >    contention:
+> >    a) either return -EINPROGRESS and call fl_grant when granted
+> >    b) or return -EAGAIN  and call fl_notify when the lock needs retrying
+> 
+> I'd put it this way (after a quick check of the code to convince myself
+> I'm remembering this right...):
+> 
+>   1) If FL_SLEEP, then return 0 if granted, and on contention either:
+>      a) block, or
+>      b) return -EAGAIN, and call fl_notify when the lock should be
+>         retried.
 
-x86 NMI-safe INT3 and Page Fault
+Gfs2 seems to return -EINPROGRESS regardless of the FL_SLEEP flag:
 
-Implements an alternative iret with popf and return so trap and exception
-handlers can return to the NMI handler without issuing iret. iret would cause
-NMIs to be reenabled prematurely. x86_32 uses popf and far return. x86_64 has to
-copy the return instruction pointer to the top of the previous stack, issue a
-popf, loads the previous esp and issue a near return (ret).
+       c) return -EINPROGRESS and call f_grant when the lock is granted
 
-It allows placing immediate values (and therefore optimized trace_marks) in NMI
-code since returning from a breakpoint would be valid. Accessing vmalloc'd
-memory, which allows executing module code or accessing vmapped or vmalloc'd
-areas from NMI context, would also be valid. This is very useful to tracers like
-LTTng.
+>   2) If !FL_SLEEP, then either
+>      a) return a result now, or
+>      b) return -EINPROGRESS, then call fl_grant with the result.
 
-This patch makes all faults, traps and exception safe to be called from NMI
-context *except* single-stepping, which requires iret to restore the TF (trap
-flag) and jump to the return address in a single instruction. Sorry, no kprobes
-support in NMI handlers because of this limitation.  We cannot single-step an
-NMI handler, because iret must set the TF flag and return back to the
-instruction to single-step in a single instruction. This cannot be emulated with
-popf/lret, because lret would be single-stepped. It does not apply to immediate
-values because they do not use single-stepping. This code detects if the TF
-flag is set and uses the iret path for single-stepping, even if it reactivates
-NMIs prematurely.
+OK, I missed that.
 
-alpha and avr32 use the active count bit 31. This patch moves them to 28.
+> In each case, b) is only of course allowed if the corresponding callback
+> is defined.  If you want to support NFS exports, then you should also
+> take option b) when possible.  (Though note only 1b is *required* to
+> avoid deadlocks; 2b is basically just a performance enhancement.  We
+> could perhaps even ditch 2b if we fixed lockd's BKL reliance and made it
+> multithreaded.)
+> 
+> The names can be confusing, since fl_notify generally results in
+> granting a previously blocked lock, whereas fl_grant just returns the
+> result (positive or negative) of a single lock request.  They have the
+> names they do because of the difference in their semantics:
+> 
+> 	- With fl_grant the filesystem says: I'm giving you the final
+> 	  result of the lock operation.  In particular, if I'm telling
+> 	  you it succeeded, that means I've already granted you the
+> 	  lock; don't ask me about it again.
+> 
+> 	- With fl_notify the filesystem says: something just happened to
+> 	  this lock.  I'm not guaranteeing anything, I'm just telling
+> 	  you this would be a good time to try the lock again.  Do it
+> 	  and maybe you'll get lucky!
+> 
+> This difference is why the fl_grant() operation takes a status argument
+> (to tell the lock manager what happened), whereas fl_notify() doesn't
+> (since it's just a poke in the ribs, and only the subsequent lock call
+> will give the real status).
+> 
+> Is that explanation helpful?
 
-TODO : test alpha and avr32 active count modification
+Yes, thanks.
 
-tested on x86_32 (tests implemented in a separate patch) :
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-- tested vmalloc faults in NMI handler by placing a non-optimized marker in the
-  NMI handler (so no breakpoint is executed) and connecting a probe which
-  touches every pages of a 20MB vmalloc'd buffer. It executes trough the return
-  path without problem.
-- Tested with and without preemption
+> OK, but I haven't read your patch yet, apologies....
 
-tested on x86_64
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
+No problem.  Here it is again with some cosmetic fixes and testing.
 
-To test on x86_64 :
-- Test without preemption
-- Test vmalloc faults
-- Test on Intel 64 bits CPUs.
+Miklos
+--
 
-"This way lies madness. Don't go there."
-- Andi
 
-Changelog since v1 :
-- x86_64 fixes.
-Changelog since v2 :
-- paravirt support
+Use a special error value FILE_LOCK_DEFERRED to mean that a locking
+operation returned asynchronously.  This is returned by
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: akpm@osdl.org
-CC: mingo@elte.hu
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
+  posix_lock_file() for sleeping locks to mean that the lock has been
+  queued on the block list, and will be woken up when it might become
+  available and needs to be retried (either fl_lmops->fl_notify() is
+  called or fl_wait is woken up).
+
+  f_op->lock() to mean either the above, or that the filesystem will
+  call back with fl_lmops->fl_grant() when the result of the locking
+  operation is known.  The filesystem can do this for sleeping as well
+  as non-sleeping locks.
+
+This is to make sure, that return values of -EAGAIN and -EINPROGRESS
+by filesystems are not mistaken to mean an asynchronous locking.
+
+This also makes error handling in fs/locks.c and lockd/svclock.c
+slightly cleaner.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- arch/x86/kernel/entry_32.S      |   25 +++++++++++++++-
- arch/x86/kernel/entry_64.S      |   31 ++++++++++++++++++++
- include/asm-alpha/thread_info.h |    2 -
- include/asm-avr32/thread_info.h |    2 -
- include/asm-x86/irqflags.h      |   61 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/paravirt.h      |    2 +
- include/linux/hardirq.h         |   24 ++++++++++++++-
- 7 files changed, 142 insertions(+), 5 deletions(-)
+ fs/gfs2/locking/dlm/plock.c |    2 +-
+ fs/lockd/svclock.c          |   13 ++++---------
+ fs/locks.c                  |   28 ++++++++++++++--------------
+ include/linux/fs.h          |    6 ++++++
+ 4 files changed, 25 insertions(+), 24 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/hardirq.h
+Index: linux-2.6/fs/locks.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/hardirq.h	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/include/linux/hardirq.h	2008-04-16 11:29:30.000000000 -0400
-@@ -22,10 +22,13 @@
-  * PREEMPT_MASK: 0x000000ff
-  * SOFTIRQ_MASK: 0x0000ff00
-  * HARDIRQ_MASK: 0x0fff0000
-+ * HARDNMI_MASK: 0x40000000
+--- linux-2.6.orig/fs/locks.c	2008-04-16 17:33:49.000000000 +0200
++++ linux-2.6/fs/locks.c	2008-04-16 17:38:01.000000000 +0200
+@@ -784,8 +784,10 @@ find_conflict:
+ 		if (!flock_locks_conflict(request, fl))
+ 			continue;
+ 		error = -EAGAIN;
+-		if (request->fl_flags & FL_SLEEP)
+-			locks_insert_block(fl, request);
++		if (!(request->fl_flags & FL_SLEEP))
++			goto out;
++		error = FILE_LOCK_DEFERRED;
++		locks_insert_block(fl, request);
+ 		goto out;
+ 	}
+ 	if (request->fl_flags & FL_ACCESS)
+@@ -841,7 +843,7 @@ static int __posix_lock_file(struct inod
+ 			error = -EDEADLK;
+ 			if (posix_locks_deadlock(request, fl))
+ 				goto out;
+-			error = -EAGAIN;
++			error = FILE_LOCK_DEFERRED;
+ 			locks_insert_block(fl, request);
+ 			goto out;
+   		}
+@@ -1040,7 +1042,7 @@ int posix_lock_file_wait(struct file *fi
+ 	might_sleep ();
+ 	for (;;) {
+ 		error = posix_lock_file(filp, fl, NULL);
+-		if ((error != -EAGAIN) || !(fl->fl_flags & FL_SLEEP))
++		if (error != FILE_LOCK_DEFERRED)
+ 			break;
+ 		error = wait_event_interruptible(fl->fl_wait, !fl->fl_next);
+ 		if (!error)
+@@ -1112,9 +1114,7 @@ int locks_mandatory_area(int read_write,
+ 
+ 	for (;;) {
+ 		error = __posix_lock_file(inode, &fl, NULL);
+-		if (error != -EAGAIN)
+-			break;
+-		if (!(fl.fl_flags & FL_SLEEP))
++		if (error != FILE_LOCK_DEFERRED)
+ 			break;
+ 		error = wait_event_interruptible(fl.fl_wait, !fl.fl_next);
+ 		if (!error) {
+@@ -1534,7 +1534,7 @@ int flock_lock_file_wait(struct file *fi
+ 	might_sleep();
+ 	for (;;) {
+ 		error = flock_lock_file(filp, fl);
+-		if ((error != -EAGAIN) || !(fl->fl_flags & FL_SLEEP))
++		if (error != FILE_LOCK_DEFERRED)
+ 			break;
+ 		error = wait_event_interruptible(fl->fl_wait, !fl->fl_next);
+ 		if (!error)
+@@ -1719,17 +1719,17 @@ out:
+  * fl_grant is set. Callers expecting ->lock() to return asynchronously
+  * will only use F_SETLK, not F_SETLKW; they will set FL_SLEEP if (and only if)
+  * the request is for a blocking lock. When ->lock() does return asynchronously,
+- * it must return -EINPROGRESS, and call ->fl_grant() when the lock
++ * it must return FILE_LOCK_DEFERRED, and call ->fl_grant() when the lock
+  * request completes.
+  * If the request is for non-blocking lock the file system should return
+- * -EINPROGRESS then try to get the lock and call the callback routine with
+- * the result. If the request timed out the callback routine will return a
++ * FILE_LOCK_DEFERRED then try to get the lock and call the callback routine
++ * with the result. If the request timed out the callback routine will return a
+  * nonzero return code and the file system should release the lock. The file
+  * system is also responsible to keep a corresponding posix lock when it
+  * grants a lock so the VFS can find out which locks are locally held and do
+  * the correct lock cleanup when required.
+  * The underlying filesystem must not drop the kernel lock or call
+- * ->fl_grant() before returning to the caller with a -EINPROGRESS
++ * ->fl_grant() before returning to the caller with a FILE_LOCK_DEFERRED
+  * return code.
   */
- #define PREEMPT_BITS	8
- #define SOFTIRQ_BITS	8
+ int vfs_lock_file(struct file *filp, unsigned int cmd, struct file_lock *fl, struct file_lock *conf)
+@@ -1806,7 +1806,7 @@ again:
+ 	else {
+ 		for (;;) {
+ 			error = posix_lock_file(filp, file_lock, NULL);
+-			if (error != -EAGAIN || cmd == F_SETLK)
++			if (error != FILE_LOCK_DEFERRED)
+ 				break;
+ 			error = wait_event_interruptible(file_lock->fl_wait,
+ 					!file_lock->fl_next);
+@@ -1934,7 +1934,7 @@ again:
+ 	else {
+ 		for (;;) {
+ 			error = posix_lock_file(filp, file_lock, NULL);
+-			if (error != -EAGAIN || cmd == F_SETLK64)
++			if (error != FILE_LOCK_DEFERRED)
+ 				break;
+ 			error = wait_event_interruptible(file_lock->fl_wait,
+ 					!file_lock->fl_next);
+Index: linux-2.6/fs/gfs2/locking/dlm/plock.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/locking/dlm/plock.c	2008-04-16 17:33:49.000000000 +0200
++++ linux-2.6/fs/gfs2/locking/dlm/plock.c	2008-04-16 17:35:46.000000000 +0200
+@@ -108,7 +108,7 @@ int gdlm_plock(void *lockspace, struct l
+ 	if (xop->callback == NULL)
+ 		wait_event(recv_wq, (op->done != 0));
+ 	else
+-		return -EINPROGRESS;
++		return FILE_LOCK_DEFERRED;
  
-+#define HARDNMI_BITS	1
-+
- #ifndef HARDIRQ_BITS
- #define HARDIRQ_BITS	12
+ 	spin_lock(&ops_lock);
+ 	if (!list_empty(&op->list)) {
+Index: linux-2.6/fs/lockd/svclock.c
+===================================================================
+--- linux-2.6.orig/fs/lockd/svclock.c	2008-04-16 17:33:49.000000000 +0200
++++ linux-2.6/fs/lockd/svclock.c	2008-04-16 17:35:46.000000000 +0200
+@@ -423,8 +423,8 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 		case -EAGAIN:
+ 			ret = nlm_lck_denied;
+-			break;
+-		case -EINPROGRESS:
++			goto out;
++		case FILE_LOCK_DEFERRED:
+ 			if (wait)
+ 				break;
+ 			/* Filesystem lock operation is in progress
+@@ -439,10 +439,6 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 	}
  
-@@ -45,16 +48,19 @@
- #define PREEMPT_SHIFT	0
- #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
- #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-+#define HARDNMI_SHIFT	(30)
+-	ret = nlm_lck_denied;
+-	if (!wait)
+-		goto out;
+-
+ 	ret = nlm_lck_blocked;
  
- #define __IRQ_MASK(x)	((1UL << (x))-1)
+ 	/* Append to list of blocked */
+@@ -520,7 +516,7 @@ nlmsvc_testlock(struct svc_rqst *rqstp, 
+ 	}
  
- #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
- #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
- #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
-+#define HARDNMI_MASK	(__IRQ_MASK(HARDNMI_BITS) << HARDNMI_SHIFT)
- 
- #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
- #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
- #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
-+#define HARDNMI_OFFSET	(1UL << HARDNMI_SHIFT)
- 
- #if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
- #error PREEMPT_ACTIVE is too low!
-@@ -63,6 +69,7 @@
- #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
- #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
- #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
-+#define hardnmi_count()	(preempt_count() & HARDNMI_MASK)
+ 	error = vfs_test_lock(file->f_file, &lock->fl);
+-	if (error == -EINPROGRESS) {
++	if (error == FILE_LOCK_DEFERRED) {
+ 		ret = nlmsvc_defer_lock_rqst(rqstp, block);
+ 		goto out;
+ 	}
+@@ -744,8 +740,7 @@ nlmsvc_grant_blocked(struct nlm_block *b
+ 	switch (error) {
+ 	case 0:
+ 		break;
+-	case -EAGAIN:
+-	case -EINPROGRESS:
++	case FILE_LOCK_DEFERRED:
+ 		dprintk("lockd: lock still blocked error %d\n", error);
+ 		nlmsvc_insert_block(block, NLM_NEVER);
+ 		nlmsvc_release_block(block);
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-04-16 17:33:49.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-04-16 18:17:12.000000000 +0200
+@@ -837,6 +837,12 @@ extern spinlock_t files_lock;
+ #define FL_SLEEP	128	/* A blocking lock */
  
  /*
-  * Are we doing bottom half or hardware interrupt processing?
-@@ -71,6 +78,7 @@
- #define in_irq()		(hardirq_count())
- #define in_softirq()		(softirq_count())
- #define in_interrupt()		(irq_count())
-+#define in_nmi()		(hardnmi_count())
- 
- /*
-  * Are we running in atomic context?  WARNING: this macro cannot
-@@ -159,7 +167,19 @@ extern void irq_enter(void);
-  */
- extern void irq_exit(void);
- 
--#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
--#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
-+#define nmi_enter()					\
-+	do {						\
-+		lockdep_off();				\
-+		BUG_ON(hardnmi_count());		\
-+		add_preempt_count(HARDNMI_OFFSET);	\
-+		__irq_enter();				\
-+	} while (0)
-+
-+#define nmi_exit()					\
-+	do {						\
-+		__irq_exit();				\
-+		sub_preempt_count(HARDNMI_OFFSET);	\
-+		lockdep_on();				\
-+	} while (0)
- 
- #endif /* LINUX_HARDIRQ_H */
-Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2008-04-16 12:06:30.000000000 -0400
-@@ -79,7 +79,6 @@ VM_MASK		= 0x00020000
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
- #define preempt_stop(clobbers)
--#define resume_kernel		restore_nocheck
- #endif
- 
- .macro TRACE_IRQS_IRET
-@@ -265,6 +264,8 @@ END(ret_from_exception)
- #ifdef CONFIG_PREEMPT
- ENTRY(resume_kernel)
- 	DISABLE_INTERRUPTS(CLBR_ANY)
-+	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
- 	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
- 	jnz restore_nocheck
- need_resched:
-@@ -276,6 +277,12 @@ need_resched:
- 	call preempt_schedule_irq
- 	jmp need_resched
- END(resume_kernel)
-+#else
-+ENTRY(resume_kernel)
-+	testl $0x40000000,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
-+	jmp restore_nocheck
-+END(resume_kernel)
- #endif
- 	CFI_ENDPROC
- 
-@@ -411,6 +418,22 @@ restore_nocheck_notrace:
- 	CFI_ADJUST_CFA_OFFSET -4
- irq_return:
- 	INTERRUPT_RETURN
-+return_to_nmi:
-+	testl $X86_EFLAGS_TF, PT_EFLAGS(%esp)
-+	jnz restore_nocheck		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	TRACE_IRQS_IRET
-+	RESTORE_REGS
-+	addl $4, %esp			# skip orig_eax/error_code
-+	CFI_ADJUST_CFA_OFFSET -4
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- .section .fixup,"ax"
- iret_exc:
- 	pushl $0			# no error code
-Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2008-04-16 12:06:31.000000000 -0400
-@@ -581,12 +581,27 @@ retint_restore_args:	/* return to kernel
- 	 * The iretq could re-enable interrupts:
- 	 */
- 	TRACE_IRQS_IRETQ
-+	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
-+	jnz return_to_nmi
- restore_args:
- 	RESTORE_ARGS 0,8,0
- 
- irq_return:
- 	INTERRUPT_RETURN
- 
-+return_to_nmi:				/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	bt $8,EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
-+	jc restore_args
-+	RESTORE_ARGS 0,8,0
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- 	.section __ex_table, "a"
- 	.quad irq_return, bad_iret
- 	.previous
-@@ -802,6 +817,10 @@ END(spurious_interrupt)
- 	.macro paranoidexit trace=1
- 	/* ebx:	no swapgs flag */
- paranoid_exit\trace:
-+	GET_THREAD_INFO(%rcx)
-+	testl $0x40000000,threadinfo_preempt_count(%rcx) /* Nested over NMI ? */
-+	jnz paranoid_return_to_nmi\trace
-+paranoid_exit_no_nmi\trace:
- 	testl %ebx,%ebx				/* swapgs needed? */
- 	jnz paranoid_restore\trace
- 	testl $3,CS(%rsp)
-@@ -814,6 +833,18 @@ paranoid_swapgs\trace:
- paranoid_restore\trace:
- 	RESTORE_ALL 8
- 	jmp irq_return
-+paranoid_return_to_nmi\trace:		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	bt $8,EFLAGS-0(%rsp)		/* trap flag? */
-+	jc paranoid_exit_no_nmi\trace
-+	RESTORE_ALL 8
-+	INTERRUPT_RETURN_NMI_SAFE
- paranoid_userspace\trace:
- 	GET_THREAD_INFO(%rcx)
- 	movl threadinfo_flags(%rcx),%ebx
-Index: linux-2.6-lttng/include/asm-x86/irqflags.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/irqflags.h	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/irqflags.h	2008-04-16 11:29:30.000000000 -0400
-@@ -138,12 +138,73 @@ static inline unsigned long __raw_local_
- 
- #ifdef CONFIG_X86_64
- #define INTERRUPT_RETURN	iretq
++ * Special return value from posix_lock_file() and vfs_lock_file() for
++ * asynchronous locking.
++ */
++#define FILE_LOCK_DEFERRED 1
 +
 +/*
-+ * Only returns from a trap or exception to a NMI context (intra-privilege
-+ * level near return) to the same SS and CS segments. Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued. It takes care of modifying the eflags, rsp and returning to the
-+ * previous function.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(rsp)  RIP
-+ * 8(rsp)  CS
-+ * 16(rsp) EFLAGS
-+ * 24(rsp) RSP
-+ * 32(rsp) SS
-+ *
-+ * Upon execution :
-+ * Copy EIP to the top of the return stack
-+ * Update top of return stack address
-+ * Pop eflags into the eflags register
-+ * Make the return stack current
-+ * Near return (popping the return address from the return stack)
-+ */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
-+					pushq %rbx;		\
-+					movq 40(%rsp), %rax;	\
-+					movq 16(%rsp), %rbx;	\
-+					subq $8, %rax;		\
-+					movq %rbx, (%rax);	\
-+					movq %rax, 40(%rsp);	\
-+					popq %rbx;		\
-+					popq %rax;		\
-+					addq $16, %rsp;		\
-+					popfq;			\
-+					movq (%rsp), %rsp;	\
-+					ret;			\
-+
- #define ENABLE_INTERRUPTS_SYSCALL_RET			\
- 			movq	%gs:pda_oldrsp, %rsp;	\
- 			swapgs;				\
- 			sysretq;
- #else
- #define INTERRUPT_RETURN		iret
-+
-+/*
-+ * Protected mode only, no V8086. Implies that protected mode must
-+ * be entered before NMIs or MCEs are enabled. Only returns from a trap or
-+ * exception to a NMI context (intra-privilege level far return). Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(esp) EIP
-+ * 4(esp) CS
-+ * 8(esp) EFLAGS
-+ *
-+ * Upon execution :
-+ * Copy the stack eflags to top of stack
-+ * Pop eflags into the eflags register
-+ * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
-+ */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
-+					popfl;		\
-+					.byte 0xCA;	\
-+					.word 4;
-+
- #define ENABLE_INTERRUPTS_SYSCALL_RET	sti; sysexit
- #define GET_CR0_INTO_EAX		movl %cr0, %eax
- #endif
-Index: linux-2.6-lttng/include/asm-alpha/thread_info.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-alpha/thread_info.h	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/include/asm-alpha/thread_info.h	2008-04-16 12:06:32.000000000 -0400
-@@ -57,7 +57,7 @@ register struct thread_info *__current_t
- 
- #endif /* __ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags:
-Index: linux-2.6-lttng/include/asm-avr32/thread_info.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-avr32/thread_info.h	2008-04-16 11:25:18.000000000 -0400
-+++ linux-2.6-lttng/include/asm-avr32/thread_info.h	2008-04-16 12:06:32.000000000 -0400
-@@ -70,7 +70,7 @@ static inline struct thread_info *curren
- 
- #endif /* !__ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags
-Index: linux-2.6-lttng/include/asm-x86/paravirt.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/paravirt.h	2008-04-16 12:23:44.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/paravirt.h	2008-04-16 12:24:36.000000000 -0400
-@@ -1358,6 +1358,8 @@ static inline unsigned long __raw_local_
- 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_iret), CLBR_NONE,	\
- 		  jmp *%cs:pv_cpu_ops+PV_CPU_iret)
- 
-+#define INTERRUPT_RETURN_NMI_SAFE INTERRUPT_RETURN
-+
- #define DISABLE_INTERRUPTS(clobbers)					\
- 	PARA_SITE(PARA_PATCH(pv_irq_ops, PV_IRQ_irq_disable), clobbers, \
- 		  PV_SAVE_REGS;			\
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+  * The POSIX file lock owner is determined by
+  * the "struct files_struct" in the thread group
+  * (or NULL for no owner - BSD locks).
+
+
+
