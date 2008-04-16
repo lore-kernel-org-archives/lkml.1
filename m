@@ -1,170 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbYDPUQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764597AbYDPURb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbYDPUQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYDPUQL
+	id S1764597AbYDPURb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYDPURV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:16:11 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:3986 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756269AbYDPUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:16:09 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Date: Wed, 16 Apr 2008 13:17:59 -0700
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: tonyb@cybernetics.com
-cc: "David Miller" <davem@davemloft.net>, "Michael Chan" <mchan@broadcom.com>,
-       "Matthew Carlson" <mcarlson@broadcom.com>, herbert@gondor.apana.org.au,
-       netdev@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-Message-ID: <20080416201759.GB19724@localdomain>
-References: <20080415.203108.55491723.davem@davemloft.net>
- <1551EAE59135BE47B544934E30FC4FC002AABC73@nt-irva-0751.brcm.ad.broadcom.com>
+	Wed, 16 Apr 2008 16:17:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35961 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752008AbYDPURU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:17:20 -0400
+Date: Wed, 16 Apr 2008 15:17:20 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: Alan Mayer <ajm@sgi.com>
+Cc: mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
+In-Reply-To: <Pine.SGI.3.96.1080415153530.8706317k-100000@fergus.americas.sgi.com>
+Message-ID: <Pine.SGI.3.96.1080416151620.8706317m-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <1551EAE59135BE47B544934E30FC4FC002AABC73@nt-irva-0751.brcm.ad.broadcom.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 16 Apr 2008 20:15:57.0044 (UTC)
- FILETIME=[AE09B340:01C89FFE]
-X-WSS-ID: 641881F43M813599571-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 08:40:25AM -0700, Michael Chan wrote:
-> David Miller wrote:
-> 
-> > Matt, skb->mac_header is either a pointer or an integer offset
-> > depending upon whether we are building 32-bit or 64-bit.
-> > 
-> > Testing skb->mac_header is therefore wrong, because it's an
-> > offset from a pointer in the 64-bit case and therefore it's
-> > alignment does not indicate correctly the actual final alignment
-> > of skb->head + skb->max_header.
-> > 
-> > Therefore you should test skb_mac_header(skb) and cast it with
-> > (unsigned long).
-> 
-> Isn't it better to test for skb->data?  That's where we tell
-> the hardware to start transmitting.
-> 
-> > 
-> > Please respin this fix with that correction so I can apply it
-> > and get this bug fixed, thanks!
-> > 
-> > 
-> 
-> We think that this problem is unique in Tony's environment because
-> of the PCIE-to-PCI bridge that he is using.  We therefore want to
-> test for that bridge and apply the workaround only when it's present.
-> We've never seen this problem in the last 6 or 7 years during the
-> lifetime of the 5701.
-> 
-> We'll try to get this done ASAP.
-> 
-> Thanks.
 
-Tony,
+Subject: [PATCH] x86_64: Fix build error from FIRST_SYSTEM_VECTOR patch
 
-Below is a patch that attempts to limit the workaround to the bridge you
-have on your system.  Can you test it and verify that the workaround is
-still enabled?
+From: Alan Mayer <ajm@sgi.com>
 
+Fixes the build error introduced by my FIRST_SYSTEM_VECTOR patch
 
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index 96043c5..52a44c6 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -4135,11 +4135,21 @@ static int tigon3_dma_hwbug_workaround(struct tg3 *tp, struct sk_buff *skb,
- 				       u32 last_plus_one, u32 *start,
- 				       u32 base_flags, u32 mss)
- {
--	struct sk_buff *new_skb = skb_copy(skb, GFP_ATOMIC);
-+	struct sk_buff *new_skb;
- 	dma_addr_t new_addr = 0;
- 	u32 entry = *start;
- 	int i, ret = 0;
+Signed-off-by: Alan Mayer <ajm@sgi.com>
+
+---
+Index: ingo/arch/x86/kernel/apic_32.c
+===================================================================
+--- ingo.orig/arch/x86/kernel/apic_32.c	2008-04-10 14:02:10.000000000 -0500
++++ ingo/arch/x86/kernel/apic_32.c	2008-04-16 14:28:34.000000000 -0500
+@@ -74,6 +74,10 @@
+ int local_apic_timer_c2_ok;
+ EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
  
-+	if (GET_ASIC_REV(tp->pci_chip_rev_id) != ASIC_REV_5701)
-+		new_skb = skb_copy(skb, GFP_ATOMIC);
-+	else {
-+		int more_headroom = 4 - ((unsigned long)skb->data & 3);
++int first_system_vector = 0xfe;
 +
-+		new_skb = skb_copy_expand(skb,
-+					  skb_headroom(skb) + more_headroom,
-+					  skb_tailroom(skb), GFP_ATOMIC);
-+	}
++char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
 +
- 	if (!new_skb) {
- 		ret = -1;
- 	} else {
-@@ -4462,7 +4472,9 @@ static int tg3_start_xmit_dma_bug(struct sk_buff *skb, struct net_device *dev)
+ /*
+  * Debug level, exported for io_apic.c
+  */
+Index: ingo/arch/x86/kernel/io_apic_32.c
+===================================================================
+--- ingo.orig/arch/x86/kernel/io_apic_32.c	2008-04-10 14:02:10.000000000 -0500
++++ ingo/arch/x86/kernel/io_apic_32.c	2008-04-16 14:29:07.000000000 -0500
+@@ -73,9 +73,9 @@
  
- 	would_hit_hwbug = 0;
+ static int disable_timer_pin_1 __initdata;
  
--	if (tg3_4g_overflow_test(mapping, len))
-+	if (tp->tg3_flags3 & TG3_FLG3_5701_DMA_BUG)
-+		would_hit_hwbug = 1;
-+	else if (tg3_4g_overflow_test(mapping, len))
- 		would_hit_hwbug = 1;
+-int first_system_vector = 0xfe;
++extern int first_system_vector;
  
- 	tg3_set_txd(tp, entry, mapping, len, base_flags,
-@@ -11339,6 +11351,41 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
- 		}
- 	}
+-char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
++extern char system_vectors[];
  
-+	if ((GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701)) {
-+		static struct tg3_dev_id {
-+			u32	vendor;
-+			u32	device;
-+		} bridge_chipsets[] = {
-+			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_0 },
-+			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_1 },
-+			{ },
-+		};
-+		struct tg3_dev_id *pci_id = &bridge_chipsets[0];
-+		struct pci_dev *bridge = NULL;
-+
-+		while (pci_id->vendor != 0 &&
-+		       !(tp->tg3_flags3 & TG3_FLG3_5701_DMA_BUG)) {
-+			while (1) {
-+				bridge = pci_get_device(pci_id->vendor,
-+							pci_id->device,
-+							bridge);
-+				if (!bridge) {
-+					pci_id++;
-+					break;
-+				}
-+				if (bridge->subordinate &&
-+				    (bridge->subordinate->number <=
-+				     tp->pdev->bus->number) &&
-+				    (bridge->subordinate->subordinate >=
-+				     tp->pdev->bus->number)) {
-+					tp->tg3_flags3 |= TG3_FLG3_5701_DMA_BUG;
-+					pci_dev_put(bridge);
-+					break;
-+				}
-+			}
-+		}
-+	}
-+
- 	/* The EPB bridge inside 5714, 5715, and 5780 cannot support
- 	 * DMA addresses > 40-bit. This bridge may have other additional
- 	 * 57xx devices behind it in some 4-port NIC designs for example.
-diff --git a/drivers/net/tg3.h b/drivers/net/tg3.h
-index c1075a7..c688c3a 100644
---- a/drivers/net/tg3.h
-+++ b/drivers/net/tg3.h
-@@ -2476,6 +2476,7 @@ struct tg3 {
- #define TG3_FLG3_NO_NVRAM_ADDR_TRANS	0x00000001
- #define TG3_FLG3_ENABLE_APE		0x00000002
- #define TG3_FLG3_5761_5784_AX_FIXES	0x00000004
-+#define TG3_FLG3_5701_DMA_BUG		0x00000008
- 
- 	struct timer_list		timer;
- 	u16				timer_counter;
-
+ /*
+  * Rough estimation of how many shared IRQs there are, can
 
