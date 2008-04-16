@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbYDPToH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYDPTpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbYDPToH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYDPTnv
+	id S1756269AbYDPTpz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYDPTpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:43:51 -0400
-Received: from el-out-1112.google.com ([209.85.162.177]:46906 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbYDPTnt (ORCPT
+	Wed, 16 Apr 2008 15:45:47 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:35328
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750847AbYDPTpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:43:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PVdAiUE/oBqLkE2jodDTOO8dcnaqFdU39++l//G8etCwLbAWfhD+gz8U5IxNoyvlTXdSlSj00CwEUbZvvodi3Wvt6bxRA5UhRdt6AiaPcbLsuYeD0eLg6uzQb6OUVl+SiJ5Y5yFRexzyqMzmIG/C6C5xrTCK5asJxGaq+o2MSMU=
-Message-ID: <bd6139dc0804161243i5e5c973aia0cf2d5ec19079fa@mail.gmail.com>
-Date: Wed, 16 Apr 2008 21:43:47 +0200
-From: "Sverre Rabbelier" <alturin@gmail.com>
-Reply-To: sverre@rabbelier.nl
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Reporting bugs and bisection
-Cc: "Adrian Bunk" <bunk@kernel.org>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jmorris@namei.org,
-       viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
-       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
-In-Reply-To: <20080416120247.c665859c.akpm@linux-foundation.org>
+	Wed, 16 Apr 2008 15:45:46 -0400
+X-Trace: 97491082/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/83.67.11.44
+X-SBRS: None
+X-RemoteIP: 83.67.11.44
+X-IP-MAIL-FROM: tvrtko@ursulin.net
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAODzBUhTQwss/2dsb2JhbACBYKx7
+X-IP-Direction: IN
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Subject: Re: Western Digital GreenPower drives and Linux
+Date: Wed, 16 Apr 2008 20:46:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200804092118.35501.tvrtko@ursulin.net> <4805E59E.1020607@aitel.hist.no>
+In-Reply-To: <4805E59E.1020607@aitel.hist.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080413205406.GA9190@2ka.mipt.ru> <20080414043939.GA6862@1wt.eu>
-	 <20080414053943.GU9785@ZenIV.linux.org.uk>
-	 <20080413232441.e216a02c.akpm@linux-foundation.org>
-	 <20080414072328.GW9785@ZenIV.linux.org.uk>
-	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
-	 <4804765B.2070300@davidnewall.com>
-	 <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
-	 <20080416132634.GA545@cs181133002.pp.htv.fi>
-	 <20080416120247.c665859c.akpm@linux-foundation.org>
+Message-Id: <200804162046.33245.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 9:02 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  Sounds like an interesting project.
+On Wednesday 16 April 2008 12:40:14 Helge Hafting wrote:
+> Tvrtko A. Ursulin wrote:
+> > 9 Power_On_Hours       0x0032 100 100 000 Old_age Always  - 66
+> > 193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
+> >
+> > At this rate the disk would reach it's design limit for load/unload
+> > cycles in around 80 days. Not good - so I implemented a lame workaround
+> > of keeping disk busy every couple of seconds - hopefully that won't kill
+> > it sooner that unloads would..
+>
+> Yuck, how stupid!
+> But the solution is simple. Make sure to get a warranty of much more
+> than 80 days. Use RAID-1 (or backup often).
+> Just let those disks destroy themselves (they _are_ faulty) and
+> get new ones all the time.  As long as they make them this stupid, you
+> won't have to buy new disks again. Free warranty replacements forever.
 
-Thank you :).
+:) I am not so enthusiastic about fiddling with my NAS box every couple of 
+months.
 
->  Well yes.  One outcome of the project would be to tell us what changes we'd
->  need to make to our processes to make such data gathering more effective.
+> To be a bit more constructive, tell them about this strategy. Perhaps
+> they get
+> busy fixing the firmware?
 
-I defenitly agree here, the command's reliability could be increased
-by always specifying bugfixes in a certain way. 'fixed-bug:' for
-example should be very recognizable.
+I have suggested exactly what you say - unfortunately the conversation has 
+gone cold since. Maybe they are busy already. :)
 
->  Of course, we may not actually implement such changes.  That would depend
->  upon how useful the output is to us.
-
-Ah yes, free will and whatnot. Then again, everybody already does
-'signed-off-by:', if there's an easy command in git to mark a bugfix,
-it would increase the odds of people using it. Perhaps something like
-'git commit -b 10256" which would then automagically append a
-predefined message to the commit users would feel more inclined?
-
-Cheers,
-
-Sverre Rabbelier
+Tvrtko
