@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbYDPAqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYDPAvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbYDPAqz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 20:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYDPAqr
+	id S1757978AbYDPAvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 20:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYDPAuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 20:46:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55392 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752917AbYDPAqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 20:46:47 -0400
-Date: Tue, 15 Apr 2008 17:46:46 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-In-Reply-To: <20080416004430.GA26928@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804151745440.6876@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com>
- <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com>
- <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi>
- <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org>
- <20080416000356.GA24737@elte.hu> <20080416001816.GA26295@elte.hu>
- <86802c440804151732j519a541t9d8e4f6b49a53313@mail.gmail.com>
- <20080416004430.GA26928@elte.hu>
+	Tue, 15 Apr 2008 20:50:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35375 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751456AbYDPAuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 20:50:51 -0400
+Date: Wed, 16 Apr 2008 02:50:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Soeren Sonnenburg <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [Bug #10117] 2.6.25-current-git sometimes hangs on boot
+	-dual-core Sony Vaio
+Message-ID: <20080416005036.GA26996@elte.hu>
+References: <RR4Oy_oXY2J.A.b0H.A3lAIB@albercik> <200804152233.39079.rjw@sisk.pl> <20080415204500.GD1677@cs181133002.pp.htv.fi> <200804152303.45320.rjw@sisk.pl> <924EFEDD5F540B4284297C4DC59F3DEEE17FD4@orsmsx423.amr.corp.intel.com> <1208294294.7851.109.camel@localhost> <924EFEDD5F540B4284297C4DC59F3DEEE17FF1@orsmsx423.amr.corp.intel.com> <20080415212949.GG1677@cs181133002.pp.htv.fi> <20080415225411.GA10041@localhost.ift.unesp.br> <20080416001925.GM1677@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080416001925.GM1677@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008, Ingo Molnar wrote:
 
-> this is the only call to memory_present() we do in 32-bit arch setup, so 
-> it's required.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-We could clip there if SPARSEMEM is configured. I wonder if this affects 
-other platforms that need HIGHMEM support?
+> On Tue, Apr 15, 2008 at 07:54:11PM -0300, Carlos R. Mafra wrote:
+> > On Wed 16.Apr'08 at  0:29:49 +0300, Adrian Bunk wrote:
+> >...
+> > > We must learn to more aggressively point people at reporting their 
+> > > issues in own bugs, instead of hijacking an already existing similar
+> > > looking bug (that might be for a different issue).
+> > 
+> > I understand now, but you made me feel bad about it.
+> 
+> Sorry for my wording, it was not meant personally.
+> 
+> It's a general problem in bug trackers that one person reports one 
+> issue, and other people say "I have the same bug" and start discussing 
+> their problem, which might or might not turn out to be the same.
+
+... which you should realize that this is generally a _GOOD_ thing. This 
+whole Linux thing is about doing things in a group, not about doing 
+things separately. It permeates everything and it's our main strength.
+
+Analogously to nuclear fission and to torrent streams, bug handling 
+needs a "critical mass" as well - the more testers, the better. (even if 
+they end up having different issues)
+
+So i'd rather see bugs being mistakenly handled together (they are easy 
+to separate out once they are established to be separate) than the same 
+bug being processed on two different tracks.
+
+Your rigid, buerocratic view of this matter is wrong, harmful and it 
+actively discourages testers. Please stop it.
+
+	Ingo
