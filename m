@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764597AbYDPURb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbYDPUQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764597AbYDPURb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYDPURV
+	id S1764277AbYDPUQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYDPUQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:17:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35961 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752008AbYDPURU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:17:20 -0400
-Date: Wed, 16 Apr 2008 15:17:20 -0500 (CDT)
-From: Alan Mayer <ajm@sgi.com>
-To: Alan Mayer <ajm@sgi.com>
-Cc: mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Change FIRST_SYSTEM_VECTOR to a variable.
-In-Reply-To: <Pine.SGI.3.96.1080415153530.8706317k-100000@fergus.americas.sgi.com>
-Message-ID: <Pine.SGI.3.96.1080416151620.8706317m-100000@fergus.americas.sgi.com>
+	Wed, 16 Apr 2008 16:16:17 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38303 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756779AbYDPUQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:16:12 -0400
+Date: Wed, 16 Apr 2008 23:16:06 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: sverre@rabbelier.nl
+Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
+       David Newall <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416201606.GS1677@cs181133002.pp.htv.fi>
+References: <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 16, 2008 at 09:39:41PM +0200, Sverre Rabbelier wrote:
+> On Wed, Apr 16, 2008 at 3:26 PM, Adrian Bunk <bunk@kernel.org> wrote:
+>...
+> >  E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11
+> >  (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine
+> >  automatically that it is a bugfix, and the commit that introduced
+> >  the bug?
+> 
+> Well, a dead giveaway would be:
+> "http://bugzilla.kernel.org/show_bug.cgi?id=10124"
 
-Subject: [PATCH] x86_64: Fix build error from FIRST_SYSTEM_VECTOR patch
+Which could be "There is no driver for my TV card in the kernel."
 
-From: Alan Mayer <ajm@sgi.com>
+> >  You can always get some data, but if you want to get usable statistics
+> >  you need explicit tags in the commits, not some algorithm that tries
+> >  to guess.
+> 
+> As said above, I don't agree, you can 'guess' very reliably on a large
+> dataset. Also, most commits are already 'tagged' in some way or
+> another. The trick is to find the pattern in this tagging and use it.
+> 
+> I hope this clears things up a bit,
 
-Fixes the build error introduced by my FIRST_SYSTEM_VECTOR patch
+I hope you are aware of the non-technical implications if the results 
+don't match reality?
 
-Signed-off-by: Alan Mayer <ajm@sgi.com>
+E.g. I am proud that my commits do virtually never introduce bugs, so 
+any results someone publishes about what I do should better be right
+or my first thoughts are somewhere between "fist" and "lawyer". [1]
 
----
-Index: ingo/arch/x86/kernel/apic_32.c
-===================================================================
---- ingo.orig/arch/x86/kernel/apic_32.c	2008-04-10 14:02:10.000000000 -0500
-+++ ingo/arch/x86/kernel/apic_32.c	2008-04-16 14:28:34.000000000 -0500
-@@ -74,6 +74,10 @@
- int local_apic_timer_c2_ok;
- EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
- 
-+int first_system_vector = 0xfe;
-+
-+char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
-+
- /*
-  * Debug level, exported for io_apic.c
-  */
-Index: ingo/arch/x86/kernel/io_apic_32.c
-===================================================================
---- ingo.orig/arch/x86/kernel/io_apic_32.c	2008-04-10 14:02:10.000000000 -0500
-+++ ingo/arch/x86/kernel/io_apic_32.c	2008-04-16 14:29:07.000000000 -0500
-@@ -73,9 +73,9 @@
- 
- static int disable_timer_pin_1 __initdata;
- 
--int first_system_vector = 0xfe;
-+extern int first_system_vector;
- 
--char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
-+extern char system_vectors[];
- 
- /*
-  * Rough estimation of how many shared IRQs there are, can
+> Cheers,
+> 
+> Sverre Rabbelier
+
+cu
+Adrian
+
+[1] my actual reaction might only be an angry email, but I hope you
+    get the point that wrong results can really piss off people
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
