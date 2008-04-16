@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbYDPPdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbYDPPhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbYDPPdw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 11:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758848AbYDPPdn
+	id S932526AbYDPPhl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 11:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbYDPPhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 11:33:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63208 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756289AbYDPPdm (ORCPT
+	Wed, 16 Apr 2008 11:37:34 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62705 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755901AbYDPPhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 11:33:42 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: Microblaze Linux release
-Date: Wed, 16 Apr 2008 17:33:03 +0200
-User-Agent: KMail/1.9.9
-Cc: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
-References: <48020A21.4000404@seznam.cz> <200804160944.42734.arnd@arndb.de> <48061B36.20800@seznam.cz>
-In-Reply-To: <48061B36.20800@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 16 Apr 2008 11:37:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EADu6BUhMROPA/2dsb2JhbACBYK0u
+Date: Wed, 16 Apr 2008 11:37:31 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
+Message-ID: <20080416153731.GA17852@Krystal>
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804161733.04714.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Sa5uHM2UNJUjD5IURoSqJk6QqCgMP1p0gU7P
- CryvX4K5OFJDvwOzUsMd/LKHjj8+PhMbwx/56SW8fjmLzk6ZPU
- 1E7p9TIgUOn5gURW4Mr0A==
+In-Reply-To: <20080416151054.GA32456@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:34:50 up 47 days, 11:45,  4 users,  load average: 0.04, 0.22,
+	0.20
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, Michal Simek wrote:
-> > One more reason for the microblaze kernel to base on top of linux-next
-> > instead of mainline.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> For me is not difficult to use lmb from microblaze/mm or from lib if the files
-> are the same.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > thanks Mathieu, i've picked this up into x86.git for more testing.
+> 
+> ... but had to drop it due to missing PARAVIRT support which broke the 
+> build. I guess on paravirt we could just initially define 
+> INTERRUPT_RETURN_NMI_SAFE to iret, etc.?
 > 
 
-What I meant is that there are a number of reasons to use linux-next
-as a base for your kernel (this being one of them) and few against.
+Yes, I was about to email you about this.
 
-	Arnd <><
+Would it be valid to execute a popf in PARAVIRT or should be have some
+special support like the normal iret does ?
+
+And yes, initially using iret for paravirt should just work, but it
+would leave the NMI iret issue for paravirt.
+
+Mathieu
+
+> 	Ingo
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
