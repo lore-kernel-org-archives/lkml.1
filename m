@@ -1,223 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763630AbYDPU5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbYDPVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763630AbYDPU5p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYDPU5e
+	id S1761426AbYDPVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYDPVAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:57:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51431 "EHLO mx1.suse.de"
+	Wed, 16 Apr 2008 17:00:04 -0400
+Received: from main.gmane.org ([80.91.229.2]:55827 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbYDPU5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:57:33 -0400
-Subject: patch sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch added to gregkh-2.6 tree
-To: dan.j.williams@intel.com, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, axboe@kernel.dk, gregkh@suse.de,
-       hpa@zytor.com, htejun@gmail.com, jgarzik@pobox.com,
-       kay.sievers@vrfy.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, lkml@rtr.ca,
-       neilb@suse.de, steve@xemacs.org, torvalds@linux-foundation.org
-From: <gregkh@suse.de>
-Date: Wed, 16 Apr 2008 13:55:53 -0700
-In-Reply-To: <1208302995.21877.12.camel@dwillia2-linux.ch.intel.com>
-Message-ID: <12083793533386@kroah.org>
+	id S1752612AbYDPVAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:00:03 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jakub Narebski <jnareb@gmail.com>
+Subject: Re: Reporting bugs and bisection
+Followup-To: gmane.comp.version-control.git
+Date: Wed, 16 Apr 2008 22:55:24 +0200
+Organization: At home
+Message-ID: <fu5p3i$96n$1@ger.gmane.org>
+References: <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416200408.GA7764@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: abwk183.neoplus.adsl.tpnet.pl
+Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
+User-Agent: KNode/0.10.2
+Cc: git@vger.kernel.org, netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Willy Tarreau wrote:
 
-This is a note to let you know that I've just added the patch titled
+> Note to contributors: it's very handy when patches comes with a properly
+> formated subject. Try to put one of the following words between brackets
+> to indicate the importance of the patch followed by a short description:
+> 
+> [MINOR]    minor fix, very low risk of impact
+> [MEDIUM]   medium risk, may cause unexpected regressions of low importance or
+>            which may quickly be discovered
 
-     Subject: sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
+[...]
 
-to my gregkh-2.6 tree.  Its filename is
+And git-am strips such prefixes because of [PATCH] and [PATCH n/m] which
+should be stripped.
 
-     sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From dan.j.williams@intel.com  Wed Apr 16 13:49:38 2008
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 15 Apr 2008 16:43:15 -0700
-Subject: sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <htejun@gmail.com>, Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>, Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>, IDE/ATA development list <linux-ide@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Message-ID: <1208302995.21877.12.camel@dwillia2-linux.ch.intel.com>
-
-
-From: Dan Williams <dan.j.williams@intel.com>
-
-Why?:
-There are occasions where userspace would like to access sysfs
-attributes for a device but it may not know how sysfs has named the
-device or the path.  For example what is the sysfs path for
-/dev/disk/by-id/ata-ST3160827AS_5MT004CK?  With this change a call to
-stat(2) returns the major:minor then userspace can see that
-/sys/dev/block/8:32 links to /sys/block/sdc.
-
-What are the alternatives?:
-1/ Add an ioctl to return the path: Doable, but sysfs is meant to reduce
-   the need to proliferate ioctl interfaces into the kernel, so this
-   seems counter productive.
-
-2/ Use udev to create these symlinks: Also doable, but it adds a
-   udev dependency to utilities that might be running in a limited
-   environment like an initramfs.
-
-3/ Do a full-tree search of sysfs.
-
-Cc: Neil Brown <neilb@suse.de>
-Cc: Tejun Heo <htejun@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>
-Acked-by: Mark Lord <lkml@rtr.ca>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-Reviewed-by: SL Baur <steve@xemacs.org>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- Documentation/filesystems/sysfs.txt |    6 ++++
- drivers/base/core.c                 |   46 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 51 insertions(+), 1 deletion(-)
-
---- a/Documentation/filesystems/sysfs.txt
-+++ b/Documentation/filesystems/sysfs.txt
-@@ -248,6 +248,7 @@ The top level sysfs directory looks like
- block/
- bus/
- class/
-+dev/
- devices/
- firmware/
- net/
-@@ -274,6 +275,11 @@ fs/ contains a directory for some filesy
- filesystem wanting to export attributes must create its own hierarchy
- below fs/ (see ./fuse.txt for an example).
- 
-+dev/ contains two directories char/ and block/. Inside these two
-+directories there are symlinks named <major>:<minor>.  These symlinks
-+point to the sysfs directory for the given device.  /sys/dev provides a
-+quick way to lookup the sysfs interface for a device from the result of
-+a stat(2) operation.
- 
- More information can driver-model specific features can be found in
- Documentation/driver-model/. 
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -27,6 +27,9 @@
- 
- int (*platform_notify)(struct device *dev) = NULL;
- int (*platform_notify_remove)(struct device *dev) = NULL;
-+static struct kobject *dev_kobj;
-+static struct kobject *char_kobj;
-+static struct kobject *block_kobj;
- 
- #ifdef CONFIG_BLOCK
- static inline int device_is_not_partition(struct device *dev)
-@@ -760,6 +763,11 @@ static void device_remove_class_symlinks
- 	sysfs_remove_link(&dev->kobj, "subsystem");
- }
- 
-+static struct kobject *device_to_dev_kobj(struct device *dev)
-+{
-+	return dev->class == &block_class ? block_kobj : char_kobj;
-+}
-+
- /**
-  * device_add - add device to device hierarchy.
-  * @dev: device.
-@@ -776,6 +784,7 @@ int device_add(struct device *dev)
- 	struct device *parent = NULL;
- 	struct class_interface *class_intf;
- 	int error;
-+	char devt_str[15];
- 
- 	dev = get_device(dev);
- 	if (!dev || !strlen(dev->bus_id)) {
-@@ -807,9 +816,16 @@ int device_add(struct device *dev)
- 		goto attrError;
- 
- 	if (MAJOR(dev->devt)) {
-+		struct kobject *kobj = device_to_dev_kobj(dev);
-+
- 		error = device_create_file(dev, &devt_attr);
- 		if (error)
- 			goto ueventattrError;
-+
-+		format_dev_t(devt_str, dev->devt);
-+		error = sysfs_create_link(kobj, &dev->kobj, devt_str);
-+		if (error)
-+			goto devtattrError;
- 	}
- 
- 	error = device_add_class_symlinks(dev);
-@@ -854,6 +870,9 @@ int device_add(struct device *dev)
- 	device_remove_class_symlinks(dev);
-  SymlinkError:
- 	if (MAJOR(dev->devt))
-+		sysfs_remove_link(device_to_dev_kobj(dev), devt_str);
-+ devtattrError:
-+	if (MAJOR(dev->devt))
- 		device_remove_file(dev, &devt_attr);
-  ueventattrError:
- 	device_remove_file(dev, &uevent_attr);
-@@ -925,12 +944,16 @@ void device_del(struct device *dev)
- {
- 	struct device *parent = dev->parent;
- 	struct class_interface *class_intf;
-+	char devt_str[15];
- 
- 	device_pm_remove(dev);
- 	if (parent)
- 		klist_del(&dev->knode_parent);
--	if (MAJOR(dev->devt))
-+	if (MAJOR(dev->devt)) {
-+		format_dev_t(devt_str, dev->devt);
-+		sysfs_remove_link(device_to_dev_kobj(dev), devt_str);
- 		device_remove_file(dev, &devt_attr);
-+	}
- 	if (dev->class) {
- 		device_remove_class_symlinks(dev);
- 
-@@ -1055,7 +1078,25 @@ int __init devices_init(void)
- 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
- 	if (!devices_kset)
- 		return -ENOMEM;
-+	dev_kobj = kobject_create_and_add("dev", NULL);
-+	if (!dev_kobj)
-+		goto dev_kobj_err;
-+	block_kobj = kobject_create_and_add("block", dev_kobj);
-+	if (!block_kobj)
-+		goto block_kobj_err;
-+	char_kobj = kobject_create_and_add("char", dev_kobj);
-+	if (!char_kobj)
-+		goto char_kobj_err;
-+
- 	return 0;
-+
-+ char_kobj_err:
-+	kobject_put(block_kobj);
-+ block_kobj_err:
-+	kobject_put(dev_kobj);
-+ dev_kobj_err:
-+	kset_unregister(devices_kset);
-+	return -ENOMEM;
- }
- 
- EXPORT_SYMBOL_GPL(device_for_each_child);
-@@ -1351,4 +1392,7 @@ void device_shutdown(void)
- 			dev->driver->shutdown(dev);
- 		}
- 	}
-+	kobject_put(char_kobj);
-+	kobject_put(block_kobj);
-+	kobject_put(dev_kobj);
- }
+-- 
+Jakub Narebski
+Warsaw, Poland
+ShadeHawk on #git
 
 
-Patches currently in gregkh-2.6 which might be from dan.j.williams@intel.com are
-
-driver-core/sysfs-refill-attribute-buffer-when-reading-from-offset-0.patch
-driver-core/sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch
