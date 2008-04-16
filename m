@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbYDPBRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbYDPB1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646AbYDPBRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 21:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYDPBR1
+	id S1759132AbYDPB1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 21:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYDPB1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 21:17:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60427 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbYDPBR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 21:17:26 -0400
-Date: Wed, 16 Apr 2008 03:17:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-Message-ID: <20080416011704.GA439@elte.hu>
-References: <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi> <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org> <20080416000356.GA24737@elte.hu> <20080416001816.GA26295@elte.hu> <86802c440804151732j519a541t9d8e4f6b49a53313@mail.gmail.com> <20080416004430.GA26928@elte.hu> <Pine.LNX.4.64.0804151745440.6876@schroedinger.engr.sgi.com> <20080416005231.GC26996@elte.hu>
+	Tue, 15 Apr 2008 21:27:44 -0400
+Received: from rv-out-0708.google.com ([209.85.198.242]:21747 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752818AbYDPB1n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 21:27:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=K6P7kIi1fiOj0GpDZhy5FI1o8KYWuAor1IQ6fLY/+5FPspOohSDH9RrubIdqaxQD2FAFSxX0ju6ynW46CIYPOjQAUJ/Jomsj0oKBZewaUP1yQwnP10H39+6iyLcHrmwUx42hRtXk9q0kFMKtNC8ZCW/bU3nstbXK97psv9iOLtc=
+Message-ID: <48055609.3020403@gmail.com>
+Date: Wed, 16 Apr 2008 10:27:37 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080416005231.GC26996@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Paul Collins <paul@burly.ondioline.org>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH #upstream-fixes] libata: force hardreset if the link is in
+ powersave mode
+References: <87od8cxg45.fsf@burly.wgtn.ondioline.org>	<48040AB5.6050300@gmail.com> <87hce3yhmi.fsf@burly.wgtn.ondioline.org>	<480419B6.1050309@gmail.com> <87d4oryf4u.fsf@burly.wgtn.ondioline.org>	<4804288D.5090504@gmail.com> <87y77ex1oh.fsf@burly.wgtn.ondioline.org>	<48052BB3.2090509@gmail.com> <87od8awxh5.fsf@burly.wgtn.ondioline.org>	<48054515.4020202@gmail.com> <4805496E.7000306@gmail.com> <87k5iywquy.fsf@burly.wgtn.ondioline.org>
+In-Reply-To: <87k5iywquy.fsf@burly.wgtn.ondioline.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently, libata doesn't support link powersave modes and always
+disables link PS modes.  However, if the link is already in powersave
+mode when libata begis probing, inhibiting powersave modes by setting
+IPM isn't enough.  Link should be manually transited into active mode
+using SPM or hardreset.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+As SPM isn't avalable on all controllers and we're gonna prefer
+hardreset in future anyway, force hardreset if link is in powersave
+mode.
 
-> > > this is the only call to memory_present() we do in 32-bit arch 
-> > > setup, so it's required.
-> > 
-> > We could clip there if SPARSEMEM is configured. I wonder if this 
-> > affects other platforms that need HIGHMEM support?
-> 
-> clip where and what?
+Reported-by: Paul Collins <paul@burly.ondioline.org>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+Jeff, this isn't necessary for #upstream.
 
-i.e. as per my previous argument i'd consider the need to sanitize the 
-calls in the architecture fundamentally wrong.
+ drivers/ata/libata-core.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-whether the core code emits a warning or allows the call is an 
-additional question i mention in the changelog - but the core sparse 
-memory code should _definitely_ not silently overflow a key internal 
-array ... (of which data structure the architecture code is not even 
-aware of)
-
-	Ingo
+index be95fdb..e3ddefd 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3966,11 +3966,26 @@ int ata_std_prereset(struct ata_link *link, unsigned long deadline)
+ 
+ 	/* if SATA, resume link */
+ 	if (ap->flags & ATA_FLAG_SATA) {
++		u32 sstatus;
++
+ 		rc = sata_link_resume(link, timing, deadline);
+ 		/* whine about phy resume failure but proceed */
+ 		if (rc && rc != -EOPNOTSUPP)
+ 			ata_link_printk(link, KERN_WARNING, "failed to resume "
+ 					"link for reset (errno=%d)\n", rc);
++
++		/* force hardreset if the link is sleeping */
++		if (sata_scr_read(link, SCR_STATUS, &sstatus) == 0) {
++			u8 ipm = sstatus >> 8;
++
++			if (ipm == 2 || ipm == 6) {
++				ata_link_printk(link, KERN_INFO,
++					"link in %s mode, forcing hardreset\n",
++					ipm == 2 ? "partial" : "slumber");
++				ehc->i.action |= ATA_EH_HARDRESET;
++				return 0;
++			}
++		}
+ 	}
+ 
+ 	/* Wait for !BSY if the controller can wait for the first D2H
