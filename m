@@ -1,127 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933485AbYDPVok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbYDPVpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933485AbYDPVok (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYDPVhf
+	id S933271AbYDPVpF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbYDPVho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:37:35 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53533 "EHLO smtp.polymtl.ca"
+	Wed, 16 Apr 2008 17:37:44 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53570 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754896AbYDPVhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:37:33 -0400
-Message-Id: <20080416213552.554633473@polymtl.ca>
+	id S1764822AbYDPVhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:37:42 -0400
+Message-Id: <20080416213550.184177372@polymtl.ca>
 References: <20080416213426.298498397@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 17:34:40 -0400
+Date: Wed, 16 Apr 2008 17:34:35 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Adrian Bunk <bunk@stusta.de>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org
-Subject: [RFC patch 14/27] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:53 +0000
+Cc: Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       akpm@osdl.org
+Subject: [RFC patch 09/27] Add all cpus option to stop machine run
+Content-Disposition: inline; filename=add-all-cpus-option-to-stop-machine-run.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 16 Apr 2008 21:35:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+-allow stop_mahcine_run() to call a function on all cpus. Calling 
+ stop_machine_run() with a 'ALL_CPUS' invokes this new behavior.
+ stop_machine_run() proceeds as normal until the calling cpu has
+ invoked 'fn'. Then, we tell all the other cpus to call 'fn'.
 
-Changelog:
-- Put imv_set and _imv_set in the architecture independent header.
-- Pack the __imv section. Use smallest types required for size (char).
-- Remove architecture specific update code : now handled by architecture
-  agnostic code.
-- Use imv_* instead of immediate_*.
-
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Paul Mackerras <paulus@samba.org>
 CC: Adrian Bunk <bunk@stusta.de>
 CC: Andi Kleen <andi@firstfloor.org>
+CC: Christoph Hellwig <hch@infradead.org>
 CC: mingo@elte.hu
 CC: akpm@osdl.org
 ---
- arch/powerpc/Kconfig            |    1 
- include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+ include/linux/stop_machine.h |    8 +++++++-
+ kernel/stop_machine.c        |   31 ++++++++++++++++++++++++-------
+ 2 files changed, 31 insertions(+), 8 deletions(-)
+
+
+Index: linux-2.6-sched-devel/include/linux/stop_machine.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2008-03-06 08:55:54.000000000 -0500
-@@ -0,0 +1,55 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm-compat.h>
-+
-+/**
-+ * imv_read - read immediate variable
-+ * @name: immediate value name
-+ *
-+ * Reads the value of @name.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _imv_read() instead.
-+ */
-+#define imv_read(name)							\
-+	({								\
-+		__typeof__(name##__imv) value;				\
-+		BUILD_BUG_ON(sizeof(value) > 8);			\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-1)\n\t"	\
-+					".byte 1\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 2:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-2)\n\t"	\
-+					".byte 2\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 4:							\
-+		case 8:	value = name##__imv;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2008-03-06 08:45:31.000000000 -0500
-+++ linux-2.6-lttng/arch/powerpc/Kconfig	2008-03-06 08:56:14.000000000 -0500
-@@ -91,6 +91,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_IMMEDIATE
+--- linux-2.6-sched-devel.orig/include/linux/stop_machine.h	2008-04-16 11:07:24.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/stop_machine.h	2008-04-16 11:13:48.000000000 -0400
+@@ -8,11 +8,17 @@
+ #include <asm/system.h>
  
- config EARLY_PRINTK
- 	bool
+ #if defined(CONFIG_STOP_MACHINE) && defined(CONFIG_SMP)
++
++#define ALL_CPUS ~0U
++
+ /**
+  * stop_machine_run: freeze the machine on all CPUs and run this function
+  * @fn: the function to run
+  * @data: the data ptr for the @fn()
+- * @cpu: the cpu to run @fn() on (or any, if @cpu == NR_CPUS.
++ * @cpu: if @cpu == n, run @fn() on cpu n
++ *       if @cpu == NR_CPUS, run @fn() on any cpu
++ *       if @cpu == ALL_CPUS, run @fn() first on the calling cpu, and then
++ *       concurrently on all the other cpus
+  *
+  * Description: This causes a thread to be scheduled on every other cpu,
+  * each of which disables interrupts, and finally interrupts are disabled
+Index: linux-2.6-sched-devel/kernel/stop_machine.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/stop_machine.c	2008-04-16 11:07:24.000000000 -0400
++++ linux-2.6-sched-devel/kernel/stop_machine.c	2008-04-16 11:13:48.000000000 -0400
+@@ -23,9 +23,17 @@ enum stopmachine_state {
+ 	STOPMACHINE_WAIT,
+ 	STOPMACHINE_PREPARE,
+ 	STOPMACHINE_DISABLE_IRQ,
++	STOPMACHINE_RUN,
+ 	STOPMACHINE_EXIT,
+ };
+ 
++struct stop_machine_data {
++	int (*fn)(void *);
++	void *data;
++	struct completion done;
++	int run_all;
++} smdata;
++
+ static enum stopmachine_state stopmachine_state;
+ static unsigned int stopmachine_num_threads;
+ static atomic_t stopmachine_thread_ack;
+@@ -34,6 +42,7 @@ static int stopmachine(void *cpu)
+ {
+ 	int irqs_disabled = 0;
+ 	int prepared = 0;
++	int ran = 0;
+ 
+ 	set_cpus_allowed_ptr(current, &cpumask_of_cpu((int)(long)cpu));
+ 
+@@ -58,6 +67,11 @@ static int stopmachine(void *cpu)
+ 			prepared = 1;
+ 			smp_mb(); /* Must read state first. */
+ 			atomic_inc(&stopmachine_thread_ack);
++		} else if (stopmachine_state == STOPMACHINE_RUN && !ran) {
++			smdata.fn(smdata.data);
++			ran = 1;
++			smp_mb(); /* Must read state first. */
++			atomic_inc(&stopmachine_thread_ack);
+ 		}
+ 		/* Yield in first stage: migration threads need to
+ 		 * help our sisters onto their CPUs. */
+@@ -135,12 +149,10 @@ static void restart_machine(void)
+ 	preempt_enable_no_resched();
+ }
+ 
+-struct stop_machine_data
++static void run_other_cpus(void)
+ {
+-	int (*fn)(void *);
+-	void *data;
+-	struct completion done;
+-};
++	stopmachine_set_state(STOPMACHINE_RUN);
++}
+ 
+ static int do_stop(void *_smdata)
+ {
+@@ -150,6 +162,8 @@ static int do_stop(void *_smdata)
+ 	ret = stop_machine();
+ 	if (ret == 0) {
+ 		ret = smdata->fn(smdata->data);
++		if (smdata->run_all)
++			run_other_cpus();
+ 		restart_machine();
+ 	}
+ 
+@@ -173,14 +187,17 @@ struct task_struct *__stop_machine_run(i
+ 	struct stop_machine_data smdata;
+ 	struct task_struct *p;
+ 
++	mutex_lock(&stopmachine_mutex);
++
+ 	smdata.fn = fn;
+ 	smdata.data = data;
++	smdata.run_all = (cpu == ALL_CPUS) ? 1 : 0;
+ 	init_completion(&smdata.done);
+ 
+-	mutex_lock(&stopmachine_mutex);
++	smp_wmb(); /* make sure other cpus see smdata updates */
+ 
+ 	/* If they don't care which CPU fn runs on, bind to any online one. */
+-	if (cpu == NR_CPUS)
++	if (cpu == NR_CPUS || cpu == ALL_CPUS)
+ 		cpu = raw_smp_processor_id();
+ 
+ 	p = kthread_create(do_stop, &smdata, "kstopmachine");
 
 -- 
 Mathieu Desnoyers
