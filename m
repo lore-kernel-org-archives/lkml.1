@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbYDPU0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbYDPUHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbYDPU0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYDPUZ5
+	id S1761002AbYDPUHQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYDPUHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:25:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42321 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbYDPUZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:25:57 -0400
-Date: Wed, 16 Apr 2008 16:25:53 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Scott Lovenberg <scott.lovenberg@gmail.com>
-Cc: Peter Teoh <htmldeveloper@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: RFC: Self-snapshotting in Linux
-Message-ID: <20080416202553.GC27967@redhat.com>
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it> <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com> <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com> <20080416195053.GB27967@redhat.com> <48065C64.7010808@gmail.com>
+	Wed, 16 Apr 2008 16:07:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:37585 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbYDPUHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:07:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=WL091uEL1TAOTUSFM1mUpHOiW90y9C2cheXow2hYnSlfI/idx7ljBnpPTHJT6K5IQATqrAJrA8L4sEL2X+1lFjvzHDSo36AijwvzLeEwMEdrUpsMTeNHPNbUozKX4sBP7YKfvod4RhW6z/kppm9GBU4Ksezx5uXV+RWUnnRK3dQ=
+Message-ID: <48065D52.9060708@gmail.com>
+Date: Wed, 16 Apr 2008 16:10:58 -0400
+From: Scott Lovenberg <scott.lovenberg@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: linux-kernel@vger.kernel.org
+Subject: Re: RFC: Self-snapshotting in Linux
+References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it> <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com> <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com> <20080416195053.GB27967@redhat.com> <48065C64.7010808@gmail.com>
 In-Reply-To: <48065C64.7010808@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 04:07:00PM -0400, Scott Lovenberg wrote:
+Scott Lovenberg wrote:
 > Vivek Goyal wrote:
 >> On Wed, Apr 16, 2008 at 11:06:05PM +0800, Peter Teoh wrote:
 >>   
@@ -125,27 +126,23 @@ On Wed, Apr 16, 2008 at 04:07:00PM -0400, Scott Lovenberg wrote:
 >> Thanks
 >> Vivek
 >>   
-> What about the way that the kernel does interrupt masks on CPUs during a 
-> critical section of code on SMP machines?  It basically flushes the TLB, 
-> and the cache, moves the process in critical section to a (now) isolated 
-> CPU, and reroutes interrupts to another CPU.  If you took that basic model 
-> and applied it to kernels instead of CPUs, you could probably get the 
-> desired hand off of freezing one after flushing its caches back (or 
-> sideways and then back in SMP) and moving the mm to your unfrozen kernel 
-> and routing the processes there. After snapshotting, flush the cache back 
-> again, and reroute each process to the once again unfrozen kernel, handing 
-> them back again?  Would this basic model work for isolation and 
-> snapshotting and then transitioning back?  Oh, yeah, and block each process 
-> so it doesn't try to run anything during snapshot :-).  Or, save PCs and 
-> then load them back again, I guess... although that's a waste, and a 
-> disaster waiting to happen... not that I've let that deter me before :-).  
-> Unfortunately, this is so far out of my skill range and knowledge base, 
-> that I can't speak intelligently on it at any lower level.  Can someone 
-> fill in the gaps for me?
-
-Not very sure what you are saying here but one important piece missing
-from your prposal seems to be state of various devices between kernels.
-
-Thanks
-Vivek
+Let's try this again, without the HTML ;)
+> What about the way that the kernel does interrupt masks on CPUs during 
+> a critical section of code on SMP machines?  It basically flushes the 
+> TLB, and the cache, moves the process in critical section to a (now) 
+> isolated CPU, and reroutes interrupts to another CPU.  If you took 
+> that basic model and applied it to kernels instead of CPUs, you could 
+> probably get the desired hand off of freezing one after flushing its 
+> caches back (or sideways and then back in SMP) and moving the mm to 
+> your unfrozen kernel and routing the processes there. After 
+> snapshotting, flush the cache back again, and reroute each process to 
+> the once again unfrozen kernel, handing them back again?  Would this 
+> basic model work for isolation and snapshotting and then transitioning 
+> back?  Oh, yeah, and block each process so it doesn't try to run 
+> anything during snapshot :-).  Or, save PCs and then load them back 
+> again, I guess... although that's a waste, and a disaster waiting to 
+> happen... not that I've let that deter me before :-).  Unfortunately, 
+> this is so far out of my skill range and knowledge base, that I can't 
+> speak intelligently on it at any lower level.  Can someone fill in the 
+> gaps for me?
 
