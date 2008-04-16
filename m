@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYDPSBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbYDPSBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYDPSBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 14:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYDPSBF
+	id S1759930AbYDPSBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 14:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYDPSB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 14:01:05 -0400
-Received: from oss.sgi.com ([192.48.170.157]:35306 "EHLO oss.sgi.com"
+	Wed, 16 Apr 2008 14:01:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52987 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYDPSBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 14:01:04 -0400
-Date: Wed, 16 Apr 2008 19:00:59 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: linux-mips@linux-mips.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] MIPS: irixelf: fix test unsigned var < 0
-Message-ID: <20080416180059.GC32263@linux-mips.org>
-References: <480558CA.7090800@tiscali.nl>
+	id S1750945AbYDPSB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 14:01:26 -0400
+Date: Wed, 16 Apr 2008 21:01:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make mmc_wait_for_app_cmd() static
+Message-ID: <20080416180120.GP1677@cs181133002.pp.htv.fi>
+References: <20080413181555.GJ2182@cs181133002.pp.htv.fi> <20080416193637.46772cde@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <480558CA.7090800@tiscali.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080416193637.46772cde@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 03:39:22AM +0200, Roel Kluin wrote:
+On Wed, Apr 16, 2008 at 07:36:37PM +0200, Pierre Ossman wrote:
+> On Sun, 13 Apr 2008 21:15:55 +0300
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > This patch makes the needlessly global mmc_wait_for_app_cmd() static.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> 
+> Now this one I'm going to have to NAK. We've discussed this one before
+>...
 
-> v is unsigned, cast to signed to evaluate the do_brk() return value,
+Sorry, I somehow lost the information that we iscussed this before.
 
-do_brk() is expected to return its first argument as the result in case
-of success.  An error also wasn't getting propagated so some further
-fixes were needed for irix_map_prda_page and its caller.  So I'll apply
-a different fix.
+> Rgds
 
-Thanks!
+cu
+Adrian
 
-  Ralf
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
