@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763541AbYDPNGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbYDPNIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763541AbYDPNGk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 09:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbYDPNGd
+	id S1763319AbYDPNIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 09:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbYDPNIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 09:06:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41202 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755808AbYDPNGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 09:06:32 -0400
-Date: Wed, 16 Apr 2008 15:06:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
-Message-ID: <20080416130605.GG6304@elte.hu>
-References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal>
+	Wed, 16 Apr 2008 09:08:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44972 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760420AbYDPNIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 09:08:11 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4805F9D1.5050602@s5r6.in-berlin.de>
+Date: Wed, 16 Apr 2008 15:06:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080414230530.GB16061@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: jszhang3@mail.ustc.edu.cn
+CC: krh@redhat.com, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH] firewire: fix sourceID read from wrong quadlet
+References: <408349802.26451@ustc.edu.cn>
+In-Reply-To: <408349802.26451@ustc.edu.cn>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+jszhang3@mail.ustc.edu.cn wrote:
+> From JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
+> 
+> In Asynchronous Receive Requests, the sourceID is in the second quadlet(OHCI 
+> specification, section 8.7.1).
 
-* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-
-> Implements an alternative iret with popf and return so trap and 
-> exception handlers can return to the NMI handler without issuing iret. 
-> iret would cause NMIs to be reenabled prematurely. x86_32 uses popf 
-> and far return. x86_64 has to copy the return instruction pointer to 
-> the top of the previous stack, issue a popf, loads the previous esp 
-> and issue a near return (ret).
-
-thanks Mathieu, i've picked this up into x86.git for more testing.
-
-note that this also fixes an oprofile regression: when oprofile is used 
-to generate stack-backtraces, we can fault on address resolution from 
-NMI context and currently we do an IRET - with your fixes it should work 
-fine. Obscure case but still worth fixing.
-
-	Ingo
+This has been fixed in Linux 2.6.25-rc1 by commit 
+478b233eda81bfe41307512b8336fd688c6553e0 .  Thank you nevertheless,
+-- 
+Stefan Richter
+-=====-==--- -=-- =----
+http://arcgraph.de/sr/
