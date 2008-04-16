@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYDPItV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbYDPIwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758503AbYDPItV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 04:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYDPItN
+	id S1760312AbYDPIwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 04:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbYDPIv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 04:49:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:39708 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbYDPItM (ORCPT
+	Wed, 16 Apr 2008 04:51:59 -0400
+Received: from qb-out-0506.google.com ([72.14.204.229]:11231 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbYDPIv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 04:49:12 -0400
+	Wed, 16 Apr 2008 04:51:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
+        d=googlemail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iodifJkuXmMhsDbE1xEqKruz6mz7OKP06tQ1C190I4kmhtzlGzQn1X6EAG38Qgjkae2QAsoNHV4w66tr0ow6UzEFO0RuIVH7VXbIUwmtBbB2DcCfVPGvs6CsAcoUXLn0C7eW0lPRLbamhrAg/TdpSItk3gMdlWZlgYTDGTtTsI4=
-Message-ID: <f17812d70804160149q1fc694dtdff26e3650666c16@mail.gmail.com>
-Date: Wed, 16 Apr 2008 16:49:11 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Subject: Re: RFC: Self-snapshotting in Linux
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Kernel Newbies" <kernelnewbies@nl.linux.org>
-In-Reply-To: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
+        b=krpPf+4PpaiS/YHad36NPRg55eco+z5+Lh+0iAfvUaPECkXXD4jCUxt2vSuRRwakKgytRQKkoplqZXFxxzlPO9k0SWjMfew6fR6IO08jvY7Yhc5m881Xq1C5xpbm2wo7qwnitcTxNhyHV39WdMrl69l4HEXMx5WnoQvSOu8voyE=
+Message-ID: <7c86c4470804160151w75aaa1doaf98a46543ba03f9@mail.gmail.com>
+Date: Wed, 16 Apr 2008 10:51:57 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [patch 1/1] x86, ptrace: PEBS support
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Markus Metzger" <markus.t.metzger@intel.com>, andi-suse@firstfloor.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, mtk.manpages@gmail.com,
+       juan.villacis@intel.com
+In-Reply-To: <4805A798.7050004@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com>
+References: <20080408110158.A9336@sedona.ch.intel.com>
+	 <20080415173534.b746f8da.akpm@linux-foundation.org>
+	 <4805A798.7050004@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hibernation maybe ... try "echo "disk" > /sys/power/state"
+On Wed, Apr 16, 2008 at 9:15 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>
+>  > Should we skip the RLIMIT_MEMLOCK check if capable(CAP_IPC_LOCK)?
+>
+>  FWIW I don't think we should. They are not really related.
+>
+That is true even though I see in mlock() that both are actually used.
+I don't check against capabilities in perfmon, but I check RLIMIT_MEMLOCK
+for the sampling buffer.
 
-On Wed, Apr 16, 2008 at 4:44 PM, Peter Teoh <htmldeveloper@gmail.com> wrote:
-> Sorry if this is a a crazy idea.....just be forewarned....
->
->  First, I would like to make a reference to VMWare's snapshot (name not
->  important, emphasize the idea) feature - hopefully u are familiar with
->  it.   This is a feature whereby u can freeze the entire OS (kernel +
->  userspace application running) and then later reload itself next time,
->  continuing where it left off, without reboot from ground zero.
->
->  Next, can I ask, is such a feature useful in Linux?   Ie, able to
->  restart the kernel + userspace application from where u left off, the
->  last time round.    Not JUST the normal suspend/resume feature, but
->  more important able to CHOOSE among the different available images for
->  u to resume on.   Eg, u want to freeze the current 2.6.25-rc6 kernel,
->  save it, and then restore back the 2.6.23-rc5 image, work on it, save
->  it, and then restore the previous image again.   All done without
->  virtualization as in the VMWare sense - which really is CPU intensive
->  and slow things  down a lot.   Now we can directly execute each OS
->  kernel image on the CPU, and since saving and restoring is quite fast
->  (eg, zipping up the entire physical memory before saving into
->  permanent storage) - I supposed this will be much faster than the
->  normal initialization/fsck work done normally....or did I missed out
->  anything?
->
->  Essentially, to reiterate the key idea:   able to snapshot the current
->  kernel+userspace permanent.....restore from another snapshot....and
->  then switch back again if needed etc.....will the implementation be
->  difficult...if not impossible????
->
->  --
->  Regards,
->  Peter Teoh
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+I see the capset()/capget() syscalls, however, I am still not clear as to how a
+sysadmin could set up the capabilities for users via PAM or other
+security interface.
 
-
-
--- 
-Cheers
-- eric
+>
+>  > It's a fairly large patch.
+>
+>  The original version was much smaller -- a lot of the increase came out of
+>  review feedback for "more infrastructure" etc. I don't think you can blame
+>  Markus for that.
+>
+I believe the patch could potentially be broken into multiple pieces:
+ds/bts, pebs, ptrace.
