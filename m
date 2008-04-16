@@ -1,93 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760967AbYDPVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763179AbYDPVcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760967AbYDPVaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYDPVaY
+	id S1763179AbYDPVcP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYDPVb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:30:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:52617 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbYDPVaX (ORCPT
+	Wed, 16 Apr 2008 17:31:58 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:50791 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751927AbYDPVb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:30:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lm7iUr71XuMrEV6H/kxRGuYEDbYJygrY/sq2gnSXCsf8XGvjpLCzhMRxs4m0hMZ6ztS91PimwDmf3nuZqH8dE+xBk/d3QnyrybuKAj9Z7Ap+UWa+/f4bt2Mr4pXeo2V5pt6y+jR0LeYfiSqVhS5mngLYnFmxCd5nCwdVH+NzbZM=
-Message-ID: <9a8748490804161430w3a9a9ed8o4dcc80d260a14500@mail.gmail.com>
-Date: Wed, 16 Apr 2008 23:30:10 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Paul Moore" <paul.moore@hp.com>
-Subject: Re: [PATCH][netlabel] Don't risk NULL ptr deref in netlbl_unlabel_staticlist_gen() if ifindex not found
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David Miller" <davem@davemloft.net>
-In-Reply-To: <200804161721.33749.paul.moore@hp.com>
+	Wed, 16 Apr 2008 17:31:56 -0400
+X-Sasl-enc: HNLsr3q3vik9gfAyCuSMI/s8+Vj2vRlGDQk4qDYKeGNt 1208381515
+Date: Wed, 16 Apr 2008 18:31:53 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH -mm 1/3] misc,acpi,backlight: Compal Laptop Extras -
+	add entry to MAINTAINERS
+Message-ID: <20080416213153.GC3396@khazad-dum.debian.net>
+References: <20080416225057.57b8c25b@debian>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LNX.1.00.0804162304220.9837@dragon.funnycrock.com>
-	 <200804161721.33749.paul.moore@hp.com>
+In-Reply-To: <20080416225057.57b8c25b@debian>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/04/2008, Paul Moore <paul.moore@hp.com> wrote:
-> On Wednesday 16 April 2008 5:08:58 pm Jesper Juhl wrote:
->  > Hi,
->  >
->  > dev_get_by_index() may return NULL if nothing is found. In
->  > net/netlabel/netlabel_unlabeled.c::netlbl_unlabel_staticlist_gen()
->  > the function is called, but the return value is never checked. If it
->  > returns NULL then we'll deref a NULL pointer on the very next line.
->  > I checked the callers, and I don't think this can actually happen
->  > today, but code changes over time and in the future it might happen
->  > and it does no harm to be defensive and check for the failure, so
->  > that if/when it happens we'll fail gracefully instead of crashing.
->  >
->  > Please consider the patch below for inclusion.
->  >
->  >
->  > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
->
->
-> I agree we should check for NULL here.  I checked the return of
->  dev_get_by_index() in the rest of the file I must have just forgotten
->  to check it here.
->
->  Thanks for finding this and fixing it.
->
-You're welcome.
-
->  Acked-by: Paul Moore <paul.moore@hp.com>
->
-
-David, will you merge this in the net tree ?
-
->
->  >
->  >  netlabel_unlabeled.c |    4 ++++
->  >  1 file changed, 4 insertions(+)
->  >
->  > diff --git a/net/netlabel/netlabel_unlabeled.c
->  > b/net/netlabel/netlabel_unlabeled.c index 4478f2f..6af9457 100644
->  > --- a/net/netlabel/netlabel_unlabeled.c
->  > +++ b/net/netlabel/netlabel_unlabeled.c
->  > @@ -1339,6 +1339,10 @@ static int netlbl_unlabel_staticlist_gen(u32
->  > cmd,
->  >
->  >       if (iface->ifindex > 0) {
->  >               dev = dev_get_by_index(&init_net, iface->ifindex);
->  > +             if (!dev) {
->  > +                     ret_val = -ENODEV;
->  > +                     goto list_cb_failure;
->  > +             }
->  >               ret_val = nla_put_string(cb_arg->skb,
->  >                                        NLBL_UNLABEL_A_IFACE, dev->name);
->  >               dev_put(dev);
->
+You don't need to CC me on backlight stuff, unless it also touches
+thinkpad-acpi.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
