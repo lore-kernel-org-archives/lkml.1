@@ -1,220 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYDPXBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbYDPXBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYDPXBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 19:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYDPXBL
+	id S1759518AbYDPXBz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 19:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYDPXBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 19:01:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:61953 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbYDPXBK (ORCPT
+	Wed, 16 Apr 2008 19:01:41 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:47592 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753357AbYDPXBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 19:01:10 -0400
+	Wed, 16 Apr 2008 19:01:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=KBjG+hIoJK1lJ2hKNpYsk/O0QTwaZ8Pwtbj3P+CApKIMRIt/YMCQ5ZVloUZlAhUt78c/zYhjJF6msoC+j+vOqS8Yecd1m4ZT+IZ3aIkVKRFI7Q5xr4WxtLp53JNRSerWim7KCzbyzlAlV6Er5i4Kdt6MY5MYMzt1U+Ij1u49s4g=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git patches] IDE fixes
-Date: Thu, 17 Apr 2008 01:15:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=djgQRLqlt7iBH5nRY9dt7CeUD+xrDxezlYZlUxJw9eL5Vetxm2TxtvFf7oVKzpiiZyhnPwNbg4H5kBV3PN2dkznE6+eeULQSKsm2x58nWDob2eRl8oeTUTrs4vI5M5BHRLzOTmoZUNShFy0+eHyNq1r+ci7EZ0rPwE5jleQtcWc=
+From: Thiago Galesi <thiagogalesi@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: Remove use of lock_kernel / unlock_kernel in fbmem
+Date: Wed, 16 Apr 2008 20:00:59 -0300
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+References: <200804131150.07601.thiagogalesi@gmail.com> <20080415221707.82da3d42.akpm@linux-foundation.org>
+In-Reply-To: <20080415221707.82da3d42.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804170115.35319.bzolnier@gmail.com>
+Message-Id: <200804162000.59587.thiagogalesi@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus, please pull from:
-
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
-
-to receive the following updates:
-
- arch/avr32/Kconfig                        |    1 -
- arch/mips/au1000/common/platform.c        |    2 +-
- drivers/ide/mips/au1xxx-ide.c             |   18 +++++++-----------
- drivers/ide/pci/it821x.c                  |    2 +-
- include/asm-mips/mach-au1x00/au1xxx_ide.h |   18 ------------------
- include/asm-mips/mach-db1x00/db1200.h     |    4 ++--
- include/asm-mips/mach-pb1x00/pb1200.h     |    4 ++--
- 7 files changed, 13 insertions(+), 36 deletions(-)
 
 
-Adrian Bunk (1):
-      avr32 mustn't select HAVE_IDE
 
-Paul Bolle (1):
-      it821x: do not describe noraid parameter with its value
+This patch removes lock_kernel(), unlock_kernel() usage in fbmem.c and replaces it with a mutex
 
-Sergei Shtylyov (3):
-      Au1200: kill IDE driver function prototypes
-      Au1200: IDE driver build fix
-      Pb1200/DBAu1200: fix bad IDE resource size
+Signed-off-by: Thiago Galesi <thiagogalesi@gmail.com>
+
+---
+
+Ok, 2nd try
+
+The only thing I don't like is the name of fb_ioctl, but I don't have a better idea, so...
 
 
-diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
-index c75d708..28e0caf 100644
---- a/arch/avr32/Kconfig
-+++ b/arch/avr32/Kconfig
-@@ -10,7 +10,6 @@ config AVR32
- 	# With EMBEDDED=n, we get lots of stuff automatically selected
- 	# that we usually don't need on AVR32.
- 	select EMBEDDED
--	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	help
-diff --git a/arch/mips/au1000/common/platform.c b/arch/mips/au1000/common/platform.c
-index 841904c..39d6812 100644
---- a/arch/mips/au1000/common/platform.c
-+++ b/arch/mips/au1000/common/platform.c
-@@ -189,7 +189,7 @@ static struct resource au1200_lcd_resources[] = {
- static struct resource au1200_ide0_resources[] = {
- 	[0] = {
- 		.start		= AU1XXX_ATA_PHYS_ADDR,
--		.end 		= AU1XXX_ATA_PHYS_ADDR + AU1XXX_ATA_PHYS_LEN,
-+		.end 		= AU1XXX_ATA_PHYS_ADDR + AU1XXX_ATA_PHYS_LEN - 1,
- 		.flags		= IORESOURCE_MEM,
- 	},
- 	[1] = {
-diff --git a/drivers/ide/mips/au1xxx-ide.c b/drivers/ide/mips/au1xxx-ide.c
-index 0f4bf5d..85c016b 100644
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -32,19 +32,12 @@
- #include <linux/kernel.h>
- #include <linux/delay.h>
- #include <linux/platform_device.h>
--
- #include <linux/init.h>
- #include <linux/ide.h>
--#include <linux/sysdev.h>
--
--#include <linux/dma-mapping.h>
--
--#include "ide-timing.h"
-+#include <linux/scatterlist.h>
+---
+
+Index: linux-2.6.23.1/drivers/video/fbmem.c
+===================================================================
+--- linux-2.6.23.1.orig/drivers/video/fbmem.c
++++ linux-2.6.23.1/drivers/video/fbmem.c
+@@ -987,7 +987,7 @@ fb_blank(struct fb_info *info, int blank
+ }
  
--#include <asm/io.h>
- #include <asm/mach-au1x00/au1xxx.h>
- #include <asm/mach-au1x00/au1xxx_dbdma.h>
--
- #include <asm/mach-au1x00/au1xxx_ide.h>
+ static int 
+-fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
++__fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 	 unsigned long arg)
+ {
+ 	int fbidx = iminor(inode);
+@@ -1085,6 +1085,28 @@ fb_ioctl(struct inode *inode, struct fil
+ 	}
+ }
  
- #define DRV_NAME	"au1200-ide"
-@@ -56,6 +49,8 @@
- static _auide_hwif auide_hwif;
- static int dbdma_init_done;
- 
-+static int auide_ddma_init(_auide_hwif *auide);
++static int
++fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
++	 unsigned long arg)
++{
++	int fbidx = iminor(inode);
++	struct fb_info *info = registered_fb[fbidx];
++	int ret;
 +
- #if defined(CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA)
++	mutex_lock(&info->hwlock);
++	ret = __fb_ioctl(inode, file, cmd, arg);
++	mutex_unlock(&info->hwlock);
++	return ret;
++}
++
++static long
++fb_unlocked_ioctl(struct file *file, unsigned int cmd,
++	 unsigned long arg)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	return fb_ioctl(inode, file, cmd, arg);
++}
++
+ #ifdef CONFIG_COMPAT
+ struct fb_fix_screeninfo32 {
+ 	char			id[16];
+@@ -1136,7 +1158,7 @@ static int fb_getput_cmap(struct inode *
+ 	    put_user(compat_ptr(data), &cmap->transp))
+ 		return -EFAULT;
  
- void auide_insw(unsigned long port, void *addr, u32 count)
-@@ -591,13 +586,14 @@ static int au_ide_probe(struct device *dev)
- 		goto out;
+-	err = fb_ioctl(inode, file, cmd, (unsigned long) cmap);
++	err = __fb_ioctl(inode, file, cmd, (unsigned long) cmap);
+ 
+ 	if (!err) {
+ 		if (copy_in_user(&cmap32->start,
+@@ -1190,7 +1212,7 @@ static int fb_get_fscreeninfo(struct ino
+ 
+ 	old_fs = get_fs();
+ 	set_fs(KERNEL_DS);
+-	err = fb_ioctl(inode, file, cmd, (unsigned long) &fix);
++	err = __fb_ioctl(inode, file, cmd, (unsigned long) &fix);
+ 	set_fs(old_fs);
+ 
+ 	if (!err)
+@@ -1208,7 +1230,7 @@ fb_compat_ioctl(struct file *file, unsig
+ 	struct fb_ops *fb = info->fbops;
+ 	long ret = -ENOIOCTLCMD;
+ 
+-	lock_kernel();
++	mutex_lock(&info->hwlock);
+ 	switch(cmd) {
+ 	case FBIOGET_VSCREENINFO:
+ 	case FBIOPUT_VSCREENINFO:
+@@ -1217,7 +1239,7 @@ fb_compat_ioctl(struct file *file, unsig
+ 	case FBIOPUT_CON2FBMAP:
+ 		arg = (unsigned long) compat_ptr(arg);
+ 	case FBIOBLANK:
+-		ret = fb_ioctl(inode, file, cmd, arg);
++		ret = __fb_ioctl(inode, file, cmd, arg);
+ 		break;
+ 
+ 	case FBIOGET_FSCREENINFO:
+@@ -1234,7 +1256,7 @@ fb_compat_ioctl(struct file *file, unsig
+ 			ret = fb->fb_compat_ioctl(info, cmd, arg);
+ 		break;
+ 	}
+-	unlock_kernel();
++	mutex_unlock(&info->hwlock);
+ 	return ret;
+ }
+ #endif
+@@ -1256,13 +1278,13 @@ fb_mmap(struct file *file, struct vm_are
+ 		return -ENODEV;
+ 	if (fb->fb_mmap) {
+ 		int res;
+-		lock_kernel();
++		mutex_lock(&info->hwlock);
+ 		res = fb->fb_mmap(info, vma);
+-		unlock_kernel();
++		mutex_unlock(&info->hwlock);
+ 		return res;
  	}
  
--	if (!request_mem_region (res->start, res->end-res->start, pdev->name)) {
-+	if (!request_mem_region(res->start, res->end - res->start + 1,
-+				pdev->name)) {
- 		pr_debug("%s: request_mem_region failed\n", DRV_NAME);
- 		ret =  -EBUSY;
- 		goto out;
+-	lock_kernel();
++	mutex_lock(&info->hwlock);
+ 
+ 	/* frame buffer memory */
+ 	start = info->fix.smem_start;
+@@ -1271,13 +1293,13 @@ fb_mmap(struct file *file, struct vm_are
+ 		/* memory mapped io */
+ 		off -= len;
+ 		if (info->var.accel_flags) {
+-			unlock_kernel();
++			mutex_unlock(&info->hwlock);
+ 			return -EINVAL;
+ 		}
+ 		start = info->fix.mmio_start;
+ 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
  	}
+-	unlock_kernel();
++	mutex_unlock(&info->hwlock);
+ 	start &= PAGE_MASK;
+ 	if ((vma->vm_end - vma->vm_start + off) > len)
+ 		return -EINVAL;
+@@ -1323,25 +1345,25 @@ fb_release(struct inode *inode, struct f
+ {
+ 	struct fb_info * const info = file->private_data;
  
--	ahwif->regbase = (u32)ioremap(res->start, res->end-res->start);
-+	ahwif->regbase = (u32)ioremap(res->start, res->end - res->start + 1);
- 	if (ahwif->regbase == 0) {
- 		ret = -ENOMEM;
- 		goto out;
-@@ -682,7 +678,7 @@ static int au_ide_remove(struct device *dev)
- 	iounmap((void *)ahwif->regbase);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start);
-+	release_mem_region(res->start, res->end - res->start + 1);
- 
+-	lock_kernel();
++	mutex_lock(&info->hwlock);
+ 	if (info->fbops->fb_release)
+ 		info->fbops->fb_release(info,1);
+ 	module_put(info->fbops->owner);
+-	unlock_kernel();
++	mutex_unlock(&info->hwlock);
  	return 0;
  }
-diff --git a/drivers/ide/pci/it821x.c b/drivers/ide/pci/it821x.c
-index 1597f0c..d8a1674 100644
---- a/drivers/ide/pci/it821x.c
-+++ b/drivers/ide/pci/it821x.c
-@@ -667,7 +667,7 @@ static int __init it821x_ide_init(void)
- module_init(it821x_ide_init);
  
- module_param_named(noraid, it8212_noraid, int, S_IRUGO);
--MODULE_PARM_DESC(it8212_noraid, "Force card into bypass mode");
-+MODULE_PARM_DESC(noraid, "Force card into bypass mode");
- 
- MODULE_AUTHOR("Alan Cox");
- MODULE_DESCRIPTION("PCI driver module for the ITE 821x");
-diff --git a/include/asm-mips/mach-au1x00/au1xxx_ide.h b/include/asm-mips/mach-au1x00/au1xxx_ide.h
-index e4fe26c..89655c0 100644
---- a/include/asm-mips/mach-au1x00/au1xxx_ide.h
-+++ b/include/asm-mips/mach-au1x00/au1xxx_ide.h
-@@ -122,24 +122,6 @@ static const struct drive_list_entry dma_black_list [] = {
- };
+ static const struct file_operations fb_fops = {
+-	.owner =	THIS_MODULE,
+-	.read =		fb_read,
+-	.write =	fb_write,
+-	.ioctl =	fb_ioctl,
++	.owner =		THIS_MODULE,
++	.read =			fb_read,
++	.write =		fb_write,
++	.unlocked_ioctl =	fb_unlocked_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl = fb_compat_ioctl,
++	.compat_ioctl = 	fb_compat_ioctl,
  #endif
+-	.mmap =		fb_mmap,
+-	.open =		fb_open,
+-	.release =	fb_release,
++	.mmap =			fb_mmap,
++	.open =			fb_open,
++	.release =		fb_release,
+ #ifdef HAVE_ARCH_FB_UNMAPPED_AREA
+ 	.get_unmapped_area = get_fb_unmapped_area,
+ #endif
+@@ -1413,6 +1435,8 @@ register_framebuffer(struct fb_info *fb_
  
--/* function prototyping */
--u8 auide_inb(unsigned long port);
--u16 auide_inw(unsigned long port);
--u32 auide_inl(unsigned long port);
--void auide_insw(unsigned long port, void *addr, u32 count);
--void auide_insl(unsigned long port, void *addr, u32 count);
--void auide_outb(u8 addr, unsigned long port);
--void auide_outbsync(ide_drive_t *drive, u8 addr, unsigned long port);
--void auide_outw(u16 addr, unsigned long port);
--void auide_outl(u32 addr, unsigned long port);
--void auide_outsw(unsigned long port, void *addr, u32 count);
--void auide_outsl(unsigned long port, void *addr, u32 count);
--static void auide_tune_drive(ide_drive_t *drive, byte pio);
--static int auide_tune_chipset(ide_drive_t *drive, u8 speed);
--static int auide_ddma_init( _auide_hwif *auide );
--static void auide_setup_ports(hw_regs_t *hw, _auide_hwif *ahwif);
--int __init auide_probe(void);
--
- /*******************************************************************************
- * PIO Mode timing calculation :                                                *
- *                                                                              *
-diff --git a/include/asm-mips/mach-db1x00/db1200.h b/include/asm-mips/mach-db1x00/db1200.h
-index a6bdac6..d2e28e6 100644
---- a/include/asm-mips/mach-db1x00/db1200.h
-+++ b/include/asm-mips/mach-db1x00/db1200.h
-@@ -173,8 +173,8 @@ static BCSR * const bcsr = (BCSR *)BCSR_KSEG1_ADDR;
- #define AU1XXX_SMC91111_IRQ			DB1200_ETH_INT
+ 	event.info = fb_info;
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
++
++	mutex_init(&fb_info->hwlock);
+ 	return 0;
+ }
  
- #define AU1XXX_ATA_PHYS_ADDR		(0x18800000)
--#define AU1XXX_ATA_PHYS_LEN			(0x100)
--#define AU1XXX_ATA_REG_OFFSET	(5)
-+#define AU1XXX_ATA_REG_OFFSET		(5)
-+#define AU1XXX_ATA_PHYS_LEN		(16 << AU1XXX_ATA_REG_OFFSET)
- #define AU1XXX_ATA_INT			DB1200_IDE_INT
- #define AU1XXX_ATA_DDMA_REQ		DSCR_CMD0_DMA_REQ1;
- #define AU1XXX_ATA_RQSIZE		128
-diff --git a/include/asm-mips/mach-pb1x00/pb1200.h b/include/asm-mips/mach-pb1x00/pb1200.h
-index 72213e3..edaa489 100644
---- a/include/asm-mips/mach-pb1x00/pb1200.h
-+++ b/include/asm-mips/mach-pb1x00/pb1200.h
-@@ -186,8 +186,8 @@ static BCSR * const bcsr = (BCSR *)BCSR_KSEG1_ADDR;
- #define AU1XXX_SMC91111_IRQ			PB1200_ETH_INT
+@@ -1464,6 +1488,7 @@ unregister_framebuffer(struct fb_info *f
+ 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+ 	event.info = fb_info;
+ 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
++	mutex_destroy(&fb_info.hwlock);
+ done:
+ 	return ret;
+ }
+Index: linux-2.6.23.1/include/linux/fb.h
+===================================================================
+--- linux-2.6.23.1.orig/include/linux/fb.h
++++ linux-2.6.23.1/include/linux/fb.h
+@@ -802,6 +802,7 @@ struct fb_info {
+ 	struct list_head modelist;      /* mode list */
+ 	struct fb_videomode *mode;	/* current mode */
  
- #define AU1XXX_ATA_PHYS_ADDR		(0x0C800000)
--#define AU1XXX_ATA_PHYS_LEN			(0x100)
--#define AU1XXX_ATA_REG_OFFSET	(5)
-+#define AU1XXX_ATA_REG_OFFSET		(5)
-+#define AU1XXX_ATA_PHYS_LEN		(16 << AU1XXX_ATA_REG_OFFSET)
- #define AU1XXX_ATA_INT			PB1200_IDE_INT
- #define AU1XXX_ATA_DDMA_REQ		DSCR_CMD0_DMA_REQ1;
- #define AU1XXX_ATA_RQSIZE		128
++	struct mutex hwlock;		/* mutex for protecting hw ops */
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	/* assigned backlight device */
+ 	/* set before framebuffer registration, 
+
+
+
+
+
+
