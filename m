@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762958AbYDPLxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbYDPMNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762958AbYDPLxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 07:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbYDPLxg
+	id S1762775AbYDPMNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 08:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbYDPMMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 07:53:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:10146 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758306AbYDPLxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 07:53:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WFA0s9yW/4ka3qyDa0au1jSmT30Ip7UqVVWbeme+2Dl3whYv5hKMwsnelAYNLRtnhDaW/hVsuAVXhGWcO9biCOIY57DEmduuZj7LaitMPQE5kZKGO2DghGmcsqxbciYfhwhG4MOQnTMhpreXqHQDXPBC/sZw1UXAuA0lHWZABiw=
-Message-ID: <7b9198260804160453o4ee8563crdf8f94c443b80758@mail.gmail.com>
-Date: Wed, 16 Apr 2008 12:53:33 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for April 16
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080416200703.92289f91.sfr@canb.auug.org.au>
+	Wed, 16 Apr 2008 08:12:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56031 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758246AbYDPMMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 08:12:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Date: Wed, 16 Apr 2008 14:13:04 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>, James Morris <jmorris@namei.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org,
+       netdev@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+References: <47FEADCB.7070104@rtr.ca> <480565D3.6000100@davidnewall.com> <20080416042920.GB25188@1wt.eu>
+In-Reply-To: <20080416042920.GB25188@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080416195809.4701a86c.sfr@canb.auug.org.au>
-	 <20080416200703.92289f91.sfr@canb.auug.org.au>
+Message-Id: <200804161413.05869.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/04/2008, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi all,
->
->  The next linux-next tree will not be created until Monday April 21
->  (unless Linus decides to release 2.6.25 before then :-))
->
->  Do Not Panic and sorry for the inconvenience.  :-)
->
-> --
->  Cheers,
->  Stephen Rothwell                    sfr@canb.auug.org.au
->
-> http://www.canb.auug.org.au/~sfr/
->
->
+On Wednesday, 16 of April 2008, Willy Tarreau wrote:
+> On Wed, Apr 16, 2008 at 12:04:59PM +0930, David Newall wrote:
+> > Rafael J. Wysocki wrote:
+> > > Well, even if someone introduces bugs relatively frequently, but then also
+> > > works with the reporters and fixes the bugs timely, it's about okay IMO.
+> > >   
+> > This really is not okay.  Even if bugs are fixed a version or two later,
+> > the impact those bugs have on users makes the system look bad and drives
+> > them away.  We do not, I believe, want Linux to top the list for "most
+> > bugs".  It's unprofessional, unreliable and quite undesirable.
+> 
+> that's what -rc are for, and it's unprofessional to use them in production :-)
 
-Hi,
+Exactly.
 
-Is there any reason you can't just make a symbolic link "latest" which
-links to the latest tar file?
+And BTW, by saying "timely" I meant "in -rc" or "before the next major release".
 
--- 
-Regards,
-Tom Spink
-University of Edinburgh
+Thanks,
+Rafael
