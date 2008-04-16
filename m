@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYDPTPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbYDPTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbYDPTPF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYDPTOx
+	id S1759821AbYDPTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbYDPTPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:14:53 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3738 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751285AbYDPTOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:14:52 -0400
-Date: Wed, 16 Apr 2008 21:13:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
-       serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080416191315.GB3923@ucw.cz>
-References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil> <484889.77284.qm@web36604.mail.mud.yahoo.com> <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.9i
+	Wed, 16 Apr 2008 15:15:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33640 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757633AbYDPTPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 15:15:09 -0400
+Date: Wed, 16 Apr 2008 12:15:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
+ operation to happen
+In-Reply-To: <20080416190213.GK22493@sgi.com>
+Message-ID: <Pine.LNX.4.64.0804161214170.14657@schroedinger.engr.sgi.com>
+References: <patchbomb.1207669443@duo.random> <ec6d8f91b299cf26cce5.1207669444@duo.random>
+ <20080416163337.GJ22493@sgi.com> <Pine.LNX.4.64.0804161134360.12296@schroedinger.engr.sgi.com>
+ <20080416190213.GK22493@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 16 Apr 2008, Robin Holt wrote:
 
-> > The question of protections on the object named /etc/passwd came
-> > up time and time again. The notion that /etc/passwd could be a
-> > symlink to /home/smalley/heeheehee really gave evaluators the
-> > whillies. As did the chroot environment, where /roots/crispin/etc/passwd
-> > could magicly become /etc/passwd.
-> Why do people continue speaking symlinks and chroots?
-> To avoid the effect of symlinks and chroots, AppArmor and TOMOYO Linux
-> derive pathnames from dentry and vfsmount.
-> If /etc/passwd was a symlink, the derived pathname will be /home/smalley/heeheehee.
-> If accessed from inside a chroot, the derived pathname will be /roots/crispin/etc/passwd.
+> On Wed, Apr 16, 2008 at 11:35:38AM -0700, Christoph Lameter wrote:
+> > On Wed, 16 Apr 2008, Robin Holt wrote:
+> > 
+> > > I don't think this lock mechanism is completely working.  I have
+> > > gotten a few failures trying to dereference 0x100100 which appears to
+> > > be LIST_POISON1.
+> > 
+> > How does xpmem unregistering of notifiers work?
 > 
-> It is true that namespace may differ between processes,
-> but I think that that is the matter of how to restrict namespace manipulation operations.
-> As I said, a system can't survive if namespace is madly manipulated.
-> To keep the system workable, /bin/ must be the directory for binary programs,
-> /etc/ must be the directory for configuration files, and so on in all namespaces.
+> For the tests I have been running, we are waiting for the release
+> callout as part of exit.
 
-Ehm? Where did you get those ideas?
+Some more details on the failure may be useful. AFAICT list_del[_rcu] is 
+the culprit here and that is only used on release or unregister.
 
-I'm free to name my directories any way I want, and keep config files
-in /pavlix_config, thank you... There is even distro that does
-something like that, IIRC...
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
