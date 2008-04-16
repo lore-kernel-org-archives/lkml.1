@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbYDPAhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbYDPAid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbYDPAhd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 20:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759143AbYDPAhB
+	id S1760424AbYDPAid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 20:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYDPAiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 20:37:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34983 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758580AbYDPAhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 20:37:00 -0400
-Date: Wed, 16 Apr 2008 02:36:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai.Lu@sun.com, apw@shadowen.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-Message-ID: <20080416003624.GA26459@elte.hu>
-References: <alpine.LFD.1.00.0804151010500.2879@woody.linux-foundation.org> <Pine.LNX.4.64.0804151232080.1785@schroedinger.engr.sgi.com> <20080415195430.GA23015@elte.hu> <Pine.LNX.4.64.0804151255390.1785@schroedinger.engr.sgi.com> <20080415201734.GA25628@elte.hu> <4805115D.5030703@cs.helsinki.fi> <20080415204025.GA29784@elte.hu> <alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org> <20080416000356.GA24737@elte.hu> <Pine.LNX.4.64.0804151718140.5705@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804151718140.5705@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 15 Apr 2008 20:38:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752806AbYDPAiY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Apr 2008 20:38:24 -0400
+Date: Tue, 15 Apr 2008 17:36:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: pbadari@us.ibm.com, linux-kernel@vger.kernel.org, linas@austin.ibm.com
+Subject: Re: 2.6.25-rc8-mm1 panic in rpaphp_register_slot()
+Message-Id: <20080415173656.218a6080.akpm@linux-foundation.org>
+In-Reply-To: <20080407234255.GA22514@ldl.fc.hp.com>
+References: <1207331616.5916.15.camel@badari-desktop>
+	<20080404180518.GA12642@ldl.fc.hp.com>
+	<1207340371.5916.23.camel@badari-desktop>
+	<20080404224227.GA31436@ldl.fc.hp.com>
+	<1207352128.5916.26.camel@badari-desktop>
+	<20080407234255.GA22514@ldl.fc.hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Apr 2008 17:42:55 -0600
+Alex Chiang <achiang@hp.com> wrote:
 
-* Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Wed, 16 Apr 2008, Ingo Molnar wrote:
+> Hi Badari,
 > 
-> > if a !PAE x86 kernel is booted on a 32-bit system with more than 4GB 
-> > of RAM, then we call memory_present() with a start/end that goes 
-> > outside the scope of MAX_PHYSMEM_BITS.
+> > > > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > > > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> > > > rpaphp_register_slot registering slot:path[/pci@800000020000003/pci@2,4] index[22010003], name[U787E.001.AAA3015-P2-C1] pdomain[22010003] type[16]
+> > > > Unable to handle kernel paging request for data at address 0x00000070
+> > > 
+> > > Hrm, this is a little more information, but still not quite
+> > > enough. I'm going to take a stab in the dark and say I'm probably
+> > > doing something wrong on this line, maybe dereferencing a pointer
+> > > incorrectly:
+> > > 
+> > >         retval = pci_hp_register(php_slot, slot->bus,
+> > > 				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+> > 
+> > Sorry. I thought you knew this already. Disassembly clearly showed
+> > that slot->dn->child is NULL. 
+> > 
+> > I confirmed it by adding printk also.
 > 
-> Well okay this fixes it but is this the right fix? The arch should not 
-> call memory_present() with an invalid pfn.
+> This patch is a complete guess on my part (since I've not been
+> able to understand pseries architecture) but I think it should
+> fix your issue.
+> 
+> Can you give it a try and let me know? It applies on top of the
+> -mm tree that includes my physical pci_slot series.
+> 
+> Also, I'm hoping Linas will speak up and let me know what the
+> real answer might be. ;)
+> 
+> Thanks.
+> 
+> /ac
+> 
+> From: Alex Chiang <achiang@hp.com>
+> Subject: rpaphp: correctly call pci_hp_register for empty PCI slots
+> 
+> Unpopulated device_node slots do not have children, and
+> attempting to dereference them will result in a panic.
+> 
+> Instead, attempt to derive the PCI slot number from the bus
+> itself, and failing that, default to 0.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+> index 0d4cfc7..91ce6a6 100644
+> --- a/drivers/pci/hotplug/rpaphp_slot.c
+> +++ b/drivers/pci/hotplug/rpaphp_slot.c
+> @@ -121,6 +121,7 @@ int rpaphp_register_slot(struct slot *slot)
+>  {
+>  	struct hotplug_slot *php_slot = slot->hotplug_slot;
+>  	int retval;
+> +	int slot_nr;
+>  
+>  	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
+>  		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
+> @@ -132,8 +133,11 @@ int rpaphp_register_slot(struct slot *slot)
+>  		return -EAGAIN;
+>  	}	
+>  
+> -	retval = pci_hp_register(php_slot, slot->bus,
+> -				 PCI_SLOT(PCI_DN(slot->dn->child)->devfn));
+> +	if (slot->bus->self)
+> +		slot_nr = PCI_SLOT(slot->bus->self->devfn);
+> +	else
+> +		slot_nr = 0;
+> +	retval = pci_hp_register(php_slot, slot->bus, slot_nr);
+>  	if (retval) {
+>  		err("pci_hp_register failed with error %d\n", retval);
+>  		return retval;
 
-it is the right fix. The architecture memory setup code doesnt even 
-_know_ the limits at this place in an open-coded way (and shouldnt know 
-them) - and even later on we use pfn_valid() to determine whether to 
-attempt to get to a struct page and free it into the buddy.
+Did we hear back from Badari on this?
 
-[ Of course the architecture code in general 'knows' about the limits - 
-  but still it's cleaner to have a dumb enumeration interface here 
-  combined with a resilient core code - that's always going to be less 
-  fragile. ]
-
-btw., i just did some bug history analysis, the calls were originally 
-added when sparsemem support was added:
-
-| commit 215c3409eed16c89b6d11ea1126bd9d4f36b9afd
-| Author: Andy Whitcroft <apw@shadowen.org>
-| Date:   Fri Jan 6 00:12:06 2006 -0800
-|
-|    [PATCH] i386 sparsemem for single node systems
-
-in v2.6.15-1003-g215c340. (so this is appears to be an unfixed bug in 
-v2.6.16 as well)
-
-	Ingo
+Thanks.
