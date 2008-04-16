@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbYDPUuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765482AbYDPUvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762789AbYDPUuI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYDPUt5
+	id S1765482AbYDPUvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYDPUvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:49:57 -0400
-Received: from hu-out-0506.google.com ([72.14.214.224]:6222 "EHLO
+	Wed, 16 Apr 2008 16:51:07 -0400
+Received: from hu-out-0506.google.com ([72.14.214.233]:6849 "EHLO
 	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbYDPUt5 (ORCPT
+	with ESMTP id S1752127AbYDPUvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:49:57 -0400
+	Wed, 16 Apr 2008 16:51:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=UFgXDXc/DQPX1qJTRX8K0WsNYWv75rOgPJUGYjHIiZC1GatKAqHUh+R5dENq1mDkxXBnUkJZ/Pb4heKG1DoZHtBWtQ0JqdgfDQ8NJrBENCPxWwAqk57XAzAVlBg13Rv3g1bK7I+mhX//1+UiKW/P0Il3QbwhnNkM9Xx4O+NSyBY=
-Date: Wed, 16 Apr 2008 23:47:09 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Current git tree broke busybox start-stop-daemon
-Message-ID: <20080416194709.GA4762@martell.zuzino.mipt.ru>
-References: <1208366702.5911.119.camel@gentoo-jocke.transmode.se> <20080416190057.GA4666@martell.zuzino.mipt.ru> <20080416193417.GD27459@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080416193417.GD27459@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=Rd8k9gSOAfqjnhTeQq2v/crvE4qAaV12vNnKj/K4WDgL5/YdysabMFoUqwx7231wn2BtpVaYuXC19hRG8eYW8EQEEuBW0Ysn5Yadr4JaJ86MVbaw6OUyfZDeFoNAf/uttiomNjHT8WO77o1yI/HBQyYeBCozKh23sLpyeVRnQvQ=
+Date: Wed, 16 Apr 2008 22:50:57 +0200
+From: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [PATCH -mm 1/3] misc,acpi,backlight: Compal Laptop Extras - add
+ entry to MAINTAINERS
+Message-ID: <20080416225057.57b8c25b@debian>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 08:34:17PM +0100, Al Viro wrote:
-> On Wed, Apr 16, 2008 at 11:00:57PM +0400, Alexey Dobriyan wrote:
-> > On Wed, Apr 16, 2008 at 07:25:02PM +0200, Joakim Tjernlund wrote:
-> > > open("/proc/1/stat", O_RDONLY|O_LARGEFILE) = 4
-> > > _llseek(4, 0, 0xbfb94898, SEEK_END)     = -1 EINVAL (Invalid argument)
-> > 
-> > > So it appears that lseek is no longer allowed for /proc/1/stat
-> > > Bug or feature?
-> > > start-stop-daemon works fine in 2.6.23
-> > 
-> > That's what happens when switching ->llseek method from NULL
-> > (effectively, default_llseek), to seq_lseek (which rejects SEEK_END).
-> > 
-> > commit be614086a4aff163d5aa0dc160638d1193b59cde
-> > commit ee992744ea53db0a90c986fd0a70fbbf91e7f8bd
-> > 
-> > Al, do you remember why SEEK_END was omitted back then?
-> 
-> Because there's no sane way to implement it?
+From: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
 
-Ugly ->index games, sigh...
+Add me to MAINTAINERS
 
-> Note that original cheerfully
-> did nothing, since it had zero ->i_size for that file.  Which makes program
-> in question very odd - what behaviour does it rely upon?
-
-Busybox just wants to estimate size of a file. And it knows about
-zero-length /proc/*/stat .
-
-libbb/read.c:
-
-void *xmalloc_open_read_close(const char *filename, size_t *sizep)
-{
-	char *buf;
-	size_t size = sizep ? *sizep : INT_MAX;
-	int fd;
-	off_t len;
-
-	fd = xopen(filename, O_RDONLY);
-	/* /proc/N/stat files report len 0 here */
-	/* In order to make such files readable, we add small const */
-	len = xlseek(fd, 0, SEEK_END) | 0x3ff; /* + up to 1k */
-		...
-
+Signed-off-by: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
+---
+diff -Nuar a/MAINTAINERS b/MAINTAINERS
+--- a/MAINTAINERS	2008-04-16 19:42:42.000000000 +0200
++++ b/MAINTAINERS	2008-04-16 19:49:49.000000000 +0200
+@@ -1137,6 +1137,11 @@
+ L:	pcihpd-discuss@lists.sourceforge.net
+ S:	Supported
+ 
++COMPAL LAPTOP SUPPORT
++P:	Cezary Jackiewicz
++M:	cezary.jackiewicz@gmail.com
++S:	Maintained
++
+ COMPUTONE INTELLIPORT MULTIPORT CARD
+ P:	Michael H. Warfield
+ M:	mhw@wittsend.com
