@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbYDPVI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYDPVJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759928AbYDPVI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 17:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYDPVIt
+	id S1756402AbYDPVJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 17:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYDPVJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 17:08:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60577 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752278AbYDPVIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 17:08:48 -0400
-Date: Wed, 16 Apr 2008 23:08:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25 and DEBUG_SECTION_MISMATCH
-Message-ID: <20080416210838.GA27459@elte.hu>
-References: <20080416175135.GN1677@cs181133002.pp.htv.fi> <20080416192306.GA3090@uranus.ravnborg.org> <20080416193102.GA16981@elte.hu> <20080416195504.GA2408@elte.hu> <20080416205230.GA4129@uranus.ravnborg.org>
+	Wed, 16 Apr 2008 17:09:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:13736 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762112AbYDPVJC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 17:09:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=ufovLXr6bubnQ7Kd5AcIMZEwgTd31iAt/HgobMYJ0AHT3KHEhYRD0XctGV1N1EIZCP18jL2PuPxaoNPDc7zv4pQIa0SEZLf/MtbL+R4lwMOtj0u4zdeSN6sCR2fnCfi8+EVNoA5k8EUTeBXNxFgweEn7fOzcAv2HuWsmt4UGbUc=
+Date: Wed, 16 Apr 2008 23:08:58 +0200 (CEST)
+To: Paul Moore <paul.moore@hp.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Jesper Juhl <jesper.juhl@gmail.com>
+Subject: [PATCH][netlabel] Don't risk NULL ptr deref in netlbl_unlabel_staticlist_gen()
+ if ifindex not found
+Message-ID: <alpine.LNX.1.00.0804162304220.9837@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080416205230.GA4129@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+dev_get_by_index() may return NULL if nothing is found. In 
+net/netlabel/netlabel_unlabeled.c::netlbl_unlabel_staticlist_gen() the 
+function is called, but the return value is never checked. If it returns 
+NULL then we'll deref a NULL pointer on the very next line.
+I checked the callers, and I don't think this can actually happen today, 
+but code changes over time and in the future it might happen and it does 
+no harm to be defensive and check for the failure, so that if/when it 
+happens we'll fail gracefully instead of crashing.
 
-> On Wed, Apr 16, 2008 at 09:55:04PM +0200, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > * Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > 
-> > > > I would prefer we were down to less than 5 warnings so we could 
-> > > > enable it in kconfig but maybe after next merge window.
-> > > 
-> > > they get regenerated. More than 1 out of every 100 new patches. Quite 
-> > > expensive feature (in terms of maintenance overhead) for a rather 
-> > > theoretical memory saving benefit.
-> > 
-> > in v2.6.24 we had at least 200 section fixes:
-> > 
-> >   $ git-log v2.6.24.. | egrep -c 'WARNING:.*Section mismatch'
-> >   198
-> > 
-> > for 12671 commits - that's 1 section type fix for every 60 commits.
-> Please get your numbers right. What you count is the number of Section 
-> mismatch warnings that has been fixed. Sometime fixing up one line of 
-> code fixes >5 section mismatch warnings.
+Please consider the patch below for inclusion.
 
-the revised number is: at least 84 commits that fixed section bugs. 
-That's still rather large.
 
-> > and 90% of the problems could be reduced via the very simple patch 
-> > below ...
-> > 
-> > so ... why shouldnt we say that if someone wants to have this 
-> > feature, it should be done all automatically, in the link space. 
-> > There's no reason why the dependencies couldnt be figured out all 
-> > automatically.
-> 
-> Or we could fix the blatant misuse of __cpuinit. If has replaced a 
-> proper separation of code that is only relevant for CPU hotplug and 
-> code that is used with and without CPUHOTPLUG.
-> 
-> I question that we have 580 functions that is used duing init in 
-> normal cases and during CPU hotplug.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-sure, if you can solve it, please do - but the stream of new section 
-warnings and seems somewhat worrying for the long run.
+ netlabel_unlabeled.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-	Ingo
+diff --git a/net/netlabel/netlabel_unlabeled.c b/net/netlabel/netlabel_unlabeled.c
+index 4478f2f..6af9457 100644
+--- a/net/netlabel/netlabel_unlabeled.c
++++ b/net/netlabel/netlabel_unlabeled.c
+@@ -1339,6 +1339,10 @@ static int netlbl_unlabel_staticlist_gen(u32 cmd,
+ 
+ 	if (iface->ifindex > 0) {
+ 		dev = dev_get_by_index(&init_net, iface->ifindex);
++		if (!dev) {
++			ret_val = -ENODEV;
++			goto list_cb_failure;
++		}
+ 		ret_val = nla_put_string(cb_arg->skb,
+ 					 NLBL_UNLABEL_A_IFACE, dev->name);
+ 		dev_put(dev);
+
+
