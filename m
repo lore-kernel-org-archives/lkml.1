@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765046AbYDPOrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbYDPOsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765046AbYDPOrt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 10:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYDPOrm
+	id S1765648AbYDPOsX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 10:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbYDPOsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 10:47:42 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:39231
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbYDPOrl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 10:47:41 -0400
-Message-ID: <4806118C.7090706@qumranet.com>
-Date: Wed, 16 Apr 2008 17:47:40 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 16 Apr 2008 10:48:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56929 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757799AbYDPOsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 10:48:14 -0400
+Date: Wed, 16 Apr 2008 16:47:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Markus Metzger <markus.t.metzger@intel.com>, andi-suse@firstfloor.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       markus.t.metzger@gmail.com, suresh.b.siddha@intel.com,
+       roland@redhat.com, mtk.manpages@gmail.com, eranian@googlemail.com,
+       juan.villacis@intel.com
+Subject: Re: [patch 1/1] x86, ptrace: PEBS support
+Message-ID: <20080416144723.GI24383@elte.hu>
+References: <20080408110158.A9336@sedona.ch.intel.com> <20080415173534.b746f8da.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: kvm-devel <kvm-devel@lists.sourceforge.net>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [ANNOUNCE] kvm-66 release
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415173534.b746f8da.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today's new kvm architecture is ia64, aka Itanium 2.  Like s390, it is 
-only provided in the git tree, not in the tarball.  Windows and Linux 
-guests are supported.
 
-On good old x86, we have a the new kvmtrace performance monitoring 
-framework together with a sizable number of bug fixes.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Changes from kvm-65:
-- adjust external module for 2.6.25 module locations (Anthony Liguori)
-- fix userspace compilation failure without kernel pit (Joerg Roedel)
-- kvmtrace performance monitoring mechanism (Eric Liu)
-- stop all vcpus before saving their state (Marcelo Tosatti)
-   - fixes smp live migration
-- save/restore kernel apicbase (Marcelo Tosatti)
-- block SIG_IPI signals (Marcelo Tosatti)
-- smsw mem16, lmsw mem16 emulation and unit tests
-- fix compile warnings (Jerone Young)
-- fix reset with iothread
-- ia64 architecture support (Xiantao Zhang, Anthony Xu)
-- don't assume guest pages are backed by a 'struct page' (Anthony Liguori)
-   - needed for pci device assignment
-- register kvm's ioctl range
-- fix hardware task switching buglet (Izik Eidus)
-- fix mce handling on AMD (Joerg Roedel)
-- do hardware task switching in hardware when NPT is enabled (Joerg Roedel)
-- fix timer race waking up a halted vcpu with smp (Marcelo Tosatti)
-- fix irq race leading to irqs delivery delays (Marcelo Tosatti)
-- fix triple fault handling on AMD
-- fix lea instruction emulation
+> Should we skip the RLIMIT_MEMLOCK check if capable(CAP_IPC_LOCK)?
+> 
+> It's a fairly large patch.
 
+btw., it's already in x86/testing (has been since last week) and hence 
+it's in linux-next as well.
 
-Notes:
-      If you use the modules bundled with kvm-66, you can use any version
-of Linux from 2.6.17 upwards.
-      If you use the modules bundled with Linux 2.6.20, you need to use
-kvm-12.
-      If you use the modules bundled with Linux 2.6.21, you need to use
-kvm-17.
-      Modules from Linux 2.6.22 and up will work with any kvm version from
-kvm-22.  Some features may only be available in newer releases.
-      For best performance, use Linux 2.6.23-rc2 or later as the host.
+it's still under the "needs some sort of positive noises from Roland" 
+tag though ...
 
-http://kvm.qumranet.com
-
+	Ingo
