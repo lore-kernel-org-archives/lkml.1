@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYDPSs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYDPSzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758247AbYDPSs5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 14:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYDPSsj
+	id S1752606AbYDPSzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 14:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbYDPSzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 14:48:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55371 "EHLO mx3.mail.elte.hu"
+	Wed, 16 Apr 2008 14:55:37 -0400
+Received: from pat.uio.no ([129.240.10.15]:45182 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYDPSsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 14:48:38 -0400
-Date: Wed, 16 Apr 2008 20:48:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linux MM <linux-mm@kvack.org>, Andi Kleen <andi@firstfloor.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [RFC][patch 2/5] mm: Node-setup agnostic free_bootmem()
-Message-ID: <20080416184816.GA4400@elte.hu>
-References: <20080416113629.947746497@skyscraper.fehenstaub.lan> <20080416113719.092060936@skyscraper.fehenstaub.lan> <86802c440804161054h6f0cfc3dmde49006afb7889b2@mail.gmail.com> <86802c440804161144id4f2a68i37513ac0428c693@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440804161144id4f2a68i37513ac0428c693@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751247AbYDPSzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 14:55:37 -0400
+Subject: Re: [patch 1/3] NFS: fix potential NULL pointer dereference
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
+       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080416181336.GA7657@cvg>
+References: <20080416174421.442716301@gmail.com>
+	 <48063bc9.2234440a.747d.09ea@mx.google.com>
+	 <1208369492.5376.9.camel@heimdal.trondhjem.org> <20080416181336.GA7657@cvg>
+Content-Type: text/plain
+Date: Wed, 16 Apr 2008 14:55:22 -0400
+Message-Id: <1208372123.5376.43.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 9789979AFE428B81EC75400E891D358C0602484D
+X-UiO-SR-test: 4139ACD233F9E51BE419C8F1304CB446FB1415A7
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 772 total 7927424 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> >  Yes, it should work well with cross nodes case.
-> >
-> >  but please add boundary check on free_bootmem_node too.
+On Wed, 2008-04-16 at 22:13 +0400, Cyrill Gorcunov wrote:
+> [Trond Myklebust - Wed, Apr 16, 2008 at 02:11:31PM -0400]
+> | 
+> | On Wed, 2008-04-16 at 21:44 +0400, Cyrill Gorcunov wrote:
+> | > plain text document attachment (nfs-kstrdup-nul-fix)
+> | > It's possible to get NULL pointer dereference
+> | > if kstrndup failed
+> | > 
+> | > Here is a possible scenario
+> | > 
+> | > nfs4_get_sb
+> | >   nfs4_validate_mount_data
+> | >     o kstrndup failed so args->nfs_server.export_path = NULL
+> | >   nfs4_create_server
+> | >     nfs4_path_walk(..., NULL) -> Oops!
+> | > 
+> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> | 
+> | Why fix only the one case? What about the other kstrdup/kstrndup cases
+> | in super.c that appear to be unchecked?
+> | 
+> | Trond
+> | 
+> | > ---
+> | > 
+> | > Index: linux-2.6.git/fs/nfs/super.c
+> | > ===================================================================
+> | > --- linux-2.6.git.orig/fs/nfs/super.c	2008-04-15 23:01:30.000000000 +0400
+> | > +++ linux-2.6.git/fs/nfs/super.c	2008-04-16 20:01:44.000000000 +0400
+> | > @@ -1858,6 +1858,8 @@ static int nfs4_validate_mount_data(void
+> | >  		if (len > NFS4_MAXPATHLEN)
+> | >  			return -ENAMETOOLONG;
+> | >  		args->nfs_server.export_path = kstrndup(c, len, GFP_KERNEL);
+> | > +		if (!args->nfs_server.export_path)
+> | > +			return -ENOMEM;
+> | >  
+> | >  		dprintk("NFS: MNTPATH: '%s'\n", args->nfs_server.export_path);
+> | > 
+> | 
 > 
-> also please note: it will have problem span nodes box.
-> 
-> for example: node 0: 0-2g, 4-6g, node1: 2-4g, 6-8g. and if ramdisk sit 
-> creoss 2G boundary. you will only free the range before 2g.
+> This one is leading to NULL deref, others - don't
 
-yes. Such systems _will_ become more common - so the "this is rare" 
-arguments are incorrect. bootmem has to be robust enough to deal with 
-it.
+So? The defensive coding principle is that you perform validity checks
+when the pointer is created. Otherwise, we could equally well have added
+the NULL deref check to nfs4_path_walk()...
 
-	Ingo
+  Trond
+
