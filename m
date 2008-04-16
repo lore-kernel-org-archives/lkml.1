@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbYDPW2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbYDPW2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbYDPW2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 18:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYDPW1x
+	id S932214AbYDPW2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 18:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYDPW1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 18:27:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:54778 "EHLO
+	Wed, 16 Apr 2008 18:27:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:53952 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754809AbYDPW1v (ORCPT
+	with ESMTP id S1753409AbYDPW1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 18:27:51 -0400
+	Wed, 16 Apr 2008 18:27:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=w90cfbJOdvVvbxeIj6nsygAUfAFXKJ6nR4itVUUpTkD0HddT2OtHg/zbp77evpT8jzj+j2nEDn1lzMk2wAOtZ7pey2c5hx9FHaRNSFK3F2vhug0m7NITHeiPFSJ9O2SjpWg26ZH0ZmS3BlE9/m4LbjPGQVB4d3mjdC7KXLBHFcs=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=UogAPGNAeZZWy7UQ47RMYOpHlPcQ05ABzacaMiXYK+TkQ5Eb3MDbI3629P0KOsj3h2wctlZDdrHywz3AAg6hBD88Me20qXmZ0Y0nCpAaBesuOCzvQQHQC5WpZYqwhAyVl6ykR/skboHa7ZNOHqy4n6RjWj/ywmGvCYB3/j5Xo98=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/6] scc_pata: add ->{in,out}put_data methods
-Date: Thu, 17 Apr 2008 00:09:43 +0200
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] au1xxx-ide: add ->{in,out}put_data methods (take 2)
+Date: Thu, 17 Apr 2008 00:14:26 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200803302141.06106.bzolnier@gmail.com> <480638EA.2000708@ru.mvista.com>
-In-Reply-To: <480638EA.2000708@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200804170009.44039.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804170014.26848.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, Sergei Shtylyov wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > There should be no functional changes caused by this patch.
-> 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> > Index: b/drivers/ide/pci/scc_pata.c
-> > ===================================================================
-> > --- a/drivers/ide/pci/scc_pata.c
-> > +++ b/drivers/ide/pci/scc_pata.c
-> > @@ -574,6 +574,36 @@ static int __devinit init_setup_scc(stru
-> >  	return ide_setup_pci_device(dev, d);
-> >  }
-> 
->     This patch in the pata-2.6 series doesn't apply anymore after the patch 
-> getting rid of ide_setup_pci_device() call was merged.
 
-I updated it in IDE tree while merging Akira's patch but it turned out
-that "take 2" was needed anyway...
+v2:
+
+* Update ->{in,out}_data methods to take 'struct request *rq' argument.
+
+There should be no functional changes caused by this patch.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+replacement patch for the one in the IDE tree
+
+ drivers/ide/mips/au1xxx-ide.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+Index: b/drivers/ide/mips/au1xxx-ide.c
+===================================================================
+--- a/drivers/ide/mips/au1xxx-ide.c
++++ b/drivers/ide/mips/au1xxx-ide.c
+@@ -88,6 +88,17 @@ void auide_outsw(unsigned long port, voi
+ 	ctp->cur_ptr = au1xxx_ddma_get_nextptr_virt(dp);
+ }
+ 
++static void au1xxx_input_data(ide_drive_t *drive, struct request *rq,
++			      void *buf, unsigned int len)
++{
++	auide_insw(drive->hwif->io_ports.data_addr, buf, (len + 1) / 2);
++}
++
++static void au1xxx_output_data(ide_drive_t *drive, struct request *rq,
++			       void *buf, unsigned int len)
++{
++	auide_outsw(drive->hwif->io_ports.data_addr, buf, (len + 1) / 2);
++}
+ #endif
+ 
+ static void au1xxx_set_pio_mode(ide_drive_t *drive, const u8 pio)
+@@ -598,6 +609,9 @@ static int au_ide_probe(struct device *d
+ 	*/
+ 
+ #ifdef CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA	
++	hwif->input_data  = au1xxx_input_data;
++	hwif->output_data = au1xxx_output_data;
++
+ 	hwif->INSW                      = auide_insw;
+ 	hwif->OUTSW                     = auide_outsw;
+ #endif
