@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYDPTHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbYDPTIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbYDPTHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYDPTH2
+	id S1756368AbYDPTIr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYDPTIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:07:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48007 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYDPTH1 (ORCPT
+	Wed, 16 Apr 2008 15:08:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50246 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751489AbYDPTIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:07:27 -0400
-Date: Wed, 16 Apr 2008 15:07:25 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Wed, 16 Apr 2008 15:08:38 -0400
+Date: Wed, 16 Apr 2008 12:07:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       vegard.nossum@gmail.com, nouveau@lists.freedesktop.org
-Subject: Re: [BUG/PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
-In-Reply-To: <20080416183258.GA30490@elte.hu>
-Message-ID: <Pine.LNX.4.58.0804161506300.30154@gandalf.stny.rr.com>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
- <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu>
- <20080414210242.2329997d@daedalus.pq.iki.fi> <20080416114609.GA20054@elte.hu>
- <20080416205902.6186d349@daedalus.pq.iki.fi> <20080416183258.GA30490@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: bhutchings@solarflare.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Add default CPU topology information
+Message-Id: <20080416120752.eed9657f.akpm@linux-foundation.org>
+In-Reply-To: <20080416125133.GA6304@elte.hu>
+References: <20080331114412.GH21637@solarflare.com>
+	<20080415124231.e22df79e.akpm@linux-foundation.org>
+	<20080416125133.GA6304@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 Apr 2008 14:51:33 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > This patch:
+> > > 
+> > > - Adds default definitions of the 4 topology macros to
+> > >   include/asm-generic/topology.h.
+> > > - Changes include/asm-*/topology.h to include <asm-generic/topology.h>
+> > >   unconditionally.
+> > > - Changes drivers/base/topology.c to use the topology macros unconditionally
+> > >   and to cope with definitions that aren't lvalues.
+> > > - Updates documentation accordingly.
+> > > 
+> > 
+> > I ran away in terror when I saw this patch.  It's dark and dirty stuff 
+> > you're unearthing there and it looks like a minefield of compilation 
+> > problems.  Not aided by the fact that we don't have a topology 
+> > maintainer afaik.
+> > 
+> > We shall see.
+> 
+> i could pick it up into sched.git
 
-On Wed, 16 Apr 2008, Ingo Molnar wrote:
->
-> so lets fix those preemptability bugs. They show that the
-> cpu-up/cpu-down ops are called from atomic context - it should normally
-> be straightforward to sort out - there's no particular reason why the
-> ->open()/->close() methods of an ftrace plugin should run in atomic
-> context. Steve, any ideas where the atomicity might come from?
->
+There seem to be multiple sched.gits
 
-They shouldn't be called in an atomic section. The only thing I do to
-protect them is call mutex_lock/unlock. Those should allow preemption to
-take place.
+> - it's a frequent party to topology 
+> patches. We've now got automated cross-build checks as well by virtue of 
+> Thomas so common build failures ought to be rare.
 
--- Steve
+OK, whatever.  There's a tangle between this change and the s390 tree which
+already has a tangle with one of the sched-gits which is sort-of getting
+sorted out.
+
+git-s390 wasn't an appropriate place to host changes to
+drivers/base/topology.c.
 
