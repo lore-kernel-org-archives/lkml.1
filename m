@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbYDPCQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbYDPCUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbYDPCQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Apr 2008 22:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYDPCQt
+	id S1760091AbYDPCUx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Apr 2008 22:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYDPCUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Apr 2008 22:16:49 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54132 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbYDPCQs (ORCPT
+	Tue, 15 Apr 2008 22:20:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42309
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752812AbYDPCUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Apr 2008 22:16:48 -0400
-Date: Wed, 16 Apr 2008 11:20:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       "Mel Gorman" <mel@csn.ul.ie>, "Nick Piggin" <npiggin@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, apw@shadowen.org
-Subject: Re: [patch] mm: sparsemem memory_present() memory corruption fix
-Message-Id: <20080416112015.79ac4867.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <86802c440804151900t3357eb52w4cf2339b38ce2c17@mail.gmail.com>
-References: <20080415201734.GA25628@elte.hu>
-	<alpine.LFD.1.00.0804151353380.2879@woody.linux-foundation.org>
-	<20080416000356.GA24737@elte.hu>
-	<20080416001816.GA26295@elte.hu>
-	<86802c440804151732j519a541t9d8e4f6b49a53313@mail.gmail.com>
-	<20080416004430.GA26928@elte.hu>
-	<Pine.LNX.4.64.0804151745440.6876@schroedinger.engr.sgi.com>
-	<20080416005231.GC26996@elte.hu>
-	<20080416011704.GA439@elte.hu>
-	<86802c440804151830h3917619ct5f1077530020f13f@mail.gmail.com>
-	<86802c440804151900t3357eb52w4cf2339b38ce2c17@mail.gmail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 15 Apr 2008 22:20:41 -0400
+Date: Tue, 15 Apr 2008 19:20:42 -0700 (PDT)
+Message-Id: <20080415.192042.119702071.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-04-15
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080415193857.GA16625@tuxdriver.com>
+References: <20080415193857.GA16625@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Apr 2008 19:00:18 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 15 Apr 2008 15:38:57 -0400
 
-> On Tue, Apr 15, 2008 at 6:30 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> > On Tue, Apr 15, 2008 at 6:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >  >
-> >  >  * Ingo Molnar <mingo@elte.hu> wrote:
-> >  >
-> >  >  > > > this is the only call to memory_present() we do in 32-bit arch
-> >  >  > > > setup, so it's required.
-> >  >  > >
-> >  >  > > We could clip there if SPARSEMEM is configured. I wonder if this
-> >  >  > > affects other platforms that need HIGHMEM support?
-> >  >  >
-> >  >  > clip where and what?
-> >  >
-> >  >  i.e. as per my previous argument i'd consider the need to sanitize the
-> >  >  calls in the architecture fundamentally wrong.
-> >  >
-> >  >  whether the core code emits a warning or allows the call is an
-> >  >  additional question i mention in the changelog - but the core sparse
-> >  >  memory code should _definitely_ not silently overflow a key internal
-> >  >  array ... (of which data structure the architecture code is not even
-> >  >  aware of)
-> >
-> >  or you can move that check into find_max_pfn for x86_32? so it will
-> >  not affect other platform regarding Christoph's concern?
-> >
-> the patch doesn't have side effects on x86_64.
+> This set looks bigger than it really is...three of the patches deal
+> with a subtle API change for the SSB bus to do DMA correctly on
+> architectures with complex DMA requirements.  The changes in those
+> patches amount to applying the same one-line change in dozens of
+> places across three drivers (b44, b43, and b43legacy).
 > 
-also no side effects on my ia64/NUMA box, which has sparse physical memory map.
+> Also included are a number of MAINTAINERS updates.  I guess everyone
+> forgets about these until the release nears.
+> 
+> Finally there are a few minor fixes, like the rfkill fix to only toggle
+> state for the correct device type rather than all devices on a system,
+> the rtl8187 priv->vif fix, the gelic IE overrun fix, and the mac80211
+> fix to limit log SPAM.
+> 
+> Please let me know if there are problems!  Hopefully this will be the
+> last round before 2.6.25...(famous last words...)
 
-Thanks,
--Kame
-
-
-
+Pulled, thanks John.
