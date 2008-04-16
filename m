@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765288AbYDPUrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbYDPUuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765288AbYDPUrX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 16:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYDPUrP
+	id S1762789AbYDPUuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 16:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYDPUt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 16:47:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47146 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752441AbYDPUrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 16:47:15 -0400
-Date: Wed, 16 Apr 2008 22:47:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       vegard.nossum@gmail.com, nouveau@lists.freedesktop.org
-Subject: Re: [BUG/PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
-Message-ID: <20080416204703.GD20762@elte.hu>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu> <20080414210242.2329997d@daedalus.pq.iki.fi> <20080416114609.GA20054@elte.hu> <20080416205902.6186d349@daedalus.pq.iki.fi> <20080416183258.GA30490@elte.hu> <20080416234209.221b7fae@daedalus.pq.iki.fi>
+	Wed, 16 Apr 2008 16:49:57 -0400
+Received: from hu-out-0506.google.com ([72.14.214.224]:6222 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbYDPUt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 16:49:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=UFgXDXc/DQPX1qJTRX8K0WsNYWv75rOgPJUGYjHIiZC1GatKAqHUh+R5dENq1mDkxXBnUkJZ/Pb4heKG1DoZHtBWtQ0JqdgfDQ8NJrBENCPxWwAqk57XAzAVlBg13Rv3g1bK7I+mhX//1+UiKW/P0Il3QbwhnNkM9Xx4O+NSyBY=
+Date: Wed, 16 Apr 2008 23:47:09 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: Current git tree broke busybox start-stop-daemon
+Message-ID: <20080416194709.GA4762@martell.zuzino.mipt.ru>
+References: <1208366702.5911.119.camel@gentoo-jocke.transmode.se> <20080416190057.GA4666@martell.zuzino.mipt.ru> <20080416193417.GD27459@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080416234209.221b7fae@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080416193417.GD27459@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Paalanen <pq@iki.fi> wrote:
-
-> > So i think we need to fix your automatic-cpudown/cpuup patch. I 
-> > tried that and it worked very intuitively and the cpus were 
-> > disabled/enabled without any trouble - with ftrace based mmiotrace 
-> > we now basically have something that most distros could enable by 
-> > default without thinking twice about it.
+On Wed, Apr 16, 2008 at 08:34:17PM +0100, Al Viro wrote:
+> On Wed, Apr 16, 2008 at 11:00:57PM +0400, Alexey Dobriyan wrote:
+> > On Wed, Apr 16, 2008 at 07:25:02PM +0200, Joakim Tjernlund wrote:
+> > > open("/proc/1/stat", O_RDONLY|O_LARGEFILE) = 4
+> > > _llseek(4, 0, 0xbfb94898, SEEK_END)     = -1 EINVAL (Invalid argument)
+> > 
+> > > So it appears that lseek is no longer allowed for /proc/1/stat
+> > > Bug or feature?
+> > > start-stop-daemon works fine in 2.6.23
+> > 
+> > That's what happens when switching ->llseek method from NULL
+> > (effectively, default_llseek), to seq_lseek (which rejects SEEK_END).
+> > 
+> > commit be614086a4aff163d5aa0dc160638d1193b59cde
+> > commit ee992744ea53db0a90c986fd0a70fbbf91e7f8bd
+> > 
+> > Al, do you remember why SEEK_END was omitted back then?
 > 
-> Without any trouble - you didn't hit the bug I did?
+> Because there's no sane way to implement it?
 
-i did get the warning both on enable/disable but it still worked.
+Ugly ->index games, sigh...
 
-	Ingo
+> Note that original cheerfully
+> did nothing, since it had zero ->i_size for that file.  Which makes program
+> in question very odd - what behaviour does it rely upon?
+
+Busybox just wants to estimate size of a file. And it knows about
+zero-length /proc/*/stat .
+
+libbb/read.c:
+
+void *xmalloc_open_read_close(const char *filename, size_t *sizep)
+{
+	char *buf;
+	size_t size = sizep ? *sizep : INT_MAX;
+	int fd;
+	off_t len;
+
+	fd = xopen(filename, O_RDONLY);
+	/* /proc/N/stat files report len 0 here */
+	/* In order to make such files readable, we add small const */
+	len = xlseek(fd, 0, SEEK_END) | 0x3ff; /* + up to 1k */
+		...
+
