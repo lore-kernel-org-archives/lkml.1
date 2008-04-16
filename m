@@ -1,111 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYDPEXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYDPE1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbYDPEXF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 00:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbYDPEWx
+	id S1756366AbYDPE1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 00:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYDPE1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 00:22:53 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:41513
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750778AbYDPEWw (ORCPT
+	Wed, 16 Apr 2008 00:27:22 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39227 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbYDPE1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 00:22:52 -0400
-X-Authority-Analysis: v=1.0 c=1 a=YSWQqB5pQ2wA:10 a=26HdPeMOMtQA:10
- a=vGK5CW9ijm8SuqUrLw8A:9 a=09X17OGoLUk09lSJMqgA:7
- a=k_3eVp-4zJYpRCH2X5XbKbXvRZEA:4 a=jEp0ucaQiEUA:10 a=WuK_CZDBSqoA:10
-Subject: Re: [PATCH -mm] relayfs: support larger relay buffer
-From: Tom Zanussi <zanussi@comcast.net>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: David Wilder <dwilder@us.ibm.com>,
+	Wed, 16 Apr 2008 00:27:21 -0400
+Date: Tue, 15 Apr 2008 22:27:15 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: x86 git tree broken (bisected)
+In-reply-to: <fa.qs5oa+YMIJd6h2hpuGCULc8ODY4@ifi.uio.no>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, tzanussi@gmail.com
-In-Reply-To: <4804C95F.2080204@redhat.com>
-References: <4804C95F.2080204@redhat.com>
-Content-Type: text/plain
-Date: Tue, 15 Apr 2008 23:22:49 -0500
-Message-Id: <1208319769.7893.16.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Message-id: <48058023.7080501@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.2mJjVaMdmV5IWp3mQiYHE1u4pHU@ifi.uio.no>
+ <fa.SO/I64FxJXD1oLBH54BTs4pc56c@ifi.uio.no>
+ <fa.fJC0A/aGr6H8XE94NUuvl1ixoc0@ifi.uio.no>
+ <fa.qs5oa+YMIJd6h2hpuGCULc8ODY4@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> On Monday, 14 of April 2008, Yinghai Lu wrote:
+>> On Mon, Apr 14, 2008 at 1:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> On Monday, 14 of April 2008, Yinghai Lu wrote:
+>>>  > On Sun, Apr 13, 2008 at 5:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>  > >
+>>>  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
+>>>  > >  > On Sun, Apr 13, 2008 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>  > >  > >
+>>>  > >  > > On Monday, 14 of April 2008, Yinghai Lu wrote:
+>>>  > >  > >  > On Sun, Apr 13, 2008 at 9:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>  > >  > >  > ...
+>>>  > >  > >  > >  > can you try to apply the patch i sent to you about agp bridge order
+>>>  > >  > >  > >  > reading for buggy silicon?
+>>>  > >  > >  > >  >
+>>>  > >  > >  > >  > Please boot kernel with "debug"...
+>>>  > >  > >  > >  >
+>>>  > >  > >  > >  > I want to verify if you can get
+>>>  > >  > >  > >  >
+>>>  > >  > >  > >  > "
+>>>  > >  > >  > >  > Aperture conflicts with PCI mapping.
+>>>  > >  > >  > >  > "
+>>>  > >  > >  > >  >
+>>>  > >  > >  > >  > in your boot log...
+>>>  > >  > >  > >
+>>>  > >  > >  > >  It's not present in there:
+>>>  > >  > >  > >
+>>>  > >  > >  > >  rafael@albercik:~> grep Aperture failing-with-patch-dmesg.log
+>>>  > >  > >  > >  Aperture too small (32 MB)
+>>>  > >  > >  > >  Aperture from AGP @ de000000 size 4096 MB (APSIZE 0)
+>>>  > >  > >  > >  Aperture too small (0 MB)
+>>>  > >  > >  > >  agpgart: Aperture pointing to RAM
+>>>  > >  > >  > >  agpgart: Aperture from AGP @ de000000 size 4096 MB
+>>>  > >  > >  > >  agpgart: Aperture too small (0 MB)
+>>>  > >  > >  > >
+>>>  > >  > >  > >  Full dmesg output attached.
+>>>  > >  > >  >
+>>>  > >  > >  > please check attached debug patch. and check if you can change GART
+>>>  > >  > >  > size in your BIOS setup to 64M instead of 32M
+>>>  > >  > >
+>>>  > >  > >  Hm, what tree am I supposed to apply it too:
+>>>  > >  > >  (1) current x86 git
+>>>  > >  > >  (2) current x86 git w/ some of your previous patches (which ones in this case)
+>>>  > >  > >  (3) failing (old) x86 git
+>>>  > >  > >  (4) failing (old) x86 git w/ some of your previous patches (which ones in this
+>>>  > >  > >     case)?
+>>>  > >  >
+>>>  > >  > (1) current x86.git
+>>>  > >
+>>>  > >  Attached is dmesg output from current x86.git with debug_gart_checking.patch
+>>>  > >  applied.
+>>>  >
+>>>  > please test the final one ... ...
+>>>  >
+>>>  > You should get back 64M memory back.
+>>>
+>>>  Tested (current x86.git), dmesg output attached.
+>> thanks.
+>>
+>> looks good. as expected...
+>>
+>> Checking aperture...
+>> AGP bridge at 00:04:00
+>> Aperture from AGP @ de000000 old size 32 MB
+>> Aperture size 4096 MB (APSIZE 0) is not right, using settings from NB
+>> Aperture from AGP @ de000000 size 32 MB (APSIZE 0)
+>> Node 0: aperture @ de000000 size 32 MB
+>> Aperture too small (32 MB) than (64 MB)
+>> ...
+>> agpgart: Detected AGP bridge 20
+>> Setting up ULi AGP.
+>> agpgart: AGP aperture is 32M @ 0xde000000
+> 
+> BTW, what exactly would be the benefit of increasing the aperture size, given
+> that I use a PCI Express graphics adapter?
 
-On Tue, 2008-04-15 at 11:27 -0400, Masami Hiramatsu wrote:
-> Use vmalloc() and memset() instead of kcalloc() to allocate a page* array
-> when the array size is bigger than one page. This enables relayfs to support
-> bigger relay buffers than 64MB on 4k-page system, 512MB on 16k-page system.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
-> This is useful for a 64-bit system which has a plenty of memory (tens of
-> giga bytes) and a large kernel memory space.
-> 
-> I tested it on x86-64 and ia64.
-> 
-
-Hi,
-
-It looks ok to me, but it might be a little cleaner and avoid some
-duplication if you add the new code as a couple of functions instead.
-Just a suggestion...
-
-Tom
-
->  kernel/relay.c |   22 ++++++++++++++++++----
->  1 file changed, 18 insertions(+), 4 deletions(-)
-> 
-> Index: 2.6.25-rc8-mm2/kernel/relay.c
-> ===================================================================
-> --- 2.6.25-rc8-mm2.orig/kernel/relay.c
-> +++ 2.6.25-rc8-mm2/kernel/relay.c
-> @@ -104,12 +104,20 @@ static int relay_mmap_buf(struct rchan_b
->  static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
->  {
->  	void *mem;
-> -	unsigned int i, j, n_pages;
-> +	unsigned int i, j, n_pages, pa_size;
-> 
->  	*size = PAGE_ALIGN(*size);
->  	n_pages = *size >> PAGE_SHIFT;
-> +	pa_size = n_pages * sizeof(struct page *);
-> 
-> -	buf->page_array = kcalloc(n_pages, sizeof(struct page *), GFP_KERNEL);
-> +	if (pa_size > PAGE_SIZE) {
-> +		buf->page_array = vmalloc(pa_size);
-> +		if (buf->page_array)
-> +			memset(buf->page_array, 0, pa_size);
-> +	} else {
-> +		buf->page_array = kcalloc(n_pages, sizeof(struct page *),
-> +					  GFP_KERNEL);
-> +	}
->  	if (!buf->page_array)
->  		return NULL;
-> 
-> @@ -130,7 +138,10 @@ static void *relay_alloc_buf(struct rcha
->  depopulate:
->  	for (j = 0; j < i; j++)
->  		__free_page(buf->page_array[j]);
-> -	kfree(buf->page_array);
-> +	if (pa_size > PAGE_SIZE)
-> +		vfree(buf->page_array);
-> +	else
-> +		kfree(buf->page_array);
->  	return NULL;
->  }
-> 
-> @@ -189,7 +200,10 @@ static void relay_destroy_buf(struct rch
->  		vunmap(buf->start);
->  		for (i = 0; i < buf->page_count; i++)
->  			__free_page(buf->page_array[i]);
-> -		kfree(buf->page_array);
-> +		if (buf->page_count * sizeof(struct page *) > PAGE_SIZE)
-> +			vfree(buf->page_array);
-> +		else
-> +			kfree(buf->page_array);
->  	}
->  	chan->buf[buf->cpu] = NULL;
->  	kfree(buf->padding);
-
+The kernel uses the AGP GART aperture as an IOMMU. If you have >4GB of 
+RAM and lots of devices with DMA addressing limits, more GART space 
+would help prevent the IOMMU space from being exhausted.
