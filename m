@@ -1,141 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYDPNZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763796AbYDPN0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbYDPNZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 09:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761176AbYDPNZd
+	id S1763796AbYDPN0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 09:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761830AbYDPN0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 09:25:33 -0400
-Received: from mx.bridgeco.net ([213.173.191.47]:1663 "EHLO mx.bridgeco.net"
+	Wed, 16 Apr 2008 09:26:40 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46413 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756438AbYDPNZc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 09:25:32 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1760945AbYDPN0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 09:26:39 -0400
+Date: Wed, 16 Apr 2008 16:26:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: sverre@rabbelier.nl
+Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
+       David Newall <davidn@davidnewall.com>
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080416132634.GA545@cs181133002.pp.htv.fi>
+References: <20080413205406.GA9190@2ka.mipt.ru> <48028830.6020703@earthlink.net> <alpine.DEB.1.10.0804131546370.9318@asgard> <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] net: let the MII driver inform a MAC about changed wire speed
-Date: Wed, 16 Apr 2008 15:20:04 +0200
-Message-ID: <83116F0A4FF67A4F97BA0B6E408C48E301F22BDD@zuerich.BC-Int.NET>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net: let the MII driver inform a MAC about changed wire speed
-Thread-Index: AcibJ86y7g67WgrMQ72dwykAarxd0A==
-From: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
-To: <linux-kernel@vger.kernel.org>
-Cc: "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 16 Apr 2008 13:25:32.0798 (UTC) FILETIME=[58D7F1E0:01C89FC5]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was tested on a ARM926 base SoC with an IP based ethernet MAC (10/100 MBit) together with a Realtek RTL8201 MII and a SMCSC
-8700 RMII with kernel 2.6.24.
+On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
+> I'm not subscribed to the kernel mailing list, so please include me in
+> the cc if you don't reply to the git list (which I am subscribed to).
+> 
+> Git is participating in Google Summer of Code this year and I've
+> proposed to write a 'git statistics' command. This command would allow
+> the user to gather data about a repository, ranging from "how active
+> is dev x" to "what did x work on in the last 3 weeks". It's main
+> feature however, would be an algorithm that ranks commits as being
+> either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
+> that can aid in determining this, a commit msg along the lines of
+> "fixes ..." being the most obvious.)
+>...
 
----
-An Ethernet MAC needs to know the medium speed (10/100/1000 Mbps) of an RMII PHY in order to correctly interpret data originating
-from that PHY. The function mii_check_media() has been extended to allow retrieval of the medium speed by a MAC driver. A trivial
-modification to existing MAC drivers will allow them to cover operation with both MII and RMII PHYs.
-Signed-off-by: Marcel Wappler <marcel.wappler@bridgeco.net>
----
-Index: linux/include/linux/mii.h
---- linux/include/linux/mii.h	(revision 341)
-+++ linux/include/linux/mii.h	(revision 342)
-@@ -143,15 +143,25 @@ struct mii_ioctl_data {
- 	__u16		val_out;
- };
+At least with the data we have currently in git it's impossible to 
+figure that out automatically.
 
--#ifdef __KERNEL__
-+#ifdef __KERNEL__
+E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
+(ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
+automatically that it is a bugfix, and the commit that introduced
+the bug?
 
- #include <linux/if.h>
+You can always get some data, but if you want to get usable statistics 
+you need explicit tags in the commits, not some algorithm that tries 
+to guess.
 
-+/* LINK speed is figured out in mii_check_media and needed by some MAC drivers */
-+#define MII_LS_10HALF           0x01    /* MII links speed is 10HALF   */
-+#define MII_LS_10FULL           0x02    /* MII links speed is 10FULL   */
-+#define MII_LS_100HALF          0x04    /* MII links speed is 100HALF  */
-+#define MII_LS_100FULL          0x08    /* MII links speed is 100FULL  */
-+#define MII_LS_1000HALF         0x10    /* MII links speed is 1000HALF */
-+#define MII_LS_1000FULL         0x20    /* MII links speed is 1000FULL */
-+
-+
- struct ethtool_cmd;
+> Cheers,
+> 
+> Sverre Rabbelier
 
- struct mii_if_info {
- 	int phy_id;
- 	int advertising;
-+	int link_speed;
- 	int phy_id_mask;
- 	int reg_num_mask;
+cu
+Adrian
 
-Index: linux/drivers/net/mii.c
---- linux/drivers/net/mii.c	(revision 341)
-+++ linux/drivers/net/mii.c	(revision 342)
-@@ -297,12 +297,12 @@ void mii_check_link (struct mii_if_info
- }
+-- 
 
- /**
-- * mii_check_media - check the MII interface for a duplex change
-+ * mii_check_media - check the MII interface for a speed and duplex change
-  * @mii: the MII interface
-  * @ok_to_print: OK to print link up/down messages
-- * @init_media: OK to save duplex mode in @mii
-+ * @init_media: OK to save speed and duplex mode in @mii
-  *
-- * Returns 1 if the duplex mode changed, 0 if not.
-+ * Returns 1 if the speed or duplex mode changed, 0 if not.
-  * If the media type is forced, always returns 0.
-  */
- unsigned int mii_check_media (struct mii_if_info *mii,
-@@ -310,7 +310,7 @@ unsigned int mii_check_media (struct mii
- 			      unsigned int init_media)
- {
- 	unsigned int old_carrier, new_carrier;
--	int advertise, lpa, media, duplex;
-+	int advertise, lpa, media, duplex, link_speed;
- 	int lpa2 = 0;
-
- 	/* if forced media, go no further */
-@@ -357,20 +357,34 @@ unsigned int mii_check_media (struct mii
- 	if (lpa2 & LPA_1000FULL)
- 		duplex = 1;
-
-+    /* figure out  link speed */
-+    if (lpa2 & LPA_1000FULL)
-+        link_speed = MII_LS_1000FULL;
-+    else if (lpa2 & LPA_1000HALF)
-+        link_speed = MII_LS_1000HALF;
-+    else if (media & ADVERTISE_100FULL)
-+        link_speed = MII_LS_100FULL;
-+    else if (media & ADVERTISE_100HALF)
-+        link_speed = MII_LS_100HALF;
-+    else if (media & ADVERTISE_10FULL)
-+        link_speed = MII_LS_10FULL;
-+        else link_speed = MII_LS_10HALF;
-+
- 	if (ok_to_print)
- 		printk(KERN_INFO "%s: link up, %sMbps, %s-duplex, lpa 0x%04X\n",
- 		       mii->dev->name,
--		       lpa2 & (LPA_1000FULL | LPA_1000HALF) ? "1000" :
--		       media & (ADVERTISE_100FULL | ADVERTISE_100HALF) ? "100" : "10",
-+		       link_speed & (MII_LS_1000FULL | MII_LS_1000HALF) ? "1000" :
-+		       link_speed & (MII_LS_100FULL  | MII_LS_100HALF) ? "100" : "10",
- 		       duplex ? "full" : "half",
- 		       lpa);
-
--	if ((init_media) || (mii->full_duplex != duplex)) {
-+	if ((init_media) || (mii->full_duplex != duplex) || mii->link_speed != link_speed) {
- 		mii->full_duplex = duplex;
--		return 1; /* duplex changed */
-+		mii->link_speed = link_speed;
-+		return 1; /* speed or duplex changed */
- 	}
-
--	return 0; /* duplex did not change */
-+	return 0; /* sped and duplex did not change */
- }
-
- /**
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
