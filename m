@@ -1,49 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764048AbYDPTe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYDPTj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764048AbYDPTe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 15:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYDPTeV
+	id S1752897AbYDPTj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 15:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYDPTjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 15:34:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44710 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYDPTeV (ORCPT
+	Wed, 16 Apr 2008 15:39:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:32632 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbYDPTjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 15:34:21 -0400
-Date: Wed, 16 Apr 2008 20:34:17 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Current git tree broke busybox start-stop-daemon
-Message-ID: <20080416193417.GD27459@ZenIV.linux.org.uk>
-References: <1208366702.5911.119.camel@gentoo-jocke.transmode.se> <20080416190057.GA4666@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Apr 2008 15:39:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VP3K+EjK+WBVDTceAEywVBorxjGTfSLU4XOhp2F6axzKhWEp3GiLD6lnrtRuhF/awV7eOxmYa+1p291iyXvyX6t7oTWJ8SiEbQeJnDenTIZk187PGEeQVtpTm6vfYPwRGEJSoXUYIwZ4nSj174iQdu2P5W8IHB1HBRHCapmWCDQ=
+Message-ID: <bd6139dc0804161239h17e79c70ta5e938619e5743c9@mail.gmail.com>
+Date: Wed, 16 Apr 2008 21:39:41 +0200
+From: "Sverre Rabbelier" <alturin@gmail.com>
+Reply-To: sverre@rabbelier.nl
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Reporting bugs and bisection
+Cc: git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
+       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Tilman Schmidt" <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, "Mark Lord" <lkml@rtr.ca>,
+       "David Miller" <davem@davemloft.net>, jesper.juhl@gmail.com,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org,
+       "David Newall" <davidn@davidnewall.com>
+In-Reply-To: <20080416132634.GA545@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080416190057.GA4666@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.4.2.3i
+References: <20080413205406.GA9190@2ka.mipt.ru>
+	 <alpine.DEB.1.10.0804131546370.9318@asgard>
+	 <20080414043939.GA6862@1wt.eu>
+	 <20080414053943.GU9785@ZenIV.linux.org.uk>
+	 <20080413232441.e216a02c.akpm@linux-foundation.org>
+	 <20080414072328.GW9785@ZenIV.linux.org.uk>
+	 <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au>
+	 <4804765B.2070300@davidnewall.com>
+	 <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com>
+	 <20080416132634.GA545@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 11:00:57PM +0400, Alexey Dobriyan wrote:
-> On Wed, Apr 16, 2008 at 07:25:02PM +0200, Joakim Tjernlund wrote:
-> > open("/proc/1/stat", O_RDONLY|O_LARGEFILE) = 4
-> > _llseek(4, 0, 0xbfb94898, SEEK_END)     = -1 EINVAL (Invalid argument)
-> 
-> > So it appears that lseek is no longer allowed for /proc/1/stat
-> > Bug or feature?
-> > start-stop-daemon works fine in 2.6.23
-> 
-> That's what happens when switching ->llseek method from NULL
-> (effectively, default_llseek), to seq_lseek (which rejects SEEK_END).
-> 
-> commit be614086a4aff163d5aa0dc160638d1193b59cde
-> commit ee992744ea53db0a90c986fd0a70fbbf91e7f8bd
-> 
-> Al, do you remember why SEEK_END was omitted back then?
+On Wed, Apr 16, 2008 at 3:26 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
+>  At least with the data we have currently in git it's impossible to
+>  figure that out automatically.
 
-Because there's no sane way to implement it?  Note that original cheerfully
-did nothing, since it had zero ->i_size for that file.  Which makes program
-in question very odd - what behaviour does it rely upon?
+I don't quite agree, as I explained in my proposal there are several
+ways to detect that a commit was a bugfix. From thereon you can deduct
+that if it was a bugfix, that the commit that introduced the fixed
+change was a bug! From thereon you can start sifting and get more
+confirmations. Junio has made several suggestions as to how this could
+be implemented and I'm confident that and algorithm can be devised
+that is at least capable of 'guessing' what type a commit is. Aside
+from the guessing part I think a lot of information can be gathered
+from commit msgs.
+
+Of course, some commits might not be able to be typed (as there might
+not be any 'follow up' information on them). Those commits can be
+marked as 'unknown' and be ignored. Agreed, should all commits be
+'unknown' then the command wouldn't be very useful, but especially on
+large repos there is a very large dataset. As the size of the dataset
+increases I estimate that the correlation between commits increases
+(less commits that add new code which then is never changed
+therafter). The higher the degree of correlation between individual
+commits the more we can determine about the nature of a commit.
+
+
+>  E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11
+>  (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine
+>  automatically that it is a bugfix, and the commit that introduced
+>  the bug?
+
+Well, a dead giveaway would be:
+"http://bugzilla.kernel.org/show_bug.cgi?id=10124"
+
+>  You can always get some data, but if you want to get usable statistics
+>  you need explicit tags in the commits, not some algorithm that tries
+>  to guess.
+
+As said above, I don't agree, you can 'guess' very reliably on a large
+dataset. Also, most commits are already 'tagged' in some way or
+another. The trick is to find the pattern in this tagging and use it.
+
+I hope this clears things up a bit,
+
+Cheers,
+
+Sverre Rabbelier
