@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYDPGST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbYDPGXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYDPGST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 02:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYDPGSG
+	id S1761541AbYDPGXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 02:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYDPGXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 02:18:06 -0400
-Received: from rv-out-0708.google.com ([209.85.198.249]:37375 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750932AbYDPGSE (ORCPT
+	Wed, 16 Apr 2008 02:23:06 -0400
+Received: from service2.sh.cvut.cz ([147.32.127.218]:33024 "EHLO
+	service2.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYDPGXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 02:18:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=puxUMgUF9FRrVRR9O2qjY9PKnjkaZ21Xry6Hih2UjNoKs8+K3vMXcgf7dlgktxQXDsjdyS47k7Cjk9wVjFgrXfiMYWoDBYV5g3ZgZE/43TG5MGemdUahLy0PSh81cpfhKgCBZ23iutxVb4CTfNCsrDIFz4ONrAB183GAMMCGF0M=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86_64: fix memtest print out
-Date: Tue, 15 Apr 2008 23:17:42 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
+	Wed, 16 Apr 2008 02:23:04 -0400
+Message-ID: <48059B92.7080601@seznam.cz>
+Date: Wed, 16 Apr 2008 08:24:18 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: benh@kernel.crashing.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
+       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
+       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       paulus@samba.org
+Subject: Re: Microblaze Linux release
+References: <48020A21.4000404@seznam.cz> <200804140801.57464.arnd@arndb.de>	 <4804A59B.5040909@seznam.cz>  <200804151532.11619.arnd@arndb.de> <1208296358.6958.237.camel@pasglop>
+In-Reply-To: <1208296358.6958.237.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804152317.42886.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Hi Ben,
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 058552e..0671f11 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -478,7 +478,7 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 				last_bad += incr;
- 			} else {
- 				if (start_bad) {
--					printk(KERN_INFO "  %016lxx bad mem addr %016lx - %016lx reserved\n",
-+					printk(KERN_CONT "\n  %016lx bad mem addr %016lx - %016lx reserved",
- 						val, start_bad, last_bad + incr);
- 					reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
- 				}
-@@ -487,7 +487,7 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 		}
- 	}
- 	if (start_bad) {
--		printk(KERN_INFO "  %016lx bad mem addr %016lx - %016lx reserved\n",
-+		printk(KERN_CONT "\n  %016lx bad mem addr %016lx - %016lx reserved",
- 			val, start_bad, last_bad + incr);
- 		reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
- 	}
+>> I'd recommend splitting prom.c into code that can be shared between powerpc
+>> and microblaze and architecture specific code. Anything that deals with
+>> LMB should go into powerpc, and you can simply use the alloc_bootmem
+>> mechanism for your architecture.
+> 
+> That is non trivial... the unflatten DT code among others relies heavily
+> on the LMB's to allocate the objects.
+
+I think so. Sharing code among archs looks nice and this way is definitely
+right. But starting with communication with PowerPC guys that this code I want
+to use in case that this code is not in vanilla. This is not good start for
+doing this.
+I think if Microblaze will be in vanilla we can talked about separation MB and
+PPC part to kernel folder and shared code move to shared folder.
+
+> We could split the early accessors, unflatten code, and kernel-side
+> accessors at one point, though we already did most of it no ?
+
+Yes
+
+Michal Simek
+www.monstr.eu
