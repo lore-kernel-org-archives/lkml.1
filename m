@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934438AbYDQPwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbYDQPx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934438AbYDQPwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbYDQPwE
+	id S933699AbYDQPx6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYDQPxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:52:04 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38792
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762913AbYDQPwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:52:03 -0400
-Date: Thu, 17 Apr 2008 17:51:57 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
-	operation to happen
-Message-ID: <20080417155157.GC17187@duo.random>
-References: <patchbomb.1207669443@duo.random> <ec6d8f91b299cf26cce5.1207669444@duo.random> <20080416163337.GJ22493@sgi.com> <Pine.LNX.4.64.0804161134360.12296@schroedinger.engr.sgi.com>
+	Thu, 17 Apr 2008 11:53:49 -0400
+Received: from namei.org ([69.55.235.186]:53655 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750833AbYDQPxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 11:53:49 -0400
+Date: Fri, 18 Apr 2008 01:53:18 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Greg KH <greg@kroah.com>
+cc: linux-security-module@vger.kernel.org, linux-audit@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/12] Tell git about security/selinux/include/audit.h
+In-Reply-To: <20080417154433.GA2120@kroah.com>
+Message-ID: <Xine.LNX.4.64.0804180152550.826@us.intercode.com.au>
+References: <88d8811229b02f6b14ff1f0682dc5502a1f61b41.1208428765.git.jmorris@namei.org>
+ <751bc5f7460a0337b7e463bd9a7c4ad60ed6176e.1208428766.git.jmorris@namei.org>
+ <20080417154433.GA2120@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804161134360.12296@schroedinger.engr.sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 11:35:38AM -0700, Christoph Lameter wrote:
-> On Wed, 16 Apr 2008, Robin Holt wrote:
-> 
-> > I don't think this lock mechanism is completely working.  I have
-> > gotten a few failures trying to dereference 0x100100 which appears to
-> > be LIST_POISON1.
-> 
-> How does xpmem unregistering of notifiers work?
+On Thu, 17 Apr 2008, Greg KH wrote:
 
-Especially are you using mmu_notifier_unregister?
+> On Thu, Apr 17, 2008 at 11:06:07AM +0000, James Morris wrote:
+> > Signed-off-by: James Morris <jmorris@namei.org>
+> > ---
+> >  security/selinux/include/audit.h |   65 ++++++++++++++++++++++++++++++++++++++
+> 
+> Shouldn't this be merged with the previous patch that needed this?
+
+Good thinking.
+
+
+-- 
+James Morris
+<jmorris@namei.org>
