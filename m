@@ -1,286 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbYDQTXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYDQT1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761726AbYDQTXt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYDQTXf
+	id S1756214AbYDQT1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYDQT1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:23:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:47792 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270AbYDQTXX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:23:23 -0400
-Message-ID: <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
-Date: Thu, 17 Apr 2008 12:23:20 -0700
-From: "Tom May" <tom@tommay.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 17 Apr 2008 15:27:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34524 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbYDQT1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 15:27:44 -0400
+Date: Thu, 17 Apr 2008 21:27:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-ID: <20080417192729.GA3058@elte.hu>
+References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org> <20080417090626.GA14383@elte.hu> <20080417021813.04df7912.akpm@linux-foundation.org> <20080417093025.GA17389@elte.hu> <20080417023603.672d1032.akpm@linux-foundation.org> <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
-	 <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 2:30 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Hi Tom
->
->
->  > Here's a test program that allocates memory and frees on notification.
->  >  It takes an argument which is the number of pages to use; use a
->  > number considerably higher than the amount of memory in the system.
->  > I'm running this on a system without swap.  Each time it gets a
->  > notification, it frees memory and writes out the /proc/meminfo
->  > contents.  What I see is that Cached gradually decreases, then Mapped
->  > decreases, and eventually the kernel invokes the oom killer.  It may
->  > be necessary to tune some of the constants that control the allocation
->  > and free rates and latency; these values work for my system.
->
->  may be...
->
->  I think you misunderstand madvise(MADV_DONTNEED).
->  madvise(DONTNEED) indicate drop process page table.
->  it mean become easily swap.
->
->  when run on system without swap, madvise(DONTNEED) almost doesn't work
->  as your expected.
 
-madvise can be replaced with munmap and the same behavior occurs.
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
---- test.c.orig 2008-04-17 11:41:47.000000000 -0700
-+++ test.c 2008-04-17 11:44:04.000000000 -0700
-@@ -127,7 +127,7 @@
-    /* Release FREE_CHUNK pages. */
+> >  Does it really really really need to consume one of our few remaining page
+> >  flags?  We'll be in a mess when we run out.
+> 
+> Actually it doesn't. I attach a patch which gets rid of the page flag, 
+> and we rely instead on the PTE flag for page-trackedness.
+[...]
+> Ingo, will you take this for some additional testing?
 
-    for (i = 0; i < FREE_CHUNK; i++) {
--       int r = madvise(p + page*PAGESIZE, PAGESIZE, MADV_DONTNEED);
-+       int r = munmap(p + page*PAGESIZE, PAGESIZE);
-        if (r == -1) {
-            perror("madvise");
-            exit(1);
+thanks Vegard, i've applied it - looks good to me too.
 
-Here's what I'm seeing on my system.  This is with munmap, but I see
-the same thing with madvise.  First, /proc/meminfo on my system before
-running the test:
-
-# cat /proc/meminfo
-MemTotal:       127612 kB
-MemFree:         71348 kB
-Buffers:          1404 kB
-Cached:          52324 kB
-SwapCached:          0 kB
-Active:           2336 kB
-Inactive:        51656 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:              80 kB
-Writeback:           0 kB
-AnonPages:         276 kB
-Mapped:            376 kB
-Slab:             1680 kB
-SReclaimable:      824 kB
-SUnreclaim:        856 kB
-PageTables:         52 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      908 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
-Here is the start and end of the output from the test program.  At
-each /dev/mem_notify notification Cached decreases, then eventually
-Mapped decreases as well, which means the amount of time the program
-has to free memory gets smaller and smaller.  Finally the oom killer
-is invoked because the program can't react quickly enough to free
-memory, even though it can free at a faster rate than it can use
-memory.  My test is slow to free because it calls nanosleep, but this
-is just a simulation of my actual program that has to perform garbage
-collection before it can free memory.
-
-# ./test_unmap 250000
-time: 1208458019
-MemTotal:       127612 kB
-MemFree:          5524 kB
-Buffers:           872 kB
-Cached:          18388 kB
-SwapCached:          0 kB
-Active:         101468 kB
-Inactive:        18220 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      100436 kB
-Mapped:            504 kB
-Slab:             1608 kB
-SReclaimable:      816 kB
-SUnreclaim:        792 kB
-PageTables:        152 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
-time: 1208458020
-MemTotal:       127612 kB
-MemFree:          5732 kB
-Buffers:           820 kB
-Cached:          17928 kB
-SwapCached:          0 kB
-Active:         101708 kB
-Inactive:        17752 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      100712 kB
-Mapped:            504 kB
-Slab:             1608 kB
-SReclaimable:      816 kB
-SUnreclaim:        792 kB
-PageTables:        156 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
-time: 1208458021
-MemTotal:       127612 kB
-MemFree:          5660 kB
-Buffers:           820 kB
-Cached:          17416 kB
-SwapCached:          0 kB
-Active:         102228 kB
-Inactive:        17316 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      101308 kB
-Mapped:            504 kB
-Slab:             1608 kB
-SReclaimable:      816 kB
-SUnreclaim:        792 kB
-PageTables:        156 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
---- snip --- now Mapped is decreasing: ---
-
-time: 1208458049
-MemTotal:       127612 kB
-MemFree:          5568 kB
-Buffers:            40 kB
-Cached:            868 kB
-SwapCached:          0 kB
-Active:         119036 kB
-Inactive:          720 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      118848 kB
-Mapped:            488 kB
-Slab:             1456 kB
-SReclaimable:      724 kB
-SUnreclaim:        732 kB
-PageTables:        172 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
-time: 1208458050
-MemTotal:       127612 kB
-MemFree:          5608 kB
-Buffers:            40 kB
-Cached:            356 kB
-SwapCached:          0 kB
-Active:         119392 kB
-Inactive:          328 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      119324 kB
-Mapped:            268 kB
-Slab:             1456 kB
-SReclaimable:      724 kB
-SUnreclaim:        732 kB
-PageTables:        172 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-
-time: 1208458051
-MemTotal:       127612 kB
-MemFree:          5428 kB
-Buffers:            40 kB
-Cached:            116 kB
-SwapCached:          0 kB
-Active:         119832 kB
-Inactive:           84 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:      119760 kB
-Mapped:             60 kB
-Slab:             1440 kB
-SReclaimable:      720 kB
-SUnreclaim:        720 kB
-PageTables:        172 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:     63804 kB
-Committed_AS:      944 kB
-VmallocTotal:   909280 kB
-VmallocUsed:       304 kB
-VmallocChunk:   908976 kB
-test_unmap invoked oom-killer: gfp_mask=0xa80d2, order=0, oomkilladj=0
- [<c012f1db>] out_of_memory+0x16f/0x1a0
- [<c01308dd>] __alloc_pages+0x2c1/0x300
- [<c013757a>] handle_mm_fault+0x262/0x3e4
- [<c010906b>] do_page_fault+0x407/0x638
- [<c011fba0>] hrtimer_wakeup+0x0/0x18
- [<c0108c64>] do_page_fault+0x0/0x638
- [<c024d822>] error_code+0x6a/0x70
-
-If it's possible to get a notification when MemFree + Cached + Mapped
-(I'm not sure whether this is the right formula) falls below some
-threshold, so that the program has time to find memory to discard
-before the system runs out, that would prevent the oom -- as long as
-the application(s) can ensure that there is not too much memory
-allocated while it is looking for memory to free.   But at least the
-threshold would give it a reasonable amount of time to handle the
-notification.
-
-Thanks,
-.tom
+	Ingo
