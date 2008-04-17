@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763881AbYDQND3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765642AbYDQNKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763881AbYDQND3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 09:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYDQNDW
+	id S1765642AbYDQNKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 09:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759467AbYDQNKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 09:03:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59599 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754066AbYDQNDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 09:03:21 -0400
-Date: Thu, 17 Apr 2008 15:02:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Possible mem leak in copy_process()
-Message-ID: <20080417130252.GB6640@elte.hu>
-References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru>
+	Thu, 17 Apr 2008 09:10:42 -0400
+Received: from stinky.trash.net ([213.144.137.162]:63121 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbYDQNKm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 09:10:42 -0400
+Message-ID: <48074C4E.6060400@trash.net>
+Date: Thu, 17 Apr 2008 15:10:38 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080417115718.GC103@tv-sign.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0003]
+To: hadi@cyberus.ca
+CC: David Miller <davem@davemloft.net>, 12o3l@tiscali.nl,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NET: catch signed nla_len() retval in tcf_simp_init()
+References: <4806C501.20300@tiscali.nl>	 <20080416.213712.78410382.davem@davemloft.net> <4806D847.2030806@trash.net> <1208437113.4420.34.camel@localhost>
+In-Reply-To: <1208437113.4420.34.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> > 1331 		if (likely(p->pid)) {
-
-> > 1351 		}
-
-> > Event leaked_storage: Returned without freeing storage "pid" Also 
-> > see events: [alloc_fn][var_assign][pass_arg]
+jamal wrote:
+> On Thu, 2008-17-04 at 06:55 +0200, Patrick McHardy wrote:
 > 
-> this looks like a false alarm.
+>> The change is also unnecessary because the attribute was
+>> already validated and the length can not be less than zero.
 > 
-> p->pid == pid->numbers[0].nr. If "struct pid *pid" was allocated, its 
-> .nr can't be 0.
-> 
-> IOW, !p->pid means that pid == init_struct_pid, it wasn't allocated 
-> but was passed from the caller.
+> Since act_simple is an academic example:
+> I think that a better solution is to add TCA_DEF_DATA (which is a
+> string) to the nla_policy. nla_policy is defined but at the moment it is
+> not used in the call to nla_parse_nested() - might as well use it.
 
-should we perhaps codify this rule via adding something like this to the 
-else branch:
-
-   WARN_ON_ONCE(task_pid(p) != &init_struct_pid);
-
-?
-
-	Ingo
+Basic validity checks are always performed. But I agree, better
+to provide a good example.
