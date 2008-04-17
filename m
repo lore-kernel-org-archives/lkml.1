@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbYDQBQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbYDQBQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765757AbYDQBQh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYDQBHt
+	id S932743AbYDQBQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYDQBHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:49 -0400
-Received: from sous-sol.org ([216.99.217.87]:58879 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:50 -0400
+Received: from sous-sol.org ([216.99.217.87]:58880 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759213AbYDQBHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759232AbYDQBHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Apr 2008 21:07:48 -0400
-Message-Id: <20080417010348.192847503@sous-sol.org>
+Message-Id: <20080417010331.416680812@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:02 -0700
+Date: Wed, 16 Apr 2008 18:01:39 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,10 +22,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>, David S Miller <davem@davemloft.net>
-Subject: TCP: Fix shrinking windows with window scaling
-Content-Disposition: inline; filename=tcp-fix-shrinking-windows-with-window-scaling.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, snitzer@gmail.com,
+       dada1@cosmosbay.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: alloc_percpu() fails to allocate percpu data
+Content-Disposition: inline; filename=alloc_percpu-fails-to-allocate-percpu-data.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,65 +33,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Eric Dumazet <dada1@cosmosbay.com>
 
-Upstream commit: 607bfbf2d55dd1cfe5368b41c2a81a8c9ccf4723
+upstream commit: be852795e1c8d3829ddf3cb1ce806113611fa555
 
-When selecting a new window, tcp_select_window() tries not to shrink
-the offered window by using the maximum of the remaining offered window
-size and the newly calculated window size. The newly calculated window
-size is always a multiple of the window scaling factor, the remaining
-window size however might not be since it depends on rcv_wup/rcv_nxt.
-This means we're effectively shrinking the window when scaling it down.
+Some oprofile results obtained while using tbench on a 2x2 cpu machine were
+very surprising.
 
+For example, loopback_xmit() function was using high number of cpu cycles
+to perform the statistic updates, supposed to be real cheap since they use
+percpu data
 
-The dump below shows the problem (scaling factor 2^7):
+        pcpu_lstats = netdev_priv(dev);
+        lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+        lb_stats->packets++;  /* HERE : serious contention */
+        lb_stats->bytes += skb->len;
 
-- Window size of 557 (71296) is advertised, up to 3111907257:
+struct pcpu_lstats is a small structure containing two longs.  It appears
+that on my 32bits platform, alloc_percpu(8) allocates a single cache line,
+instead of giving to each cpu a separate cache line.
 
-IP 172.2.2.3.33000 > 172.2.2.2.33000: . ack 3111835961 win 557 <...>
+Using the following patch gave me impressive boost in various benchmarks
+( 6 % in tbench)
+(all percpu_counters hit this bug too)
 
-- New window size of 514 (65792) is advertised, up to 3111907217, 40 bytes
-  below the last end:
+Long term fix (ie >= 2.6.26) would be to let each CPU allocate their own
+block of memory, so that we dont need to roudup sizes to L1_CACHE_BYTES, or
+merging the SGI stuff of course...
 
-IP 172.2.2.3.33000 > 172.2.2.2.33000: . 3113575668:3113577116(1448) ack 3111841425 win 514 <...>
+Note : SLUB vs SLAB is important here to *show* the improvement, since they
+dont have the same minimum allocation sizes (8 bytes vs 32 bytes).  This
+could very well explain regressions some guys reported when they switched
+to SLUB.
 
-The number 40 results from downscaling the remaining window:
-
-3111907257 - 3111841425 = 65832
-65832 / 2^7 = 514
-65832 % 2^7 = 40
-
-If the sender uses up the entire window before it is shrunk, this can have
-chaotic effects on the connection. When sending ACKs, tcp_acceptable_seq()
-will notice that the window has been shrunk since tcp_wnd_end() is before
-tp->snd_nxt, which makes it choose tcp_wnd_end() as sequence number.
-This will fail the receivers checks in tcp_sequence() however since it
-is before it's tp->rcv_wup, making it respond with a dupack.
-
-If both sides are in this condition, this leads to a constant flood of
-ACKs until the connection times out.
-
-Make sure the window is never shrunk by aligning the remaining window to
-the window scaling factor.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/ipv4/tcp_output.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/allocpercpu.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -258,7 +258,7 @@ static u16 tcp_select_window(struct sock
- 		 *
- 		 * Relax Will Robinson.
- 		 */
--		new_win = cur_win;
-+		new_win = ALIGN(cur_win, 1 << tp->rx_opt.rcv_wscale);
- 	}
- 	tp->rcv_wnd = new_win;
- 	tp->rcv_wup = tp->rcv_nxt;
+This is appropriate for 2.6.24.y
+
+--- a/mm/allocpercpu.c
++++ b/mm/allocpercpu.c
+@@ -6,6 +6,10 @@
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ 
++#ifndef cache_line_size
++#define cache_line_size()	L1_CACHE_BYTES
++#endif
++
+ /**
+  * percpu_depopulate - depopulate per-cpu data for given cpu
+  * @__pdata: per-cpu data to depopulate
+@@ -52,6 +56,11 @@ void *percpu_populate(void *__pdata, siz
+ 	struct percpu_data *pdata = __percpu_disguise(__pdata);
+ 	int node = cpu_to_node(cpu);
+ 
++	/*
++	 * We should make sure each CPU gets private memory.
++	 */
++	size = roundup(size, cache_line_size());
++
+ 	BUG_ON(pdata->ptrs[cpu]);
+ 	if (node_online(node))
+ 		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
+@@ -98,7 +107,11 @@ EXPORT_SYMBOL_GPL(__percpu_populate_mask
+  */
+ void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
+ {
+-	void *pdata = kzalloc(nr_cpu_ids * sizeof(void *), gfp);
++	/*
++	 * We allocate whole cache lines to avoid false sharing
++	 */
++	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
++	void *pdata = kzalloc(sz, gfp);
+ 	void *__pdata = __percpu_disguise(pdata);
+ 
+ 	if (unlikely(!pdata))
 
 -- 
