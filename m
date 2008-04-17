@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935291AbYDQJwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbYDQJxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935291AbYDQJwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbYDQJ0q
+	id S933887AbYDQJxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933742AbYDQJ0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:26:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46247 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:26:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46248 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933742AbYDQJ0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:26:37 -0400
+	id S933747AbYDQJ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:26:38 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Cyrill Gorcunov <gorcunov@gamil.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 40/48] [GFS2] possible null pointer dereference fixup
-Date: Thu, 17 Apr 2008 09:39:16 +0100
-Message-Id: <12084216511207-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 41/48] [GFS2] gfs2_adjust_quota has broken unstuffing code
+Date: Thu, 17 Apr 2008 09:39:17 +0100
+Message-Id: <12084216533319-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12084216494161-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12084216511207-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -58,214 +57,148 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <1208421645785-git-send-email-swhiteho@redhat.com>
  <1208421647805-git-send-email-swhiteho@redhat.com>
  <12084216494161-git-send-email-swhiteho@redhat.com>
+ <12084216511207-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+From: Abhijith Das <adas@redhat.com>
 
-gfs2_alloc_get may fail so we have to check it to prevent
-NULL pointer dereference.
+This patch combines the 2 patches in bug 434736 to correct the lock
+ordering in the unstuffing of the quota inode in gfs2_adjust_quota and
+adjusting the number of revokes in gfs2_write_jdata_pagevec
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gamil.com>
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index c1ee635..f7093aa 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -900,6 +900,8 @@ static int do_grow(struct gfs2_inode *ip, u64 size)
- 	int error;
- 
- 	al = gfs2_alloc_get(ip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_lock(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-@@ -1081,7 +1083,8 @@ static int trunc_dealloc(struct gfs2_inode *ip, u64 size)
- 		lblock = (size - 1) >> sdp->sd_sb.sb_bsize_shift;
- 
- 	find_metapath(sdp, lblock, &mp, ip->i_height);
--	gfs2_alloc_get(ip);
-+	if (!gfs2_alloc_get(ip))
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_hold(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
-index a3753c7..94070ad 100644
---- a/fs/gfs2/dir.c
-+++ b/fs/gfs2/dir.c
-@@ -1868,11 +1868,14 @@ static int leaf_dealloc(struct gfs2_inode *dip, u32 index, u32 len,
- 	if (!ht)
- 		return -ENOMEM;
- 
--	gfs2_alloc_get(dip);
-+	if (!gfs2_alloc_get(dip)) {
-+		error = -ENOMEM;
-+		goto out;
-+	}
- 
- 	error = gfs2_quota_hold(dip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
--		goto out;
-+		goto out_put;
- 
- 	error = gfs2_rindex_hold(sdp, &dip->i_alloc->al_ri_gh);
- 	if (error)
-@@ -1946,8 +1949,9 @@ out_rlist:
- 	gfs2_glock_dq_uninit(&dip->i_alloc->al_ri_gh);
- out_qs:
- 	gfs2_quota_unhold(dip);
--out:
-+out_put:
- 	gfs2_alloc_put(dip);
-+out:
- 	kfree(ht);
- 	return error;
- }
-diff --git a/fs/gfs2/eattr.c b/fs/gfs2/eattr.c
-index 76ead1a..288d5e6 100644
---- a/fs/gfs2/eattr.c
-+++ b/fs/gfs2/eattr.c
-@@ -318,6 +318,8 @@ static int ea_remove_unstuffed(struct gfs2_inode *ip, struct buffer_head *bh,
- 	int error;
- 
- 	al = gfs2_alloc_get(ip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_hold(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-@@ -681,6 +683,8 @@ static int ea_alloc_skeleton(struct gfs2_inode *ip, struct gfs2_ea_request *er,
- 	int error;
- 
- 	al = gfs2_alloc_get(ip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_lock(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-@@ -1464,6 +1468,8 @@ int gfs2_ea_dealloc(struct gfs2_inode *ip)
- 	int error;
- 
- 	al = gfs2_alloc_get(ip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_hold(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 92ea9af..dcae2aa 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -351,6 +351,8 @@ int gfs2_dinode_dealloc(struct gfs2_inode *ip)
- 	}
- 
- 	al = gfs2_alloc_get(ip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_hold(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
-@@ -825,7 +827,8 @@ static int make_dinode(struct gfs2_inode *dip, struct gfs2_glock *gl,
- 	int error;
- 
- 	munge_mode_uid_gid(dip, &mode, &uid, &gid);
--	gfs2_alloc_get(dip);
-+	if (!gfs2_alloc_get(dip))
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_lock(dip, uid, gid);
- 	if (error)
-@@ -860,6 +863,8 @@ static int link_dinode(struct gfs2_inode *dip, const struct qstr *name,
- 	int error;
- 
- 	al = gfs2_alloc_get(dip);
-+	if (!al)
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_lock(dip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 	if (error)
 diff --git a/fs/gfs2/ops_address.c b/fs/gfs2/ops_address.c
-index fbb4a6a..2483d87 100644
+index 2483d87..e72fd47 100644
 --- a/fs/gfs2/ops_address.c
 +++ b/fs/gfs2/ops_address.c
-@@ -649,6 +649,10 @@ static int gfs2_write_begin(struct file *file, struct address_space *mapping,
+@@ -21,7 +21,6 @@
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/lm_interface.h>
+ #include <linux/backing-dev.h>
+-#include <linux/pagevec.h>
  
- 	if (alloc_required) {
- 		al = gfs2_alloc_get(ip);
-+		if (!al) {
-+			error = -ENOMEM;
-+			goto out_unlock;
-+		}
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -278,7 +277,7 @@ static int gfs2_write_jdata_pagevec(struct address_space *mapping,
+ 	int i;
+ 	int ret;
  
- 		error = gfs2_quota_lock(ip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 		if (error)
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 6cbbb5b..34fe571 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -200,6 +200,10 @@ static int gfs2_link(struct dentry *old_dentry, struct inode *dir,
+-	ret = gfs2_trans_begin(sdp, nrblocks, 0);
++	ret = gfs2_trans_begin(sdp, nrblocks, nrblocks);
+ 	if (ret < 0)
+ 		return ret;
  
- 	if (alloc_required) {
- 		struct gfs2_alloc *al = gfs2_alloc_get(dip);
-+		if (!al) {
-+			error = -ENOMEM;
-+			goto out_gunlock;
-+		}
- 
- 		error = gfs2_quota_lock(dip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 		if (error)
-@@ -716,6 +720,10 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 
- 	if (alloc_required) {
- 		struct gfs2_alloc *al = gfs2_alloc_get(ndip);
-+		if (!al) {
-+			error = -ENOMEM;
-+			goto out_gunlock;
-+		}
- 
- 		error = gfs2_quota_lock(ndip, NO_QUOTA_CHANGE, NO_QUOTA_CHANGE);
- 		if (error)
-@@ -953,7 +961,8 @@ static int setattr_chown(struct inode *inode, struct iattr *attr)
- 	if (!(attr->ia_valid & ATTR_GID) || ogid == ngid)
- 		ogid = ngid = NO_QUOTA_CHANGE;
- 
--	gfs2_alloc_get(ip);
-+	if (!gfs2_alloc_get(ip))
-+		return -ENOMEM;
- 
- 	error = gfs2_quota_lock(ip, nuid, ngid);
- 	if (error)
 diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index a08dabd..636bccf 100644
+index 636bccf..c71f781 100644
 --- a/fs/gfs2/quota.c
 +++ b/fs/gfs2/quota.c
-@@ -617,8 +617,9 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
+@@ -616,17 +616,9 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
+ 	s64 value;
  	int err = -EIO;
  
- 	if (gfs2_is_stuffed(ip)) {
--		struct gfs2_alloc *al = NULL;
+-	if (gfs2_is_stuffed(ip)) {
+-		struct gfs2_alloc *al = gfs2_alloc_get(ip);
+-		if (!al)
+-			return -ENOMEM;
+-		/* just request 1 blk */
+-		al->al_requested = 1;
+-		gfs2_inplace_reserve(ip);
++	if (gfs2_is_stuffed(ip))
+ 		gfs2_unstuff_dinode(ip, NULL);
+-		gfs2_inplace_release(ip);
+-		gfs2_alloc_put(ip);
+-	}
++	
+ 	page = grab_cache_page(mapping, index);
+ 	if (!page)
+ 		return -ENOMEM;
+@@ -691,7 +683,7 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
+ 	unsigned int qx, x;
+ 	struct gfs2_quota_data *qd;
+ 	loff_t offset;
+-	unsigned int nalloc = 0;
++	unsigned int nalloc = 0, blocks;
+ 	struct gfs2_alloc *al = NULL;
+ 	int error;
+ 
+@@ -728,34 +720,33 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
+ 			nalloc++;
+ 	}
+ 
+-	if (nalloc) {
 -		al = gfs2_alloc_get(ip);
-+		struct gfs2_alloc *al = gfs2_alloc_get(ip);
-+		if (!al)
-+			return -ENOMEM;
- 		/* just request 1 blk */
- 		al->al_requested = 1;
- 		gfs2_inplace_reserve(ip);
-@@ -729,6 +730,10 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
+-		if (!al) {
+-			error = -ENOMEM;
+-			goto out_gunlock;
+-		}
++	al = gfs2_alloc_get(ip);
++	if (!al) {
++		error = -ENOMEM;
++		goto out_gunlock;
++	}
++	/* 
++	 * 1 blk for unstuffing inode if stuffed. We add this extra
++	 * block to the reservation unconditionally. If the inode
++	 * doesn't need unstuffing, the block will be released to the 
++	 * rgrp since it won't be allocated during the transaction
++	 */
++	al->al_requested = 1;
++	/* +1 in the end for block requested above for unstuffing */
++	blocks = num_qd * data_blocks + RES_DINODE + num_qd + 1;
  
- 	if (nalloc) {
- 		al = gfs2_alloc_get(ip);
-+		if (!al) {
-+			error = -ENOMEM;
-+			goto out_gunlock;
-+		}
+-		al->al_requested = nalloc * (data_blocks + ind_blocks);
++	if (nalloc)
++		al->al_requested += nalloc * (data_blocks + ind_blocks);		
++	error = gfs2_inplace_reserve(ip);
++	if (error)
++		goto out_alloc;
  
- 		al->al_requested = nalloc * (data_blocks + ind_blocks);
+-		error = gfs2_inplace_reserve(ip);
+-		if (error)
+-			goto out_alloc;
+-
+-		error = gfs2_trans_begin(sdp,
+-					 al->al_rgd->rd_length +
+-					 num_qd * data_blocks +
+-					 nalloc * ind_blocks +
+-					 RES_DINODE + num_qd +
+-					 RES_STATFS, 0);
+-		if (error)
+-			goto out_ipres;
+-	} else {
+-		error = gfs2_trans_begin(sdp,
+-					 num_qd * data_blocks +
+-					 RES_DINODE + num_qd, 0);
+-		if (error)
+-			goto out_gunlock;
+-	}
++	if (nalloc)
++		blocks += al->al_rgd->rd_length + nalloc * ind_blocks + RES_STATFS;
++
++	error = gfs2_trans_begin(sdp, blocks, 0);
++	if (error)
++		goto out_ipres;
  
+ 	for (x = 0; x < num_qd; x++) {
+ 		qd = qda[x];
+@@ -774,11 +765,9 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
+ out_end_trans:
+ 	gfs2_trans_end(sdp);
+ out_ipres:
+-	if (nalloc)
+-		gfs2_inplace_release(ip);
++	gfs2_inplace_release(ip);
+ out_alloc:
+-	if (nalloc)
+-		gfs2_alloc_put(ip);
++	gfs2_alloc_put(ip);
+ out_gunlock:
+ 	gfs2_glock_dq_uninit(&i_gh);
+ out:
 -- 
 1.5.1.2
 
