@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYDQEh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbYDQEtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbYDQEh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYDQEhM
+	id S1753579AbYDQEtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbYDQEtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:37:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38230
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751153AbYDQEhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:37:11 -0400
-Date: Wed, 16 Apr 2008 21:37:12 -0700 (PDT)
-Message-Id: <20080416.213712.78410382.davem@davemloft.net>
-To: 12o3l@tiscali.nl
-Cc: hadi@cyberus.ca, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: catch signed nla_len() retval in tcf_simp_init()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4806C501.20300@tiscali.nl>
-References: <4806C501.20300@tiscali.nl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 17 Apr 2008 00:49:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:35846 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750849AbYDQEtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 00:49:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,668,1199692800"; 
+   d="scan'208";a="318052789"
+Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+In-Reply-To: <20080417033402.GB3394@gondor.apana.org.au>
+References: <1207723262.18313.37.camel@caritas-dev.intel.com>
+	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
+	 <1208333949.4322.5.camel@caritas-dev.intel.com>
+	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
+	 <1208397123.4322.21.camel@caritas-dev.intel.com>
+	 <20080417033402.GB3394@gondor.apana.org.au>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 17 Apr 2008 12:53:13 +0800
+Message-Id: <1208407993.4322.29.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 17 Apr 2008 04:48:52.0600 (UTC) FILETIME=[55B2DF80:01C8A046]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <12o3l@tiscali.nl>
-Date: Thu, 17 Apr 2008 05:33:21 +0200
-
-> 'datalen' is unsigned, use 'ret' instead to catch a negative return value.
+On Thu, 2008-04-17 at 11:34 +0800, Herbert Xu wrote:
+> On Thu, Apr 17, 2008 at 09:52:03AM +0800, Huang, Ying wrote:
+> >
+> > As far as I know, the CRYPTO_MINALIGN is defined in
+> > include/linux/crypto.h as __alignof__(unsigned long long), and the
+> > __crt_ctx in crypto_tfm is aligned in CRYPTO_MINALIGN. So I think adding
+> > a pad is sufficient for x86_64 implementation.
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/net/sched/act_simple.c b/net/sched/act_simple.c
-> index fbde461..b78d015 100644
-> --- a/net/sched/act_simple.c
-> +++ b/net/sched/act_simple.c
-> @@ -114,9 +114,10 @@ static int tcf_simp_init(struct nlattr *nla, struct nlattr *est,
->  	if (defdata == NULL)
->  		return -EINVAL;
->  
-> -	datalen = nla_len(tb[TCA_DEF_DATA]);
-> -	if (datalen <= 0)
-> +	ret = nla_len(tb[TCA_DEF_DATA]);
-> +	if (ret <= 0)
->  		return -EINVAL;
-> +	datalen = ret;
->  
->  	pc = tcf_hash_check(parm->index, a, bind, &simp_hash_info);
->  	if (!pc) {
+> It should be sufficient but it would be better to use an align
+> attribute to better document the intention.
 
-This clobbers 'ret' which is compared to ACT_P_CREATED
-later in the function.  If the !pc branch below this code
-is not taken, ret must be left at it's initial value of
-zero.  Now, it will take on some non-zero positive value
-which is not correct.
+OK. I will use the align attribute.
 
+Best Regards,
+Huang Ying
