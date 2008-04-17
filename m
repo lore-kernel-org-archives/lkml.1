@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbYDQKum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbYDQKvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933409AbYDQKum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYDQKuc
+	id S933571AbYDQKvX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYDQKvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:50:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760248AbYDQKub (ORCPT
+	Thu, 17 Apr 2008 06:51:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49418 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760248AbYDQKvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:50:31 -0400
-Date: Thu, 17 Apr 2008 03:50:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Thu, 17 Apr 2008 06:51:14 -0400
+Message-ID: <48072B9D.2000900@firstfloor.org>
+Date: Thu, 17 Apr 2008 12:51:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417035015.1320350f.akpm@linux-foundation.org>
-In-Reply-To: <87skxkepr0.fsf@saeurebad.de>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<20080417011401.ea3e70f0.akpm@linux-foundation.org>
-	<87skxkepr0.fsf@saeurebad.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20080416202338.GA6007@elte.hu> <878wzdikwk.fsf@basil.nowhere.org> <1208426793.10305.1248377703@webmail.messagingengine.com>
+In-Reply-To: <1208426793.10305.1248377703@webmail.messagingengine.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 12:32:03 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
 
-> Hi,
 > 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > - extensive damage to the page-flags patches
-> >
-> >   Did you check that all architectures and configurations still have
-> >   sufficient page flags for us to be able to consume another one for
-> >   kmemcheck?  The MM developers have put much, much effort into avoiding
-> >   running out of flags over numerous years and afaik none of them even know
-> >   that this debug feature is using one of the few remaining ones.
-> >
-> >   What do we do when we run out?
-> 
-> Would it be feasible to add another unsigned long to struct page?  I
-> mean, extending such a common structure always sucks, but for
-> emergency...
-> 
-> #define PageFoobar(page)	test_bit(PG_foobar, &(page)->flags2)
-> 
-> Of course the essential core flags should always be in ->flags but
-> perhaps we could have a symbol CONFIG_NEED_EXTRA_PAGE_FLAGS that gets
-> selected by kmemcheck (and other candidates that are unlikely to be
-> enabled most of the time) and then #ifndef ->flags2 out.
-> 
+> The input for the first 'benchmark' was indeed completely unrealistic.
+> They did show a very convincing speedup, though. This program was
+> really written to verify the implementation and was later converted
+> to a benchmark. Many benchmarks are unrealistic. I also wrote a
+> benchmark for find_first_bit and find_next_bit:
+>         http://heukelum.fastmail.fm/find_first_bit
 
-Yes, but I think that only applies to PG_tracked.
+I think a realistic benchmark would be by running a real kernel
+and profiling the input values of the bitmap functions and then
+testing these cases.
 
-We may be able to reclaim PG_buddy by putting various fields in the
-pageframe to idiotic otherwise-cant-happen states.  Like
+I actually started that when I complained last time by writing
+a systemtap script for this that generates a histogram, but for some
+reason systemtap couldn't tap all bitmap functions in my kernel and
+missed some completely and I ran out of time tracking that down.
 
-static inline bool PageBuddy(struct page *page)
-{
-	return page->mapping == (long)&page->private;
-}
+My gut feeling is the only interesting cases are cpumask/nodemask sized
+(which can be one word, two words but now upto 8 words on a NR_CPU=4096
+x86 kernel) and then 4k sized ext3/reiser/etc. block bitmaps.
 
-or something.  But these things are so overloaded it gets tricky.
+> My conclusion would be: the speed of the generic bitmap implementation
+> is either better than or at least comparable to the current private
+> implementations in i386/x86_64. 
+
+Ok.
+
+The generic version is out-of-line,
+> while the private implementation of i386 was inlined: this causes a
+> regression for very small bitmaps. However, if the bitmap size is
+> a constant and fits a long integer, the updated generic code should
+> inline an optimized version, like x86_64 currently does it.
+
+Yes it should probably. cpumask walks are relatively common.
+
+I remember profiling mysql some time ago which did bad overscheduling
+due to dumb locking. Funny was that the mask walking in the scheduler
+actually stood out. No, i don't claim extreme overscheduling is an
+interesting case to optimize for, but then there are more realistic
+workloads which also do a lot of context switching.
+
+BTW if you do generic work on this: one reason the generated code for
+for_each_cpu etc. is so ugly is that the code has checks for
+find_next_bit returning >= max size. If you can generize the
+code enough to make sure no arch does that anymore these checks
+could be eliminated.
+
+-Andi
