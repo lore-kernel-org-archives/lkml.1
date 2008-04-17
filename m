@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYDQXbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbYDQXe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbYDQXbh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 19:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbYDQXb1
+	id S1756486AbYDQXe2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 19:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYDQXeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 19:31:27 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:37078 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754901AbYDQXb0 (ORCPT
+	Thu, 17 Apr 2008 19:34:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37133 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755343AbYDQXeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 19:31:26 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kenichi Ohmichi <oomichi@mxs.nes.nec.co.jp>,
-       Vivek Goyal <vgoyal@redhat.com>
-References: <20080417010122.148289106@sous-sol.org>
-	<20080417010334.951283202@sous-sol.org>
-	<m17iewvnot.fsf@frodo.ebiederm.org>
-	<20080417171616.GE17220@sequoia.sous-sol.org>
-Date: Thu, 17 Apr 2008 16:31:12 -0700
-In-Reply-To: <20080417171616.GE17220@sequoia.sous-sol.org> (Chris Wright's
-	message of "Thu, 17 Apr 2008 10:16:16 -0700")
-Message-ID: <m163ugawjj.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 17 Apr 2008 19:34:17 -0400
+Date: Thu, 17 Apr 2008 16:24:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-ID: <20080417232441.GA19281@kroah.com>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0004]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  1.0 XM_Sft_Co_L33T XM_Sft_Co_L33T
-	*  0.0 XM_Sft_Brands_C00 XM_Sft_Brands_C00
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: vmcoreinfo: add the symbol "phys_base"
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright <chrisw@sous-sol.org> writes:
+On Thu, Apr 17, 2008 at 04:03:31PM -0700, Andrew Morton wrote:
+> 
+> I repulled all the trees an hour or two ago, installed everything on an
+> 8-way x86_64 box and:
+> 
+> 
+> stack-protector:
+> 
+> Testing -fstack-protector-all feature
+> No -fstack-protector-stack-frame!
+> -fstack-protector-all test failed
+> ------------[ cut here ]------------
+> WARNING: at kernel/panic.c:369 __stack_chk_test+0x4b/0x51()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #4
+> 
+> Call Trace:
+>  [<ffffffff80256692>] ? print_modules+0x88/0x8f
+>  [<ffffffff80237b70>] warn_on_slowpath+0x58/0x7f
+>  [<ffffffff802388fe>] ? printk+0x67/0x69
+>  [<ffffffff8034ec74>] ? debug_write_lock_after+0x18/0x1f
+>  [<ffffffff8034ed43>] ? _raw_write_unlock+0x29/0x7b
+>  [<ffffffff804f0254>] ? _write_unlock+0x9/0xb
+>  [<ffffffff8023d25e>] ? insert_resource+0xe3/0xea
+>  [<ffffffff80237be2>] __stack_chk_test+0x4b/0x51
+>  [<ffffffff8092f912>] kernel_init+0x16c/0x29e
+>  [<ffffffff8020ce58>] child_rip+0xa/0x12
+>  [<ffffffff8092f7a6>] ? kernel_init+0x0/0x29e
+>  [<ffffffff8020ce4e>] ? child_rip+0x0/0x12
+> 
+> ---[ end trace da2bc9ee81defeda ]---
+> 
+> 
+> usb/sysfs:
+> 
+> ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 17 (level, low) -> IRQ 17
+> uhci_hcd 0000:00:1d.0: UHCI Host Controller
+> uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+> uhci_hcd 0000:00:1d.0: irq 17, io base 0x00002080
+> usb usb1: configuration #1 chosen from 1 choice
+> hub 1-0:1.0: USB hub found
+> hub 1-0:1.0: 2 ports detected
+> sysfs: duplicate filename '189:0' can not be created
 
-> * Eric W. Biederman (ebiederm@xmission.com) wrote:
->> Chris Wright <chrisw@sous-sol.org> writes:
->> 
->> > -stable review patch.  If anyone has any objections, please let us know.
->> > ---------------------
->> 
->> This patch seems quite reasonable.  However as I read it, it is
->> a feature enhancement, that allows a user space tool to function
->> better.  Do we backport trivial features into stable now?
->
-> Function better, meaning work reliably?  Sounds like a fix not a
-> feature.
+Interesting, that's the new major:minor code.  I'll go poke at it...
 
-After you also upgrade user space, so it can use the additional
-information allowing us to get better bug reports on kernels
-built in an interesting fashion.
+thanks,
 
-Essentially this patch widens our user space ABI very slightly.
-
-I'm just being pedantic, and I don't oppose it.
-
-Eric
+greg k-h
