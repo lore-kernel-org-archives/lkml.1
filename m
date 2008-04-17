@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbYDQPn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933867AbYDQPp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763531AbYDQPn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765736AbYDQPnK
+	id S933867AbYDQPp4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbYDQPpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:43:10 -0400
-Received: from mout0.freenet.de ([195.4.92.90]:33331 "EHLO mout0.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762448AbYDQPnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:43:08 -0400
-Message-ID: <48076FD6.60505@de.ibm.com>
-Date: Thu, 17 Apr 2008 17:42:14 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Martin_Jetter=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Thu, 17 Apr 2008 11:45:43 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:37867 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754045AbYDQPpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 11:45:42 -0400
+Message-ID: <480770A3.3070805@tiscali.nl>
+Date: Thu, 17 Apr 2008 17:45:39 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/45] KVM: s390: API documentation
-References: <1208423450-29415-1-git-send-email-avi@qumranet.com> <1208423450-29415-14-git-send-email-avi@qumranet.com> <20080417081106.aab87b1a.randy.dunlap@oracle.com>
-In-Reply-To: <20080417081106.aab87b1a.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: liam.girdwood@wolfsonmicro.com, broonie@opensource.wolfsonmicro.com,
+       alsa-devel@alsa-project.org
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SOC: fix tests in cs4270_hw_params()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Warning: de.ibm.com is listed at abuse.rfc-ignorant.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Please use "CPU" consistently throughout the file (i.e., not "cpu").
-Thanks, will fix that with a patch that'll go on top.
+cs4270_hw_params does several times:
+
+ret = snd_soc_write()
+if (ret < 0)
+	...
+
+This only works when ret is signed.
+
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/sound/soc/codecs/cs4270.c b/sound/soc/codecs/cs4270.c
+index bf2ab72..e73fcfd 100644
+--- a/sound/soc/codecs/cs4270.c
++++ b/sound/soc/codecs/cs4270.c
+@@ -372,7 +372,7 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
+ 	struct snd_soc_device *socdev = rtd->socdev;
+ 	struct snd_soc_codec *codec = socdev->codec;
+ 	struct cs4270_private *cs4270 = codec->private_data;
+-	unsigned int ret = 0;
++	int ret;
+ 	unsigned int i;
+ 	unsigned int rate;
+ 	unsigned int ratio;
