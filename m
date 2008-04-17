@@ -1,82 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYDQTgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYDQThb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYDQTgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYDQTfz
+	id S1754175AbYDQThb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYDQThX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:35:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44110 "EHLO mx2.mail.elte.hu"
+	Thu, 17 Apr 2008 15:37:23 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58784 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbYDQTfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:35:54 -0400
-Date: Thu, 17 Apr 2008 21:35:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080417193537.GA6253@elte.hu>
-References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org> <20080417090626.GA14383@elte.hu> <20080417021813.04df7912.akpm@linux-foundation.org> <20080417093025.GA17389@elte.hu> <20080417023603.672d1032.akpm@linux-foundation.org> <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com> <20080417192729.GA3058@elte.hu>
+	id S1752129AbYDQThW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 15:37:22 -0400
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: LKML <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: PCI MSI breaks when booting with nosmp
+Date: Thu, 17 Apr 2008 21:40:01 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Tejun Heo <htejun@gmail.com>,
+       Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Reuben Farrelly <reuben-lkml@reub.net>, Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080417192729.GA3058@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200804172140.02311.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+My Thinkpad T60p laptop won't boot any recent kernel with nosmp.
+I investigated the issue because many people have been complaining
+lately that nosmp was breaking their system, and that's unfortunate
+because nosmp is a valuable debugging tool.
 
-> > Actually it doesn't. I attach a patch which gets rid of the page flag, 
-> > and we rely instead on the PTE flag for page-trackedness.
-> [...]
-> > Ingo, will you take this for some additional testing?
-> 
-> thanks Vegard, i've applied it - looks good to me too.
+The actual problem is that the ahci driver fails during probe.
+It's essentially the same problem that has been reported here over
+3 years ago:
+http://marc.info/?l=linux-ide&m=112729386600155&w=2
 
-x86.git randconfig testing found a build bug - fix below.
+The post above gave me the idea to try booting with "nosmp pci=nomsi",
+and that worked. This makes me believe that the problem is that PCI MSI
+makes expectations that are no longer valid when booting with nomsp.
 
-	Ingo
+So, I have come up with the following naive patch:
 
------------->
-Subject: kmemcheck: fix build
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Apr 17 21:20:43 CEST 2008
+* * * * *
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Booting with "nosmp" doesn't work on my Thinkpad T60p laptop while
+booting with "nosmp pci=nomsi" works. Forcibly disabling PCI MSI
+when booting with nosmp fixes the problem. I'm not sure if it's the
+correct fix though.
+
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
 ---
- include/linux/kmemcheck.h |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/pci/pci.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux/include/linux/kmemcheck.h
-===================================================================
---- linux.orig/include/linux/kmemcheck.h
-+++ linux/include/linux/kmemcheck.h
-@@ -1,6 +1,8 @@
- #ifndef LINUX_KMEMCHECK_H
- #define LINUX_KMEMCHECK_H
+--- linux-2.6.25-rc9.orig/drivers/pci/pci.c
++++ linux-2.6.25-rc9/drivers/pci/pci.c
+@@ -1635,6 +1635,10 @@ static int __devinit pci_init(void)
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		pci_fixup_device(pci_fixup_final, dev);
+ 	}
++#ifdef CONFIG_SMP
++	if (setup_max_cpus == 0)
++		pci_no_msi();
++#endif	
+ 	return 0;
+ }
  
-+#include <linux/types.h>
-+
- #ifdef CONFIG_KMEMCHECK
- extern int kmemcheck_enabled;
- 
-@@ -24,6 +26,7 @@ void kmemcheck_mark_uninitialized_pages(
- #ifndef CONFIG_KMEMCHECK
- #define kmemcheck_enabled 0
- static inline void kmemcheck_init(void) { }
-+static inline bool kmemcheck_page_is_tracked(struct page *p) { return false; }
- #endif /* CONFIG_KMEMCHECK */
- 
- #endif /* LINUX_KMEMCHECK_H */
+
+* * * * *
+
+I would welcome comments on the patch above. Is it even remotely
+correct? Or is the bug more likely in the ahci driver and the PCI MSI
+code is innocent?
+
+FWIW, booting with noapic or nolapic without disabling PCI MSI works
+fine for me, so it doesn't seem to be an APIC problem (although this was
+my first suspect originally.)
+
+Thanks,
+-- 
+Jean Delvare
+Suse L3
