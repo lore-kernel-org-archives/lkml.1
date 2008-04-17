@@ -1,66 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbYDQLA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765665AbYDQLFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933277AbYDQLA4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYDQLAn
+	id S1765665AbYDQLFO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbYDQLE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:00:43 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48035 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765626AbYDQLAh (ORCPT
+	Thu, 17 Apr 2008 07:04:58 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:57537 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbYDQLE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 07:00:37 -0400
-Date: Thu, 17 Apr 2008 12:00:05 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
-Message-ID: <20080417110005.GE1449@flint.arm.linux.org.uk>
-Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk> <200804160126.11116.bzolnier@gmail.com> <20080417093753.GF1677@cs181133002.pp.htv.fi> <20080417095916.GD1449@flint.arm.linux.org.uk> <20080417104836.GH1677@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080417104836.GH1677@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 17 Apr 2008 07:04:57 -0400
+Message-ID: <48072ED7.7030002@tiscali.nl>
+Date: Thu, 17 Apr 2008 13:04:55 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: petkovbb@gmail.com
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] IDE: ide-cd: fix test unsigned var < 0
+References: <48055F1A.9020706@tiscali.nl>	 <200804170040.07397.bzolnier@gmail.com> <4806C952.6030102@tiscali.nl> <9ea470500804170212md8ce430p42b3c1787ba95631@mail.gmail.com>
+In-Reply-To: <9ea470500804170212md8ce430p42b3c1787ba95631@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 01:48:36PM +0300, Adrian Bunk wrote:
-> On Thu, Apr 17, 2008 at 10:59:16AM +0100, Russell King wrote:
-> > On Thu, Apr 17, 2008 at 12:37:53PM +0300, Adrian Bunk wrote:
-> > > Any objections against the patch below?
-> > 
-> > Let's look at the rest of the situation surrounding HAVE_IDE first.
-> > It's something of a mess:
-> > 
-> > avr32, m68knommu, ppc, s390 and v850 do not have asm/ide.h
-> > 
-> > avr32, m68knommu, ppc, v850 all set HAVE_IDE, arch/s390/Kconfig contains
-> > no reference.
-> > 
-> > avr32 supports PATA (which is IDE).
-> > 
-> > Everything else provides an asm/ide.h and sets HAVE_IDE.
-> > 
-> > So:
-> > 
-> > Q1. Do avr32, m68knommu, ppc, v850 have IDE support or do they not?
+Boris Petkov wrote:
+
+> I'd rather keep the "unsigned long bio_sectors;" part and do something
+> of the likes of:
 > 
-> avr32 is fixed in 2.6.25 (no more HAVE_IDE)
+> bio_sectors = bio_sectors(failed_command->bio);
+> 
+> 
+> (remove the "if (bio_sectors < 4)"-test)
+> 
+> ... and later...
+> 
+> sector &= ~(max(bio_sectors - 1, 3));
+> 
+> which is, IMO, more readable.
+> 
+> Roel, would you redo your patch please? Thanks.
 
-avr32 has ATA, so the only reason it doesn't actually use IDE is because
-they're using libata entirely.  This is NO different from the situation
-on ARM - some machine classes use entirely libata, others use IDE, and
-some others are trying to give up IDE in favour of libata.
+While at it I also cleaned up some whitespace
+---
+Clean up cdrom_analyze_sense_data()
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index a60f5df..df9bf0d 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -133,65 +133,61 @@ static int cdrom_log_sense(ide_drive_t *drive, struct request *rq,
+ 		default:
+ 			log = 1;
+ 			break;
+ 	}
+ 	return log;
+ }
+ 
+-static
+-void cdrom_analyze_sense_data(ide_drive_t *drive,
++static void cdrom_analyze_sense_data(ide_drive_t *drive,
+ 			      struct request *failed_command,
+ 			      struct request_sense *sense)
+ {
+ 	unsigned long sector;
+ 	unsigned long bio_sectors;
+-	unsigned long valid;
+ 	struct cdrom_info *info = drive->driver_data;
+ 
+ 	if (!cdrom_log_sense(drive, failed_command, sense))
+ 		return;
+ 
+ 	/*
+ 	 * If a read toc is executed for a CD-R or CD-RW medium where
+ 	 * the first toc has not been recorded yet, it will fail with
+ 	 * 05/24/00 (which is a confusing error)
+ 	 */
+ 	if (failed_command && failed_command->cmd[0] == GPCMD_READ_TOC_PMA_ATIP)
+ 		if (sense->sense_key == 0x05 && sense->asc == 0x24)
+ 			return;
+ 
+- 	if (sense->error_code == 0x70) {	/* Current Error */
+- 		switch(sense->sense_key) {
++	if (sense->error_code == 0x70) {	/* Current Error */
++		switch (sense->sense_key) {
+ 		case MEDIUM_ERROR:
+ 		case VOLUME_OVERFLOW:
+ 		case ILLEGAL_REQUEST:
+ 			if (!sense->valid)
+ 				break;
+ 			if (failed_command == NULL ||
+ 					!blk_fs_request(failed_command))
+ 				break;
+ 			sector = (sense->information[0] << 24) |
+ 				 (sense->information[1] << 16) |
+ 				 (sense->information[2] <<  8) |
+ 				 (sense->information[3]);
+ 
+-			bio_sectors = bio_sectors(failed_command->bio);
+-			if (bio_sectors < 4)
+-				bio_sectors = 4;
+ 			if (drive->queue->hardsect_size == 2048)
+ 				sector <<= 2;	/* Device sector size is 2K */
+-			sector &= ~(bio_sectors -1);
+-			valid = (sector - failed_command->sector) << 9;
++
++			bio_sectors = bio_sectors(failed_command->bio);
++			sector &= ~(max(bio_sectors - 1, 3));
+ 
+ 			if (sector < get_capacity(info->disk) &&
+ 				drive->probed_capacity - sector < 4 * 75) {
+ 				set_capacity(info->disk, sector);
+ 			}
+- 		}
+- 	}
++		}
++	}
+ 
+ 	ide_cd_log_error(drive->name, failed_command, sense);
+ }
+ 
+ /*
+  * Initialize a ide-cd packet command request
+  */
