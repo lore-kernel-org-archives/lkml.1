@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbYDQBc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYDQBcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751205AbYDQBc3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbYDQBKf
+	id S1753334AbYDQBcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763193AbYDQBM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:10:35 -0400
-Received: from sous-sol.org ([216.99.217.87]:59054 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:12:56 -0400
+Received: from sous-sol.org ([216.99.217.87]:59877 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754363AbYDQBKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:10:33 -0400
-Message-Id: <20080417010321.398997883@sous-sol.org>
+	id S1765963AbYDQBMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:12:54 -0400
+Message-Id: <20080417010405.373315819@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:32 -0700
+Date: Wed, 16 Apr 2008 18:02:27 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Christian Lamparter <chunkeey@web.de>, nickpiggin@yahoo.com.au,
-       Nick Piggin <npiggin@suse.de>, Robert Love <rlove@google.com>,
-       John McCutchan <ttb@tentacle.dhs.org>, Jan Kara <jack@ucw.cz>,
-       Yan Zheng <yanzheng@21cn.com>
-Subject: inotify: remove debug code
-Content-Disposition: inline; filename=inotify-remove-debug-code.patch
+       Serge Hallyn <serge@hallyn.com>, Andrew G Morgan <morgan@kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: file capabilities: remove cap_task_kill()
+Content-Disposition: inline; filename=file-capabilities-remove-cap_task_kill.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,78 +34,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Serge Hallyn <serge@hallyn.com>
 
-upstream commit: 0d71bd5993b630a989d15adc2562a9ffe41cd26d
+upstream commit: aedb60a67c10a0861af179725d060765262ba0fb
 
-The inotify debugging code is supposed to verify that the
-DCACHE_INOTIFY_PARENT_WATCHED scalability optimisation does not result in
-notifications getting lost nor extra needless locking generated.
+The original justification for cap_task_kill() was as follows:
 
-Unfortunately there are also some races in the debugging code.  And it isn't
-very good at finding problems anyway.  So remove it for now.
+	check_kill_permission() does appropriate uid equivalence checks.
+	However with file capabilities it becomes possible for an
+	unprivileged user to execute a file with file capabilities
+	resulting in a more privileged task with the same uid.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: Robert Love <rlove@google.com>
-Cc: John McCutchan <ttb@tentacle.dhs.org>
-Cc: Jan Kara <jack@ucw.cz>
-Cc: Yan Zheng <yanzheng@21cn.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+However now that cap_task_kill() always returns 0 (permission
+granted) when p->uid==current->uid, the whole hook is worthless,
+and only likely to create more subtle problems in the corner cases
+where it might still be called but return -EPERM.  Those cases
+are basically when uids are different but euid/suid is equivalent
+as per the check in check_kill_permission().
+
+One example of a still-broken application is 'at' for non-root users.
+
+This patch removes cap_task_kill().
+
+Signed-off-by: Serge Hallyn <serge@hallyn.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+Earlier-version-tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christian Lamparter <chunkeey@web.de>
+[chrisw@sous-sol.org: backport to 2.6.24.4]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/dcache.c  |    3 ---
- fs/inotify.c |   17 +++++------------
- 2 files changed, 5 insertions(+), 15 deletions(-)
+ include/linux/security.h |    3 +--
+ security/capability.c    |    1 -
+ security/commoncap.c     |   39 ---------------------------------------
+ 3 files changed, 1 insertion(+), 42 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1408,9 +1408,6 @@ void d_delete(struct dentry * dentry)
- 	if (atomic_read(&dentry->d_count) == 1) {
- 		dentry_iput(dentry);
- 		fsnotify_nameremove(dentry, isdir);
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -62,7 +62,6 @@ extern int cap_inode_need_killpriv(struc
+ extern int cap_inode_killpriv(struct dentry *dentry);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+-extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
+ extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
+ extern int cap_task_setioprio (struct task_struct *p, int ioprio);
+ extern int cap_task_setnice (struct task_struct *p, int nice);
+@@ -2112,7 +2111,7 @@ static inline int security_task_kill (st
+ 				      struct siginfo *info, int sig,
+ 				      u32 secid)
+ {
+-	return cap_task_kill(p, info, sig, secid);
++	return 0;
+ }
+ 
+ static inline int security_task_wait (struct task_struct *p)
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -40,7 +40,6 @@ static struct security_operations capabi
+ 	.inode_need_killpriv =		cap_inode_need_killpriv,
+ 	.inode_killpriv =		cap_inode_killpriv,
+ 
+-	.task_kill =			cap_task_kill,
+ 	.task_setscheduler =		cap_task_setscheduler,
+ 	.task_setioprio =		cap_task_setioprio,
+ 	.task_setnice =			cap_task_setnice,
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -527,40 +527,6 @@ int cap_task_setnice (struct task_struct
+ 	return cap_safe_nice(p);
+ }
+ 
+-int cap_task_kill(struct task_struct *p, struct siginfo *info,
+-				int sig, u32 secid)
+-{
+-	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
+-		return 0;
 -
--		/* remove this and other inotify debug checks after 2.6.18 */
--		dentry->d_flags &= ~DCACHE_INOTIFY_PARENT_WATCHED;
- 		return;
- 	}
+-	/*
+-	 * Running a setuid root program raises your capabilities.
+-	 * Killing your own setuid root processes was previously
+-	 * allowed.
+-	 * We must preserve legacy signal behavior in this case.
+-	 */
+-	if (p->uid == current->uid)
+-		return 0;
+-
+-	/* sigcont is permitted within same session */
+-	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+-		return 0;
+-
+-	if (secid)
+-		/*
+-		 * Signal sent as a particular user.
+-		 * Capabilities are ignored.  May be wrong, but it's the
+-		 * only thing we can do at the moment.
+-		 * Used only by usb drivers?
+-		 */
+-		return 0;
+-	if (cap_issubset(p->cap_permitted, current->cap_permitted))
+-		return 0;
+-	if (capable(CAP_KILL))
+-		return 0;
+-
+-	return -EPERM;
+-}
+ #else
+ int cap_task_setscheduler (struct task_struct *p, int policy,
+ 			   struct sched_param *lp)
+@@ -575,11 +541,6 @@ int cap_task_setnice (struct task_struct
+ {
+ 	return 0;
+ }
+-int cap_task_kill(struct task_struct *p, struct siginfo *info,
+-				int sig, u32 secid)
+-{
+-	return 0;
+-}
+ #endif
  
---- a/fs/inotify.c
-+++ b/fs/inotify.c
-@@ -168,20 +168,14 @@ static void set_dentry_child_flags(struc
- 		struct dentry *child;
- 
- 		list_for_each_entry(child, &alias->d_subdirs, d_u.d_child) {
--			if (!child->d_inode) {
--				WARN_ON(child->d_flags & DCACHE_INOTIFY_PARENT_WATCHED);
-+			if (!child->d_inode)
- 				continue;
--			}
-+
- 			spin_lock(&child->d_lock);
--			if (watched) {
--				WARN_ON(child->d_flags &
--						DCACHE_INOTIFY_PARENT_WATCHED);
-+			if (watched)
- 				child->d_flags |= DCACHE_INOTIFY_PARENT_WATCHED;
--			} else {
--				WARN_ON(!(child->d_flags &
--					DCACHE_INOTIFY_PARENT_WATCHED));
--				child->d_flags&=~DCACHE_INOTIFY_PARENT_WATCHED;
--			}
-+			else
-+				child->d_flags &=~DCACHE_INOTIFY_PARENT_WATCHED;
- 			spin_unlock(&child->d_lock);
- 		}
- 	}
-@@ -253,7 +247,6 @@ void inotify_d_instantiate(struct dentry
- 	if (!inode)
- 		return;
- 
--	WARN_ON(entry->d_flags & DCACHE_INOTIFY_PARENT_WATCHED);
- 	spin_lock(&entry->d_lock);
- 	parent = entry->d_parent;
- 	if (parent->d_inode && inotify_inode_watched(parent->d_inode))
+ void cap_task_reparent_to_init (struct task_struct *p)
 
 -- 
