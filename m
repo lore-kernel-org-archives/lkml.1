@@ -1,61 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933752AbYDQBeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934172AbYDQBew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933752AbYDQBeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761390AbYDQBRe
+	id S934172AbYDQBew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933708AbYDQBYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:17:34 -0400
-Received: from emh03.mail.saunalahti.fi ([62.142.5.109]:55468 "EHLO
-	emh03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932845AbYDQBRb (ORCPT
+	Wed, 16 Apr 2008 21:24:32 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:43319 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763068AbYDQBY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:17:31 -0400
-X-Greylist: delayed 631 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Apr 2008 21:17:31 EDT
-Date: Thu, 17 Apr 2008 04:08:35 +0300 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc2
-To: Jamie Lokier <jamie@shareable.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-In-Reply-To: <20080415152313.GB8513@shareable.org>
-Message-ID: <Pine.LNX.4.61.0804170357290.4657@dhcppc2>
-References: <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu>
- <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu>
- <20080414094215.GD2076@shareable.org> <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu>
- <20080414115540.GA5802@shareable.org> <E1JlNly-0005bt-2v@pomaz-ex.szeredi.hu>
- <20080414223556.GA21340@shareable.org> <E1JljQD-0008Ae-5H@pomaz-ex.szeredi.hu>
- <20080415152313.GB8513@shareable.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+	Wed, 16 Apr 2008 21:24:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIEAAdEBkhMROPA/2dsb2JhbACBYKwb
+Date: Wed, 16 Apr 2008 21:24:20 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Paul Mackerras <paulus@samba.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC patch 23/27] Immediate Values - Powerpc Optimization NMI
+	MCE support
+Message-ID: <20080417012420.GA11709@Krystal>
+References: <20080416213426.298498397@polymtl.ca> <20080416213556.704299869@polymtl.ca> <18438.34621.508450.720068@cargo.ozlabs.ibm.com> <20080416233331.GA9225@Krystal> <18438.39737.921541.359469@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <18438.39737.921541.359469@cargo.ozlabs.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:51:57 up 47 days, 21:02,  4 users,  load average: 0.03, 0.06,
+	0.07
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 15 Apr 2008, Jamie Lokier wrote:
-> Miklos Szeredi wrote:
-> > > > How old?  The out of tree fuse module (hoping to get rid of it soon)
-> > > > works down to 2.6.9.  Beyond that it does probably require a fair
-> > > > amount of porting work.
-> > > 
-> > > I imagine that backporting FUSE to 2.4 no-mmu will be more work than
-> > > backporting a filesystem, but I could be mistaken.  Moving my project
-> > > to a 2.6 kernel (*any* 2.6 kernel) would be much more work than
-> > > either.
-> > 
-> > Fuse-2.5 still supported linux-2.4.  Although I have no idea if it
-> > works with no-mmu, maybe it's worth a try.
-> > 
-> > Backporting ntfs-3g to an older version of fuse shouldn't be a big
-> > problem, as the fuse interface didn't change very much since then.
+* Paul Mackerras (paulus@samba.org) wrote:
+> Mathieu Desnoyers writes:
 > 
-> Thanks for your advice.  I will look into all these possibilities.
-> Fuse working would be quite useful in many other ways too.
+> > * Paul Mackerras (paulus@samba.org) wrote:
+> > > Mathieu Desnoyers writes:
+> > > 
+> > > > Use an atomic update for immediate values.
+> > > 
+> > > What is meant by an "atomic" update in this context?  AFAICS you are
+> > > using memcpy, which is not in any way guaranteed to be atomic.
+> > > 
+> > > Paul.
+> > 
+> > I expect memcpy to perform the copy in one memory access, given I put a 
+> > 
+> >   .align 2
+> > 
+> > before the 2 bytes instruction. It makes sure the instruction modified
+> > fits in a single, aligned, memory write.
+> 
+> My original question was in the context of the powerpc architecture,
+> where instructions are always 4 bytes long and aligned.  So that's not
+> an issue.
+> 
 
-ntfs-3g was reported to work on 2.4 no-mmu kernels six months ago (though 
-it had no our QA). Please see http://ntfs-3g.org/support.html#kernel24 and 
-search for nommu on fuse-devel for the details.
+Sorry, I meant 4 byte instruction with 2 bytes immediate value, but we
+both understand it would be a memory write aligned on 2 bytes since we
+only change the immediate value.
 
-	Szaka
+> > Or maybe am I expecting too much from memcpy ?
+> 
+> I don't think memcpy gives you any such guarantees.  It would be quite
+> within its rights to say "it's only a few bytes, I'll do it byte by
+> byte".
+> 
+> If you really want it to be atomic (which I agree is probably a good
+> idea), I think the best way to do it is to use an asm to generate a
+> sth (store halfword) instruction to the immediate field (instruction
+> address + 2).  That's on powerpc of course; I don't know what you
+> would do on other architectures.
+> 
+
+A simple 
+
+  *(uint16_t* )destptr = newvalue;
+
+seems to generate the "sth" instruction.
+
+Do you see any reason why the compiler could choose a different, non
+atomic assembler primitive ?
+
+quoting Documentation/RCU/whatisRCU.txt :
+
+"In contrast, RCU-based updaters typically take advantage of the fact
+that writes to single aligned pointers are atomic on modern CPUs"
+
+Paul E. McKenney could say if I am wrong if I assume that any object
+smaller or equal to the architecture pointer size, aligned on a multiple
+of its own size, will be read or written atomically.
+
+Therefore, I would suggest the following replacement patch :
+
+
+Immediate Values - Powerpc Optimization NMI MCE support
+
+Use an atomic update for immediate values.
+
+- Changelog :
+Use a direct assignment instead of memcpy to be sure the update is
+atomic.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/Makefile    |    1 
+ arch/powerpc/kernel/immediate.c |   70 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/immediate.h |   18 ++++++++++
+ 3 files changed, 89 insertions(+)
+
+Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/arch/powerpc/kernel/immediate.c	2008-04-16 21:22:29.000000000 -0400
+@@ -0,0 +1,70 @@
++/*
++ * Powerpc optimized immediate values enabling/disabling.
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ */
++
++#include <linux/module.h>
++#include <linux/immediate.h>
++#include <linux/string.h>
++#include <linux/kprobes.h>
++#include <asm/cacheflush.h>
++#include <asm/page.h>
++
++#define LI_OPCODE_LEN	2
++
++/**
++ * arch_imv_update - update one immediate value
++ * @imv: pointer of type const struct __imv to update
++ * @early: early boot (1), normal (0)
++ *
++ * Update one immediate value. Must be called with imv_mutex held.
++ */
++int arch_imv_update(const struct __imv *imv, int early)
++{
++#ifdef CONFIG_KPROBES
++	kprobe_opcode_t *insn;
++	/*
++	 * Fail if a kprobe has been set on this instruction.
++	 * (TODO: we could eventually do better and modify all the (possibly
++	 * nested) kprobes for this site if kprobes had an API for this.
++	 */
++	switch (imv->size) {
++	case 1:	/* The uint8_t points to the 3rd byte of the
++		 * instruction */
++		insn = (void *)(imv->imv - 1 - LI_OPCODE_LEN);
++		break;
++	case 2:	insn = (void *)(imv->imv - LI_OPCODE_LEN);
++		break;
++	default:
++	return -EINVAL;
++	}
++
++	if (unlikely(!early && *insn == BREAKPOINT_INSTRUCTION)) {
++		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
++				    "Variable at %p, "
++				    "instruction at %p, size %lu\n",
++				    (void *)imv->imv,
++				    (void *)imv->var, imv->size);
++		return -EBUSY;
++	}
++#endif
++
++	/*
++	 * If the variable and the instruction have the same value, there is
++	 * nothing to do.
++	 */
++	switch (imv->size) {
++	case 1:	if (*(uint8_t *)imv->imv == *(uint8_t *)imv->var)
++			return 0;
++		*(uint8_t *)imv->imv = *(uint8_t *)imv->var;
++		break;
++	case 2:	if (*(uint16_t *)imv->imv == *(uint16_t *)imv->var)
++			return 0;
++		*(uint16_t *)imv->imv = *(uint16_t *)imv->var;
++		break;
++	default:return -EINVAL;
++	}
++	flush_icache_range(imv->imv, imv->imv + imv->size);
++	return 0;
++}
+Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-powerpc/immediate.h	2008-04-16 12:25:42.000000000 -0400
++++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2008-04-16 20:49:48.000000000 -0400
+@@ -12,6 +12,16 @@
+ 
+ #include <asm/asm-compat.h>
+ 
++struct __imv {
++	unsigned long var;	/* Identifier variable of the immediate value */
++	unsigned long imv;	/*
++				 * Pointer to the memory location that holds
++				 * the immediate value within the load immediate
++				 * instruction.
++				 */
++	unsigned char size;	/* Type size. */
++} __attribute__ ((packed));
++
+ /**
+  * imv_read - read immediate variable
+  * @name: immediate value name
+@@ -19,6 +29,11 @@
+  * Reads the value of @name.
+  * Optimized version of the immediate.
+  * Do not use in __init and __exit functions. Use _imv_read() instead.
++ * Makes sure the 2 bytes update will be atomic by aligning the immediate
++ * value. Use a normal memory read for the 4 bytes immediate because there is no
++ * way to atomically update it without using a seqlock read side, which would
++ * cost more in term of total i-cache and d-cache space than a simple memory
++ * read.
+  */
+ #define imv_read(name)							\
+ 	({								\
+@@ -40,6 +55,7 @@
+ 					PPC_LONG "%c1, ((1f)-2)\n\t"	\
+ 					".byte 2\n\t"			\
+ 					".previous\n\t"			\
++					".align 2\n\t"			\
+ 					"li %0,0\n\t"			\
+ 					"1:\n\t"			\
+ 				: "=r" (value)				\
+@@ -52,4 +68,6 @@
+ 		value;							\
+ 	})
+ 
++extern int arch_imv_update(const struct __imv *imv, int early);
++
+ #endif /* _ASM_POWERPC_IMMEDIATE_H */
+Index: linux-2.6-lttng/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/kernel/Makefile	2008-04-16 12:23:07.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/kernel/Makefile	2008-04-16 12:25:44.000000000 -0400
+@@ -45,6 +45,7 @@ obj-$(CONFIG_HIBERNATION)	+= swsusp.o su
+ obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+ obj-$(CONFIG_MODULES)		+= module_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_44x)		+= cpu_setup_44x.o
++obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
