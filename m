@@ -1,110 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933820AbYDQJbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbYDQJcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933820AbYDQJbv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763600AbYDQJMe
+	id S933986AbYDQJcZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932763AbYDQJT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:12:34 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:38749 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763924AbYDQJMc convert rfc822-to-8bit (ORCPT
+	Thu, 17 Apr 2008 05:19:26 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:39811 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932619AbYDQJTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:12:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sORK3tKzms38YpwPcWzNjTnKCQfXDiqTyZN6pPibzBhsm3q/6MCsb6whTEwl2PFgmoRrze6BZOx8UKq/ilfGYY+G1HvYat9QCpMHgGGxZzyJf5hzkJSyZ6Xhospr8O48uLIv9AOGsfOARE+S/5gKOLZG3vbrOsud9BI7z7FhYOE=
-Message-ID: <9ea470500804170212md8ce430p42b3c1787ba95631@mail.gmail.com>
-Date: Thu, 17 Apr 2008 11:12:30 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Roel Kluin" <12o3l@tiscali.nl>
-Subject: Re: [PATCH 3/6] IDE: ide-cd: fix test unsigned var < 0
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <4806C952.6030102@tiscali.nl>
+	Thu, 17 Apr 2008 05:19:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: hlu.kernel@gmail.com
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <200804111626.11232.yhlu.kernel@gmail.com>
+Date: Thu, 17 Apr 2008 02:19:16 -0700
+In-Reply-To: <200804111626.11232.yhlu.kernel@gmail.com> (Yinghai Lu's message
+	of "Fri, 11 Apr 2008 16:26:11 -0700")
+Message-ID: <m1bq48vnxn.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <48055F1A.9020706@tiscali.nl>
-	 <200804170040.07397.bzolnier@gmail.com> <4806C952.6030102@tiscali.nl>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86_64: restore mask_bits in msi shutdown
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 5:51 AM, Roel Kluin <12o3l@tiscali.nl> wrote:
-> Bartlomiej Zolnierkiewicz wrote:
->  > Hi,
->  >
->  > On Wednesday 16 April 2008, Roel Kluin wrote:
->  >> Is this the right fix in this case?
->  >
->  > Yes, but it seems that 'valid' is only written to
->  > so it may be as well removed completely.
->  >
->  > Care to update the patch?
->  >
->  > Thanks,
->  > Bart
->
->  how about this?
->
->  Roel
->
->  ---
->  Clean up cdrom_analyze_sense_data()
->
->
->  Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->  ---
->  diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
->  index a60f5df..a5f3beb 100644
->
-> --- a/drivers/ide/ide-cd.c
->  +++ b/drivers/ide/ide-cd.c
->  @@ -143,8 +143,6 @@ void cdrom_analyze_sense_data(ide_drive_t *drive,
->                               struct request_sense *sense)
->   {
->         unsigned long sector;
->  -       unsigned long bio_sectors;
->  -       unsigned long valid;
->         struct cdrom_info *info = drive->driver_data;
->
->         if (!cdrom_log_sense(drive, failed_command, sense))
->  @@ -174,13 +172,9 @@ void cdrom_analyze_sense_data(ide_drive_t *drive,
->                                  (sense->information[2] <<  8) |
->                                  (sense->information[3]);
->
->  -                       bio_sectors = bio_sectors(failed_command->bio);
->  -                       if (bio_sectors < 4)
->  -                               bio_sectors = 4;
->                         if (drive->queue->hardsect_size == 2048)
->                                 sector <<= 2;   /* Device sector size is 2K */
->  -                       sector &= ~(bio_sectors -1);
->
-> -                       valid = (sector - failed_command->sector) << 9;
->  +                       sector &= ~(max(bio_sectors(failed_command->bio) - 1, 3));
+Yinghai Lu <yhlu.kernel.send@gmail.com> writes:
 
-Well, i don't think that this "optimization" makes the code more readable.
-Besides, gcc does this anyway. Poor are only those who have to stare at it for
-a couple of minutes just to understand what it says. Still, i don't object to
-it completely and the "valid"-var can go. I'd rather keep the "unsigned long
-bio_sectors;" part and do something of the likes of:
+> I can not kexec RHEL 5.1 from 2.6.25-rc3 later
+>
+> caused by:
+> commit 89d694b9dbe769ca1004e01db0ca43964806a611
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon Feb 18 18:25:17 2008 +0100
+>
+>     genirq: do not leave interupts enabled on free_irq
+>
+>     The default_disable() function was changed in commit:
+>
+>      76d2160147f43f982dfe881404cfde9fd0a9da21
+>      genirq: do not mask interrupts by default
+>
+>     It removed the mask function in favour of the default delayed
+>     interrupt disabling. Unfortunately this also broke the shutdown in
+>     free_irq() when the last handler is removed from the interrupt for
+>     those architectures which rely on the default implementations. Now we
+>     can end up with a enabled interrupt line after the last handler was
+>     removed, which can result in spurious interrupts.
+>
+>     Fix this by adding a default_shutdown function, which is only
+>     installed, when the irqchip implementation does provide neither a
+>     shutdown nor a disable function.
+>
+>     [@stable: affected versions: .21 - .24 ]
+>
+>
+>
+> for MSI, default_shutdown will call mask_bit for msi device. so all mask bits
+> will
+> left disabled after free_irq.
+> then if kexec next kernel that only can use msi_enable bit.
+> all device's MSI can not be used.
+>
+> So try to restore MSI mask bits that is saved before using msi in first kernel.
+>
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-bio_sectors = bio_sectors(failed_command->bio);
+Ouch!  In the case of MSI-X this is horrible.  Reenabling an interrupt
+line when we are not using it.  That is likely to cause even stranger
+things than kexec to fail.
 
+What happens when someone next comes to use that msi interrupt is
+a reasonable question.
 
-(remove the "if (bio_sectors < 4)"-test)
+The PCI standard describes the state the bits in the msi capability
+are supposed to be in after reset, and if a driver is going to
+assume some state that is the only reasonable state for a driver to
+expect the hardware to be in.  So we don't need to perform a
+save/restore cycle.
 
-... and later...
+Could you look at having pci_disable_msi reset the mask bit
+to it's default state after we have called msi_set_enable(dev, 0)?
+Once the msi capability is disabled the mask bit has no affect.
 
-sector &= ~(max(bio_sectors - 1, 3));
+You should be able to ignoring pci_disable_msix for now.
 
-which is, IMO, more readable.
+Thanks, 
+Eric
 
-Roel, would you redo your patch please? Thanks.
-
--- 
-Regards/Gruß,
-Boris
