@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbYDQBOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbYDQBO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761452AbYDQBOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbYDQBHe
+	id S932440AbYDQBO6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYDQBHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:34 -0400
-Received: from sous-sol.org ([216.99.217.87]:58853 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:36 -0400
+Received: from sous-sol.org ([216.99.217.87]:58854 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758912AbYDQBHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:32 -0400
-Message-Id: <20080417010348.780146429@sous-sol.org>
+	id S1758935AbYDQBHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:33 -0400
+Message-Id: <20080417010322.059941982@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:03 -0700
+Date: Wed, 16 Apr 2008 18:01:33 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David S Miller <davem@davemloft.net>
-Subject: TCP: Let skbs grow over a page on fast peers
-Content-Disposition: inline; filename=tcp-let-skbs-grow-over-a-page-on-fast-peers.patch
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: NOHZ: reevaluate idle sleep length after add_timer_on()
+Content-Disposition: inline; filename=nohz-reevaluate-idle-sleep-length-after-add_timer_on.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,66 +34,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Upstream commit: 69d1506731168d6845a76a303b2c45f7c05f3f2c
+upstream commit: 06d8308c61e54346585b2691c13ee3f90cb6fb2f
 
-While testing the virtio-net driver on KVM with TSO I noticed
-that TSO performance with a 1500 MTU is significantly worse
-compared to the performance of non-TSO with a 16436 MTU.  The
-packet dump shows that most of the packets sent are smaller
-than a page.
+add_timer_on() can add a timer on a CPU which is currently in a long
+idle sleep, but the timer wheel is not reevaluated by the nohz code on
+that CPU. So a timer can be delayed for quite a long time. This
+triggered a false positive in the clocksource watchdog code.
 
-Looking at the code this actually is quite obvious as it always
-stop extending the packet if it's the first packet yet to be
-sent and if it's larger than the MSS.  Since each extension is
-bound by the page size, this means that (given a 1500 MTU) we're
-very unlikely to construct packets greater than a page, provided
-that the receiver and the path is fast enough so that packets can
-always be sent immediately.
+To avoid this we need to wake up the idle CPU and enforce the
+reevaluation of the timer wheel for the next timer event.
 
-The fix is also quite obvious.  The push calls inside the loop
-is just an optimisation so that we don't end up doing all the
-sending at the end of the loop.  Therefore there is no specific
-reason why it has to do so at MSS boundaries.  For TSO, the
-most natural extension of this optimisation is to do the pushing
-once the skb exceeds the TSO size goal.
+Add a function, which checks a given CPU for idle state, marks the
+idle task with NEED_RESCHED and sends a reschedule IPI to notify the
+other CPU of the change in the timer wheel.
 
-This is what the patch does and testing with KVM shows that the
-TSO performance with a 1500 MTU easily surpasses that of a 16436
-MTU and indeed the packet sizes sent are generally larger than
-16436.
+Call this function from add_timer_on().
 
-I don't see any obvious downsides for slower peers or connections,
-but it would be prudent to test this extensively to ensure that
-those cases don't regress.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+--
+ include/linux/sched.h |    6 ++++++
+ kernel/sched.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/timer.c        |   10 +++++++++-
+ 3 files changed, 58 insertions(+), 1 deletion(-)
 ---
- net/ipv4/tcp.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -583,7 +583,7 @@ new_segment:
- 		if (!(psize -= copy))
- 			goto out;
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1449,6 +1449,12 @@ static inline void idle_task_exit(void) 
  
--		if (skb->len < mss_now || (flags & MSG_OOB))
-+		if (skb->len < size_goal || (flags & MSG_OOB))
- 			continue;
+ extern void sched_idle_next(void);
  
- 		if (forced_push(tp)) {
-@@ -829,7 +829,7 @@ new_segment:
- 			if ((seglen -= copy) == 0 && iovlen == 0)
- 				goto out;
++#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
++extern void wake_up_idle_cpu(int cpu);
++#else
++static inline void wake_up_idle_cpu(int cpu) { }
++#endif
++
+ #ifdef CONFIG_SCHED_DEBUG
+ extern unsigned int sysctl_sched_latency;
+ extern unsigned int sysctl_sched_min_granularity;
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -727,6 +727,49 @@ static void resched_cpu(int cpu)
+ 	resched_task(cpu_curr(cpu));
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
++
++#ifdef CONFIG_NO_HZ
++/*
++ * When add_timer_on() enqueues a timer into the timer wheel of an
++ * idle CPU then this timer might expire before the next timer event
++ * which is scheduled to wake up that CPU. In case of a completely
++ * idle system the next event might even be infinite time into the
++ * future. wake_up_idle_cpu() ensures that the CPU is woken up and
++ * leaves the inner idle loop so the newly added timer is taken into
++ * account when the CPU goes back to idle and evaluates the timer
++ * wheel for the next timer event.
++ */
++void wake_up_idle_cpu(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++
++	if (cpu == smp_processor_id())
++		return;
++
++	/*
++	 * This is safe, as this function is called with the timer
++	 * wheel base lock of (cpu) held. When the CPU is on the way
++	 * to idle and has not yet set rq->curr to idle then it will
++	 * be serialized on the timer wheel base lock and take the new
++	 * timer into account automatically.
++	 */
++	if (rq->curr != rq->idle)
++		return;
++
++	/*
++	 * We can set TIF_RESCHED on the idle task of the other CPU
++	 * lockless. The worst case is that the other CPU runs the
++	 * idle task through an additional NOOP schedule()
++	 */
++	set_tsk_thread_flag(rq->idle, TIF_NEED_RESCHED);
++
++	/* NEED_RESCHED must be visible before we test polling */
++	smp_mb();
++	if (!tsk_is_polling(rq->idle))
++		smp_send_reschedule(cpu);
++}
++#endif
++
+ #else
+ static inline void resched_task(struct task_struct *p)
+ {
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -453,10 +453,18 @@ void add_timer_on(struct timer_list *tim
+ 	spin_lock_irqsave(&base->lock, flags);
+ 	timer_set_base(timer, base);
+ 	internal_add_timer(base, timer);
++	/*
++	 * Check whether the other CPU is idle and needs to be
++	 * triggered to reevaluate the timer wheel when nohz is
++	 * active. We are protected against the other CPU fiddling
++	 * with the timer by holding the timer base lock. This also
++	 * makes sure that a CPU on the way to idle can not evaluate
++	 * the timer wheel.
++	 */
++	wake_up_idle_cpu(cpu);
+ 	spin_unlock_irqrestore(&base->lock, flags);
+ }
  
--			if (skb->len < mss_now || (flags & MSG_OOB))
-+			if (skb->len < size_goal || (flags & MSG_OOB))
- 				continue;
- 
- 			if (forced_push(tp)) {
+-
+ /**
+  * mod_timer - modify a timer's timeout
+  * @timer: the timer to be modified
 
 -- 
