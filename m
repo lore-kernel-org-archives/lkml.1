@@ -1,105 +1,458 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764578AbYDQBLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765941AbYDQBMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764578AbYDQBLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYDQBHP
+	id S1765941AbYDQBMy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbYDQBH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:15 -0400
-Received: from sous-sol.org ([216.99.217.87]:58811 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758242AbYDQBHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:10 -0400
-Message-Id: <20080417010313.378925738@sous-sol.org>
-References: <20080417010122.148289106@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:29 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Constantin Baranov <const@tltsu.ru>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Daniel Drake <dsd@gentoo.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: USB: add support for Motorola ROKR Z6 cellphone in mass storage mode
-Content-Disposition: inline; filename=usb-add-support-for-motorola-rokr-z6-cellphone-in-mass-storage-mode.patch
+	Wed, 16 Apr 2008 21:07:27 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:59536 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755060AbYDQBHV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:21 -0400
+Date: Wed, 16 Apr 2008 21:07:11 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: jack@suse.cz
+Cc: linux-kernel@vger.kernel.org, vsu@altlinux.ru
+Subject: [PATCH] udf: use crc_itu_t from lib instead of udf_crc
+Message-ID: <20080417010711.GA15779@hash.localnet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+Hi Jan,
 
-From: Constantin Baranov <const@tltsu.ru>
+In reviewing a patch of mine, Sergey Vlasov noticed that the CRC used
+in UDF was recently added to lib/.  Would you accept a patch to switch
+UDF over?  Such as:
 
-upstream commit: cc36bdd47ae51b66780b317c1fa519221f894405
+From: Bob Copeland <me@bobcopeland.com>
+Date: Wed, 16 Apr 2008 20:23:31 -0400
+Subject: [PATCH] udf: use crc_itu_t from lib instead of udf_crc
 
-Motorola ROKR Z6 cellphone has bugs in its USB, so it is impossible to use
-it as mass storage. Patch describes new "unusual" USB device for it with
-FIX_INQUIRY and FIX_CAPACITY flags and new BULK_IGNORE_TAG flag.
-Last flag relaxes check for equality of bcs->Tag and us->tag in
-usb_stor_Bulk_transport routine.
+As pointed out by Sergey Vlasov, UDF implements its own version of
+the CRC ITU-T V.41.  Convert it to use the one in the library.
 
-Signed-off-by: Constantin Baranov <const@tltsu.ru>
-Signed-off-by: Matthew Dharm <mdharm-usb@one-eyed-alien.net>
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
+Cc: Sergey Vlasov <vsu@altlinux.ru>
 ---
- drivers/usb/storage/transport.c    |    3 ++-
- drivers/usb/storage/unusual_devs.h |   11 +++++++++++
- include/linux/usb_usual.h          |    4 +++-
- 3 files changed, 16 insertions(+), 2 deletions(-)
+ fs/Kconfig       |    1 +
+ fs/udf/Makefile  |    2 +-
+ fs/udf/crc.c     |  172 ------------------------------------------------------
+ fs/udf/inode.c   |   11 ++--
+ fs/udf/misc.c    |   12 ++--
+ fs/udf/namei.c   |   21 +++----
+ fs/udf/super.c   |   11 ++--
+ fs/udf/udfdecl.h |    3 -
+ fs/udf/unicode.c |    3 +-
+ 9 files changed, 32 insertions(+), 204 deletions(-)
+ delete mode 100644 fs/udf/crc.c
 
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -1010,7 +1010,8 @@ int usb_stor_Bulk_transport(struct scsi_
- 	US_DEBUGP("Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
- 			le32_to_cpu(bcs->Signature), bcs->Tag, 
- 			residue, bcs->Status);
--	if (bcs->Tag != us->tag || bcs->Status > US_BULK_STAT_PHASE) {
-+	if (!(bcs->Tag == us->tag || (us->flags & US_FL_BULK_IGNORE_TAG)) ||
-+		bcs->Status > US_BULK_STAT_PHASE) {
- 		US_DEBUGP("Bulk logical error\n");
- 		return USB_STOR_TRANSPORT_ERROR;
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 5dd8f94..f18564f 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -663,6 +663,7 @@ config ZISOFS
+ 
+ config UDF_FS
+ 	tristate "UDF file system support"
++	select CRC_ITU_T
+ 	help
+ 	  This is the new file system used on some CD-ROMs and DVDs. Say Y if
+ 	  you intend to mount DVD discs or CDRW's written in packet mode, or
+diff --git a/fs/udf/Makefile b/fs/udf/Makefile
+index be845e7..0d4503f 100644
+--- a/fs/udf/Makefile
++++ b/fs/udf/Makefile
+@@ -6,4 +6,4 @@ obj-$(CONFIG_UDF_FS) += udf.o
+ 
+ udf-objs     := balloc.o dir.o file.o ialloc.o inode.o lowlevel.o namei.o \
+ 		partition.o super.o truncate.o symlink.o fsync.o \
+-		crc.o directory.o misc.o udftime.o unicode.o
++		directory.o misc.o udftime.o unicode.o
+diff --git a/fs/udf/crc.c b/fs/udf/crc.c
+deleted file mode 100644
+index b166129..0000000
+--- a/fs/udf/crc.c
++++ /dev/null
+@@ -1,172 +0,0 @@
+-/*
+- * crc.c
+- *
+- * PURPOSE
+- *	Routines to generate, calculate, and test a 16-bit CRC.
+- *
+- * DESCRIPTION
+- *	The CRC code was devised by Don P. Mitchell of AT&T Bell Laboratories
+- *	and Ned W. Rhodes of Software Systems Group. It has been published in
+- *	"Design and Validation of Computer Protocols", Prentice Hall,
+- *	Englewood Cliffs, NJ, 1991, Chapter 3, ISBN 0-13-539925-4.
+- *
+- *	Copyright is held by AT&T.
+- *
+- *	AT&T gives permission for the free use of the CRC source code.
+- *
+- * COPYRIGHT
+- *	This file is distributed under the terms of the GNU General Public
+- *	License (GPL). Copies of the GPL can be obtained from:
+- *		ftp://prep.ai.mit.edu/pub/gnu/GPL
+- *	Each contributing author retains all rights to their own work.
+- */
+-
+-#include "udfdecl.h"
+-
+-static uint16_t crc_table[256] = {
+-	0x0000U, 0x1021U, 0x2042U, 0x3063U, 0x4084U, 0x50a5U, 0x60c6U, 0x70e7U,
+-	0x8108U, 0x9129U, 0xa14aU, 0xb16bU, 0xc18cU, 0xd1adU, 0xe1ceU, 0xf1efU,
+-	0x1231U, 0x0210U, 0x3273U, 0x2252U, 0x52b5U, 0x4294U, 0x72f7U, 0x62d6U,
+-	0x9339U, 0x8318U, 0xb37bU, 0xa35aU, 0xd3bdU, 0xc39cU, 0xf3ffU, 0xe3deU,
+-	0x2462U, 0x3443U, 0x0420U, 0x1401U, 0x64e6U, 0x74c7U, 0x44a4U, 0x5485U,
+-	0xa56aU, 0xb54bU, 0x8528U, 0x9509U, 0xe5eeU, 0xf5cfU, 0xc5acU, 0xd58dU,
+-	0x3653U, 0x2672U, 0x1611U, 0x0630U, 0x76d7U, 0x66f6U, 0x5695U, 0x46b4U,
+-	0xb75bU, 0xa77aU, 0x9719U, 0x8738U, 0xf7dfU, 0xe7feU, 0xd79dU, 0xc7bcU,
+-	0x48c4U, 0x58e5U, 0x6886U, 0x78a7U, 0x0840U, 0x1861U, 0x2802U, 0x3823U,
+-	0xc9ccU, 0xd9edU, 0xe98eU, 0xf9afU, 0x8948U, 0x9969U, 0xa90aU, 0xb92bU,
+-	0x5af5U, 0x4ad4U, 0x7ab7U, 0x6a96U, 0x1a71U, 0x0a50U, 0x3a33U, 0x2a12U,
+-	0xdbfdU, 0xcbdcU, 0xfbbfU, 0xeb9eU, 0x9b79U, 0x8b58U, 0xbb3bU, 0xab1aU,
+-	0x6ca6U, 0x7c87U, 0x4ce4U, 0x5cc5U, 0x2c22U, 0x3c03U, 0x0c60U, 0x1c41U,
+-	0xedaeU, 0xfd8fU, 0xcdecU, 0xddcdU, 0xad2aU, 0xbd0bU, 0x8d68U, 0x9d49U,
+-	0x7e97U, 0x6eb6U, 0x5ed5U, 0x4ef4U, 0x3e13U, 0x2e32U, 0x1e51U, 0x0e70U,
+-	0xff9fU, 0xefbeU, 0xdfddU, 0xcffcU, 0xbf1bU, 0xaf3aU, 0x9f59U, 0x8f78U,
+-	0x9188U, 0x81a9U, 0xb1caU, 0xa1ebU, 0xd10cU, 0xc12dU, 0xf14eU, 0xe16fU,
+-	0x1080U, 0x00a1U, 0x30c2U, 0x20e3U, 0x5004U, 0x4025U, 0x7046U, 0x6067U,
+-	0x83b9U, 0x9398U, 0xa3fbU, 0xb3daU, 0xc33dU, 0xd31cU, 0xe37fU, 0xf35eU,
+-	0x02b1U, 0x1290U, 0x22f3U, 0x32d2U, 0x4235U, 0x5214U, 0x6277U, 0x7256U,
+-	0xb5eaU, 0xa5cbU, 0x95a8U, 0x8589U, 0xf56eU, 0xe54fU, 0xd52cU, 0xc50dU,
+-	0x34e2U, 0x24c3U, 0x14a0U, 0x0481U, 0x7466U, 0x6447U, 0x5424U, 0x4405U,
+-	0xa7dbU, 0xb7faU, 0x8799U, 0x97b8U, 0xe75fU, 0xf77eU, 0xc71dU, 0xd73cU,
+-	0x26d3U, 0x36f2U, 0x0691U, 0x16b0U, 0x6657U, 0x7676U, 0x4615U, 0x5634U,
+-	0xd94cU, 0xc96dU, 0xf90eU, 0xe92fU, 0x99c8U, 0x89e9U, 0xb98aU, 0xa9abU,
+-	0x5844U, 0x4865U, 0x7806U, 0x6827U, 0x18c0U, 0x08e1U, 0x3882U, 0x28a3U,
+-	0xcb7dU, 0xdb5cU, 0xeb3fU, 0xfb1eU, 0x8bf9U, 0x9bd8U, 0xabbbU, 0xbb9aU,
+-	0x4a75U, 0x5a54U, 0x6a37U, 0x7a16U, 0x0af1U, 0x1ad0U, 0x2ab3U, 0x3a92U,
+-	0xfd2eU, 0xed0fU, 0xdd6cU, 0xcd4dU, 0xbdaaU, 0xad8bU, 0x9de8U, 0x8dc9U,
+-	0x7c26U, 0x6c07U, 0x5c64U, 0x4c45U, 0x3ca2U, 0x2c83U, 0x1ce0U, 0x0cc1U,
+-	0xef1fU, 0xff3eU, 0xcf5dU, 0xdf7cU, 0xaf9bU, 0xbfbaU, 0x8fd9U, 0x9ff8U,
+-	0x6e17U, 0x7e36U, 0x4e55U, 0x5e74U, 0x2e93U, 0x3eb2U, 0x0ed1U, 0x1ef0U
+-};
+-
+-/*
+- * udf_crc
+- *
+- * PURPOSE
+- *	Calculate a 16-bit CRC checksum using ITU-T V.41 polynomial.
+- *
+- * DESCRIPTION
+- *	The OSTA-UDF(tm) 1.50 standard states that using CRCs is mandatory.
+- *	The polynomial used is:	x^16 + x^12 + x^15 + 1
+- *
+- * PRE-CONDITIONS
+- *	data		Pointer to the data block.
+- *	size		Size of the data block.
+- *
+- * POST-CONDITIONS
+- *	<return>	CRC of the data block.
+- *
+- * HISTORY
+- *	July 21, 1997 - Andrew E. Mileski
+- *	Adapted from OSTA-UDF(tm) 1.50 standard.
+- */
+-uint16_t udf_crc(uint8_t *data, uint32_t size, uint16_t crc)
+-{
+-	while (size--)
+-		crc = crc_table[(crc >> 8 ^ *(data++)) & 0xffU] ^ (crc << 8);
+-
+-	return crc;
+-}
+-
+-/****************************************************************************/
+-#if defined(TEST)
+-
+-/*
+- * PURPOSE
+- *	Test udf_crc()
+- *
+- * HISTORY
+- *	July 21, 1997 - Andrew E. Mileski
+- *	Adapted from OSTA-UDF(tm) 1.50 standard.
+- */
+-
+-unsigned char bytes[] = { 0x70U, 0x6AU, 0x77U };
+-
+-int main(void)
+-{
+-	unsigned short x;
+-
+-	x = udf_crc(bytes, sizeof bytes);
+-	printf("udf_crc: calculated = %4.4x, correct = %4.4x\n", x, 0x3299U);
+-
+-	return 0;
+-}
+-
+-#endif /* defined(TEST) */
+-
+-/****************************************************************************/
+-#if defined(GENERATE)
+-
+-/*
+- * PURPOSE
+- *	Generate a table for fast 16-bit CRC calculations (any polynomial).
+- *
+- * DESCRIPTION
+- *	The ITU-T V.41 polynomial is 010041.
+- *
+- * HISTORY
+- *	July 21, 1997 - Andrew E. Mileski
+- *	Adapted from OSTA-UDF(tm) 1.50 standard.
+- */
+-
+-#include <stdio.h>
+-
+-int main(int argc, char **argv)
+-{
+-	unsigned long crc, poly;
+-	int n, i;
+-
+-	/* Get the polynomial */
+-	sscanf(argv[1], "%lo", &poly);
+-	if (poly & 0xffff0000U) {
+-		fprintf(stderr, "polynomial is too large\en");
+-		exit(1);
+-	}
+-
+-	printf("/* CRC 0%o */\n", poly);
+-
+-	/* Create a table */
+-	printf("static unsigned short crc_table[256] = {\n");
+-	for (n = 0; n < 256; n++) {
+-		if (n % 8 == 0)
+-			printf("\t");
+-		crc = n << 8;
+-		for (i = 0; i < 8; i++) {
+-			if (crc & 0x8000U)
+-				crc = (crc << 1) ^ poly;
+-			else
+-				crc <<= 1;
+-			crc &= 0xFFFFU;
+-		}
+-		if (n == 255)
+-			printf("0x%04xU ", crc);
+-		else
+-			printf("0x%04xU, ", crc);
+-		if (n % 8 == 7)
+-			printf("\n");
+-	}
+-	printf("};\n");
+-
+-	return 0;
+-}
+-
+-#endif /* defined(GENERATE) */
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 24cfa55..97297e7 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -37,6 +37,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/writeback.h>
+ #include <linux/slab.h>
++#include <linux/crc-itu-t.h>
+ 
+ #include "udf_i.h"
+ #include "udf_sb.h"
+@@ -1488,9 +1489,9 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 						iinfo->i_location.
+ 							logicalBlockNum);
+ 		use->descTag.descCRCLength = cpu_to_le16(crclen);
+-		use->descTag.descCRC = cpu_to_le16(udf_crc((char *)use +
+-							   sizeof(tag), crclen,
+-							   0));
++		use->descTag.descCRC = cpu_to_le16(crc_itu_t(0, (char *)use +
++							   sizeof(tag), 
++							   crclen));
+ 		use->descTag.tagChecksum = udf_tag_checksum(&use->descTag);
+ 
+ 		mark_buffer_dirty(bh);
+@@ -1660,8 +1661,8 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 	crclen += iinfo->i_lenEAttr + iinfo->i_lenAlloc -
+ 								sizeof(tag);
+ 	fe->descTag.descCRCLength = cpu_to_le16(crclen);
+-	fe->descTag.descCRC = cpu_to_le16(udf_crc((char *)fe + sizeof(tag),
+-						  crclen, 0));
++	fe->descTag.descCRC = cpu_to_le16(crc_itu_t(0, (char *)fe + sizeof(tag),
++						  crclen));
+ 	fe->descTag.tagChecksum = udf_tag_checksum(&fe->descTag);
+ 
+ 	/* write the data blocks */
+diff --git a/fs/udf/misc.c b/fs/udf/misc.c
+index a1d6da0..532bdf0 100644
+--- a/fs/udf/misc.c
++++ b/fs/udf/misc.c
+@@ -25,6 +25,7 @@
+ #include <linux/string.h>
+ #include <linux/udf_fs.h>
+ #include <linux/buffer_head.h>
++#include <linux/crc-itu-t.h>
+ 
+ #include "udf_i.h"
+ #include "udf_sb.h"
+@@ -136,8 +137,8 @@ struct genericFormat *udf_add_extendedattr(struct inode *inode, uint32_t size,
+ 		/* rewrite CRC + checksum of eahd */
+ 		crclen = sizeof(struct extendedAttrHeaderDesc) - sizeof(tag);
+ 		eahd->descTag.descCRCLength = cpu_to_le16(crclen);
+-		eahd->descTag.descCRC = cpu_to_le16(udf_crc((char *)eahd +
+-						sizeof(tag), crclen, 0));
++		eahd->descTag.descCRC = cpu_to_le16(crc_itu_t(0, (char *)eahd +
++						sizeof(tag), crclen));
+ 		eahd->descTag.tagChecksum = udf_tag_checksum(&eahd->descTag);
+ 		iinfo->i_lenEAttr += size;
+ 		return (struct genericFormat *)&ea[offset];
+@@ -244,8 +245,9 @@ struct buffer_head *udf_read_tagged(struct super_block *sb, uint32_t block,
+ 
+ 	/* Verify the descriptor CRC */
+ 	if (le16_to_cpu(tag_p->descCRCLength) + sizeof(tag) > sb->s_blocksize ||
+-	    le16_to_cpu(tag_p->descCRC) == udf_crc(bh->b_data + sizeof(tag),
+-					le16_to_cpu(tag_p->descCRCLength), 0))
++	    le16_to_cpu(tag_p->descCRC) == crc_itu_t(0, 
++					bh->b_data + sizeof(tag),
++					le16_to_cpu(tag_p->descCRCLength)))
+ 		return bh;
+ 
+ 	udf_debug("Crc failure block %d: crc = %d, crclen = %d\n",
+@@ -270,7 +272,7 @@ void udf_update_tag(char *data, int length)
+ 	length -= sizeof(tag);
+ 
+ 	tptr->descCRCLength = cpu_to_le16(length);
+-	tptr->descCRC = cpu_to_le16(udf_crc(data + sizeof(tag), length, 0));
++	tptr->descCRC = cpu_to_le16(crc_itu_t(0, data + sizeof(tag), length));
+ 	tptr->tagChecksum = udf_tag_checksum(tptr);
+ }
+ 
+diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+index 112a5fb..168d2e9 100644
+--- a/fs/udf/namei.c
++++ b/fs/udf/namei.c
+@@ -31,6 +31,7 @@
+ #include <linux/smp_lock.h>
+ #include <linux/buffer_head.h>
+ #include <linux/sched.h>
++#include <linux/crc-itu-t.h>
+ 
+ static inline int udf_match(int len1, const char *name1, int len2,
+ 			    const char *name2)
+@@ -97,25 +98,23 @@ int udf_write_fi(struct inode *inode, struct fileIdentDesc *cfi,
+ 		memset(fibh->ebh->b_data, 0x00, padlen + offset);
  	}
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1557,6 +1557,17 @@ UNUSUAL_DEV(  0x22b8, 0x4810, 0x0001, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
  
-+/*
-+ * Patch by Constantin Baranov <const@tltsu.ru>
-+ * Report by Andreas Koenecke.
-+ * Motorola ROKR Z6.
-+ */
-+UNUSUAL_DEV(  0x22b8, 0x6426, 0x0101, 0x0101,
-+		"Motorola",
-+		"MSnc.",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_INQUIRY | US_FL_FIX_CAPACITY | US_FL_BULK_IGNORE_TAG),
-+
- /* Reported by Radovan Garabik <garabik@kassiopeia.juls.savba.sk> */
- UNUSUAL_DEV(  0x2735, 0x100b, 0x0000, 0x9999,
- 		"MPIO",
---- a/include/linux/usb_usual.h
-+++ b/include/linux/usb_usual.h
-@@ -50,7 +50,9 @@
- 	US_FLAG(CAPACITY_HEURISTICS,	0x00001000)		\
- 		/* sometimes sizes is too big */		\
- 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
--		/* Sets max_sectors to arch min */
-+		/* Sets max_sectors to arch min */		\
-+	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
-+		/* Ignore tag mismatch in bulk operations */
+-	crc = udf_crc((uint8_t *)cfi + sizeof(tag),
+-		      sizeof(struct fileIdentDesc) - sizeof(tag), 0);
++	crc = crc_itu_t(0, (uint8_t *)cfi + sizeof(tag),
++		      sizeof(struct fileIdentDesc) - sizeof(tag));
  
+ 	if (fibh->sbh == fibh->ebh) {
+-		crc = udf_crc((uint8_t *)sfi->impUse,
++		crc = crc_itu_t(crc, (uint8_t *)sfi->impUse,
+ 			      crclen + sizeof(tag) -
+-			      sizeof(struct fileIdentDesc), crc);
++			      sizeof(struct fileIdentDesc));
+ 	} else if (sizeof(struct fileIdentDesc) >= -fibh->soffset) {
+-		crc = udf_crc(fibh->ebh->b_data +
++		crc = crc_itu_t(crc, fibh->ebh->b_data +
+ 					sizeof(struct fileIdentDesc) +
+ 					fibh->soffset,
+ 			      crclen + sizeof(tag) -
+-					sizeof(struct fileIdentDesc),
+-			      crc);
++					sizeof(struct fileIdentDesc));
+ 	} else {
+-		crc = udf_crc((uint8_t *)sfi->impUse,
+-			      -fibh->soffset - sizeof(struct fileIdentDesc),
+-			      crc);
+-		crc = udf_crc(fibh->ebh->b_data, fibh->eoffset, crc);
++		crc = crc_itu_t(crc, (uint8_t *)sfi->impUse,
++			      -fibh->soffset - sizeof(struct fileIdentDesc));
++		crc = crc_itu_t(crc, fibh->ebh->b_data, fibh->eoffset);
+ 	}
  
- #define US_FLAG(name, value)	US_FL_##name = value ,
+ 	cfi->descTag.descCRC = cpu_to_le16(crc);
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index f3ac4ab..a8194c7 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -55,6 +55,7 @@
+ #include <linux/errno.h>
+ #include <linux/mount.h>
+ #include <linux/seq_file.h>
++#include <linux/crc-itu-t.h>
+ #include <asm/byteorder.h>
+ 
+ #include <linux/udf_fs.h>
+@@ -1644,9 +1645,8 @@ static void udf_open_lvid(struct super_block *sb)
+ 		lvid->integrityType = LVID_INTEGRITY_TYPE_OPEN;
+ 
+ 		lvid->descTag.descCRC = cpu_to_le16(
+-			udf_crc((char *)lvid + sizeof(tag),
+-				le16_to_cpu(lvid->descTag.descCRCLength),
+-				0));
++			crc_itu_t(0, (char *)lvid + sizeof(tag),
++				le16_to_cpu(lvid->descTag.descCRCLength)));
+ 
+ 		lvid->descTag.tagChecksum = udf_tag_checksum(&lvid->descTag);
+ 		mark_buffer_dirty(bh);
+@@ -1682,9 +1682,8 @@ static void udf_close_lvid(struct super_block *sb)
+ 		lvid->integrityType = cpu_to_le32(LVID_INTEGRITY_TYPE_CLOSE);
+ 
+ 		lvid->descTag.descCRC = cpu_to_le16(
+-			udf_crc((char *)lvid + sizeof(tag),
+-				le16_to_cpu(lvid->descTag.descCRCLength),
+-				0));
++			crc_itu_t(0, (char *)lvid + sizeof(tag),
++				le16_to_cpu(lvid->descTag.descCRCLength)));
+ 
+ 		lvid->descTag.tagChecksum = udf_tag_checksum(&lvid->descTag);
+ 		mark_buffer_dirty(bh);
+diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+index 681dc2b..82ac3aa 100644
+--- a/fs/udf/udfdecl.h
++++ b/fs/udf/udfdecl.h
+@@ -191,9 +191,6 @@ extern struct fileIdentDesc *udf_get_fileident(void *buffer, int bufsize,
+ extern long_ad *udf_get_filelongad(uint8_t *, int, uint32_t *, int);
+ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
+ 
+-/* crc.c */
+-extern uint16_t udf_crc(uint8_t *, uint32_t, uint16_t);
+-
+ /* udftime.c */
+ extern time_t *udf_stamp_to_time(time_t *, long *, kernel_timestamp);
+ extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *, struct timespec);
+diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+index e533b11..e951cca 100644
+--- a/fs/udf/unicode.c
++++ b/fs/udf/unicode.c
+@@ -24,6 +24,7 @@
+ #include <linux/string.h>	/* for memset */
+ #include <linux/nls.h>
+ #include <linux/udf_fs.h>
++#include <linux/crc-itu-t.h>
+ 
+ #include "udf_sb.h"
+ 
+@@ -463,7 +464,7 @@ static int udf_translate_to_linux(uint8_t *newName, uint8_t *udfName,
+ 		} else if (newIndex > 250)
+ 			newIndex = 250;
+ 		newName[newIndex++] = CRC_MARK;
+-		valueCRC = udf_crc(fidName, fidNameLen, 0);
++		valueCRC = crc_itu_t(0, fidName, fidNameLen);
+ 		newName[newIndex++] = hexChar[(valueCRC & 0xf000) >> 12];
+ 		newName[newIndex++] = hexChar[(valueCRC & 0x0f00) >> 8];
+ 		newName[newIndex++] = hexChar[(valueCRC & 0x00f0) >> 4];
+-- 
+1.5.4.2.182.gb3092
 
 -- 
+Bob Copeland %% www.bobcopeland.com 
+
