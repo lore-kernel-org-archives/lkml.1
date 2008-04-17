@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934854AbYDQROM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934932AbYDQRO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934854AbYDQROM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934459AbYDQRNn
+	id S934932AbYDQRO6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbYDQROq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:13:43 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37192 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934424AbYDQRNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:13:43 -0400
-Date: Thu, 17 Apr 2008 20:19:36 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Paul Menage <menage@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
-Message-ID: <20080417161936.GB4482@tv-sign.ru>
-References: <48036677.3010807@linux.vnet.ibm.com> <20080414170709.736819b6.akpm@linux-foundation.org> <20080415171359.GA352@tv-sign.ru> <6599ad830804151113i73010bb4x48e658195f295d41@mail.gmail.com> <20080415195950.GA113@tv-sign.ru> <4806C633.3000302@linux.vnet.ibm.com> <20080417113000.GB103@tv-sign.ru> <6599ad830804170934i6df9fe42kd979492babe03be@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 17 Apr 2008 13:14:46 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:36388
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762110AbYDQROp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 13:14:45 -0400
+Date: Thu, 17 Apr 2008 19:14:43 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
+	operation to happen
+Message-ID: <20080417171443.GM17187@duo.random>
+References: <patchbomb.1207669443@duo.random> <ec6d8f91b299cf26cce5.1207669444@duo.random> <20080416163337.GJ22493@sgi.com> <Pine.LNX.4.64.0804161134360.12296@schroedinger.engr.sgi.com> <20080417155157.GC17187@duo.random> <20080417163642.GE11364@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830804170934i6df9fe42kd979492babe03be@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080417163642.GE11364@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/17, Paul Menage wrote:
->
-> On Thu, Apr 17, 2008 at 4:30 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> >  >
-> >  > I had this loop earlier (inspired from zap_threads()), is this loop more
-> >  > efficient than what we have?
-> >
-> >  All sub-threads have the same ->mm. Once we see that c->mm != mm, we don't
-> >  need to waste CPU iterating over the all other threads in the thread group.
+On Thu, Apr 17, 2008 at 11:36:42AM -0500, Robin Holt wrote:
+> In this case, we are not making the call to unregister, we are waiting
+> for the _release callout which has already removed it from the list.
 > 
-> Technically they don't have to have the same mm, right? You can use
-> CLONE_THREAD without CLONE_VM when creating a new subthread.
+> In the event that the user has removed all the grants, we use unregister.
+> That typically does not occur.  We merely wait for exit processing to
+> clean up the structures.
 
-No, no, this is not possible/allowed.
+Then it's very strange. LIST_POISON1 is set in n->next. If it was a
+second hlist_del triggering the bug in theory list_poison2 should
+trigger first, so perhaps it's really a notifier running despite a
+mm_lock is taken? Could you post a full stack trace so I can see who's
+running into LIST_POISON1? If it's really a notifier running outside
+of some mm_lock that will be _immediately_ visible from the stack
+trace that triggered the LIST_POISON1!
 
-Please look at copy_process, CLONE_THREAD requires CLONE_SIGHAND,
-CLONE_SIGHAND needs CLONE_VM.
+Also note, EMM isn't using the clean hlist_del, it's implementing list
+by hand (with zero runtime gain) so all the debugging may not be
+existent in EMM, so if it's really a mm_lock race, and it only
+triggers with mmu notifiers and not with EMM, it doesn't necessarily
+mean EMM is bug free. If you've a full stack trace it would greatly
+help to verify what is mangling over the list when the oops triggers.
 
-> >  chance you have the "for dummies" explanation what mm->owner is?
-> >  I mean, I can't understand how it is possible that 2 CLONE_VM tasks
-> >  are not equal wrt "ownering".
-> 
-> The idea is to be able to get from an mm to a task, where that task is
-> representative of the tasks using the mm. Uses include:
-
-Thanks! but...
-
-Let's suppose 2 task belongs to different cgroups, but share ->mm,
-
-> - swap cgroup - when swapping from an mm, find a task whose swap
-> cgroup we can charge the swap page to
-
-now we will charge the somewhat "random" cgroup. The one to which
-the result of the last "find the next suitable owner" belongs.
-
-This looks a bit strange to me... but OK, as I said, I don't know
-what cgroup is, please ignore me ;)
-
-Oleg.
-
+Thanks!
+Andrea
