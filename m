@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbYDQR7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934150AbYDQSCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbYDQR7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762038AbYDQR7A
+	id S934150AbYDQSCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 14:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762704AbYDQSCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:59:00 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:55816 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758001AbYDQR67 (ORCPT
+	Thu, 17 Apr 2008 14:02:21 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:15228 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762584AbYDQSCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:58:59 -0400
-Date: Thu, 17 Apr 2008 23:28:43 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: alex@clusterfs.com, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mballoc: fix hot spins after err_freebuddy and
-	err_freemeta
-Message-ID: <20080417175843.GA7517@skywalker>
-References: <4807762A.9090202@tiscali.nl>
+	Thu, 17 Apr 2008 14:02:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DhrM0hi5HS095n/umdUHAeeQ9b945gSHEvlczcJUxAaPWLtksXmp06PFCgk7SfPy9C+Mt7jF99h0Vrh00FlwbEDCuxb1I1om2bzHinmbmTb0d7T2Y7pFJ+JJK/2+c31ln0RkZzs3JmKB9LcrEz65GeOtOyFdKgttqwAffPbZWfE=
+Message-ID: <86802c440804171102q2be96c67m881394c1e6fa3867@mail.gmail.com>
+Date: Thu, 17 Apr 2008 11:02:13 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH] - Increase MAX_APICS for large configs
+Cc: "Jack Steiner" <steiner@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080417110727.GA942@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4807762A.9090202@tiscali.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080416163936.GA23099@sgi.com> <20080417110727.GA942@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 06:09:14PM +0200, Roel Kluin wrote:
-> ext4_mb_init_backend() has a variable i of type ext4_group_t. which is typedefined
-> in include/linux/ext4_fs_i.h:34 to unsigned long. Since unsigned, i >= 0 is always
-> true, so fix hot spins after err_freebuddy and err_freemeta.
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-> index ef97f19..afba9b8 100644
-> --- a/fs/ext4/mballoc.c
-> +++ b/fs/ext4/mballoc.c
-> @@ -2618,14 +2618,14 @@ static int ext4_mb_init_backend(struct super_block *sb)
->  	return 0;
+On Thu, Apr 17, 2008 at 4:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Jack Steiner <steiner@sgi.com> wrote:
+>
+>  > Increase the maximum number of apics when running very large
+>  > configurations. This patch has no affect on most systems.
+>
+>  x86.git overnight random-qa testing found a boot crash and i bisected it
+>  down to this patch. The config is:
+>
+>   http://redhat.com/~mingo/misc/config-Thu_Apr_17_10_17_14_CEST_2008.bad
+>
+>  the failure is attached below. (I needed the exact boot parameters
+>  listed in that bootup log to see this failure.)
+>
+>  it seems to be CONFIG_MAXSMP=y triggers the new more-apic-ids code and
+>  that causes some breakage elsewhere. [btw., this again shows how useful
+>  the CONFIG_MAXSMP debug feature is!]
 
-The function needs more changes. For ex:
+so this one and Mike's 4096 NR_CPUS cause the problem?
 
-2279     if (meta_group_info[j] == NULL) {
-2280               printk(KERN_ERR "EXT4-fs: can't allocate buddy mem\n");
-2281               i--;
-2282               goto err_freebuddy;
-2283     }
+2048 CPUs works.
 
-That decrement  i--; could result in bad value if i == 0;.
-
-
-> 
->  err_freebuddy:
-> -	while (i >= 0) {
-> +	do {
->  		kfree(ext4_get_group_info(sb, i));
-> -		i--;
-> -	}
-> -	i = num_meta_group_infos;
-> +	} while (i-- != 0);
-> +	i = num_meta_group_infos - 1;
->  err_freemeta:
-> -	while (--i >= 0)
-> +	do {
->  		kfree(sbi->s_group_info[i]);
-> +	} while (i-- != 0);
->  	iput(sbi->s_buddy_cache);
->  err_freesgi:
->  	kfree(sbi->s_group_info);
-
--aneesh
+YH
