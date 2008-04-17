@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbYDQQIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933732AbYDQQJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933179AbYDQQIJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 12:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbYDQQHz
+	id S933732AbYDQQJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 12:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760472AbYDQQJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 12:07:55 -0400
-Received: from ns2.gothnet.se ([82.193.160.251]:8333 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760472AbYDQQHy (ORCPT
+	Thu, 17 Apr 2008 12:09:29 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:43708 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754474AbYDQQJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 12:07:54 -0400
-From: Thomas Hellstrom <thomas@tungstengraphics.com>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Hellstrom <thomas@tungstengraphics.com>
-Subject: [PATCH][Resend] Fix loading of large firmware files
-Date: Thu, 17 Apr 2008 19:07:39 +0200
-Message-Id: <1208452059-31415-1-git-send-email-thomas@tungstengraphics.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <12084421001860-git-send-email-thomas@tungstengraphics.com>
-References: <12084421001860-git-send-email-thomas@tungstengraphics.com>
-X-BitDefender-Scanner: Mail not scanned due to license constraints
+	Thu, 17 Apr 2008 12:09:29 -0400
+Message-ID: <4807762A.9090202@tiscali.nl>
+Date: Thu, 17 Apr 2008 18:09:14 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: alex@clusterfs.com, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@clusterfs.com
+CC: linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mballoc: fix hot spins after err_freebuddy and err_freemeta
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Firmware loading has a memory allocation complexity of
-O(size * size), which makes loads of very large firmware files
-stall and fail. This patch fixes that problem by making the
-allocation complexity O(size * ln(size)).
-Signed-off-by: Thomas Hellstrom <thomas@tungstengraphics.com>
+ext4_mb_init_backend() has a variable i of type ext4_group_t. which is typedefined
+in include/linux/ext4_fs_i.h:34 to unsigned long. Since unsigned, i >= 0 is always
+true, so fix hot spins after err_freebuddy and err_freemeta.
+
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
- drivers/base/firmware_class.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 4a1b9bf..4215cbf 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -206,7 +206,9 @@ fw_realloc_buffer(struct firmware_priv *
- 	if (min_size <= fw_priv->alloc_size)
- 		return 0;
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index ef97f19..afba9b8 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2618,14 +2618,14 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 	return 0;
  
--	new_size = ALIGN(min_size, PAGE_SIZE);
-+	new_size = 2 * new_size;
-+	new_size = (min_size > new_size) ? min_size : new_size;
-+	new_size = ALIGN(new_size, PAGE_SIZE);
- 	new_data = vmalloc(new_size);
- 	if (!new_data) {
- 		printk(KERN_ERR "%s: unable to alloc buffer\n", __FUNCTION__);
--- 
-1.4.1
-
-
-
+ err_freebuddy:
+-	while (i >= 0) {
++	do {
+ 		kfree(ext4_get_group_info(sb, i));
+-		i--;
+-	}
+-	i = num_meta_group_infos;
++	} while (i-- != 0);
++	i = num_meta_group_infos - 1;
+ err_freemeta:
+-	while (--i >= 0)
++	do {
+ 		kfree(sbi->s_group_info[i]);
++	} while (i-- != 0);
+ 	iput(sbi->s_buddy_cache);
+ err_freesgi:
+ 	kfree(sbi->s_group_info);
