@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934132AbYDQQ7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934418AbYDQRC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934132AbYDQQ7c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 12:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932449AbYDQQ7V
+	id S934418AbYDQRC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYDQRCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 12:59:21 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:55877 "EHLO mail.screens.ru"
+	Thu, 17 Apr 2008 13:02:18 -0400
+Received: from sous-sol.org ([216.99.217.87]:46756 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756308AbYDQQ7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 12:59:20 -0400
-Date: Thu, 17 Apr 2008 20:05:21 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jesper Juhl <jesper.juhl@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: fork_idle && pid problems ?
-Message-ID: <20080417160521.GA4482@tv-sign.ru>
-References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru> <20080417130252.GB6640@elte.hu> <20080417140246.GA257@tv-sign.ru> <480771DC.5040002@openvz.org> <20080417153644.GA69@tv-sign.ru> <48077D65.1090207@openvz.org>
-Mime-Version: 1.0
+	id S1755550AbYDQRCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 13:02:17 -0400
+Date: Thu, 17 Apr 2008 10:01:49 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       rufus-azrael@numericable.fr, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.25 section mismatches
+Message-ID: <20080417170149.GC17220@sequoia.sous-sol.org>
+References: <e2e108260804170246i673a2e08q333eeae48467ed4@mail.gmail.com> <e2e108260804170949p6cceb4em78455d8dc5ff7261@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48077D65.1090207@openvz.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <e2e108260804170949p6cceb4em78455d8dc5ff7261@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/17, Pavel Emelyanov wrote:
->
-> Oleg Nesterov wrote:
-> >> Well, these was some request to make tasks always have pid link
-> >> point to not NULL (from Matt?) so we'll need this :)
-> > 
-> > For now I'd suggest the patch below. If contrary to our expectations
-> > there is any usage of idle_task->pids, we will notice ;)
-> > 
-> > Oleg.
-> > 
-> > --- kernel/fork.c~	2008-03-07 18:11:27.000000000 +0300
-> > +++ kernel/fork.c	2008-04-17 19:34:10.000000000 +0400
-> > @@ -1420,6 +1420,9 @@ struct task_struct * __cpuinit fork_idle
-> >  	if (!IS_ERR(task))
-> >  		init_idle(task, cpu);
-> >  
-> > +	/* COMMENT */
-> > +	memset(task->pids, 0, sizeof task->pids);
-> > +
+* Bart Van Assche (bart.vanassche@gmail.com) wrote:
+> On Thu, Apr 17, 2008 at 11:46 AM, Bart Van Assche
+> <bart.vanassche@gmail.com> wrote:
+> > Apparently there is a significant number of section mismatches in the
+> >  2.6.25 kernel. These were already reported against 2.6.25-rc1 and are
+> >  still present in the final 2.6.25 release. These section mismatches
+> >  show up at least on the i386 and x86_64 architectures. Maybe it's a
+> >  good idea before a patch is merged not only to check whether the patch
+> >  applies cleanly but also to check whether it doesn't create any new
+> >  section mismatches ?
+> >
+> >  See also http://bugzilla.kernel.org/show_bug.cgi?id=9974.
 > 
-> Hm... Looks ok, but I'd suggest such patch instead:
-> 
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1348,6 +1348,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->  		}
->  		attach_pid(p, PIDTYPE_PID, pid);
->  		nr_threads++;
-> +	} else {
-> +		p->pids[PIDTYPE_PID].pid = NULL;
-> +		p->pids[PIDTYPE_SID].pid = NULL;
-> +		p->pids[PIDTYPE_PGID].pid = NULL;
->  	}
+> Who should look into this ?
 
-This penalizes the "normal" fork()...
+Sam, any of these look familiar (or put another way...are there still
+outstanding section mismatch fixes in -mm)?
 
-> it will cover cases, when we (if ever) call the copy_process from
-> other place. Oh, well...
-
-We must not use init_struct_pid as an argument for copy_process(), except
-in fork_idle(). Note that the result of copy_process(init_struct_pid) is
-not "visible", we can't find it via find_pid() or see it on init_task.tasks.
-
-Not that I have a strong opinion, though. In any case, I think this is
-harmless. But "not good" anyway.
-
-Oleg.
-
+thanks,
+-chris
