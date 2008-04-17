@@ -1,69 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbYDQPlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbYDQPmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbYDQPlf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbYDQPl1
+	id S933999AbYDQPmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762448AbYDQPmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:41:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39634 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760565AbYDQPl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:41:26 -0400
-Date: Thu, 17 Apr 2008 11:41:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       akpm@goodmis.org
-Subject: [PATCH] lockdep: comment hidden releases of graph_lock 
-Message-ID: <Pine.LNX.4.58.0804171139170.12839@gandalf.stny.rr.com>
+	Thu, 17 Apr 2008 11:42:44 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41039 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760923AbYDQPmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 11:42:43 -0400
+Date: Thu, 17 Apr 2008 10:42:41 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: sukadev@us.ibm.com
+Cc: Andrew Morton <akpm@osdl.org>, serue@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Factor out PTY index allocation
+Message-ID: <20080417154241.GC14215@sergelap.austin.ibm.com>
+References: <20080416221723.GB7112@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080416221723.GB7112@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting sukadev@us.ibm.com (sukadev@us.ibm.com):
+> We noticed this while working on pts namespaces and believe this might
+> be an useful change even as we rework our pts/device namespace approach.
+> 
+> ---
+> 
+> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+> Subject: [PATCH]: Factor out PTY index allocation
+> 
+> Factor out the code used to allocate/free a pts index into new interfaces,
+> devpts_new_index() and devpts_kill_index().  This localizes the external
+> data structures used in managing the pts indices.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+> Signed-off-by: Serge Hallyn<serue@us.ibm.com>
+> Signed-off-by: Matt Helsley<matthltc@us.ibm.com>
 
-While reviewing the lockdep.c code, it looked to me that I found a bug where
-the release of the graph_lock was not done on failure. This turns out not
-to be the case, because the graph_unlock is performed within the internal
-functions of lockdep when a failure occurs.
+No traces of devpts namespaces here, so I assume this should be
+non-offensive and fine for inclusion.
 
-To help out others when visually reviewing this code, I've added comments
-to the places where it looks like it may be a bug not to call graph_unlock.
+thanks,
+-serge
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/lockdep.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-sched-devel.git/kernel/lockdep.c
-===================================================================
---- linux-sched-devel.git.orig/kernel/lockdep.c	2008-04-17 10:52:40.000000000 -0400
-+++ linux-sched-devel.git/kernel/lockdep.c	2008-04-17 11:20:49.000000000 -0400
-@@ -1566,6 +1566,7 @@ static int validate_chain(struct task_st
- 		/*
- 		 * Add dependency only if this lock is not the head
- 		 * of the chain, and if it's not a secondary read-lock:
-+		 * (will do graph_unlock on failure)
- 		 */
- 		if (!chain_head && ret != 2)
- 			if (!check_prevs_add(curr, hlock))
-@@ -2284,6 +2285,7 @@ static int mark_lock(struct task_struct
-
- 	this->class->usage_mask |= new_mask;
-
-+	/* save_trace does graph_unlock on failure */
- 	if (!save_trace(this->class->usage_traces + new_bit))
- 		return 0;
-
-@@ -2296,6 +2298,7 @@ static int mark_lock(struct task_struct
- 	case LOCK_ENABLED_SOFTIRQS:
- 	case LOCK_ENABLED_HARDIRQS_READ:
- 	case LOCK_ENABLED_SOFTIRQS_READ:
-+		/* mark_lock_irq does graph_unlock on failure */
- 		ret = mark_lock_irq(curr, this, new_bit);
- 		if (!ret)
- 			return 0;
-
+> ---
+>  drivers/char/tty_io.c     |   40 ++++++----------------------------------
+>  fs/devpts/inode.c         |   42 +++++++++++++++++++++++++++++++++++++++++-
+>  include/linux/devpts_fs.h |    4 ++++
+>  3 files changed, 51 insertions(+), 35 deletions(-)
+> 
+> Index: 2.6.25-rc8-mm2/include/linux/devpts_fs.h
+> ===================================================================
+> --- 2.6.25-rc8-mm2.orig/include/linux/devpts_fs.h	2008-01-26 09:49:16.000000000 -0800
+> +++ 2.6.25-rc8-mm2/include/linux/devpts_fs.h	2008-04-16 09:51:15.000000000 -0700
+> @@ -17,6 +17,8 @@
+> 
+>  #ifdef CONFIG_UNIX98_PTYS
+> 
+> +int devpts_new_index(void);
+> +void devpts_kill_index(int idx);
+>  int devpts_pty_new(struct tty_struct *tty);      /* mknod in devpts */
+>  struct tty_struct *devpts_get_tty(int number);	 /* get tty structure */
+>  void devpts_pty_kill(int number);		 /* unlink */
+> @@ -24,6 +26,8 @@ void devpts_pty_kill(int number);		 /* u
+>  #else
+> 
+>  /* Dummy stubs in the no-pty case */
+> +static inline int devpts_new_index(void) { return -EINVAL; }
+> +static inline void devpts_kill_index(int idx) { }
+>  static inline int devpts_pty_new(struct tty_struct *tty) { return -EINVAL; }
+>  static inline struct tty_struct *devpts_get_tty(int number) { return NULL; }
+>  static inline void devpts_pty_kill(int number) { }
+> Index: 2.6.25-rc8-mm2/drivers/char/tty_io.c
+> ===================================================================
+> --- 2.6.25-rc8-mm2.orig/drivers/char/tty_io.c	2008-04-16 09:51:11.000000000 -0700
+> +++ 2.6.25-rc8-mm2/drivers/char/tty_io.c	2008-04-16 09:51:15.000000000 -0700
+> @@ -91,7 +91,6 @@
+>  #include <linux/module.h>
+>  #include <linux/smp_lock.h>
+>  #include <linux/device.h>
+> -#include <linux/idr.h>
+>  #include <linux/wait.h>
+>  #include <linux/bitops.h>
+>  #include <linux/delay.h>
+> @@ -137,9 +136,6 @@ EXPORT_SYMBOL(tty_mutex);
+> 
+>  #ifdef CONFIG_UNIX98_PTYS
+>  extern struct tty_driver *ptm_driver;	/* Unix98 pty masters; for /dev/ptmx */
+> -extern int pty_limit;			/* Config limit on Unix98 ptys */
+> -static DEFINE_IDR(allocated_ptys);
+> -static DEFINE_MUTEX(allocated_ptys_lock);
+>  static int ptmx_open(struct inode *, struct file *);
+>  #endif
+> 
+> @@ -2636,15 +2632,9 @@ static void release_dev(struct file *fil
+>  	 */
+>  	release_tty(tty, idx);
+> 
+> -#ifdef CONFIG_UNIX98_PTYS
+>  	/* Make this pty number available for reallocation */
+> -	if (devpts) {
+> -		mutex_lock(&allocated_ptys_lock);
+> -		idr_remove(&allocated_ptys, idx);
+> -		mutex_unlock(&allocated_ptys_lock);
+> -	}
+> -#endif
+> -
+> +	if (devpts)
+> +		devpts_kill_index(idx);
+>  }
+> 
+>  /**
+> @@ -2800,29 +2790,13 @@ static int ptmx_open(struct inode *inode
+>  	struct tty_struct *tty;
+>  	int retval;
+>  	int index;
+> -	int idr_ret;
+> 
+>  	nonseekable_open(inode, filp);
+> 
+>  	/* find a device that is not in use. */
+> -	mutex_lock(&allocated_ptys_lock);
+> -	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+> -		mutex_unlock(&allocated_ptys_lock);
+> -		return -ENOMEM;
+> -	}
+> -	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+> -	if (idr_ret < 0) {
+> -		mutex_unlock(&allocated_ptys_lock);
+> -		if (idr_ret == -EAGAIN)
+> -			return -ENOMEM;
+> -		return -EIO;
+> -	}
+> -	if (index >= pty_limit) {
+> -		idr_remove(&allocated_ptys, index);
+> -		mutex_unlock(&allocated_ptys_lock);
+> -		return -EIO;
+> -	}
+> -	mutex_unlock(&allocated_ptys_lock);
+> +	index = devpts_new_index();
+> +	if (index < 0)
+> +		return index;
+> 
+>  	mutex_lock(&tty_mutex);
+>  	retval = init_dev(ptm_driver, index, &tty);
+> @@ -2847,9 +2821,7 @@ out1:
+>  	release_dev(filp);
+>  	return retval;
+>  out:
+> -	mutex_lock(&allocated_ptys_lock);
+> -	idr_remove(&allocated_ptys, index);
+> -	mutex_unlock(&allocated_ptys_lock);
+> +	devpts_kill_index(index);
+>  	return retval;
+>  }
+>  #endif
+> Index: 2.6.25-rc8-mm2/fs/devpts/inode.c
+> ===================================================================
+> --- 2.6.25-rc8-mm2.orig/fs/devpts/inode.c	2008-02-27 15:17:59.000000000 -0800
+> +++ 2.6.25-rc8-mm2/fs/devpts/inode.c	2008-04-16 09:51:15.000000000 -0700
+> @@ -17,6 +17,7 @@
+>  #include <linux/namei.h>
+>  #include <linux/mount.h>
+>  #include <linux/tty.h>
+> +#include <linux/idr.h>
+>  #include <linux/devpts_fs.h>
+>  #include <linux/parser.h>
+>  #include <linux/fsnotify.h>
+> @@ -26,6 +27,10 @@
+> 
+>  #define DEVPTS_DEFAULT_MODE 0600
+> 
+> +extern int pty_limit;			/* Config limit on Unix98 ptys */
+> +static DEFINE_IDR(allocated_ptys);
+> +static DECLARE_MUTEX(allocated_ptys_lock);
+> +
+>  static struct vfsmount *devpts_mnt;
+>  static struct dentry *devpts_root;
+> 
+> @@ -171,9 +176,44 @@ static struct dentry *get_node(int num)
+>  	return lookup_one_len(s, root, sprintf(s, "%d", num));
+>  }
+> 
+> +int devpts_new_index(void)
+> +{
+> +	int index;
+> +	int idr_ret;
+> +
+> +retry:
+> +	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+> +		return -ENOMEM;
+> +	}
+> +
+> +	down(&allocated_ptys_lock);
+> +	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+> +	if (idr_ret < 0) {
+> +		up(&allocated_ptys_lock);
+> +		if (idr_ret == -EAGAIN)
+> +			goto retry;
+> +		return -EIO;
+> +	}
+> +
+> +	if (index >= pty_limit) {
+> +		idr_remove(&allocated_ptys, index);
+> +		up(&allocated_ptys_lock);
+> +		return -EIO;
+> +	}
+> +	up(&allocated_ptys_lock);
+> +	return index;
+> +}
+> +
+> +void devpts_kill_index(int idx)
+> +{
+> +	down(&allocated_ptys_lock);
+> +	idr_remove(&allocated_ptys, idx);
+> +	up(&allocated_ptys_lock);
+> +}
+> +
+>  int devpts_pty_new(struct tty_struct *tty)
+>  {
+> -	int number = tty->index;
+> +	int number = tty->index; /* tty layer puts index from devpts_new_index() in here */
+>  	struct tty_driver *driver = tty->driver;
+>  	dev_t device = MKDEV(driver->major, driver->minor_start+number);
+>  	struct dentry *dentry;
