@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYDQWGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYDQWGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYDQWGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 18:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYDQWGE
+	id S1756176AbYDQWGv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 18:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYDQWGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 18:06:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59229 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 18:06:41 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:8041 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753981AbYDQWGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 18:06:02 -0400
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, mathieu.desnoyers@polymtl.ca
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-References: <20080415115058.GA6788@in.ibm.com>
-	<20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins>
-	<20080415155223.GA6935@in.ibm.com> <1208361092.6395.81.camel@twins>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 17 Apr 2008 18:02:21 -0400
-In-Reply-To: <1208361092.6395.81.camel@twins> (Peter Zijlstra's message of "Wed, 16 Apr 2008 17:51:32 +0200")
-Message-ID: <y0m1w54cf82.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753983AbYDQWGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 18:06:40 -0400
+X-IronPort-AV: E=Sophos;i="4.25,673,1199692800"; 
+   d="scan'208";a="32879118"
+Subject: Re: SUNRPC: Fix a memory leak in rpc_create()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org, Chuck Lever <chuck.lever@oracle.com>
+In-Reply-To: <200804172325.39462.s.L-H@gmx.de>
+References: <20080417010122.148289106@sous-sol.org>
+	 <20080417010354.950049854@sous-sol.org>  <200804172325.39462.s.L-H@gmx.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 17 Apr 2008 18:06:37 -0400
+Message-Id: <1208469997.5375.4.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 17 Apr 2008 22:06:38.0726 (UTC) FILETIME=[4F33B260:01C8A0D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
 
-> [...]
->> If we were to log just the futex_ops, just as you had suggested,
->> "Just log:
->>  
->>   futex: <uaddr> wait
->>   futex: <uaddr> wakeup"
->> [...]
->> If you can specifically point me to information you think would be
->> absolutely unnecessary, I can get them out of the trace_mark().
->
-> I'm thinking everything is superflous; you're basically logging what
-> strace already gives you
+On Thu, 2008-04-17 at 23:25 +0200, Stefan Lippers-Hollmann wrote:
+> Hi
+> 
+> On Donnerstag, 17. April 2008, you wrote:
+> > -stable review patch.  If anyone has any objections, please let us know.
+> > ---------------------
+> > 
+> > From: Chuck Lever <chuck.lever@oracle.com>
+> > 
+> > upstream commit: ed13c27e546667fb0967ae30f5070cd7f6455f90
+> > 
+> > Commit 510deb0d was supposed to move the xprt_create_transport() call in
+> > rpc_create(), but neglected to remove the old call site.  This resulted in
+> > a transport leak after every rpc_create() call.
+> > 
+> > This leak is present in 2.6.24 and 2.6.25.
+> 
+> This patch might introduce a regression:
+> 
 
-But we don't want to run strace just for this stuff.  As you probably
-know, strace involves invasive user-space context-switching between
-the target and the tracer.
+Gah. You're quite right. The commit that introduced the leak was merged
+well after 2.6.24 was released despite what the changelog entry says
+above:
 
-> except worse by encoding local variable names and exposing kernel
-> pointers.
+$ git describe 510deb0d
+v2.6.24-3933-g510deb0
 
-The pointers are probably excessive, the and the names don't really
-matter.  What does matter is providing enough information for a
-problem diagnosis tool & person to reconstruct what the kernel must
-have been thinking when it did something noteworthy.
+I should have double-checked before posting this to stable@kernel.org.
+I'm very sorry...
 
+  Trond
 
-- FChE
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
