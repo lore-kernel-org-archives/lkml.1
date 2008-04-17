@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYDQJaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934117AbYDQJak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbYDQJaI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764031AbYDQJLy
+	id S934117AbYDQJak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763616AbYDQJLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:11:54 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58976
+	Thu, 17 Apr 2008 05:11:55 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:59088
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761146AbYDQJLO (ORCPT
+	with ESMTP id S1763409AbYDQJLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Apr 2008 05:11:14 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Xiantao Zhang <xiantao.zhang@intel.com>
-Subject: [PATCH 43/45] KVM: ia64: Add kvm sal/pal virtulization support
-Date: Thu, 17 Apr 2008 12:10:48 +0300
-Message-Id: <1208423450-29415-44-git-send-email-avi@qumranet.com>
+Subject: [PATCH 44/45] KVM: ia64: Enable kvm build for ia64
+Date: Thu, 17 Apr 2008 12:10:49 +0300
+Message-Id: <1208423450-29415-45-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208423450-29415-1-git-send-email-avi@qumranet.com>
 References: <1208423450-29415-1-git-send-email-avi@qumranet.com>
@@ -25,522 +25,171 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Xiantao Zhang <xiantao.zhang@intel.com>
 
-Some sal/pal calls would be traped to kvm for virtulization
-from guest firmware.
+Update the related Makefile and KConfig for kvm build
 
 Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/ia64/kvm/kvm_fw.c |  500 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 500 insertions(+), 0 deletions(-)
- create mode 100644 arch/ia64/kvm/kvm_fw.c
+ arch/ia64/Kconfig      |    3 ++
+ arch/ia64/Makefile     |    1 +
+ arch/ia64/kvm/Kconfig  |   46 ++++++++++++++++++++++++++++++++++++
+ arch/ia64/kvm/Makefile |   61 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 111 insertions(+), 0 deletions(-)
+ create mode 100644 arch/ia64/kvm/Kconfig
+ create mode 100644 arch/ia64/kvm/Makefile
 
-diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 8fa3faf..a7bb62e 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -19,6 +19,7 @@ config IA64
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
++	select HAVE_KVM
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+@@ -589,6 +590,8 @@ config MSPEC
+ 
+ source "fs/Kconfig"
+ 
++source "arch/ia64/kvm/Kconfig"
++
+ source "lib/Kconfig"
+ 
+ #
+diff --git a/arch/ia64/Makefile b/arch/ia64/Makefile
+index f1645c4..ec4cca4 100644
+--- a/arch/ia64/Makefile
++++ b/arch/ia64/Makefile
+@@ -57,6 +57,7 @@ core-$(CONFIG_IA64_GENERIC) 	+= arch/ia64/dig/
+ core-$(CONFIG_IA64_HP_ZX1)	+= arch/ia64/dig/
+ core-$(CONFIG_IA64_HP_ZX1_SWIOTLB) += arch/ia64/dig/
+ core-$(CONFIG_IA64_SGI_SN2)	+= arch/ia64/sn/
++core-$(CONFIG_KVM) 		+= arch/ia64/kvm/
+ 
+ drivers-$(CONFIG_PCI)		+= arch/ia64/pci/
+ drivers-$(CONFIG_IA64_HP_SIM)	+= arch/ia64/hp/sim/
+diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
 new file mode 100644
-index 0000000..091f936
+index 0000000..d2e54b9
 --- /dev/null
-+++ b/arch/ia64/kvm/kvm_fw.c
-@@ -0,0 +1,500 @@
-+/*
-+ * PAL/SAL call delegation
-+ *
-+ * Copyright (c) 2004 Li Susie <susie.li@intel.com>
-+ * Copyright (c) 2005 Yu Ke <ke.yu@intel.com>
-+ * Copyright (c) 2007 Xiantao Zhang <xiantao.zhang@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-+ * Place - Suite 330, Boston, MA 02111-1307 USA.
-+ */
-+
-+#include <linux/kvm_host.h>
-+#include <linux/smp.h>
-+
-+#include "vti.h"
-+#include "misc.h"
-+
-+#include <asm/pal.h>
-+#include <asm/sal.h>
-+#include <asm/tlb.h>
-+
-+/*
-+ * Handy macros to make sure that the PAL return values start out
-+ * as something meaningful.
-+ */
-+#define INIT_PAL_STATUS_UNIMPLEMENTED(x)		\
-+	{						\
-+		x.status = PAL_STATUS_UNIMPLEMENTED;	\
-+		x.v0 = 0;				\
-+		x.v1 = 0;				\
-+		x.v2 = 0;				\
-+	}
-+
-+#define INIT_PAL_STATUS_SUCCESS(x)			\
-+	{						\
-+		x.status = PAL_STATUS_SUCCESS;		\
-+		x.v0 = 0;				\
-+		x.v1 = 0;				\
-+		x.v2 = 0;				\
-+    }
-+
-+static void kvm_get_pal_call_data(struct kvm_vcpu *vcpu,
-+		u64 *gr28, u64 *gr29, u64 *gr30, u64 *gr31) {
-+	struct exit_ctl_data *p;
-+
-+	if (vcpu) {
-+		p = &vcpu->arch.exit_data;
-+		if (p->exit_reason == EXIT_REASON_PAL_CALL) {
-+			*gr28 = p->u.pal_data.gr28;
-+			*gr29 = p->u.pal_data.gr29;
-+			*gr30 = p->u.pal_data.gr30;
-+			*gr31 = p->u.pal_data.gr31;
-+			return ;
-+		}
-+	}
-+	printk(KERN_DEBUG"Failed to get vcpu pal data!!!\n");
-+}
-+
-+static void set_pal_result(struct kvm_vcpu *vcpu,
-+		struct ia64_pal_retval result) {
-+
-+	struct exit_ctl_data *p;
-+
-+	p = kvm_get_exit_data(vcpu);
-+	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
-+		p->u.pal_data.ret = result;
-+		return ;
-+	}
-+	INIT_PAL_STATUS_UNIMPLEMENTED(p->u.pal_data.ret);
-+}
-+
-+static void set_sal_result(struct kvm_vcpu *vcpu,
-+		struct sal_ret_values result) {
-+	struct exit_ctl_data *p;
-+
-+	p = kvm_get_exit_data(vcpu);
-+	if (p && p->exit_reason == EXIT_REASON_SAL_CALL) {
-+		p->u.sal_data.ret = result;
-+		return ;
-+	}
-+	printk(KERN_WARNING"Failed to set sal result!!\n");
-+}
-+
-+struct cache_flush_args {
-+	u64 cache_type;
-+	u64 operation;
-+	u64 progress;
-+	long status;
-+};
-+
-+cpumask_t cpu_cache_coherent_map;
-+
-+static void remote_pal_cache_flush(void *data)
-+{
-+	struct cache_flush_args *args = data;
-+	long status;
-+	u64 progress = args->progress;
-+
-+	status = ia64_pal_cache_flush(args->cache_type, args->operation,
-+					&progress, NULL);
-+	if (status != 0)
-+	args->status = status;
-+}
-+
-+static struct ia64_pal_retval pal_cache_flush(struct kvm_vcpu *vcpu)
-+{
-+	u64 gr28, gr29, gr30, gr31;
-+	struct ia64_pal_retval result = {0, 0, 0, 0};
-+	struct cache_flush_args args = {0, 0, 0, 0};
-+	long psr;
-+
-+	gr28 = gr29 = gr30 = gr31 = 0;
-+	kvm_get_pal_call_data(vcpu, &gr28, &gr29, &gr30, &gr31);
-+
-+	if (gr31 != 0)
-+		printk(KERN_ERR"vcpu:%p called cache_flush error!\n", vcpu);
-+
-+	/* Always call Host Pal in int=1 */
-+	gr30 &= ~PAL_CACHE_FLUSH_CHK_INTRS;
-+	args.cache_type = gr29;
-+	args.operation = gr30;
-+	smp_call_function(remote_pal_cache_flush,
-+				(void *)&args, 1, 1);
-+	if (args.status != 0)
-+		printk(KERN_ERR"pal_cache_flush error!,"
-+				"status:0x%lx\n", args.status);
-+	/*
-+	 * Call Host PAL cache flush
-+	 * Clear psr.ic when call PAL_CACHE_FLUSH
-+	 */
-+	local_irq_save(psr);
-+	result.status = ia64_pal_cache_flush(gr29, gr30, &result.v1,
-+						&result.v0);
-+	local_irq_restore(psr);
-+	if (result.status != 0)
-+		printk(KERN_ERR"vcpu:%p crashed due to cache_flush err:%ld"
-+				"in1:%lx,in2:%lx\n",
-+				vcpu, result.status, gr29, gr30);
-+
-+#if 0
-+	if (gr29 == PAL_CACHE_TYPE_COHERENT) {
-+		cpus_setall(vcpu->arch.cache_coherent_map);
-+		cpu_clear(vcpu->cpu, vcpu->arch.cache_coherent_map);
-+		cpus_setall(cpu_cache_coherent_map);
-+		cpu_clear(vcpu->cpu, cpu_cache_coherent_map);
-+	}
-+#endif
-+	return result;
-+}
-+
-+struct ia64_pal_retval pal_cache_summary(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct ia64_pal_retval result;
-+
-+	PAL_CALL(result, PAL_CACHE_SUMMARY, 0, 0, 0);
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_freq_base(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct ia64_pal_retval result;
-+
-+	PAL_CALL(result, PAL_FREQ_BASE, 0, 0, 0);
-+
-+	/*
-+	 * PAL_FREQ_BASE may not be implemented in some platforms,
-+	 * call SAL instead.
-+	 */
-+	if (result.v0 == 0) {
-+		result.status = ia64_sal_freq_base(SAL_FREQ_BASE_PLATFORM,
-+							&result.v0,
-+							&result.v1);
-+		result.v2 = 0;
-+	}
-+
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_freq_ratios(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct ia64_pal_retval result;
-+
-+	PAL_CALL(result, PAL_FREQ_RATIOS, 0, 0, 0);
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_logical_to_physica(struct kvm_vcpu *vcpu)
-+{
-+	struct ia64_pal_retval result;
-+
-+	INIT_PAL_STATUS_UNIMPLEMENTED(result);
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_platform_addr(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct ia64_pal_retval result;
-+
-+	INIT_PAL_STATUS_SUCCESS(result);
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_proc_get_features(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct ia64_pal_retval result = {0, 0, 0, 0};
-+	long in0, in1, in2, in3;
-+
-+	kvm_get_pal_call_data(vcpu, &in0, &in1, &in2, &in3);
-+	result.status = ia64_pal_proc_get_features(&result.v0, &result.v1,
-+			&result.v2, in2);
-+
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_cache_info(struct kvm_vcpu *vcpu)
-+{
-+
-+	pal_cache_config_info_t ci;
-+	long status;
-+	unsigned long in0, in1, in2, in3, r9, r10;
-+
-+	kvm_get_pal_call_data(vcpu, &in0, &in1, &in2, &in3);
-+	status = ia64_pal_cache_config_info(in1, in2, &ci);
-+	r9 = ci.pcci_info_1.pcci1_data;
-+	r10 = ci.pcci_info_2.pcci2_data;
-+	return ((struct ia64_pal_retval){status, r9, r10, 0});
-+}
-+
-+#define GUEST_IMPL_VA_MSB	59
-+#define GUEST_RID_BITS		18
-+
-+static struct ia64_pal_retval pal_vm_summary(struct kvm_vcpu *vcpu)
-+{
-+
-+	pal_vm_info_1_u_t vminfo1;
-+	pal_vm_info_2_u_t vminfo2;
-+	struct ia64_pal_retval result;
-+
-+	PAL_CALL(result, PAL_VM_SUMMARY, 0, 0, 0);
-+	if (!result.status) {
-+		vminfo1.pvi1_val = result.v0;
-+		vminfo1.pal_vm_info_1_s.max_itr_entry = 8;
-+		vminfo1.pal_vm_info_1_s.max_dtr_entry = 8;
-+		result.v0 = vminfo1.pvi1_val;
-+		vminfo2.pal_vm_info_2_s.impl_va_msb = GUEST_IMPL_VA_MSB;
-+		vminfo2.pal_vm_info_2_s.rid_size = GUEST_RID_BITS;
-+		result.v1 = vminfo2.pvi2_val;
-+	}
-+
-+	return result;
-+}
-+
-+static struct ia64_pal_retval pal_vm_info(struct kvm_vcpu *vcpu)
-+{
-+	struct ia64_pal_retval result;
-+
-+	INIT_PAL_STATUS_UNIMPLEMENTED(result);
-+
-+	return result;
-+}
-+
-+static  u64 kvm_get_pal_call_index(struct kvm_vcpu *vcpu)
-+{
-+	u64 index = 0;
-+	struct exit_ctl_data *p;
-+
-+	p = kvm_get_exit_data(vcpu);
-+	if (p && (p->exit_reason == EXIT_REASON_PAL_CALL))
-+		index = p->u.pal_data.gr28;
-+
-+	return index;
-+}
-+
-+int kvm_pal_emul(struct kvm_vcpu *vcpu, struct kvm_run *run)
-+{
-+
-+	u64 gr28;
-+	struct ia64_pal_retval result;
-+	int ret = 1;
-+
-+	gr28 = kvm_get_pal_call_index(vcpu);
-+	/*printk("pal_call index:%lx\n",gr28);*/
-+	switch (gr28) {
-+	case PAL_CACHE_FLUSH:
-+		result = pal_cache_flush(vcpu);
-+		break;
-+	case PAL_CACHE_SUMMARY:
-+		result = pal_cache_summary(vcpu);
-+		break;
-+	case PAL_HALT_LIGHT:
-+	{
-+		vcpu->arch.timer_pending = 1;
-+		INIT_PAL_STATUS_SUCCESS(result);
-+		if (kvm_highest_pending_irq(vcpu) == -1)
-+			ret = kvm_emulate_halt(vcpu);
-+
-+	}
-+		break;
-+
-+	case PAL_FREQ_RATIOS:
-+		result = pal_freq_ratios(vcpu);
-+		break;
-+
-+	case PAL_FREQ_BASE:
-+		result = pal_freq_base(vcpu);
-+		break;
-+
-+	case PAL_LOGICAL_TO_PHYSICAL :
-+		result = pal_logical_to_physica(vcpu);
-+		break;
-+
-+	case PAL_VM_SUMMARY :
-+		result = pal_vm_summary(vcpu);
-+		break;
-+
-+	case PAL_VM_INFO :
-+		result = pal_vm_info(vcpu);
-+		break;
-+	case PAL_PLATFORM_ADDR :
-+		result = pal_platform_addr(vcpu);
-+		break;
-+	case PAL_CACHE_INFO:
-+		result = pal_cache_info(vcpu);
-+		break;
-+	case PAL_PTCE_INFO:
-+		INIT_PAL_STATUS_SUCCESS(result);
-+		result.v1 = (1L << 32) | 1L;
-+		break;
-+	case PAL_VM_PAGE_SIZE:
-+		result.status = ia64_pal_vm_page_size(&result.v0,
-+							&result.v1);
-+		break;
-+	case PAL_RSE_INFO:
-+		result.status = ia64_pal_rse_info(&result.v0,
-+					(pal_hints_u_t *)&result.v1);
-+		break;
-+	case PAL_PROC_GET_FEATURES:
-+		result = pal_proc_get_features(vcpu);
-+		break;
-+	case PAL_DEBUG_INFO:
-+		result.status = ia64_pal_debug_info(&result.v0,
-+							&result.v1);
-+		break;
-+	case PAL_VERSION:
-+		result.status = ia64_pal_version(
-+				(pal_version_u_t *)&result.v0,
-+				(pal_version_u_t *)&result.v1);
-+
-+		break;
-+	case PAL_FIXED_ADDR:
-+		result.status = PAL_STATUS_SUCCESS;
-+		result.v0 = vcpu->vcpu_id;
-+		break;
-+	default:
-+		INIT_PAL_STATUS_UNIMPLEMENTED(result);
-+		printk(KERN_WARNING"kvm: Unsupported pal call,"
-+					" index:0x%lx\n", gr28);
-+	}
-+	set_pal_result(vcpu, result);
-+	return ret;
-+}
-+
-+static struct sal_ret_values sal_emulator(struct kvm *kvm,
-+				long index, unsigned long in1,
-+				unsigned long in2, unsigned long in3,
-+				unsigned long in4, unsigned long in5,
-+				unsigned long in6, unsigned long in7)
-+{
-+	unsigned long r9  = 0;
-+	unsigned long r10 = 0;
-+	long r11 = 0;
-+	long status;
-+
-+	status = 0;
-+	switch (index) {
-+	case SAL_FREQ_BASE:
-+		status = ia64_sal_freq_base(in1, &r9, &r10);
-+		break;
-+	case SAL_PCI_CONFIG_READ:
-+		printk(KERN_WARNING"kvm: Not allowed to call here!"
-+			" SAL_PCI_CONFIG_READ\n");
-+		break;
-+	case SAL_PCI_CONFIG_WRITE:
-+		printk(KERN_WARNING"kvm: Not allowed to call here!"
-+			" SAL_PCI_CONFIG_WRITE\n");
-+		break;
-+	case SAL_SET_VECTORS:
-+		if (in1 == SAL_VECTOR_OS_BOOT_RENDEZ) {
-+			if (in4 != 0 || in5 != 0 || in6 != 0 || in7 != 0) {
-+				status = -2;
-+			} else {
-+				kvm->arch.rdv_sal_data.boot_ip = in2;
-+				kvm->arch.rdv_sal_data.boot_gp = in3;
-+			}
-+			printk("Rendvous called! iip:%lx\n\n", in2);
-+		} else
-+			printk(KERN_WARNING"kvm: CALLED SAL_SET_VECTORS %lu."
-+							"ignored...\n", in1);
-+		break;
-+	case SAL_GET_STATE_INFO:
-+		/* No more info.  */
-+		status = -5;
-+		r9 = 0;
-+		break;
-+	case SAL_GET_STATE_INFO_SIZE:
-+		/* Return a dummy size.  */
-+		status = 0;
-+		r9 = 128;
-+		break;
-+	case SAL_CLEAR_STATE_INFO:
-+		/* Noop.  */
-+		break;
-+	case SAL_MC_RENDEZ:
-+		printk(KERN_WARNING
-+			"kvm: called SAL_MC_RENDEZ. ignored...\n");
-+		break;
-+	case SAL_MC_SET_PARAMS:
-+		printk(KERN_WARNING
-+			"kvm: called  SAL_MC_SET_PARAMS.ignored!\n");
-+		break;
-+	case SAL_CACHE_FLUSH:
-+		if (1) {
-+			/*Flush using SAL.
-+			This method is faster but has a side
-+			effect on other vcpu running on
-+			this cpu.  */
-+			status = ia64_sal_cache_flush(in1);
-+		} else {
-+			/*Maybe need to implement the method
-+			without side effect!*/
-+			status = 0;
-+		}
-+		break;
-+	case SAL_CACHE_INIT:
-+		printk(KERN_WARNING
-+			"kvm: called SAL_CACHE_INIT.  ignored...\n");
-+		break;
-+	case SAL_UPDATE_PAL:
-+		printk(KERN_WARNING
-+			"kvm: CALLED SAL_UPDATE_PAL.  ignored...\n");
-+		break;
-+	default:
-+		printk(KERN_WARNING"kvm: called SAL_CALL with unknown index."
-+						" index:%ld\n", index);
-+		status = -1;
-+		break;
-+	}
-+	return ((struct sal_ret_values) {status, r9, r10, r11});
-+}
-+
-+static void kvm_get_sal_call_data(struct kvm_vcpu *vcpu, u64 *in0, u64 *in1,
-+		u64 *in2, u64 *in3, u64 *in4, u64 *in5, u64 *in6, u64 *in7){
-+
-+	struct exit_ctl_data *p;
-+
-+	p = kvm_get_exit_data(vcpu);
-+
-+	if (p) {
-+		if (p->exit_reason == EXIT_REASON_SAL_CALL) {
-+			*in0 = p->u.sal_data.in0;
-+			*in1 = p->u.sal_data.in1;
-+			*in2 = p->u.sal_data.in2;
-+			*in3 = p->u.sal_data.in3;
-+			*in4 = p->u.sal_data.in4;
-+			*in5 = p->u.sal_data.in5;
-+			*in6 = p->u.sal_data.in6;
-+			*in7 = p->u.sal_data.in7;
-+			return ;
-+		}
-+	}
-+	*in0 = 0;
-+}
-+
-+void kvm_sal_emul(struct kvm_vcpu *vcpu)
-+{
-+
-+	struct sal_ret_values result;
-+	u64 index, in1, in2, in3, in4, in5, in6, in7;
-+
-+	kvm_get_sal_call_data(vcpu, &index, &in1, &in2,
-+			&in3, &in4, &in5, &in6, &in7);
-+	result = sal_emulator(vcpu->kvm, index, in1, in2, in3,
-+					in4, in5, in6, in7);
-+	set_sal_result(vcpu, result);
-+}
++++ b/arch/ia64/kvm/Kconfig
+@@ -0,0 +1,46 @@
++#
++# KVM configuration
++#
++config HAVE_KVM
++	bool
++
++menuconfig VIRTUALIZATION
++	bool "Virtualization"
++	depends on HAVE_KVM || IA64
++	default y
++	---help---
++	  Say Y here to get to see options for using your Linux host to run other
++	  operating systems inside virtual machines (guests).
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++if VIRTUALIZATION
++
++config KVM
++	tristate "Kernel-based Virtual Machine (KVM) support"
++	depends on HAVE_KVM && EXPERIMENTAL
++	select PREEMPT_NOTIFIERS
++	select ANON_INODES
++	---help---
++	  Support hosting fully virtualized guest machines using hardware
++	  virtualization extensions.  You will need a fairly recent
++	  processor equipped with virtualization extensions. You will also
++	  need to select one or more of the processor modules below.
++
++	  This module provides access to the hardware capabilities through
++	  a character device node named /dev/kvm.
++
++	  To compile this as a module, choose M here: the module
++	  will be called kvm.
++
++	  If unsure, say N.
++
++config KVM_INTEL
++	tristate "KVM for Intel Itanium 2 processors support"
++	depends on KVM && m
++	---help---
++	  Provides support for KVM on Itanium 2 processors equipped with the VT
++	  extensions.
++
++endif # VIRTUALIZATION
+diff --git a/arch/ia64/kvm/Makefile b/arch/ia64/kvm/Makefile
+new file mode 100644
+index 0000000..41b034f
+--- /dev/null
++++ b/arch/ia64/kvm/Makefile
+@@ -0,0 +1,61 @@
++#This Make file is to generate asm-offsets.h and build source.
++#
++
++#Generate asm-offsets.h for vmm module build
++offsets-file := asm-offsets.h
++
++always  := $(offsets-file)
++targets := $(offsets-file)
++targets += arch/ia64/kvm/asm-offsets.s
++clean-files := $(addprefix $(objtree)/,$(targets) $(obj)/memcpy.S $(obj)/memset.S)
++
++# Default sed regexp - multiline due to syntax constraints
++define sed-y
++	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
++endef
++
++quiet_cmd_offsets = GEN     $@
++define cmd_offsets
++	(set -e; \
++	 echo "#ifndef __ASM_KVM_OFFSETS_H__"; \
++	 echo "#define __ASM_KVM_OFFSETS_H__"; \
++	 echo "/*"; \
++	 echo " * DO NOT MODIFY."; \
++	 echo " *"; \
++	 echo " * This file was generated by Makefile"; \
++	 echo " *"; \
++	 echo " */"; \
++	 echo ""; \
++	 sed -ne $(sed-y) $<; \
++	 echo ""; \
++	 echo "#endif" ) > $@
++endef
++# We use internal rules to avoid the "is up to date" message from make
++arch/ia64/kvm/asm-offsets.s: arch/ia64/kvm/asm-offsets.c
++	$(call if_changed_dep,cc_s_c)
++
++$(obj)/$(offsets-file): arch/ia64/kvm/asm-offsets.s
++	$(call cmd,offsets)
++
++#
++# Makefile for Kernel-based Virtual Machine module
++#
++
++EXTRA_CFLAGS += -Ivirt/kvm -Iarch/ia64/kvm/
++
++$(addprefix $(objtree)/,$(obj)/memcpy.S $(obj)/memset.S):
++	$(shell ln -snf ../lib/memcpy.S $(src)/memcpy.S)
++	$(shell ln -snf ../lib/memset.S $(src)/memset.S)
++
++common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o ioapic.o)
++
++kvm-objs := $(common-objs) kvm-ia64.o kvm_fw.o
++obj-$(CONFIG_KVM) += kvm.o
++
++FORCE : $(obj)/$(offsets-file)
++EXTRA_CFLAGS_vcpu.o += -mfixed-range=f2-f5,f12-f127
++kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o mmio.o \
++	vtlb.o process.o
++#Add link memcpy and memset to avoid possible structure assignment error
++kvm-intel-objs += memset.o memcpy.o
++obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
 -- 
 1.5.5
 
