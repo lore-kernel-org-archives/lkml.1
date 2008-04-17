@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934504AbYDQSCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763861AbYDQSDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934504AbYDQSCu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 14:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764557AbYDQSCZ
+	id S1763861AbYDQSDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 14:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763020AbYDQSDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 14:02:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35793 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764266AbYDQSCY (ORCPT
+	Thu, 17 Apr 2008 14:03:09 -0400
+Received: from web52504.mail.re2.yahoo.com ([206.190.48.187]:32311 "HELO
+	web52504.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762928AbYDQSDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 14:02:24 -0400
-Date: Thu, 17 Apr 2008 11:01:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417110135.08b076ac.akpm@linux-foundation.org>
-In-Reply-To: <20080417114900.GA17033@infradead.org>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com>
-	<20080417012051.ed56f4ab.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI>
-	<84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com>
-	<20080417014217.ab0453a9.akpm@linux-foundation.org>
-	<20080417114900.GA17033@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Thu, 17 Apr 2008 14:03:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=IUpRg6I1mZLBBij/RA4zYTzXUDU4LSWyP7LgoWMHVyejk6EqjYE7iHN3CGtmJvhaJnk+65EsOb9SDqW/yBt41PuQSYcf3NK9z4hCJvQW7A8VukNqnn0CWqxVAAxBHYEJjLVt1LZShrA9RtF0YX+t4UrzsJPC/GlIe5IYZH2T1lU=;
+X-YMail-OSG: sEA.FxUVM1lvKtc1XQMZuIu5EUoeYC9vM7729mJkWoWMX6tB9FcmSMWQ75YOVx4OZQ--
+Date: Thu, 17 Apr 2008 11:03:04 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: AMD Quad Core clock problem?
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <e2e108260804162317s5162a6cds151bba6abf988921@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <298557.12633.qm@web52504.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 07:49:00 -0400 Christoph Hellwig <hch@infradead.org> wrote:
 
-> On Thu, Apr 17, 2008 at 01:42:17AM -0700, Andrew Morton wrote:
-> > Apparently that code is not being proposed for merge and it all got
-> > reimplemented and moved elsewhere.  I knew nothing of this.
+--- Bart Van Assche <bart.vanassche@gmail.com> wrote:
+
+> On Wed, Apr 16, 2008 at 11:44 PM, Marc Perkel
+> <mperkel@yahoo.com> wrote:
+> >  --- Bart Van Assche <bart.vanassche@gmail.com>
+> wrote:
+> >  > It's better to correct the clock frequency once
+> with
+> >  > the tickadj or adjtimex, so you don't have to
+> add
+> >  > ntpdate to cron and you can still run ntpd.
+> >  >
+> >  > Bart.
+> >
+> >  ok - thanks. How do I do that?
 > 
-> It's not just you, I haven't heard anythinh either :)  I'm also still
-> not comfortable with adding another quick-hacker interface instead of
-> making sure the existing one doesn't suck.
+> You can do that as follows:
+> * First of all, make sure that adjtimex is
+> installed. Some distro's
+> include this command in util-linux.
+> * Query the current tick value via adjtimex -p |
+> grep tick. E.g. with
+> HZ = 100, tick == 10000.
+> * Multiply the tick value with the relative clock
+> error: when e.g. 3s
+> are lost every hour, the correct tick value is 10000
+> * (1 + 3/3600) =
+> 10008.
+> * Pass this new tick value to the kernel via
+> adjtimex -t 10008.
+> * Stop and restart ntpd such that it forgets any
+> previous frequency estimates.
+> * Keep an eye on the output of adjtimex -p|grep
+> frequency to see
+> whether the frequency estimate converges (should be
+> stable within 10
+> ppm after an hour. See also man adjtimex for the
+> units of this value).
+> 
+> Bart.
+> 
 
-afaik the sysprof-vs-oprofile issue still hasn't been settled.  Maybe it's
-no longer a relevant question with the new code - I just don't know. 
-Everything went all quiet and then this stuff happened.
+Thanks Bart - that seems to have worked. A value of
+10025 seems to get it close enough for NTPD to lock
+on. I'm using tickadj.
+
+So - the question is - is this a kernel bug not
+calibrating quad core phenoms right or do I just have
+a bad motherboard?
+
+
+
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
