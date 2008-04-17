@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935067AbYDQJqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbYDQJrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935067AbYDQJqh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933578AbYDQJ01
+	id S1763597AbYDQJrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933657AbYDQJ02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:26:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46201 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:26:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46205 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933700AbYDQJ0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:26:09 -0400
+	id S933680AbYDQJ0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:26:12 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 27/48] [GFS2] Add a function to interate over an extent
-Date: Thu, 17 Apr 2008 09:39:03 +0100
-Message-Id: <12084216241802-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 29/48] [GFS2] Get inode buffer only once per block map call
+Date: Thu, 17 Apr 2008 09:39:05 +0100
+Message-Id: <12084216281152-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12084216222853-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12084216262937-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -44,113 +44,127 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084216182363-git-send-email-swhiteho@redhat.com>
  <12084216204027-git-send-email-swhiteho@redhat.com>
  <12084216222853-git-send-email-swhiteho@redhat.com>
+ <12084216241802-git-send-email-swhiteho@redhat.com>
+ <12084216262937-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-This adds a function (currently the only use is during mapping
-of already allocated blocks, but watch this space) which iterates
-over a number of pointers in a block and returns the extent length.
+In the case that we needed to grow the height of the metadata tree
+we were looking up the inode buffer and then brelse()ing it despite
+the fact that it is needed later in the block map process.
 
-If the initial pointer is 0 (i.e. unallocated) it will return the
-number of unallocated blocks in the extent. If the initial pointer
-is allocated, then it returns the number of contiguously allocated
-blocks in the extent.
+This patch ensures that we look up the inode's buffer once and only
+once during the block map process.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
 diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index 7f72564..6780aa5 100644
+index e27e660..f1f38ca 100644
 --- a/fs/gfs2/bmap.c
 +++ b/fs/gfs2/bmap.c
-@@ -422,6 +422,42 @@ static void release_metapath(struct metapath *mp)
- 			brelse(mp->mp_bh[i]);
- }
- 
-+/**
-+ * gfs2_extent_length - Returns length of an extent of blocks
-+ * @start: Start of the buffer
-+ * @len: Length of the buffer in bytes
-+ * @ptr: Current position in the buffer
-+ * @limit: Max extent length to return (0 = unlimited)
-+ * @eob: Set to 1 if we hit "end of block"
-+ *
-+ * If the first block is zero (unallocated) it will return the number of
-+ * unallocated blocks in the extent, otherwise it will return the number
-+ * of contiguous blocks in the extent.
-+ *
-+ * Returns: The length of the extent (minimum of one block)
-+ */
-+
-+static inline unsigned int gfs2_extent_length(void *start, unsigned int len, __be64 *ptr, unsigned limit, int *eob)
-+{
-+	const __be64 *end = (start + len);
-+	const __be64 *first = ptr;
-+	u64 d = be64_to_cpu(*ptr);
-+
-+	*eob = 0;
-+	do {
-+		ptr++;
-+		if (ptr >= end)
-+			break;
-+		if (limit && --limit == 0)
-+			break;
-+		if (d)
-+			d++;
-+	} while(be64_to_cpu(*ptr) == d);
-+	if (ptr >= end)
-+		*eob = 1;
-+	return (ptr - first);
-+}
-+
- static inline void bmap_lock(struct inode *inode, int create)
+@@ -188,50 +188,45 @@ static int build_height(struct inode *inode, struct metapath *mp, unsigned heigh
  {
  	struct gfs2_inode *ip = GFS2_I(inode);
-@@ -499,26 +535,26 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
- 		goto out_fail;
- 	boundary = error;
+ 	unsigned new_height = height - ip->i_height;
+-	struct buffer_head *dibh;
++	struct buffer_head *dibh = mp->mp_bh[0];
+ 	struct gfs2_dinode *di;
+-	int error;
+ 	__be64 *bp;
+ 	u64 bn;
+ 	unsigned n, i = 0;
  
-+	if (new) {
-+		map_bh(bh_map, inode->i_sb, dblock);
-+		if (boundary)
-+			set_buffer_boundary(bh_map);
-+		gfs2_trans_add_bh(ip->i_gl, mp.mp_bh[0], 1);
-+		gfs2_dinode_out(ip, mp.mp_bh[0]->b_data);
-+		set_buffer_new(bh_map);
-+		goto out_ok;
-+	}
-+
- 	if (dblock) {
-+		unsigned int len;
-+		struct buffer_head *bh = mp.mp_bh[ip->i_height - 1];
-+		__be64 *ptr = metapointer(&boundary, ip->i_height - 1, &mp);
- 		map_bh(bh_map, inode->i_sb, dblock);
-+		len = gfs2_extent_length(bh->b_data, bh->b_size, ptr, maxlen,
-+					 &boundary);
-+		bh_map->b_size = (len << inode->i_blkbits);
- 		if (boundary)
- 			set_buffer_boundary(bh_map);
--		if (new) {
--			gfs2_trans_add_bh(ip->i_gl, mp.mp_bh[0], 1);
--			gfs2_dinode_out(ip, mp.mp_bh[0]->b_data);
--			set_buffer_new(bh_map);
--			goto out_ok;
--		}
--		while(--maxlen && !buffer_boundary(bh_map)) {
--			u64 eblock;
--			mp.mp_list[ip->i_height - 1]++;
--			boundary = lookup_block(ip, ip->i_height - 1, &mp, 0, &new, &eblock);
--			if (eblock != ++dblock)
--				break;
--			bh_map->b_size += (1 << inode->i_blkbits);
--			if (boundary)
--				set_buffer_boundary(bh_map);
--		}
+-	if (height <= ip->i_height)
+-		return 0;
+-
+-	error = gfs2_meta_inode_buffer(ip, &dibh);
+-	if (error)
+-		return error;
++	BUG_ON(height <= ip->i_height);
+ 
+ 	do {
+ 		n = new_height - i;
+ 		bn = gfs2_alloc_block(ip, &n);
+ 		gfs2_trans_add_unrevoke(GFS2_SB(inode), bn, n);
+ 		do {
+-			mp->mp_bh[i] = gfs2_meta_new(ip->i_gl, bn++);
+-			gfs2_trans_add_bh(ip->i_gl, mp->mp_bh[i], 1);
++			mp->mp_bh[i + 1] = gfs2_meta_new(ip->i_gl, bn++);
++			gfs2_trans_add_bh(ip->i_gl, mp->mp_bh[i + 1], 1);
+ 			i++;
+ 		} while(i < n);
+ 	} while(i < new_height);
+ 
+ 	n = 0;
+-	bn = mp->mp_bh[0]->b_blocknr;
++	bn = mp->mp_bh[1]->b_blocknr;
+ 	if (new_height > 1) {
+ 		for(; n < new_height-1; n++) {
+-			gfs2_metatype_set(mp->mp_bh[n], GFS2_METATYPE_IN,
++			gfs2_metatype_set(mp->mp_bh[n + 1], GFS2_METATYPE_IN,
+ 					  GFS2_FORMAT_IN);
+-			gfs2_buffer_clear_tail(mp->mp_bh[n],
++			gfs2_buffer_clear_tail(mp->mp_bh[n + 1],
+ 					       sizeof(struct gfs2_meta_header));
+-			bp = (__be64 *)(mp->mp_bh[n]->b_data +
++			bp = (__be64 *)(mp->mp_bh[n + 1]->b_data +
+ 				     sizeof(struct gfs2_meta_header));
+-			*bp = cpu_to_be64(mp->mp_bh[n+1]->b_blocknr);
+-			brelse(mp->mp_bh[n]);
+-			mp->mp_bh[n] = NULL;
++			*bp = cpu_to_be64(mp->mp_bh[n+2]->b_blocknr);
++			brelse(mp->mp_bh[n+1]);
++			mp->mp_bh[n+1] = NULL;
+ 		}
  	}
- out_ok:
- 	error = 0;
+-	gfs2_metatype_set(mp->mp_bh[n], GFS2_METATYPE_IN, GFS2_FORMAT_IN);
+-	gfs2_buffer_copy_tail(mp->mp_bh[n], sizeof(struct gfs2_meta_header),
++	gfs2_metatype_set(mp->mp_bh[n+1], GFS2_METATYPE_IN, GFS2_FORMAT_IN);
++	gfs2_buffer_copy_tail(mp->mp_bh[n+1], sizeof(struct gfs2_meta_header),
+ 			      dibh, sizeof(struct gfs2_dinode));
+-	brelse(mp->mp_bh[n]);
++	brelse(mp->mp_bh[n+1]);
++	mp->mp_bh[n+1] = NULL;
+ 	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
+ 	di = (struct gfs2_dinode *)dibh->b_data;
+ 	gfs2_buffer_clear_tail(dibh, sizeof(struct gfs2_dinode));
+@@ -240,8 +235,7 @@ static int build_height(struct inode *inode, struct metapath *mp, unsigned heigh
+ 	gfs2_add_inode_blocks(&ip->i_inode, new_height);
+ 	di->di_height = cpu_to_be16(ip->i_height);
+ 	di->di_blocks = cpu_to_be64(gfs2_get_inode_blocks(&ip->i_inode));
+-	brelse(dibh);
+-	return error;
++	return 0;
+ }
+ 
+ /**
+@@ -391,11 +385,7 @@ static int lookup_metapath(struct inode *inode, struct metapath *mp,
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+ 	unsigned int end_of_metadata = ip->i_height - 1;
+ 	unsigned int x;
+-	int ret = gfs2_meta_inode_buffer(ip, &bh);
+-	if (ret)
+-		return ret;
+-
+-	mp->mp_bh[0] = bh;
++	int ret;
+ 
+ 	for (x = 0; x < end_of_metadata; x++) {
+ 		lookup_block(ip, x, mp, create, new, dblock);
+@@ -515,6 +505,10 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 	}
+ 	size = (lblock + 1) * bsize;
+ 
++	error = gfs2_meta_inode_buffer(ip, &mp.mp_bh[0]);
++	if (error)
++		goto out_fail;
++
+ 	if (size > arr[ip->i_height]) {
+ 		u8 height = ip->i_height;
+ 		if (!create)
 -- 
 1.5.1.2
 
