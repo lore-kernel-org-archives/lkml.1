@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbYDUNZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbYDUNZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbYDUNZA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760080AbYDUNTM
+	id S932263AbYDUNZh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760115AbYDUNTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:19:12 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:8681 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759914AbYDUNTB (ORCPT
+	Mon, 21 Apr 2008 09:19:13 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:25621 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760017AbYDUNTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:19:01 -0400
+	Mon, 21 Apr 2008 09:19:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:in-reply-to:references:date:subject:cc:from;
-        b=ahn0tnMeY2/Lq3hfs6UYSZrE5BuQKa+aqR6zlvsOAI+dqVOJaM9Lyx3bVSu6qTydMdeeijnS8dqoq8BVGaiXxmM8/tbI1o8QL0L0jDTGoewSxCIxOo73Wpn8uo61R96Cxa2cBsvQWkL/2lD5hmKEGhVAEC72BuvqvIHWUR+05mo=
-Message-Id: <a32bcc45b9e9d8021b5936c45dc3f8db7a044466.1208783694.git.dmitry.torokhov@gmail.com>
+        b=SglVnHR7e+uwAt8hufYj5FmjarucpsEZycmZ3ucMQjGbHAvHG0f4HDFVR1PRYkwImwCAYf27pMLHZo73AIhb8XrAPQDGKCgUfyySzgK3BSyayglRweDkwVSj750KS7UGM8N9ZuCcpENqrs4KNW62Hu1odHszZFu7y2aqYi+5zcI=
+Message-Id: <d808fbe5b404854374917bd0d1db937a0a524665.1208783694.git.dmitry.torokhov@gmail.com>
 In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
 References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-Date: Mon, 10 Mar 2008 03:08:58 -0700
-Subject: [PATCH 27/37] Input: aiptek - add support for Genius G-PEN 560 tablet
+Date: Thu, 17 Apr 2008 09:24:39 -0400
+Subject: [PATCH 30/37] Input: wm97xx-core - only schedule interrupt handler if not already scheduled
 Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-From: Guryanov Dmitry <dmitry.torokhov@gmail.com>
+From: Mark Brown <dmitry.torokhov@gmail.com>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-USBHID driver only supports relative mode with this tablet so let aiptek
-module handle it.
+As well as clarifying the fact that the driver can cope if a second
+interrupt occurs before the IRQ work is scheduled this also ensures
+that calls to the machine irq_enable() are balanced, making that easier
+to implement.  Normally this is redundant due to the interrupt disabling
+but some unusal board configurations can trigger it.
 
-Signed-off-by: Dmitry Guryanov <guryanov@dgap.mipt.ru>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
- drivers/hid/usbhid/hid-quirks.c |    4 ++++
- drivers/input/tablet/Kconfig    |   10 +++++-----
- drivers/input/tablet/aiptek.c   |    2 ++
- 3 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/input/touchscreen/wm97xx-core.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index e29a057..17b2f49 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -405,6 +405,9 @@
- #define USB_VENDOR_ID_YEALINK		0x6993
- #define USB_DEVICE_ID_YEALINK_P1K_P4K_B2K	0xb001
- 
-+#define USB_VENDOR_ID_KYE		0x0458
-+#define USB_DEVICE_ID_KYE_GPEN_560	0x5003
-+
- /*
-  * Alphabetically sorted blacklist by quirk type.
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index 2910999..e27b1e0 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -328,18 +328,18 @@ static void wm97xx_pen_irq_worker(struct work_struct *work)
+  *
+  * We have to disable the codec interrupt in the handler because it
+  * can take upto 1ms to clear the interrupt source. We schedule a task
+- * in a work queue to do the actual interaction with the chip (it
+- * doesn't matter if we end up reenqueing it before it is executed
+- * since we don't touch the chip until it has run).  The interrupt is
+- * then enabled again in the slow handler when the source has been
+- * cleared.
++ * in a work queue to do the actual interaction with the chip.  The
++ * interrupt is then enabled again in the slow handler when the source
++ * has been cleared.
   */
-@@ -703,6 +706,7 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_HARMONY_63, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_HARMONY_64, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_NATIONAL_SEMICONDUCTOR, USB_DEVICE_ID_N_S_HARMONY, HID_QUIRK_IGNORE },
-+	{ USB_VENDOR_ID_KYE, USB_DEVICE_ID_KYE_GPEN_560, HID_QUIRK_IGNORE },
+ static irqreturn_t wm97xx_pen_interrupt(int irq, void *dev_id)
+ {
+ 	struct wm97xx *wm = dev_id;
  
- 	{ 0, 0 }
- };
-diff --git a/drivers/input/tablet/Kconfig b/drivers/input/tablet/Kconfig
-index d371c0b..effb49e 100644
---- a/drivers/input/tablet/Kconfig
-+++ b/drivers/input/tablet/Kconfig
-@@ -25,14 +25,14 @@ config TABLET_USB_ACECAD
- 	  module will be called acecad.
+-	wm->mach_ops->irq_enable(wm, 0);
+-	queue_work(wm->ts_workq, &wm->pen_event_work);
++	if (!work_pending(&wm->pen_event_work)) {
++		wm->mach_ops->irq_enable(wm, 0);
++		queue_work(wm->ts_workq, &wm->pen_event_work);
++	}
  
- config TABLET_USB_AIPTEK
--	tristate "Aiptek 6000U/8000U tablet support (USB)"
-+	tristate "Aiptek 6000U/8000U and Genius G_PEN tablet support (USB)"
- 	depends on USB_ARCH_HAS_HCD
- 	select USB
- 	help
--	  Say Y here if you want to use the USB version of the Aiptek 6000U
--	  or Aiptek 8000U tablet.  Make sure to say Y to "Mouse support"
--	  (CONFIG_INPUT_MOUSEDEV) and/or "Event interface support"
--	  (CONFIG_INPUT_EVDEV) as well.
-+	  Say Y here if you want to use the USB version of the Aiptek 6000U,
-+	  Aiptek 8000U or Genius G-PEN 560 tablet.  Make sure to say Y to
-+	  "Mouse support" (CONFIG_INPUT_MOUSEDEV) and/or "Event interface
-+	  support" (CONFIG_INPUT_EVDEV) as well.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called aiptek.
-diff --git a/drivers/input/tablet/aiptek.c b/drivers/input/tablet/aiptek.c
-index 94683f5..1d759f6 100644
---- a/drivers/input/tablet/aiptek.c
-+++ b/drivers/input/tablet/aiptek.c
-@@ -184,6 +184,7 @@
-  */
- 
- #define USB_VENDOR_ID_AIPTEK				0x08ca
-+#define USB_VENDOR_ID_KYE				0x0458
- #define USB_REQ_GET_REPORT				0x01
- #define USB_REQ_SET_REPORT				0x09
- 
-@@ -832,6 +833,7 @@ static const struct usb_device_id aiptek_ids[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_AIPTEK, 0x22)},
- 	{USB_DEVICE(USB_VENDOR_ID_AIPTEK, 0x23)},
- 	{USB_DEVICE(USB_VENDOR_ID_AIPTEK, 0x24)},
-+	{USB_DEVICE(USB_VENDOR_ID_KYE, 0x5003)},
- 	{}
- };
- 
+ 	return IRQ_HANDLED;
+ }
 -- 
 1.5.5.rc2.6.gf58d
 
