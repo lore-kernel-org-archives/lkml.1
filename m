@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764578AbYDQBUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbYDQBVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764578AbYDQBUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbYDQBIZ
+	id S933235AbYDQBVJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYDQBI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:08:25 -0400
-Received: from sous-sol.org ([216.99.217.87]:58923 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:08:27 -0400
+Received: from sous-sol.org ([216.99.217.87]:58928 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755130AbYDQBIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:08:23 -0400
-Message-Id: <20080417010354.176575927@sous-sol.org>
+	id S1755130AbYDQBI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:08:26 -0400
+Message-Id: <20080417010350.654976705@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:12 -0700
+Date: Wed, 16 Apr 2008 18:02:06 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       hartmut.hackmann@t-online.de, o.endriss@gmx.de, hermann-pitton@arcor.de,
-       v4l-dvb-maintainer@linuxtv.org, mchehab@infradead.org, oendriss@gmx.de
-Subject: DVB: tda10086: make the 22kHz tone for DISEQC a config option
-Content-Disposition: inline; filename=dvb-tda10086-make-the-22khz-tone-for-diseqc-a-config-option.patch
+       "David S. Miller" <davem@davemloft.net>
+Subject: SPARC64: Fix __get_cpu_var in preemption-enabled area.
+Content-Disposition: inline; filename=sparc64-fix-__get_cpu_var-in-preemption-enabled-area.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,164 +33,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Hartmut Hackmann <hartmut.hackmann@t-online.de>
+From: David S. Miller <davem@davemloft.net>
 
-(backported from commit ea75baf4b0f117564bd50827a49c4b14d61d24e9)
+Upstream commit: 69072f6e8e4bd4799d2a54e4ff8771d0657512c1
 
-Some cards need the diseqc signal modulated, while some just need
-the envelope to control the LNB supply.
+Reported by Mariusz Kozlowski.
 
-This fixes Bug 9887
-
-Signed-off-by: Hartmut Hackmann <hartmut.hackmann@t-online.de>
-Acked-by: Oliver Endriss <o.endriss@gmx.de>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Hermann Pitton <hermann-pitton@arcor.de>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/media/dvb/dvb-usb/ttusb2.c        |    1 +
- drivers/media/dvb/frontends/tda10086.c    |   28 ++++++++++++++++++++++------
- drivers/media/dvb/frontends/tda10086.h    |    3 +++
- drivers/media/dvb/ttpci/budget.c          |    1 +
- drivers/media/video/saa7134/saa7134-dvb.c |    1 +
- 5 files changed, 28 insertions(+), 6 deletions(-)
+ arch/sparc64/mm/tlb.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/media/dvb/dvb-usb/ttusb2.c
-+++ b/drivers/media/dvb/dvb-usb/ttusb2.c
-@@ -144,6 +144,7 @@ static int ttusb2_power_ctrl(struct dvb_
- static struct tda10086_config tda10086_config = {
- 	.demod_address = 0x0e,
- 	.invert = 0,
-+	.diseqc_tone = 1,
- };
+--- a/arch/sparc64/mm/tlb.c
++++ b/arch/sparc64/mm/tlb.c
+@@ -23,10 +23,11 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_ga
  
- static int ttusb2_frontend_attach(struct dvb_usb_adapter *adap)
---- a/drivers/media/dvb/frontends/tda10086.c
-+++ b/drivers/media/dvb/frontends/tda10086.c
-@@ -106,9 +106,12 @@ static int tda10086_write_mask(struct td
- static int tda10086_init(struct dvb_frontend* fe)
+ void flush_tlb_pending(void)
  {
- 	struct tda10086_state* state = fe->demodulator_priv;
-+	u8 t22k_off = 0x80;
+-	struct mmu_gather *mp = &__get_cpu_var(mmu_gathers);
++	struct mmu_gather *mp;
  
- 	dprintk ("%s\n", __FUNCTION__);
+ 	preempt_disable();
  
-+	if (state->config->diseqc_tone)
-+		t22k_off = 0;
- 	// reset
- 	tda10086_write_byte(state, 0x00, 0x00);
- 	msleep(10);
-@@ -158,7 +161,7 @@ static int tda10086_init(struct dvb_fron
- 	tda10086_write_byte(state, 0x3d, 0x80);
++	mp = &__get_cpu_var(mmu_gathers);
+ 	if (mp->tlb_nr) {
+ 		flush_tsb_user(mp);
  
- 	// setup SEC
--	tda10086_write_byte(state, 0x36, 0x80); // all SEC off, no 22k tone
-+	tda10086_write_byte(state, 0x36, t22k_off); // all SEC off, 22k tone
- 	tda10086_write_byte(state, 0x34, (((1<<19) * (22000/1000)) / (SACLK/1000)));      // } tone frequency
- 	tda10086_write_byte(state, 0x35, (((1<<19) * (22000/1000)) / (SACLK/1000)) >> 8); // }
- 
-@@ -180,16 +183,20 @@ static void tda10086_diseqc_wait(struct 
- static int tda10086_set_tone (struct dvb_frontend* fe, fe_sec_tone_mode_t tone)
- {
- 	struct tda10086_state* state = fe->demodulator_priv;
-+	u8 t22k_off = 0x80;
- 
- 	dprintk ("%s\n", __FUNCTION__);
- 
-+	if (state->config->diseqc_tone)
-+		t22k_off = 0;
-+
- 	switch (tone) {
- 	case SEC_TONE_OFF:
--		tda10086_write_byte(state, 0x36, 0x80);
-+		tda10086_write_byte(state, 0x36, t22k_off);
- 		break;
- 
- 	case SEC_TONE_ON:
--		tda10086_write_byte(state, 0x36, 0x81);
-+		tda10086_write_byte(state, 0x36, 0x01 + t22k_off);
- 		break;
- 	}
- 
-@@ -202,9 +209,13 @@ static int tda10086_send_master_cmd (str
- 	struct tda10086_state* state = fe->demodulator_priv;
- 	int i;
- 	u8 oldval;
-+	u8 t22k_off = 0x80;
- 
- 	dprintk ("%s\n", __FUNCTION__);
- 
-+	if (state->config->diseqc_tone)
-+		t22k_off = 0;
-+
- 	if (cmd->msg_len > 6)
- 		return -EINVAL;
- 	oldval = tda10086_read_byte(state, 0x36);
-@@ -212,7 +223,8 @@ static int tda10086_send_master_cmd (str
- 	for(i=0; i< cmd->msg_len; i++) {
- 		tda10086_write_byte(state, 0x48+i, cmd->msg[i]);
- 	}
--	tda10086_write_byte(state, 0x36, 0x88 | ((cmd->msg_len - 1) << 4));
-+	tda10086_write_byte(state, 0x36, (0x08 + t22k_off)
-+					| ((cmd->msg_len - 1) << 4));
- 
- 	tda10086_diseqc_wait(state);
- 
-@@ -225,16 +237,20 @@ static int tda10086_send_burst (struct d
- {
- 	struct tda10086_state* state = fe->demodulator_priv;
- 	u8 oldval = tda10086_read_byte(state, 0x36);
-+	u8 t22k_off = 0x80;
- 
- 	dprintk ("%s\n", __FUNCTION__);
- 
-+	if (state->config->diseqc_tone)
-+		t22k_off = 0;
-+
- 	switch(minicmd) {
- 	case SEC_MINI_A:
--		tda10086_write_byte(state, 0x36, 0x84);
-+		tda10086_write_byte(state, 0x36, 0x04 + t22k_off);
- 		break;
- 
- 	case SEC_MINI_B:
--		tda10086_write_byte(state, 0x36, 0x86);
-+		tda10086_write_byte(state, 0x36, 0x06 + t22k_off);
- 		break;
- 	}
- 
---- a/drivers/media/dvb/frontends/tda10086.h
-+++ b/drivers/media/dvb/frontends/tda10086.h
-@@ -33,6 +33,9 @@ struct tda10086_config
- 
- 	/* does the "inversion" need inverted? */
- 	u8 invert;
-+
-+	/* do we need the diseqc signal with carrier? */
-+	u8 diseqc_tone;
- };
- 
- #if defined(CONFIG_DVB_TDA10086) || (defined(CONFIG_DVB_TDA10086_MODULE) && defined(MODULE))
---- a/drivers/media/dvb/ttpci/budget.c
-+++ b/drivers/media/dvb/ttpci/budget.c
-@@ -351,6 +351,7 @@ static struct s5h1420_config s5h1420_con
- static struct tda10086_config tda10086_config = {
- 	.demod_address = 0x0e,
- 	.invert = 0,
-+	.diseqc_tone = 1,
- };
- 
- static u8 read_pwm(struct budget* budget)
---- a/drivers/media/video/saa7134/saa7134-dvb.c
-+++ b/drivers/media/video/saa7134/saa7134-dvb.c
-@@ -826,6 +826,7 @@ static struct tda1004x_config ads_tech_d
- static struct tda10086_config flydvbs = {
- 	.demod_address = 0x0e,
- 	.invert = 0,
-+	.diseqc_tone = 0,
- };
- 
- /* ==================================================================
 
 -- 
