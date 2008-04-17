@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933011AbYDQKmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbYDQKs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933011AbYDQKmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbYDQKml
+	id S1762337AbYDQKs5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbYDQKsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:42:41 -0400
-Received: from hs-out-0708.google.com ([64.233.178.241]:21959 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbYDQKmj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:42:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VWjk5k2Owg8KHuevZL+GcjOaGtDExFiMCJ3+9eIzRrptqgUDmQq6Th8P4N04p5EQnHzOKstaCgKuDmZSXGecda0tUH2sRSdklXh3pZFKqvDRm4zoYRE4ApGSOoY1QS0LFyZJsPANAWUogzOo07Hoh6xcBbDVBLsbKsGOatsySV4=
-Message-ID: <84144f020804170342x7d692e83x2b50ebbccfc4c40b@mail.gmail.com>
-Date: Thu, 17 Apr 2008 13:42:38 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Nick Piggin" <npiggin@suse.de>
-In-Reply-To: <20080417103800.GA27250@elte.hu>
+	Thu, 17 Apr 2008 06:48:46 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47244 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756434AbYDQKsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 06:48:45 -0400
+Date: Thu, 17 Apr 2008 13:48:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
+Message-ID: <20080417104836.GH1677@cs181133002.pp.htv.fi>
+References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk> <200804160126.11116.bzolnier@gmail.com> <20080417093753.GF1677@cs181133002.pp.htv.fi> <20080417095916.GD1449@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080416202338.GA6007@elte.hu> <20080417083000.GA4935@elte.hu>
-	 <20080417014054.ea788f1f.akpm@linux-foundation.org>
-	 <20080417090626.GA14383@elte.hu>
-	 <20080417021813.04df7912.akpm@linux-foundation.org>
-	 <20080417093025.GA17389@elte.hu>
-	 <20080417023603.672d1032.akpm@linux-foundation.org>
-	 <84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com>
-	 <20080417033333.947dfcc9.akpm@linux-foundation.org>
-	 <20080417103800.GA27250@elte.hu>
-X-Google-Sender-Auth: f1280731d55c8d1b
+In-Reply-To: <20080417095916.GD1449@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 1:38 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  > We (still!) have not made the decision whether to proceed with slab or
->  > slub.  How hard would it be to port kmemcheck into slab?
->
->  i think slab is clearly out, unless some catastrophic regression is
->  found. But Nick's SLQB might replace SLUB ;-)
+On Thu, Apr 17, 2008 at 10:59:16AM +0100, Russell King wrote:
+> On Thu, Apr 17, 2008 at 12:37:53PM +0300, Adrian Bunk wrote:
+> > Any objections against the patch below?
+> 
+> Let's look at the rest of the situation surrounding HAVE_IDE first.
+> It's something of a mess:
+> 
+> avr32, m68knommu, ppc, s390 and v850 do not have asm/ide.h
+> 
+> avr32, m68knommu, ppc, v850 all set HAVE_IDE, arch/s390/Kconfig contains
+> no reference.
+> 
+> avr32 supports PATA (which is IDE).
+> 
+> Everything else provides an asm/ide.h and sets HAVE_IDE.
+> 
+> So:
+> 
+> Q1. Do avr32, m68knommu, ppc, v850 have IDE support or do they not?
 
-Hey, we all have our favorite replacements for kmalloc():
+avr32 is fixed in 2.6.25 (no more HAVE_IDE)
+m68knommu I'll check
+ppc arch will be removed in 2 months
+v850 arch is completely hosed, and I'm already trying to get it removed
 
-http://www.kernel.org/pub/linux/kernel/people/penberg/patches/binalloc/2.6.25-rc8/kmalloc-binning
+> Q2. Should avr32, m68knommu, ppc, v850 supply an asm/ide.h header?
+> Q3. Is it worth supporting HAVE_IDE for all kernel architectures when
+>     its just one (s390) which supports neither IDE nor ATA - or would
+>     something more generic covering both be appropriate.
+> 
+> -- 
+> Russell King
 
-But it seems unrealistic to expect any of them to replace SLUB or SLAB
-in the near future.
+cu
+Adrian
 
-                             Pekka
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
