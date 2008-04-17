@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbYDQRrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933364AbYDQRt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933010AbYDQRrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbYDQRq7
+	id S933364AbYDQRt3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbYDQRtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:46:59 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50002 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbYDQRq6 (ORCPT
+	Thu, 17 Apr 2008 13:49:21 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:55789 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753094AbYDQRtU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:46:58 -0400
-Date: Thu, 17 Apr 2008 19:46:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
-       serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080417174656.GA5880@atrey.karlin.mff.cuni.cz>
-References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil> <484889.77284.qm@web36604.mail.mud.yahoo.com> <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp> <20080416191315.GB3923@ucw.cz> <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
+	Thu, 17 Apr 2008 13:49:20 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ZeTWotr6fG//+qHvv3DymCR1vd/gcFLJ9bA0UecfxrEFuik703tUNHu0u5hU237Yr
+	bacYJF4558LkFu7beLNoA==
+Message-ID: <6599ad830804171049p522d8167yc24b5cae79ae2fdd@mail.gmail.com>
+Date: Thu, 17 Apr 2008 10:49:06 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, serue@us.ibm.com,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
+In-Reply-To: <20080417161936.GB4482@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <48036677.3010807@linux.vnet.ibm.com>
+	 <20080414170709.736819b6.akpm@linux-foundation.org>
+	 <20080415171359.GA352@tv-sign.ru>
+	 <6599ad830804151113i73010bb4x48e658195f295d41@mail.gmail.com>
+	 <20080415195950.GA113@tv-sign.ru>
+	 <4806C633.3000302@linux.vnet.ibm.com>
+	 <20080417113000.GB103@tv-sign.ru>
+	 <6599ad830804170934i6df9fe42kd979492babe03be@mail.gmail.com>
+	 <20080417161936.GB4482@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Pavel Machek wrote:
-> > > It is true that namespace may differ between processes,
-> > > but I think that that is the matter of how to restrict namespace manipulation operations.
-> > > As I said, a system can't survive if namespace is madly manipulated.
-> > > To keep the system workable, /bin/ must be the directory for binary programs,
-> > > /etc/ must be the directory for configuration files, and so on in all namespaces.
-> > 
-> > Ehm? Where did you get those ideas?
-> > 
-> > I'm free to name my directories any way I want, and keep config files
-> > in /pavlix_config, thank you... There is even distro that does
-> > something like that, IIRC...
-> > 
-> We can make processes have different namespace by using clone() with CLONE_NEWNS.
-> But even if some process got a different namespace, it need to follow conventional rules.
-> Optional files (e.g. /pavlix_config) need not to follow conventional rules.
-> What I'm talking about is essetial files (e.g. /bin/sh and
-> /etc/passwd).
+On Thu, Apr 17, 2008 at 9:19 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> On 04/17, Paul Menage wrote:
+>  >
+>  > On Thu, Apr 17, 2008 at 4:30 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>  > >  >
+>  > >  > I had this loop earlier (inspired from zap_threads()), is this loop more
+>  > >  > efficient than what we have?
+>  > >
+>  > >  All sub-threads have the same ->mm. Once we see that c->mm != mm, we don't
+>  > >  need to waste CPU iterating over the all other threads in the thread group.
+>  >
+>  > Technically they don't have to have the same mm, right? You can use
+>  > CLONE_THREAD without CLONE_VM when creating a new subthread.
+>
+>  No, no, this is not possible/allowed.
+>
+>  Please look at copy_process, CLONE_THREAD requires CLONE_SIGHAND,
+>  CLONE_SIGHAND needs CLONE_VM.
 
-Why would I need to follow rules?
+Ah, OK. I saw that CLONE_THREAD -> CLONE_SIGHAND but I didn't notice
+the second implication. That would mean that your optimization is
+valid, good.
 
-> Can your system continue running even if essetial files are not in place
-> (like /bin/sh moved to /etc/sh and /etc/passwd moved to /bin/passwd) ?
+>
+>  Let's suppose 2 task belongs to different cgroups, but share ->mm,
+>
+>
+>  > - swap cgroup - when swapping from an mm, find a task whose swap
+>  > cgroup we can charge the swap page to
+>
+>  now we will charge the somewhat "random" cgroup. The one to which
+>  the result of the last "find the next suitable owner" belongs.
 
-Why not? They are just a names, they can be changed as log as you
-change them everywhere. Which is rather easy for small
-systems... think openembedded.
-									Pavel
+Correct. (Although if two tasks are sharing an mm, charging either of
+them seems perfectly fair, as long as we charge exactly one of them
+and remember who we charged).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+>  This looks a bit strange to me... but OK, as I said, I don't know
+>  what cgroup is, please ignore me ;)
+
+A control group is just a way of grouping tasks together for the
+purposes of resource control, isolation, etc.
+
+Yes, weird things can potentially happen in this case - if the user
+sets up situations like this, hopefully they know what they're doing.
+The important thing is that these weird setups not crash.
+
+Paul
