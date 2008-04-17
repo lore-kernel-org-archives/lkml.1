@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbYDQNZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYDQNdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbYDQNZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 09:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYDQNZT
+	id S1759720AbYDQNdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 09:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbYDQNdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 09:25:19 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:33586 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751625AbYDQNZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 09:25:17 -0400
-Date: Thu, 17 Apr 2008 16:25:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
-Message-ID: <20080417132507.GA9314@cs181133002.pp.htv.fi>
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk> <200804160126.11116.bzolnier@gmail.com> <20080417093753.GF1677@cs181133002.pp.htv.fi> <20080417095916.GD1449@flint.arm.linux.org.uk> <20080417104836.GH1677@cs181133002.pp.htv.fi> <20080417110005.GE1449@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 17 Apr 2008 09:33:06 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47310 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751803AbYDQNdF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 09:33:05 -0400
+Message-Id: <1208439182.14784.1248410993@webmail.messagingengine.com>
+X-Sasl-Enc: QYe5kqTQeS9uCIoQlcAYxogqSVdaHWQX3DYcnCrWY6PJ 1208439182
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Content-Disposition: inline
-In-Reply-To: <20080417110005.GE1449@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080416202338.GA6007@elte.hu> <878wzdikwk.fsf@basil.nowhere.org>   
+   <1208426793.10305.1248377703@webmail.messagingengine.com>   
+   <48072B9D.2000900@firstfloor.org>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+In-Reply-To: <48072B9D.2000900@firstfloor.org>
+Date: Thu, 17 Apr 2008 15:33:02 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 12:00:05PM +0100, Russell King wrote:
-> On Thu, Apr 17, 2008 at 01:48:36PM +0300, Adrian Bunk wrote:
-> > On Thu, Apr 17, 2008 at 10:59:16AM +0100, Russell King wrote:
-> > > On Thu, Apr 17, 2008 at 12:37:53PM +0300, Adrian Bunk wrote:
-> > > > Any objections against the patch below?
-> > > 
-> > > Let's look at the rest of the situation surrounding HAVE_IDE first.
-> > > It's something of a mess:
-> > > 
-> > > avr32, m68knommu, ppc, s390 and v850 do not have asm/ide.h
-> > > 
-> > > avr32, m68knommu, ppc, v850 all set HAVE_IDE, arch/s390/Kconfig contains
-> > > no reference.
-> > > 
-> > > avr32 supports PATA (which is IDE).
-> > > 
-> > > Everything else provides an asm/ide.h and sets HAVE_IDE.
-> > > 
-> > > So:
-> > > 
-> > > Q1. Do avr32, m68knommu, ppc, v850 have IDE support or do they not?
-> > 
-> > avr32 is fixed in 2.6.25 (no more HAVE_IDE)
+On Thu, 17 Apr 2008 12:51:09 +0200, "Andi Kleen" <andi@firstfloor.org>
+said:
+> I think a realistic benchmark would be by running a real kernel
+> and profiling the input values of the bitmap functions and then
+> testing these cases.
 > 
-> avr32 has ATA, so the only reason it doesn't actually use IDE is because
-> they're using libata entirely.  This is NO different from the situation
-> on ARM - some machine classes use entirely libata, others use IDE, and
-> some others are trying to give up IDE in favour of libata.
+> I actually started that when I complained last time by writing
+> a systemtap script for this that generates a histogram, but for some
+> reason systemtap couldn't tap all bitmap functions in my kernel and
+> missed some completely and I ran out of time tracking that down.
+> 
+> My gut feeling is the only interesting cases are cpumask/nodemask sized
+> (which can be one word, two words but now upto 8 words on a NR_CPU=4096
+> x86 kernel) and then 4k sized ext3/reiser/etc. block bitmaps.
+>
+> The generic version is out-of-line,
+> > while the private implementation of i386 was inlined: this causes a
+> > regression for very small bitmaps. However, if the bitmap size is
+> > a constant and fits a long integer, the updated generic code should
+> > inline an optimized version, like x86_64 currently does it.
+> 
+> Yes it should probably. cpumask walks are relatively common.
 
-You have a point that one might argue that avr32 should also select 
-HAVE_IDE and get an asm/ide.h .
+Hi,
 
-The main difference between avr32 and arm is that on arm there are a 
-bunch of platforms that actually want to use drivers/ide/ at the moment, 
-and the fine-grained select's we have at the moment don't bring any real 
-gain.
+The version that is in x86#testing _will_ do this optimization. For
+32 node SMP on x86_64 this results in:
 
-I do actually not care much how this gets resolved (we could even 
-ditch HAVE_IDE and provide asm/ide.h on all architectures) if there's 
-general agreement that this is the way to go.
+<__first_cpu>:
+    mov    $0x20,%edx   (inlined...)
+    mov    $0x100000000,%rax
+    or     (%rdi),%rax
+    bsf    %rax,%rax    (... find_first_bit)
+    cmp    $0x20,%eax   (superfluous paranoia...)
+    cmovg  %edx,%eax    (... for broken find_first_bit)
+    retq   
 
-> Russell King
+and something similar for __next_cpu.
 
-cu
-Adrian
+> I remember profiling mysql some time ago which did bad overscheduling
+> due to dumb locking. Funny was that the mask walking in the scheduler
+> actually stood out. No, i don't claim extreme overscheduling is an
+> interesting case to optimize for, but then there are more realistic
+> workloads which also do a lot of context switching.
+> 
+> BTW if you do generic work on this: one reason the generated code for
+> for_each_cpu etc. is so ugly is that the code has checks for
+> find_next_bit returning >= max size. If you can generize the
+> code enough to make sure no arch does that anymore these checks
+> could be eliminated.
+
+for_each_cpu code looks fine:
+
+    mov    $cpumapaddress,%rdi
+    callq  <__first_cpu>
+    jmp    end_of_body
+start_of_body:
+    ...
+end_of_body:
+    mov    $cpumapaddress,%edi  ($mapaddress often cached in register)
+    callq  <__next_cpu>
+    cmp    $0x1f,%eax
+    jle    start_of_body
+
+On the other hand it would be nice to change __first_cpu and
+__next_cpu into inline functions. If all implementations of
+find_first_bit and find_next_bit would reliably return max_size
+if no bits were found, that would be a good thing to do. The
+generic one does return max_size.
+
+Greetings,
+    Alexander
+
+> -Andi
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+http://www.fastmail.fm - One of many happy users:
+  http://www.fastmail.fm/docs/quotes.html
 
