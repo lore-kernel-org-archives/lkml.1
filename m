@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765520AbYDQBMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbYDQBMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765520AbYDQBMi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbYDQBHY
+	id S1763309AbYDQBMP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbYDQBHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:24 -0400
-Received: from sous-sol.org ([216.99.217.87]:58831 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:22 -0400
+Received: from sous-sol.org ([216.99.217.87]:58829 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755504AbYDQBHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:21 -0400
-Message-Id: <20080417010343.953795252@sous-sol.org>
+	id S1755130AbYDQBHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:20 -0400
+Message-Id: <20080417010323.239220997@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:57 -0700
+Date: Wed, 16 Apr 2008 18:01:34 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Chapman <jchapman@katalix.com>,
-       David S Miller <davem@davemloft.net>
-Subject: PPPOL2TP: Fix SMP issues in skb reorder queue handling
-Content-Disposition: inline; filename=pppol2tp-fix-smp-issues-in-skb-reorder-queue-handling.patch
+       Pekka J Enberg <penberg@cs.helsinki.fi>, mel@csn.ul.ie, olaf@aepfle.de,
+       dan.yeisley@unisys.com, clameter@sgi.com
+Subject: slab: fix cache_cache bootstrap in kmem_cache_init()
+Content-Disposition: inline; filename=slab-fix-cache_cache-bootstrap-in-kmem_cache_init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,65 +34,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: James Chapman <jchapman@katalix.com>
+From: Daniel Yeisley <dan.yeisley@unisys.com>
 
-Upstream commit: e653181dd6b3ad38ce14904351b03a5388f4b0f7
+upstream commit: ec1f5eeeb5a79a0d48036de649a3498da42db565
 
-When walking a session's packet reorder queue, use
-skb_queue_walk_safe() since the list could be modified inside the
-loop.
-
-Rearrange the unlinking skbs from the reorder queue such that it is
-done while the queue lock is held in pppol2tp_recv_dequeue() when
-walking the skb list.
-
-A version of this patch was suggested by Jarek Poplawski.
-
-Signed-off-by: James Chapman <jchapman@katalix.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Commit 556a169dab38b5100df6f4a45b655dddd3db94c1 ("slab: fix bootstrap on
+memoryless node") introduced bootstrap-time cache_cache list3s for all nodes
+but forgot that initkmem_list3 needs to be accessed by [somevalue + node]. This
+patch fixes list_add() corruption in mm/slab.c seen on the ES7000.
+ 
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Olaf Hering <olaf@aepfle.de>
+Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/pppol2tp.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ mm/slab.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -342,10 +342,11 @@ static struct pppol2tp_tunnel *pppol2tp_
- static void pppol2tp_recv_queue_skb(struct pppol2tp_session *session, struct sk_buff *skb)
- {
- 	struct sk_buff *skbp;
-+	struct sk_buff *tmp;
- 	u16 ns = PPPOL2TP_SKB_CB(skb)->ns;
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1484,7 +1484,7 @@ void __init kmem_cache_init(void)
+ 	list_add(&cache_cache.next, &cache_chain);
+ 	cache_cache.colour_off = cache_line_size();
+ 	cache_cache.array[smp_processor_id()] = &initarray_cache.cache;
+-	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
++	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE + node];
  
- 	spin_lock_bh(&session->reorder_q.lock);
--	skb_queue_walk(&session->reorder_q, skbp) {
-+	skb_queue_walk_safe(&session->reorder_q, skbp, tmp) {
- 		if (PPPOL2TP_SKB_CB(skbp)->ns > ns) {
- 			__skb_insert(skb, skbp->prev, skbp, &session->reorder_q);
- 			PRINTK(session->debug, PPPOL2TP_MSG_SEQ, KERN_DEBUG,
-@@ -371,10 +372,9 @@ static void pppol2tp_recv_dequeue_skb(st
- 	int length = PPPOL2TP_SKB_CB(skb)->length;
- 	struct sock *session_sock = NULL;
+ 	/*
+ 	 * struct kmem_cache size depends on nr_node_ids, which
+@@ -1605,7 +1605,7 @@ void __init kmem_cache_init(void)
+ 		int nid;
  
--	/* We're about to requeue the skb, so unlink it and return resources
-+	/* We're about to requeue the skb, so return resources
- 	 * to its current owner (a socket receive buffer).
- 	 */
--	skb_unlink(skb, &session->reorder_q);
- 	skb_orphan(skb);
+ 		for_each_online_node(nid) {
+-			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], nid);
++			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE + nid], nid);
  
- 	tunnel->stats.rx_packets++;
-@@ -469,6 +469,11 @@ static void pppol2tp_recv_dequeue(struct
- 				goto out;
- 			}
- 		}
-+		__skb_unlink(skb, &session->reorder_q);
-+
-+		/* Process the skb. We release the queue lock while we
-+		 * do so to let other contexts process the queue.
-+		 */
- 		spin_unlock_bh(&session->reorder_q.lock);
- 		pppol2tp_recv_dequeue_skb(session, skb);
- 		spin_lock_bh(&session->reorder_q.lock);
+ 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
+ 				  &initkmem_list3[SIZE_AC + nid], nid);
 
 -- 
