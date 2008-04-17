@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934584AbYDQQa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934304AbYDQQfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934584AbYDQQa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 12:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763098AbYDQQas
+	id S934304AbYDQQfS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 12:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbYDQQfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 12:30:48 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40904 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbYDQQar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 12:30:47 -0400
-Date: Thu, 17 Apr 2008 19:36:44 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jesper Juhl <jesper.juhl@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: fork_idle && pid problems ?
-Message-ID: <20080417153644.GA69@tv-sign.ru>
-References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru> <20080417130252.GB6640@elte.hu> <20080417140246.GA257@tv-sign.ru> <480771DC.5040002@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Apr 2008 12:35:05 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44689 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755977AbYDQQfD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 12:35:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ihnZ+qQLgVEPXkWp8BE/G5dqkpyqKOkvntd2OJdzDARipWgBauLmVwlKG0FEpUz0s
+	Bf1R3hCPhuugsKYSMitZw==
+Message-ID: <6599ad830804170934i6df9fe42kd979492babe03be@mail.gmail.com>
+Date: Thu, 17 Apr 2008 09:34:50 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, serue@us.ibm.com,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
+In-Reply-To: <20080417113000.GB103@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <480771DC.5040002@openvz.org>
-User-Agent: Mutt/1.5.11
+References: <48036677.3010807@linux.vnet.ibm.com>
+	 <20080414170709.736819b6.akpm@linux-foundation.org>
+	 <20080415171359.GA352@tv-sign.ru>
+	 <6599ad830804151113i73010bb4x48e658195f295d41@mail.gmail.com>
+	 <20080415195950.GA113@tv-sign.ru>
+	 <4806C633.3000302@linux.vnet.ibm.com>
+	 <20080417113000.GB103@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/17, Pavel Emelyanov wrote:
+On Thu, Apr 17, 2008 at 4:30 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>  >
+>  > I had this loop earlier (inspired from zap_threads()), is this loop more
+>  > efficient than what we have?
 >
-> Oleg Nesterov wrote:
-> > 
-> > But wait... What _is_ the task_pid() after fork_idle() ???
-> 
-> It is NULL, but every code getting one can handle such case :)
-> 
-> > fork_idle() doesn't really attach the new thread to the init_struct_pid,
-> > so ->pids[PIDTYPE_PID].pid just points the parent's pid, no?
-> > 
-> > As for x86, the parent is /sbin/init (kernel_init->smp_prepare_cpus),
-> > not so bad, it can't exit.
-> > 
-> > But what about HOTPLUG_CPU? Suppose we add CPU, use some non-idle
-> > kernel thread (workqueue) to fork the idle thread. CPU goes down,
-> > parent exits and frees the pid. Now, if this CPU goes up again, the
-> > idle thread runs with its ->pid pointing to the freed memory, not
-> > good.
-> 
-> Nope - it will be NULL.
+>  All sub-threads have the same ->mm. Once we see that c->mm != mm, we don't
+>  need to waste CPU iterating over the all other threads in the thread group.
 
-How so? I bet it won't be NULL...
+Technically they don't have to have the same mm, right? You can use
+CLONE_THREAD without CLONE_VM when creating a new subthread.
 
-	dup_task_struct:
+So the complete loop is required for correctness - but it might make
+sense to include your version of the loop first, since that will be
+faster whenever there are heavily-threaded apps on the system, and
+will give the right answer 99.9% of the time (i.e. except when the
+user is doing something really weird with clone flags).
 
-		*tsk = *orig;
+>  chance you have the "for dummies" explanation what mm->owner is?
+>  I mean, I can't understand how it is possible that 2 CLONE_VM tasks
+>  are not equal wrt "ownering".
 
-After that the child's ->pids[PIDTYPE_MAX] is a copy of parent's.
-But the task is not attached to these pids.
+The idea is to be able to get from an mm to a task, where that task is
+representative of the tasks using the mm. Uses include:
 
-> > Not serious perhaps, afaics we only need this ->pid to ensure that
-> > swapper can safely fork /sbin/init, but still.
-> > 
-> > Pavel, Eric, Sukadev? Please say I missed something! ;)
-> > 
-> > Otherwise, we can change init_idle() to do attach_pid(init_struct_pid),
-> > afaics we can do this lockless. In that case we should also change
-> > INIT_STRUCT_PID() and remove the initialization of .tasks.
-> 
-> Well, these was some request to make tasks always have pid link
-> point to not NULL (from Matt?) so we'll need this :)
+- virtual address space cgroup - when we extend an mm, we don't always
+have a task pointer available currently.
 
-For now I'd suggest the patch below. If contrary to our expectations
-there is any usage of idle_task->pids, we will notice ;)
+- swap cgroup - when swapping from an mm, find a task whose swap
+cgroup we can charge the swap page to
 
-Oleg.
+- revokeat() - apparently needs this for locating tasks based on file mappings
 
---- kernel/fork.c~	2008-03-07 18:11:27.000000000 +0300
-+++ kernel/fork.c	2008-04-17 19:34:10.000000000 +0400
-@@ -1420,6 +1420,9 @@ struct task_struct * __cpuinit fork_idle
- 	if (!IS_ERR(task))
- 		init_idle(task, cpu);
- 
-+	/* COMMENT */
-+	memset(task->pids, 0, sizeof task->pids);
-+
- 	return task;
- }
- 
+> When the old owner dies, we choose a
+>  random thread with the same mm. But we do nothing when the last user
+>  of ->mm dies. What is the point? (please feel free to ignore my q
 
+When the last user of the mm dies, the mm is freed, so there's no need
+for mm->owner to be valid any longer.
+
+Paul
