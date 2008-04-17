@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbYDQBdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbYDQBeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbYDQBdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbYDQBOu
+	id S933697AbYDQBeD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530AbYDQBQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:14:50 -0400
-Received: from sous-sol.org ([216.99.217.87]:59895 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932503AbYDQBOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:14:48 -0400
-Message-Id: <20080417010337.793546930@sous-sol.org>
-References: <20080417010122.148289106@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:47 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Joy Latten <latten@austin.ibm.com>
-Subject: CRYPTO xcbc: Fix crash when ipsec uses xcbc-mac with big data chunk
-Content-Disposition: inline; filename=crypto-xcbc-fix-crash-when-ipsec-uses-xcbc-mac-with-big-data-chunk.patch
+	Wed, 16 Apr 2008 21:16:25 -0400
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:49677 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760342AbYDQBQY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:16:24 -0400
+X-Authority-Analysis: v=1.0 c=1 a=81MVaMzL4IIA:10 a=MC0mamqS7d4A:10
+ a=3JgGrMvpAysF6h7O_gQA:9 a=QU4gCfpQ2EuUItA3O3jHGwHSl1QA:4 a=50e4U0PicR4A:10
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Marcus Furlong <furlongm@hotmail.com>
+Subject: Re: [BUG] 2.6.25-rc9 Oops (keyboard/mouse related)
+Date: Wed, 16 Apr 2008 21:16:14 -0400
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <fu66a8$flv$1@ger.gmane.org>
+In-Reply-To: <fu66a8$flv$1@ger.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804162116.14712.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+Hi Marcus,
 
-From: Joy Latten <latten@austin.ibm.com>
+On Wednesday 16 April 2008, Marcus Furlong wrote:
+> Hi,
+> 
+> I got the following oops on 2.6.25-rc9. The mouse/keyboard are
+> consistently "jerky" and unresponsive, and between 1 and 15 minutes after
+> booting the machine hangs.
+> 
+> Possibly the same on 2.6.24.*, I only tried it once and it hung and I had no
+> more time for testing until now. No problem on 2.6.23.17.
+> 
+> [  854.789883] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> [  854.792850] Modules linked in: i915 drm iwl3945 mac80211 cfg80211
+> intel_agp agpgart scsi_wait_scan
+> [  854.792850]
 
-upstream commit: 1edcf2e1ee2babb011cfca80ad9d202e9c491669
+Hmm, it looks like the very first line or two are missing... Could I
+get the whole dmesg (so I can see exactly what kind of ALPS touchpad
+you have) please?
 
-The kernel crashes when ipsec passes a udp packet of about 14XX bytes
-of data to aes-xcbc-mac.
-
-It seems the first xxxx bytes of the data are in first sg entry,
-and remaining xx bytes are in next sg entry. But we don't
-check next sg entry to see if we need to go look the page up.
-
-I noticed in hmac.c, we do a scatterwalk_sg_next(), to do this check
-and possible lookup, thus xcbc.c needs to use this routine too.
-
-A 15-hour run of an ipsec stress test sending streams of tcp and
-udp packets of various sizes,  using this patch and
-aes-xcbc-mac completed successfully, so hopefully this fixes the
-problem.
-
-Signed-off-by: Joy Latten <latten@austin.ibm.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- crypto/xcbc.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
-
---- a/crypto/xcbc.c
-+++ b/crypto/xcbc.c
-@@ -116,13 +116,11 @@ static int crypto_xcbc_digest_update2(st
- 	struct crypto_xcbc_ctx *ctx = crypto_hash_ctx_aligned(parent);
- 	struct crypto_cipher *tfm = ctx->child;
- 	int bs = crypto_hash_blocksize(parent);
--	unsigned int i = 0;
- 
--	do {
--
--		struct page *pg = sg_page(&sg[i]);
--		unsigned int offset = sg[i].offset;
--		unsigned int slen = sg[i].length;
-+	for (;;) {
-+		struct page *pg = sg_page(sg);
-+		unsigned int offset = sg->offset;
-+		unsigned int slen = sg->length;
- 
- 		if (unlikely(slen > nbytes))
- 			slen = nbytes;
-@@ -182,8 +180,11 @@ static int crypto_xcbc_digest_update2(st
- 			offset = 0;
- 			pg++;
- 		}
--		i++;
--	} while (nbytes>0);
-+
-+		if (!nbytes)
-+			break;
-+		sg = scatterwalk_sg_next(sg);
-+	}
- 
- 	return 0;
- }
+Thanks!
 
 -- 
+Dmitry
