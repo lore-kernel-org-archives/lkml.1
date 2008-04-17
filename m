@@ -1,85 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933627AbYDQSU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934379AbYDQSXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933627AbYDQSU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 14:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYDQSUM
+	id S934379AbYDQSXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 14:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYDQSXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 14:20:12 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40527 "EHLO mx2.suse.de"
+	Thu, 17 Apr 2008 14:23:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52887 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756869AbYDQSUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 14:20:10 -0400
-Message-ID: <480794D4.9020503@suse.de>
-Date: Thu, 17 Apr 2008 20:20:04 +0200
-From: Stefan Seyfried <seife@suse.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.8.1.12) Gecko/20071114 SUSE/2.0.0.12-14 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	id S1756278AbYDQSXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 14:23:01 -0400
+Date: Thu, 17 Apr 2008 20:22:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [git pull] kgdb light for v2.6.26
+Message-ID: <20080417182246.GB15158@elte.hu>
 MIME-Version: 1.0
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       suspend-devel@lists.sourceforge.net,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Suspend-devel] 2.6.25-rc6 regression - hang on resume [Bug	10319]
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>	<pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost> <1207552602.26185.13.camel@pern>
-In-Reply-To: <1207552602.26185.13.camel@pern>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Romano Giannetti schrieb:
-> 
-> On Fri, 2008-04-04 at 08:31 +0200, Soeren Sonnenburg wrote:
->> On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
-> 
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10319
->>> Subject		: 2.6.25-rc6 regression - hang on resume
->>> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
->>> Date		: 2008-03-25 04:44 (10 days old)
->> Yes. The machine resumes and display stays black using s2ram -f -p
->> (blindly typing reboot etc on keyboard does what is expected). However
->> display comes back on 2.6.24.
-> 
-> I can add that on my laptop (toshiba U305, Intel 945GM chipset), s2ram
-> -f -p -m which used to work ok, in X and console, in 2.6.24 stopped to
-> work (I tested -rc8, but I think it's like that since a long time).
-> Machine resumes but the screen stays off after that, although machine is
-> working (exactly as Soeren said). 
 
-can you try if this patch to libx86 (make sure it gets installed and used...)
-fixes the problem?
+Linus, please pull the kgdb-light git tree from:
 
-Index: libx86-0.99/x86-common.c
-===================================================================
---- libx86-0.99.orig/x86-common.c
-+++ libx86-0.99/x86-common.c
-@@ -232,7 +232,7 @@ int LRMI_common_init(void)
- 	}
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
 
- 	m = mmap((void *)0xa0000, 0x100000 - 0xa0000,
--	 PROT_READ | PROT_WRITE,
-+	 PROT_READ | PROT_WRITE | PROT_EXEC,
- 	 MAP_FIXED | MAP_SHARED, fd_mem, 0xa0000);
+[ i kept the v2.6.25 history because it demonstrates the flux in this 
+  codebase during v2.6.25 - it was quite low. ]
 
- 	if (m == (void *)-1) {
+Thanks,
 
-> On the other hand, now the plain "echo mem > /sys/power/state" works
-> perfectly, from X and console. So some of the magic vbe save/restore of
-> s2ram mess something up for this card. 
+	Ingo
 
-Especially the userspace stuff (VBE_*) should not interfere with the restoring
-now done inside the kernel drivers.
+------------------>
+Andrew Morton (1):
+      kgdb: Kconfig fix
 
-> Is it a regression for my laptop (is evidently one for Soeren)? On one
-> side, a "used to work" setup is broken, but it worked with userspace
-> hacks; now it works with the plain way, and that's clearly better.
--- 
-Stefan Seyfried
-R&D Team Mobile Devices            |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg | "Well, surrounding them's out."
+Ingo Molnar (2):
+      uaccess: add probe_kernel_write()
+      x86: kgdb support
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Jason Wessel (17):
+      kgdb: core
+      consoles: polling support, kgdboc
+      kgdb: document parameters
+      kgdb: fix kgdboc dynamic module configuration
+      kgdb: fix NMI hangs
+      kgdb: clocksource watchdog
+      kgdb: print breakpoint removed on exception
+      kgdb: add x86 HW breakpoints
+      kgdb: fix optional arch functions and probe_kernel_*
+      kgdb: kgdboc pl011 I/O module
+      kgdb: fix several kgdb regressions
+      kgdb: add kgdb internal test suite
+      kgdb: add documentation
+      kgdb: allow static kgdbts boot configuration
+      kgdb: documentation fixes
+      kgdb: fix SMP NMI kgdb_handle_exception exit race
+      kgdb: always use icache flush for sw breakpoints
+
+ Documentation/DocBook/Makefile      |    2 +-
+ Documentation/DocBook/kgdb.tmpl     |  447 +++++++++
+ Documentation/kernel-parameters.txt |    5 +
+ MAINTAINERS                         |    6 +
+ arch/x86/Kconfig                    |    1 +
+ arch/x86/kernel/Makefile            |    1 +
+ arch/x86/kernel/kgdb.c              |  571 ++++++++++++
+ arch/x86/kernel/setup64.c           |   16 +
+ arch/x86/kernel/traps_32.c          |    2 +
+ arch/x86/kernel/traps_64.c          |    9 +-
+ drivers/char/tty_io.c               |   47 +
+ drivers/misc/Makefile               |    1 +
+ drivers/misc/kgdbts.c               | 1090 ++++++++++++++++++++++
+ drivers/serial/8250.c               |   58 ++
+ drivers/serial/Kconfig              |    3 +
+ drivers/serial/Makefile             |    1 +
+ drivers/serial/amba-pl011.c         |   30 +
+ drivers/serial/kgdboc.c             |  168 ++++
+ drivers/serial/serial_core.c        |   74 ++-
+ include/asm-x86/kdebug.h            |    1 +
+ include/asm-x86/kgdb.h              |   81 ++
+ include/linux/clocksource.h         |    1 +
+ include/linux/kgdb.h                |  281 ++++++
+ include/linux/serial_core.h         |    4 +
+ include/linux/tty_driver.h          |   12 +
+ include/linux/uaccess.h             |   22 +
+ kernel/Makefile                     |    1 +
+ kernel/kgdb.c                       | 1700 +++++++++++++++++++++++++++++++++++
+ kernel/time/clocksource.c           |   12 +
+ lib/Kconfig.debug                   |    2 +
+ lib/Kconfig.kgdb                    |   58 ++
+ mm/Makefile                         |    2 +-
+ mm/maccess.c                        |   55 ++
+ 33 files changed, 4757 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/DocBook/kgdb.tmpl
+ create mode 100644 arch/x86/kernel/kgdb.c
+ create mode 100644 drivers/misc/kgdbts.c
+ create mode 100644 drivers/serial/kgdboc.c
+ create mode 100644 include/asm-x86/kgdb.h
+ create mode 100644 include/linux/kgdb.h
+ create mode 100644 kernel/kgdb.c
+ create mode 100644 lib/Kconfig.kgdb
+ create mode 100644 mm/maccess.c
+
