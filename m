@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbYDQM4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764403AbYDQM5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762584AbYDQM4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 08:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbYDQM4I
+	id S1764403AbYDQM5l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 08:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbYDQM5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 08:56:08 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:62327 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757251AbYDQM4H convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 08:56:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AloFAPrlBkhMROPA/2dsb2JhbACBYKs3
-Date: Thu, 17 Apr 2008 08:56:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       akpm@osdl.org
-Subject: Re: [RFC patch 15/27] Immediate Values - Documentation
-Message-ID: <20080417125604.GA16219@Krystal>
-References: <20080416213426.298498397@polymtl.ca> <20080416213552.942797527@polymtl.ca> <20080417184930.A8CD.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080417103635.GG1677@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 17 Apr 2008 08:57:31 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:50401 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755022AbYDQM5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 08:57:30 -0400
+Date: Thu, 17 Apr 2008 15:57:18 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: Possible mem leak in copy_process()
+Message-ID: <20080417115718.GC103@tv-sign.ru>
+References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20080417103635.GG1677@cs181133002.pp.htv.fi>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:55:10 up 48 days,  9:06,  5 users,  load average: 0.43, 0.28,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@kernel.org) wrote:
-> On Thu, Apr 17, 2008 at 06:52:54PM +0900, KOSAKI Motohiro wrote:
-> > > +Memory read:
-> > > +644.09ツア11.39 - 88.16ツア1.35 = 555.93ツア11.46 cycles
-> > > +
-> > > +Getppid without memory pressure:
-> > > +1462.09ツア18.87 - 150.92ツア1.01 = 1311.17ツア18.90 cycles
-> > > +
-> > > +Getppid with memory pressure:
-> > > +17113.33ツア1655.92 - 578.22ツア269.51 = 16535.11ツア1677.71 cycles
-> > > +
-> > > +Therefore, if we add 2 markers not based on immediate values to the getppid
-> > > +code, which would add 2 memory reads, we would add
-> > > +2 * 555.93ツア12.74 = 1111.86ツア25.48 cycles
-> > 
-> > sorry..
-> > 
-> > non ascii character is harmful for some language region user.
-> > Couldn't you write ascii only?
-> 
-> The kernel is UTF-8, and this shouldn't be a problem.
-> 
-> The problem seems to be that Mathieu's emails don't contain a header 
-> indicating the charset.
-> 
+Ugh! I'm not sure I really understand what Coverity says, to the
+point I am not sure where it thinks the bug is, but
 
-I removed the UTF-8 characters for now. Someday I should fix my
-quilt+exit4 setup, when I find the time. :)
-
-Thanks,
-
-Mathieu
-
-> cu
-> Adrian
+On 04/16, Jesper Juhl wrote:
 > 
-> -- 
+> At conditional (16): "(p)->pid != 0" taking false path
 > 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
+> 1331 		if (likely(p->pid)) {
+> 1332 			add_parent(p);
+> 1333 			if (unlikely(p->ptrace & PT_PTRACED))
+> 1334 				__ptrace_link(p, current->parent);
+> 1335 	
+> 1336 			if (thread_group_leader(p)) {
+> 1337 				if (clone_flags & CLONE_NEWPID)
+> 1338 					p->nsproxy->pid_ns->child_reaper = p;
+> 1339 	
+> 1340 				p->signal->leader_pid = pid;
+> 1341 				p->signal->tty = current->signal->tty;
+> 1342 				set_task_pgrp(p, task_pgrp_nr(current));
+> 1343 				set_task_session(p, task_session_nr(current));
+> 1344 				attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
+> 1345 				attach_pid(p, PIDTYPE_SID, task_session(current));
+> 1346 				list_add_tail_rcu(&p->tasks, &init_task.tasks);
+> 1347 				__get_cpu_var(process_counts)++;
+> 1348 			}
+> 1349 			attach_pid(p, PIDTYPE_PID, pid);
+> 1350 			nr_threads++;
+> 1351 		}
+> 1352 	
+> 1353 		total_forks++;
+> 1354 		spin_unlock(&current->sighand->siglock);
+> 1355 		write_unlock_irq(&tasklist_lock);
+> 1356 		proc_fork_connector(p);
+> 1357 		cgroup_post_fork(p);
 > 
+> Event leaked_storage: Returned without freeing storage "pid"
+> Also see events: [alloc_fn][var_assign][pass_arg]
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+this looks like a false alarm.
+
+p->pid == pid->numbers[0].nr. If "struct pid *pid" was allocated,
+its .nr can't be 0.
+
+IOW, !p->pid means that pid == init_struct_pid, it wasn't allocated
+but was passed from the caller.
+
+Oleg.
+
