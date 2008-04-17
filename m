@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYDQT5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbYDQT60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbYDQT5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYDQT5K
+	id S1754587AbYDQT60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYDQT6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:57:10 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:62701 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYDQT5H (ORCPT
+	Thu, 17 Apr 2008 15:58:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50662 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754036AbYDQT6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:57:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=weFurQfAl/FBVlkSJ4BxlUj/oF73u5vxAr/jHpxbla9yA8UrkwxIwDP/AQ9kxVe1b5965Q4qrreqOP6rM6zhSXf/1wWZta94wePTi29ZLQIfNOgQqvPzC5D8Vk/gi/oII4B0nWSD12aYiOVWxtDMojKPR8DcdrTmIQzAiKucdlk=
-Message-ID: <bd6139dc0804171257l5f875694yb57105ba40170789@mail.gmail.com>
-Date: Thu, 17 Apr 2008 21:57:06 +0200
-From: "Sverre Rabbelier" <alturin@gmail.com>
-Reply-To: sverre@rabbelier.nl
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: Reporting bugs and bisection
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "David Newall" <davidn@davidnewall.com>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, git@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
-       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Tilman Schmidt" <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       "Mark Lord" <lkml@rtr.ca>, "David Miller" <davem@davemloft.net>,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org
-In-Reply-To: <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Apr 2008 15:58:06 -0400
+Date: Thu, 17 Apr 2008 12:57:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hch@infradead.org, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, arjan@infradead.org,
+       John Levon <levon@movementarian.org>,
+       Philippe Elie <phil.el@wanadoo.fr>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-Id: <20080417125701.83849f30.akpm@linux-foundation.org>
+In-Reply-To: <20080417185158.GA26603@elte.hu>
+References: <20080416202338.GA6007@elte.hu>
+	<20080417002552.5742ad65.akpm@linux-foundation.org>
+	<84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com>
+	<20080417012051.ed56f4ab.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI>
+	<84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com>
+	<20080417014217.ab0453a9.akpm@linux-foundation.org>
+	<20080417114900.GA17033@infradead.org>
+	<20080417110135.08b076ac.akpm@linux-foundation.org>
+	<20080417185158.GA26603@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47FEADCB.7070104@rtr.ca>
-	 <9a8748490804161417n4ad6c1den54ccd302831a66c6@mail.gmail.com>
-	 <48078323.4010109@davidnewall.com> <200804172109.35027.rjw@sisk.pl>
-	 <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 9:35 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
-> On Thu, Apr 17, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  >  > Finger-pointing, in these extreme cases, gives incentive to improve
->  >  > quality.  It's a positive thing.
->  >
->  >  Sorry, but I have to disagree.  Negative finger-pointing is never a good thing.
->
->  Correct, but let's be careful here. The original suggestion was,
->  effectively, to get better metrics on the quality of contributions.
->  Those metrics *could* be used for finger pointing, or (my preference)
->  they could be used to direct and allocate our scarce resources: code
->  reviews and mentoring.
+On Thu, 17 Apr 2008 20:51:58 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Exactly!
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > afaik the sysprof-vs-oprofile issue still hasn't been settled.  Maybe 
+> > it's no longer a relevant question with the new code - I just don't 
+> > know. Everything went all quiet and then this stuff happened.
+> 
+> i dont think there's any big issue here. Sysprof is a time and stack 
+> system-wide tracer/profiler, oprofile profiles CPU events - deep 
+> stacktracing is an afterthought there. And how do you set up oprofile to 
+> do precise time events?
+> 
+> with sysprof you can do:
+> 
+>   cd /sys/kernel/debug/tracing
+>   echo sysprof > current_tracer
+>   cat trace_pipe
+> 
+> and you'll see the trace events go by, live. The user-space bits of 
+> sysprof have been ported over to ftrace/sysprof already and it's a 
+> really nice tool that shows a deep stack-trace based hierarchical 
+> "vertical" profile instead of the usual finegrained profile.
 
->  There's no way to know what the metrics will tell us until we have
->  them. Arguing against metrics because they *may* be used to point
->  fingers at people is a silly argument; anything can be subverted to do
->  that.
+Well that's all good to hear but I don't know where you're getting your
+information from.  In the past month and a half I've seen zero email from
+Soeren and a single ftrace-related patch.
 
-Thank you, that should have been said before, you worded it perfectly.
+So right now I do not have enough information to understand what ftrace
+does, let alone to compare it with oprofile.
 
->  Let's get some measurements and see what they say. In the meantime,
->  try to believe that they could be put to good purposes, such as
->  identifying code areas that are tricky for contributors to get right
->  (independent of contributor), or contributors that could benefit from
->  code reviews, etc.
+And this is a problem.  I, probably more than anyone else, work with bug
+reporters on kernel problems and I am not in a position to be able to
+direct them to use an important new tool.  There isn't even a documentation
+file I can point them at.
 
-This especially is an area that I plan to focus on and should be very
-reliable when finished. As can be read in my application, I plan to
-look at how often a piece of code is changed, in what timespan and by
-how many different authors.
+I'd imagine that a large number of the current kernel development team only
+vaguely know of ftrace's existence, let alone how to use it and what its
+advantages are.  So they just won't use it.
 
-Thanks for the reply!
+> It certainly helps that the author of the tracer plugin (Soeren 
+> Sandmann) is the author of the userspace app too - so there's a rather 
+> well-working feedback loop here ;-)
+> 
+> With oprofile all these things are rather indirect, the API is more 
+> complex, it forces per-CPU buffers, etc. etc. I think for 
+> instrumentation the driving force must be usability, and sysprof/ftrace 
+> is hands down more usable - to me at least.
 
-Cheers,
+Well.  You know how to use it.
 
-Sverre
+John, Phillippe: have you had a chance to take a look at the latest ftrace
+code?
+
+Thanks.
