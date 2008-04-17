@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935665AbYDQKAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935418AbYDQKBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935665AbYDQKAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934390AbYDQJed
+	id S935418AbYDQKBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934214AbYDQJgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:34:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54758 "EHLO
+	Thu, 17 Apr 2008 05:36:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37627 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933417AbYDQJeb (ORCPT
+	by vger.kernel.org with ESMTP id S934563AbYDQJgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:34:31 -0400
-Date: Thu, 17 Apr 2008 02:33:31 -0700
+	Thu, 17 Apr 2008 05:36:52 -0400
+Date: Thu, 17 Apr 2008 02:36:03 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, hpa@zytor.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417023331.3350e217.akpm@linux-foundation.org>
-In-Reply-To: <20080417.021935.170766914.davem@davemloft.net>
-References: <20080417014054.ea788f1f.akpm@linux-foundation.org>
-	<20080417.014534.258800340.davem@davemloft.net>
-	<20080417015425.312d34c0.akpm@linux-foundation.org>
-	<20080417.021935.170766914.davem@davemloft.net>
+Message-Id: <20080417023603.672d1032.akpm@linux-foundation.org>
+In-Reply-To: <20080417093025.GA17389@elte.hu>
+References: <20080416202338.GA6007@elte.hu>
+	<20080417002552.5742ad65.akpm@linux-foundation.org>
+	<20080417083000.GA4935@elte.hu>
+	<20080417014054.ea788f1f.akpm@linux-foundation.org>
+	<20080417090626.GA14383@elte.hu>
+	<20080417021813.04df7912.akpm@linux-foundation.org>
+	<20080417093025.GA17389@elte.hu>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,24 +34,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 02:19:35 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+On Thu, 17 Apr 2008 11:30:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Thu, 17 Apr 2008 01:54:25 -0700
 > 
-> > linux-next ramped up across the 2.6.25-rc window and I wanted to give it
-> > some time to see how it would pan out.
-> ...
-> > I don't know what you mena by this.  But linux-next integrates only the
-> > other subsystem trees and they have rarely caused me integration problems
-> > against git-net.  
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > > By keeping all this code out of -mm you haven't solved any of the 
+> > > > merge/integration problems which we had in 2.6.24-rcX.  They're 
+> > > > all still there.  All you did was to push them out of the 
+> > > > two-month integrate-and-test period and put them into the 2.6.25 
+> > > > merge window instead.
+> > > 
+> > > ... hm, i think there's really no problem here at all: most of the 
+> > > merge problems you cited were due to clearly out-of-tree patches 
+> > > that sit in x86.git/testing for the convenience of our testers and 
+> > > contributors, that we have no intention to push upstream.
+> > 
+> > Are those out-of-tree patches also in linux-next? [...]
+> 
+> yes they are.
+> 
+> > [...]  The page-flags and prctl changes are there.  And those are 
+> > planned for 2.6.26, aren't they?
+> 
+> you mean kmemcheck? Yes, that's planned. We've been working 4 months 
+> non-stop on kmemcheck to make it mergeable and usable, it's at version 7 
+> right now, and it caught a handful of real bugs already (such as 
+> 63a7138671c - unfortunately not credited in the log to kmemcheck). But 
+> because it touches SLUB (because it has to - and they are acked by 
+> Pekka) i never had the chance to move it into the for-akpm branch.
 
-There are maybe as many as 100 "subsystem trees" hosted in -mm.  Stuff like
-md, ipmi, tty, elf, keys, procfs, char drivers, nbd, fbdev, aoe, fuse, edac
-and the list goes on.
+Does it really really really need to consume one of our few remaining page
+flags?  We'll be in a mess when we run out.
 
-Once I get -mm based on linux-next, the next step is to somehow feed those
-trees (well, the "stable" parts thereof) back into linux-next while not
-losing track of all the patches.  I haven't a clue how I'll do this ;)
+> i guess this will all sort itself out when you rebase -mm to linux-next. 
+> Stephen Rothwell is doing an excellent job of resolving interactions 
+> between trees.
 
-But I haven't thought about it much yet.
+Yep I expect it'll help in several ways.  (That's why I suggested it!)
