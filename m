@@ -1,176 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYDQCGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYDQCKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYDQCGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 22:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYDQCFx
+	id S1755790AbYDQCKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 22:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYDQCJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 22:05:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:19098 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbYDQCFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 22:05:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=anMpMWDd8KLaLyoKn2OJgYIrTtu/Htu+1ijmvaQNmDwK4kSxrjf9RSejpudIAZNP5x5v08lUSxqv1Yt9hd1FPjLzbM1h9bdUaj289CGnzENf+je7KajpjuA2ygOyHuOn55wMoIn7LL72k1ZlFOnv4cC0rcKO8wwTLtW6DOZnLpg=
-Message-ID: <4806B16C.5090204@gmail.com>
-Date: Wed, 16 Apr 2008 22:09:48 -0400
-From: Scott Lovenberg <scott.lovenberg@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Peter Teoh <htmldeveloper@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: RFC: Self-snapshotting in Linux
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajd42-7Gt-49@gated-at.bofh.it> <db1091b2-68a6-4f71-800e-c4df6f8641ca@m44g2000hsc.googlegroups.com> <804dabb00804160806o39a2c89eg8d3a3387beb7b5cb@mail.gmail.com> <20080416195053.GB27967@redhat.com> <48065C64.7010808@gmail.com> <20080416202553.GC27967@redhat.com>
-In-Reply-To: <20080416202553.GC27967@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 22:09:59 -0400
+Received: from sous-sol.org ([216.99.217.87]:54946 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbYDQCJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 22:09:58 -0400
+Message-Id: <20080417010206.817647157@sous-sol.org>
+References: <20080417010122.148289106@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 16 Apr 2008 18:01:24 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Sam Ravnborg <sam@uranus.ravnborg.org>, Michael Buesch <mb@bu3sch.de>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: kbuild: soften modpost checks when doing cross builds
+Content-Disposition: inline; filename=kbuild-soften-modpost-checks-when-doing-cross-builds.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Apr 16, 2008 at 04:07:00PM -0400, Scott Lovenberg wrote:
->   
->> Vivek Goyal wrote:
->>     
->>> On Wed, Apr 16, 2008 at 11:06:05PM +0800, Peter Teoh wrote:
->>>   
->>>       
->>>> On 4/16/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
->>>>     
->>>>         
->>>>> Scott Lovenberg wrote:
->>>>>
->>>>>       
->>>>>           
->>>>>> Peter Teoh wrote:
->>>>>>         
->>>>>>             
->>>>>  > Maybe you load up another kernel to handle the snapshot, and then hand
->>>>>  > the system back to it afterwards?  What do you think?
->>>>>
->>>>>
->>>>> Isn't that just what Ying Huans kexec-based hibernation does?
->>>>>
->>>>>       
->>>>>           
->>>> This list is awesome.   After I read up on this kexec-based hibernation thing:
->>>>
->>>> http://kerneltrap.org/node/11756
->>>>
->>>> I realized it is about the same idea.   Some differences though:
->>>>
->>>> My original starting point was VMWare's snapshot idea.   Drawing an
->>>> analogy from there, the idea is to freeze and restore back entire
->>>> kernel + userspace application.   For integrity reason, filesystem
->>>> should be included in the frozen image as well.
->>>>
->>>> Currently, what we are doing now is to have a bank of Norton
->>>> Ghost-based images of the entire OS and just selectively restoring
->>>> back the OS we want to work on.   Very fast - less than 30secs the
->>>> entire OS can be restored back.   But problem is that it need to be
->>>> boot up - which is very slow.   And there userspace state cannot be
->>>> frozen and restored back.
->>>>
->>>> VMWare images is slow, and cannot meet bare-metal CPU/direct hardware
->>>> access requirements.   There goes Xen's virtualization approach as
->>>> well.
->>>>
->>>> Another approach is this (from an email by Scott Lovenberg) - using
->>>> RELOCATABLE kernel (or may be not?????I really don't know, but idea is
->>>> below):
->>>>
->>>> a.   Assuming we have 32G (64bit hardware can do that) of memory, but
->>>> we want to have 7 32-bit OS running (not concurrently) - so then
->>>> memory is partition into 8 x 4GB each - the lowest 4GB reserved for
->>>> the current running OS.   Each OS will be housed into each 4G of
->>>> memory.   When each OS is running, it will access its own partition on
->>>> the harddisk/memory, security concerns put aside.   Switching from one
->>>> OS to another OS is VOLUNTARILY done by the user - equivalent to that
->>>> of "desktop" feature in Solaris CDE. Restoring back essentially is
->>>> just copying from each of the 4GB into the lowest 4GB memory range.
->>>> Because only the lowest 4gb is used, only 32 bit instruction is
->>>> needed, 64bit is needed only when copying from one 4GB memory
->>>> partition into the lowest 4GB region, and vice versa.   And together
->>>> with using  partitioning of harddisk for each OS, switching among the
->>>> different OS kernel should be in seconds, much less than 1 minute,
->>>> correct?
->>>>
->>>>     
->>>>         
->>> [CCing Huang and Eric]
->>>
->>> I think Huang is doing something very similar in kexec based hibernation
->>> and probably that idea can be extended to achive above.
->>>
->>> Currently if system has got 4G of memory then one can reserve some
->>> amount of RAM, lets say 128 MB (with in 4G) and load the kernel there
->>> and let it run from there. Huang's implementation is also targetting
->>> the same thing where more than one kernel be in RAM at the same time
->>> (in mutually exclusive RAM locations) and one can switch between those
->>> kernels using kexec techniques.
->>>
->>> To begin with, he is targetting co-existence of just two kernels and
->>> second kernel can be used to save/resume the hibernated image.
->>>
->>> In fact, because of RELOCATABLE nature of kernel, you don't have to
->>> copy the kernel to lower 4GB of memory (Assuming all 64bit kernels
->>> running). At max one might require first 640 KB of memory and that
->>> can be worked out, if need be.
->>>
->>> This will indeed need to put devices into some kind of sleep state so
->>> that next kernel can resume it.
->>>
->>> So I think a variant of above is possible where on a large memory system
->>> multiple kernels can coexist (while accessing separate disk partitions)
->>> and one ought to be able to switch between kernels.
->>>
->>> Technically, there are few important pieces. kexec, relocatable kernel,
->>> hibernation, kexec based hibernation. First three pieces are already
->>> in place and fourth one is under development and after that I think
->>> it is just a matter of putting everything together.
->>>
->>> Thanks
->>> Vivek
->>>   
->>>       
->> What about the way that the kernel does interrupt masks on CPUs during a 
->> critical section of code on SMP machines?  It basically flushes the TLB, 
->> and the cache, moves the process in critical section to a (now) isolated 
->> CPU, and reroutes interrupts to another CPU.  If you took that basic model 
->> and applied it to kernels instead of CPUs, you could probably get the 
->> desired hand off of freezing one after flushing its caches back (or 
->> sideways and then back in SMP) and moving the mm to your unfrozen kernel 
->> and routing the processes there. After snapshotting, flush the cache back 
->> again, and reroute each process to the once again unfrozen kernel, handing 
->> them back again?  Would this basic model work for isolation and 
->> snapshotting and then transitioning back?  Oh, yeah, and block each process 
->> so it doesn't try to run anything during snapshot :-).  Or, save PCs and 
->> then load them back again, I guess... although that's a waste, and a 
->> disaster waiting to happen... not that I've let that deter me before :-).  
->> Unfortunately, this is so far out of my skill range and knowledge base, 
->> that I can't speak intelligently on it at any lower level.  Can someone 
->> fill in the gaps for me?
->>     
->
-> Not very sure what you are saying here but one important piece missing
-> from your prposal seems to be state of various devices between kernels.
->
-> Thanks
-> Vivek
->
->   
-Aha!  Now I see what you're getting at.  While I don't have any good 
-solutions, I do now fully understand and appreciate the problem at hand! :)
-I was proposing something to the effect of rerouting the processes to 
-the new kernel and then firing it up at the same time as shutting down 
-the one that was running.  Then just putting all the userspace processes 
-on ice (IO block or something) until the snapshot happened and thawing 
-them back out on the original.  Well, it looked pretty in my minds' eye 
-at that moment.  Do you have any suggestions on this, or areas of 
-research that might be promising?
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
+
+From: Sam Ravnborg <sam@uranus.ravnborg.org>
+
+upstream commit: 4ce6efed48d736e3384c39ff87bda723e1f8e041
+
+The module alias support in the kernel have a consistency
+check where it is checked that the size of a structure
+in the kernel and on the build host are the same.
+For cross builds this check does not make sense so detect
+when we do cross builds and silently skip the check in these
+situations.
+This fixes a build bug for a wireless driver when cross building
+for arm.
+
+Acked-by: Michael Buesch <mb@bu3sch.de>
+Tested-by: Gordon Farquharson <gordonfarquharson@gmail.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+[chrisw@sous-sol.org: backport to 2.6.24.4]
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ Makefile                 |    2 +-
+ scripts/Makefile.modpost |    6 +++++-
+ scripts/mod/file2alias.c |    4 ++++
+ scripts/mod/modpost.c    |    5 ++++-
+ scripts/mod/modpost.h    |    1 +
+ 5 files changed, 15 insertions(+), 3 deletions(-)
+
+--- a/Makefile
++++ b/Makefile
+@@ -189,7 +189,7 @@ SUBARCH := $(shell uname -m | sed -e s/i
+ # Alternatively CROSS_COMPILE can be set in the environment.
+ # Default value for CROSS_COMPILE is not to prefix executables
+ # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
+-
++export KBUILD_BUILDHOST := $(SUBARCH)
+ ARCH		?= $(SUBARCH)
+ CROSS_COMPILE	?=
+ 
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -53,6 +53,9 @@ modules   := $(patsubst %.o,%.ko, $(wild
+ # Stop after building .o files if NOFINAL is set. Makes compile tests quicker
+ _modpost: $(if $(KBUILD_MODPOST_NOFINAL), $(modules:.ko:.o),$(modules))
+ 
++ifneq ($(KBUILD_BUILDHOST),$(ARCH))
++        cross_build := 1
++endif
+ 
+ # Step 2), invoke modpost
+ #  Includes step 3,4
+@@ -62,7 +65,8 @@ modpost = scripts/mod/modpost           
+  $(if $(KBUILD_EXTMOD),-i,-o) $(kernelsymfile)   \
+  $(if $(KBUILD_EXTMOD),-I $(modulesymfile))      \
+  $(if $(KBUILD_EXTMOD),-o $(modulesymfile))      \
+- $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w)
++ $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w) \
++ $(if $(cross_build),-c)
+ 
+ quiet_cmd_modpost = MODPOST $(words $(filter-out vmlinux FORCE, $^)) modules
+       cmd_modpost = $(modpost) -s
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -51,11 +51,13 @@ do {                                    
+                 sprintf(str + strlen(str), "*");                \
+ } while(0)
+ 
++unsigned int cross_build = 0;
+ /**
+  * Check that sizeof(device_id type) are consistent with size of section
+  * in .o file. If in-consistent then userspace and kernel does not agree
+  * on actual size which is a bug.
+  * Also verify that the final entry in the table is all zeros.
++ * Ignore both checks if build host differ from target host and size differs.
+  **/
+ static void device_id_check(const char *modname, const char *device_id,
+ 			    unsigned long size, unsigned long id_size,
+@@ -64,6 +66,8 @@ static void device_id_check(const char *
+ 	int i;
+ 
+ 	if (size % id_size || size < id_size) {
++		if (cross_build != 0)
++			return;
+ 		fatal("%s: sizeof(struct %s_device_id)=%lu is not a modulo "
+ 		      "of the size of section __mod_%s_device_table=%lu.\n"
+ 		      "Fix definition of struct %s_device_id "
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1659,7 +1659,7 @@ int main(int argc, char **argv)
+ 	int opt;
+ 	int err;
+ 
+-	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
++	while ((opt = getopt(argc, argv, "i:I:cmso:aw")) != -1) {
+ 		switch(opt) {
+ 			case 'i':
+ 				kernel_read = optarg;
+@@ -1668,6 +1668,9 @@ int main(int argc, char **argv)
+ 				module_read = optarg;
+ 				external_module = 1;
+ 				break;
++		case 'c':
++			cross_build = 1;
++			break;
+ 			case 'm':
+ 				modversions = 1;
+ 				break;
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -130,6 +130,7 @@ struct elf_info {
+ };
+ 
+ /* file2alias.c */
++extern unsigned int cross_build;
+ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 			Elf_Sym *sym, const char *symname);
+ void add_moddevtable(struct buffer *buf, struct module *mod);
+
+-- 
