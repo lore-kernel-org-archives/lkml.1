@@ -1,175 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762524AbYDQI7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbYDQJEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762524AbYDQI7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbYDQI7h
+	id S1761482AbYDQJEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbYDQJEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:59:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:45314 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756473AbYDQI7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:59:36 -0400
-Date: Thu, 17 Apr 2008 10:58:59 +0200
-From: Jiri Benc <jbenc@suse.cz>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH-mm 1/3] mac80211: tkip.c use get/put_unaligned helpers
-Message-ID: <20080417105859.45092413@griffin.suse.cz>
-In-Reply-To: <1208370570.11920.107.camel@brick>
-References: <1208370570.11920.107.camel@brick>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Apr 2008 05:04:39 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39709 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754297AbYDQJEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:04:38 -0400
+Message-Id: <1208423077.31914.1248369455@webmail.messagingengine.com>
+X-Sasl-Enc: h0o+qik3Qh5WpG4422TzT5lIbxi9bw2x7XC5UxVGBTk+ 1208423077
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Paul Mackerras" <paulus@samba.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linuxppc-dev@ozlabs.org
+Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1208191719.12568.1247788911@webmail.messagingengine.com>   
+   <20080416125724.GC6304@elte.hu>   
+   <20080416135508.GA16439@mailshack.com>   
+   <20080416144051.GH24383@elte.hu>   
+   <18438.33744.389334.543623@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH] x86: fix find_next_bit breakage on ppc and powerpc
+In-Reply-To: <18438.33744.389334.543623@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Apr 2008 11:04:37 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008 11:29:30 -0700, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> This depends on the introduction of the new unaligned helpers, and applies
-> on top of the cleanup patches already in -mm.
-
-Please send all mac80211 patches to the linux-wireless mailing list and
-CC Johannes Berg. (It's a good idea to resend all of the mac80211
-patches you sent.)
-
-Thanks,
-
- Jiri
-
+On Thu, 17 Apr 2008 08:55:12 +1000, "Paul Mackerras" <paulus@samba.org>
+said:
+> Ingo Molnar writes:
+> > 
+> > * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> > 
+> > > Powerpc (and ppc) have their have some code in their bitops.h which 
+> > > used to be exacly the same as asm-generic/bitops/find.h. Include this 
+> > > header instead.
+> > > 
+> > > This should also fix the compile problems due to the generic 
+> > > find_next_bit changes. Those were fixed by Thomas Gleixner in 
+> > > asm-generic/bitops/find.h earlier.
+> > > 
+> > > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > 
+> > thanks, applied. I dropped:
 > 
->  net/mac80211/tkip.c |   62 +++++++++++++++++++--------------------------------
->  1 files changed, 23 insertions(+), 39 deletions(-)
-> 
-> diff --git a/net/mac80211/tkip.c b/net/mac80211/tkip.c
-> index 61c60d3..1c5a46a 100644
-> --- a/net/mac80211/tkip.c
-> +++ b/net/mac80211/tkip.c
-> @@ -63,16 +63,6 @@ static const u16 tkip_sbox[256] =
->  	0x82C3, 0x29B0, 0x5A77, 0x1E11, 0x7BCB, 0xA8FC, 0x6DD6, 0x2C3A,
->  };
->  
-> -
-> -/*
-> - * Get a cpu-byteorder u16 from a u8 pointer fixing up possible unaligned
-> - * accesses.
-> - */
-> -static inline u16 getle16(const u8 *x)
-> -{
-> -	return le16_to_cpu(get_unaligned((__le16 *)x));
-> -}
-> -
->  static inline u16 tkip_S(u16 val)
->  {
->  	return tkip_sbox[val & 0xff] ^ swab16(tkip_sbox[val >> 8]);
-> @@ -91,17 +81,17 @@ static void tkip_mixing_phase1(const u8 *ta, const u8 *tk, u32 tsc_IV32,
->  
->  	p1k[0] = tsc_IV32 & 0xFFFF;
->  	p1k[1] = tsc_IV32 >> 16;
-> -	p1k[2] = getle16(ta + 0);
-> -	p1k[3] = getle16(ta + 2);
-> -	p1k[4] = getle16(ta + 4);
-> +	p1k[2] = get_unaligned_le16(ta + 0);
-> +	p1k[3] = get_unaligned_le16(ta + 2);
-> +	p1k[4] = get_unaligned_le16(ta + 4);
->  
->  	for (i = 0; i < PHASE1_LOOP_COUNT; i++) {
->  		j = 2 * (i & 1);
-> -		p1k[0] += tkip_S(p1k[4] ^ getle16(tk + 0 + j));
-> -		p1k[1] += tkip_S(p1k[0] ^ getle16(tk + 4 + j));
-> -		p1k[2] += tkip_S(p1k[1] ^ getle16(tk + 8 + j));
-> -		p1k[3] += tkip_S(p1k[2] ^ getle16(tk + 12 + j));
-> -		p1k[4] += tkip_S(p1k[3] ^ getle16(tk + 0 + j)) + i;
-> +		p1k[0] += tkip_S(p1k[4] ^ get_unaligned_le16(tk + 0 + j));
-> +		p1k[1] += tkip_S(p1k[0] ^ get_unaligned_le16(tk + 4 + j));
-> +		p1k[2] += tkip_S(p1k[1] ^ get_unaligned_le16(tk + 8 + j));
-> +		p1k[3] += tkip_S(p1k[2] ^ get_unaligned_le16(tk + 12 + j));
-> +		p1k[4] += tkip_S(p1k[3] ^ get_unaligned_le16(tk + 0 + j)) + i;
->  	}
->  }
->  
-> @@ -119,14 +109,14 @@ static void tkip_mixing_phase2(const u16 *p1k, const u8 *tk, u16 tsc_IV16,
->  	ppk[4] = p1k[4];
->  	ppk[5] = p1k[4] + tsc_IV16;
->  
-> -	ppk[0] += tkip_S(ppk[5] ^ getle16(tk + 0));
-> -	ppk[1] += tkip_S(ppk[0] ^ getle16(tk + 2));
-> -	ppk[2] += tkip_S(ppk[1] ^ getle16(tk + 4));
-> -	ppk[3] += tkip_S(ppk[2] ^ getle16(tk + 6));
-> -	ppk[4] += tkip_S(ppk[3] ^ getle16(tk + 8));
-> -	ppk[5] += tkip_S(ppk[4] ^ getle16(tk + 10));
-> -	ppk[0] +=  ror16(ppk[5] ^ getle16(tk + 12), 1);
-> -	ppk[1] +=  ror16(ppk[0] ^ getle16(tk + 14), 1);
-> +	ppk[0] += tkip_S(ppk[5] ^ get_unaligned_le16(tk + 0));
-> +	ppk[1] += tkip_S(ppk[0] ^ get_unaligned_le16(tk + 2));
-> +	ppk[2] += tkip_S(ppk[1] ^ get_unaligned_le16(tk + 4));
-> +	ppk[3] += tkip_S(ppk[2] ^ get_unaligned_le16(tk + 6));
-> +	ppk[4] += tkip_S(ppk[3] ^ get_unaligned_le16(tk + 8));
-> +	ppk[5] += tkip_S(ppk[4] ^ get_unaligned_le16(tk + 10));
-> +	ppk[0] +=  ror16(ppk[5] ^ get_unaligned_le16(tk + 12), 1);
-> +	ppk[1] +=  ror16(ppk[0] ^ get_unaligned_le16(tk + 14), 1);
->  	ppk[2] +=  ror16(ppk[1], 1);
->  	ppk[3] +=  ror16(ppk[2], 1);
->  	ppk[4] +=  ror16(ppk[3], 1);
-> @@ -135,11 +125,11 @@ static void tkip_mixing_phase2(const u16 *p1k, const u8 *tk, u16 tsc_IV16,
->  	rc4key[0] = tsc_IV16 >> 8;
->  	rc4key[1] = ((tsc_IV16 >> 8) | 0x20) & 0x7f;
->  	rc4key[2] = tsc_IV16 & 0xFF;
-> -	rc4key[3] = ((ppk[5] ^ getle16(tk)) >> 1) & 0xFF;
-> +	rc4key[3] = ((ppk[5] ^ get_unaligned_le16(tk)) >> 1) & 0xFF;
->  
->  	rc4key += 4;
-> -	for (i = 0; i < 6; i++)
-> -		put_unaligned(cpu_to_le16(ppk[i]), (__le16 *)rc4key + i);
-> +	for (i = 0; i < 12; i += 2)
-> +		put_unaligned_le16(ppk[i], rc4key + i);
->  }
->  
-> 
-> @@ -153,11 +143,8 @@ u8 * ieee80211_tkip_add_iv(u8 *pos, struct ieee80211_key *key,
->  	*pos++ = iv1;
->  	*pos++ = iv2;
->  	*pos++ = (key->conf.keyidx << 6) | (1 << 5) /* Ext IV */;
-> -	*pos++ = key->u.tkip.iv32 & 0xff;
-> -	*pos++ = (key->u.tkip.iv32 >> 8) & 0xff;
-> -	*pos++ = (key->u.tkip.iv32 >> 16) & 0xff;
-> -	*pos++ = (key->u.tkip.iv32 >> 24) & 0xff;
-> -	return pos;
-> +	put_unaligned_le32(key->u.tkip.iv32, pos);
-> +	return pos + 4;
->  }
->  
-> 
-> @@ -200,10 +187,7 @@ void ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
->  
->  	iv16 = data[hdr_len] << 8;
->  	iv16 += data[hdr_len + 2];
-> -	iv32 = data[hdr_len + 4] +
-> -		(data[hdr_len + 5] >> 8) +
-> -		(data[hdr_len + 6] >> 16) +
-> -		(data[hdr_len + 7] >> 24);
-> +	iv32 = get_unaligned_le32(data + hdr_len + 4);
->  
->  #ifdef CONFIG_TKIP_DEBUG
->  	printk(KERN_DEBUG "TKIP encrypt: iv16 = 0x%04x, iv32 = 0x%08x\n",
-> @@ -274,7 +258,7 @@ int ieee80211_tkip_decrypt_data(struct crypto_blkcipher *tfm,
->  
->  	iv16 = (pos[0] << 8) | pos[2];
->  	keyid = pos[3];
-> -	iv32 = pos[4] | (pos[5] << 8) | (pos[6] << 16) | (pos[7] << 24);
-> +	iv32 = get_unaligned_le32(pos + 4);
->  	pos += 8;
->  #ifdef CONFIG_TKIP_DEBUG
->  	{
-> -- 
-> 1.5.5.144.g3e42
-> 
+> Why are powerpc (and ppc) patches
+> - not being sent to the powerpc maintainer (me)
+> - not being cc'd to the linuxppc-dev@ozlabs.org list
+> - ending up going through the x86 tree?
 
+Hello,
+
+My apologies for that. The patches that are now in x86#testing were
+needed because of changes I introduced. Thomas Gleixner found a
+problem with the patches that caused compile problems for basically
+all archs with GENERIC_FIND_NEXT_BIT=y, and his fix was to change
+asm-generic/bitops/find.h. However, ppc and powerpc did things
+differently... (x86 too, but they have special permissions ;) )
+
+(Better late than never) Please consider applying the patch in
+        http://lkml.org/lkml/2008/4/16/107
+as:
+
+[PATCH] powerpc: use asm-generic/bitops/find.h in bitops.h
+
+Powerpc (and ppc) have some code in their bitops.h that is
+exacly the same as asm-generic/bitops/find.h. Include this
+header instead of the private implementation.
+
+> How come patches to unify x86_32 and x86_64 bitops need to end up
+> touching powerpc?
+
+This was not a pure unification. Originally I wanted to convert
+both x86_64 and i386 to the existing generic bitops. Andi Kleen,
+however, objected because x86_64 would than lose a certain
+optimization for small bitmaps. I moved this optimization to
+the generic code, and broke non-x86. Everyone except ppc/powerpc
+was fixed by Thomas Gleixner (in a generic header file).
+http://lkml.org/lkml/2008/4/16/107 just changes ppc/powerpc in
+such a way that Thomas' fix works there too.
+
+Greetings,
+    Alexander
+
+> Paul.
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-Jiri Benc
-SUSE Labs
+http://www.fastmail.fm - The professional email service
+
