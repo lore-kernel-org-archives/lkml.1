@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935953AbYDQKFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935985AbYDQKGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935953AbYDQKFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935039AbYDQJqS
+	id S935985AbYDQKGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934949AbYDQJqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:46:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:25735 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934919AbYDQJqQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:46:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZxFRx8z+nX6K0UIxkrFAplVDX1IJW4Myc7qmHgUEYkTlmwX+mA9pepm+sPqPVLpZKnuYo0tUNDCJCnqiOcZmm/s8IVT1NV0gE1GWyfkHxviOJGNCoGoE41o385GwWefwBSaLG5x0cAu8lW6K4yjbfrX7eGY1YDoh5Q0d7FkFXsY=
-Message-ID: <e2e108260804170246i673a2e08q333eeae48467ed4@mail.gmail.com>
-Date: Thu, 17 Apr 2008 11:46:14 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.25 section mismatches
-Cc: rufus-azrael@numericable.fr
+	Thu, 17 Apr 2008 05:46:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36559 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934726AbYDQJqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:46:21 -0400
+Date: Thu, 17 Apr 2008 11:46:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-ID: <20080417094606.GA19607@elte.hu>
+References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org> <20080417090626.GA14383@elte.hu> <20080417021813.04df7912.akpm@linux-foundation.org> <20080417093025.GA17389@elte.hu> <20080417023603.672d1032.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080417023603.672d1032.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apparently there is a significant number of section mismatches in the
-2.6.25 kernel. These were already reported against 2.6.25-rc1 and are
-still present in the final 2.6.25 release. These section mismatches
-show up at least on the i386 and x86_64 architectures. Maybe it's a
-good idea before a patch is merged not only to check whether the patch
-applies cleanly but also to check whether it doesn't create any new
-section mismatches ?
 
-See also http://bugzilla.kernel.org/show_bug.cgi?id=9974.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Bart.
+> > you mean kmemcheck? Yes, that's planned. We've been working 4 months 
+> > non-stop on kmemcheck to make it mergeable and usable, it's at 
+> > version 7 right now, and it caught a handful of real bugs already 
+> > (such as 63a7138671c - unfortunately not credited in the log to 
+> > kmemcheck). But because it touches SLUB (because it has to - and 
+> > they are acked by Pekka) i never had the chance to move it into the 
+> > for-akpm branch.
+> 
+> Does it really really really need to consume one of our few remaining 
+> page flags?  We'll be in a mess when we run out.
+
+well AFAICS the shortage really mostly affects 32-bit platforms. And 
+there we've got 19 bits used, out of 23 available, right?
+
+whether we track a page or not is rather fundamental to kmemcheck, i 
+dont see any easy way to get rid of that usage. (and since kmemcheck is 
+a transparent add-on, i dont see any obvious other candidate like 
+page->private either - all those fields might be utilized)
+
+if we run out of that in the future: the high bits get used by sparse 
+section and numa node ID bits, worst-case we could live with restricting 
+the max number of NUMA nodes on 32-bit from 64 to 32? [NUMA on 32-bit is 
+an afterthought anyway.] Or we could do a CONFIG_KMEMCHECK=y only 
+page->flags_debug.
+
+	Ingo
