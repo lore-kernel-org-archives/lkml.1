@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765709AbYDQM6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763881AbYDQND3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765709AbYDQM6x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 08:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbYDQM6l
+	id S1763881AbYDQND3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 09:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYDQNDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 08:58:41 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:37577 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757869AbYDQM6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 08:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
-        b=FDw83UA463av1bYgJjZvCNFmbH9/adSpfpD37cVPy5WzZMmarcNL9qWIBodqbKlky1dAQO42tr2K64eKjDgRYq9pmQyz1RnAPcWtrlyj3BxgEj5w0nLX1ceQ9XasQTuc+1jAO9xhySbAh7vZConF7bC0Ys8QwNSy9XsXrhVS+8k=
-Subject: Re: [PATCH] NET: catch signed nla_len() retval in tcf_simp_init()
-From: jamal <hadi@cyberus.ca>
-Reply-To: hadi@cyberus.ca
-To: Patrick McHardy <kaber@trash.net>
-Cc: David Miller <davem@davemloft.net>, 12o3l@tiscali.nl,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4806D847.2030806@trash.net>
-References: <4806C501.20300@tiscali.nl>
-	 <20080416.213712.78410382.davem@davemloft.net> <4806D847.2030806@trash.net>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 08:58:33 -0400
-Message-Id: <1208437113.4420.34.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 09:03:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59599 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754066AbYDQNDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 09:03:21 -0400
+Date: Thu, 17 Apr 2008 15:02:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: Possible mem leak in copy_process()
+Message-ID: <20080417130252.GB6640@elte.hu>
+References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080417115718.GC103@tv-sign.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0003]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-17-04 at 06:55 +0200, Patrick McHardy wrote:
 
-> The change is also unnecessary because the attribute was
-> already validated and the length can not be less than zero.
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-Since act_simple is an academic example:
-I think that a better solution is to add TCA_DEF_DATA (which is a
-string) to the nla_policy. nla_policy is defined but at the moment it is
-not used in the call to nla_parse_nested() - might as well use it.
+> > 1331 		if (likely(p->pid)) {
 
-Roel, would you like to take a crack at that? You will need to define
-the max size of the string that TCA_DEF_DATA can hold (if you want to do
-it cleanly then define it in include/linux/tc_act/tc_defact.h). This MAX
-size will appear in the nla_policy.
+> > 1351 		}
 
-cheers,
-jamal
+> > Event leaked_storage: Returned without freeing storage "pid" Also 
+> > see events: [alloc_fn][var_assign][pass_arg]
+> 
+> this looks like a false alarm.
+> 
+> p->pid == pid->numbers[0].nr. If "struct pid *pid" was allocated, its 
+> .nr can't be 0.
+> 
+> IOW, !p->pid means that pid == init_struct_pid, it wasn't allocated 
+> but was passed from the caller.
 
+should we perhaps codify this rule via adding something like this to the 
+else branch:
+
+   WARN_ON_ONCE(task_pid(p) != &init_struct_pid);
+
+?
+
+	Ingo
