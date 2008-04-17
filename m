@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934726AbYDQJj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934780AbYDQJjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934726AbYDQJj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763409AbYDQJZo
+	id S934780AbYDQJjt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933542AbYDQJZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:25:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46159 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:25:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46164 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933393AbYDQJZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:25:38 -0400
+	id S933523AbYDQJZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:25:40 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 12/48] [GFS2] Get rid of gl_waiters2
-Date: Thu, 17 Apr 2008 09:38:48 +0100
-Message-Id: <12084215931509-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 13/48] [GFS2] Move part of gfs2_block_map into a separate function
+Date: Thu, 17 Apr 2008 09:38:49 +0100
+Message-Id: <12084215961690-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12084215913125-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12084215931509-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -30,74 +29,117 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <120842158797-git-send-email-swhiteho@redhat.com>
  <12084215891940-git-send-email-swhiteho@redhat.com>
  <12084215913125-git-send-email-swhiteho@redhat.com>
+ <12084215931509-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch reduces memory by replacing the int variable
-gl_waiters2 by a single bit in the gl_flags.
+This is required to enable future changes to the block
+mapping code.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index befcda0..951cb91 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -595,11 +595,12 @@ static void run_queue(struct gfs2_glock *gl)
- 			blocked = rq_mutex(gh);
- 		} else if (test_bit(GLF_DEMOTE, &gl->gl_flags)) {
- 			blocked = rq_demote(gl);
--			if (gl->gl_waiters2 && !blocked) {
-+			if (test_bit(GLF_WAITERS2, &gl->gl_flags) &&
-+				     !blocked) {
- 				set_bit(GLF_DEMOTE, &gl->gl_flags);
- 				gl->gl_demote_state = LM_ST_UNLOCKED;
- 			}
--			gl->gl_waiters2 = 0;
-+			clear_bit(GLF_WAITERS2, &gl->gl_flags);
- 		} else if (!list_empty(&gl->gl_waiters3)) {
- 			gh = list_entry(gl->gl_waiters3.next,
- 					struct gfs2_holder, gh_list);
-@@ -710,7 +711,7 @@ static void handle_callback(struct gfs2_glock *gl, unsigned int state,
- 	} else if (gl->gl_demote_state != LM_ST_UNLOCKED &&
- 			gl->gl_demote_state != state) {
- 		if (test_bit(GLF_DEMOTE_IN_PROGRESS,  &gl->gl_flags)) 
--			gl->gl_waiters2 = 1;
-+			set_bit(GLF_WAITERS2, &gl->gl_flags);
- 		else 
- 			gl->gl_demote_state = LM_ST_UNLOCKED;
+diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
+index e84e384..08d1be4 100644
+--- a/fs/gfs2/bmap.c
++++ b/fs/gfs2/bmap.c
+@@ -384,6 +384,35 @@ static int lookup_block(struct gfs2_inode *ip, struct buffer_head *bh,
+ 	return 0;
+ }
+ 
++static int lookup_metapath(struct inode *inode, struct metapath *mp,
++			   int create, int *new, u64 *dblock,
++			   struct buffer_head **dibh, struct buffer_head **bh)
++{
++	struct gfs2_inode *ip = GFS2_I(inode);
++	unsigned int end_of_metadata = ip->i_height - 1;
++	unsigned int x;
++	int ret = gfs2_meta_inode_buffer(ip, bh);
++	if (ret)
++		return ret;
++
++	*dibh = *bh;
++	get_bh(*dibh);
++
++	for (x = 0; x < end_of_metadata; x++) {
++		lookup_block(ip, *bh, x, mp, create, new, dblock);
++		brelse(*bh);
++		*bh = NULL;
++		if (!dblock)
++			return 0;
++
++		ret = gfs2_meta_indirect_buffer(ip, x+1, *dblock, *new, bh);
++		if (ret)
++			return ret;
++	}
++
++	return lookup_block(ip, *bh, end_of_metadata, mp, create, new, dblock);
++}
++
+ static inline void bmap_lock(struct inode *inode, int create)
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+@@ -419,10 +448,8 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+ 	struct gfs2_sbd *sdp = GFS2_SB(inode);
+-	struct buffer_head *bh;
+ 	unsigned int bsize = sdp->sd_sb.sb_bsize;
+-	unsigned int end_of_metadata;
+-	unsigned int x;
++	struct buffer_head *bh = NULL;
+ 	int error = 0;
+ 	int new = 0;
+ 	u64 dblock = 0;
+@@ -459,25 +486,11 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
  	}
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 39bab7b..fe14f6a 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -1,6 +1,6 @@
- /*
-  * Copyright (C) Sistina Software, Inc.  1997-2003 All rights reserved.
-- * Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+ * Copyright (C) 2004-2008 Red Hat, Inc.  All rights reserved.
-  *
-  * This copyrighted material is made available to anyone wishing to use,
-  * modify, copy, or redistribute it subject to the terms and conditions
-@@ -167,6 +167,7 @@ enum {
- 	GLF_DIRTY		= 5,
- 	GLF_DEMOTE_IN_PROGRESS	= 6,
- 	GLF_LFLUSH		= 7,
-+	GLF_WAITERS2		= 8,
- };
  
- struct gfs2_glock {
-@@ -186,7 +187,6 @@ struct gfs2_glock {
- 	struct list_head gl_holders;
- 	struct list_head gl_waiters1;	/* HIF_MUTEX */
- 	struct list_head gl_waiters3;	/* HIF_PROMOTE */
--	int gl_waiters2;		/* GIF_DEMOTE */
+ 	find_metapath(ip, lblock, &mp);
+-	end_of_metadata = ip->i_height - 1;
+-	error = gfs2_meta_inode_buffer(ip, &bh);
+-	if (error)
++	error = lookup_metapath(inode, &mp, create, &new, &dblock, &dibh, &bh);
++	if (error < 0)
+ 		goto out_fail;
+-	dibh = bh;
+-	get_bh(dibh);
+-
+-	for (x = 0; x < end_of_metadata; x++) {
+-		lookup_block(ip, bh, x, &mp, create, &new, &dblock);
+-		brelse(bh);
+-		if (!dblock)
+-			goto out_ok;
++	boundary = error;
  
- 	const struct gfs2_glock_operations *gl_ops;
+-		error = gfs2_meta_indirect_buffer(ip, x+1, dblock, new, &bh);
+-		if (error)
+-			goto out_fail;
+-	}
+-
+-	boundary = lookup_block(ip, bh, end_of_metadata, &mp, create, &new, &dblock);
+ 	if (dblock) {
+ 		map_bh(bh_map, inode->i_sb, dblock);
+ 		if (boundary)
+@@ -489,6 +502,7 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 			goto out_brelse;
+ 		}
+ 		while(--maxlen && !buffer_boundary(bh_map)) {
++			unsigned int end_of_metadata = ip->i_height - 1;
+ 			u64 eblock;
  
+ 			mp.mp_list[end_of_metadata]++;
+@@ -501,7 +515,8 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 		}
+ 	}
+ out_brelse:
+-	brelse(bh);
++	if (bh)
++		brelse(bh);
+ out_ok:
+ 	error = 0;
+ out_fail:
 -- 
 1.5.1.2
 
