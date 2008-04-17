@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYDQBIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYDQBJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbYDQBIv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbYDQBGv
+	id S1758692AbYDQBJP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757515AbYDQBGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:06:51 -0400
-Received: from sous-sol.org ([216.99.217.87]:58748 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:06:53 -0400
+Received: from sous-sol.org ([216.99.217.87]:58768 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbYDQBGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:06:46 -0400
-Message-Id: <20080417010402.200417728@sous-sol.org>
+	id S1756420AbYDQBGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:06:52 -0400
+Message-Id: <20080417010315.860547821@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:22 -0700
+Date: Wed, 16 Apr 2008 18:01:30 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,12 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Parisc List <linux-parisc@vger.kernel.org>,
-       Kyle McMartin <kyle@shortfin.cabal.ca>,
-       Kyle McMartin <kyle@parisc-linux.org>
-Subject: PARISC pdc_console: fix bizarre panic on boot
-Content-Disposition: inline; filename=parisc-pdc_console-fix-bizarre-panic-on-boot.patch
+       Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: USB: new quirk flag to avoid Set-Interface
+Content-Disposition: inline; filename=usb-new-quirk-flag-to-avoid-set-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,155 +34,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Kyle McMartin <kyle@shortfin.cabal.ca>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-upstream commit ef1afd4d79f0479960ff36bb5fe6ec6eba1ebff2
+upstream commit: 392e1d9817d0024c96aae237c3c4349e47c976fd
 
-commit 721fdf34167580ff98263c74cead8871d76936e6
-Author: Kyle McMartin <kyle@shortfin.cabal.ca>
-Date:   Thu Dec 6 09:32:15 2007 -0800
+This patch (as1057) fixes a problem with the X-Rite/Gretag-Macbeth
+Eye-One Pro display colorimeter; the device crashes when it receives a
+Set-Interface request.  A new quirk (USB_QUIRK_NO_SET_INTF) is
+introduced and a quirks entry is created for this device.
 
-    [PARISC] print more than one character at a time for pdc console
-
-introduced a subtle bug by accidentally removing the "static" from
-iodc_dbuf. This resulted in, what appeared to be, a trap without
-*current set to a task. Probably the result of a trap in real mode
-while calling firmware.
-
-Also do other misc clean ups. Since the only input from firmware is non
-blocking, share iodc_dbuf between input and output, and spinlock the
-only callers.
-
-[jejb: fixed up rejections against the stable tree]
-
-Signed-off-by: Kyle McMartin <kyle@parisc-linux.org>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[chrisw@sous-sol.org: backport to 2.6.24.4]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/parisc/kernel/firmware.c |   27 +++++++++++++++++----------
- arch/parisc/kernel/pdc_cons.c |   19 +++++++++++++++++--
- include/asm-parisc/pdc.h      |    3 +--
- 3 files changed, 35 insertions(+), 14 deletions(-)
+ drivers/usb/core/message.c |    5 ++++-
+ drivers/usb/core/quirks.c  |    3 +++
+ include/linux/usb/quirks.h |    3 +++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
---- a/arch/parisc/kernel/firmware.c
-+++ b/arch/parisc/kernel/firmware.c
-@@ -1080,6 +1080,9 @@ void pdc_io_reset_devices(void)
- 	spin_unlock_irqrestore(&pdc_lock, flags);
- }
- 
-+/* locked by pdc_console_lock */
-+static int __attribute__((aligned(8)))   iodc_retbuf[32];
-+static char __attribute__((aligned(64))) iodc_dbuf[4096];
- 
- /**
-  * pdc_iodc_print - Console print using IODC.
-@@ -1091,24 +1094,20 @@ void pdc_io_reset_devices(void)
-  * Since the HP console requires CR+LF to perform a 'newline', we translate
-  * "\n" to "\r\n".
-  */
--int pdc_iodc_print(unsigned char *str, unsigned count)
-+int pdc_iodc_print(const unsigned char *str, unsigned count)
- {
--	/* XXX Should we spinlock posx usage */
- 	static int posx;        /* for simple TAB-Simulation... */
--	int __attribute__((aligned(8)))   iodc_retbuf[32];
--	char __attribute__((aligned(64))) iodc_dbuf[4096];
- 	unsigned int i;
- 	unsigned long flags;
- 
--	memset(iodc_dbuf, 0, 4096);
--	for (i = 0; i < count && i < 2048;) {
-+	for (i = 0; i < count && i < 79;) {
- 		switch(str[i]) {
- 		case '\n':
- 			iodc_dbuf[i+0] = '\r';
- 			iodc_dbuf[i+1] = '\n';
- 			i += 2;
- 			posx = 0;
--			break;
-+			goto print;
- 		case '\t':
- 			while (posx & 7) {
- 				iodc_dbuf[i] = ' ';
-@@ -1124,6 +1123,16 @@ int pdc_iodc_print(unsigned char *str, u
- 		}
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -1189,7 +1189,10 @@ int usb_set_interface(struct usb_device 
+ 		return -EINVAL;
  	}
  
-+	/* if we're at the end of line, and not already inserting a newline,
-+	 * insert one anyway. iodc console doesn't claim to support >79 char
-+	 * lines. don't account for this in the return value.
-+	 */
-+	if (i == 79 && iodc_dbuf[i-1] != '\n') {
-+		iodc_dbuf[i+0] = '\r';
-+		iodc_dbuf[i+1] = '\n';
-+	}
+-	ret = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
++	if (dev->quirks & USB_QUIRK_NO_SET_INTF)
++		ret = -EPIPE;
++	else
++		ret = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
+ 				   USB_REQ_SET_INTERFACE, USB_RECIP_INTERFACE,
+ 				   alternate, interface, NULL, 0, 5000);
+ 
+--- a/drivers/usb/core/quirks.c
++++ b/drivers/usb/core/quirks.c
+@@ -39,6 +39,9 @@ static const struct usb_device_id usb_qu
+ 	/* M-Systems Flash Disk Pioneers */
+ 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
+ 
++	/* X-Rite/Gretag-Macbeth Eye-One Pro display colorimeter */
++	{ USB_DEVICE(0x0971, 0x2000), .driver_info = USB_QUIRK_NO_SET_INTF },
 +
-+print:
-         spin_lock_irqsave(&pdc_lock, flags);
-         real32_call(PAGE0->mem_cons.iodc_io,
-                     (unsigned long)PAGE0->mem_cons.hpa, ENTRY_IO_COUT,
-@@ -1142,11 +1151,9 @@ int pdc_iodc_print(unsigned char *str, u
-  */
- int pdc_iodc_getc(void)
- {
--	unsigned long flags;
--        static int __attribute__((aligned(8)))   iodc_retbuf[32];
--        static char __attribute__((aligned(64))) iodc_dbuf[4096];
- 	int ch;
- 	int status;
-+	unsigned long flags;
+ 	/* Philips PSC805 audio device */
+ 	{ USB_DEVICE(0x0471, 0x0155), .driver_info = USB_QUIRK_RESET_RESUME },
  
- 	/* Bail if no console input device. */
- 	if (!PAGE0->mem_kbd.iodc_io)
---- a/arch/parisc/kernel/pdc_cons.c
-+++ b/arch/parisc/kernel/pdc_cons.c
-@@ -52,10 +52,18 @@
- #include <linux/tty.h>
- #include <asm/pdc.h>		/* for iodc_call() proto and friends */
+--- a/include/linux/usb/quirks.h
++++ b/include/linux/usb/quirks.h
+@@ -9,3 +9,6 @@
  
-+static spinlock_t pdc_console_lock = SPIN_LOCK_UNLOCKED;
- 
- static void pdc_console_write(struct console *co, const char *s, unsigned count)
- {
--	pdc_iodc_print(s, count);
-+	int i = 0;
-+	unsigned long flags;
+ /* device can't resume correctly so reset it instead */
+ #define USB_QUIRK_RESET_RESUME		0x00000002
 +
-+	spin_lock_irqsave(&pdc_console_lock, flags);
-+	do {
-+		i += pdc_iodc_print(s + i, count - i);
-+	} while (i < count);
-+	spin_unlock_irqrestore(&pdc_console_lock, flags);
- }
- 
- void pdc_printf(const char *fmt, ...)
-@@ -73,7 +81,14 @@ void pdc_printf(const char *fmt, ...)
- 
- int pdc_console_poll_key(struct console *co)
- {
--	return pdc_iodc_getc();
-+	int c;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pdc_console_lock, flags);
-+	c = pdc_iodc_getc();
-+	spin_unlock_irqrestore(&pdc_console_lock, flags);
-+
-+	return c;
- }
- 
- static int pdc_console_setup(struct console *co, char *options)
---- a/include/asm-parisc/pdc.h
-+++ b/include/asm-parisc/pdc.h
-@@ -645,8 +645,7 @@ int pdc_soft_power_button(int sw_control
- void pdc_io_reset(void);
- void pdc_io_reset_devices(void);
- int pdc_iodc_getc(void);
--int pdc_iodc_print(unsigned char *str, unsigned count);
--void pdc_printf(const char *fmt, ...);
-+int pdc_iodc_print(const unsigned char *str, unsigned count);
- 
- void pdc_emergency_unlock(void);
- int pdc_sti_call(unsigned long func, unsigned long flags,
++/* device can't handle Set-Interface requests */
++#define USB_QUIRK_NO_SET_INTF		0x00000004
 
 -- 
