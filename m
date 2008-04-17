@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbYDQBMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764578AbYDQBLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763309AbYDQBMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbYDQBHW
+	id S1764578AbYDQBLv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYDQBHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:22 -0400
-Received: from sous-sol.org ([216.99.217.87]:58829 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:15 -0400
+Received: from sous-sol.org ([216.99.217.87]:58811 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755130AbYDQBHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:20 -0400
-Message-Id: <20080417010323.239220997@sous-sol.org>
+	id S1758242AbYDQBHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:10 -0400
+Message-Id: <20080417010313.378925738@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:34 -0700
+Date: Wed, 16 Apr 2008 18:01:29 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, mel@csn.ul.ie, olaf@aepfle.de,
-       dan.yeisley@unisys.com, clameter@sgi.com
-Subject: slab: fix cache_cache bootstrap in kmem_cache_init()
-Content-Disposition: inline; filename=slab-fix-cache_cache-bootstrap-in-kmem_cache_init.patch
+       Constantin Baranov <const@tltsu.ru>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Daniel Drake <dsd@gentoo.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: USB: add support for Motorola ROKR Z6 cellphone in mass storage mode
+Content-Disposition: inline; filename=usb-add-support-for-motorola-rokr-z6-cellphone-in-mass-storage-mode.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,44 +35,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Daniel Yeisley <dan.yeisley@unisys.com>
+From: Constantin Baranov <const@tltsu.ru>
 
-upstream commit: ec1f5eeeb5a79a0d48036de649a3498da42db565
+upstream commit: cc36bdd47ae51b66780b317c1fa519221f894405
 
-Commit 556a169dab38b5100df6f4a45b655dddd3db94c1 ("slab: fix bootstrap on
-memoryless node") introduced bootstrap-time cache_cache list3s for all nodes
-but forgot that initkmem_list3 needs to be accessed by [somevalue + node]. This
-patch fixes list_add() corruption in mm/slab.c seen on the ES7000.
- 
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Olaf Hering <olaf@aepfle.de>
-Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Motorola ROKR Z6 cellphone has bugs in its USB, so it is impossible to use
+it as mass storage. Patch describes new "unusual" USB device for it with
+FIX_INQUIRY and FIX_CAPACITY flags and new BULK_IGNORE_TAG flag.
+Last flag relaxes check for equality of bcs->Tag and us->tag in
+usb_stor_Bulk_transport routine.
+
+Signed-off-by: Constantin Baranov <const@tltsu.ru>
+Signed-off-by: Matthew Dharm <mdharm-usb@one-eyed-alien.net>
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- mm/slab.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/storage/transport.c    |    3 ++-
+ drivers/usb/storage/unusual_devs.h |   11 +++++++++++
+ include/linux/usb_usual.h          |    4 +++-
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1484,7 +1484,7 @@ void __init kmem_cache_init(void)
- 	list_add(&cache_cache.next, &cache_chain);
- 	cache_cache.colour_off = cache_line_size();
- 	cache_cache.array[smp_processor_id()] = &initarray_cache.cache;
--	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
-+	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE + node];
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -1010,7 +1010,8 @@ int usb_stor_Bulk_transport(struct scsi_
+ 	US_DEBUGP("Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
+ 			le32_to_cpu(bcs->Signature), bcs->Tag, 
+ 			residue, bcs->Status);
+-	if (bcs->Tag != us->tag || bcs->Status > US_BULK_STAT_PHASE) {
++	if (!(bcs->Tag == us->tag || (us->flags & US_FL_BULK_IGNORE_TAG)) ||
++		bcs->Status > US_BULK_STAT_PHASE) {
+ 		US_DEBUGP("Bulk logical error\n");
+ 		return USB_STOR_TRANSPORT_ERROR;
+ 	}
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1557,6 +1557,17 @@ UNUSUAL_DEV(  0x22b8, 0x4810, 0x0001, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
  
- 	/*
- 	 * struct kmem_cache size depends on nr_node_ids, which
-@@ -1605,7 +1605,7 @@ void __init kmem_cache_init(void)
- 		int nid;
++/*
++ * Patch by Constantin Baranov <const@tltsu.ru>
++ * Report by Andreas Koenecke.
++ * Motorola ROKR Z6.
++ */
++UNUSUAL_DEV(  0x22b8, 0x6426, 0x0101, 0x0101,
++		"Motorola",
++		"MSnc.",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_INQUIRY | US_FL_FIX_CAPACITY | US_FL_BULK_IGNORE_TAG),
++
+ /* Reported by Radovan Garabik <garabik@kassiopeia.juls.savba.sk> */
+ UNUSUAL_DEV(  0x2735, 0x100b, 0x0000, 0x9999,
+ 		"MPIO",
+--- a/include/linux/usb_usual.h
++++ b/include/linux/usb_usual.h
+@@ -50,7 +50,9 @@
+ 	US_FLAG(CAPACITY_HEURISTICS,	0x00001000)		\
+ 		/* sometimes sizes is too big */		\
+ 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
+-		/* Sets max_sectors to arch min */
++		/* Sets max_sectors to arch min */		\
++	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
++		/* Ignore tag mismatch in bulk operations */
  
- 		for_each_online_node(nid) {
--			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], nid);
-+			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE + nid], nid);
  
- 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
- 				  &initkmem_list3[SIZE_AC + nid], nid);
+ #define US_FLAG(name, value)	US_FL_##name = value ,
 
 -- 
