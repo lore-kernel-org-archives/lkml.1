@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934367AbYDQJu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbYDQJve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934367AbYDQJu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933748AbYDQJ0i
+	id S934103AbYDQJve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933752AbYDQJ0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:26:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46228 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:26:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46235 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933675AbYDQJ03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:26:29 -0400
+	id S933712AbYDQJ0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:26:33 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Christoph Hellwig <hch@lst.de>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 36/48] [GFS2] fix file_system_type leak on gfs2meta mount
-Date: Thu, 17 Apr 2008 09:39:12 +0100
-Message-Id: <12084216431261-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 39/48] [GFS2] Need to ensure that sector_t is 64bits for GFS2
+Date: Thu, 17 Apr 2008 09:39:15 +0100
+Message-Id: <12084216494161-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12084216402644-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1208421647805-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -53,43 +53,32 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084216372363-git-send-email-swhiteho@redhat.com>
  <12084216391215-git-send-email-swhiteho@redhat.com>
  <12084216402644-git-send-email-swhiteho@redhat.com>
+ <12084216431261-git-send-email-swhiteho@redhat.com>
+ <1208421645785-git-send-email-swhiteho@redhat.com>
+ <1208421647805-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@lst.de>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-get_gfs2_sb does a get_fs_type without doing a put_filesystem and
-thus leaking a file_system_type reference everytime it's called.
+We need to ensure that sector_t is 64bits for GFS2, so that we need to
+depend on LBD as well as LSF.
 
-Just use gfs2_fs_type directly instead of doing the lookup and thus
-fix the problem.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index c4b7a21..63d5fd2 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -943,7 +943,6 @@ static struct super_block* get_gfs2_sb(const char *dev_name)
- {
- 	struct kstat stat;
- 	struct nameidata nd;
--	struct file_system_type *fstype;
- 	struct super_block *sb = NULL, *s;
- 	int error;
- 
-@@ -955,8 +954,7 @@ static struct super_block* get_gfs2_sb(const char *dev_name)
- 	}
- 	error = vfs_getattr(nd.path.mnt, nd.path.dentry, &stat);
- 
--	fstype = get_fs_type("gfs2");
--	list_for_each_entry(s, &fstype->fs_supers, s_instances) {
-+	list_for_each_entry(s, &gfs2_fs_type.fs_supers, s_instances) {
- 		if ((S_ISBLK(stat.mode) && s->s_dev == stat.rdev) ||
- 		    (S_ISDIR(stat.mode) &&
- 		     s == nd.path.dentry->d_inode->i_sb)) {
+diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
+index d147b53..7f7947e 100644
+--- a/fs/gfs2/Kconfig
++++ b/fs/gfs2/Kconfig
+@@ -1,6 +1,6 @@
+ config GFS2_FS
+ 	tristate "GFS2 file system support"
+-	depends on EXPERIMENTAL && (64BIT || LSF)
++	depends on EXPERIMENTAL && (64BIT || (LSF && LBD))
+ 	select FS_POSIX_ACL
+ 	select CRC32
+ 	help
 -- 
 1.5.1.2
 
