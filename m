@@ -1,92 +1,406 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYDQAlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbYDQAoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbYDQAlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 20:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYDQAkv
+	id S1756438AbYDQAoo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 20:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYDQAof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 20:40:51 -0400
-Received: from main.gmane.org ([80.91.229.2]:56316 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbYDQAku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 20:40:50 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Marcus Furlong <furlongm@hotmail.com>
-Subject: [BUG] 2.6.25-rc9 Oops (keyboard/mouse related)
-Date: Thu, 17 Apr 2008 01:40:35 +0100
-Message-ID: <fu66a8$flv$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 84-203-37-37.mysmart.ie
-User-Agent: KNode/0.10.9
+	Wed, 16 Apr 2008 20:44:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:65381 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbYDQAoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 20:44:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=WSCcGMwwO287oYs8Wa0OwQcaAzUJIS7u4/J9KJqY3wkcnWmeFvFCOoBrN8Tay5h4tCkkQUPfEsJBlTvB1Qy1gigDN3sIiGzQow6ZD9iq6kJX1douzbgv3KDKeGRoOkWu1c6+CNoZYkQXbDiQ5Cy+/niTpM1MySnAIs3YtwASxRw=
+Reply-To: yhlu.kernel@gmail.com
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] x86_64: clean up aperture_64.c
+Date: Wed, 16 Apr 2008 17:44:13 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804161744.13340.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I got the following oops on 2.6.25-rc9. The mouse/keyboard are
-consistently "jerky" and unresponsive, and between 1 and 15 minutes after
-booting the machine hangs.
+1. use symbolic register names where appropriate.
+2. num to bus or slot changing
+3. handle for new opteron for bus other than 0
 
-Possibly the same on 2.6.24.*, I only tried it once and it hung and I had no
-more time for testing until now. No problem on 2.6.23.17.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-[  854.789883] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-[  854.792850] Modules linked in: i915 drm iwl3945 mac80211 cfg80211
-intel_agp agpgart scsi_wait_scan
-[  854.792850] 
-[  854.792850] Pid: 9, comm: events/0 Not tainted (2.6.25-rc9 #2)
-[  854.792850] EIP: 0060:[<c039e62f>] EFLAGS: 00010093 CPU: 0
-[  854.792850] EIP is at alps_process_byte+0x1f/0x80
-[  854.792850] EAX: 00000000 EBX: f73e2280 ECX: f68de400 EDX: 00000000
-[  854.792850] ESI: f68de400 EDI: f722a400 EBP: c0652f2c ESP: c0652f28
-[  854.792850]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[  854.792850] Process events/0 (pid: 9, ti=c0652000 task=f787e000
-task.ti=f7854000)
-[  854.792850] Stack: f68de400 c0652f48 c039baef 00000000 00000002 00000001
-c0391d71 00000000 
-[  854.792850]        c0652f70 c039c378 00000000 c0652f70 c047a00a 00000000
-00000002 f722a400 
-[  854.792850]        c05c8560 00000000 c0652f90 c0391d89 00000092 f722a44c
-00000096 00000000 
-[  854.792850] Call Trace:
-[  854.792850]  [<c039baef>] ? psmouse_handle_byte+0xf/0x110
-[  854.792850]  [<c0391d71>] ? serio_interrupt+0x21/0x80
-[  854.792850]  [<c039c378>] ? psmouse_interrupt+0xc8/0x2a0
-[  854.792850]  [<c047a00a>] ? _spin_lock_irqsave+0x4a/0x60
-[  854.792850]  [<c0391d89>] ? serio_interrupt+0x39/0x80
-[  854.792850]  [<c0392a69>] ? i8042_interrupt+0x109/0x250
-[  854.792850]  [<c0157c78>] ? handle_IRQ_event+0x28/0x60
-[  854.792850]  [<c01590d3>] ? handle_edge_irq+0xb3/0x140
-[  854.792850]  [<c0159020>] ? handle_edge_irq+0x0/0x140
-[  854.792850]  [<c010738b>] ? do_IRQ+0x8b/0xf0
-[  854.792850]  [<c0104c12>] ? common_interrupt+0x2e/0x34
-[  854.792850]  [<c01400d8>] ? posix_cpu_timer_set+0x368/0x430
-[  854.792850]  [<c047a3a7>] ? _spin_unlock_irqrestore+0x57/0x70
-[  854.792850]  [<c01340b7>] ? __mod_timer+0xa7/0xc0
-[  854.792850]  [<c013b2d4>] ? queue_delayed_work_on+0x84/0xc0
-[  854.792850]  [<c013b4e1>] ? queue_delayed_work+0x51/0x60
-[  854.792850]  [<c013b51a>] ? schedule_delayed_work+0x2a/0x40
-[  854.792850]  [<c0168089>] ? vmstat_update+0x39/0x50
-[  854.792850]  [<c013aa6c>] ? run_workqueue+0x12c/0x1e0
-[  854.792850]  [<c013aa14>] ? run_workqueue+0xd4/0x1e0
-[  854.792850]  [<c047a389>] ? _spin_unlock_irqrestore+0x39/0x70
-[  854.792850]  [<c0168050>] ? vmstat_update+0x0/0x50
-[  854.792850]  [<c013b5c9>] ? worker_thread+0x99/0xf0
-[  854.792850]  [<c013e250>] ? autoremove_wake_function+0x0/0x50
-[  854.792850]  [<c013b530>] ? worker_thread+0x0/0xf0
-[  854.792850]  [<c013df62>] ? kthread+0x42/0x70
-[  854.792850]  [<c013df20>] ? kthread+0x0/0x70
-[  854.792850]  [<c0104e97>] ? kernel_thread_helper+0x7/0x10
-[  854.792850]  =======================
-[  854.792850] Code: b6 00 00 00 00 8d bc 27 00 00 00 00 55 89 c1 89 e5 53
-0f b6 90 a0 00 00 00 8b 18 0f b6 c2 25 c8 00 00 00 83 f8 08 74 37 8b 43 24
-<22> 50 04 3a 50 03 74 09 5b 31 c0 5d c3 8d 74 26 00 0f b6 91 a9 
-[  854.792850] EIP: [<c039e62f>] alps_process_byte+0x1f/0x80 SS:ESP
-0068:c0652f28
-
-Marcus.
-
+Index: linux-2.6/arch/x86/kernel/aperture_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/aperture_64.c
++++ linux-2.6/arch/x86/kernel/aperture_64.c
+@@ -35,6 +35,18 @@ int fallback_aper_force __initdata;
+ 
+ int fix_aperture __initdata = 1;
+ 
++struct bus_dev_range {
++	int bus;
++	int dev_base;
++	int dev_limit;
++};
++
++static struct bus_dev_range bus_dev_ranges[] __initdata = {
++	{ 0x00, 0x18, 0x20},
++	{ 0xff, 0x00, 0x20},
++	{ 0xfe, 0x00, 0x20}
++};
++
+ static struct resource gart_resource = {
+ 	.name	= "GART",
+ 	.flags	= IORESOURCE_MEM,
+@@ -120,33 +132,33 @@ static int __init aperture_valid(u64 ape
+ }
+ 
+ /* Find a PCI capability */
+-static __u32 __init find_cap(int num, int slot, int func, int cap)
++static __u32 __init find_cap(int bus, int slot, int func, int cap)
+ {
+ 	int bytes;
+ 	u8 pos;
+ 
+-	if (!(read_pci_config_16(num, slot, func, PCI_STATUS) &
++	if (!(read_pci_config_16(bus, slot, func, PCI_STATUS) &
+ 						PCI_STATUS_CAP_LIST))
+ 		return 0;
+ 
+-	pos = read_pci_config_byte(num, slot, func, PCI_CAPABILITY_LIST);
++	pos = read_pci_config_byte(bus, slot, func, PCI_CAPABILITY_LIST);
+ 	for (bytes = 0; bytes < 48 && pos >= 0x40; bytes++) {
+ 		u8 id;
+ 
+ 		pos &= ~3;
+-		id = read_pci_config_byte(num, slot, func, pos+PCI_CAP_LIST_ID);
++		id = read_pci_config_byte(bus, slot, func, pos+PCI_CAP_LIST_ID);
+ 		if (id == 0xff)
+ 			break;
+ 		if (id == cap)
+ 			return pos;
+-		pos = read_pci_config_byte(num, slot, func,
++		pos = read_pci_config_byte(bus, slot, func,
+ 						pos+PCI_CAP_LIST_NEXT);
+ 	}
+ 	return 0;
+ }
+ 
+ /* Read a standard AGPv3 bridge header */
+-static __u32 __init read_agp(int num, int slot, int func, int cap, u32 *order)
++static __u32 __init read_agp(int bus, int slot, int func, int cap, u32 *order)
+ {
+ 	u32 apsize;
+ 	u32 apsizereg;
+@@ -155,8 +167,8 @@ static __u32 __init read_agp(int num, in
+ 	u64 aper;
+ 	u32 old_order;
+ 
+-	printk(KERN_INFO "AGP bridge at %02x:%02x:%02x\n", num, slot, func);
+-	apsizereg = read_pci_config_16(num, slot, func, cap + 0x14);
++	printk(KERN_INFO "AGP bridge at %02x:%02x:%02x\n", bus, slot, func);
++	apsizereg = read_pci_config_16(bus, slot, func, cap + 0x14);
+ 	if (apsizereg == 0xffffffff) {
+ 		printk(KERN_ERR "APSIZE in AGP bridge unreadable\n");
+ 		return 0;
+@@ -174,8 +186,8 @@ static __u32 __init read_agp(int num, in
+ 	if ((int)*order < 0) /* < 32MB */
+ 		*order = 0;
+ 
+-	aper_low = read_pci_config(num, slot, func, 0x10);
+-	aper_hi = read_pci_config(num, slot, func, 0x14);
++	aper_low = read_pci_config(bus, slot, func, 0x10);
++	aper_hi = read_pci_config(bus, slot, func, 0x14);
+ 	aper = (aper_low & ~((1<<22)-1)) | ((u64)aper_hi << 32);
+ 
+ 	/*
+@@ -213,15 +225,15 @@ static __u32 __init read_agp(int num, in
+  */
+ static __u32 __init search_agp_bridge(u32 *order, int *valid_agp)
+ {
+-	int num, slot, func;
++	int bus, slot, func;
+ 
+ 	/* Poor man's PCI discovery */
+-	for (num = 0; num < 256; num++) {
++	for (bus = 0; bus < 256; bus++) {
+ 		for (slot = 0; slot < 32; slot++) {
+ 			for (func = 0; func < 8; func++) {
+ 				u32 class, cap;
+ 				u8 type;
+-				class = read_pci_config(num, slot, func,
++				class = read_pci_config(bus, slot, func,
+ 							PCI_CLASS_REVISION);
+ 				if (class == 0xffffffff)
+ 					break;
+@@ -230,17 +242,17 @@ static __u32 __init search_agp_bridge(u3
+ 				case PCI_CLASS_BRIDGE_HOST:
+ 				case PCI_CLASS_BRIDGE_OTHER: /* needed? */
+ 					/* AGP bridge? */
+-					cap = find_cap(num, slot, func,
++					cap = find_cap(bus, slot, func,
+ 							PCI_CAP_ID_AGP);
+ 					if (!cap)
+ 						break;
+ 					*valid_agp = 1;
+-					return read_agp(num, slot, func, cap,
++					return read_agp(bus, slot, func, cap,
+ 							order);
+ 				}
+ 
+ 				/* No multi-function device? */
+-				type = read_pci_config_byte(num, slot, func,
++				type = read_pci_config_byte(bus, slot, func,
+ 							       PCI_HEADER_TYPE);
+ 				if (!(type & 0x80))
+ 					break;
+@@ -280,38 +292,49 @@ void __init early_gart_iommu_check(void)
+ 	 * or BIOS forget to put that in reserved.
+ 	 * try to update e820 to make that region as reserved.
+ 	 */
+-	int fix, num;
++	int fix, slot;
+ 	u32 ctl;
+ 	u32 aper_size = 0, aper_order = 0, last_aper_order = 0;
+ 	u64 aper_base = 0, last_aper_base = 0;
+ 	int aper_enabled = 0, last_aper_enabled = 0;
++	int i;
+ 
+ 	if (!early_pci_allowed())
+ 		return;
+ 
+ 	fix = 0;
+-	for (num = 24; num < 32; num++) {
+-		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+-			continue;
+-
+-		ctl = read_pci_config(0, num, 3, 0x90);
+-		aper_enabled = ctl & 1;
+-		aper_order = (ctl >> 1) & 7;
+-		aper_size = (32 * 1024 * 1024) << aper_order;
+-		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
+-		aper_base <<= 25;
+-
+-		if ((last_aper_order && aper_order != last_aper_order) ||
+-		    (last_aper_base && aper_base != last_aper_base) ||
+-		    (last_aper_enabled && aper_enabled != last_aper_enabled)) {
+-			fix = 1;
+-			break;
++	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
++		int bus;
++		int dev_base, dev_limit;
++
++		bus = bus_dev_ranges[i].bus;
++		dev_base = bus_dev_ranges[i].dev_base;
++		dev_limit = bus_dev_ranges[i].dev_limit;
++
++		for (slot = dev_base; slot < dev_limit; slot++) {
++			if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
++				continue;
++
++			ctl = read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL);
++			aper_enabled = ctl & AMD64_GARTEN;
++			aper_order = (ctl >> 1) & 7;
++			aper_size = (32 * 1024 * 1024) << aper_order;
++			aper_base = read_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
++			aper_base <<= 25;
++
++			if ((last_aper_order && aper_order != last_aper_order) ||
++			    (last_aper_base && aper_base != last_aper_base) ||
++			    (last_aper_enabled && aper_enabled != last_aper_enabled)) {
++				fix = 1;
++				goto out;
++			}
++			last_aper_order = aper_order;
++			last_aper_base = aper_base;
++			last_aper_enabled = aper_enabled;
+ 		}
+-		last_aper_order = aper_order;
+-		last_aper_base = aper_base;
+-		last_aper_enabled = aper_enabled;
+ 	}
+ 
++out:
+ 	if (!fix && !aper_enabled)
+ 		return;
+ 
+@@ -330,13 +353,22 @@ void __init early_gart_iommu_check(void)
+ 	}
+ 
+ 	/* different nodes have different setting, disable them all at first*/
+-	for (num = 24; num < 32; num++) {
+-		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+-			continue;
+-
+-		ctl = read_pci_config(0, num, 3, 0x90);
+-		ctl &= ~1;
+-		write_pci_config(0, num, 3, 0x90, ctl);
++	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
++		int bus;
++		int dev_base, dev_limit;
++
++		bus = bus_dev_ranges[i].bus;
++		dev_base = bus_dev_ranges[i].dev_base;
++		dev_limit = bus_dev_ranges[i].dev_limit;
++
++		for (slot = dev_base; slot < dev_limit; slot++) {
++			if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
++				continue;
++
++			ctl = read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL);
++			ctl &= ~AMD64_GARTEN;
++			write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, ctl);
++		}
+ 	}
+ 
+ }
+@@ -348,8 +380,8 @@ void __init gart_iommu_hole_init(void)
+ 	u32 agp_aper_base = 0, agp_aper_order = 0;
+ 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
+ 	u64 aper_base, last_aper_base = 0;
+-	int fix, num, valid_agp = 0;
+-	int node;
++	int fix, slot, valid_agp = 0;
++	int i, node;
+ 
+ 	if (gart_iommu_aperture_disabled || !fix_aperture ||
+ 	    !early_pci_allowed())
+@@ -362,48 +394,58 @@ void __init gart_iommu_hole_init(void)
+ 
+ 	fix = 0;
+ 	node = 0;
+-	for (num = 24; num < 32; num++) {
+-		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+-			continue;
+-
+-		iommu_detected = 1;
+-		gart_iommu_aperture = 1;
+-
+-		aper_order = (read_pci_config(0, num, 3, 0x90) >> 1) & 7;
+-		aper_size = (32 * 1024 * 1024) << aper_order;
+-		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
+-		aper_base <<= 25;
+-
+-		printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
+-				node, aper_base, aper_size >> 20);
+-		node++;
+-
+-		if (!aperture_valid(aper_base, aper_size, 64<<20)) {
+-			if (valid_agp && agp_aper_base &&
+-			    agp_aper_base == aper_base &&
+-			    agp_aper_order == aper_order) {
+-				/* the same between two setting from NB and agp */
+-				if (!no_iommu && end_pfn > MAX_DMA32_PFN && !printed_gart_size_msg) {
+-					printk(KERN_ERR "you are using iommu with agp, but GART size is less than 64M\n");
+-					printk(KERN_ERR "please increase GART size in your BIOS setup\n");
+-					printk(KERN_ERR "if BIOS doesn't have that option, contact your HW vendor!\n");
+-					printed_gart_size_msg = 1;
++	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
++		int bus;
++		int dev_base, dev_limit;
++
++		bus = bus_dev_ranges[i].bus;
++		dev_base = bus_dev_ranges[i].dev_base;
++		dev_limit = bus_dev_ranges[i].dev_limit;
++
++		for (slot = dev_base; slot < dev_limit; slot++) {
++			if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
++				continue;
++
++			iommu_detected = 1;
++			gart_iommu_aperture = 1;
++
++			aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
++			aper_size = (32 * 1024 * 1024) << aper_order;
++			aper_base = read_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
++			aper_base <<= 25;
++
++			printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
++					node, aper_base, aper_size >> 20);
++			node++;
++
++			if (!aperture_valid(aper_base, aper_size, 64<<20)) {
++				if (valid_agp && agp_aper_base &&
++				    agp_aper_base == aper_base &&
++				    agp_aper_order == aper_order) {
++					/* the same between two setting from NB and agp */
++					if (!no_iommu && end_pfn > MAX_DMA32_PFN && !printed_gart_size_msg) {
++						printk(KERN_ERR "you are using iommu with agp, but GART size is less than 64M\n");
++						printk(KERN_ERR "please increase GART size in your BIOS setup\n");
++						printk(KERN_ERR "if BIOS doesn't have that option, contact your HW vendor!\n");
++						printed_gart_size_msg = 1;
++					}
++				} else {
++					fix = 1;
++					goto out;
+ 				}
+-			} else {
+-				fix = 1;
+-				break;
+ 			}
+-		}
+ 
+-		if ((last_aper_order && aper_order != last_aper_order) ||
+-		    (last_aper_base && aper_base != last_aper_base)) {
+-			fix = 1;
+-			break;
++			if ((last_aper_order && aper_order != last_aper_order) ||
++			    (last_aper_base && aper_base != last_aper_base)) {
++				fix = 1;
++				goto out;
++			}
++			last_aper_order = aper_order;
++			last_aper_base = aper_base;
+ 		}
+-		last_aper_order = aper_order;
+-		last_aper_base = aper_base;
+ 	}
+ 
++out:
+ 	if (!fix && !fallback_aper_force) {
+ 		if (last_aper_base) {
+ 			unsigned long n = (32 * 1024 * 1024) << last_aper_order;
+@@ -452,16 +494,22 @@ void __init gart_iommu_hole_init(void)
+ 	}
+ 
+ 	/* Fix up the north bridges */
+-	for (num = 24; num < 32; num++) {
+-		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+-			continue;
+-
+-		/*
+-		 * Don't enable translation yet. That is done later.
+-		 * Assume this BIOS didn't initialise the GART so
+-		 * just overwrite all previous bits
+-		 */
+-		write_pci_config(0, num, 3, 0x90, aper_order<<1);
+-		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
++	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
++		int bus;
++		int dev_base, dev_limit;
++
++		bus = bus_dev_ranges[i].bus;
++		dev_base = bus_dev_ranges[i].dev_base;
++		dev_limit = bus_dev_ranges[i].dev_limit;
++		for (slot = dev_base; slot < dev_limit; slot++) {
++			if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
++				continue;
++
++			/* Don't enable translation yet. That is done later.
++			   Assume this BIOS didn't initialise the GART so
++			   just overwrite all previous bits */
++			write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, aper_order << 1);
++			write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
++		}
+ 	}
+ }
