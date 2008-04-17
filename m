@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYDQEQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYDQEQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbYDQEQh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYDQEQ2
+	id S1757176AbYDQEQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYDQEQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:16:28 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:37829 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbYDQEQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:16:27 -0400
-Message-ID: <4806CF18.2050403@tiscali.nl>
-Date: Thu, 17 Apr 2008 06:16:24 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 17 Apr 2008 00:16:33 -0400
+Received: from mail.lang.hm ([64.81.33.126]:49223 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbYDQEQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 00:16:32 -0400
+Date: Wed, 16 Apr 2008 21:22:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25
+In-Reply-To: <alpine.LFD.1.00.0804162009080.2879@woody.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0804162120130.17133@asgard>
+References: <alpine.LFD.1.00.0804162009080.2879@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mos7840: test and propagate set_uart_reg return value
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The test for an mos7840_set_uart_reg() error return value only works when
-status is signed. propagate its error value.
+On Wed, 16 Apr 2008, Linus Torvalds wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
+> It's been long promised, but there it is now. Special thanks to Ingo who
+> found and fixed a nasty-looking regression that turned out to not be a
+> regression at all, but an old bug that just had not been triggering as
+> reliably before.
+>
+> That said, that was just the last particular regression fix I was holding
+> things up for, and it's not like there weren't a lot of other fixes too,
+> they just didn't end up being the final things that triggered my
+> particular worries.
 
-diff --git a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
-index aeeb9cb..ef1ede2 100644
---- a/drivers/usb/serial/mos7840.c
-+++ b/drivers/usb/serial/mos7840.c
-@@ -1713,7 +1713,7 @@ static int mos7840_tiocmset(struct usb_serial_port *port, struct file *file,
- {
- 	struct moschip_port *mos7840_port;
- 	unsigned int mcr;
--	unsigned int status;
-+	int status;
- 
- 	dbg("%s - port %d", __FUNCTION__, port->number);
- 
-@@ -1739,11 +1739,10 @@ static int mos7840_tiocmset(struct usb_serial_port *port, struct file *file,
- 
- 	mos7840_port->shadowMCR = mcr;
- 
--	status = 0;
- 	status = mos7840_set_uart_reg(port, MODEM_CONTROL_REGISTER, mcr);
- 	if (status < 0) {
- 		dbg("setting MODEM_CONTROL_REGISTER Failed\n");
--		return -1;
-+		return status;
- 	}
- 
- 	return 0;
+Rafael,
+   could you post the list of the remaining known regressions in 2.6.25. a 
+few days ago there were about 2 dozen left, but there was a flurry of 
+activity (patching, identifying some as not regressions, others as being 
+fixed, etc) so I've lost track of what's left
+
+David Lang
