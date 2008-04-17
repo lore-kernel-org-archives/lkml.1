@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbYDQBO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbYDQBP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932440AbYDQBO6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYDQBHg
+	id S1760119AbYDQBP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbYDQBHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:36 -0400
-Received: from sous-sol.org ([216.99.217.87]:58854 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:38 -0400
+Received: from sous-sol.org ([216.99.217.87]:58859 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758935AbYDQBHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:33 -0400
-Message-Id: <20080417010322.059941982@sous-sol.org>
+	id S1758952AbYDQBHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:35 -0400
+Message-Id: <20080417010317.497463045@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:33 -0700
+Date: Wed, 16 Apr 2008 18:01:31 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: NOHZ: reevaluate idle sleep length after add_timer_on()
-Content-Disposition: inline; filename=nohz-reevaluate-idle-sleep-length-after-add_timer_on.patch
+       Christian Lamparter <chunkeey@web.de>, nickpiggin@yahoo.com.au,
+       Nick Piggin <npiggin@suse.de>, Robert Love <rlove@google.com>,
+       John McCutchan <ttb@tentacle.dhs.org>, Jan Kara <jack@ucw.cz>,
+       Yan Zheng <yanzheng@21cn.com>
+Subject: inotify: fix race
+Content-Disposition: inline; filename=inotify-fix-race.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,123 +36,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Nick Piggin <npiggin@suse.de>
 
-upstream commit: 06d8308c61e54346585b2691c13ee3f90cb6fb2f
+upstream commit: d599e36a9ea85432587f4550acc113cd7549d12a
 
-add_timer_on() can add a timer on a CPU which is currently in a long
-idle sleep, but the timer wheel is not reevaluated by the nohz code on
-that CPU. So a timer can be delayed for quite a long time. This
-triggered a false positive in the clocksource watchdog code.
+There is a race between setting an inode's children's "parent watched" flag
+when placing the first watch on a parent, and instantiating new children of
+that parent: a child could miss having its flags set by
+set_dentry_child_flags, but then inotify_d_instantiate might still see
+!inotify_inode_watched.
 
-To avoid this we need to wake up the idle CPU and enforce the
-reevaluation of the timer wheel for the next timer event.
+The solution is to set_dentry_child_flags after adding the watch.  Locking is
+taken care of, because both set_dentry_child_flags and inotify_d_instantiate
+hold dcache_lock and child->d_locks.
 
-Add a function, which checks a given CPU for idle state, marks the
-idle task with NEED_RESCHED and sends a reschedule IPI to notify the
-other CPU of the change in the timer wheel.
-
-Call this function from add_timer_on().
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: Robert Love <rlove@google.com>
+Cc: John McCutchan <ttb@tentacle.dhs.org>
+Cc: Jan Kara <jack@ucw.cz>
+Cc: Yan Zheng <yanzheng@21cn.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christian Lamparter <chunkeey@web.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
---
- include/linux/sched.h |    6 ++++++
- kernel/sched.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
- kernel/timer.c        |   10 +++++++++-
- 3 files changed, 58 insertions(+), 1 deletion(-)
 ---
+ fs/inotify.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1449,6 +1449,12 @@ static inline void idle_task_exit(void) 
- 
- extern void sched_idle_next(void);
- 
-+#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
-+extern void wake_up_idle_cpu(int cpu);
-+#else
-+static inline void wake_up_idle_cpu(int cpu) { }
-+#endif
-+
- #ifdef CONFIG_SCHED_DEBUG
- extern unsigned int sysctl_sched_latency;
- extern unsigned int sysctl_sched_min_granularity;
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -727,6 +727,49 @@ static void resched_cpu(int cpu)
- 	resched_task(cpu_curr(cpu));
- 	spin_unlock_irqrestore(&rq->lock, flags);
- }
-+
-+#ifdef CONFIG_NO_HZ
-+/*
-+ * When add_timer_on() enqueues a timer into the timer wheel of an
-+ * idle CPU then this timer might expire before the next timer event
-+ * which is scheduled to wake up that CPU. In case of a completely
-+ * idle system the next event might even be infinite time into the
-+ * future. wake_up_idle_cpu() ensures that the CPU is woken up and
-+ * leaves the inner idle loop so the newly added timer is taken into
-+ * account when the CPU goes back to idle and evaluates the timer
-+ * wheel for the next timer event.
-+ */
-+void wake_up_idle_cpu(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	if (cpu == smp_processor_id())
-+		return;
-+
-+	/*
-+	 * This is safe, as this function is called with the timer
-+	 * wheel base lock of (cpu) held. When the CPU is on the way
-+	 * to idle and has not yet set rq->curr to idle then it will
-+	 * be serialized on the timer wheel base lock and take the new
-+	 * timer into account automatically.
-+	 */
-+	if (rq->curr != rq->idle)
-+		return;
-+
-+	/*
-+	 * We can set TIF_RESCHED on the idle task of the other CPU
-+	 * lockless. The worst case is that the other CPU runs the
-+	 * idle task through an additional NOOP schedule()
-+	 */
-+	set_tsk_thread_flag(rq->idle, TIF_NEED_RESCHED);
-+
-+	/* NEED_RESCHED must be visible before we test polling */
-+	smp_mb();
-+	if (!tsk_is_polling(rq->idle))
-+		smp_send_reschedule(cpu);
-+}
-+#endif
-+
- #else
- static inline void resched_task(struct task_struct *p)
+--- a/fs/inotify.c
++++ b/fs/inotify.c
+@@ -627,6 +627,7 @@ s32 inotify_add_watch(struct inotify_han
+ 		      struct inode *inode, u32 mask)
  {
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -453,10 +453,18 @@ void add_timer_on(struct timer_list *tim
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
- 	internal_add_timer(base, timer);
-+	/*
-+	 * Check whether the other CPU is idle and needs to be
-+	 * triggered to reevaluate the timer wheel when nohz is
-+	 * active. We are protected against the other CPU fiddling
-+	 * with the timer by holding the timer base lock. This also
-+	 * makes sure that a CPU on the way to idle can not evaluate
-+	 * the timer wheel.
-+	 */
-+	wake_up_idle_cpu(cpu);
- 	spin_unlock_irqrestore(&base->lock, flags);
- }
+ 	int ret = 0;
++	int newly_watched;
  
+ 	/* don't allow invalid bits: we don't want flags set */
+ 	mask &= IN_ALL_EVENTS | IN_ONESHOT;
+@@ -653,12 +654,18 @@ s32 inotify_add_watch(struct inotify_han
+ 	 */
+ 	watch->inode = igrab(inode);
+ 
+-	if (!inotify_inode_watched(inode))
+-		set_dentry_child_flags(inode, 1);
 -
- /**
-  * mod_timer - modify a timer's timeout
-  * @timer: the timer to be modified
+ 	/* Add the watch to the handle's and the inode's list */
++	newly_watched = !inotify_inode_watched(inode);
+ 	list_add(&watch->h_list, &ih->watches);
+ 	list_add(&watch->i_list, &inode->inotify_watches);
++	/*
++	 * Set child flags _after_ adding the watch, so there is no race
++	 * windows where newly instantiated children could miss their parent's
++	 * watched flag.
++	 */
++	if (newly_watched)
++		set_dentry_child_flags(inode, 1);
++
+ out:
+ 	mutex_unlock(&ih->mutex);
+ 	mutex_unlock(&inode->inotify_mutex);
 
 -- 
