@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbYDQHyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYDQILc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761325AbYDQHyR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 03:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbYDQHyE
+	id S1757537AbYDQILc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYDQILV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 03:54:04 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:65144 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756144AbYDQHyD (ORCPT
+	Thu, 17 Apr 2008 04:11:21 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:51098 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYDQILT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 03:54:03 -0400
-Date: Thu, 17 Apr 2008 09:53:57 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 16
-In-Reply-To: <20080416200703.92289f91.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0804170953370.13264@vixen.sonytel.be>
-References: <20080416195809.4701a86c.sfr@canb.auug.org.au>
- <20080416200703.92289f91.sfr@canb.auug.org.au>
+	Thu, 17 Apr 2008 04:11:19 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+Subject: Re: ehci-hcd affects hda speed
+Date: Thu, 17 Apr 2008 10:20:11 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       David Brownell <david-b@pacbell.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200804160738.13437.oliver@neukum.org> <alpine.LFD.1.10.0804170211220.8464@nev.ubzr>
+In-Reply-To: <alpine.LFD.1.10.0804170211220.8464@nev.ubzr>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1205745769-1208418837=:13264"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804171020.14189.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Am Donnerstag, 17. April 2008 00:23:08 schrieb Lev A. Melnikovsky:
+> Oliver,
+> 
+> ON> EHCI should not scan an empty async. However this manufacturer
+> ON> has shown a liberal attitude about conforming with specifications.
+> ON> If the root hub is suspended, it can't do DMA. So it might help.
+> Yes, it does, thank you. No DMA when suspended. Auto-suspend is executed 
+> if external hub is the only attached device. Can this be used to block 
+> spurious schedule traversal?
 
----584349381-1205745769-1208418837=:13264
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Obviously, yes, if only hubs are attached. The question is whether it
+should be. It would be better to find a way to fix the chip bug in the active
+state. However, as fixing all hardware bugs for that vendor may be difficult
+I wanted to test whether a partial work around is available.
 
-On Wed, 16 Apr 2008, Stephen Rothwell wrote:
-> The next linux-next tree will not be created until Monday April 21
-> (unless Linus decides to release 2.6.25 before then :-))
-
-And hence Linus released 2.6.25 ;-)
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-1205745769-1208418837=:13264--
+	Regards
+		Oliver
