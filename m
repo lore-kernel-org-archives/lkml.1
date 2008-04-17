@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935370AbYDQJyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935200AbYDQJzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935370AbYDQJyz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbYDQJ0u
+	id S935200AbYDQJzi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933574AbYDQJ0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:26:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46252 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:26:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46261 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933760AbYDQJ0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:26:44 -0400
+	id S933765AbYDQJ0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:26:49 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
+Cc: Benjamin Marzinski <bmarzins@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 44/48] [GFS2] Faster gfs2_bitfit algorithm
-Date: Thu, 17 Apr 2008 09:39:20 +0100
-Message-Id: <12084216593910-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 46/48] [GFS2] Invalidate cache at correct point
+Date: Thu, 17 Apr 2008 09:39:22 +0100
+Message-Id: <12084216641014-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1208421657826-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12084216611008-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -62,147 +62,214 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084216533319-git-send-email-swhiteho@redhat.com>
  <12084216553542-git-send-email-swhiteho@redhat.com>
  <1208421657826-git-send-email-swhiteho@redhat.com>
+ <12084216593910-git-send-email-swhiteho@redhat.com>
+ <12084216611008-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Benjamin Marzinski <bmarzins@redhat.com>
 
-This version of the gfs2_bitfit algorithm includes the latest
-suggestions from Steve Whitehouse.  It is typically eight to
-ten times faster than the version we're using today.  If there
-is a lot of metadata mixed in (lots of small files) the
-algorithm is often 15 times faster, and given the right
-conditions, I've seen peaks of 20 times faster.
+GFS2 wasn't invalidating its cache before it called into the lock manager
+with a request that could potentially drop a lock.  This was leaving a
+window where the lock could be actually be held by another node, but the
+file's page cache would still appear valid, causing coherency problems.
+This patch moves the cache invalidation to before the lock manager call
+when dropping a lock. It also adds the option to the lock_dlm lock
+manager to not use conversion mode deadlock avoidance, which, on a
+conversion from shared to exclusive, could internally drop the lock, and
+then reacquire in. GFS2 now asks lock_dlm to not do this.  Instead, GFS2
+manually drops the lock and reacquires it.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
+Signed-off-by: Benjamin Marzinski <bmarzins@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 4291375..7e8f0b1 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -14,6 +14,7 @@
- #include <linux/fs.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/lm_interface.h>
-+#include <linux/prefetch.h>
- 
- #include "gfs2.h"
- #include "incore.h"
-@@ -33,6 +34,16 @@
- #define BFITNOENT ((u32)~0)
- #define NO_BLOCK ((u64)~0)
- 
-+#if BITS_PER_LONG == 32
-+#define LBITMASK   (0x55555555UL)
-+#define LBITSKIP55 (0x55555555UL)
-+#define LBITSKIP00 (0x00000000UL)
-+#else
-+#define LBITMASK   (0x5555555555555555UL)
-+#define LBITSKIP55 (0x5555555555555555UL)
-+#define LBITSKIP00 (0x0000000000000000UL)
-+#endif
-+
- /*
-  * These routines are used by the resource group routines (rgrp.c)
-  * to keep track of block allocation.  Each block is represented by two
-@@ -138,45 +149,63 @@ static inline unsigned char gfs2_testbit(struct gfs2_rgrpd *rgd,
- static u32 gfs2_bitfit(const u8 *buffer, unsigned int buflen, u32 goal,
- 		       u8 old_state)
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 63981e2..d636b3e 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -764,7 +764,7 @@ static void state_change(struct gfs2_glock *gl, unsigned int new_state)
+ static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
  {
--	const u8 *byte;
--	u32 blk = goal;
--	unsigned int bit, bitlong;
--	const unsigned long *plong;
--#if BITS_PER_LONG == 32
--	const unsigned long plong55 = 0x55555555;
--#else
--	const unsigned long plong55 = 0x5555555555555555;
--#endif
+ 	struct gfs2_sbd *sdp = gl->gl_sbd;
+-	const struct gfs2_glock_operations *glops = gl->gl_ops;
++	struct gfs2_holder *gh = gl->gl_req_gh;
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+ 	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+@@ -772,8 +772,14 @@ static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
+ 
+ 	state_change(gl, LM_ST_UNLOCKED);
+ 
+-	if (glops->go_inval)
+-		glops->go_inval(gl, DIO_METADATA);
++	if (test_and_clear_bit(GLF_CONV_DEADLK, &gl->gl_flags)) {
++		spin_lock(&gl->gl_spin);
++		gh->gh_error = 0;
++		spin_unlock(&gl->gl_spin);
++		gfs2_glock_xmote_th(gl, gl->gl_req_gh);
++		gfs2_glock_put(gl);
++		return;
++	}
+ 
+ 	spin_lock(&gl->gl_spin);
+ 	gfs2_demote_wake(gl);
+@@ -794,7 +800,6 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
+ 	struct gfs2_sbd *sdp = gl->gl_sbd;
+ 	const struct gfs2_glock_operations *glops = gl->gl_ops;
+ 	struct gfs2_holder *gh = gl->gl_req_gh;
+-	int prev_state = gl->gl_state;
+ 	int op_done = 1;
+ 
+ 	if (!gh && (ret & LM_OUT_ST_MASK) == LM_ST_UNLOCKED) {
+@@ -808,16 +813,6 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
+ 
+ 	state_change(gl, ret & LM_OUT_ST_MASK);
+ 
+-	if (prev_state != LM_ST_UNLOCKED && !(ret & LM_OUT_CACHEABLE)) {
+-		if (glops->go_inval)
+-			glops->go_inval(gl, DIO_METADATA);
+-	} else if (gl->gl_state == LM_ST_DEFERRED) {
+-		/* We might not want to do this here.
+-		   Look at moving to the inode glops. */
+-		if (glops->go_inval)
+-			glops->go_inval(gl, 0);
+-	}
 -
--	byte = buffer + (goal / GFS2_NBBY);
--	plong = (const unsigned long *)(buffer + (goal / GFS2_NBBY));
--	bit = (goal % GFS2_NBBY) * GFS2_BIT_SIZE;
--	bitlong = bit;
--
--	while (byte < buffer + buflen) {
--
--		if (bitlong == 0 && old_state == 0 && *plong == plong55) {
--			plong++;
--			byte += sizeof(unsigned long);
--			blk += sizeof(unsigned long) * GFS2_NBBY;
--			continue;
-+	const u8 *byte, *start, *end;
-+	int bit, startbit;
-+	u32 g1, g2, misaligned;
-+	unsigned long *plong;
-+	unsigned long lskipval;
-+
-+	lskipval = (old_state & GFS2_BLKST_USED) ? LBITSKIP00 : LBITSKIP55;
-+	g1 = (goal / GFS2_NBBY);
-+	start = buffer + g1;
-+	byte = start;
-+        end = buffer + buflen;
-+	g2 = ALIGN(g1, sizeof(unsigned long));
-+	plong = (unsigned long *)(buffer + g2);
-+	startbit = bit = (goal % GFS2_NBBY) * GFS2_BIT_SIZE;
-+	misaligned = g2 - g1;
-+	if (!misaligned)
-+		goto ulong_aligned;
-+/* parse the bitmap a byte at a time */
-+misaligned:
-+	while (byte < end) {
-+		if (((*byte >> bit) & GFS2_BIT_MASK) == old_state) {
-+			return goal +
-+				(((byte - start) * GFS2_NBBY) +
-+				 ((bit - startbit) >> 1));
+ 	/*  Deal with each possible exit condition  */
+ 
+ 	if (!gh) {
+@@ -837,6 +832,14 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
  		}
--		if (((*byte >> bit) & GFS2_BIT_MASK) == old_state)
--			return blk;
- 		bit += GFS2_BIT_SIZE;
--		if (bit >= 8) {
-+		if (bit >= GFS2_NBBY * GFS2_BIT_SIZE) {
- 			bit = 0;
- 			byte++;
-+			misaligned--;
-+			if (!misaligned) {
-+				plong = (unsigned long *)byte;
-+				goto ulong_aligned;
-+			}
- 		}
--		bitlong += GFS2_BIT_SIZE;
--		if (bitlong >= sizeof(unsigned long) * 8) {
--			bitlong = 0;
--			plong++;
--		}
--
--		blk++;
+ 	} else {
+ 		spin_lock(&gl->gl_spin);
++		if (ret & LM_OUT_CONV_DEADLK) {
++			gh->gh_error = 0;
++			set_bit(GLF_CONV_DEADLK, &gl->gl_flags);
++			spin_unlock(&gl->gl_spin);
++			gfs2_glock_drop_th(gl);
++			gfs2_glock_put(gl);
++			return;
++		}
+ 		list_del_init(&gh->gh_list);
+ 		gh->gh_error = -EIO;
+ 		if (unlikely(test_bit(SDF_SHUTDOWN, &sdp->sd_flags))) 
+@@ -910,6 +913,8 @@ static void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
+ 
+ 	if (glops->go_xmote_th)
+ 		glops->go_xmote_th(gl);
++	if (state == LM_ST_DEFERRED && glops->go_inval)
++		glops->go_inval(gl, DIO_METADATA);
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+ 	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+@@ -952,6 +957,8 @@ static void gfs2_glock_drop_th(struct gfs2_glock *gl)
+ 
+ 	if (glops->go_xmote_th)
+ 		glops->go_xmote_th(gl);
++	if (glops->go_inval)
++		glops->go_inval(gl, DIO_METADATA);
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+ 	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+index 4ba2ea6..9c2c0b9 100644
+--- a/fs/gfs2/incore.h
++++ b/fs/gfs2/incore.h
+@@ -167,6 +167,7 @@ enum {
+ 	GLF_DEMOTE_IN_PROGRESS	= 6,
+ 	GLF_LFLUSH		= 7,
+ 	GLF_WAITERS2		= 8,
++	GLF_CONV_DEADLK		= 9,
+ };
+ 
+ struct gfs2_glock {
+diff --git a/fs/gfs2/locking/dlm/lock.c b/fs/gfs2/locking/dlm/lock.c
+index 542a797..53a6ab3 100644
+--- a/fs/gfs2/locking/dlm/lock.c
++++ b/fs/gfs2/locking/dlm/lock.c
+@@ -137,7 +137,8 @@ static inline unsigned int make_flags(struct gdlm_lock *lp,
+ 
+ 		/* Conversion deadlock avoidance by DLM */
+ 
+-		if (!test_bit(LFL_FORCE_PROMOTE, &lp->flags) &&
++		if (!(lp->ls->fsflags & LM_MFLAG_CONV_NODROP) &&
++		    !test_bit(LFL_FORCE_PROMOTE, &lp->flags) &&
+ 		    !(lkf & DLM_LKF_NOQUEUE) &&
+ 		    cur > DLM_LOCK_NL && req > DLM_LOCK_NL && cur != req)
+ 			lkf |= DLM_LKF_CONVDEADLK;
+diff --git a/fs/gfs2/locking/dlm/thread.c b/fs/gfs2/locking/dlm/thread.c
+index 521694f..e53db6f 100644
+--- a/fs/gfs2/locking/dlm/thread.c
++++ b/fs/gfs2/locking/dlm/thread.c
+@@ -135,7 +135,15 @@ static void process_complete(struct gdlm_lock *lp)
+ 			 lp->lksb.sb_status, lp->lockname.ln_type,
+ 			 (unsigned long long)lp->lockname.ln_number,
+ 			 lp->flags);
+-		return;
++		if (lp->lksb.sb_status == -EDEADLOCK &&
++		    lp->ls->fsflags & LM_MFLAG_CONV_NODROP) {
++			lp->req = lp->cur;
++			acb.lc_ret |= LM_OUT_CONV_DEADLK;
++			if (lp->cur == DLM_LOCK_IV)
++				lp->lksb.sb_lkid = 0;
++			goto out;
++		} else
++			return;
  	}
-+	return BFITNOENT;
  
-+/* parse the bitmap a unsigned long at a time */
-+ulong_aligned:
-+	/* Stop at "end - 1" or else prefetch can go past the end and segfault.
-+	   We could "if" it but we'd lose some of the performance gained.
-+	   This way will only slow down searching the very last 4/8 bytes
-+	   depending on architecture.  I've experimented with several ways
-+	   of writing this section such as using an else before the goto
-+	   but this one seems to be the fastest. */
-+	while ((unsigned char *)plong < end - 1) {
-+		prefetch(plong + 1);
-+		if (((*plong) & LBITMASK) != lskipval)
-+			break;
-+		plong++;
-+	}
-+	if ((unsigned char *)plong < end) {
-+		byte = (const u8 *)plong;
-+		misaligned += sizeof(unsigned long) - 1;
-+		goto misaligned;
-+	}
- 	return BFITNOENT;
- }
+ 	/*
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index 5b518f7..ef9c6c4 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -723,7 +723,7 @@ static int gfs2_lm_mount(struct gfs2_sbd *sdp, int silent)
+ {
+ 	char *proto = sdp->sd_proto_name;
+ 	char *table = sdp->sd_table_name;
+-	int flags = 0;
++	int flags = LM_MFLAG_CONV_NODROP;
+ 	int error;
  
+ 	if (sdp->sd_args.ar_spectator)
+diff --git a/include/linux/lm_interface.h b/include/linux/lm_interface.h
+index 1418fdc..f274997 100644
+--- a/include/linux/lm_interface.h
++++ b/include/linux/lm_interface.h
+@@ -21,9 +21,15 @@ typedef void (*lm_callback_t) (void *ptr, unsigned int type, void *data);
+  * modify the filesystem.  The lock module shouldn't assign a journal to the FS
+  * mount.  It shouldn't send recovery callbacks to the FS mount.  If the node
+  * dies or withdraws, all locks can be wiped immediately.
++ *
++ * LM_MFLAG_CONV_NODROP
++ * Do not allow the dlm to internally resolve conversion deadlocks by demoting
++ * the lock to unlocked and then reacquiring it in the requested mode. Instead,
++ * it should cancel the request and return LM_OUT_CONV_DEADLK.
+  */
+ 
+ #define LM_MFLAG_SPECTATOR	0x00000001
++#define LM_MFLAG_CONV_NODROP	0x00000002
+ 
+ /*
+  * lm_lockstruct flags
+@@ -110,6 +116,9 @@ typedef void (*lm_callback_t) (void *ptr, unsigned int type, void *data);
+  *
+  * LM_OUT_ASYNC
+  * The result of the request will be returned in an LM_CB_ASYNC callback.
++ *
++ * LM_OUT_CONV_DEADLK
++ * The lock request was canceled do to a conversion deadlock.
+  */
+ 
+ #define LM_OUT_ST_MASK		0x00000003
+@@ -117,6 +126,7 @@ typedef void (*lm_callback_t) (void *ptr, unsigned int type, void *data);
+ #define LM_OUT_CANCELED		0x00000008
+ #define LM_OUT_ASYNC		0x00000080
+ #define LM_OUT_ERROR		0x00000100
++#define LM_OUT_CONV_DEADLK	0x00000200
+ 
+ /*
+  * lm_callback_t types
 -- 
 1.5.1.2
 
