@@ -1,46 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbYDQXqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYDQXyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbYDQXqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 19:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbYDQXqL
+	id S1756600AbYDQXyR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 19:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbYDQXx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 19:46:11 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:53762 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751066AbYDQXqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 19:46:10 -0400
-From: Aaron Carroll <aaronc@cse.unsw.edu.au>
-To: Avi Kivity <avi@qumranet.com>
-Date: Fri, 18 Apr 2008 09:44:21 +1000
-Message-ID: <4807E0D5.2060600@cse.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080316)
-MIME-Version: 1.0
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Paolo Valente <paolo.valente@unimore.it>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
-References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <20080417083047.GV12774@kernel.dk> <48076A97.9060003@qumranet.com>
-In-Reply-To: <48076A97.9060003@qumranet.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 17 Apr 2008 19:53:59 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59869 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755233AbYDQXx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 19:53:59 -0400
+Subject: Re: [PATCH]: Factor out PTY index allocation
+From: Matthew Helsley <matthltc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sukadev@us.ibm.com, serue@us.ibm.com, ebiederm@xmission.com, hpa@zytor.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080417141725.7cd8e50e.akpm@linux-foundation.org>
+References: <20080416221723.GB7112@us.ibm.com>
+	 <20080417141725.7cd8e50e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 16:53:49 -0700
+Message-Id: <1208476430.5134.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Jens Axboe wrote:
->> I was thinking about that too. Generally I've been opposed to doing
->> scheduling decisions on anything but time, since that is always
->> relevant. When to hand out slices and to what process, that algorithm is
->> really basic in CFQ and could do with an improvement.
->>   
+
+On Thu, 2008-04-17 at 14:17 -0700, Andrew Morton wrote:
+> On Wed, 16 Apr 2008 15:17:23 -0700
+> sukadev@us.ibm.com wrote:
 > 
-> Jumping in at random, does "process" here mean task or mms_struct?  If 
-> the former, doesn't that mean that a 100-thread process can starve out a 
-> single-threaded process?
+> > Factor out the code used to allocate/free a pts index into new interfaces,
+> > devpts_new_index() and devpts_kill_index().  This localizes the external
+> > data structures used in managing the pts indices.
+> 
+> err...
+> 
+> > -	mutex_lock(&allocated_ptys_lock);
+> > +	down(&allocated_ptys_lock);
+> 
+> Why the mutex-to-semaphore conversion?
 
-task_struct.  It would also be nice to do per-user I/O scheduling..
+The patch series was originally developed for 2.6.22 -- prior to the
+semaphore -> mutex migration. This appears to be a mistake in
+forward-porting the series.
 
- -- Aaron
+Acked-by: Matt Helsley <matthltc@us.ibm.com>
+
+> 
+> --- a/fs/devpts/inode.c~devpts-factor-out-pty-index-allocation-fix
+> +++ a/fs/devpts/inode.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/namei.h>
+>  #include <linux/mount.h>
+>  #include <linux/tty.h>
+> +#include <linux/mutex.h>
+>  #include <linux/idr.h>
+>  #include <linux/devpts_fs.h>
+>  #include <linux/parser.h>
+> @@ -29,7 +30,7 @@
+> 
+>  extern int pty_limit;			/* Config limit on Unix98 ptys */
+>  static DEFINE_IDR(allocated_ptys);
+> -static DECLARE_MUTEX(allocated_ptys_lock);
+> +static DEFINE_MUTEX(allocated_ptys_lock);
+> 
+>  static struct vfsmount *devpts_mnt;
+>  static struct dentry *devpts_root;
+> @@ -186,10 +187,10 @@ retry:
+>  		return -ENOMEM;
+>  	}
+> 
+> -	down(&allocated_ptys_lock);
+> +	mutex_lock(&allocated_ptys_lock);
+>  	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+>  	if (idr_ret < 0) {
+> -		up(&allocated_ptys_lock);
+> +		mutex_unlock(&allocated_ptys_lock);
+>  		if (idr_ret == -EAGAIN)
+>  			goto retry;
+>  		return -EIO;
+> @@ -197,18 +198,18 @@ retry:
+> 
+>  	if (index >= pty_limit) {
+>  		idr_remove(&allocated_ptys, index);
+> -		up(&allocated_ptys_lock);
+> +		mutex_unlock(&allocated_ptys_lock);
+>  		return -EIO;
+>  	}
+> -	up(&allocated_ptys_lock);
+> +	mutex_unlock(&allocated_ptys_lock);
+>  	return index;
+>  }
+> 
+>  void devpts_kill_index(int idx)
+>  {
+> -	down(&allocated_ptys_lock);
+> +	mutex_lock(&allocated_ptys_lock);
+>  	idr_remove(&allocated_ptys, idx);
+> -	up(&allocated_ptys_lock);
+> +	mutex_unlock(&allocated_ptys_lock);
+>  }
+> 
+>  int devpts_pty_new(struct tty_struct *tty)
+> _
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
