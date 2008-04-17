@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYDQDli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbYDQDwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYDQDli (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 23:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDQDla
+	id S1755710AbYDQDwA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 23:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYDQDvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 23:41:30 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40139 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753080AbYDQDla (ORCPT
+	Wed, 16 Apr 2008 23:51:50 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:54078 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbYDQDvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 23:41:30 -0400
-Message-ID: <4806C633.3000302@linux.vnet.ibm.com>
-Date: Thu, 17 Apr 2008 09:08:27 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 16 Apr 2008 23:51:48 -0400
+Message-ID: <4806C952.6030102@tiscali.nl>
+Date: Thu, 17 Apr 2008 05:51:46 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       serue@us.ibm.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: [-mm] Add an owner to the mm_struct (v9)]
-References: <48036677.3010807@linux.vnet.ibm.com> <20080414170709.736819b6.akpm@linux-foundation.org> <20080415171359.GA352@tv-sign.ru> <6599ad830804151113i73010bb4x48e658195f295d41@mail.gmail.com> <20080415195950.GA113@tv-sign.ru>
-In-Reply-To: <20080415195950.GA113@tv-sign.ru>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: Re: [PATCH 3/6] IDE: ide-cd: fix test unsigned var < 0
+References: <48055F1A.9020706@tiscali.nl> <200804170040.07397.bzolnier@gmail.com>
+In-Reply-To: <200804170040.07397.bzolnier@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 04/15, Paul Menage wrote:
->> On Tue, Apr 15, 2008 at 10:13 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
->>>  Let's suppose the process with a lot of threads does exit_group() and nobody
->>>  else uses this ->mm. How many time we will re-assign mm->owner and iterate
->>>  over the all threads in system ?
->>>
->> In general we won't get to the third loop, since one of the first two
->> loops (children or siblings) will find another mm user.
+Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> Well yes, the second loop checks parent->children ... all sub-threads have
-> the same parent.
+> On Wednesday 16 April 2008, Roel Kluin wrote:
+>> Is this the right fix in this case?
 > 
-> I'd suggest to use ->real_parent though. And the third loop could be
+> Yes, but it seems that 'valid' is only written to
+> so it may be as well removed completely.
 > 
-
-real_parent is for ptraced processes right?
-
-> 	for_each_process(g) {
-> 		c = g;
-> 		do {
-> 			if (!c->mm)
-> 				continue;
-> 			if (c->mm != mm)
-> 				break;
-> 			goto assign_new_owner;
-> 		} while_each_thread(g, c);
-> 	}
+> Care to update the patch?
 > 
+> Thanks,
+> Bart
 
-I had this loop earlier (inspired from zap_threads()), is this loop more
-efficient than what we have?
+how about this?
 
-> Still. can't we make mm->mm_users_list ?
-> 
+Roel
 
-I suspect that will be expensive to maintain. Specially with large number of
-threads. I see a large space overhead and time overhead and additional
-synchronization overhead. Apart from finding the next owner is there any other
-advantage?
+---
+Clean up cdrom_analyze_sense_data()
 
-> Oleg.
-> 
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index a60f5df..a5f3beb 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -143,8 +143,6 @@ void cdrom_analyze_sense_data(ide_drive_t *drive,
+ 			      struct request_sense *sense)
+ {
+ 	unsigned long sector;
+-	unsigned long bio_sectors;
+-	unsigned long valid;
+ 	struct cdrom_info *info = drive->driver_data;
+ 
+ 	if (!cdrom_log_sense(drive, failed_command, sense))
+@@ -174,13 +172,9 @@ void cdrom_analyze_sense_data(ide_drive_t *drive,
+ 				 (sense->information[2] <<  8) |
+ 				 (sense->information[3]);
+ 
+-			bio_sectors = bio_sectors(failed_command->bio);
+-			if (bio_sectors < 4)
+-				bio_sectors = 4;
+ 			if (drive->queue->hardsect_size == 2048)
+ 				sector <<= 2;	/* Device sector size is 2K */
+-			sector &= ~(bio_sectors -1);
+-			valid = (sector - failed_command->sector) << 9;
++			sector &= ~(max(bio_sectors(failed_command->bio) - 1, 3));
+ 
+ 			if (sector < get_capacity(info->disk) &&
+ 				drive->probed_capacity - sector < 4 * 75) {
 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
