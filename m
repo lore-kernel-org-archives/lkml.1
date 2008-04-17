@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763450AbYDQJ3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYDQJ3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763450AbYDQJ3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbYDQJLv
+	id S1760151AbYDQJ3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763774AbYDQJLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:11:51 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:59027
+	Thu, 17 Apr 2008 05:11:52 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:59057
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763386AbYDQJLN (ORCPT
+	with ESMTP id S1763392AbYDQJLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Apr 2008 05:11:13 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Xiantao Zhang <xiantao.zhang@intel.com>
-Subject: [PATCH 40/45] KVM: ia64: Add optimization for some virtulization faults
-Date: Thu, 17 Apr 2008 12:10:45 +0300
-Message-Id: <1208423450-29415-41-git-send-email-avi@qumranet.com>
+Subject: [PATCH 42/45] KVM: ia64: Add guest interruption injection support
+Date: Thu, 17 Apr 2008 12:10:47 +0300
+Message-Id: <1208423450-29415-43-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208423450-29415-1-git-send-email-avi@qumranet.com>
 References: <1208423450-29415-1-git-send-email-avi@qumranet.com>
@@ -25,941 +25,992 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Xiantao Zhang <xiantao.zhang@intel.com>
 
-optvfault.S Add optimization for some performance-critical
-virtualization faults.
+process.c mainly handle interruption injection, and some faults handling.
 
 Signed-off-by: Anthony Xu <anthony.xu@intel.com>
 Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/ia64/kvm/optvfault.S |  918 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 918 insertions(+), 0 deletions(-)
- create mode 100644 arch/ia64/kvm/optvfault.S
+ arch/ia64/kvm/process.c |  970 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 970 insertions(+), 0 deletions(-)
+ create mode 100644 arch/ia64/kvm/process.c
 
-diff --git a/arch/ia64/kvm/optvfault.S b/arch/ia64/kvm/optvfault.S
+diff --git a/arch/ia64/kvm/process.c b/arch/ia64/kvm/process.c
 new file mode 100644
-index 0000000..e4f15d6
+index 0000000..5a33f7e
 --- /dev/null
-+++ b/arch/ia64/kvm/optvfault.S
-@@ -0,0 +1,918 @@
++++ b/arch/ia64/kvm/process.c
+@@ -0,0 +1,970 @@
 +/*
-+ * arch/ia64/vmx/optvfault.S
-+ * optimize virtualization fault handler
++ * process.c: handle interruption inject for guests.
++ * Copyright (c) 2005, Intel Corporation.
 + *
-+ * Copyright (C) 2006 Intel Co
-+ *	Xuefei Xu (Anthony Xu) <anthony.xu@intel.com>
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ *  	Shaofan Li (Susue Li) <susie.li@intel.com>
++ *  	Xiaoyan Feng (Fleming Feng)  <fleming.feng@intel.com>
++ *  	Xuefei Xu (Anthony Xu) (Anthony.xu@intel.com)
++ *  	Xiantao Zhang (xiantao.zhang@intel.com)
 + */
++#include "vcpu.h"
 +
-+#include <asm/asmmacro.h>
-+#include <asm/processor.h>
++#include <asm/pal.h>
++#include <asm/sal.h>
++#include <asm/fpswa.h>
++#include <asm/kregs.h>
++#include <asm/tlb.h>
 +
-+#include "vti.h"
-+#include "asm-offsets.h"
++fpswa_interface_t *vmm_fpswa_interface;
 +
-+#define ACCE_MOV_FROM_AR
-+#define ACCE_MOV_FROM_RR
-+#define ACCE_MOV_TO_RR
-+#define ACCE_RSM
-+#define ACCE_SSM
-+#define ACCE_MOV_TO_PSR
-+#define ACCE_THASH
++#define IA64_VHPT_TRANS_VECTOR			0x0000
++#define IA64_INST_TLB_VECTOR			0x0400
++#define IA64_DATA_TLB_VECTOR			0x0800
++#define IA64_ALT_INST_TLB_VECTOR		0x0c00
++#define IA64_ALT_DATA_TLB_VECTOR		0x1000
++#define IA64_DATA_NESTED_TLB_VECTOR		0x1400
++#define IA64_INST_KEY_MISS_VECTOR		0x1800
++#define IA64_DATA_KEY_MISS_VECTOR		0x1c00
++#define IA64_DIRTY_BIT_VECTOR			0x2000
++#define IA64_INST_ACCESS_BIT_VECTOR		0x2400
++#define IA64_DATA_ACCESS_BIT_VECTOR		0x2800
++#define IA64_BREAK_VECTOR			0x2c00
++#define IA64_EXTINT_VECTOR			0x3000
++#define IA64_PAGE_NOT_PRESENT_VECTOR		0x5000
++#define IA64_KEY_PERMISSION_VECTOR		0x5100
++#define IA64_INST_ACCESS_RIGHTS_VECTOR		0x5200
++#define IA64_DATA_ACCESS_RIGHTS_VECTOR		0x5300
++#define IA64_GENEX_VECTOR			0x5400
++#define IA64_DISABLED_FPREG_VECTOR		0x5500
++#define IA64_NAT_CONSUMPTION_VECTOR		0x5600
++#define IA64_SPECULATION_VECTOR		0x5700 /* UNUSED */
++#define IA64_DEBUG_VECTOR			0x5900
++#define IA64_UNALIGNED_REF_VECTOR		0x5a00
++#define IA64_UNSUPPORTED_DATA_REF_VECTOR	0x5b00
++#define IA64_FP_FAULT_VECTOR			0x5c00
++#define IA64_FP_TRAP_VECTOR			0x5d00
++#define IA64_LOWERPRIV_TRANSFER_TRAP_VECTOR 	0x5e00
++#define IA64_TAKEN_BRANCH_TRAP_VECTOR		0x5f00
++#define IA64_SINGLE_STEP_TRAP_VECTOR		0x6000
 +
-+//mov r1=ar3
-+GLOBAL_ENTRY(kvm_asm_mov_from_ar)
-+#ifndef ACCE_MOV_FROM_AR
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	add r18=VMM_VCPU_ITC_OFS_OFFSET, r21
-+	add r16=VMM_VCPU_LAST_ITC_OFFSET,r21
-+	extr.u r17=r25,6,7
-+	;;
-+	ld8 r18=[r18]
-+	mov r19=ar.itc
-+	mov r24=b0
-+	;;
-+	add r19=r19,r18
-+	addl r20=@gprel(asm_mov_to_reg),gp
-+	;;
-+	st8 [r16] = r19
-+	adds r30=kvm_resume_to_guest-asm_mov_to_reg,r20
-+	shladd r17=r17,4,r20
-+	;;
-+	mov b0=r17
-+	br.sptk.few b0
-+	;;
-+END(kvm_asm_mov_from_ar)
++/* SDM vol2 5.5 - IVA based interruption handling */
++#define INITIAL_PSR_VALUE_AT_INTERRUPTION (IA64_PSR_UP | IA64_PSR_MFL |\
++			IA64_PSR_MFH | IA64_PSR_PK | IA64_PSR_DT |    	\
++			IA64_PSR_RT | IA64_PSR_MC|IA64_PSR_IT)
 +
++#define DOMN_PAL_REQUEST    0x110000
++#define DOMN_SAL_REQUEST    0x110001
 +
-+// mov r1=rr[r3]
-+GLOBAL_ENTRY(kvm_asm_mov_from_rr)
-+#ifndef ACCE_MOV_FROM_RR
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	extr.u r16=r25,20,7
-+	extr.u r17=r25,6,7
-+	addl r20=@gprel(asm_mov_from_reg),gp
-+	;;
-+	adds r30=kvm_asm_mov_from_rr_back_1-asm_mov_from_reg,r20
-+	shladd r16=r16,4,r20
-+	mov r24=b0
-+	;;
-+	add r27=VMM_VCPU_VRR0_OFFSET,r21
-+	mov b0=r16
-+	br.many b0
-+	;;
-+kvm_asm_mov_from_rr_back_1:
-+	adds r30=kvm_resume_to_guest-asm_mov_from_reg,r20
-+	adds r22=asm_mov_to_reg-asm_mov_from_reg,r20
-+	shr.u r26=r19,61
-+	;;
-+	shladd r17=r17,4,r22
-+	shladd r27=r26,3,r27
-+	;;
-+	ld8 r19=[r27]
-+	mov b0=r17
-+	br.many b0
-+END(kvm_asm_mov_from_rr)
-+
-+
-+// mov rr[r3]=r2
-+GLOBAL_ENTRY(kvm_asm_mov_to_rr)
-+#ifndef ACCE_MOV_TO_RR
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	extr.u r16=r25,20,7
-+	extr.u r17=r25,13,7
-+	addl r20=@gprel(asm_mov_from_reg),gp
-+	;;
-+	adds r30=kvm_asm_mov_to_rr_back_1-asm_mov_from_reg,r20
-+	shladd r16=r16,4,r20
-+	mov r22=b0
-+	;;
-+	add r27=VMM_VCPU_VRR0_OFFSET,r21
-+	mov b0=r16
-+	br.many b0
-+	;;
-+kvm_asm_mov_to_rr_back_1:
-+	adds r30=kvm_asm_mov_to_rr_back_2-asm_mov_from_reg,r20
-+	shr.u r23=r19,61
-+	shladd r17=r17,4,r20
-+	;;
-+	//if rr6, go back
-+	cmp.eq p6,p0=6,r23
-+	mov b0=r22
-+	(p6) br.cond.dpnt.many kvm_virtualization_fault_back
-+	;;
-+	mov r28=r19
-+	mov b0=r17
-+	br.many b0
-+kvm_asm_mov_to_rr_back_2:
-+	adds r30=kvm_resume_to_guest-asm_mov_from_reg,r20
-+	shladd r27=r23,3,r27
-+	;; // vrr.rid<<4 |0xe
-+	st8 [r27]=r19
-+	mov b0=r30
-+	;;
-+	extr.u r16=r19,8,26
-+	extr.u r18 =r19,2,6
-+	mov r17 =0xe
-+	;;
-+	shladd r16 = r16, 4, r17
-+	extr.u r19 =r19,0,8
-+	;;
-+	shl r16 = r16,8
-+	;;
-+	add r19 = r19, r16
-+	;; //set ve 1
-+	dep r19=-1,r19,0,1
-+	cmp.lt p6,p0=14,r18
-+	;;
-+	(p6) mov r18=14
-+	;;
-+	(p6) dep r19=r18,r19,2,6
-+	;;
-+	cmp.eq p6,p0=0,r23
-+	;;
-+	cmp.eq.or p6,p0=4,r23
-+	;;
-+	adds r16=VMM_VCPU_MODE_FLAGS_OFFSET,r21
-+	(p6) adds r17=VMM_VCPU_META_SAVED_RR0_OFFSET,r21
-+	;;
-+	ld4 r16=[r16]
-+	cmp.eq p7,p0=r0,r0
-+	(p6) shladd r17=r23,1,r17
-+	;;
-+	(p6) st8 [r17]=r19
-+	(p6) tbit.nz p6,p7=r16,0
-+	;;
-+	(p7) mov rr[r28]=r19
-+	mov r24=r22
-+	br.many b0
-+END(kvm_asm_mov_to_rr)
-+
-+
-+//rsm
-+GLOBAL_ENTRY(kvm_asm_rsm)
-+#ifndef ACCE_RSM
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	add r16=VMM_VPD_BASE_OFFSET,r21
-+	extr.u r26=r25,6,21
-+	extr.u r27=r25,31,2
-+	;;
-+	ld8 r16=[r16]
-+	extr.u r28=r25,36,1
-+	dep r26=r27,r26,21,2
-+	;;
-+	add r17=VPD_VPSR_START_OFFSET,r16
-+	add r22=VMM_VCPU_MODE_FLAGS_OFFSET,r21
-+	//r26 is imm24
-+	dep r26=r28,r26,23,1
-+	;;
-+	ld8 r18=[r17]
-+	movl r28=IA64_PSR_IC+IA64_PSR_I+IA64_PSR_DT+IA64_PSR_SI
-+	ld4 r23=[r22]
-+	sub r27=-1,r26
-+	mov r24=b0
-+	;;
-+	mov r20=cr.ipsr
-+	or r28=r27,r28
-+	and r19=r18,r27
-+	;;
-+	st8 [r17]=r19
-+	and r20=r20,r28
-+	/* Comment it out due to short of fp lazy alorgithm support
-+	adds r27=IA64_VCPU_FP_PSR_OFFSET,r21
-+	;;
-+	ld8 r27=[r27]
-+	;;
-+	tbit.nz p8,p0= r27,IA64_PSR_DFH_BIT
-+	;;
-+	(p8) dep r20=-1,r20,IA64_PSR_DFH_BIT,1
-+	*/
-+	;;
-+	mov cr.ipsr=r20
-+	tbit.nz p6,p0=r23,0
-+	;;
-+	tbit.z.or p6,p0=r26,IA64_PSR_DT_BIT
-+	(p6) br.dptk kvm_resume_to_guest
-+	;;
-+	add r26=VMM_VCPU_META_RR0_OFFSET,r21
-+	add r27=VMM_VCPU_META_RR0_OFFSET+8,r21
-+	dep r23=-1,r23,0,1
-+	;;
-+	ld8 r26=[r26]
-+	ld8 r27=[r27]
-+	st4 [r22]=r23
-+	dep.z r28=4,61,3
-+	;;
-+	mov rr[r0]=r26
-+	;;
-+	mov rr[r28]=r27
-+	;;
-+	srlz.d
-+	br.many kvm_resume_to_guest
-+END(kvm_asm_rsm)
-+
-+
-+//ssm
-+GLOBAL_ENTRY(kvm_asm_ssm)
-+#ifndef ACCE_SSM
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	add r16=VMM_VPD_BASE_OFFSET,r21
-+	extr.u r26=r25,6,21
-+	extr.u r27=r25,31,2
-+	;;
-+	ld8 r16=[r16]
-+	extr.u r28=r25,36,1
-+	dep r26=r27,r26,21,2
-+	;;  //r26 is imm24
-+	add r27=VPD_VPSR_START_OFFSET,r16
-+	dep r26=r28,r26,23,1
-+	;;  //r19 vpsr
-+	ld8 r29=[r27]
-+	mov r24=b0
-+	;;
-+	add r22=VMM_VCPU_MODE_FLAGS_OFFSET,r21
-+	mov r20=cr.ipsr
-+	or r19=r29,r26
-+	;;
-+	ld4 r23=[r22]
-+	st8 [r27]=r19
-+	or r20=r20,r26
-+	;;
-+	mov cr.ipsr=r20
-+	movl r28=IA64_PSR_DT+IA64_PSR_RT+IA64_PSR_IT
-+	;;
-+	and r19=r28,r19
-+	tbit.z p6,p0=r23,0
-+	;;
-+	cmp.ne.or p6,p0=r28,r19
-+	(p6) br.dptk kvm_asm_ssm_1
-+	;;
-+	add r26=VMM_VCPU_META_SAVED_RR0_OFFSET,r21
-+	add r27=VMM_VCPU_META_SAVED_RR0_OFFSET+8,r21
-+	dep r23=0,r23,0,1
-+	;;
-+	ld8 r26=[r26]
-+	ld8 r27=[r27]
-+	st4 [r22]=r23
-+	dep.z r28=4,61,3
-+	;;
-+	mov rr[r0]=r26
-+	;;
-+	mov rr[r28]=r27
-+	;;
-+	srlz.d
-+	;;
-+kvm_asm_ssm_1:
-+	tbit.nz p6,p0=r29,IA64_PSR_I_BIT
-+	;;
-+	tbit.z.or p6,p0=r19,IA64_PSR_I_BIT
-+	(p6) br.dptk kvm_resume_to_guest
-+	;;
-+	add r29=VPD_VTPR_START_OFFSET,r16
-+	add r30=VPD_VHPI_START_OFFSET,r16
-+	;;
-+	ld8 r29=[r29]
-+	ld8 r30=[r30]
-+	;;
-+	extr.u r17=r29,4,4
-+	extr.u r18=r29,16,1
-+	;;
-+	dep r17=r18,r17,4,1
-+	;;
-+	cmp.gt p6,p0=r30,r17
-+	(p6) br.dpnt.few kvm_asm_dispatch_vexirq
-+	br.many kvm_resume_to_guest
-+END(kvm_asm_ssm)
-+
-+
-+//mov psr.l=r2
-+GLOBAL_ENTRY(kvm_asm_mov_to_psr)
-+#ifndef ACCE_MOV_TO_PSR
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	add r16=VMM_VPD_BASE_OFFSET,r21
-+	extr.u r26=r25,13,7 //r2
-+	;;
-+	ld8 r16=[r16]
-+	addl r20=@gprel(asm_mov_from_reg),gp
-+	;;
-+	adds r30=kvm_asm_mov_to_psr_back-asm_mov_from_reg,r20
-+	shladd r26=r26,4,r20
-+	mov r24=b0
-+	;;
-+	add r27=VPD_VPSR_START_OFFSET,r16
-+	mov b0=r26
-+	br.many b0
-+	;;
-+kvm_asm_mov_to_psr_back:
-+	ld8 r17=[r27]
-+	add r22=VMM_VCPU_MODE_FLAGS_OFFSET,r21
-+	dep r19=0,r19,32,32
-+	;;
-+	ld4 r23=[r22]
-+	dep r18=0,r17,0,32
-+	;;
-+	add r30=r18,r19
-+	movl r28=IA64_PSR_DT+IA64_PSR_RT+IA64_PSR_IT
-+	;;
-+	st8 [r27]=r30
-+	and r27=r28,r30
-+	and r29=r28,r17
-+	;;
-+	cmp.eq p5,p0=r29,r27
-+	cmp.eq p6,p7=r28,r27
-+	(p5) br.many kvm_asm_mov_to_psr_1
-+	;;
-+	//virtual to physical
-+	(p7) add r26=VMM_VCPU_META_RR0_OFFSET,r21
-+	(p7) add r27=VMM_VCPU_META_RR0_OFFSET+8,r21
-+	(p7) dep r23=-1,r23,0,1
-+	;;
-+	//physical to virtual
-+	(p6) add r26=VMM_VCPU_META_SAVED_RR0_OFFSET,r21
-+	(p6) add r27=VMM_VCPU_META_SAVED_RR0_OFFSET+8,r21
-+	(p6) dep r23=0,r23,0,1
-+	;;
-+	ld8 r26=[r26]
-+	ld8 r27=[r27]
-+	st4 [r22]=r23
-+	dep.z r28=4,61,3
-+	;;
-+	mov rr[r0]=r26
-+	;;
-+	mov rr[r28]=r27
-+	;;
-+	srlz.d
-+	;;
-+kvm_asm_mov_to_psr_1:
-+	mov r20=cr.ipsr
-+	movl r28=IA64_PSR_IC+IA64_PSR_I+IA64_PSR_DT+IA64_PSR_SI+IA64_PSR_RT
-+	;;
-+	or r19=r19,r28
-+	dep r20=0,r20,0,32
-+	;;
-+	add r20=r19,r20
-+	mov b0=r24
-+	;;
-+	/* Comment it out due to short of fp lazy algorithm support
-+	adds r27=IA64_VCPU_FP_PSR_OFFSET,r21
-+	;;
-+	ld8 r27=[r27]
-+	;;
-+	tbit.nz p8,p0=r27,IA64_PSR_DFH_BIT
-+	;;
-+	(p8) dep r20=-1,r20,IA64_PSR_DFH_BIT,1
-+	;;
-+	*/
-+	mov cr.ipsr=r20
-+	cmp.ne p6,p0=r0,r0
-+	;;
-+	tbit.nz.or p6,p0=r17,IA64_PSR_I_BIT
-+	tbit.z.or p6,p0=r30,IA64_PSR_I_BIT
-+	(p6) br.dpnt.few kvm_resume_to_guest
-+	;;
-+	add r29=VPD_VTPR_START_OFFSET,r16
-+	add r30=VPD_VHPI_START_OFFSET,r16
-+	;;
-+	ld8 r29=[r29]
-+	ld8 r30=[r30]
-+	;;
-+	extr.u r17=r29,4,4
-+	extr.u r18=r29,16,1
-+	;;
-+	dep r17=r18,r17,4,1
-+	;;
-+	cmp.gt p6,p0=r30,r17
-+	(p6) br.dpnt.few kvm_asm_dispatch_vexirq
-+	br.many kvm_resume_to_guest
-+END(kvm_asm_mov_to_psr)
-+
-+
-+ENTRY(kvm_asm_dispatch_vexirq)
-+//increment iip
-+	mov r16=cr.ipsr
-+	;;
-+	extr.u r17=r16,IA64_PSR_RI_BIT,2
-+	tbit.nz p6,p7=r16,IA64_PSR_RI_BIT+1
-+	;;
-+	(p6) mov r18=cr.iip
-+	(p6) mov r17=r0
-+	(p7) add r17=1,r17
-+	;;
-+	(p6) add r18=0x10,r18
-+	dep r16=r17,r16,IA64_PSR_RI_BIT,2
-+	;;
-+	(p6) mov cr.iip=r18
-+	mov cr.ipsr=r16
-+	mov r30 =1
-+	br.many kvm_dispatch_vexirq
-+END(kvm_asm_dispatch_vexirq)
-+
-+// thash
-+// TODO: add support when pta.vf = 1
-+GLOBAL_ENTRY(kvm_asm_thash)
-+#ifndef ACCE_THASH
-+	br.many kvm_virtualization_fault_back
-+#endif
-+	extr.u r17=r25,20,7		// get r3 from opcode in r25
-+	extr.u r18=r25,6,7		// get r1 from opcode in r25
-+	addl r20=@gprel(asm_mov_from_reg),gp
-+	;;
-+	adds r30=kvm_asm_thash_back1-asm_mov_from_reg,r20
-+	shladd r17=r17,4,r20	// get addr of MOVE_FROM_REG(r17)
-+	adds r16=VMM_VPD_BASE_OFFSET,r21	// get vcpu.arch.priveregs
-+	;;
-+	mov r24=b0
-+	;;
-+	ld8 r16=[r16]		// get VPD addr
-+	mov b0=r17
-+	br.many b0			// r19 return value
-+	;;
-+kvm_asm_thash_back1:
-+	shr.u r23=r19,61		// get RR number
-+	adds r25=VMM_VCPU_VRR0_OFFSET,r21	// get vcpu->arch.vrr[0]'s addr
-+	adds r16=VMM_VPD_VPTA_OFFSET,r16	// get vpta
-+	;;
-+	shladd r27=r23,3,r25	// get vcpu->arch.vrr[r23]'s addr
-+	ld8 r17=[r16]		// get PTA
-+	mov r26=1
-+	;;
-+	extr.u r29=r17,2,6		// get pta.size
-+	ld8 r25=[r27]		// get vcpu->arch.vrr[r23]'s value
-+	;;
-+	extr.u r25=r25,2,6		// get rr.ps
-+	shl r22=r26,r29		// 1UL << pta.size
-+	;;
-+	shr.u r23=r19,r25		// vaddr >> rr.ps
-+	adds r26=3,r29		// pta.size + 3
-+	shl r27=r17,3		// pta << 3
-+	;;
-+	shl r23=r23,3		// (vaddr >> rr.ps) << 3
-+	shr.u r27=r27,r26		// (pta << 3) >> (pta.size+3)
-+	movl r16=7<<61
-+	;;
-+	adds r22=-1,r22		// (1UL << pta.size) - 1
-+	shl r27=r27,r29		// ((pta<<3)>>(pta.size+3))<<pta.size
-+	and r19=r19,r16		// vaddr & VRN_MASK
-+	;;
-+	and r22=r22,r23		// vhpt_offset
-+	or r19=r19,r27 // (vadr&VRN_MASK)|(((pta<<3)>>(pta.size + 3))<<pta.size)
-+	adds r26=asm_mov_to_reg-asm_mov_from_reg,r20
-+	;;
-+	or r19=r19,r22		// calc pval
-+	shladd r17=r18,4,r26
-+	adds r30=kvm_resume_to_guest-asm_mov_from_reg,r20
-+	;;
-+	mov b0=r17
-+	br.many b0
-+END(kvm_asm_thash)
-+
-+#define MOV_TO_REG0	\
-+{;			\
-+	nop.b 0x0;		\
-+	nop.b 0x0;		\
-+	nop.b 0x0;		\
-+	;;			\
++static u64 vec2off[68] = {0x0, 0x400, 0x800, 0xc00, 0x1000, 0x1400, 0x1800,
++	0x1c00, 0x2000, 0x2400, 0x2800, 0x2c00, 0x3000, 0x3400, 0x3800, 0x3c00,
++	0x4000, 0x4400, 0x4800, 0x4c00, 0x5000, 0x5100, 0x5200, 0x5300, 0x5400,
++	0x5500, 0x5600, 0x5700, 0x5800, 0x5900, 0x5a00, 0x5b00, 0x5c00, 0x5d00,
++	0x5e00, 0x5f00, 0x6000, 0x6100, 0x6200, 0x6300, 0x6400, 0x6500, 0x6600,
++	0x6700, 0x6800, 0x6900, 0x6a00, 0x6b00, 0x6c00, 0x6d00, 0x6e00, 0x6f00,
++	0x7000, 0x7100, 0x7200, 0x7300, 0x7400, 0x7500, 0x7600, 0x7700, 0x7800,
++	0x7900, 0x7a00, 0x7b00, 0x7c00, 0x7d00, 0x7e00, 0x7f00
 +};
 +
++static void collect_interruption(struct kvm_vcpu *vcpu)
++{
++	u64 ipsr;
++	u64 vdcr;
++	u64 vifs;
++	unsigned long vpsr;
++	struct kvm_pt_regs *regs = vcpu_regs(vcpu);
 +
-+#define MOV_TO_REG(n)	\
-+{;			\
-+	mov r##n##=r19;	\
-+	mov b0=r30;	\
-+	br.sptk.many b0;	\
-+	;;			\
-+};
++	vpsr = vcpu_get_psr(vcpu);
++	vcpu_bsw0(vcpu);
++	if (vpsr & IA64_PSR_IC) {
 +
++		/* Sync mpsr id/da/dd/ss/ed bits to vipsr
++		 * since after guest do rfi, we still want these bits on in
++		 * mpsr
++		 */
 +
-+#define MOV_FROM_REG(n)	\
-+{;				\
-+	mov r19=r##n##;		\
-+	mov b0=r30;		\
-+	br.sptk.many b0;		\
-+	;;				\
-+};
++		ipsr = regs->cr_ipsr;
++		vpsr = vpsr | (ipsr & (IA64_PSR_ID | IA64_PSR_DA
++					| IA64_PSR_DD | IA64_PSR_SS
++					| IA64_PSR_ED));
++		vcpu_set_ipsr(vcpu, vpsr);
 +
++		/* Currently, for trap, we do not advance IIP to next
++		 * instruction. That's because we assume caller already
++		 * set up IIP correctly
++		 */
 +
-+#define MOV_TO_BANK0_REG(n)			\
-+ENTRY_MIN_ALIGN(asm_mov_to_bank0_reg##n##);	\
-+{;						\
-+	mov r26=r2;				\
-+	mov r2=r19;				\
-+	bsw.1;					\
-+	;;						\
-+};						\
-+{;						\
-+	mov r##n##=r2;				\
-+	nop.b 0x0;					\
-+	bsw.0;					\
-+	;;						\
-+};						\
-+{;						\
-+	mov r2=r26;				\
-+	mov b0=r30;				\
-+	br.sptk.many b0;				\
-+	;;						\
-+};						\
-+END(asm_mov_to_bank0_reg##n##)
++		vcpu_set_iip(vcpu , regs->cr_iip);
 +
++		/* set vifs.v to zero */
++		vifs = VCPU(vcpu, ifs);
++		vifs &= ~IA64_IFS_V;
++		vcpu_set_ifs(vcpu, vifs);
 +
-+#define MOV_FROM_BANK0_REG(n)			\
-+ENTRY_MIN_ALIGN(asm_mov_from_bank0_reg##n##);	\
-+{;						\
-+	mov r26=r2;				\
-+	nop.b 0x0;					\
-+	bsw.1;					\
-+	;;						\
-+};						\
-+{;						\
-+	mov r2=r##n##;				\
-+	nop.b 0x0;					\
-+	bsw.0;					\
-+	;;						\
-+};						\
-+{;						\
-+	mov r19=r2;				\
-+	mov r2=r26;				\
-+	mov b0=r30;				\
-+};						\
-+{;						\
-+	nop.b 0x0;					\
-+	nop.b 0x0;					\
-+	br.sptk.many b0;				\
-+	;;						\
-+};						\
-+END(asm_mov_from_bank0_reg##n##)
++		vcpu_set_iipa(vcpu, VMX(vcpu, cr_iipa));
++	}
 +
++	vdcr = VCPU(vcpu, dcr);
 +
-+#define JMP_TO_MOV_TO_BANK0_REG(n)		\
-+{;						\
-+	nop.b 0x0;					\
-+	nop.b 0x0;					\
-+	br.sptk.many asm_mov_to_bank0_reg##n##;	\
-+	;;						\
++	/* Set guest psr
++	 * up/mfl/mfh/pk/dt/rt/mc/it keeps unchanged
++	 * be: set to the value of dcr.be
++	 * pp: set to the value of dcr.pp
++	 */
++	vpsr &= INITIAL_PSR_VALUE_AT_INTERRUPTION;
++	vpsr |= (vdcr & IA64_DCR_BE);
++
++	/* VDCR pp bit position is different from VPSR pp bit */
++	if (vdcr & IA64_DCR_PP) {
++		vpsr |= IA64_PSR_PP;
++	} else {
++		vpsr &= ~IA64_PSR_PP;;
++	}
++
++	vcpu_set_psr(vcpu, vpsr);
++
++}
++
++void inject_guest_interruption(struct kvm_vcpu *vcpu, u64 vec)
++{
++	u64 viva;
++	struct kvm_pt_regs *regs;
++	union ia64_isr pt_isr;
++
++	regs = vcpu_regs(vcpu);
++
++	/* clear cr.isr.ir (incomplete register frame)*/
++	pt_isr.val = VMX(vcpu, cr_isr);
++	pt_isr.ir = 0;
++	VMX(vcpu, cr_isr) = pt_isr.val;
++
++	collect_interruption(vcpu);
++
++	viva = vcpu_get_iva(vcpu);
++	regs->cr_iip = viva + vec;
++}
++
++static u64 vcpu_get_itir_on_fault(struct kvm_vcpu *vcpu, u64 ifa)
++{
++	union ia64_rr rr, rr1;
++
++	rr.val = vcpu_get_rr(vcpu, ifa);
++	rr1.val = 0;
++	rr1.ps = rr.ps;
++	rr1.rid = rr.rid;
++	return (rr1.val);
 +}
 +
 +
-+#define JMP_TO_MOV_FROM_BANK0_REG(n)		\
-+{;						\
-+	nop.b 0x0;					\
-+	nop.b 0x0;					\
-+	br.sptk.many asm_mov_from_bank0_reg##n##;	\
-+	;;						\
++/*
++ * Set vIFA & vITIR & vIHA, when vPSR.ic =1
++ * Parameter:
++ *  set_ifa: if true, set vIFA
++ *  set_itir: if true, set vITIR
++ *  set_iha: if true, set vIHA
++ */
++void set_ifa_itir_iha(struct kvm_vcpu *vcpu, u64 vadr,
++		int set_ifa, int set_itir, int set_iha)
++{
++	long vpsr;
++	u64 value;
++
++	vpsr = VCPU(vcpu, vpsr);
++	/* Vol2, Table 8-1 */
++	if (vpsr & IA64_PSR_IC) {
++		if (set_ifa)
++			vcpu_set_ifa(vcpu, vadr);
++		if (set_itir) {
++			value = vcpu_get_itir_on_fault(vcpu, vadr);
++			vcpu_set_itir(vcpu, value);
++		}
++
++		if (set_iha) {
++			value = vcpu_thash(vcpu, vadr);
++			vcpu_set_iha(vcpu, value);
++		}
++	}
++}
++
++/*
++ * Data TLB Fault
++ *  @ Data TLB vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void dtlb_fault(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	/* If vPSR.ic, IFA, ITIR, IHA */
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 1);
++	inject_guest_interruption(vcpu, IA64_DATA_TLB_VECTOR);
++}
++
++/*
++ * Instruction TLB Fault
++ *  @ Instruction TLB vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void itlb_fault(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	/* If vPSR.ic, IFA, ITIR, IHA */
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 1);
++	inject_guest_interruption(vcpu, IA64_INST_TLB_VECTOR);
 +}
 +
 +
-+MOV_FROM_BANK0_REG(16)
-+MOV_FROM_BANK0_REG(17)
-+MOV_FROM_BANK0_REG(18)
-+MOV_FROM_BANK0_REG(19)
-+MOV_FROM_BANK0_REG(20)
-+MOV_FROM_BANK0_REG(21)
-+MOV_FROM_BANK0_REG(22)
-+MOV_FROM_BANK0_REG(23)
-+MOV_FROM_BANK0_REG(24)
-+MOV_FROM_BANK0_REG(25)
-+MOV_FROM_BANK0_REG(26)
-+MOV_FROM_BANK0_REG(27)
-+MOV_FROM_BANK0_REG(28)
-+MOV_FROM_BANK0_REG(29)
-+MOV_FROM_BANK0_REG(30)
-+MOV_FROM_BANK0_REG(31)
 +
-+
-+// mov from reg table
-+ENTRY(asm_mov_from_reg)
-+	MOV_FROM_REG(0)
-+	MOV_FROM_REG(1)
-+	MOV_FROM_REG(2)
-+	MOV_FROM_REG(3)
-+	MOV_FROM_REG(4)
-+	MOV_FROM_REG(5)
-+	MOV_FROM_REG(6)
-+	MOV_FROM_REG(7)
-+	MOV_FROM_REG(8)
-+	MOV_FROM_REG(9)
-+	MOV_FROM_REG(10)
-+	MOV_FROM_REG(11)
-+	MOV_FROM_REG(12)
-+	MOV_FROM_REG(13)
-+	MOV_FROM_REG(14)
-+	MOV_FROM_REG(15)
-+	JMP_TO_MOV_FROM_BANK0_REG(16)
-+	JMP_TO_MOV_FROM_BANK0_REG(17)
-+	JMP_TO_MOV_FROM_BANK0_REG(18)
-+	JMP_TO_MOV_FROM_BANK0_REG(19)
-+	JMP_TO_MOV_FROM_BANK0_REG(20)
-+	JMP_TO_MOV_FROM_BANK0_REG(21)
-+	JMP_TO_MOV_FROM_BANK0_REG(22)
-+	JMP_TO_MOV_FROM_BANK0_REG(23)
-+	JMP_TO_MOV_FROM_BANK0_REG(24)
-+	JMP_TO_MOV_FROM_BANK0_REG(25)
-+	JMP_TO_MOV_FROM_BANK0_REG(26)
-+	JMP_TO_MOV_FROM_BANK0_REG(27)
-+	JMP_TO_MOV_FROM_BANK0_REG(28)
-+	JMP_TO_MOV_FROM_BANK0_REG(29)
-+	JMP_TO_MOV_FROM_BANK0_REG(30)
-+	JMP_TO_MOV_FROM_BANK0_REG(31)
-+	MOV_FROM_REG(32)
-+	MOV_FROM_REG(33)
-+	MOV_FROM_REG(34)
-+	MOV_FROM_REG(35)
-+	MOV_FROM_REG(36)
-+	MOV_FROM_REG(37)
-+	MOV_FROM_REG(38)
-+	MOV_FROM_REG(39)
-+	MOV_FROM_REG(40)
-+	MOV_FROM_REG(41)
-+	MOV_FROM_REG(42)
-+	MOV_FROM_REG(43)
-+	MOV_FROM_REG(44)
-+	MOV_FROM_REG(45)
-+	MOV_FROM_REG(46)
-+	MOV_FROM_REG(47)
-+	MOV_FROM_REG(48)
-+	MOV_FROM_REG(49)
-+	MOV_FROM_REG(50)
-+	MOV_FROM_REG(51)
-+	MOV_FROM_REG(52)
-+	MOV_FROM_REG(53)
-+	MOV_FROM_REG(54)
-+	MOV_FROM_REG(55)
-+	MOV_FROM_REG(56)
-+	MOV_FROM_REG(57)
-+	MOV_FROM_REG(58)
-+	MOV_FROM_REG(59)
-+	MOV_FROM_REG(60)
-+	MOV_FROM_REG(61)
-+	MOV_FROM_REG(62)
-+	MOV_FROM_REG(63)
-+	MOV_FROM_REG(64)
-+	MOV_FROM_REG(65)
-+	MOV_FROM_REG(66)
-+	MOV_FROM_REG(67)
-+	MOV_FROM_REG(68)
-+	MOV_FROM_REG(69)
-+	MOV_FROM_REG(70)
-+	MOV_FROM_REG(71)
-+	MOV_FROM_REG(72)
-+	MOV_FROM_REG(73)
-+	MOV_FROM_REG(74)
-+	MOV_FROM_REG(75)
-+	MOV_FROM_REG(76)
-+	MOV_FROM_REG(77)
-+	MOV_FROM_REG(78)
-+	MOV_FROM_REG(79)
-+	MOV_FROM_REG(80)
-+	MOV_FROM_REG(81)
-+	MOV_FROM_REG(82)
-+	MOV_FROM_REG(83)
-+	MOV_FROM_REG(84)
-+	MOV_FROM_REG(85)
-+	MOV_FROM_REG(86)
-+	MOV_FROM_REG(87)
-+	MOV_FROM_REG(88)
-+	MOV_FROM_REG(89)
-+	MOV_FROM_REG(90)
-+	MOV_FROM_REG(91)
-+	MOV_FROM_REG(92)
-+	MOV_FROM_REG(93)
-+	MOV_FROM_REG(94)
-+	MOV_FROM_REG(95)
-+	MOV_FROM_REG(96)
-+	MOV_FROM_REG(97)
-+	MOV_FROM_REG(98)
-+	MOV_FROM_REG(99)
-+	MOV_FROM_REG(100)
-+	MOV_FROM_REG(101)
-+	MOV_FROM_REG(102)
-+	MOV_FROM_REG(103)
-+	MOV_FROM_REG(104)
-+	MOV_FROM_REG(105)
-+	MOV_FROM_REG(106)
-+	MOV_FROM_REG(107)
-+	MOV_FROM_REG(108)
-+	MOV_FROM_REG(109)
-+	MOV_FROM_REG(110)
-+	MOV_FROM_REG(111)
-+	MOV_FROM_REG(112)
-+	MOV_FROM_REG(113)
-+	MOV_FROM_REG(114)
-+	MOV_FROM_REG(115)
-+	MOV_FROM_REG(116)
-+	MOV_FROM_REG(117)
-+	MOV_FROM_REG(118)
-+	MOV_FROM_REG(119)
-+	MOV_FROM_REG(120)
-+	MOV_FROM_REG(121)
-+	MOV_FROM_REG(122)
-+	MOV_FROM_REG(123)
-+	MOV_FROM_REG(124)
-+	MOV_FROM_REG(125)
-+	MOV_FROM_REG(126)
-+	MOV_FROM_REG(127)
-+END(asm_mov_from_reg)
-+
-+
-+/* must be in bank 0
-+ * parameter:
-+ * r31: pr
-+ * r24: b0
++/*
++ * Data Nested TLB Fault
++ *  @ Data Nested TLB Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
 + */
-+ENTRY(kvm_resume_to_guest)
-+	adds r16 = VMM_VCPU_SAVED_GP_OFFSET,r21
-+	;;
-+	ld8 r1 =[r16]
-+	adds r20 = VMM_VCPU_VSA_BASE_OFFSET,r21
-+	;;
-+	mov r16=cr.ipsr
-+	;;
-+	ld8 r20 = [r20]
-+	adds r19=VMM_VPD_BASE_OFFSET,r21
-+	;;
-+	ld8 r25=[r19]
-+	extr.u r17=r16,IA64_PSR_RI_BIT,2
-+	tbit.nz p6,p7=r16,IA64_PSR_RI_BIT+1
-+	;;
-+	(p6) mov r18=cr.iip
-+	(p6) mov r17=r0
-+	;;
-+	(p6) add r18=0x10,r18
-+	(p7) add r17=1,r17
-+	;;
-+	(p6) mov cr.iip=r18
-+	dep r16=r17,r16,IA64_PSR_RI_BIT,2
-+	;;
-+	mov cr.ipsr=r16
-+	adds r19= VPD_VPSR_START_OFFSET,r25
-+	add r28=PAL_VPS_RESUME_NORMAL,r20
-+	add r29=PAL_VPS_RESUME_HANDLER,r20
-+	;;
-+	ld8 r19=[r19]
-+	mov b0=r29
-+	cmp.ne p6,p7 = r0,r0
-+	;;
-+	tbit.z p6,p7 = r19,IA64_PSR_IC_BIT		// p1=vpsr.ic
-+	;;
-+	(p6) ld8 r26=[r25]
-+	(p7) mov b0=r28
-+	mov pr=r31,-2
-+	br.sptk.many b0             // call pal service
-+	;;
-+END(kvm_resume_to_guest)
++void nested_dtlb(struct kvm_vcpu *vcpu)
++{
++	inject_guest_interruption(vcpu, IA64_DATA_NESTED_TLB_VECTOR);
++}
++
++/*
++ * Alternate Data TLB Fault
++ *  @ Alternate Data TLB vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void alt_dtlb(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 0);
++	inject_guest_interruption(vcpu, IA64_ALT_DATA_TLB_VECTOR);
++}
 +
 +
-+MOV_TO_BANK0_REG(16)
-+MOV_TO_BANK0_REG(17)
-+MOV_TO_BANK0_REG(18)
-+MOV_TO_BANK0_REG(19)
-+MOV_TO_BANK0_REG(20)
-+MOV_TO_BANK0_REG(21)
-+MOV_TO_BANK0_REG(22)
-+MOV_TO_BANK0_REG(23)
-+MOV_TO_BANK0_REG(24)
-+MOV_TO_BANK0_REG(25)
-+MOV_TO_BANK0_REG(26)
-+MOV_TO_BANK0_REG(27)
-+MOV_TO_BANK0_REG(28)
-+MOV_TO_BANK0_REG(29)
-+MOV_TO_BANK0_REG(30)
-+MOV_TO_BANK0_REG(31)
++/*
++ * Data TLB Fault
++ *  @ Data TLB vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void alt_itlb(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 0);
++	inject_guest_interruption(vcpu, IA64_ALT_INST_TLB_VECTOR);
++}
++
++/* Deal with:
++ *  VHPT Translation Vector
++ */
++static void _vhpt_fault(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	/* If vPSR.ic, IFA, ITIR, IHA*/
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 1);
++	inject_guest_interruption(vcpu, IA64_VHPT_TRANS_VECTOR);
 +
 +
-+// mov to reg table
-+ENTRY(asm_mov_to_reg)
-+	MOV_TO_REG0
-+	MOV_TO_REG(1)
-+	MOV_TO_REG(2)
-+	MOV_TO_REG(3)
-+	MOV_TO_REG(4)
-+	MOV_TO_REG(5)
-+	MOV_TO_REG(6)
-+	MOV_TO_REG(7)
-+	MOV_TO_REG(8)
-+	MOV_TO_REG(9)
-+	MOV_TO_REG(10)
-+	MOV_TO_REG(11)
-+	MOV_TO_REG(12)
-+	MOV_TO_REG(13)
-+	MOV_TO_REG(14)
-+	MOV_TO_REG(15)
-+	JMP_TO_MOV_TO_BANK0_REG(16)
-+	JMP_TO_MOV_TO_BANK0_REG(17)
-+	JMP_TO_MOV_TO_BANK0_REG(18)
-+	JMP_TO_MOV_TO_BANK0_REG(19)
-+	JMP_TO_MOV_TO_BANK0_REG(20)
-+	JMP_TO_MOV_TO_BANK0_REG(21)
-+	JMP_TO_MOV_TO_BANK0_REG(22)
-+	JMP_TO_MOV_TO_BANK0_REG(23)
-+	JMP_TO_MOV_TO_BANK0_REG(24)
-+	JMP_TO_MOV_TO_BANK0_REG(25)
-+	JMP_TO_MOV_TO_BANK0_REG(26)
-+	JMP_TO_MOV_TO_BANK0_REG(27)
-+	JMP_TO_MOV_TO_BANK0_REG(28)
-+	JMP_TO_MOV_TO_BANK0_REG(29)
-+	JMP_TO_MOV_TO_BANK0_REG(30)
-+	JMP_TO_MOV_TO_BANK0_REG(31)
-+	MOV_TO_REG(32)
-+	MOV_TO_REG(33)
-+	MOV_TO_REG(34)
-+	MOV_TO_REG(35)
-+	MOV_TO_REG(36)
-+	MOV_TO_REG(37)
-+	MOV_TO_REG(38)
-+	MOV_TO_REG(39)
-+	MOV_TO_REG(40)
-+	MOV_TO_REG(41)
-+	MOV_TO_REG(42)
-+	MOV_TO_REG(43)
-+	MOV_TO_REG(44)
-+	MOV_TO_REG(45)
-+	MOV_TO_REG(46)
-+	MOV_TO_REG(47)
-+	MOV_TO_REG(48)
-+	MOV_TO_REG(49)
-+	MOV_TO_REG(50)
-+	MOV_TO_REG(51)
-+	MOV_TO_REG(52)
-+	MOV_TO_REG(53)
-+	MOV_TO_REG(54)
-+	MOV_TO_REG(55)
-+	MOV_TO_REG(56)
-+	MOV_TO_REG(57)
-+	MOV_TO_REG(58)
-+	MOV_TO_REG(59)
-+	MOV_TO_REG(60)
-+	MOV_TO_REG(61)
-+	MOV_TO_REG(62)
-+	MOV_TO_REG(63)
-+	MOV_TO_REG(64)
-+	MOV_TO_REG(65)
-+	MOV_TO_REG(66)
-+	MOV_TO_REG(67)
-+	MOV_TO_REG(68)
-+	MOV_TO_REG(69)
-+	MOV_TO_REG(70)
-+	MOV_TO_REG(71)
-+	MOV_TO_REG(72)
-+	MOV_TO_REG(73)
-+	MOV_TO_REG(74)
-+	MOV_TO_REG(75)
-+	MOV_TO_REG(76)
-+	MOV_TO_REG(77)
-+	MOV_TO_REG(78)
-+	MOV_TO_REG(79)
-+	MOV_TO_REG(80)
-+	MOV_TO_REG(81)
-+	MOV_TO_REG(82)
-+	MOV_TO_REG(83)
-+	MOV_TO_REG(84)
-+	MOV_TO_REG(85)
-+	MOV_TO_REG(86)
-+	MOV_TO_REG(87)
-+	MOV_TO_REG(88)
-+	MOV_TO_REG(89)
-+	MOV_TO_REG(90)
-+	MOV_TO_REG(91)
-+	MOV_TO_REG(92)
-+	MOV_TO_REG(93)
-+	MOV_TO_REG(94)
-+	MOV_TO_REG(95)
-+	MOV_TO_REG(96)
-+	MOV_TO_REG(97)
-+	MOV_TO_REG(98)
-+	MOV_TO_REG(99)
-+	MOV_TO_REG(100)
-+	MOV_TO_REG(101)
-+	MOV_TO_REG(102)
-+	MOV_TO_REG(103)
-+	MOV_TO_REG(104)
-+	MOV_TO_REG(105)
-+	MOV_TO_REG(106)
-+	MOV_TO_REG(107)
-+	MOV_TO_REG(108)
-+	MOV_TO_REG(109)
-+	MOV_TO_REG(110)
-+	MOV_TO_REG(111)
-+	MOV_TO_REG(112)
-+	MOV_TO_REG(113)
-+	MOV_TO_REG(114)
-+	MOV_TO_REG(115)
-+	MOV_TO_REG(116)
-+	MOV_TO_REG(117)
-+	MOV_TO_REG(118)
-+	MOV_TO_REG(119)
-+	MOV_TO_REG(120)
-+	MOV_TO_REG(121)
-+	MOV_TO_REG(122)
-+	MOV_TO_REG(123)
-+	MOV_TO_REG(124)
-+	MOV_TO_REG(125)
-+	MOV_TO_REG(126)
-+	MOV_TO_REG(127)
-+END(asm_mov_to_reg)
++}
++
++/*
++ * VHPT Instruction Fault
++ *  @ VHPT Translation vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void ivhpt_fault(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	_vhpt_fault(vcpu, vadr);
++}
++
++
++/*
++ * VHPT Data Fault
++ *  @ VHPT Translation vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void dvhpt_fault(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	_vhpt_fault(vcpu, vadr);
++}
++
++
++
++/*
++ * Deal with:
++ *  General Exception vector
++ */
++void _general_exception(struct kvm_vcpu *vcpu)
++{
++	inject_guest_interruption(vcpu, IA64_GENEX_VECTOR);
++}
++
++
++/*
++ * Illegal Operation Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void illegal_op(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++
++/*
++ * Illegal Dependency Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void illegal_dep(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++
++/*
++ * Reserved Register/Field Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void rsv_reg_field(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++/*
++ * Privileged Operation Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++
++void privilege_op(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++
++/*
++ * Unimplement Data Address Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void unimpl_daddr(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++
++/*
++ * Privileged Register Fault
++ *  @ General Exception Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void privilege_reg(struct kvm_vcpu *vcpu)
++{
++	_general_exception(vcpu);
++}
++
++/* Deal with
++ *  Nat consumption vector
++ * Parameter:
++ *  vaddr: Optional, if t == REGISTER
++ */
++static void _nat_consumption_fault(struct kvm_vcpu *vcpu, u64 vadr,
++						enum tlb_miss_type t)
++{
++	/* If vPSR.ic && t == DATA/INST, IFA */
++	if (t == DATA || t == INSTRUCTION) {
++		/* IFA */
++		set_ifa_itir_iha(vcpu, vadr, 1, 0, 0);
++	}
++
++	inject_guest_interruption(vcpu, IA64_NAT_CONSUMPTION_VECTOR);
++}
++
++/*
++ * Instruction Nat Page Consumption Fault
++ *  @ Nat Consumption Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void inat_page_consumption(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	_nat_consumption_fault(vcpu, vadr, INSTRUCTION);
++}
++
++/*
++ * Register Nat Consumption Fault
++ *  @ Nat Consumption Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void rnat_consumption(struct kvm_vcpu *vcpu)
++{
++	_nat_consumption_fault(vcpu, 0, REGISTER);
++}
++
++/*
++ * Data Nat Page Consumption Fault
++ *  @ Nat Consumption Vector
++ * Refer to SDM Vol2 Table 5-6 & 8-1
++ */
++void dnat_page_consumption(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	_nat_consumption_fault(vcpu, vadr, DATA);
++}
++
++/* Deal with
++ *  Page not present vector
++ */
++static void __page_not_present(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	/* If vPSR.ic, IFA, ITIR */
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 0);
++	inject_guest_interruption(vcpu, IA64_PAGE_NOT_PRESENT_VECTOR);
++}
++
++
++void data_page_not_present(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	__page_not_present(vcpu, vadr);
++}
++
++
++void inst_page_not_present(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	__page_not_present(vcpu, vadr);
++}
++
++
++/* Deal with
++ *  Data access rights vector
++ */
++void data_access_rights(struct kvm_vcpu *vcpu, u64 vadr)
++{
++	/* If vPSR.ic, IFA, ITIR */
++	set_ifa_itir_iha(vcpu, vadr, 1, 1, 0);
++	inject_guest_interruption(vcpu, IA64_DATA_ACCESS_RIGHTS_VECTOR);
++}
++
++fpswa_ret_t vmm_fp_emulate(int fp_fault, void *bundle, unsigned long *ipsr,
++		unsigned long *fpsr, unsigned long *isr, unsigned long *pr,
++		unsigned long *ifs, struct kvm_pt_regs *regs)
++{
++	fp_state_t fp_state;
++	fpswa_ret_t ret;
++	struct kvm_vcpu *vcpu = current_vcpu;
++
++	uint64_t old_rr7 = ia64_get_rr(7UL<<61);
++
++	if (!vmm_fpswa_interface)
++		return (fpswa_ret_t) {-1, 0, 0, 0};
++
++	/*
++	 * Just let fpswa driver to use hardware fp registers.
++	 * No fp register is valid in memory.
++	 */
++	memset(&fp_state, 0, sizeof(fp_state_t));
++
++	/*
++	 * unsigned long (*EFI_FPSWA) (
++	 *      unsigned long    trap_type,
++	 *      void             *Bundle,
++	 *      unsigned long    *pipsr,
++	 *      unsigned long    *pfsr,
++	 *      unsigned long    *pisr,
++	 *      unsigned long    *ppreds,
++	 *      unsigned long    *pifs,
++	 *      void             *fp_state);
++	 */
++	/*Call host fpswa interface directly to virtualize
++	 *guest fpswa request!
++	 */
++	ia64_set_rr(7UL << 61, vcpu->arch.host.rr[7]);
++	ia64_srlz_d();
++
++	ret = (*vmm_fpswa_interface->fpswa) (fp_fault, bundle,
++			ipsr, fpsr, isr, pr, ifs, &fp_state);
++	ia64_set_rr(7UL << 61, old_rr7);
++	ia64_srlz_d();
++	return ret;
++}
++
++/*
++ * Handle floating-point assist faults and traps for domain.
++ */
++unsigned long vmm_handle_fpu_swa(int fp_fault, struct kvm_pt_regs *regs,
++					unsigned long isr)
++{
++	struct kvm_vcpu *v = current_vcpu;
++	IA64_BUNDLE bundle;
++	unsigned long fault_ip;
++	fpswa_ret_t ret;
++
++	fault_ip = regs->cr_iip;
++	/*
++	 * When the FP trap occurs, the trapping instruction is completed.
++	 * If ipsr.ri == 0, there is the trapping instruction in previous
++	 * bundle.
++	 */
++	if (!fp_fault && (ia64_psr(regs)->ri == 0))
++		fault_ip -= 16;
++
++	if (fetch_code(v, fault_ip, &bundle))
++		return -EAGAIN;
++
++	if (!bundle.i64[0] && !bundle.i64[1])
++		return -EACCES;
++
++	ret = vmm_fp_emulate(fp_fault, &bundle, &regs->cr_ipsr, &regs->ar_fpsr,
++			&isr, &regs->pr, &regs->cr_ifs, regs);
++	return ret.status;
++}
++
++void reflect_interruption(u64 ifa, u64 isr, u64 iim,
++		u64 vec, struct kvm_pt_regs *regs)
++{
++	u64 vector;
++	int status ;
++	struct kvm_vcpu *vcpu = current_vcpu;
++	u64 vpsr = VCPU(vcpu, vpsr);
++
++	vector = vec2off[vec];
++
++	if (!(vpsr & IA64_PSR_IC) && (vector != IA64_DATA_NESTED_TLB_VECTOR)) {
++		panic_vm(vcpu);
++		return;
++	}
++
++	switch (vec) {
++	case 32: 	/*IA64_FP_FAULT_VECTOR*/
++		status = vmm_handle_fpu_swa(1, regs, isr);
++		if (!status) {
++			vcpu_increment_iip(vcpu);
++			return;
++		} else if (-EAGAIN == status)
++			return;
++		break;
++	case 33:	/*IA64_FP_TRAP_VECTOR*/
++		status = vmm_handle_fpu_swa(0, regs, isr);
++		if (!status)
++			return ;
++		else if (-EAGAIN == status) {
++			vcpu_decrement_iip(vcpu);
++			return ;
++		}
++		break;
++	}
++
++	VCPU(vcpu, isr) = isr;
++	VCPU(vcpu, iipa) = regs->cr_iip;
++	if (vector == IA64_BREAK_VECTOR || vector == IA64_SPECULATION_VECTOR)
++		VCPU(vcpu, iim) = iim;
++	else
++		set_ifa_itir_iha(vcpu, ifa, 1, 1, 1);
++
++	inject_guest_interruption(vcpu, vector);
++}
++
++static void set_pal_call_data(struct kvm_vcpu *vcpu)
++{
++	struct exit_ctl_data *p = &vcpu->arch.exit_data;
++
++	/*FIXME:For static and stacked convention, firmware
++	 * has put the parameters in gr28-gr31 before
++	 * break to vmm  !!*/
++
++	p->u.pal_data.gr28 = vcpu_get_gr(vcpu, 28);
++	p->u.pal_data.gr29 = vcpu_get_gr(vcpu, 29);
++	p->u.pal_data.gr30 = vcpu_get_gr(vcpu, 30);
++	p->u.pal_data.gr31 = vcpu_get_gr(vcpu, 31);
++	p->exit_reason = EXIT_REASON_PAL_CALL;
++}
++
++static void set_pal_call_result(struct kvm_vcpu *vcpu)
++{
++	struct exit_ctl_data *p = &vcpu->arch.exit_data;
++
++	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
++		vcpu_set_gr(vcpu, 8, p->u.pal_data.ret.status, 0);
++		vcpu_set_gr(vcpu, 9, p->u.pal_data.ret.v0, 0);
++		vcpu_set_gr(vcpu, 10, p->u.pal_data.ret.v1, 0);
++		vcpu_set_gr(vcpu, 11, p->u.pal_data.ret.v2, 0);
++	} else
++		panic_vm(vcpu);
++}
++
++static void set_sal_call_data(struct kvm_vcpu *vcpu)
++{
++	struct exit_ctl_data *p = &vcpu->arch.exit_data;
++
++	p->u.sal_data.in0 = vcpu_get_gr(vcpu, 32);
++	p->u.sal_data.in1 = vcpu_get_gr(vcpu, 33);
++	p->u.sal_data.in2 = vcpu_get_gr(vcpu, 34);
++	p->u.sal_data.in3 = vcpu_get_gr(vcpu, 35);
++	p->u.sal_data.in4 = vcpu_get_gr(vcpu, 36);
++	p->u.sal_data.in5 = vcpu_get_gr(vcpu, 37);
++	p->u.sal_data.in6 = vcpu_get_gr(vcpu, 38);
++	p->u.sal_data.in7 = vcpu_get_gr(vcpu, 39);
++	p->exit_reason = EXIT_REASON_SAL_CALL;
++}
++
++static void set_sal_call_result(struct kvm_vcpu *vcpu)
++{
++	struct exit_ctl_data *p = &vcpu->arch.exit_data;
++
++	if (p->exit_reason == EXIT_REASON_SAL_CALL) {
++		vcpu_set_gr(vcpu, 8, p->u.sal_data.ret.r8, 0);
++		vcpu_set_gr(vcpu, 9, p->u.sal_data.ret.r9, 0);
++		vcpu_set_gr(vcpu, 10, p->u.sal_data.ret.r10, 0);
++		vcpu_set_gr(vcpu, 11, p->u.sal_data.ret.r11, 0);
++	} else
++		panic_vm(vcpu);
++}
++
++void  kvm_ia64_handle_break(unsigned long ifa, struct kvm_pt_regs *regs,
++		unsigned long isr, unsigned long iim)
++{
++	struct kvm_vcpu *v = current_vcpu;
++
++	if (ia64_psr(regs)->cpl == 0) {
++		/* Allow hypercalls only when cpl = 0.  */
++		if (iim == DOMN_PAL_REQUEST) {
++			set_pal_call_data(v);
++			vmm_transition(v);
++			set_pal_call_result(v);
++			vcpu_increment_iip(v);
++			return;
++		} else if (iim == DOMN_SAL_REQUEST) {
++			set_sal_call_data(v);
++			vmm_transition(v);
++			set_sal_call_result(v);
++			vcpu_increment_iip(v);
++			return;
++		}
++	}
++	reflect_interruption(ifa, isr, iim, 11, regs);
++}
++
++void check_pending_irq(struct kvm_vcpu *vcpu)
++{
++	int  mask, h_pending, h_inservice;
++	u64 isr;
++	unsigned long  vpsr;
++	struct kvm_pt_regs *regs = vcpu_regs(vcpu);
++
++	h_pending = highest_pending_irq(vcpu);
++	if (h_pending == NULL_VECTOR) {
++		update_vhpi(vcpu, NULL_VECTOR);
++		return;
++	}
++	h_inservice = highest_inservice_irq(vcpu);
++
++	vpsr = VCPU(vcpu, vpsr);
++	mask = irq_masked(vcpu, h_pending, h_inservice);
++	if ((vpsr & IA64_PSR_I) && IRQ_NO_MASKED == mask) {
++		isr = vpsr & IA64_PSR_RI;
++		update_vhpi(vcpu, h_pending);
++		reflect_interruption(0, isr, 0, 12, regs); /* EXT IRQ */
++	} else if (mask == IRQ_MASKED_BY_INSVC) {
++		if (VCPU(vcpu, vhpi))
++			update_vhpi(vcpu, NULL_VECTOR);
++	} else {
++		/* masked by vpsr.i or vtpr.*/
++		update_vhpi(vcpu, h_pending);
++	}
++}
++
++static void generate_exirq(struct kvm_vcpu *vcpu)
++{
++	unsigned  vpsr;
++	uint64_t isr;
++
++	struct kvm_pt_regs *regs = vcpu_regs(vcpu);
++
++	vpsr = VCPU(vcpu, vpsr);
++	isr = vpsr & IA64_PSR_RI;
++	if (!(vpsr & IA64_PSR_IC))
++		panic_vm(vcpu);
++	reflect_interruption(0, isr, 0, 12, regs); /* EXT IRQ */
++}
++
++void vhpi_detection(struct kvm_vcpu *vcpu)
++{
++	uint64_t    threshold, vhpi;
++	union ia64_tpr       vtpr;
++	struct ia64_psr vpsr;
++
++	vpsr = *(struct ia64_psr *)&VCPU(vcpu, vpsr);
++	vtpr.val = VCPU(vcpu, tpr);
++
++	threshold = ((!vpsr.i) << 5) | (vtpr.mmi << 4) | vtpr.mic;
++	vhpi = VCPU(vcpu, vhpi);
++	if (vhpi > threshold) {
++		/* interrupt actived*/
++		generate_exirq(vcpu);
++	}
++}
++
++
++void leave_hypervisor_tail(void)
++{
++	struct kvm_vcpu *v = current_vcpu;
++
++	if (VMX(v, timer_check)) {
++		VMX(v, timer_check) = 0;
++		if (VMX(v, itc_check)) {
++			if (vcpu_get_itc(v) > VCPU(v, itm)) {
++				if (!(VCPU(v, itv) & (1 << 16))) {
++					vcpu_pend_interrupt(v, VCPU(v, itv)
++							& 0xff);
++				VMX(v, itc_check) = 0;
++				} else {
++					v->arch.timer_pending = 1;
++				}
++				VMX(v, last_itc) = VCPU(v, itm) + 1;
++			}
++		}
++	}
++
++	rmb();
++	if (v->arch.irq_new_pending) {
++		v->arch.irq_new_pending = 0;
++		VMX(v, irq_check) = 0;
++		check_pending_irq(v);
++		return;
++	}
++	if (VMX(v, irq_check)) {
++		VMX(v, irq_check) = 0;
++		vhpi_detection(v);
++	}
++}
++
++
++static inline void handle_lds(struct kvm_pt_regs *regs)
++{
++	regs->cr_ipsr |= IA64_PSR_ED;
++}
++
++void physical_tlb_miss(struct kvm_vcpu *vcpu, unsigned long vadr, int type)
++{
++	unsigned long pte;
++	union ia64_rr rr;
++
++	rr.val = ia64_get_rr(vadr);
++	pte =  vadr & _PAGE_PPN_MASK;
++	pte = pte | PHY_PAGE_WB;
++	thash_vhpt_insert(vcpu, pte, (u64)(rr.ps << 2), vadr, type);
++	return;
++}
++
++void kvm_page_fault(u64 vadr , u64 vec, struct kvm_pt_regs *regs)
++{
++	unsigned long vpsr;
++	int type;
++
++	u64 vhpt_adr, gppa, pteval, rr, itir;
++	union ia64_isr misr;
++	union ia64_pta vpta;
++	struct thash_data *data;
++	struct kvm_vcpu *v = current_vcpu;
++
++	vpsr = VCPU(v, vpsr);
++	misr.val = VMX(v, cr_isr);
++
++	type = vec;
++
++	if (is_physical_mode(v) && (!(vadr << 1 >> 62))) {
++		if (vec == 2) {
++			if (__gpfn_is_io((vadr << 1) >> (PAGE_SHIFT + 1))) {
++				emulate_io_inst(v, ((vadr << 1) >> 1), 4);
++				return;
++			}
++		}
++		physical_tlb_miss(v, vadr, type);
++		return;
++	}
++	data = vtlb_lookup(v, vadr, type);
++	if (data != 0) {
++		if (type == D_TLB) {
++			gppa = (vadr & ((1UL << data->ps) - 1))
++				+ (data->ppn >> (data->ps - 12) << data->ps);
++			if (__gpfn_is_io(gppa >> PAGE_SHIFT)) {
++				if (data->pl >= ((regs->cr_ipsr >>
++						IA64_PSR_CPL0_BIT) & 3))
++					emulate_io_inst(v, gppa, data->ma);
++				else {
++					vcpu_set_isr(v, misr.val);
++					data_access_rights(v, vadr);
++				}
++				return ;
++			}
++		}
++		thash_vhpt_insert(v, data->page_flags, data->itir, vadr, type);
++
++	} else if (type == D_TLB) {
++		if (misr.sp) {
++			handle_lds(regs);
++			return;
++		}
++
++		rr = vcpu_get_rr(v, vadr);
++		itir = rr & (RR_RID_MASK | RR_PS_MASK);
++
++		if (!vhpt_enabled(v, vadr, misr.rs ? RSE_REF : DATA_REF)) {
++			if (vpsr & IA64_PSR_IC) {
++				vcpu_set_isr(v, misr.val);
++				alt_dtlb(v, vadr);
++			} else {
++				nested_dtlb(v);
++			}
++			return ;
++		}
++
++		vpta.val = vcpu_get_pta(v);
++		/* avoid recursively walking (short format) VHPT */
++
++		vhpt_adr = vcpu_thash(v, vadr);
++		if (!guest_vhpt_lookup(vhpt_adr, &pteval)) {
++			/* VHPT successfully read.  */
++			if (!(pteval & _PAGE_P)) {
++				if (vpsr & IA64_PSR_IC) {
++					vcpu_set_isr(v, misr.val);
++					dtlb_fault(v, vadr);
++				} else {
++					nested_dtlb(v);
++				}
++			} else if ((pteval & _PAGE_MA_MASK) != _PAGE_MA_ST) {
++				thash_purge_and_insert(v, pteval, itir,
++								vadr, D_TLB);
++			} else if (vpsr & IA64_PSR_IC) {
++				vcpu_set_isr(v, misr.val);
++				dtlb_fault(v, vadr);
++			} else {
++				nested_dtlb(v);
++			}
++		} else {
++			/* Can't read VHPT.  */
++			if (vpsr & IA64_PSR_IC) {
++				vcpu_set_isr(v, misr.val);
++				dvhpt_fault(v, vadr);
++			} else {
++				nested_dtlb(v);
++			}
++		}
++	} else if (type == I_TLB) {
++		if (!(vpsr & IA64_PSR_IC))
++			misr.ni = 1;
++		if (!vhpt_enabled(v, vadr, INST_REF)) {
++			vcpu_set_isr(v, misr.val);
++			alt_itlb(v, vadr);
++			return;
++		}
++
++		vpta.val = vcpu_get_pta(v);
++
++		vhpt_adr = vcpu_thash(v, vadr);
++		if (!guest_vhpt_lookup(vhpt_adr, &pteval)) {
++			/* VHPT successfully read.  */
++			if (pteval & _PAGE_P) {
++				if ((pteval & _PAGE_MA_MASK) == _PAGE_MA_ST) {
++					vcpu_set_isr(v, misr.val);
++					itlb_fault(v, vadr);
++					return ;
++				}
++				rr = vcpu_get_rr(v, vadr);
++				itir = rr & (RR_RID_MASK | RR_PS_MASK);
++				thash_purge_and_insert(v, pteval, itir,
++							vadr, I_TLB);
++			} else {
++				vcpu_set_isr(v, misr.val);
++				inst_page_not_present(v, vadr);
++			}
++		} else {
++			vcpu_set_isr(v, misr.val);
++			ivhpt_fault(v, vadr);
++		}
++	}
++}
++
++void kvm_vexirq(struct kvm_vcpu *vcpu)
++{
++	u64 vpsr, isr;
++	struct kvm_pt_regs *regs;
++
++	regs = vcpu_regs(vcpu);
++	vpsr = VCPU(vcpu, vpsr);
++	isr = vpsr & IA64_PSR_RI;
++	reflect_interruption(0, isr, 0, 12, regs); /*EXT IRQ*/
++}
++
++void kvm_ia64_handle_irq(struct kvm_vcpu *v)
++{
++	struct exit_ctl_data *p = &v->arch.exit_data;
++	long psr;
++
++	local_irq_save(psr);
++	p->exit_reason = EXIT_REASON_EXTERNAL_INTERRUPT;
++	vmm_transition(v);
++	local_irq_restore(psr);
++
++	VMX(v, timer_check) = 1;
++
++}
++
++static void ptc_ga_remote_func(struct kvm_vcpu *v, int pos)
++{
++	u64 oldrid, moldrid, oldpsbits, vaddr;
++	struct kvm_ptc_g *p = &v->arch.ptc_g_data[pos];
++	vaddr = p->vaddr;
++
++	oldrid = VMX(v, vrr[0]);
++	VMX(v, vrr[0]) = p->rr;
++	oldpsbits = VMX(v, psbits[0]);
++	VMX(v, psbits[0]) = VMX(v, psbits[REGION_NUMBER(vaddr)]);
++	moldrid = ia64_get_rr(0x0);
++	ia64_set_rr(0x0, vrrtomrr(p->rr));
++	ia64_srlz_d();
++
++	vaddr = PAGEALIGN(vaddr, p->ps);
++	thash_purge_entries_remote(v, vaddr, p->ps);
++
++	VMX(v, vrr[0]) = oldrid;
++	VMX(v, psbits[0]) = oldpsbits;
++	ia64_set_rr(0x0, moldrid);
++	ia64_dv_serialize_data();
++}
++
++static void vcpu_do_resume(struct kvm_vcpu *vcpu)
++{
++	/*Re-init VHPT and VTLB once from resume*/
++	vcpu->arch.vhpt.num = VHPT_NUM_ENTRIES;
++	thash_init(&vcpu->arch.vhpt, VHPT_SHIFT);
++	vcpu->arch.vtlb.num = VTLB_NUM_ENTRIES;
++	thash_init(&vcpu->arch.vtlb, VTLB_SHIFT);
++
++	ia64_set_pta(vcpu->arch.vhpt.pta.val);
++}
++
++static void kvm_do_resume_op(struct kvm_vcpu *vcpu)
++{
++	if (test_and_clear_bit(KVM_REQ_RESUME, &vcpu->requests)) {
++		vcpu_do_resume(vcpu);
++		return;
++	}
++
++	if (unlikely(test_and_clear_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests))) {
++		thash_purge_all(vcpu);
++		return;
++	}
++
++	if (test_and_clear_bit(KVM_REQ_PTC_G, &vcpu->requests)) {
++		while (vcpu->arch.ptc_g_count > 0)
++			ptc_ga_remote_func(vcpu, --vcpu->arch.ptc_g_count);
++	}
++}
++
++void vmm_transition(struct kvm_vcpu *vcpu)
++{
++	ia64_call_vsa(PAL_VPS_SAVE, (unsigned long)vcpu->arch.vpd,
++			0, 0, 0, 0, 0, 0);
++	vmm_trampoline(&vcpu->arch.guest, &vcpu->arch.host);
++	ia64_call_vsa(PAL_VPS_RESTORE, (unsigned long)vcpu->arch.vpd,
++						0, 0, 0, 0, 0, 0);
++	kvm_do_resume_op(vcpu);
++}
 -- 
 1.5.5
 
