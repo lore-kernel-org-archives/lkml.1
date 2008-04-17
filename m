@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbYDQJGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761778AbYDQJKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762875AbYDQJGs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYDQJGj
+	id S1761778AbYDQJKQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYDQJKC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:06:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33800 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Apr 2008 05:10:02 -0400
+Received: from smtp2.sssup.it ([193.205.80.100]:47105 "EHLO smtp2.sssup.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753304AbYDQJGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:06:39 -0400
-Date: Thu, 17 Apr 2008 11:06:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080417090626.GA14383@elte.hu>
-References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	id S1755524AbYDQJKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:10:01 -0400
+Date: Thu, 17 Apr 2008 11:14:55 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, paolo.valente@unimore.it
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417091455.GJ62286@gandalf.sssup.it>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080417014054.ea788f1f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080416184441.GA3923@ucw.cz>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> From: Pavel Machek <pavel@ucw.cz>
+> Date: Wed, Apr 16, 2008 08:44:41PM +0200
+>
+> On Tue 2008-04-01 17:29:03, Fabio Checconi wrote:
+> ...
+> > In the first type of tests, to achieve a higher throughput than CFQ
+> > (with the default 100 ms time slice), the maximum budget for BFQ
+> > had to be set to at least 4k sectors.  Using the same value for the
+> 
+> Hmm, 4k sectors is ~40 seconds worst case, no? That's quite long...
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> By keeping all this code out of -mm you haven't solved any of the 
-> merge/integration problems which we had in 2.6.24-rcX.  They're all 
-> still there.  All you did was to push them out of the two-month 
-> integrate-and-test period and put them into the 2.6.25 merge window 
-> instead.
+A process with such a low throughput would be marked as seeky from
+the heuristics implemented in cfq/bfq.  Seeky processes are not
+treated in the same way as sequential ones and they should not get
+their full slice allocated, since they idle only for very short
+periods.
 
-... hm, i think there's really no problem here at all: most of the merge 
-problems you cited were due to clearly out-of-tree patches that sit in 
-x86.git/testing for the convenience of our testers and contributors, 
-that we have no intention to push upstream.
+BTW looking at the code they can get a full slice, if they always
+reissue requests fast enough - within BFQ_MIN_TT - and this is
+definitely an issue/error in the current implementation (and we
+didn't notice it when converting the code from time-based to
+service-based allocation :) ).
 
-(Again, sorry about the terse shortlog which might have contributed to 
-this misunderstanding, that's all i could do yesterday evening.)
-
-	Ingo
+An easy solution (without changing the nature of bfq) would be
+to use shorter slices for seeky queues, with the same mechanism
+we already use for the async ones.
