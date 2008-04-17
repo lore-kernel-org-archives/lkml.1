@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYDQG6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbYDQHJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbYDQG6c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 02:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYDQG6V
+	id S1759305AbYDQHJz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 03:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYDQHJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 02:58:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:26567 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753019AbYDQG6U (ORCPT
+	Thu, 17 Apr 2008 03:09:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57363
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753433AbYDQHJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 02:58:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=dhxAMCvZ0Ykgkxogee3ban2+XBBZJF2Vh/dkIZVN7nljzYif6fvDpJIEst30krpNcp/r4e8nqsn3HxS0hOPXeA+D6G2Hw+uyCA1eDE+CPEvEpLQfhpiZb89EVx54W8xUrtaJQrbljR5fL4SV5qlobkAIdsexBf8PUIXfs80qvmE=
-Message-ID: <ed10ee420804162358k416bb443lf7c95892d84e75d2@mail.gmail.com>
-Date: Wed, 16 Apr 2008 23:58:19 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Roel Kluin" <12o3l@tiscali.nl>
-Subject: Re: [PATCH] mos7840: test and propagate set_uart_reg return value
-Cc: "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <4806CF18.2050403@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Apr 2008 03:09:45 -0400
+Date: Thu, 17 Apr 2008 00:09:46 -0700 (PDT)
+Message-Id: <20080417.000946.44234467.davem@davemloft.net>
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [LMB][2/2] Restructure allocation loops to avoid unsigned
+ underflow
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18432.18107.854417.50018@cargo.ozlabs.ibm.com>
+References: <18432.18107.854417.50018@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4806CF18.2050403@tiscali.nl>
-X-Google-Sender-Auth: 4c83e846af2e9c28
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/08, Roel Kluin <12o3l@tiscali.nl> wrote:
-> The test for an mos7840_set_uart_reg() error return value only works when
->  status is signed. propagate its error value.
->
->  Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->  ---
->
->  diff --git a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
->  index aeeb9cb..ef1ede2 100644
->  --- a/drivers/usb/serial/mos7840.c
->  +++ b/drivers/usb/serial/mos7840.c
->  @@ -1713,7 +1713,7 @@ static int mos7840_tiocmset(struct usb_serial_port *port, struct file *file,
->   {
->         struct moschip_port *mos7840_port;
->         unsigned int mcr;
->  -       unsigned int status;
->  +       int status;
->
->         dbg("%s - port %d", __FUNCTION__, port->number);
->
->  @@ -1739,11 +1739,10 @@ static int mos7840_tiocmset(struct usb_serial_port *port, struct file *file,
->
->         mos7840_port->shadowMCR = mcr;
->
->  -       status = 0;
->         status = mos7840_set_uart_reg(port, MODEM_CONTROL_REGISTER, mcr);
->         if (status < 0) {
->                 dbg("setting MODEM_CONTROL_REGISTER Failed\n");
->  -               return -1;
->  +               return status;
->         }
->
->         return 0;
+From: Paul Mackerras <paulus@samba.org>
+Date: Sat, 12 Apr 2008 15:20:59 +1000
 
-O.K.  I can see you're changing types to properly match the function return
-values.  May I ask why you didn't change mos7840_tiocmget the same way?
+> There is a potential bug in __lmb_alloc_base where we subtract `size'
+> from the base address of a reserved region without checking whether
+> the subtraction could wrap around and produce a very large unsigned
+> value.  In fact it probably isn't possible to hit the bug in practice
+> since it would only occur in the situation where we can't satisfy the
+> allocation request and there is a reserved region starting at 0.
+> 
+> This fixes the potential bug by breaking out of the loop when we get
+> to the point where the base of the reserved region is less than the
+> size requested.  This also restructures the loop to be a bit easier to
+> follow. 
+> 
+> The same logic got copied into lmb_alloc_nid_unreserved, so this makes
+> a similar change there.  Here the bug is more likely to be hit because
+> the outer loop  (in lmb_alloc_nid) goes through the memory regions in
+> increasing order rather than decreasing order as __lmb_alloc_base
+> does, and we are therefore more likely to hit the case where we are
+> testing against a reserved region with a base address of 0.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
--sb
+This looks great, thanks for doing this work Paul.
+
+I'll try to find some cycles to validate these changes alongside
+the pending sparc64 NUMA changes I have.
