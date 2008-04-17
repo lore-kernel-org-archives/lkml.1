@@ -1,113 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbYDQKFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935953AbYDQKFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbYDQKFU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933083AbYDQJo2
+	id S935953AbYDQKFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935039AbYDQJqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:44:28 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:12220 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934848AbYDQJo0 (ORCPT
+	Thu, 17 Apr 2008 05:46:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:25735 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934919AbYDQJqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:44:26 -0400
+	Thu, 17 Apr 2008 05:46:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pM6Ku81lZxSDlnNp5kiy89x87H0a7PERDMtvEMynyHmG+1ub7RWd79xjYXCVn6/klqpWUnQWKxHRlp/E2amKSVUYaSA8oKZ351vYEUow8Xh3DezRY5zS0hBhkMo4ky+3QmVaGl/FFGgUy3S1d2ObnRljqei9dedXwSMNIE5Clzg=
-Message-ID: <86802c440804170244g3463d1bcx632844dc0204ded2@mail.gmail.com>
-Date: Thu, 17 Apr 2008 02:44:16 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86_64: restore mask_bits in msi shutdown
-Cc: hlu.kernel@gmail.com, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Jeff Garzik" <jeff@garzik.org>,
-       "Ayaz Abdulla" <aabdulla@nvidia.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1bq48vnxn.fsf@frodo.ebiederm.org>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZxFRx8z+nX6K0UIxkrFAplVDX1IJW4Myc7qmHgUEYkTlmwX+mA9pepm+sPqPVLpZKnuYo0tUNDCJCnqiOcZmm/s8IVT1NV0gE1GWyfkHxviOJGNCoGoE41o385GwWefwBSaLG5x0cAu8lW6K4yjbfrX7eGY1YDoh5Q0d7FkFXsY=
+Message-ID: <e2e108260804170246i673a2e08q333eeae48467ed4@mail.gmail.com>
+Date: Thu, 17 Apr 2008 11:46:14 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: 2.6.25 section mismatches
+Cc: rufus-azrael@numericable.fr
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200804111626.11232.yhlu.kernel@gmail.com>
-	 <m1bq48vnxn.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 2:19 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
->
-> Yinghai Lu <yhlu.kernel.send@gmail.com> writes:
->
->  > I can not kexec RHEL 5.1 from 2.6.25-rc3 later
->  >
->  > caused by:
->  > commit 89d694b9dbe769ca1004e01db0ca43964806a611
->  > Author: Thomas Gleixner <tglx@linutronix.de>
->  > Date:   Mon Feb 18 18:25:17 2008 +0100
->  >
->  >     genirq: do not leave interupts enabled on free_irq
->  >
->  >     The default_disable() function was changed in commit:
->  >
->  >      76d2160147f43f982dfe881404cfde9fd0a9da21
->  >      genirq: do not mask interrupts by default
->  >
->  >     It removed the mask function in favour of the default delayed
->  >     interrupt disabling. Unfortunately this also broke the shutdown in
->  >     free_irq() when the last handler is removed from the interrupt for
->  >     those architectures which rely on the default implementations. Now we
->  >     can end up with a enabled interrupt line after the last handler was
->  >     removed, which can result in spurious interrupts.
->  >
->  >     Fix this by adding a default_shutdown function, which is only
->  >     installed, when the irqchip implementation does provide neither a
->  >     shutdown nor a disable function.
->  >
->  >     [@stable: affected versions: .21 - .24 ]
->  >
->  >
->  >
->  > for MSI, default_shutdown will call mask_bit for msi device. so all mask bits
->  > will
->  > left disabled after free_irq.
->  > then if kexec next kernel that only can use msi_enable bit.
->  > all device's MSI can not be used.
->  >
->  > So try to restore MSI mask bits that is saved before using msi in first kernel.
->  >
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
->  Ouch!  In the case of MSI-X this is horrible.  Reenabling an interrupt
->  line when we are not using it.  That is likely to cause even stranger
->  things than kexec to fail.
+Apparently there is a significant number of section mismatches in the
+2.6.25 kernel. These were already reported against 2.6.25-rc1 and are
+still present in the final 2.6.25 release. These section mismatches
+show up at least on the i386 and x86_64 architectures. Maybe it's a
+good idea before a patch is merged not only to check whether the patch
+applies cleanly but also to check whether it doesn't create any new
+section mismatches ?
 
-only does save and restore with msi and doesn't do anything with MSIX
+See also http://bugzilla.kernel.org/show_bug.cgi?id=9974.
 
-+void msi_restore_mask_bits(unsigned int irq)
-+{
-+       struct msi_desc *entry;
-+
-+       entry = get_irq_msi(irq);
-+       BUG_ON(!entry || !entry->dev);
-+       switch (entry->msi_attrib.type) {
-+       case PCI_CAP_ID_MSI:
-+               if (entry->msi_attrib.maskbit) {
-+                       int pos;
-+                       u32 mask_bits;
-+
-+                       pos = (long)entry->mask_base;
-+                       mask_bits = entry->orig_mask_bits;
-+                       pci_write_config_dword(entry->dev, pos, mask_bits);
-+               }
-+               break;
-+       case PCI_CAP_ID_MSIX:
-+               break; ======================> does not restore that for MSIX
-+       default:
-+               BUG();
-+               break;
-+       }
-+}
-
-YH
+Bart.
