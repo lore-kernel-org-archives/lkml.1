@@ -1,43 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbYDQIpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761692AbYDQIrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761777AbYDQIpq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbYDQIpi
+	id S1761692AbYDQIrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYDQIrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:45:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59241
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751977AbYDQIpi (ORCPT
+	Thu, 17 Apr 2008 04:47:11 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:46091 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750776AbYDQIrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:45:38 -0400
-Date: Thu, 17 Apr 2008 01:45:34 -0700 (PDT)
-Message-Id: <20080417.014534.258800340.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080417014054.ea788f1f.akpm@linux-foundation.org>
-References: <20080417002552.5742ad65.akpm@linux-foundation.org>
-	<20080417083000.GA4935@elte.hu>
-	<20080417014054.ea788f1f.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 04:47:09 -0400
+Date: Thu, 17 Apr 2008 09:45:22 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Crispin Cowan <crispin@crispincowan.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Message-ID: <20080417084522.GA23301@shareable.org>
+Mail-Followup-To: Crispin Cowan <crispin@crispincowan.com>,
+	Stephen Smalley <sds@tycho.nsa.gov>,
+	"Serge E. Hallyn" <serue@us.ibm.com>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+	paul.moore@hp.com, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+	takedakn@nttdata.co.jp, linux-fsdevel@vger.kernel.org,
+	netdev@vger.kernel.org
+References: <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp> <20080411143013.GB11962@parisc-linux.org> <20080413163658.GC7010@sergelap.austin.ibm.com> <4802BBDC.1030707@crispincowan.com> <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil> <48043648.1000502@crispincowan.com> <1208363519.18883.232.camel@moss-spartans.epoch.ncsc.mil> <4807011D.8060009@crispincowan.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4807011D.8060009@crispincowan.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 17 Apr 2008 01:40:54 -0700
+Crispin Cowan wrote:
+> Of *course* AppArmor protects the integrity of /etc/shadow, and 
+> unauthorized parties are not permitted to feed data into that file 
+> unless explicit access is granted. The difference is in how it is done:
+> 
+>    * SELinux marks the inode with a label, and only processes with the
+>      right permissions can mess with the label.
+>          o Residual problem: someone could rename the inode and drop a
+>            new inode into place named "/etc/shadow". SELinux addresses
+>            this with access control on the parent directory.
 
-> By keeping all this code out of -mm you haven't solved any of the
-> merge/integration problems which we had in 2.6.24-rcX.
+<small> I have actually hacked a system by renaming /etc/passwd in
+this way.  /etc was owned by user "bin", and I had a login as "bin"
+due to a misfeature in some program.  So I substituted another
+/etc/passwd, and gave myself a root shell. </small>
 
-I think things would have been a lot easier if you had adopted
-basing -mm on top of linux-next from the very start.
+The trouble with access control on the parent directory is that
+occasionally some human accidentally forgets how important that is,
+thinking that permissions on the /etc/shadow file are important.
 
-The responsiveness to problems and merge hassles has been so much
-superior and efficient from the linux-next folks for my networking
-stuff, for example.  It's never been like that with -mm.
+Also *programs* care about a file with that name.  They reference it
+by name, apply security decisions based on a process which starts with
+that name.  So the name is the most relevant point of communication
+between the policy setter and programs which need to be affected.
+
+So I think AppArmor's approach is good here.
+
+>    * AppArmor checks the name "/etc/shadow" so that you cannot access
+>      that name without explicit permission.
+>          o AppArmor cares about the integrity of what the OS returns
+>            when you access the name "/etc/shadow" and does not care a
+>            wit what happens to the inode that was *previously* named
+>            "/etc/shadow".
+> 
+> Now, without running off into the weeds again, tell me again why I 
+> should care about the *integrity* of an inode that was *previously* 
+> known as "/etc/shadow"?
+
+But insufficient here.
+
+If you rename /etc/shadow legitimately, after changing a password,
+there might be a program which still has a handle to the _old_ inode
+and is still reading it, still comparing a password against its contents.
+
+If policy was entirely name based, so modifications may be possible to
+that file after it's renamed from /etc/shadow to /etc/shadow.bak,
+_while_ some programs are still reading it (because it was /etc/shadow
+when they opened it, and they got swapped for a moment), that's a failure.
+
+So you *should* care about the integrity of an inode that was
+previously known as /etc/shadow - at least until you can prove that
+nobody is still dependent on it's earlier security properties.  That's
+a garbage collection problem.
+
+> So associating a security property with a name is ok if you do it 
+> statically at some arbitrary point in time, but not if you consider it 
+> at the time of access? WtF? Isn't that a gigantic race condition?
+
+Both are race conditions.
+
+> To the contrary, I argue that the *current* name of a file is vastly 
+> more meaningful for security properties than the name the file had some 
+> months ago when someone ran restorecon over the file system.
+
+I agree that the current name is meaningful, but it's not watertight
+when your systems change.  To avoid unexpected weaknesses, you'll need
+to apply the intersection of permissions over a time period, using
+name based policy but having it follow renames until you can prove
+it's safe to release the following.
+
+-- Jamie
