@@ -1,289 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933732AbYDQQPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934253AbYDQQRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933732AbYDQQPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 12:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763268AbYDQQOw
+	id S934253AbYDQQRV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 12:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbYDQQRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 12:14:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:26311 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755001AbYDQQOu (ORCPT
+	Thu, 17 Apr 2008 12:17:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35552 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763700AbYDQQRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 12:14:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=rSRIzCpLJMKfnVYVRcGd0BEHegOnaIAC7clRLiHrUCJ7+lI4BrHdnQmPz0eiOIBYM0bEIMjWobkUcsfeA4lAFY/LF35sZPRVMqk2LpAyaFb6zNqXpod6ppvQlKjI4OKd8I/oUrYscIuAdOlphpqzHTx38uupSBGN4HmRoXEkTIM=
-Date: Thu, 17 Apr 2008 18:10:32 +0200
-To: James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Steve Grubb <sgrubb@redhat.com>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-security-module@vger.kernel.org,
-       linux-audit@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.26 #repost] Smack: Integrate with Audit
-Message-ID: <20080417161032.GA24882@ubuntu>
-References: <1208430369-23156-1-git-send-email-jmorris@namei.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208430369-23156-1-git-send-email-jmorris@namei.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Thu, 17 Apr 2008 12:17:12 -0400
+Subject: Re: Semphore -> mutex in the device tree
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0804171204460.18040-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0804171204460.18040-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 18:17:09 +0200
+Message-Id: <1208449029.7115.34.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James/all,
-
-On Thu, Apr 17, 2008 at 11:05:57AM +0000, James Morris wrote:
+On Thu, 2008-04-17 at 12:11 -0400, Alan Stern wrote:
+> On Thu, 17 Apr 2008, Peter Zijlstra wrote:
 > 
-> Please review the following security patches for 2.6.26, which have
-> been undergoing testing in the "next" tree and affect multiple LSMs.
+> > On Thu, 2008-04-17 at 11:22 -0400, Alan Stern wrote:
+> > > Peter:
+> > > 
+> > > The obstacle to converting the semaphore in struct device to a mutex 
+> > > has been that its tree-oriented usage pattern isn't compatible with 
+> > > lockdep.
+> > > 
+> > > In order to get around this and at least begin the conversion process,
+> > > how about adding a provision for making some classes of mutex invisible
+> > > to lockdep?  I know it doesn't solve the fundamental problem, but maybe
+> > > it's a step in the right direction.
+> > 
+> > the device lock has two problems with lockdep:
+> > 
+> >  1) on suspend it takes more than MAX_LOCK_DEPTH (48) locks
 > 
+> This isn't true any more.  Not in Greg KH's development tree.
 > 
+> >  2) tree nesting
+> > 
+> > 
+> > Lets start with the easy one first; would a similar solution to the
+> > radix tree locking as found in -rt work?
+> > 
+> > http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
+> > 
+> > That does mean you have to set an effective max depth to the tree, is
+> > that a practical issue?
+> 
+> I don't know.  But I suspect it wouldn't be sufficient to solve the 
+> problems associated with tree nesting.
 
-As a clarification, those new changes was added to the security tree 
-to modularly integrate Smack with Audit. The final step is the
-reposted below patch which setups the new Audit hooks for Smack.
+It works for strict top-down locking. The sideways locking you do:
 
-The main concern against below patch was the reuse of SELinux Audit
-fields. For such reuse, Stephen asked for an explicit ACK from the 
-Audit devs. I've CCed Steve and Al as a kind request for the ACK.
+> For example, it's quite likely that some code somewhere needs to hold
+> two sibling nodes' locks at the same time.  Provided the parent node is
+> already locked, this operation is perfectly safe.  But is lockdep able
+> to handle it?
 
-Patch is re-based and re-tested over James's security/for-linus
-branch.
+Your siblings are ordered; so a simple mutex_lock_nested() should work
+between siblings as long as you never need more than 8 siblings locked
+at any one time.
 
-Thanks all.
+> There are other, more subtle problems too; this is just one example.
 
--->
+Can you think of a situation where the top-down class annotation and the
+sideways _nesting() isn't sufficient? If so, please share.
 
-Setup the new Audit hooks for Smack. SELinux Audit rule fields 
-are recycled to avoid `auditd' userspace modifications.
-Currently only equality testing is supported on labels acting 
-as a subject (AUDIT_SUBJ_USER) or as an object (AUDIT_OBJ_USER).
+> > The harder part is 1), holding _that_ many locks. Would something
+> > obscene like this work for you:
+> 
+> This is no longer needed, fortunately.  :-)
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 904bdc0..70e4abc 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -26,6 +26,7 @@
- #include <linux/pipe_fs_i.h>
- #include <net/netlabel.h>
- #include <net/cipso_ipv4.h>
-+#include <linux/audit.h>
- 
- #include "smack.h"
- 
-@@ -752,6 +753,18 @@ static int smack_inode_listsecurity(struct inode *inode, char *buffer,
- 	return -EINVAL;
- }
- 
-+/**
-+ * smack_inode_getsecid - Extract inode's security id
-+ * @inode: inode to extract the info from
-+ * @secid: where result will be saved
-+ */
-+static void smack_inode_getsecid(const struct inode *inode, u32 *secid)
-+{
-+	struct inode_smack *isp = inode->i_security;
-+
-+	*secid = smack_to_secid(isp->smk_inode);
-+}
-+
- /*
-  * File Hooks
-  */
-@@ -1805,6 +1818,18 @@ static int smack_ipc_permission(struct kern_ipc_perm *ipp, short flag)
- 	return smk_curacc(isp, may);
- }
- 
-+/**
-+ * smack_ipc_getsecid - Extract smack security id
-+ * @ipcp: the object permissions
-+ * @secid: where result will be saved
-+ */
-+static void smack_ipc_getsecid(struct kern_ipc_perm *ipp, u32 *secid)
-+{
-+	char *smack = ipp->security;
-+
-+	*secid = smack_to_secid(smack);
-+}
-+
- /* module stacking operations */
- 
- /**
-@@ -2382,6 +2407,124 @@ static int smack_key_permission(key_ref_t key_ref,
- #endif /* CONFIG_KEYS */
- 
- /*
-+ * Smack Audit hooks
-+ *
-+ * Audit requires a unique representation of each Smack specific
-+ * rule. This unique representation is used to distinguish the
-+ * object to be audited from remaining kernel objects and also
-+ * works as a glue between the audit hooks.
-+ *
-+ * Since repository entries are added but never deleted, we'll use
-+ * the smack_known label address related to the given audit rule as
-+ * the needed unique representation. This also better fits the smack
-+ * model where nearly everything is a label.
-+ */
-+#ifdef CONFIG_AUDIT
-+
-+/**
-+ * smack_audit_rule_init - Initialize a smack audit rule
-+ * @field: audit rule fields given from user-space (audit.h)
-+ * @op: required testing operator (=, !=, >, <, ...)
-+ * @rulestr: smack label to be audited
-+ * @vrule: pointer to save our own audit rule representation
-+ *
-+ * Prepare to audit cases where (@field @op @rulestr) is true.
-+ * The label to be audited is created if necessay.
-+ */
-+static int smack_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule)
-+{
-+	char **rule = (char **)vrule;
-+	*rule = NULL;
-+
-+	if (field != AUDIT_SUBJ_USER && field != AUDIT_OBJ_USER)
-+		return -EINVAL;
-+
-+	if (op != AUDIT_EQUAL && op != AUDIT_NOT_EQUAL)
-+		return -EINVAL;
-+
-+	*rule = smk_import(rulestr, 0);
-+
-+	return 0;
-+}
-+
-+/**
-+ * smack_audit_rule_known - Distinguish Smack audit rules
-+ * @krule: rule of interest, in Audit kernel representation format
-+ *
-+ * This is used to filter Smack rules from remaining Audit ones.
-+ * If it's proved that this rule belongs to us, the
-+ * audit_rule_match hook will be called to do the final judgement.
-+ */
-+static int smack_audit_rule_known(struct audit_krule *krule)
-+{
-+	struct audit_field *f;
-+	int i;
-+
-+	for (i = 0; i < krule->field_count; i++) {
-+		f = &krule->fields[i];
-+
-+		if (f->type == AUDIT_SUBJ_USER || f->type == AUDIT_OBJ_USER)
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * smack_audit_rule_match - Audit given object ?
-+ * @secid: security id for identifying the object to test
-+ * @field: audit rule flags given from user-space
-+ * @op: required testing operator
-+ * @vrule: smack internal rule presentation
-+ * @actx: audit context associated with the check
-+ *
-+ * The core Audit hook. It's used to take the decision of
-+ * whether to audit or not to audit a given object.
-+ */
-+static int smack_audit_rule_match(u32 secid, u32 field, u32 op, void *vrule,
-+				  struct audit_context *actx)
-+{
-+	char *smack;
-+	char *rule = vrule;
-+
-+	if (!rule) {
-+		audit_log(actx, GFP_KERNEL, AUDIT_SELINUX_ERR,
-+			  "Smack: missing rule\n");
-+		return -ENOENT;
-+	}
-+
-+	if (field != AUDIT_SUBJ_USER && field != AUDIT_OBJ_USER)
-+		return 0;
-+
-+	smack = smack_from_secid(secid);
-+
-+	/*
-+	 * No need to do string comparisons. If a match occurs,
-+	 * both pointers will point to the same smack_known
-+	 * label.
-+	 */
-+	if (op == AUDIT_EQUAL)
-+		return (rule == smack);
-+	if (op == AUDIT_NOT_EQUAL)
-+		return (rule != smack);
-+
-+	return 0;
-+}
-+
-+/**
-+ * smack_audit_rule_free - free smack rule representation
-+ * @vrule: rule to be freed.
-+ *
-+ * No memory was allocated.
-+ */
-+static void smack_audit_rule_free(void *vrule)
-+{
-+	/* No-op */
-+}
-+
-+#endif /* CONFIG_AUDIT */
-+
-+/*
-  * smack_secid_to_secctx - return the smack label for a secid
-  * @secid: incoming integer
-  * @secdata: destination
-@@ -2467,6 +2610,7 @@ struct security_operations smack_ops = {
- 	.inode_getsecurity = 		smack_inode_getsecurity,
- 	.inode_setsecurity = 		smack_inode_setsecurity,
- 	.inode_listsecurity = 		smack_inode_listsecurity,
-+	.inode_getsecid =		smack_inode_getsecid,
- 
- 	.file_permission = 		smack_file_permission,
- 	.file_alloc_security = 		smack_file_alloc_security,
-@@ -2497,6 +2641,7 @@ struct security_operations smack_ops = {
- 	.task_to_inode = 		smack_task_to_inode,
- 
- 	.ipc_permission = 		smack_ipc_permission,
-+	.ipc_getsecid =			smack_ipc_getsecid,
- 
- 	.msg_msg_alloc_security = 	smack_msg_msg_alloc_security,
- 	.msg_msg_free_security = 	smack_msg_msg_free_security,
-@@ -2541,12 +2686,22 @@ struct security_operations smack_ops = {
- 	.sk_free_security = 		smack_sk_free_security,
- 	.sock_graft = 			smack_sock_graft,
- 	.inet_conn_request = 		smack_inet_conn_request,
-+
-  /* key management security hooks */
- #ifdef CONFIG_KEYS
- 	.key_alloc = 			smack_key_alloc,
- 	.key_free = 			smack_key_free,
- 	.key_permission = 		smack_key_permission,
- #endif /* CONFIG_KEYS */
-+
-+ /* Audit hooks */
-+#ifdef CONFIG_AUDIT
-+	.audit_rule_init =		smack_audit_rule_init,
-+	.audit_rule_known =		smack_audit_rule_known,
-+	.audit_rule_match =		smack_audit_rule_match,
-+	.audit_rule_free =		smack_audit_rule_free,
-+#endif /* CONFIG_AUDIT */
-+
- 	.secid_to_secctx = 		smack_secid_to_secctx,
- 	.secctx_to_secid = 		smack_secctx_to_secid,
- 	.release_secctx = 		smack_release_secctx,
-
--- 
-
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+Ah, good :-) 
 
