@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964833AbYDQJlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbYDQJl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964833AbYDQJlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932263AbYDQJZv
+	id S934872AbYDQJl7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbYDQJ0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:25:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46171 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 05:26:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46180 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933547AbYDQJZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:25:46 -0400
+	id S933676AbYDQJ0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:26:06 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 16/48] [GFS2] Eliminate gl_req_bh
-Date: Thu, 17 Apr 2008 09:38:52 +0100
-Message-Id: <12084216023999-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 19/48] [GFS2] Shrink & rename di_depth
+Date: Thu, 17 Apr 2008 09:38:55 +0100
+Message-Id: <12084216082638-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12084216003676-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12084216061172-git-send-email-swhiteho@redhat.com>
 References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215642582-git-send-email-swhiteho@redhat.com>
  <1208421571478-git-send-email-swhiteho@redhat.com>
@@ -34,225 +33,238 @@ References: 12084214272083-git-send-email-swhiteho@redhat.com
  <12084215961690-git-send-email-swhiteho@redhat.com>
  <1208421597980-git-send-email-swhiteho@redhat.com>
  <12084216003676-git-send-email-swhiteho@redhat.com>
+ <12084216023999-git-send-email-swhiteho@redhat.com>
+ <12084216044123-git-send-email-swhiteho@redhat.com>
+ <12084216061172-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch further reduces the memory needs of GFS2 by
-eliminating the gl_req_bh variable from struct gfs2_glock.
+This patch forms a pair with the previous patch which shrunk
+di_height. Like that patch di_depth is renamed i_depth and moved
+into struct gfs2_inode directly. Also the field goes from 16 bits
+to 8 bits since it is also limited to a max value which is rather
+small (17 in this case). In addition we also now validate the field
+against this maximum value when its read in.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 951cb91..a8387e0 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -338,7 +338,6 @@ int gfs2_glock_get(struct gfs2_sbd *sdp, u64 number,
- 	gl->gl_ip = 0;
- 	gl->gl_ops = glops;
- 	gl->gl_req_gh = NULL;
--	gl->gl_req_bh = NULL;
- 	gl->gl_vn = 0;
- 	gl->gl_stamp = jiffies;
- 	gl->gl_tchange = jiffies;
-@@ -744,6 +743,50 @@ static void state_change(struct gfs2_glock *gl, unsigned int new_state)
- }
+diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
+index 78c236f..081daa9 100644
+--- a/fs/gfs2/dir.c
++++ b/fs/gfs2/dir.c
+@@ -757,7 +757,7 @@ static struct gfs2_dirent *gfs2_dirent_search(struct inode *inode,
  
- /**
-+ * drop_bh - Called after a lock module unlock completes
-+ * @gl: the glock
-+ * @ret: the return status
-+ *
-+ * Doesn't wake up the process waiting on the struct gfs2_holder (if any)
-+ * Doesn't drop the reference on the glock the top half took out
-+ *
-+ */
-+
-+static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
-+{
-+	struct gfs2_sbd *sdp = gl->gl_sbd;
-+	const struct gfs2_glock_operations *glops = gl->gl_ops;
-+	struct gfs2_holder *gh = gl->gl_req_gh;
-+
-+	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
-+	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
-+	gfs2_assert_warn(sdp, !ret);
-+
-+	state_change(gl, LM_ST_UNLOCKED);
-+
-+	if (glops->go_inval)
-+		glops->go_inval(gl, DIO_METADATA);
-+
-+	if (gh) {
-+		spin_lock(&gl->gl_spin);
-+		list_del_init(&gh->gh_list);
-+		gh->gh_error = 0;
-+		spin_unlock(&gl->gl_spin);
-+	}
-+
-+	spin_lock(&gl->gl_spin);
-+	gfs2_demote_wake(gl);
-+	gl->gl_req_gh = NULL;
-+	clear_bit(GLF_LOCK, &gl->gl_flags);
-+	spin_unlock(&gl->gl_spin);
-+
-+	gfs2_glock_put(gl);
-+
-+	if (gh)
-+		gfs2_holder_wake(gh);
-+}
-+
-+/**
-  * xmote_bh - Called after the lock module is done acquiring a lock
-  * @gl: The glock in question
-  * @ret: the int returned from the lock module
-@@ -758,6 +801,11 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
- 	int prev_state = gl->gl_state;
- 	int op_done = 1;
+ 	if (ip->i_di.di_flags & GFS2_DIF_EXHASH) {
+ 		struct gfs2_leaf *leaf;
+-		unsigned hsize = 1 << ip->i_di.di_depth;
++		unsigned hsize = 1 << ip->i_depth;
+ 		unsigned index;
+ 		u64 ln;
+ 		if (hsize * sizeof(u64) != ip->i_di.di_size) {
+@@ -765,7 +765,7 @@ static struct gfs2_dirent *gfs2_dirent_search(struct inode *inode,
+ 			return ERR_PTR(-EIO);
+ 		}
  
-+	if ((ret & LM_OUT_ST_MASK) == LM_ST_UNLOCKED) {
-+		drop_bh(gl, ret);
-+		return;
-+	}
-+
- 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
- 	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
- 	gfs2_assert_warn(sdp, !(ret & LM_OUT_ASYNC));
-@@ -783,7 +831,6 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
- 		} else {
- 			spin_lock(&gl->gl_spin);
- 			if (gl->gl_state != gl->gl_demote_state) {
--				gl->gl_req_bh = NULL;
- 				spin_unlock(&gl->gl_spin);
- 				gfs2_glock_drop_th(gl);
- 				gfs2_glock_put(gl);
-@@ -825,7 +872,6 @@ out:
- 	if (op_done) {
- 		spin_lock(&gl->gl_spin);
- 		gl->gl_req_gh = NULL;
--		gl->gl_req_bh = NULL;
- 		clear_bit(GLF_LOCK, &gl->gl_flags);
- 		spin_unlock(&gl->gl_spin);
+-		index = name->hash >> (32 - ip->i_di.di_depth);
++		index = name->hash >> (32 - ip->i_depth);
+ 		error = get_first_leaf(ip, index, &bh);
+ 		if (error)
+ 			return ERR_PTR(error);
+@@ -910,7 +910,7 @@ static int dir_make_exhash(struct inode *inode)
+ 	dip->i_di.di_flags |= GFS2_DIF_EXHASH;
+ 
+ 	for (x = sdp->sd_hash_ptrs, y = -1; x; x >>= 1, y++) ;
+-	dip->i_di.di_depth = y;
++	dip->i_depth = y;
+ 
+ 	gfs2_dinode_out(dip, dibh->b_data);
+ 
+@@ -941,7 +941,7 @@ static int dir_split_leaf(struct inode *inode, const struct qstr *name)
+ 	int x, moved = 0;
+ 	int error;
+ 
+-	index = name->hash >> (32 - dip->i_di.di_depth);
++	index = name->hash >> (32 - dip->i_depth);
+ 	error = get_leaf_nr(dip, index, &leaf_no);
+ 	if (error)
+ 		return error;
+@@ -952,7 +952,7 @@ static int dir_split_leaf(struct inode *inode, const struct qstr *name)
+ 		return error;
+ 
+ 	oleaf = (struct gfs2_leaf *)obh->b_data;
+-	if (dip->i_di.di_depth == be16_to_cpu(oleaf->lf_depth)) {
++	if (dip->i_depth == be16_to_cpu(oleaf->lf_depth)) {
+ 		brelse(obh);
+ 		return 1; /* can't split */
  	}
-@@ -864,7 +910,6 @@ static void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
- 	gfs2_assert_warn(sdp, state != gl->gl_state);
+@@ -967,10 +967,10 @@ static int dir_split_leaf(struct inode *inode, const struct qstr *name)
+ 	bn = nbh->b_blocknr;
  
- 	gfs2_glock_hold(gl);
--	gl->gl_req_bh = xmote_bh;
+ 	/*  Compute the start and len of leaf pointers in the hash table.  */
+-	len = 1 << (dip->i_di.di_depth - be16_to_cpu(oleaf->lf_depth));
++	len = 1 << (dip->i_depth - be16_to_cpu(oleaf->lf_depth));
+ 	half_len = len >> 1;
+ 	if (!half_len) {
+-		printk(KERN_WARNING "di_depth %u lf_depth %u index %u\n", dip->i_di.di_depth, be16_to_cpu(oleaf->lf_depth), index);
++		printk(KERN_WARNING "i_depth %u lf_depth %u index %u\n", dip->i_depth, be16_to_cpu(oleaf->lf_depth), index);
+ 		gfs2_consist_inode(dip);
+ 		error = -EIO;
+ 		goto fail_brelse;
+@@ -997,7 +997,7 @@ static int dir_split_leaf(struct inode *inode, const struct qstr *name)
+ 	kfree(lp);
  
- 	lck_ret = gfs2_lm_lock(sdp, gl->gl_lock, gl->gl_state, state, lck_flags);
+ 	/*  Compute the divider  */
+-	divider = (start + half_len) << (32 - dip->i_di.di_depth);
++	divider = (start + half_len) << (32 - dip->i_depth);
  
-@@ -878,51 +923,6 @@ static void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
- }
+ 	/*  Copy the entries  */
+ 	dirent_first(dip, obh, &dent);
+@@ -1082,7 +1082,7 @@ static int dir_double_exhash(struct gfs2_inode *dip)
+ 	int x;
+ 	int error = 0;
  
- /**
-- * drop_bh - Called after a lock module unlock completes
-- * @gl: the glock
-- * @ret: the return status
-- *
-- * Doesn't wake up the process waiting on the struct gfs2_holder (if any)
-- * Doesn't drop the reference on the glock the top half took out
-- *
-- */
--
--static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
--{
--	struct gfs2_sbd *sdp = gl->gl_sbd;
--	const struct gfs2_glock_operations *glops = gl->gl_ops;
--	struct gfs2_holder *gh = gl->gl_req_gh;
--
--	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
--	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
--	gfs2_assert_warn(sdp, !ret);
--
--	state_change(gl, LM_ST_UNLOCKED);
--
--	if (glops->go_inval)
--		glops->go_inval(gl, DIO_METADATA);
--
--	if (gh) {
--		spin_lock(&gl->gl_spin);
--		list_del_init(&gh->gh_list);
--		gh->gh_error = 0;
--		spin_unlock(&gl->gl_spin);
--	}
--
--	spin_lock(&gl->gl_spin);
--	gfs2_demote_wake(gl);
--	gl->gl_req_gh = NULL;
--	gl->gl_req_bh = NULL;
--	clear_bit(GLF_LOCK, &gl->gl_flags);
--	spin_unlock(&gl->gl_spin);
--
--	gfs2_glock_put(gl);
--
--	if (gh)
--		gfs2_holder_wake(gh);
--}
--
--/**
-  * gfs2_glock_drop_th - call into the lock module to unlock a lock
-  * @gl: the glock
-  *
-@@ -942,7 +942,6 @@ static void gfs2_glock_drop_th(struct gfs2_glock *gl)
- 	gfs2_assert_warn(sdp, gl->gl_state != LM_ST_UNLOCKED);
+-	hsize = 1 << dip->i_di.di_depth;
++	hsize = 1 << dip->i_depth;
+ 	if (hsize * sizeof(u64) != dip->i_di.di_size) {
+ 		gfs2_consist_inode(dip);
+ 		return -EIO;
+@@ -1125,7 +1125,7 @@ static int dir_double_exhash(struct gfs2_inode *dip)
  
- 	gfs2_glock_hold(gl);
--	gl->gl_req_bh = drop_bh;
+ 	error = gfs2_meta_inode_buffer(dip, &dibh);
+ 	if (!gfs2_assert_withdraw(sdp, !error)) {
+-		dip->i_di.di_depth++;
++		dip->i_depth++;
+ 		gfs2_dinode_out(dip, dibh->b_data);
+ 		brelse(dibh);
+ 	}
+@@ -1370,14 +1370,14 @@ static int dir_e_read(struct inode *inode, u64 *offset, void *opaque,
+ 	int error = 0;
+ 	unsigned depth = 0;
  
- 	ret = gfs2_lm_unlock(sdp, gl->gl_lock, gl->gl_state);
+-	hsize = 1 << dip->i_di.di_depth;
++	hsize = 1 << dip->i_depth;
+ 	if (hsize * sizeof(u64) != dip->i_di.di_size) {
+ 		gfs2_consist_inode(dip);
+ 		return -EIO;
+ 	}
  
-@@ -971,8 +970,7 @@ static void do_cancels(struct gfs2_holder *gh)
- 	while (gl->gl_req_gh != gh &&
- 	       !test_bit(HIF_HOLDER, &gh->gh_iflags) &&
- 	       !list_empty(&gh->gh_list)) {
--		if (gl->gl_req_bh && !(gl->gl_req_gh &&
--				     (gl->gl_req_gh->gh_flags & GL_NOCANCEL))) {
-+		if (!(gl->gl_req_gh && (gl->gl_req_gh->gh_flags & GL_NOCANCEL))) {
- 			spin_unlock(&gl->gl_spin);
- 			gfs2_lm_cancel(gl->gl_sbd, gl->gl_lock);
- 			msleep(100);
-@@ -1042,7 +1040,6 @@ static int glock_wait_internal(struct gfs2_holder *gh)
+ 	hash = gfs2_dir_offset2hash(*offset);
+-	index = hash >> (32 - dip->i_di.di_depth);
++	index = hash >> (32 - dip->i_depth);
  
- 		spin_lock(&gl->gl_spin);
- 		gl->gl_req_gh = NULL;
--		gl->gl_req_bh = NULL;
- 		clear_bit(GLF_LOCK, &gl->gl_flags);
- 		run_queue(gl);
- 		spin_unlock(&gl->gl_spin);
-@@ -1535,8 +1532,7 @@ void gfs2_glock_cb(void *cb_data, unsigned int type, void *data)
- 		gl = gfs2_glock_find(sdp, &async->lc_name);
- 		if (gfs2_assert_warn(sdp, gl))
- 			return;
--		if (!gfs2_assert_warn(sdp, gl->gl_req_bh))
--			gl->gl_req_bh(gl, async->lc_ret);
-+		xmote_bh(gl, async->lc_ret);
- 		if (queue_delayed_work(glock_workqueue, &gl->gl_work, 0) == 0)
- 			gfs2_glock_put(gl);
- 		up_read(&gfs2_umount_flush_sem);
-@@ -1898,7 +1894,6 @@ static int dump_glock(struct glock_iter *gi, struct gfs2_glock *gl)
- 		print_dbg(gi, "  gl_owner = -1\n");
- 	print_dbg(gi, "  gl_ip = %lu\n", gl->gl_ip);
- 	print_dbg(gi, "  req_gh = %s\n", (gl->gl_req_gh) ? "yes" : "no");
--	print_dbg(gi, "  req_bh = %s\n", (gl->gl_req_bh) ? "yes" : "no");
- 	print_dbg(gi, "  lvb_count = %d\n", atomic_read(&gl->gl_lvb_count));
- 	print_dbg(gi, "  object = %s\n", (gl->gl_object) ? "yes" : "no");
- 	print_dbg(gi, "  reclaim = %s\n",
+ 	lp = kmalloc(sdp->sd_hash_bsize, GFP_KERNEL);
+ 	if (!lp)
+@@ -1405,7 +1405,7 @@ static int dir_e_read(struct inode *inode, u64 *offset, void *opaque,
+ 		if (error)
+ 			break;
+ 
+-		len = 1 << (dip->i_di.di_depth - depth);
++		len = 1 << (dip->i_depth - depth);
+ 		index = (index & ~(len - 1)) + len;
+ 	}
+ 
+@@ -1549,7 +1549,7 @@ static int dir_new_leaf(struct inode *inode, const struct qstr *name)
+ 	u32 index;
+ 	u64 bn;
+ 
+-	index = name->hash >> (32 - ip->i_di.di_depth);
++	index = name->hash >> (32 - ip->i_depth);
+ 	error = get_first_leaf(ip, index, &obh);
+ 	if (error)
+ 		return error;
+@@ -1641,7 +1641,7 @@ int gfs2_dir_add(struct inode *inode, const struct qstr *name,
+ 			continue;
+ 		if (error < 0)
+ 			break;
+-		if (ip->i_di.di_depth < GFS2_DIR_MAX_DEPTH) {
++		if (ip->i_depth < GFS2_DIR_MAX_DEPTH) {
+ 			error = dir_double_exhash(ip);
+ 			if (error)
+ 				break;
+@@ -1785,7 +1785,7 @@ static int foreach_leaf(struct gfs2_inode *dip, leaf_call_t lc, void *data)
+ 	u64 leaf_no;
+ 	int error = 0;
+ 
+-	hsize = 1 << dip->i_di.di_depth;
++	hsize = 1 << dip->i_depth;
+ 	if (hsize * sizeof(u64) != dip->i_di.di_size) {
+ 		gfs2_consist_inode(dip);
+ 		return -EIO;
+@@ -1817,7 +1817,7 @@ static int foreach_leaf(struct gfs2_inode *dip, leaf_call_t lc, void *data)
+ 			if (error)
+ 				goto out;
+ 			leaf = (struct gfs2_leaf *)bh->b_data;
+-			len = 1 << (dip->i_di.di_depth - be16_to_cpu(leaf->lf_depth));
++			len = 1 << (dip->i_depth - be16_to_cpu(leaf->lf_depth));
+ 			brelse(bh);
+ 
+ 			error = lc(dip, index, len, leaf_no, data);
 diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index fe14f6a..65aa46a 100644
+index e9c58dc..9dfdde3 100644
 --- a/fs/gfs2/incore.h
 +++ b/fs/gfs2/incore.h
-@@ -191,7 +191,6 @@ struct gfs2_glock {
- 	const struct gfs2_glock_operations *gl_ops;
+@@ -246,7 +246,6 @@ struct gfs2_dinode_host {
+ 	u64 di_generation;	/* generation number for NFS */
+ 	u32 di_flags;		/* GFS2_DIF_... */
+ 	/* These only apply to directories  */
+-	u16 di_depth;		/* Number of bits in the table */
+ 	u32 di_entries;		/* The number of entries in the directory */
+ 	u64 di_eattr;		/* extended attribute block number */
+ };
+@@ -267,6 +266,7 @@ struct gfs2_inode {
  
- 	struct gfs2_holder *gl_req_gh;
--	gfs2_glop_bh_t gl_req_bh;
+ 	struct rw_semaphore i_rw_mutex;
+ 	u8 i_height;
++	u8 i_depth;
+ };
  
- 	void *gl_lock;
- 	char *gl_lvb;
+ /*
+diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+index db5961a..65fdfee 100644
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -248,7 +248,7 @@ static int gfs2_dinode_in(struct gfs2_inode *ip, const void *buf)
+ {
+ 	struct gfs2_dinode_host *di = &ip->i_di;
+ 	const struct gfs2_dinode *str = buf;
+-	u16 height;
++	u16 height, depth;
+ 
+ 	if (unlikely(ip->i_no_addr != be64_to_cpu(str->di_num.no_addr)))
+ 		goto corrupt;
+@@ -293,7 +293,10 @@ static int gfs2_dinode_in(struct gfs2_inode *ip, const void *buf)
+ 		goto corrupt;
+ 	ip->i_height = (u8)height;
+ 
+-	di->di_depth = be16_to_cpu(str->di_depth);
++	depth = be16_to_cpu(str->di_depth);
++	if (unlikely(depth > GFS2_DIR_MAX_DEPTH))
++		goto corrupt;
++	ip->i_depth = (u8)depth;
+ 	di->di_entries = be32_to_cpu(str->di_entries);
+ 
+ 	di->di_eattr = be64_to_cpu(str->di_eattr);
+@@ -1410,7 +1413,7 @@ void gfs2_dinode_out(const struct gfs2_inode *ip, void *buf)
+ 	str->di_payload_format = cpu_to_be32(S_ISDIR(ip->i_inode.i_mode) &&
+ 					     !(ip->i_di.di_flags & GFS2_DIF_EXHASH) ?
+ 					     GFS2_FORMAT_DE : 0);
+-	str->di_depth = cpu_to_be16(di->di_depth);
++	str->di_depth = cpu_to_be16(ip->i_depth);
+ 	str->di_entries = cpu_to_be32(di->di_entries);
+ 
+ 	str->di_eattr = cpu_to_be64(di->di_eattr);
+@@ -1436,7 +1439,7 @@ void gfs2_dinode_print(const struct gfs2_inode *ip)
+ 	       (unsigned long long)di->di_goal_data);
+ 	printk(KERN_INFO "  di_flags = 0x%.8X\n", di->di_flags);
+ 	printk(KERN_INFO "  i_height = %u\n", ip->i_height);
+-	printk(KERN_INFO "  di_depth = %u\n", di->di_depth);
++	printk(KERN_INFO "  i_depth = %u\n", ip->i_depth);
+ 	printk(KERN_INFO "  di_entries = %u\n", di->di_entries);
+ 	printk(KERN_INFO "  di_eattr = %llu\n",
+ 	       (unsigned long long)di->di_eattr);
 -- 
 1.5.1.2
 
