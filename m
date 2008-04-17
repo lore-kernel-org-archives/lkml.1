@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933350AbYDQKTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbYDQKVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933350AbYDQKTw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbYDQKTf
+	id S933001AbYDQKVZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760020AbYDQKVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:19:35 -0400
-Received: from rv-out-0708.google.com ([209.85.198.249]:14265 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765658AbYDQKTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:19:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Tg///tySOCw6+JTp0KxP9gYfNxiheo3jSWIx67YhzS5XNYf5gGhYdFhhSQlHEv6DTNxwcSjpWC/d8lQoBVq1wCdbFUPCJbzHMo/Mp5Ld/xMqUFKf+BScSXbSbKkzWcXm3eF9J99swGz0YRbLS7+dl5T01Fiuels8TL0xnB6dckM=
-Message-ID: <84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com>
-Date: Thu, 17 Apr 2008 13:19:32 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-In-Reply-To: <20080417023603.672d1032.akpm@linux-foundation.org>
+	Thu, 17 Apr 2008 06:21:15 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:9722 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbYDQKVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 06:21:14 -0400
+Date: Thu, 17 Apr 2008 12:21:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Aaron Carroll <aaronc@cse.unsw.edu.au>
+Cc: Paolo Valente <paolo.valente@unimore.it>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417102109.GZ12774@kernel.dk>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <20080417083047.GV12774@kernel.dk> <4807173E.4060300@unimore.it> <20080417092751.GX12774@kernel.dk> <48072421.60307@cse.unsw.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080416202338.GA6007@elte.hu>
-	 <20080417002552.5742ad65.akpm@linux-foundation.org>
-	 <20080417083000.GA4935@elte.hu>
-	 <20080417014054.ea788f1f.akpm@linux-foundation.org>
-	 <20080417090626.GA14383@elte.hu>
-	 <20080417021813.04df7912.akpm@linux-foundation.org>
-	 <20080417093025.GA17389@elte.hu>
-	 <20080417023603.672d1032.akpm@linux-foundation.org>
-X-Google-Sender-Auth: ffc7969df5d50fd0
+In-Reply-To: <48072421.60307@cse.unsw.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 12:36 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> > you mean kmemcheck? Yes, that's planned. We've been working 4 months
-> > non-stop on kmemcheck to make it mergeable and usable, it's at version 7
-> > right now, and it caught a handful of real bugs already (such as
-> > 63a7138671c - unfortunately not credited in the log to kmemcheck). But
-> > because it touches SLUB (because it has to - and they are acked by
-> > Pekka) i never had the chance to move it into the for-akpm branch.
->
->  Does it really really really need to consume one of our few remaining page
->  flags?  We'll be in a mess when we run out.
+On Thu, Apr 17 2008, Aaron Carroll wrote:
+> Jens Axboe wrote:
+> >>Maybe there is also another middle-ground solution. I'll try to sketch 
+> >>it out:
+> >>. use sectors instead of time
+> >>. impose a penalty to each thread in proportion to the distance between 
+> >>its disk requests
+> >>. reduce the maximum budget of each thread as a function of this seek 
+> >>penalty so as to prevent the thread from stealing more than a given time 
+> >>slice (the simple mechanism to limit per-thread budget is already 
+> >>implemented in bfq).
+> >>
+> >>By doing so, both fairness and time isolation should be guaranteed.
+> >>Finally, this policy should be safe in that, given the maximum time used 
+> >>by a seeky thread to consume its maximum budget on a reference disk, the 
+> >>time used on any faster disk should be shorter.
+> >>
+> >>Does it seem reasonable?
+> >
+> >Not for CFQ, that will stay time based. The problem with #2 above is
+> >that it then quickly turns to various heuristics, which is just
+> >impossible to tune for general behaviour. Or it just falls apart for
+> >other real life situations.
+> 
+> Like SSD or hardware RAID.  Time-slices have the nice property of fairness
+> irrespective of the underlying hardware characteristics.
 
-FYI, the initial version of kmemcheck didn't have a separate page flag
-(it abused SLUB internals) but it got really hairy and I think I
-finally convinced Vegard to switch over to page flags after some
-hair-pulling when we hit a bug. So yes, from SLUB maintainer point of
-view, we _really, really_ want to use a page flag here.
+Exactly. We can cater to that somewhat by adding some simple hardware
+profiles, so that the IO schedulers if seeks etc are costly or not. But
+it's a good example none the less.
+
+-- 
+Jens Axboe
+
