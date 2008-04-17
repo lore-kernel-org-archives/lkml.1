@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbYDQBas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761027AbYDQBbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbYDQBas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760795AbYDQBKG
+	id S1761027AbYDQBbN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbYDQBKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:10:06 -0400
-Received: from sous-sol.org ([216.99.217.87]:59033 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:10:08 -0400
+Received: from sous-sol.org ([216.99.217.87]:59035 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761315AbYDQBKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:10:02 -0400
-Message-Id: <20080417010358.329332938@sous-sol.org>
+	id S1760874AbYDQBKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:10:07 -0400
+Message-Id: <20080417010354.950049854@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:18 -0700
+Date: Wed, 16 Apr 2008 18:02:13 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dan.j.williams@intel.com>, NeilBrown <neilb@suse.de>
-Subject: md: close a livelock window in handle_parity_checks5
-Content-Disposition: inline; filename=md-close-a-livelock-window-in-handle_parity_checks5.patch
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Chuck Lever <chuck.lever@oracle.com>
+Subject: SUNRPC: Fix a memory leak in rpc_create()
+Content-Disposition: inline; filename=sunrpc-fix-a-memory-leak-in-rpc_create.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,108 +34,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: Chuck Lever <chuck.lever@oracle.com>
 
-upstream commit: bd2ab67030e9116f1e4aae1289220255412b37fd
+upstream commit: ed13c27e546667fb0967ae30f5070cd7f6455f90
 
-If a failure is detected after a parity check operation has been initiated,
-but before it completes handle_parity_checks5 will never quiesce operations on
-the stripe.
+Commit 510deb0d was supposed to move the xprt_create_transport() call in
+rpc_create(), but neglected to remove the old call site.  This resulted in
+a transport leak after every rpc_create() call.
 
-Explicitly handle this case by "canceling" the parity check, i.e.  clear the
-STRIPE_OP_CHECK flags and queue the stripe on the handle list again to refresh
-any non-uptodate blocks.
+This leak is present in 2.6.24 and 2.6.25.
 
-Kernel versions >= 2.6.23 are susceptible.
-
-Cc: <stable@kernel.org>
-Cc: NeilBrown <neilb@suse.de>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/md/raid5.c |   53 ++++++++++++++++++++++++++++++-----------------------
- 1 file changed, 30 insertions(+), 23 deletions(-)
 
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -2348,25 +2348,15 @@ static void handle_issuing_new_write_req
- static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
- 				struct stripe_head_state *s, int disks)
- {
-+	int canceled_check = 0;
-+
- 	set_bit(STRIPE_HANDLE, &sh->state);
--	/* Take one of the following actions:
--	 * 1/ start a check parity operation if (uptodate == disks)
--	 * 2/ finish a check parity operation and act on the result
--	 * 3/ skip to the writeback section if we previously
--	 *    initiated a recovery operation
--	 */
--	if (s->failed == 0 &&
--	    !test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
--		if (!test_and_set_bit(STRIPE_OP_CHECK, &sh->ops.pending)) {
--			BUG_ON(s->uptodate != disks);
--			clear_bit(R5_UPTODATE, &sh->dev[sh->pd_idx].flags);
--			sh->ops.count++;
--			s->uptodate--;
--		} else if (
--		       test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
--			clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
--			clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
+ net/sunrpc/clnt.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -249,10 +249,6 @@ struct rpc_clnt *rpc_create(struct rpc_c
+ 	};
+ 	char servername[20];
  
-+	/* complete a check operation */
-+	if (test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
-+	    clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
-+	    clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
-+		if (s->failed == 0) {
- 			if (sh->ops.zero_sum_result == 0)
- 				/* parity is correct (on disc,
- 				 * not in buffer any more)
-@@ -2391,7 +2381,8 @@ static void handle_parity_checks5(raid5_
- 					s->uptodate++;
- 				}
- 			}
--		}
-+		} else
-+			canceled_check = 1; /* STRIPE_INSYNC is not set */
- 	}
- 
- 	/* check if we can clear a parity disk reconstruct */
-@@ -2404,12 +2395,28 @@ static void handle_parity_checks5(raid5_
- 		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
- 	}
- 
--	/* Wait for check parity and compute block operations to complete
--	 * before write-back
-+	/* start a new check operation if there are no failures, the stripe is
-+	 * not insync, and a repair is not in flight
- 	 */
--	if (!test_bit(STRIPE_INSYNC, &sh->state) &&
--		!test_bit(STRIPE_OP_CHECK, &sh->ops.pending) &&
--		!test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending)) {
-+	if (s->failed == 0 &&
-+	    !test_bit(STRIPE_INSYNC, &sh->state) &&
-+	    !test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
-+		if (!test_and_set_bit(STRIPE_OP_CHECK, &sh->ops.pending)) {
-+			BUG_ON(s->uptodate != disks);
-+			clear_bit(R5_UPTODATE, &sh->dev[sh->pd_idx].flags);
-+			sh->ops.count++;
-+			s->uptodate--;
-+		}
-+	}
-+
-+	/* Wait for check parity and compute block operations to complete
-+	 * before write-back.  If a failure occurred while the check operation
-+	 * was in flight we need to cycle this stripe through handle_stripe
-+	 * since the parity block may not be uptodate
-+	 */
-+	if (!canceled_check && !test_bit(STRIPE_INSYNC, &sh->state) &&
-+	    !test_bit(STRIPE_OP_CHECK, &sh->ops.pending) &&
-+	    !test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending)) {
- 		struct r5dev *dev;
- 		/* either failed parity check, or recovery is happening */
- 		if (s->failed == 0)
+-	xprt = xprt_create_transport(&xprtargs);
+-	if (IS_ERR(xprt))
+-		return (struct rpc_clnt *)xprt;
+-
+ 	/*
+ 	 * If the caller chooses not to specify a hostname, whip
+ 	 * up a string representation of the passed-in address.
 
 -- 
