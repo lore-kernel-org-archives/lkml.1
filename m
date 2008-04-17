@@ -1,116 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYDQXyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYDQX4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbYDQXyR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 19:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbYDQXx7
+	id S1756760AbYDQX4B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 19:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYDQXzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 19:53:59 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59869 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755233AbYDQXx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 19:53:59 -0400
-Subject: Re: [PATCH]: Factor out PTY index allocation
-From: Matthew Helsley <matthltc@us.ibm.com>
+	Thu, 17 Apr 2008 19:55:52 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:12025 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755421AbYDQXzv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 19:55:51 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sukadev@us.ibm.com, serue@us.ibm.com, ebiederm@xmission.com, hpa@zytor.com,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080417141725.7cd8e50e.akpm@linux-foundation.org>
-References: <20080416221723.GB7112@us.ibm.com>
-	 <20080417141725.7cd8e50e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 16:53:49 -0700
-Message-Id: <1208476430.5134.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Subject: Re: 2.6.25-mm1: not looking good
+Date: Thu, 17 Apr 2008 19:55:46 -0400
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+In-Reply-To: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804171955.46600.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 17 April 2008 7:03:31 pm Andrew Morton wrote:
+> I repulled all the trees an hour or two ago, installed everything on
+> an 8-way x86_64 box and:
 
-On Thu, 2008-04-17 at 14:17 -0700, Andrew Morton wrote:
-> On Wed, 16 Apr 2008 15:17:23 -0700
-> sukadev@us.ibm.com wrote:
-> 
-> > Factor out the code used to allocate/free a pts index into new interfaces,
-> > devpts_new_index() and devpts_kill_index().  This localizes the external
-> > data structures used in managing the pts indices.
-> 
-> err...
-> 
-> > -	mutex_lock(&allocated_ptys_lock);
-> > +	down(&allocated_ptys_lock);
-> 
-> Why the mutex-to-semaphore conversion?
+...
 
-The patch series was originally developed for 2.6.22 -- prior to the
-semaphore -> mutex migration. This appears to be a mistake in
-forward-porting the series.
+> ffffffff80268932 0000000000000001 Call Trace:
+>  <IRQ>  [<ffffffff8028fec4>] virt_to_cache+0x11/0x13
+>  [<ffffffff802909af>] kfree+0x20/0x38
+>  [<ffffffff80327789>] sel_netnode_free+0xd/0xf
+>  [<ffffffff80268932>] __rcu_process_callbacks+0x147/0x1b6
+>  [<ffffffff802689c4>] rcu_process_callbacks+0x23/0x44
+>  [<ffffffff8023cc04>] __do_softirq+0x58/0xae
+>  [<ffffffff8020d1cc>] call_softirq+0x1c/0x28
+>  [<ffffffff8020ed5c>] do_softirq+0x2f/0x6f
+>  [<ffffffff8023c72e>] irq_exit+0x36/0x38
+>  [<ffffffff8021dedc>] smp_apic_timer_interrupt+0x74/0x81
+>  [<ffffffff8020cc76>] apic_timer_interrupt+0x66/0x70
+>  <EOI>  [<ffffffff8020a2e1>] ? mwait_idle+0x38/0x42
+>  [<ffffffff8020a2a9>] ? mwait_idle+0x0/0x42
+>  [<ffffffff8020b2ff>] ? cpu_idle+0xcb/0xe0
+>  [<ffffffff804eaefe>] ? start_secondary+0xb2/0xb4
+>
+>
+> Code: 3a 48 69 c0 80 0e 00 00 48 03 04 d5 00 35 92 80 c9 c3 55 48 89
+> e5 53 e8 87 ff ff ff 48 89 c7 48 89 c3 e8 69 ff ff ff 85 c0 75 04
+> <0f> 0b eb fe 48 8b 43 30 5b c9 c3 55 48 89 e5 e8 87 ff ff ff 48 RIP 
+> [<ffffffff8028fea8>] page_get_cache+0x19/0x24
+>  RSP <ffff81025f22fe88>
+>
+> security/selinux/netnode.c looks to be doing simple old
+> kzalloc/kfree, so I'd be suspecting slab.  But there are significant
+> changes netnode.c in git-selinux.
+>
+> I have maybe two hours in which to weed out whatever
+> very-recently-added dud patches are causing this.  Any suggestions
+> are welcome.
 
-Acked-by: Matt Helsley <matthltc@us.ibm.com>
+For what it's worth I just looked over the changes in netnode.c and 
+nothing is jumping out at me.  The changes ran fine for me when tested 
+on the later 2.6.25-rcX kernels but I suppose that doesn't mean a whole 
+lot.
 
-> 
-> --- a/fs/devpts/inode.c~devpts-factor-out-pty-index-allocation-fix
-> +++ a/fs/devpts/inode.c
-> @@ -17,6 +17,7 @@
->  #include <linux/namei.h>
->  #include <linux/mount.h>
->  #include <linux/tty.h>
-> +#include <linux/mutex.h>
->  #include <linux/idr.h>
->  #include <linux/devpts_fs.h>
->  #include <linux/parser.h>
-> @@ -29,7 +30,7 @@
-> 
->  extern int pty_limit;			/* Config limit on Unix98 ptys */
->  static DEFINE_IDR(allocated_ptys);
-> -static DECLARE_MUTEX(allocated_ptys_lock);
-> +static DEFINE_MUTEX(allocated_ptys_lock);
-> 
->  static struct vfsmount *devpts_mnt;
->  static struct dentry *devpts_root;
-> @@ -186,10 +187,10 @@ retry:
->  		return -ENOMEM;
->  	}
-> 
-> -	down(&allocated_ptys_lock);
-> +	mutex_lock(&allocated_ptys_lock);
->  	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
->  	if (idr_ret < 0) {
-> -		up(&allocated_ptys_lock);
-> +		mutex_unlock(&allocated_ptys_lock);
->  		if (idr_ret == -EAGAIN)
->  			goto retry;
->  		return -EIO;
-> @@ -197,18 +198,18 @@ retry:
-> 
->  	if (index >= pty_limit) {
->  		idr_remove(&allocated_ptys, index);
-> -		up(&allocated_ptys_lock);
-> +		mutex_unlock(&allocated_ptys_lock);
->  		return -EIO;
->  	}
-> -	up(&allocated_ptys_lock);
-> +	mutex_unlock(&allocated_ptys_lock);
->  	return index;
->  }
-> 
->  void devpts_kill_index(int idx)
->  {
-> -	down(&allocated_ptys_lock);
-> +	mutex_lock(&allocated_ptys_lock);
->  	idr_remove(&allocated_ptys, idx);
-> -	up(&allocated_ptys_lock);
-> +	mutex_unlock(&allocated_ptys_lock);
->  }
-> 
->  int devpts_pty_new(struct tty_struct *tty)
-> _
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+I've got a 4-way x86_64 box but it needs to be installed (which means 
+I'm not going to be able to do anything useful with it until tomorrow 
+at the earliest).  I'll try it out and see if I can recreate the 
+problem.
 
+-- 
+paul moore
+linux @ hp
