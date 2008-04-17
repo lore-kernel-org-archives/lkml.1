@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYDQTug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYDQT5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbYDQTug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYDQTu1
+	id S1753208AbYDQT5f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYDQT5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:50:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58749 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752429AbYDQTu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:50:26 -0400
-Date: Thu, 17 Apr 2008 15:19:10 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080417191910.GI28235@redhat.com>
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415132512.GA22351@Krystal> <1208361084.6395.80.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 17 Apr 2008 15:57:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:62701 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYDQT5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 15:57:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=weFurQfAl/FBVlkSJ4BxlUj/oF73u5vxAr/jHpxbla9yA8UrkwxIwDP/AQ9kxVe1b5965Q4qrreqOP6rM6zhSXf/1wWZta94wePTi29ZLQIfNOgQqvPzC5D8Vk/gi/oII4B0nWSD12aYiOVWxtDMojKPR8DcdrTmIQzAiKucdlk=
+Message-ID: <bd6139dc0804171257l5f875694yb57105ba40170789@mail.gmail.com>
+Date: Thu, 17 Apr 2008 21:57:06 +0200
+From: "Sverre Rabbelier" <alturin@gmail.com>
+Reply-To: sverre@rabbelier.nl
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: Reporting bugs and bisection
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "David Newall" <davidn@davidnewall.com>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>, git@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "James Morris" <jmorris@namei.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
+       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Tilman Schmidt" <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
+       "Mark Lord" <lkml@rtr.ca>, "David Miller" <davem@davemloft.net>,
+       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org
+In-Reply-To: <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1208361084.6395.80.camel@twins>
-User-Agent: Mutt/1.4.1i
+References: <47FEADCB.7070104@rtr.ca>
+	 <9a8748490804161417n4ad6c1den54ccd302831a66c6@mail.gmail.com>
+	 <48078323.4010109@davidnewall.com> <200804172109.35027.rjw@sisk.pl>
+	 <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Thu, Apr 17, 2008 at 9:35 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
+> On Thu, Apr 17, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>  >  > Finger-pointing, in these extreme cases, gives incentive to improve
+>  >  > quality.  It's a positive thing.
+>  >
+>  >  Sorry, but I have to disagree.  Negative finger-pointing is never a good thing.
+>
+>  Correct, but let's be careful here. The original suggestion was,
+>  effectively, to get better metrics on the quality of contributions.
+>  Those metrics *could* be used for finger pointing, or (my preference)
+>  they could be used to direct and allocate our scarce resources: code
+>  reviews and mentoring.
 
-On Wed, Apr 16, 2008 at 05:51:24PM +0200, Peter Zijlstra wrote:
-> [...]
-> > > > > What is wrong with a few simple hooks like:
-> > > > >   trace_futex_wait(uaddr, fshares, val, abs_time, bitset);
-> > > > > and then deal with that.
-> [...]
-> > Yes, but then you would have to create new code for each event you want
-> > to trace. In the end, it would increase the icache footprint
-> > considerably and would also make addition of new events cumbersome.
-> > [...]
+Exactly!
 
-That, plus the new hand-written function (trace_futex_wait) would
-still need to manage the packaging of the arguments for consumption by
-separately compiled pieces.  It is desirable not to require such
-hand-written functions to *also* be declared in headers for these
-event consumers to compile against.
+>  There's no way to know what the metrics will tell us until we have
+>  them. Arguing against metrics because they *may* be used to point
+>  fingers at people is a silly argument; anything can be subverted to do
+>  that.
 
+Thank you, that should have been said before, you worded it perfectly.
 
-> So I'm not sure what adding all these character strings buy you.
+>  Let's get some measurements and see what they say. In the meantime,
+>  try to believe that they could be put to good purposes, such as
+>  identifying code areas that are tricky for contributors to get right
+>  (independent of contributor), or contributors that could benefit from
+>  code reviews, etc.
 
-The main thing is type checking by engaging gcc's printf format
-checking logic.  In my original markers proposal, the types were
-encoded into the function name, sort of as in C++:
+This especially is an area that I plan to focus on and should be very
+reliable when finished. As can be read in my application, I plan to
+look at how often a piece of code is changed, in what timespan and by
+how many different authors.
 
-  trace_mark_nnnnn(futex_wake_called, uaddr, fshares, val, abs_time, bitset);
+Thanks for the reply!
 
-where each "n" stands for some integral value, and could be chosen
-amongst a small number of other types (say -- "s": char* string, "p":
-void*, "l":64-bit long).  Then, type checking could be done by the
-core compiler for both event producers and consumers.  One downside
-was that the trace_mark_* permutations themselves would have to be
-generated by some shell/perl script [1], and some deemed this probably
-unacceptable.  I'm still not sure...
+Cheers,
 
-[1] some systemtap archaeology:
-http://sourceware.org/git/?p=systemtap.git;a=commit;h=b171146c8e8d4fa749b8829c47750750dc19f11c
-
-
-> >﻿+       trace_mark(futex_wake_called, "uaddr:%p fshared:%p nr_wake:%d "
-> > +                       "bitset:%d",
-> > +                       uaddr, fshared, nr_wake, bitset);
-> 
-> > +       INIT_FUTEX_DEBUG_PROBE(futex_wake_called,
-> > +                       "uaddr:%p fshared:%p nr_wake:%d bitset:%d"),
-> 
-> Why the need to duplicate it; that's utter madness.
-
-This second instance is optional and is used as a consistency check
-for the event consumer to hook up exactly to the intended producer.
-The string could be empty.
-
-
-- FChE
+Sverre
