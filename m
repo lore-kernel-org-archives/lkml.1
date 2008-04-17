@@ -1,101 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYDQVSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbYDQVWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYDQVSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 17:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYDQVSa
+	id S1755126AbYDQVWB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 17:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYDQVVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 17:18:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41087 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751367AbYDQVS3 (ORCPT
+	Thu, 17 Apr 2008 17:21:53 -0400
+Received: from lazybastard.de ([212.112.238.170]:49149 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbYDQVVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 17:18:29 -0400
-Date: Thu, 17 Apr 2008 14:17:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: sukadev@us.ibm.com
-Cc: serue@us.ibm.com, ebiederm@xmission.com, hpa@zytor.com,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Factor out PTY index allocation
-Message-Id: <20080417141725.7cd8e50e.akpm@linux-foundation.org>
-In-Reply-To: <20080416221723.GB7112@us.ibm.com>
-References: <20080416221723.GB7112@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 17:21:52 -0400
+Date: Thu, 17 Apr 2008 23:21:38 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Alex Dubov <oakad@yahoo.com>, Ben Dooks <ben@fluff.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Smartmedia/xd card support - request for comments
+Message-ID: <20080417212138.GA343@logfs.org>
+References: <257448.48285.qm@web36701.mail.mud.yahoo.com> <alpine.LFD.1.10.0804171535581.3261@apollo.tec.linutronix.de> <20080417140734.GA30001@logfs.org> <alpine.LFD.1.10.0804172109170.3261@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0804172109170.3261@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Apr 2008 15:17:23 -0700
-sukadev@us.ibm.com wrote:
+On Thu, 17 April 2008 21:11:30 +0200, Thomas Gleixner wrote:
+> 
+> Oops. I did not bother to look into drivers/mtd and for some reason it
+> slipped out of my memory that it got mainlined. It's read only, but
+> the missing bits to make it r/w are not that hard. At least less code
+> than duplicating code all over the place for no good reason.
 
-> Factor out the code used to allocate/free a pts index into new interfaces,
-> devpts_new_index() and devpts_kill_index().  This localizes the external
-> data structures used in managing the pts indices.
+Indeed.  If some janitor or kernel-newbie is looking for a fun project,
+most of the code in drivers/usb/storage/*.c can be abstracted out to a
+library implementation and possibly combined with drivers/mtd/ssfdc.c,
+drivers/mtd/nand/alauda.c and some others.
 
-err...
+Jörn
 
-> -	mutex_lock(&allocated_ptys_lock);
-> +	down(&allocated_ptys_lock);
-
-Why the mutex-to-semaphore conversion?
-
-
---- a/fs/devpts/inode.c~devpts-factor-out-pty-index-allocation-fix
-+++ a/fs/devpts/inode.c
-@@ -17,6 +17,7 @@
- #include <linux/namei.h>
- #include <linux/mount.h>
- #include <linux/tty.h>
-+#include <linux/mutex.h>
- #include <linux/idr.h>
- #include <linux/devpts_fs.h>
- #include <linux/parser.h>
-@@ -29,7 +30,7 @@
- 
- extern int pty_limit;			/* Config limit on Unix98 ptys */
- static DEFINE_IDR(allocated_ptys);
--static DECLARE_MUTEX(allocated_ptys_lock);
-+static DEFINE_MUTEX(allocated_ptys_lock);
- 
- static struct vfsmount *devpts_mnt;
- static struct dentry *devpts_root;
-@@ -186,10 +187,10 @@ retry:
- 		return -ENOMEM;
- 	}
- 
--	down(&allocated_ptys_lock);
-+	mutex_lock(&allocated_ptys_lock);
- 	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
- 	if (idr_ret < 0) {
--		up(&allocated_ptys_lock);
-+		mutex_unlock(&allocated_ptys_lock);
- 		if (idr_ret == -EAGAIN)
- 			goto retry;
- 		return -EIO;
-@@ -197,18 +198,18 @@ retry:
- 
- 	if (index >= pty_limit) {
- 		idr_remove(&allocated_ptys, index);
--		up(&allocated_ptys_lock);
-+		mutex_unlock(&allocated_ptys_lock);
- 		return -EIO;
- 	}
--	up(&allocated_ptys_lock);
-+	mutex_unlock(&allocated_ptys_lock);
- 	return index;
- }
- 
- void devpts_kill_index(int idx)
- {
--	down(&allocated_ptys_lock);
-+	mutex_lock(&allocated_ptys_lock);
- 	idr_remove(&allocated_ptys, idx);
--	up(&allocated_ptys_lock);
-+	mutex_unlock(&allocated_ptys_lock);
- }
- 
- int devpts_pty_new(struct tty_struct *tty)
-_
-
+-- 
+The only good bug is a dead bug.
+-- Starship Troopers
