@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbYDQBJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbYDQBK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762254AbYDQBJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYDQBHA
+	id S1758203AbYDQBK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbYDQBHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:00 -0400
-Received: from sous-sol.org ([216.99.217.87]:58784 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:08 -0400
+Received: from sous-sol.org ([216.99.217.87]:58796 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757904AbYDQBG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:06:58 -0400
-Message-Id: <20080417010312.861195068@sous-sol.org>
+	id S1754226AbYDQBHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:04 -0400
+Message-Id: <20080417010403.435495277@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:28 -0700
+Date: Wed, 16 Apr 2008 18:02:24 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean-Samuel Chenard <jsamch@gmail.com>, Hans J Koch <hjk@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: UIO: add pgprot_noncached() to UIO mmap code
-Content-Disposition: inline; filename=uio-add-pgprot_noncached-to-uio-mmap-code.patch
+       Len Brown <lenb@kernel.org>
+Subject: acpi: bus: check once more for an empty list after locking it
+Content-Disposition: inline; filename=acpi-bus-check-once-more-for-an-empty-list-after-locking-it.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,32 +33,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean-Samuel Chenard <jsamch@gmail.com>
+From: Chuck Ebbert <cebbert@redhat.com>
 
-upstream commit: c9698d6b1a90929e427a165bd8283f803f57d9bd
+upstream commit: f0a37e008750ead1751b7d5e89d220a260a46147
 
-Mapping of physical memory in UIO needs pgprot_noncached() to ensure
-that IO memory is not cached. Without pgprot_noncached(), it (accidentally)
-works on x86 and arm, but fails on PPC.
+List could have become empty after the unlocked check that was made earlier,
+so check again inside the lock.
 
-Signed-off-by: Jean-Samuel Chenard <jsamch@gmail.com>
-Signed-off-by: Hans J Koch <hjk@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Should fix https://bugzilla.redhat.com/show_bug.cgi?id=427765
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+Cc: <stable@kernel.org>
+Cc: Len Brown <lenb@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/uio/uio.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/acpi/bus.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -447,6 +447,8 @@ static int uio_mmap_physical(struct vm_a
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -350,10 +350,11 @@ int acpi_bus_receive_event(struct acpi_b
+ 	}
  
- 	vma->vm_flags |= VM_IO | VM_RESERVED;
+ 	spin_lock_irqsave(&acpi_bus_event_lock, flags);
+-	entry =
+-	    list_entry(acpi_bus_event_list.next, struct acpi_bus_event, node);
+-	if (entry)
++	if (!list_empty(&acpi_bus_event_list)) {
++		entry = list_entry(acpi_bus_event_list.next,
++				   struct acpi_bus_event, node);
+ 		list_del(&entry->node);
++	}
+ 	spin_unlock_irqrestore(&acpi_bus_event_lock, flags);
  
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+
- 	return remap_pfn_range(vma,
- 			       vma->vm_start,
- 			       idev->info->mem[mi].addr >> PAGE_SHIFT,
+ 	if (!entry)
 
 -- 
