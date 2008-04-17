@@ -1,48 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYDQES3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbYDQETL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYDQES3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYDQESM
+	id S1759094AbYDQETL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYDQES4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:18:12 -0400
-Received: from qb-out-0506.google.com ([72.14.204.229]:37306 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbYDQESK (ORCPT
+	Thu, 17 Apr 2008 00:18:56 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:38104 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbYDQESz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:18:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=kbFi1+ugoXnDVNpZwHxxW22RptsQ9tWjUz/kfdok9QPp4DtbpW9a0jhhZbvXzDy4OOjAbLmEUVBIhmFVILfppdZ8mH6l0D23ucsEP3z27JbHyL6DOj8S1L0jhOvV8Ey7377HTEHrhoOdqKMOLuOuvNgBuT8v6AURtkML2Bgb2R4=
-Date: Thu, 17 Apr 2008 12:13:56 +0800 (CST)
-Message-Id: <20080417.121356.08390959.xiyou.wangcong@gmail.com>
-To: jdike@addtoit.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] UML: Clean up arch/um/drivers/ubd_kern.c
-From: WANG Cong <xiyou.wangcong@gmail.com>
-In-Reply-To: <20080416152019.GA8693@c2.user-mode-linux.org>
-References: <20080415133325.GA7882@c2.user-mode-linux.org>
-	<20080416.133919.133424295.xiyou.wangcong@gmail.com>
-	<20080416152019.GA8693@c2.user-mode-linux.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 17 Apr 2008 00:18:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=J9vwxog6RmdrCCbQJTQRLgveujZAuIQpGWlSnABdv9BJ2kbF2v5UCXqXrk42DxyuV
+	M/8vCZOyHeEesPbUyAkiw==
+Message-ID: <6599ad830804162118g6b24d8ebq26b0d72133b0e19e@mail.gmail.com>
+Date: Wed, 16 Apr 2008 21:18:41 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroup: fix a race condition in manipulating tsk->cg_list
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Paul Jackson" <pj@sgi.com>
+In-Reply-To: <4806C5EB.3040102@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4806C5EB.3040102@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Dike <jdike@addtoit.com>
-Date: Wed, 16 Apr 2008 11:20:19 -0400
-> On Wed, Apr 16, 2008 at 01:39:19PM +0800, WANG Cong wrote:
-> > From: Jeff Dike <jdike@addtoit.com>
-> > Date: Tue, 15 Apr 2008 09:33:25 -0400
-> > > On Mon, Apr 14, 2008 at 11:42:37PM -0700, Andrew Morton wrote:
-> > > > omg, when checkpatch bit into this patch my CPU melted.
-> 
-> Here's a cleaned up version.
-> 
->        	 	    Jeff
+On Wed, Apr 16, 2008 at 8:37 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> When I ran a test program to fork mass processes and at the same time
+>  'cat /cgroup/tasks', I got the following oops:
+>
+>  ------------[ cut here ]------------
+>  kernel BUG at lib/list_debug.c:72!
+>  invalid opcode: 0000 [#1] SMP
+>  Pid: 4178, comm: a.out Not tainted (2.6.25-rc9 #72)
+>  ...
+>  Call Trace:
+>   [<c044a5f9>] ? cgroup_exit+0x55/0x94
+>   [<c0427acf>] ? do_exit+0x217/0x5ba
+>   [<c0427ed7>] ? do_group_exit+0.65/0x7c
+>   [<c0427efd>] ? sys_exit_group+0xf/0x11
+>   [<c0404842>] ? syscall_call+0x7/0xb
+>   [<c05e0000>] ? init_cyrix+0x2fa/0x479
+>  ...
+>  EIP: [<c04df671>] list_del+0x35/0x53 SS:ESP 0068:ebc7df4
+>  ---[ end trace caffb7332252612b ]---
+>  Fixing recursive fault but reboot is needed!
+>
+>  After digging into the code and debugging, I finlly found out a race
+>  situation:
+>                                 do_exit()
+>                                   ->cgroup_exit()
+>                                     ->if (!list_empty(&tsk->cg_list))
+>                                         list_del(&tsk->cg_list);
+>
+>  cgroup_iter_start()
+>   ->cgroup_enable_task_cg_list()
+>     ->list_add(&tsk->cg_list, ..);
+>
+>  In this case the list won't be deleted though the process has exited.
+>
+>  We got two bug reports in the past, which seem to be the same bug as
+>  this one:
+>         http://lkml.org/lkml/2008/3/5/332
+>         http://lkml.org/lkml/2007/10/17/224
 
-Looks OK for me. Thank you!
+Yes, that looks like it could be the same one - great. But this
+corruption can only be triggered the first time you cat a tasks file
+after a reboot, right? That would partly explain why it was hard to
+reproduce (at least, I had trouble).
+
+My only thought about the downside of this is that an exiting task
+that gets stuck somewhere  between setting PF_EXITING and calling
+cgroup_exit() won't show up in its cgroup's tasks file, since we'll
+enable cgroup links but skip it. I guess that's not a big deal.
+
+Maybe it would be better to not do a cgroup_exit() until we're
+unhashed, so that cgroup_enable_task_cg_list() can't find the exiting
+task?
+
+Paul
