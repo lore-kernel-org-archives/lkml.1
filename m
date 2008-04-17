@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933798AbYDQRHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934427AbYDQRI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933798AbYDQRHq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765914AbYDQRH0
+	id S934427AbYDQRI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760151AbYDQRIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:07:26 -0400
-Received: from outbound-mail-10.bluehost.com ([69.89.17.210]:45387 "HELO
-	outbound-mail-10.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1765532AbYDQRHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:07:25 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: Mapping PCI BAR through /sys/devices/pci* sets cache-disableandwrite-through
-Date: Thu, 17 Apr 2008 10:07:17 -0700
-User-Agent: KMail/1.9.9
-Cc: "Keith Packard" <keithp@keithp.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-References: <1208367626.5245.5.camel@koto.keithp.com> <1208409631.10327.5.camel@koto.keithp.com> <924EFEDD5F540B4284297C4DC59F3DEEE5D0C7@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEE5D0C7@orsmsx423.amr.corp.intel.com>
+	Thu, 17 Apr 2008 13:08:16 -0400
+Received: from sacred.ru ([62.205.161.221]:44941 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759059AbYDQRIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 13:08:15 -0400
+Message-ID: <48077D65.1090207@openvz.org>
+Date: Thu, 17 Apr 2008 20:40:05 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Ingo Molnar <mingo@elte.hu>, Jesper Juhl <jesper.juhl@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: fork_idle && pid problems ?
+References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru> <20080417130252.GB6640@elte.hu> <20080417140246.GA257@tv-sign.ru> <480771DC.5040002@openvz.org> <20080417153644.GA69@tv-sign.ru>
+In-Reply-To: <20080417153644.GA69@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804171007.17898.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 17 Apr 2008 20:41:33 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, April 17, 2008 6:14 am Pallipadi, Venkatesh wrote:
-> >Jesse Barnes suggested using the fact that the BAR was prefetchable to
-> >guess that this region should not be mapped UC. I don't know of any
-> >other information available at this API that would help make a better
-> >choice; there are no ioctls on /sys files that we could use to
-> >manipulate the mapping.
->
-> Yes. But, the API being there for some time may mean that there is some
-> user who always wants UC behavior with or without PREFETCHABLE flag.
-> With PAT changes we thought of ioctl and then settled on new interface.
+Oleg Nesterov wrote:
+> On 04/17, Pavel Emelyanov wrote:
+>> Oleg Nesterov wrote:
+>>> But wait... What _is_ the task_pid() after fork_idle() ???
+>> It is NULL, but every code getting one can handle such case :)
+>>
+>>> fork_idle() doesn't really attach the new thread to the init_struct_pid,
+>>> so ->pids[PIDTYPE_PID].pid just points the parent's pid, no?
+>>>
+>>> As for x86, the parent is /sbin/init (kernel_init->smp_prepare_cpus),
+>>> not so bad, it can't exit.
+>>>
+>>> But what about HOTPLUG_CPU? Suppose we add CPU, use some non-idle
+>>> kernel thread (workqueue) to fork the idle thread. CPU goes down,
+>>> parent exits and frees the pid. Now, if this CPU goes up again, the
+>>> idle thread runs with its ->pid pointing to the freed memory, not
+>>> good.
+>> Nope - it will be NULL.
+> 
+> How so? I bet it won't be NULL...
+> 
+> 	dup_task_struct:
+> 
+> 		*tsk = *orig;
+> 
+> After that the child's ->pids[PIDTYPE_MAX] is a copy of parent's.
+> But the task is not attached to these pids.
 
-Yeah, we can't really know.  There *probably* aren't any users here that would 
-break, but you never know, and it's best not to change the behavior of an 
-existing API...
+Ouch... Indeed.
 
-> >Yeah, we'll do that when it becomes available. Would it make sense in
-> >the pre-PAT world to use Jesse's guess?
->
-> Yes. Easiest way to do that will be to use UC_MINUS (Just set PCD bit
-> and not PWT bit) until PAT changes.
-> Ioremap() uses UC_MINUS, it should not have any side effects to other
-> users who expect this mapping to be UC without any MTRR setting.
+>>> Not serious perhaps, afaics we only need this ->pid to ensure that
+>>> swapper can safely fork /sbin/init, but still.
+>>>
+>>> Pavel, Eric, Sukadev? Please say I missed something! ;)
+>>>
+>>> Otherwise, we can change init_idle() to do attach_pid(init_struct_pid),
+>>> afaics we can do this lockless. In that case we should also change
+>>> INIT_STRUCT_PID() and remove the initialization of .tasks.
+>> Well, these was some request to make tasks always have pid link
+>> point to not NULL (from Matt?) so we'll need this :)
+> 
+> For now I'd suggest the patch below. If contrary to our expectations
+> there is any usage of idle_task->pids, we will notice ;)
+> 
+> Oleg.
+> 
+> --- kernel/fork.c~	2008-03-07 18:11:27.000000000 +0300
+> +++ kernel/fork.c	2008-04-17 19:34:10.000000000 +0400
+> @@ -1420,6 +1420,9 @@ struct task_struct * __cpuinit fork_idle
+>  	if (!IS_ERR(task))
+>  		init_idle(task, cpu);
+>  
+> +	/* COMMENT */
+> +	memset(task->pids, 0, sizeof task->pids);
+> +
 
-We could probably do that unconditionally though, rather than dependent on the 
-prefetchable bit like my patch does.
+Hm... Looks ok, but I'd suggest such patch instead:
 
-> >In any case, we'll continue to use the fact that mprotect is
-> >also broken
-> >to get our WC mapping working (using mprotect PROT_NONE followed by
-> >mprotect PROT_READ|PROT_WRITE causes the CD and WT bits to get
-> >cleared).
-> >We're fortunate in this case that we've found a bug to exploit that
-> >gives us the desired behaviour.
->
-> Noo.. Now we have one more thing in PAT to do list :-(. To go and plug
-> those mprotect APIs to prevent users from doing things like this.
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1348,6 +1348,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 		}
+ 		attach_pid(p, PIDTYPE_PID, pid);
+ 		nr_threads++;
++	} else {
++		p->pids[PIDTYPE_PID].pid = NULL;
++		p->pids[PIDTYPE_SID].pid = NULL;
++		p->pids[PIDTYPE_PGID].pid = NULL;
+ 	}
+ 
+ 	total_forks++;
 
-I think it's just a long standing bug...  mprotect really shouldn't be 
-clobbering PTE bits regardless of PAT (though with PAT the bug becomes more 
-serious).
+it will cover cases, when we (if ever) call the copy_process from
+other place. Oh, well...
 
-Jesse
+>  	return task;
+>  }
+>  
+> 
+> 
+
