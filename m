@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935418AbYDQKBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbYDQKBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935418AbYDQKBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934214AbYDQJgx
+	id S934064AbYDQKBM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934147AbYDQJek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:36:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934563AbYDQJgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:36:52 -0400
-Date: Thu, 17 Apr 2008 02:36:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417023603.672d1032.akpm@linux-foundation.org>
-In-Reply-To: <20080417093025.GA17389@elte.hu>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<20080417083000.GA4935@elte.hu>
-	<20080417014054.ea788f1f.akpm@linux-foundation.org>
-	<20080417090626.GA14383@elte.hu>
-	<20080417021813.04df7912.akpm@linux-foundation.org>
-	<20080417093025.GA17389@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 05:34:40 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49178 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934361AbYDQJej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:34:39 -0400
+Date: Thu, 17 Apr 2008 12:34:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: kristen.c.accardi@intel.com, gregkh@suse.de
+Cc: pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make pciehp_acpi_get_hp_hw_control_from_firmware()
+	static
+Message-ID: <20080417093349.GA1677@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 11:30:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+this_patch_makes_the_needlessly_global_pciehp_acpi_get_hp_hw_control_from_firmware_static
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > > By keeping all this code out of -mm you haven't solved any of the 
-> > > > merge/integration problems which we had in 2.6.24-rcX.  They're 
-> > > > all still there.  All you did was to push them out of the 
-> > > > two-month integrate-and-test period and put them into the 2.6.25 
-> > > > merge window instead.
-> > > 
-> > > ... hm, i think there's really no problem here at all: most of the 
-> > > merge problems you cited were due to clearly out-of-tree patches 
-> > > that sit in x86.git/testing for the convenience of our testers and 
-> > > contributors, that we have no intention to push upstream.
-> > 
-> > Are those out-of-tree patches also in linux-next? [...]
-> 
-> yes they are.
-> 
-> > [...]  The page-flags and prctl changes are there.  And those are 
-> > planned for 2.6.26, aren't they?
-> 
-> you mean kmemcheck? Yes, that's planned. We've been working 4 months 
-> non-stop on kmemcheck to make it mergeable and usable, it's at version 7 
-> right now, and it caught a handful of real bugs already (such as 
-> 63a7138671c - unfortunately not credited in the log to kmemcheck). But 
-> because it touches SLUB (because it has to - and they are acked by 
-> Pekka) i never had the chance to move it into the for-akpm branch.
+;)
 
-Does it really really really need to consume one of our few remaining page
-flags?  We'll be in a mess when we run out.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> i guess this will all sort itself out when you rebase -mm to linux-next. 
-> Stephen Rothwell is doing an excellent job of resolving interactions 
-> between trees.
+---
+1ad3d7f12e34fb3af50c549683479faf9719ccd5 diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+index 698975a..e76b667 100644
+--- a/drivers/pci/hotplug/pciehp_hpc.c
++++ b/drivers/pci/hotplug/pciehp_hpc.c
+@@ -1052,7 +1052,7 @@ static struct hpc_ops pciehp_hpc_ops = {
+ };
+ 
+ #ifdef CONFIG_ACPI
+-int pciehp_acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev)
++static int pciehp_acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev)
+ {
+ 	acpi_status status;
+ 	acpi_handle chandle, handle = DEVICE_ACPI_HANDLE(&(dev->dev));
 
-Yep I expect it'll help in several ways.  (That's why I suggested it!)
