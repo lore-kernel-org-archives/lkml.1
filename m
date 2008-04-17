@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbYDQLIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934415AbYDQLJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934316AbYDQLIw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457AbYDQLGj
+	id S934415AbYDQLJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbYDQLGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:06:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41597 "EHLO hera.kernel.org"
+	Thu, 17 Apr 2008 07:06:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41599 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760859AbYDQLGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761001AbYDQLGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Apr 2008 07:06:33 -0400
 From: James Morris <jmorris@namei.org>
 To: linux-security-module@vger.kernel.org
 Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
        "Ahmed S. Darwish" <darwish.07@gmail.com>,
        Casey Schaufler <casey@schaufler-ca.com>
-Subject: [PATCH 06/12] LSM/Audit: Introduce generic Audit LSM hooks
-Date: Thu, 17 Apr 2008 11:06:03 +0000
-Message-Id: <d7470dd3d3ec489b61e9bd6216c9413ce7b949ef.1208428765.git.jmorris@namei.org>
+Subject: [PATCH 05/12] SELinux: remove redundant exports
+Date: Thu, 17 Apr 2008 11:06:02 +0000
+Message-Id: <14b33afe467d8903b8b3f1394500f94f13cb3089.1208428765.git.jmorris@namei.org>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208430369-23156-1-git-send-email-jmorris@namei.org>
 References: <1208430369-23156-1-git-send-email-jmorris@namei.org>
@@ -28,210 +28,168 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Introduce a generic Audit interface for security modules
-by adding the following new LSM hooks:
+Remove the following exported SELinux interfaces:
+selinux_get_inode_sid(inode, sid)
+selinux_get_ipc_sid(ipcp, sid)
+selinux_get_task_sid(tsk, sid)
+selinux_sid_to_string(sid, ctx, len)
 
-audit_rule_init(field, op, rulestr, lsmrule)
-audit_rule_known(krule)
-audit_rule_match(secid, field, op, rule, actx)
-audit_rule_free(rule)
-
-Those hooks are only available if CONFIG_AUDIT is enabled.
+They can be substitued with the following generic equivalents
+respectively:
+new LSM hook, inode_getsecid(inode, secid)
+new LSM hook, ipc_getsecid*(ipcp, secid)
+LSM hook, task_getsecid(tsk, secid)
+LSM hook, sid_to_secctx(sid, ctx, len)
 
 Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 Acked-by: James Morris <jmorris@namei.org>
 Reviewed-by: Paul Moore <paul.moore@hp.com>
 ---
- include/linux/security.h |   72 ++++++++++++++++++++++++++++++++++++++++++++++
- security/dummy.c         |   31 +++++++++++++++++++-
- security/security.c      |   25 ++++++++++++++++
- 3 files changed, 127 insertions(+), 1 deletions(-)
+ include/linux/selinux.h    |   62 --------------------------------------------
+ security/selinux/exports.c |   42 -----------------------------
+ 2 files changed, 0 insertions(+), 104 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 45717d9..697f228 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -37,6 +37,7 @@
- extern unsigned securebits;
+diff --git a/include/linux/selinux.h b/include/linux/selinux.h
+index 8c2cc4c..24b0af1 100644
+--- a/include/linux/selinux.h
++++ b/include/linux/selinux.h
+@@ -16,7 +16,6 @@
  
- struct ctl_table;
-+struct audit_krule;
+ struct selinux_audit_rule;
+ struct audit_context;
+-struct inode;
+ struct kern_ipc_perm;
  
- /*
-  * These functions are in security/capability.c and are used
-@@ -1235,6 +1236,37 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  *	@secdata contains the security context.
-  *	@seclen contains the length of the security context.
-  *
-+ * Security hooks for Audit
-+ *
-+ * @audit_rule_init:
-+ *	Allocate and initialize an LSM audit rule structure.
-+ *	@field contains the required Audit action. Fields flags are defined in include/linux/audit.h
-+ *	@op contains the operator the rule uses.
-+ *	@rulestr contains the context where the rule will be applied to.
-+ *	@lsmrule contains a pointer to receive the result.
-+ *	Return 0 if @lsmrule has been successfully set,
-+ *	-EINVAL in case of an invalid rule.
-+ *
-+ * @audit_rule_known:
-+ *	Specifies whether given @rule contains any fields related to current LSM.
-+ *	@rule contains the audit rule of interest.
-+ *	Return 1 in case of relation found, 0 otherwise.
-+ *
-+ * @audit_rule_match:
-+ *	Determine if given @secid matches a rule previously approved
-+ *	by @audit_rule_known.
-+ *	@secid contains the security id in question.
-+ *	@field contains the field which relates to current LSM.
-+ *	@op contains the operator that will be used for matching.
-+ *	@rule points to the audit rule that will be checked against.
-+ *	@actx points to the audit context associated with the check.
-+ *	Return 1 if secid matches the rule, 0 if it does not, -ERRNO on failure.
-+ *
-+ * @audit_rule_free:
-+ *	Deallocate the LSM audit rule structure previously allocated by
-+ *	audit_rule_init.
-+ *	@rule contains the allocated rule
-+ *
-  * This is the main security structure.
-  */
- struct security_operations {
-@@ -1494,6 +1526,13 @@ struct security_operations {
+ #ifdef CONFIG_SECURITY_SELINUX
+@@ -70,45 +69,6 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op,
+ void selinux_audit_set_callback(int (*callback)(void));
  
- #endif	/* CONFIG_KEYS */
- 
-+#ifdef CONFIG_AUDIT
-+	int (*audit_rule_init)(u32 field, u32 op, char *rulestr, void **lsmrule);
-+	int (*audit_rule_known)(struct audit_krule *krule);
-+	int (*audit_rule_match)(u32 secid, u32 field, u32 op, void *lsmrule,
-+				struct audit_context *actx);
-+	void (*audit_rule_free)(void *lsmrule);
-+#endif /* CONFIG_AUDIT */
- };
- 
- /* prototypes */
-@@ -2700,5 +2739,38 @@ static inline int security_key_permission(key_ref_t key_ref,
- #endif
- #endif /* CONFIG_KEYS */
- 
-+#ifdef CONFIG_AUDIT
-+#ifdef CONFIG_SECURITY
-+int security_audit_rule_init(u32 field, u32 op, char *rulestr, void **lsmrule);
-+int security_audit_rule_known(struct audit_krule *krule);
-+int security_audit_rule_match(u32 secid, u32 field, u32 op, void *lsmrule,
-+			      struct audit_context *actx);
-+void security_audit_rule_free(void *lsmrule);
-+
-+#else
-+
-+static inline int security_audit_rule_init(u32 field, u32 op, char *rulestr,
-+					   void **lsmrule)
-+{
-+	return 0;
-+}
-+
-+static inline int security_audit_rule_known(struct audit_krule *krule)
-+{
-+	return 0;
-+}
-+
-+static inline int security_audit_rule_match(u32 secid, u32 field, u32 op,
-+				   void *lsmrule, struct audit_context *actx)
-+{
-+	return 0;
-+}
-+
-+static inline void security_audit_rule_free(void *lsmrule)
-+{ }
-+
-+#endif /* CONFIG_SECURITY */
-+#endif /* CONFIG_AUDIT */
-+
- #endif /* ! __LINUX_SECURITY_H */
- 
-diff --git a/security/dummy.c b/security/dummy.c
-index fb2e942..1ac9f8e 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -993,6 +993,30 @@ static inline int dummy_key_permission(key_ref_t key_ref,
- }
- #endif /* CONFIG_KEYS */
- 
-+#ifdef CONFIG_AUDIT
-+static inline int dummy_audit_rule_init(u32 field, u32 op, char *rulestr,
-+					void **lsmrule)
-+{
-+	return 0;
-+}
-+
-+static inline int dummy_audit_rule_known(struct audit_krule *krule)
-+{
-+	return 0;
-+}
-+
-+static inline int dummy_audit_rule_match(u32 secid, u32 field, u32 op,
-+					 void *lsmrule,
-+					 struct audit_context *actx)
-+{
-+	return 0;
-+}
-+
-+static inline void dummy_audit_rule_free(void *lsmrule)
-+{ }
-+
-+#endif /* CONFIG_AUDIT */
-+
- struct security_operations dummy_security_ops;
- 
- #define set_to_dummy_if_null(ops, function)				\
-@@ -1182,6 +1206,11 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, key_free);
- 	set_to_dummy_if_null(ops, key_permission);
- #endif	/* CONFIG_KEYS */
+ /**
+- *     selinux_sid_to_string - map a security context ID to a string
+- *     @sid: security context ID to be converted.
+- *     @ctx: address of context string to be returned
+- *     @ctxlen: length of returned context string.
+- *
+- *     Returns 0 if successful, -errno if not.  On success, the context
+- *     string will be allocated internally, and the caller must call
+- *     kfree() on it after use.
+- */
+-int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen);
 -
-+#ifdef CONFIG_AUDIT
-+	set_to_dummy_if_null(ops, audit_rule_init);
-+	set_to_dummy_if_null(ops, audit_rule_known);
-+	set_to_dummy_if_null(ops, audit_rule_match);
-+	set_to_dummy_if_null(ops, audit_rule_free);
-+#endif
+-/**
+- *     selinux_get_inode_sid - get the inode's security context ID
+- *     @inode: inode structure to get the sid from.
+- *     @sid: pointer to security context ID to be filled in.
+- *
+- *     Returns nothing
+- */
+-void selinux_get_inode_sid(const struct inode *inode, u32 *sid);
+-
+-/**
+- *     selinux_get_ipc_sid - get the ipc security context ID
+- *     @ipcp: ipc structure to get the sid from.
+- *     @sid: pointer to security context ID to be filled in.
+- *
+- *     Returns nothing
+- */
+-void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid);
+-
+-/**
+- *     selinux_get_task_sid - return the SID of task
+- *     @tsk: the task whose SID will be returned
+- *     @sid: pointer to security context ID to be filled in.
+- *
+- *     Returns nothing
+- */
+-void selinux_get_task_sid(struct task_struct *tsk, u32 *sid);
+-
+-/**
+  *     selinux_string_to_sid - map a security context string to a security ID
+  *     @str: the security context string to be mapped
+  *     @sid: ID value returned via this.
+@@ -175,28 +135,6 @@ static inline void selinux_audit_set_callback(int (*callback)(void))
+ 	return;
  }
  
-diff --git a/security/security.c b/security/security.c
-index 33e59a7..bf189d2 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -1120,3 +1120,28 @@ int security_key_permission(key_ref_t key_ref,
- }
+-static inline int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen)
+-{
+-       *ctx = NULL;
+-       *ctxlen = 0;
+-       return 0;
+-}
+-
+-static inline void selinux_get_inode_sid(const struct inode *inode, u32 *sid)
+-{
+-	*sid = 0;
+-}
+-
+-static inline void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid)
+-{
+-	*sid = 0;
+-}
+-
+-static inline void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
+-{
+-	*sid = 0;
+-}
+-
+ static inline int selinux_string_to_sid(const char *str, u32 *sid)
+ {
+        *sid = 0;
+diff --git a/security/selinux/exports.c b/security/selinux/exports.c
+index 87d2bb3..64af2d3 100644
+--- a/security/selinux/exports.c
++++ b/security/selinux/exports.c
+@@ -25,48 +25,6 @@
+ /* SECMARK reference count */
+ extern atomic_t selinux_secmark_refcount;
  
- #endif	/* CONFIG_KEYS */
-+
-+#ifdef CONFIG_AUDIT
-+
-+int security_audit_rule_init(u32 field, u32 op, char *rulestr, void **lsmrule)
-+{
-+	return security_ops->audit_rule_init(field, op, rulestr, lsmrule);
-+}
-+
-+int security_audit_rule_known(struct audit_krule *krule)
-+{
-+	return security_ops->audit_rule_known(krule);
-+}
-+
-+void security_audit_rule_free(void *lsmrule)
-+{
-+	security_ops->audit_rule_free(lsmrule);
-+}
-+
-+int security_audit_rule_match(u32 secid, u32 field, u32 op, void *lsmrule,
-+			      struct audit_context *actx)
-+{
-+	return security_ops->audit_rule_match(secid, field, op, lsmrule, actx);
-+}
-+
-+#endif /* CONFIG_AUDIT */
+-int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen)
+-{
+-	if (selinux_enabled)
+-		return security_sid_to_context(sid, ctx, ctxlen);
+-	else {
+-		*ctx = NULL;
+-		*ctxlen = 0;
+-	}
+-
+-	return 0;
+-}
+-
+-void selinux_get_inode_sid(const struct inode *inode, u32 *sid)
+-{
+-	if (selinux_enabled) {
+-		struct inode_security_struct *isec = inode->i_security;
+-		*sid = isec->sid;
+-		return;
+-	}
+-	*sid = 0;
+-}
+-
+-void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid)
+-{
+-	if (selinux_enabled) {
+-		struct ipc_security_struct *isec = ipcp->security;
+-		*sid = isec->sid;
+-		return;
+-	}
+-	*sid = 0;
+-}
+-
+-void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
+-{
+-	if (selinux_enabled) {
+-		struct task_security_struct *tsec = tsk->security;
+-		*sid = tsec->sid;
+-		return;
+-	}
+-	*sid = 0;
+-}
+-
+ int selinux_string_to_sid(char *str, u32 *sid)
+ {
+ 	if (selinux_enabled)
 -- 
 1.5.4.2
 
