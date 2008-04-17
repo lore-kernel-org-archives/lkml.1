@@ -1,129 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYDPXzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYDQAGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYDPXzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 19:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYDPXzA
+	id S1755407AbYDQAGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 20:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYDQAG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 19:55:00 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49983 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750853AbYDPXy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 19:54:59 -0400
-Subject: Re: bdev size not updated correctly after underlying device is
-	resized
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, dm-devel@redhat.com, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, linux-scsi@vger.kernel.org
-In-Reply-To: <1208383185.3859.24.camel@bluto.andrew>
-References: <1207783782.31821.80.camel@bluto.andrew>
-	 <20080415160314.11e9b7e1.akpm@linux-foundation.org>
-	 <1208301719.24092.21.camel@bluto.andrew>
-	 <1208383185.3859.24.camel@bluto.andrew>
-Content-Type: text/plain
-Date: Wed, 16 Apr 2008 18:54:54 -0500
-Message-Id: <1208390094.3227.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Apr 2008 20:06:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44894 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750853AbYDQAG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 20:06:29 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org
+Cc: Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, linux-kernel@vger.kernel.org
+Message-Id: <20080417000624.18399.35041.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/4] Verification and debugging of memory initialisation V2
+Date: Thu, 17 Apr 2008 01:06:24 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-16 at 15:59 -0600, Andrew Patterson wrote:
-> On Tue, 2008-04-15 at 17:21 -0600, Andrew Patterson wrote:
-> > On Tue, 2008-04-15 at 16:03 -0700, Andrew Morton wrote:
-> > > On Wed, 09 Apr 2008 17:29:42 -0600
-> > > .
-> > > > Subject: [PATCH] Reset bdev size regardless of other openers.
-> > > > 
-> > > > A block device may be resized while online.  If the revalidate_disk
-> > > > routine is called after the resize, the gendisk->capacity value is
-> > > > updated for the device.  However, the bdev->bd_inode->i_size is not
-> > > > updated when the block device is opened if there are any other openers
-> > > > on the device.  This means that apps like LVM are unlikely to see the
-> > > > size change as they tend to keep their block devices open.  There is a
-> > > > discussion of this problem at:
-> > > > 
-> > > >   http://lkml.org/lkml/2007/7/3/83
-> > > > 
-> > > > This patch changes block_dev.c:do_open() to call bd_set_size()
-> > > > regardless if there are other openers on the device.  It should not be
-> > > > applied in its existing state as changing i_size should be protected by
-> > > > a lock. Also, there needs to be some analysis on the effects of changing
-> > > > the device size underneath an app.
-> > > 
-> > > hm, tricky.
-> > > 
-> > > I don't know what problems a change like this might cause - probably few,
-> > > given the rarity and slowness of block device resizing.
-> > 
-> > I have been looking through code where this might be a problem.  The
-> > sort of things I was worried about is where something might try and do a
-> > calculation based on the i_size and write/read data from there after it
-> > has been resized, possibly corrupting data.  The COW code in dm seems to
-> > come the closest, but then if you are resizing the device that has
-> > snapshots on it, you might be getting what you deserve.
-> > 
-> > > 
-> > > Presumably increasing the device size will cause les problems than
-> > > decreasing it would. 
-> > 
-> > Agreed.
-> > 
-> > >  Do we even support device shrinking?
-> > 
-> > Yes, this common with LVM at least.  Whether it is a good idea to do
-> > this with a mounted file-system on it is another matter.
-> > 
-> > > 
-> > > > diff --git a/fs/block_dev.c b/fs/block_dev.c
-> > > > index 7d822fa..d13a4e5 100644
-> > > > --- a/fs/block_dev.c
-> > > > +++ b/fs/block_dev.c
-> > > > @@ -992,6 +992,9 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
-> > > >  				ret = bdev->bd_disk->fops->open(bdev->bd_inode, file);
-> > > >  				if (ret)
-> > > >  					goto out;
-> > > > +				/* device may have been resized with revalidate_disk */
-> > > > +				if (!part)
-> > > > +					bd_set_size(bdev, (loff_t)get_capacity(disk)<<9);
-> > > >  			}
-> > > >  			if (bdev->bd_invalidated)
-> > > >  				rescan_partitions(bdev->bd_disk, bdev);
-> > > 
-> > > I'd have thought that an appropriate way to fix all this would be to
-> > > perform the i_size update between freeze_bdev() and thaw_bdev(), when the
-> > > fs is quiesced.  But it's not really in my comfort zone.
-> > 
-> > Except that this is not only done with file-systems.  In my case I am
-> > just trying to extend an LVM logical volume after a resize but cannot
-> > because it is open (activated). In practice, however, it is probably
-> > only useful to do this with an online file-system.  Otherwise you could
-> > just close all openers and the resize will work fine.
-> > 
-> > > 
-> > 
-> 
-> Adding linux-scsi.  
+Many changes are based on feedback from Ingo. Others are from off-list mails
+that were not group-replied for some reason. A number of issues were rattled
+out while testing on machines other than x86-32. V1 was pretty flaky and
+barely a proof-of-concept but this version has successfully boot-tested on
+x86-32, x86-64 and ppc64. It has been successfully cross-compiled on ARM
+which does not support arch-independent zone-sizing.
 
-Thanks!
+Changelog since V1
+  o Make memory initialisation verification a DEBUG option depending on
+    DEBUG_KERNEL option. By default it will then to verify structures but
+    tracing can be enabled via the command-line. Without the CONFIG option,
+    checks will still be made on PFN ranges passed by the architecture-specific
+    code and a warning printed once if a problem is encountered
+  o Reshuffle the patches so that the zonelist printing is at the end of the
+    patchset. This is because -mm requires a different patch to print zonelists
+    and this allows the end patch to be temporarily dropped when testing against
+    -mm
+  o Rebase on top of Ingo's sparsemem fix for easier testing
+  o WARN_ON_ONCE when PFNs from the architecture violate SPARSEMEM limitations.
+    The warning should be "harmless" as the system will boot regardless but
+    it acts as a reminder that bad input is being used.
+  o Convert mminit_debug_printk() to a macro
+  o Spelling mistake corrections
+  o Proper use of KERN_CONT
+  o Document mminit_debug_level=
+  o Fix check on pageflags where the masks were not being shifted
+  o The zone ID should should have used page_zonenum not page_zone_id
+  o Iterate all zonelists correctly
+  o Correct typo of SECTIONS_SHIFT
 
-Actually this looks like a bit of an incredible hack to me since it
-requires another open to trigger.
+Boot initialisation has always been a bit of a mess with a number
+of ugly points. While significant amounts of the initialisation
+is architecture-independent, it trusts of the data received from the
+architecture layer. This was a mistake in retrospect as it has resulted in
+a number of difficult-to-diagnose bugs.
 
-What probably should happen is that if the disk grew, then updating the
-new size should be fine (fs can then expand into the space).  But if it
-shrank, we probably want to invalidate the whole lot just to make sure
-we don't have pages or inodes which are backed by now non-existent
-pieces of the disk.
+This patchset optionally adds some validation and tracing to memory
+initialisation. It also introduces a few basic defencive measures and
+depending on a boot parameter, will perform additional tests for errors
+"that should never occur". I think this would have reduced debugging time
+for some boot-related problems. 
 
-So, what about doing the check in revalidate instead?  If old size ==
-new size, do nothing; if > do invalidation like media change and if <
-just update the actual size?
+One question. These patches generally print at KERN_INFO level on the
+assumption if the user has compiled in the option, they are not expecting to
+also have to set loglevel. However, it has been pointed out privately that this
+may be confusing. Which level for printk would people find less surprising?
 
-James
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
