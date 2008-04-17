@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764631AbYDQMiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbYDQMlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764631AbYDQMiw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 08:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbYDQMil
+	id S932068AbYDQMlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 08:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbYDQMlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 08:38:41 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53777 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbYDQMik (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 08:38:40 -0400
-Date: Thu, 17 Apr 2008 06:38:17 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
-Message-ID: <20080417123816.GA20637@parisc-linux.org>
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk> <200804160126.11116.bzolnier@gmail.com> <20080417093753.GF1677@cs181133002.pp.htv.fi> <20080417095916.GD1449@flint.arm.linux.org.uk> <20080417104836.GH1677@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
+	Thu, 17 Apr 2008 08:41:03 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:2134 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755739AbYDQMlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 08:41:00 -0400
+X-Greylist: delayed 1700 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Apr 2008 08:41:00 EDT
+Date: Thu, 17 Apr 2008 14:12:38 +0200
+From: David Madore <david.madore@ens.fr>
+To: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>
+Subject: does pata_marvell (88SE6145 driver) support external SATA port?
+Message-ID: <20080417121238.GA29263@clipper.ens.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080417104836.GH1677@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Thu, 17 Apr 2008 14:12:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 01:48:36PM +0300, Adrian Bunk wrote:
-> avr32 is fixed in 2.6.25 (no more HAVE_IDE)
-> m68knommu I'll check
-> ppc arch will be removed in 2 months
+Hi,
 
-More pertinently, builds using ARCH=ppc will use asm-powerpc via a nasty
-nasty temporary hack ;-)
+I have an Asus P5W64 WS motherboard, featuring a Marvell 88SE6145 ATA
+controller, with three internal SATA ports and one external e-SATA
+port.  I understand the Linux kernel driver for this controller is
+called pata_marvell even though it's a SATA controller (/me confused,
+but I think it says something like the controller is used in "legacy"
+mode, whatever that means); I also understand that this driver will
+not drive the third internal SATA port (reported on, e.g., <URL:
+http://ubuntuforums.org/archive/index.php/t-507061.html
+ >): this is coherent with Alan Cox's comment when signing of the
+driver (<URL: http://lkml.org/lkml/2006/10/16/157 >) that the driver
+will "drive the SATA ports 1 & 2 in legacy mode".  However, no mention
+was made of the external SATA port.
 
-> v850 arch is completely hosed, and I'm already trying to get it removed
+So:
 
-Oh good.  There's a couple of things I've noticd about it recently that
-are broken and was trying to summon the enthusiasm for doing a proper
-bug report.
+Does the pata_marvell module support an external SATA port?
+
+How can I know this without buying an external SATA drive and
+discovering to my dismay that I can't use it? :-)
+
+Cheers,
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+     David A. Madore
+    (david.madore@ens.fr,
+     http://www.madore.org/~david/ )
