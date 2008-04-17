@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYDQERw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbYDQESM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYDQERw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYDQERo
+	id S1751993AbYDQESM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbYDQERy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:17:44 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38014 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbYDQERn (ORCPT
+	Thu, 17 Apr 2008 00:17:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:50835 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753458AbYDQERw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:17:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=PeEzpkv3GykVD5IY/dfjf0qB33gFLFUMB81w7gQaB4sVXss4iRQQ7+1X4321FZVUt
-	YbEQX6zROprgSJrMb397A==
-Message-ID: <6599ad830804162117w14364b7cg20d3694ffdfeb867@mail.gmail.com>
-Date: Wed, 16 Apr 2008 21:17:34 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] cgroup: fix a race condition in manipulating tsk->cg_list
-Cc: "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Paul Jackson" <pj@sgi.com>
-In-Reply-To: <20080416211144.a38f6fc0.akpm@linux-foundation.org>
+	Thu, 17 Apr 2008 00:17:52 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: Possible mem leak in copy_process()
+Date: Thu, 17 Apr 2008 06:17:34 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
+In-Reply-To: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4806C5EB.3040102@cn.fujitsu.com>
-	 <20080416211144.a38f6fc0.akpm@linux-foundation.org>
+Message-Id: <200804170617.36010.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19+RIZ+TwMl70WfFSYzMgnnG6D0uhz5UPyZmC8
+ 0SbwFe8YGs847wY2AXOpxKxLVKNnqTAZNbdHjKKqGtn0GvUxcu
+ WhI6wSOd8klzWNVjo0/HA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 9:11 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
->  I don't fully understand the race.  Both paths hold css_set_lock.
->
->  Can you describe it in more detail please?
+On Wednesday 16 April 2008, Jesper Juhl wrote:
+> 
+> Perhaps it can never happen the way Coverity thinks it can. You are a much 
+> better judge of that than I, but it looks to me like it's at least 
+> possible in theory - in which case we have a potential leak every time we 
+> create a new process and that can't be good...
 
-Task A starts exiting, passes the check for unlinking current->cg_list.
+I think you're just looking at the common case here, which is correct:
+The pid is allocated for task creation and stays around as long as the
+task does. It gets freed when the last reference to it goes away,
+usually in the put_pid() called from exit().
 
-Before it completely exits task B does the very first
-cgroup_iter_begin() call (via reading a cgroups tasks file) which
-links all tasks in to their css_set objects via tsk->cg_list.
-
-Then task A finishes exiting and is freed, but doesn't unlink from the cg_list.
-
->
->  afacit the task at *p could set PF_EXITING immediately after this code has
->  tested PF_EXITING and then the task at *p could proceed until we hit the
->  same race (whatever that is).
-
-The important fact there is that the task sets PF_EXITING *before* it
-checks whether it needs to unlink from current->cg_list.
-
-Paul
+	Arnd <><
