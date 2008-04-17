@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933743AbYDQBYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933769AbYDQBYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933743AbYDQBYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760648AbYDQBIy
+	id S933769AbYDQBYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760791AbYDQBI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:08:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:58961 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:08:59 -0400
+Received: from sous-sol.org ([216.99.217.87]:58966 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbYDQBIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:08:53 -0400
-Message-Id: <20080417010345.091651392@sous-sol.org>
+	id S1760763AbYDQBI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:08:58 -0400
+Message-Id: <20080417010334.951283202@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:59 -0700
+Date: Wed, 16 Apr 2008 18:01:43 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Martin Devera <devik@cdi.cz>, David S Miller <davem@davemloft.net>
-Subject: sch_htb: fix "too many events" situation
-Content-Disposition: inline; filename=sch_htb-fix-too-many-events-situation.patch
+       Kenichi Ohmichi <oomichi@mxs.nes.nec.co.jp>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: vmcoreinfo: add the symbol "phys_base"
+Content-Disposition: inline; filename=vmcoreinfo-add-the-symbol-phys_base.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,55 +35,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Martin Devera <devik@cdi.cz>
+From: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
 
-Upstream commit: 8f3ea33a5078a09eba12bfe57424507809367756
+upstream commit: 629c8b4cdb354518308663aff2f719e02f69ffbe
 
-HTB is event driven algorithm and part of its work is to apply
-scheduled events at proper times. It tried to defend itself from
-livelock by processing only limited number of events per dequeue.
-Because of faster computers some users already hit this hardcoded
-limit.
+Fix the problem that makedumpfile sometimes fails on x86_64 machine.
 
-This patch limits processing up to 2 jiffies (why not 1 jiffie ?
-because it might stop prematurely when only fraction of jiffie
-remains).
+This patch adds the symbol "phys_base" to a vmcoreinfo data.  The
+vmcoreinfo data has the minimum debugging information only for dump
+filtering.  makedumpfile (dump filtering command) gets it to distinguish
+unnecessary pages, and makedumpfile creates a small dumpfile.
 
-Signed-off-by: Martin Devera <devik@cdi.cz>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+On x86_64 kernel which compiled with CONFIG_PHYSICAL_START=0x0 and
+CONFIG_RELOCATABLE=y, makedumpfile fails like the following:
+
+ # makedumpfile -d31 /proc/vmcore dumpfile
+ The kernel version is not supported.
+ The created dumpfile may be incomplete.
+ _exclude_free_page: Can't get next online node.
+
+ makedumpfile Failed.
+ #
+
+The cause is the lack of the symbol "phys_base" in a vmcoreinfo data.
+If the symbol "phys_base" does not exist, makedumpfile considers an
+x86_64 kernel as non relocatable.  As the result, makedumpfile
+misunderstands the physical address where the kernel is loaded, and it
+cannot translate a kernel virtual address to physical address correctly.
+
+To fix this problem, this patch adds the symbol "phys_base" to a
+vmcoreinfo data.
+
+Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: <stable@kernel.org>
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/sched/sch_htb.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ arch/x86/kernel/machine_kexec_64.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/sched/sch_htb.c
-+++ b/net/sched/sch_htb.c
-@@ -708,9 +708,11 @@ static void htb_charge_class(struct htb_
-  */
- static psched_time_t htb_do_events(struct htb_sched *q, int level)
- {
--	int i;
--
--	for (i = 0; i < 500; i++) {
-+	/* don't run for longer than 2 jiffies; 2 is used instead of
-+	   1 to simplify things when jiffy is going to be incremented
-+	   too soon */
-+	unsigned long stop_at = jiffies + 2;
-+	while (time_before(jiffies, stop_at)) {
- 		struct htb_class *cl;
- 		long diff;
- 		struct rb_node *p = rb_first(&q->wait_pq[level]);
-@@ -728,9 +730,8 @@ static psched_time_t htb_do_events(struc
- 		if (cl->cmode != HTB_CAN_SEND)
- 			htb_add_to_wait_tree(q, cl, diff);
- 	}
--	if (net_ratelimit())
--		printk(KERN_WARNING "htb: too many events !\n");
--	return q->now + PSCHED_TICKS_PER_SEC / 10;
-+	/* too much load - let's continue on next jiffie */
-+	return q->now + PSCHED_TICKS_PER_SEC / HZ;
- }
+--- a/arch/x86/kernel/machine_kexec_64.c
++++ b/arch/x86/kernel/machine_kexec_64.c
+@@ -233,6 +233,7 @@ NORET_TYPE void machine_kexec(struct kim
  
- /* Returns class->node+prio from id-tree where classe's id is >= id. NULL
+ void arch_crash_save_vmcoreinfo(void)
+ {
++	VMCOREINFO_SYMBOL(phys_base);
+ 	VMCOREINFO_SYMBOL(init_level4_pgt);
+ 
+ #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
 
 -- 
