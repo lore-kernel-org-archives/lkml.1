@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbYDQJRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbYDQJSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932681AbYDQJRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763446AbYDQJLP
+	id S932738AbYDQJSY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763102AbYDQJLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:11:15 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58966
+	Thu, 17 Apr 2008 05:11:16 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58975
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759609AbYDQJK7 (ORCPT
+	with ESMTP id S1760359AbYDQJLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:10:59 -0400
+	Thu, 17 Apr 2008 05:11:00 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng.yang@intel.com>
-Subject: [PATCH 17/45] KVM: VMX: Enable MSR Bitmap feature
-Date: Thu, 17 Apr 2008 12:10:22 +0300
-Message-Id: <1208423450-29415-18-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Izik Eidus <izike@qumranet.com>
+Subject: [PATCH 19/45] KVM: MMU: allow the vm to shrink the kvm mmu shadow caches
+Date: Thu, 17 Apr 2008 12:10:24 +0300
+Message-Id: <1208423450-29415-20-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208423450-29415-1-git-send-email-avi@qumranet.com>
 References: <1208423450-29415-1-git-send-email-avi@qumranet.com>
@@ -23,162 +23,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng.yang@intel.com>
+From: Izik Eidus <izike@qumranet.com>
 
-MSR Bitmap controls whether the accessing of an MSR causes VM Exit.
-Eliminating exits on automatically saved and restored MSRs yields a
-small performance gain.
+Allow the Linux memory manager to reclaim memory in the kvm shadow cache.
 
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+Signed-off-by: Izik Eidus <izike@qumranet.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |   67 ++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 60 insertions(+), 7 deletions(-)
+ arch/x86/kvm/mmu.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 56 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index cbca46a..87eee7a 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -91,6 +91,7 @@ static DEFINE_PER_CPU(struct vmcs *, current_vmcs);
- 
- static struct page *vmx_io_bitmap_a;
- static struct page *vmx_io_bitmap_b;
-+static struct page *vmx_msr_bitmap;
- 
- static DECLARE_BITMAP(vmx_vpid_bitmap, VMX_NR_VPIDS);
- static DEFINE_SPINLOCK(vmx_vpid_lock);
-@@ -185,6 +186,11 @@ static inline int is_external_interrupt(u32 intr_info)
- 		== (INTR_TYPE_EXT_INTR | INTR_INFO_VALID_MASK);
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index c563283..1594ee0 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1966,7 +1966,53 @@ void kvm_mmu_zap_all(struct kvm *kvm)
+ 	kvm_flush_remote_tlbs(kvm);
  }
  
-+static inline int cpu_has_vmx_msr_bitmap(void)
+-void kvm_mmu_module_exit(void)
++void kvm_mmu_remove_one_alloc_mmu_page(struct kvm *kvm)
 +{
-+	return (vmcs_config.cpu_based_exec_ctrl & CPU_BASED_USE_MSR_BITMAPS);
++	struct kvm_mmu_page *page;
++
++	page = container_of(kvm->arch.active_mmu_pages.prev,
++			    struct kvm_mmu_page, link);
++	kvm_mmu_zap_page(kvm, page);
 +}
 +
- static inline int cpu_has_vmx_tpr_shadow(void)
++static int mmu_shrink(int nr_to_scan, gfp_t gfp_mask)
++{
++	struct kvm *kvm;
++	struct kvm *kvm_freed = NULL;
++	int cache_count = 0;
++
++	spin_lock(&kvm_lock);
++
++	list_for_each_entry(kvm, &vm_list, vm_list) {
++		int npages;
++
++		spin_lock(&kvm->mmu_lock);
++		npages = kvm->arch.n_alloc_mmu_pages -
++			 kvm->arch.n_free_mmu_pages;
++		cache_count += npages;
++		if (!kvm_freed && nr_to_scan > 0 && npages > 0) {
++			kvm_mmu_remove_one_alloc_mmu_page(kvm);
++			cache_count--;
++			kvm_freed = kvm;
++		}
++		nr_to_scan--;
++
++		spin_unlock(&kvm->mmu_lock);
++	}
++	if (kvm_freed)
++		list_move_tail(&kvm_freed->vm_list, &vm_list);
++
++	spin_unlock(&kvm_lock);
++
++	return cache_count;
++}
++
++static struct shrinker mmu_shrinker = {
++	.shrink = mmu_shrink,
++	.seeks = DEFAULT_SEEKS * 10,
++};
++
++void mmu_destroy_caches(void)
  {
- 	return (vmcs_config.cpu_based_exec_ctrl & CPU_BASED_TPR_SHADOW);
-@@ -1001,6 +1007,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
- 	      CPU_BASED_MOV_DR_EXITING |
- 	      CPU_BASED_USE_TSC_OFFSETING;
- 	opt = CPU_BASED_TPR_SHADOW |
-+	      CPU_BASED_USE_MSR_BITMAPS |
- 	      CPU_BASED_ACTIVATE_SECONDARY_CONTROLS;
- 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_PROCBASED_CTLS,
- 				&_cpu_based_exec_control) < 0)
-@@ -1575,6 +1582,30 @@ static void allocate_vpid(struct vcpu_vmx *vmx)
- 	spin_unlock(&vmx_vpid_lock);
+ 	if (pte_chain_cache)
+ 		kmem_cache_destroy(pte_chain_cache);
+@@ -1976,6 +2022,12 @@ void kvm_mmu_module_exit(void)
+ 		kmem_cache_destroy(mmu_page_header_cache);
  }
  
-+void vmx_disable_intercept_for_msr(struct page *msr_bitmap, u32 msr)
++void kvm_mmu_module_exit(void)
 +{
-+	void *va;
-+
-+	if (!cpu_has_vmx_msr_bitmap())
-+		return;
-+
-+	/*
-+	 * See Intel PRM Vol. 3, 20.6.9 (MSR-Bitmap Address). Early manuals
-+	 * have the write-low and read-high bitmap offsets the wrong way round.
-+	 * We can control MSRs 0x00000000-0x00001fff and 0xc0000000-0xc0001fff.
-+	 */
-+	va = kmap(msr_bitmap);
-+	if (msr <= 0x1fff) {
-+		__clear_bit(msr, va + 0x000); /* read-low */
-+		__clear_bit(msr, va + 0x800); /* write-low */
-+	} else if ((msr >= 0xc0000000) && (msr <= 0xc0001fff)) {
-+		msr &= 0x1fff;
-+		__clear_bit(msr, va + 0x400); /* read-high */
-+		__clear_bit(msr, va + 0xc00); /* write-high */
-+	}
-+	kunmap(msr_bitmap);
++	mmu_destroy_caches();
++	unregister_shrinker(&mmu_shrinker);
 +}
 +
- /*
-  * Sets up the vmcs for emulated real mode.
-  */
-@@ -1592,6 +1623,9 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
- 	vmcs_write64(IO_BITMAP_A, page_to_phys(vmx_io_bitmap_a));
- 	vmcs_write64(IO_BITMAP_B, page_to_phys(vmx_io_bitmap_b));
- 
-+	if (cpu_has_vmx_msr_bitmap())
-+		vmcs_write64(MSR_BITMAP, page_to_phys(vmx_msr_bitmap));
-+
- 	vmcs_write64(VMCS_LINK_POINTER, -1ull); /* 22.3.1.5 */
- 
- 	/* Control */
-@@ -2728,7 +2762,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 
- static int __init vmx_init(void)
+ int kvm_mmu_module_init(void)
  {
--	void *iova;
-+	void *va;
- 	int r;
+ 	pte_chain_cache = kmem_cache_create("kvm_pte_chain",
+@@ -1995,10 +2047,12 @@ int kvm_mmu_module_init(void)
+ 	if (!mmu_page_header_cache)
+ 		goto nomem;
  
- 	vmx_io_bitmap_a = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
-@@ -2741,30 +2775,48 @@ static int __init vmx_init(void)
- 		goto out;
- 	}
- 
-+	vmx_msr_bitmap = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
-+	if (!vmx_msr_bitmap) {
-+		r = -ENOMEM;
-+		goto out1;
-+	}
++	register_shrinker(&mmu_shrinker);
 +
- 	/*
- 	 * Allow direct access to the PC debug port (it is often used for I/O
- 	 * delays, but the vmexits simply slow things down).
- 	 */
--	iova = kmap(vmx_io_bitmap_a);
--	memset(iova, 0xff, PAGE_SIZE);
--	clear_bit(0x80, iova);
-+	va = kmap(vmx_io_bitmap_a);
-+	memset(va, 0xff, PAGE_SIZE);
-+	clear_bit(0x80, va);
- 	kunmap(vmx_io_bitmap_a);
- 
--	iova = kmap(vmx_io_bitmap_b);
--	memset(iova, 0xff, PAGE_SIZE);
-+	va = kmap(vmx_io_bitmap_b);
-+	memset(va, 0xff, PAGE_SIZE);
- 	kunmap(vmx_io_bitmap_b);
- 
-+	va = kmap(vmx_msr_bitmap);
-+	memset(va, 0xff, PAGE_SIZE);
-+	kunmap(vmx_msr_bitmap);
-+
- 	set_bit(0, vmx_vpid_bitmap); /* 0 is reserved for host */
- 
- 	r = kvm_init(&vmx_x86_ops, sizeof(struct vcpu_vmx), THIS_MODULE);
- 	if (r)
--		goto out1;
-+		goto out2;
-+
-+	vmx_disable_intercept_for_msr(vmx_msr_bitmap, MSR_FS_BASE);
-+	vmx_disable_intercept_for_msr(vmx_msr_bitmap, MSR_GS_BASE);
-+	vmx_disable_intercept_for_msr(vmx_msr_bitmap, MSR_IA32_SYSENTER_CS);
-+	vmx_disable_intercept_for_msr(vmx_msr_bitmap, MSR_IA32_SYSENTER_ESP);
-+	vmx_disable_intercept_for_msr(vmx_msr_bitmap, MSR_IA32_SYSENTER_EIP);
- 
- 	if (bypass_guest_pf)
- 		kvm_mmu_set_nonpresent_ptes(~0xffeull, 0ull);
- 
  	return 0;
  
-+out2:
-+	__free_page(vmx_msr_bitmap);
- out1:
- 	__free_page(vmx_io_bitmap_b);
- out:
-@@ -2774,6 +2826,7 @@ out:
- 
- static void __exit vmx_exit(void)
- {
-+	__free_page(vmx_msr_bitmap);
- 	__free_page(vmx_io_bitmap_b);
- 	__free_page(vmx_io_bitmap_a);
+ nomem:
+-	kvm_mmu_module_exit();
++	mmu_destroy_caches();
+ 	return -ENOMEM;
+ }
  
 -- 
 1.5.5
