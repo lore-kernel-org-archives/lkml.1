@@ -1,105 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765748AbYDQRjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764311AbYDQRmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765748AbYDQRjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbYDQRjG
+	id S1764311AbYDQRmH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYDQRlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:39:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28112 "EHLO mga02.intel.com"
+	Thu, 17 Apr 2008 13:41:53 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:47519 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755671AbYDQRjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:39:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,672,1199692800"; 
-   d="scan'208";a="271692923"
-Message-ID: <48078AF6.2020003@intel.com>
-Date: Thu, 17 Apr 2008 10:37:58 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	id S1753176AbYDQRlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 13:41:52 -0400
+Date: Thu, 17 Apr 2008 12:41:48 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       ecryptfs-devel@lists.sourceforge.net
+Subject: Re: [PATCH] eCryptfs: Fix refs to pid and user_ns
+Message-ID: <20080417174148.GA19334@sergelap.austin.ibm.com>
+References: <20080415202313.GM4627@localhost.austin.ibm.com> <20080415140453.a45a15b4.akpm@linux-foundation.org> <20080415213402.GA6446@sergelap.austin.ibm.com> <20080416192417.GQ4627@localhost.austin.ibm.com> <20080417153406.GA14215@sergelap.austin.ibm.com> <20080417170331.GV4627@localhost.austin.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
-       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Re: Bad network performance over 2Gbps
-References: <1208282804.23631.27.camel@localhost>	 <175f5a0f0804151315x1e192fc7p7dac1e84fd154211@mail.gmail.com>	 <48051173.5030802@intel.com>  <48051734.1000107@redhat.com> <1208426550.6049.10.camel@localhost>
-In-Reply-To: <1208426550.6049.10.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Apr 2008 17:38:41.0280 (UTC) FILETIME=[E04C2000:01C8A0B1]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080417170331.GV4627@localhost.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Titov wrote:
-> On Tue, 2008-04-15 at 16:59 -0400, Chris Snook wrote:
->> Still, I think you're on to something here.  Disabling NAPI and instead 
->> tuning the cards' interrupt coalescing settings might allow irqbalance 
->> to do a better job than it is currently.
+Quoting Michael Halcrow (mhalcrow@us.ibm.com):
+> On Thu, Apr 17, 2008 at 10:34:06AM -0500, Serge E. Hallyn wrote:
+> > Quoting Michael Halcrow (mhalcrow@us.ibm.com):
+> > > @@ -206,6 +210,7 @@ ecryptfs_spawn_daemon(struct ecryptfs_daemon **daemon, uid_t euid, pid_t pid)
+> > >  		goto out;
+> > >  	}
+> > >  	(*daemon)->euid = euid;
+> > > +	(*daemon)->user_ns = user_ns;
+> > >  	(*daemon)->pid = pid;
+> > 
+> > You'll want to do a get_pid() here, no?
+> > 
+> > And get_user_ns().
+> > 
 > 
-> Disabling NAPI allowed me to push as much as 3.5Gbit out of the same
-> server with ~ 20% of time CPUs doing software interrupts.
+> > It's not because you particulary need them to stick around, but just
+> > to ensure no wraparound causes another daemon with the same struct
+> > pid or user_namespace to be spawned.  Pretty gosh-darned unlikely,
+> > but still...
+> > ...
+> > > @@ -372,12 +383,24 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+> > >  	msg_ctx = &ecryptfs_msg_ctx_arr[msg->index];
+> > >  	mutex_lock(&msg_ctx->mux);
+> > >  	mutex_lock(&ecryptfs_daemon_hash_mux);
+> > > -	rc = ecryptfs_find_daemon_by_euid(&daemon, msg_ctx->task->euid);
+> > > +	rcu_read_lock();
+> > > +	nsproxy = task_nsproxy(msg_ctx->task);
+> > > +	if (nsproxy == NULL) {
+> > > +		rc = -EBADMSG;
+> > > +		printk(KERN_ERR "%s: Receiving process is a zombie. Dropping "
+> > > +		       "message.\n", __func__);
+> > > +		rcu_read_unlock();
+> > > +		mutex_unlock(&ecryptfs_daemon_hash_mux);
+> > > +		goto wake_up;
+> > > +	}
+> > > +	rc = ecryptfs_find_daemon_by_euid(&daemon, msg_ctx->task->euid,
+> > > +					  nsproxy->user_ns);
+> > > +	rcu_read_unlock();
+> > >  	mutex_unlock(&ecryptfs_daemon_hash_mux);
+> > >  	if (rc) {
+> > >  		rc = -EBADMSG;
+> > >  		printk(KERN_WARNING "%s: User [%d] received a "
+> > > -		       "message response from process [%d] but does "
+> > > +		       "message response from process [0x%p] but does "
+> > >  		       "not have a registered daemon\n", __func__,
+> > >  		       msg_ctx->task->euid, pid);
+> > >  		goto wake_up;
+> > > @@ -389,10 +412,17 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+> > >  		       euid, msg_ctx->task->euid);
+> > >  		goto unlock;
+> > >  	}
+> > > +	if (nsproxy->user_ns != user_ns) {
+> > 
+> > Since you didn't grab a ref to the nsproxy, it's possible that it
+> > will have been freed before this, right?  So you probably just want
+> > to grab a copy of nsproxy->user_ns while under the rcu_read_lock,
+> > where you can be sure it's still around.
+> 
+> Have eCryptfs properly reference the pid and user_ns objects. Copy
+> user_ns out of nsproxy in case nsproxy goes away after we drop the
+> lock.
+> 
+> Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-yes, I really don't see this is such an amazing discovery - the in-kernel
-irqbalance code is totally wrong for network interrupts (and probably for most
-interrupts).
+Looks good.  Thanks, Mike.
 
-on your system with 6 network interrupts it blows chunks and it's not NAPI that is
-the issue - NAPI will work just fine on it's own. By disabling NAPI and reverting
-to the in-driver irq moderation code you've effectively put the in-kernel
-irqbalance code to the sideline and this is what makes it work again.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-It's not the right solution.
+for both.
 
-We keep seing this exact issue pop up everywhere - especially with e1000(e)
-datacenter users - this code _has_ to go or be fixed. Since there is a perfectly
-viable solution, I strongly suggest disabling it.
+-serge
 
-This is not the first time I've sent this patch out in some form...
-
-Auke
-
-
----
-[X86] IRQBALANCE: Mark as BROKEN and disable by default
-
-The IRQBALANCE option causes interrupts to bounce all around on SMP systems
-quickly burying the CPU in migration cost and cache misses. Mainly affected are
-network interrupts and this results in one CPU pegged in softirqd completely.
-
-Disable this option and provide documentation to a better solution (userspace
-irqbalance daemon does overall the best job to begin with and only manual setting
-of smp_affinity will beat it).
-
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
-
----
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 6c70fed..956aa22 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1026,13 +1026,17 @@ config EFI
-   	platforms.
-
- config IRQBALANCE
--	def_bool y
-+	def_bool n
- 	prompt "Enable kernel irq balancing"
--	depends on X86_32 && SMP && X86_IO_APIC
-+	depends on X86_32 && SMP && X86_IO_APIC && BROKEN
- 	help
- 	  The default yes will allow the kernel to do irq load balancing.
- 	  Saying no will keep the kernel from doing irq load balancing.
-
-+	  This option is known to cause performance issues on SMP
-+	  systems. The preferred method is to use the userspace
-+	  'irqbalance' daemon instead. See http://irqbalance.org/.
-+
- config SECCOMP
- 	def_bool y
- 	prompt "Enable seccomp to safely compute untrusted bytecode"
+> ---
+>  fs/ecryptfs/messaging.c |   16 ++++++++++++----
+>  1 files changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/ecryptfs/messaging.c b/fs/ecryptfs/messaging.c
+> index f0d74b8..61506e5 100644
+> --- a/fs/ecryptfs/messaging.c
+> +++ b/fs/ecryptfs/messaging.c
+> @@ -20,6 +20,8 @@
+>   * 02111-1307, USA.
+>   */
+>  #include <linux/sched.h>
+> +#include <linux/user_namespace.h>
+> +#include <linux/nsproxy.h>
+>  #include "ecryptfs_kernel.h"
+> 
+>  static LIST_HEAD(ecryptfs_msg_ctx_free_list);
+> @@ -208,8 +210,8 @@ ecryptfs_spawn_daemon(struct ecryptfs_daemon **daemon, uid_t euid,
+>  		goto out;
+>  	}
+>  	(*daemon)->euid = euid;
+> -	(*daemon)->user_ns = user_ns;
+> -	(*daemon)->pid = pid;
+> +	(*daemon)->user_ns = get_user_ns(user_ns);
+> +	(*daemon)->pid = get_pid(pid);
+>  	(*daemon)->task = current;
+>  	mutex_init(&(*daemon)->mux);
+>  	INIT_LIST_HEAD(&(*daemon)->msg_ctx_out_queue);
+> @@ -298,6 +300,10 @@ int ecryptfs_exorcise_daemon(struct ecryptfs_daemon *daemon)
+>  	hlist_del(&daemon->euid_chain);
+>  	if (daemon->task)
+>  		wake_up_process(daemon->task);
+> +	if (daemon->pid)
+> +		put_pid(daemon->pid);
+> +	if (daemon->user_ns)
+> +		put_user_ns(daemon->user_ns);
+>  	mutex_unlock(&daemon->mux);
+>  	memset(daemon, 0, sizeof(*daemon));
+>  	kfree(daemon);
+> @@ -368,6 +374,7 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+>  	struct ecryptfs_msg_ctx *msg_ctx;
+>  	size_t msg_size;
+>  	struct nsproxy *nsproxy;
+> +	struct user_namespace *current_user_ns;
+>  	int rc;
+> 
+>  	if (msg->index >= ecryptfs_message_buf_len) {
+> @@ -391,8 +398,9 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+>  		mutex_unlock(&ecryptfs_daemon_hash_mux);
+>  		goto wake_up;
+>  	}
+> +	current_user_ns = nsproxy->user_ns;
+>  	rc = ecryptfs_find_daemon_by_euid(&daemon, msg_ctx->task->euid,
+> -					  nsproxy->user_ns);
+> +					  current_user_ns);
+>  	rcu_read_unlock();
+>  	mutex_unlock(&ecryptfs_daemon_hash_mux);
+>  	if (rc) {
+> @@ -410,7 +418,7 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t euid,
+>  		       euid, msg_ctx->task->euid);
+>  		goto unlock;
+>  	}
+> -	if (nsproxy->user_ns != user_ns) {
+> +	if (current_user_ns != user_ns) {
+>  		rc = -EBADMSG;
+>  		printk(KERN_WARNING "%s: Received message from user_ns "
+>  		       "[0x%p]; expected message from user_ns [0x%p]\n",
+> -- 
+> 1.5.1.6
