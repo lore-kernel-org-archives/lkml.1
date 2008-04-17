@@ -1,108 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYDQUig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbYDQUkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbYDQUig (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 16:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYDQUiU
+	id S1755511AbYDQUkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 16:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYDQUj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 16:38:20 -0400
-Received: from rv-out-0708.google.com ([209.85.198.245]:1828 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753504AbYDQUiT (ORCPT
+	Thu, 17 Apr 2008 16:39:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:58488 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561AbYDQUj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 16:38:19 -0400
+	Thu, 17 Apr 2008 16:39:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Colk2elZi6swZMfLr39GO4znY6P+UxTqMO6OnEXKg2D3JoC4BwejGYzTr/3Jymu2cp+fxoH6xvBA436O/Z12Tzvn7Sh/RgAZw7BLQE9mijsrJsprc311mDEJ4XzsWzuGKCBVkGNiGXFrqjEDBqDl1FFPf0T1dpwS2506Qmqz6BE=
-Message-ID: <2c0942db0804171338p7bc7d9f2u8079c2f8c8998e76@mail.gmail.com>
-Date: Thu, 17 Apr 2008 13:38:18 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Al Viro" <viro@zeniv.linux.org.uk>
-Subject: Re: Reporting bugs and bisection
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "David Newall" <davidn@davidnewall.com>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, sverre@rabbelier.nl,
-       git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       "James Morris" <jmorris@namei.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Willy Tarreau" <w@1wt.eu>,
-       david@lang.hm, "Stephen Clark" <sclark46@earthlink.net>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Tilman Schmidt" <tilman@imap.cc>, Valdis.Kletnieks@vt.edu,
-       "Mark Lord" <lkml@rtr.ca>, "David Miller" <davem@davemloft.net>,
-       yoshfuji@linux-ipv6.org, jeff@garzik.org, netdev@vger.kernel.org
-In-Reply-To: <20080417201657.GF27459@ZenIV.linux.org.uk>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=h+IMtPCCbe1nWK0ziwxg7PuC0ck8LyIWPejzpEOH3+SxjjVS0iKF1/2M9GpnI0qMZAi/c3TrGDsH/hHPC3o/KKoORqo9z4fnN6/kSHaqpD3F+Xezl7mAxlJSGHYylEwMAUwbswwadqzFQLDWZdnEPazEzmPwt8wp3WvFiFEFwZ0=
+Message-ID: <19f34abd0804171339l7aab0895wb7e82534c4ab8b9a@mail.gmail.com>
+Date: Thu, 17 Apr 2008 22:39:55 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       tglx@linutronix.de, hpa@zytor.com,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
+In-Reply-To: <20080417124353.30fe1d06.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <47FEADCB.7070104@rtr.ca>
-	 <9a8748490804161417n4ad6c1den54ccd302831a66c6@mail.gmail.com>
-	 <48078323.4010109@davidnewall.com> <200804172109.35027.rjw@sisk.pl>
-	 <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
-	 <20080417201657.GF27459@ZenIV.linux.org.uk>
-X-Google-Sender-Auth: d7f256c9a96f2a80
+References: <20080416202338.GA6007@elte.hu>
+	 <20080417002552.5742ad65.akpm@linux-foundation.org>
+	 <20080417083000.GA4935@elte.hu>
+	 <20080417014054.ea788f1f.akpm@linux-foundation.org>
+	 <20080417090626.GA14383@elte.hu>
+	 <20080417021813.04df7912.akpm@linux-foundation.org>
+	 <20080417093025.GA17389@elte.hu>
+	 <20080417023603.672d1032.akpm@linux-foundation.org>
+	 <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com>
+	 <20080417124353.30fe1d06.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 1:16 PM, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> On Thu, Apr 17, 2008 at 12:35:12PM -0700, Ray Lee wrote:
->  > On Thu, Apr 17, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->  > >  > Finger-pointing, in these extreme cases, gives incentive to improve
->  > >  > quality.  It's a positive thing.
->  > >
->  > >  Sorry, but I have to disagree.  Negative finger-pointing is never a good thing.
+Hi Andrew,
+
+Thank you very much for the review of this patch. Those are hard to
+come by, and I've posted kmemcheck to LKML already 3 or 4 times, with
+relatively sparse response. I mean, the fact that they were ALL
+whitespace damaged, but discovered by nobody, quite plainly tells me
+that nobody actually tried to apply it (except perhaps Daniel Walker,
+but we never realized it was whitespace damage causing the problems).
+The patches that Ingo took into x86 were probably sent as an
+attachment...
+
+On Thu, Apr 17, 2008 at 9:43 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 17 Apr 2008 20:47:06 +0200
+>
+> "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
+>  > Actually it doesn't. I attach a patch which gets rid of the page flag,
+>  > and we rely instead on the PTE flag for page-trackedness.
 >  >
->  > Correct, but let's be careful here. The original suggestion was,
->  > effectively, to get better metrics on the quality of contributions.
+>  > The reason we didn't do this at once is that the making of kmemcheck
+>  > has been pretty much my first introduction to SLUB, x86, page flags,
+>  > etc., and the actual semantics of the various introduced flags have
+>  > varied since the first version of kmemcheck. At this point, the struct
+>  > page flags weren't actually needed anymore, but they were convenient.
+>  >
+>  > My apologies for not inlining the patch -- I don't have a mail client
+>  > that won't mess up whitespace. It can also be downloaded at:
+>  > http://folk.uio.no/vegardno/linux/0001-kmemcheck-remove-use-of-tracked-page-flag.patch
+>  >
+>  > The patch has received minimal amount of testing, but I've
+>  > double-checked the logic. It boots fine on my laptop, boot log at:
+>  > http://folk.uio.no/vegardno/linux/kmemcheck-20080417.txt
+>  >
+>  > Ingo, will you take this for some additional testing?
+>  >
 >
->         There already is one: reputation with people working on the tree,
->  be it actively modifying/reviewing/bug hunting/etc.  _We_ _already_ _know_;
-
-Sigh. No, you already know. I don't. This is not a rhetorical point.
-I've just bid out another project that'd involve getting linux running
-on another embedded hardware platform. If that happens, I get to spend
-paid time to work on the kernel, and as a by-product spend more time
-looking at patches and code coming across the list.
-
-So, where would it be best to spend my time? Or anyone else's?
-
->  generally one gets a decent idea of what to expect pretty soon.
+>  If you're OK with doing it this way then it would be preferable.
 >
->         And frankly, that's the only thing that matters anyway; I suspect
->  I'd do rather well by proposed criteria, but you know what?  I don't give
->  a flying f*ck through the rolling doughnut for self-appointed PHBs and
->  their idea of performance reviews.
+>  > diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
+>  > index 16dce10..d82f35d 100644
+>  > --- a/arch/x86/kernel/kmemcheck.c
+>  > +++ b/arch/x86/kernel/kmemcheck.c
+>  > @@ -233,12 +233,27 @@ param_kmemcheck(char *str)
+>  >       if (!str)
+>  >               return -EINVAL;
+>  >
+>  > -     sscanf("%d", str, &kmemcheck_enabled);
+>  > +     sscanf(str, "%d", &kmemcheck_enabled);
+>  >       return 0;
+>  >  }
+>
+>  whoops.  Note to Ingo: unrelated bugfix in there.
 
-(Geez, conflate the issue much?) No one is saying you should. But
-also, I haven't seen anyone saying it'd be used for performance
-reviews other than you.
+Yes, sorry. I had actually already e-mailed this as a separate patch
+to Ingo before sending this to the list, so he should know. But it
+should not have been part of this patch, I agree.
 
->         Think of it as a modified Turing test: convince me that you are
->  not a script piped through an Eng.Lit. wanker or an MBA, then I might care
->  for your opinion.
+>  >  early_param("kmemcheck", param_kmemcheck);
+>
+>  kmemcheck= is documented in at least three places, which is nice, but it
+>  isn't mentioned in the place where we document kernel-parameters:
+>  Documentation/kernel-parameters.txt.  A brief section there which directs
+>  the user to the extended docs would be fine.
+>
+>  early_param() is unusual - we normally use __setup().  I assume there's a
+>  reason for using early_param(), but that reason cannot be discerned from
+>  reading the code.  A /*comment*/ is the way to fix that.
 
-<shrug> Shockingly enough, I actually don't care. I'm just trying to
-scratch my own itch, which is figure out where in the kernel (if
-anywhere!) it'd be best to donate my time.
+The reason is that we need to set this before kmalloc() is ever
+called. A comment will come.
 
-And your point is likely about the metrics, and yes, they'll be
-computer generated. So? Perhaps they'll be crap. Who knows until we
-look at them and match them up with what everyone already knows? If,
-by some one in a thousand chance, they turn out to be good and useful,
-then it'll either be a one-off eye-opener, or perhaps something useful
-more than once.
+But it seems that __setup() is what is really missing a comment. I
+don't know what it is or how it works, and the comments around the
+definition are not very helpful. Maybe somebody could enlighten me?
 
-Who knows? And to the larger point, why put effort into stopping
-someone else from finding out?
+>  > +static pte_t *
+>  > +address_get_pte(unsigned int address)
+>
+>  This is not the preferred way of laying out function declarations but I've
+>  basically given up on this one.
+>
+>         (void *)address
+>
+>  is more common, but I'm close to giving up on that too.
+>
+>  >  static int
+>  > -show_addr(uint32_t addr)
+>  > +show_addr(uint32_t address)
+>
+>  u32 is preferred, but ditto.
 
->         Al, who never had problems with pointing fingers and laughing, but
->  likes an informed human brain to be the source of it...
+This will be turned into unsigned long with 64-bit support. (Hopefully
+we can get that working too.)
 
-<shrug> Shame and Guilt, two major motivators of human behavior, it's
-true. But, one last time, *you're* the one saying the stats would be
-used for finger pointing at people. Perhaps, instead, the stats will
-show that we should all collectively point our fingers at some random
-area in the tree, where everyone, despite their track record, ends up
-making mistakes.
+Changing these to match the rest of the kernel is no problem for me.
+It is not the way I would write it, but Pekka and Ingo has already
+forced me to write if () instead of if(), so there should be no reason
+to stop here! :-)
 
-Let the kid find out, that's all I'm saying.
+>  Perhaps we should get all this code onto the list(s) for re-review.  It's
+>  been a while..
+
+I'm not sure it would make much of a difference, except perhaps for
+you, if you want to review it all. (My latest post to LKML had 0
+replies in total. Well, except private e-mail exchange with Ingo and
+Pekka; they should know the code already. Once again, thanks to them
+for helping me.) Do you still want me to post it again?
+
+Thank  you.
+
+
+Vegard
+
+PS: And it's not that I do that much testing/reviewing myself. But I
+do think I have the excuse of being a newbie at this :-)
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
