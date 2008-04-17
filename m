@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbYDQKvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764601AbYDQLAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933571AbYDQKvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYDQKvP
+	id S1764601AbYDQLAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYDQLAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:51:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49418 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760248AbYDQKvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:51:14 -0400
-Message-ID: <48072B9D.2000900@firstfloor.org>
-Date: Thu, 17 Apr 2008 12:51:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 17 Apr 2008 07:00:13 -0400
+Received: from oss.sgi.com ([192.48.170.157]:44249 "EHLO oss.sgi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbYDQLAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 07:00:12 -0400
+Date: Thu, 17 Apr 2008 11:59:52 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Roel Kluin <12o3l@tiscali.nl>, linux-mips@linux-mips.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/6 v2] MIPS: ip27-timer: unsigned irq to evaluate
+	allocate_irqno()
+Message-ID: <20080417105930.GA28713@linux-mips.org>
+References: <480559DC.2060807@tiscali.nl> <20080416091554.GA6026@alpha.franken.de> <480616C6.3080203@tiscali.nl> <20080416222755.GA18832@alpha.franken.de>
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-References: <20080416202338.GA6007@elte.hu> <878wzdikwk.fsf@basil.nowhere.org> <1208426793.10305.1248377703@webmail.messagingengine.com>
-In-Reply-To: <1208426793.10305.1248377703@webmail.messagingengine.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080416222755.GA18832@alpha.franken.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 17, 2008 at 12:27:56AM +0200, Thomas Bogendoerfer wrote:
 
+> On Wed, Apr 16, 2008 at 05:09:58PM +0200, Roel Kluin wrote:
+> > Thomas Bogendoerfer wrote:
+> > > On Wed, Apr 16, 2008 at 03:43:56AM +0200, Roel Kluin wrote:
+> > >> irq is unsigned, cast to signed to evaluate the allocate_irqno() return value,
+> >  
+> > >> +		if ((int) irq < 0)
+> > > 
+> > > Why don't you just make irq and rt_timer_irq an int ?
+> > 
+> > Ok, thanks, It should be right, but I cannot test this (no hardware).
 > 
-> The input for the first 'benchmark' was indeed completely unrealistic.
-> They did show a very convincing speedup, though. This program was
-> really written to verify the implementation and was later converted
-> to a benchmark. Many benchmarks are unrealistic. I also wrote a
-> benchmark for find_first_bit and find_next_bit:
->         http://heukelum.fastmail.fm/find_first_bit
+> I've tested it on real hardware.
+> 
+> Acked-By: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
-I think a realistic benchmark would be by running a real kernel
-and profiling the input values of the bitmap functions and then
-testing these cases.
+Thanks, applied.
 
-I actually started that when I complained last time by writing
-a systemtap script for this that generates a histogram, but for some
-reason systemtap couldn't tap all bitmap functions in my kernel and
-missed some completely and I ran out of time tracking that down.
-
-My gut feeling is the only interesting cases are cpumask/nodemask sized
-(which can be one word, two words but now upto 8 words on a NR_CPU=4096
-x86 kernel) and then 4k sized ext3/reiser/etc. block bitmaps.
-
-> My conclusion would be: the speed of the generic bitmap implementation
-> is either better than or at least comparable to the current private
-> implementations in i386/x86_64. 
-
-Ok.
-
-The generic version is out-of-line,
-> while the private implementation of i386 was inlined: this causes a
-> regression for very small bitmaps. However, if the bitmap size is
-> a constant and fits a long integer, the updated generic code should
-> inline an optimized version, like x86_64 currently does it.
-
-Yes it should probably. cpumask walks are relatively common.
-
-I remember profiling mysql some time ago which did bad overscheduling
-due to dumb locking. Funny was that the mask walking in the scheduler
-actually stood out. No, i don't claim extreme overscheduling is an
-interesting case to optimize for, but then there are more realistic
-workloads which also do a lot of context switching.
-
-BTW if you do generic work on this: one reason the generated code for
-for_each_cpu etc. is so ugly is that the code has checks for
-find_next_bit returning >= max size. If you can generize the
-code enough to make sure no arch does that anymore these checks
-could be eliminated.
-
--Andi
+  Ralf
