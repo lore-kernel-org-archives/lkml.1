@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765347AbYDQBN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbYDQBNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765347AbYDQBN2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbYDQBH2
+	id S932388AbYDQBNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYDQBH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:28 -0400
-Received: from sous-sol.org ([216.99.217.87]:58838 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:58846 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbYDQBHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:23 -0400
-Message-Id: <20080417010340.987341667@sous-sol.org>
+	id S1758793AbYDQBH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:27 -0400
+Message-Id: <20080417010344.527179466@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:52 -0700
+Date: Wed, 16 Apr 2008 18:01:58 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: SUNGEM: Fix NAPI assertion failure.
-Content-Disposition: inline; filename=sungem-fix-napi-assertion-failure.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David S Miller <davem@davemloft.net>
+Subject: NET: Add preemption point in qdisc_run
+Content-Disposition: inline; filename=net-add-preemption-point-in-qdisc_run.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,42 +34,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-Upstream commit: da990a2402aeaee84837f29054c4628eb02f7493
+Upstream commit: 2ba2506ca7ca62c56edaa334b0fe61eb5eab6ab0
 
-As reported by Johannes Berg:
+The qdisc_run loop is currently unbounded and runs entirely in a
+softirq.  This is bad as it may create an unbounded softirq run.
 
-I started getting this warning with recent kernels:
+This patch fixes this by calling need_resched and breaking out if
+necessary.
 
-[  773.908927] ------------[ cut here ]------------
-[  773.908954] Badness at net/core/dev.c:2204
- ...
+It also adds a break out if the jiffies value changes since that would
+indicate we've been transmitting for too long which starves other
+softirqs.
 
-If we loop more than once in gem_poll(), we'll
-use more than the real budget in our gem_rx()
-calls, thus eventually trigger the caller's
-assertions in net_rx_action().
-
-Subtract "work_done" from "budget" for the second
-arg to gem_rx() to fix the bug.
-
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/sungem.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sched/sch_generic.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- a/drivers/net/sungem.c
-+++ b/drivers/net/sungem.c
-@@ -910,7 +910,7 @@ static int gem_poll(struct napi_struct *
- 		 * rx ring - must call napi_disable(), which
- 		 * schedule_timeout()'s if polling is already disabled.
- 		 */
--		work_done += gem_rx(gp, budget);
-+		work_done += gem_rx(gp, budget - work_done);
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -178,10 +178,22 @@ static inline int qdisc_restart(struct n
  
- 		if (work_done >= budget)
- 			return work_done;
+ void __qdisc_run(struct net_device *dev)
+ {
+-	do {
+-		if (!qdisc_restart(dev))
++	unsigned long start_time = jiffies;
++
++	while (qdisc_restart(dev)) {
++		if (netif_queue_stopped(dev))
++			break;
++
++		/*
++		 * Postpone processing if
++		 * 1. another process needs the CPU;
++		 * 2. we've been doing it for too long.
++		 */
++		if (need_resched() || jiffies != start_time) {
++			netif_schedule(dev);
+ 			break;
+-	} while (!netif_queue_stopped(dev));
++		}
++	}
+ 
+ 	clear_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
+ }
 
 -- 
