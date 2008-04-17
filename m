@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932856AbYDQKaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763672AbYDQKcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932856AbYDQKaS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbYDQK34
+	id S1763672AbYDQKcj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbYDQKcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:29:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37448 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760803AbYDQK3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:29:55 -0400
-Message-ID: <4807269E.8070202@firstfloor.org>
-Date: Thu, 17 Apr 2008 12:29:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
+	Thu, 17 Apr 2008 06:32:31 -0400
+Received: from saeurebad.de ([85.214.36.134]:59719 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756908AbYDQKca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 06:32:30 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-References: <20080416202338.GA6007@elte.hu>	<20080417002552.5742ad65.akpm@linux-foundation.org>	<20080417083000.GA4935@elte.hu>	<20080417014054.ea788f1f.akpm@linux-foundation.org>	<20080417090626.GA14383@elte.hu>	<20080417021813.04df7912.akpm@linux-foundation.org>	<20080417093025.GA17389@elte.hu>	<20080417023603.672d1032.akpm@linux-foundation.org>	<87zlrshjtz.fsf@basil.nowhere.org> <20080417031829.15ec73df.akpm@linux-foundation.org>
-In-Reply-To: <20080417031829.15ec73df.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+References: <20080416202338.GA6007@elte.hu>
+	<20080417002552.5742ad65.akpm@linux-foundation.org>
+	<20080417011401.ea3e70f0.akpm@linux-foundation.org>
+Date: Thu, 17 Apr 2008 12:32:03 +0200
+In-Reply-To: <20080417011401.ea3e70f0.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 17 Apr 2008 01:14:01 -0700")
+Message-ID: <87skxkepr0.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 17 Apr 2008 12:11:36 +0200 Andi Kleen <andi@firstfloor.org> wrote:
-> 
->> Andrew Morton <akpm@linux-foundation.org> writes:
->>> Does it really really really need to consume one of our few remaining page
->>> flags?  We'll be in a mess when we run out.
->> No we're not. Just the (imho always misguided) "encode zone/node number 
->> into flags" optimization has to be removed again or made 64bit only.
->> Then there will be plenty of flags again.
-> 
-> hm.  Or we add a new nid&zone field to the pageframe for 32bit NUMA.  Just
-> don't tell Paul Mundt ;)
+Hi,
 
-Most (all?) NUMA archs have some way to get from phys->nid. Getting from
-pfn->nid is then easy.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Originally this was all optimized for text size when this stuff was
-still inlined, but at some point they were all out of lined anyways
-(unless on FLAT iirc) so a lot of the old design decisions became obsolete.
+> - extensive damage to the page-flags patches
+>
+>   Did you check that all architectures and configurations still have
+>   sufficient page flags for us to be able to consume another one for
+>   kmemcheck?  The MM developers have put much, much effort into avoiding
+>   running out of flags over numerous years and afaik none of them even know
+>   that this debug feature is using one of the few remaining ones.
+>
+>   What do we do when we run out?
 
-BTW I should disclose that my mask allocator that I'm still planning
-to push needs one flag bit on 32/64bit and another one on 64bit
-(for swiotlb)
+Would it be feasible to add another unsigned long to struct page?  I
+mean, extending such a common structure always sucks, but for
+emergency...
 
-> 
-> Need to work out what's going on with ia64's use of the upper 32 bits too. 
-> I have a feeling it's using less than it used too but at 3AM I can't be
-> assed working it out.
-> 
->> Really I see no real reason this can't be done with a small hash table
->> again like x86-64 originally did.
-> 
-> How did that work?  A pfn->zone-id hash table would be huge?
+#define PageFoobar(page)	test_bit(PG_foobar, &(page)->flags2)
 
-Sorry i meant it used the hash table to look up the node. In fact
-that code is still in there, although used less because a lot of these
-lookups are resolved from the flags.
+Of course the essential core flags should always be in ->flags but
+perhaps we could have a symbol CONFIG_NEED_EXTRA_PAGE_FLAGS that gets
+selected by kmemcheck (and other candidates that are unlikely to be
+enabled most of the time) and then #ifndef ->flags2 out.
 
-Once you have the node from the pfn it is a at most three range checks
-to get to the zone (usually less). The most efficient way to do that is
-to just open code it in code.
-
--Andi
-
+	Hannes
