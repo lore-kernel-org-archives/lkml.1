@@ -1,117 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbYDQOXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761733AbYDQOhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbYDQOXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 10:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbYDQOXk
+	id S1761733AbYDQOhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 10:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYDQOhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 10:23:40 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:48204 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755470AbYDQOXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 10:23:39 -0400
-Date: Thu, 17 Apr 2008 22:22:59 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joy Latten <latten@austin.ibm.com>
-Subject: Re: CRYPTO xcbc: Fix crash when ipsec uses xcbc-mac with big data chunk
-Message-ID: <20080417142259.GA12808@gondor.apana.org.au>
-References: <20080417010122.148289106@sous-sol.org> <20080417010337.793546930@sous-sol.org> <200804171426.15334.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 17 Apr 2008 10:37:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:39559 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756077AbYDQOho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 10:37:44 -0400
+Date: Thu, 17 Apr 2008 09:37:38 -0500
+From: Ryan Harper <ryanh@us.ibm.com>
+To: Anthony Liguori <aliguori@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ryan Harper <ryanh@us.ibm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net, Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH] add virtio disk geometry feature
+Message-ID: <20080417143738.GE17938@us.ibm.com>
+References: <1208372197-20815-1-git-send-email-ryanh@us.ibm.com> <200804170715.55041.rusty@rustcorp.com.au> <4806706E.10701@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200804171426.15334.caglar@pardus.org.tr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4806706E.10701@us.ibm.com>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 02:26:12PM +0300, S.Çağlar Onur wrote:
->
->   CC [M]  crypto/xcbc.o
-> crypto/xcbc.c: In function `crypto_xcbc_digest_update2':
-> crypto/xcbc.c:186: error: implicit declaration of function `scatterwalk_sg_next'
-> crypto/xcbc.c:186: warning: assignment makes pointer from integer without a cast
-> make[1]: *** [crypto/xcbc.o] Hata 1
-> make: *** [crypto] Hata 2
+* Anthony Liguori <aliguori@us.ibm.com> [2008-04-16 16:33]:
+> Rusty Russell wrote:
+> >On Thursday 17 April 2008 04:56:37 Ryan Harper wrote:
+> >  
+> >>From: Ryan Harper <ryanh@us.ibm.com>
+> >>
+> >>Rather than faking up some geometry, allow the backend to push the disk
+> >>geometry via virtio pci config option.  Keep the old geo code around for
+> >>compatibility.
+> >>    
+> >
+> >Hi Ryan,
+> >
+> >   Looks good! Some brief review below.  Mainly just "how I would have done
+> >things" stuff.  BTW, does this help in real life?  I assume something in
+> >userspace wants it?
+> >  
+> 
+> Boot loaders (like grub) query the geometry from the kernel to figure 
+> out how to setup the stage1/stage2.  We've seen strange issues with grub 
+> thinking it has crazy geometries when installed on a virtio disk (as 
+> opposed to booting from virtio with an existing disk).
+> 
+> Ryan: have you tested a hardy install with your patches?  Does it help 
+> when installing to virtio?  I could pretty reliably reproduce the 
+> strangeness with a 20GB disk image FWIW.
 
-Sorry, my fault.  That should've been sg_next for 2.6.24.
+I had tested out hardy with a 10G disk and saw nothing out of the
+ordinary.  Disk size was the expected value and grub had no issues with
+it.
 
-Thanks for catching this!
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-From: Joy Latten <latten@austin.ibm.com>
-
-[CRYPTO] xcbc: Fix crash when ipsec uses xcbc-mac with big data chunk
-
-[ Upstream commit: 1edcf2e1ee2babb011cfca80ad9d202e9c491669 ]
-
-The kernel crashes when ipsec passes a udp packet of about 14XX bytes
-of data to aes-xcbc-mac.
-
-It seems the first xxxx bytes of the data are in first sg entry,
-and remaining xx bytes are in next sg entry. But we don't
-check next sg entry to see if we need to go look the page up.
-
-I noticed in hmac.c, we do a scatterwalk_sg_next(), to do this check
-and possible lookup, thus xcbc.c needs to use this routine too.
-
-A 15-hour run of an ipsec stress test sending streams of tcp and
-udp packets of various sizes,  using this patch and
-aes-xcbc-mac completed successfully, so hopefully this fixes the
-problem.
-
-Signed-off-by: Joy Latten <latten@austin.ibm.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/crypto/xcbc.c b/crypto/xcbc.c
-index 2feb0f2..b63b633 100644
---- a/crypto/xcbc.c
-+++ b/crypto/xcbc.c
-@@ -116,13 +116,11 @@ static int crypto_xcbc_digest_update2(struct hash_desc *pdesc,
- 	struct crypto_xcbc_ctx *ctx = crypto_hash_ctx_aligned(parent);
- 	struct crypto_cipher *tfm = ctx->child;
- 	int bs = crypto_hash_blocksize(parent);
--	unsigned int i = 0;
- 
--	do {
--
--		struct page *pg = sg_page(&sg[i]);
--		unsigned int offset = sg[i].offset;
--		unsigned int slen = sg[i].length;
-+	for (;;) {
-+		struct page *pg = sg_page(sg);
-+		unsigned int offset = sg->offset;
-+		unsigned int slen = sg->length;
- 
- 		if (unlikely(slen > nbytes))
- 			slen = nbytes;
-@@ -182,8 +180,11 @@ static int crypto_xcbc_digest_update2(struct hash_desc *pdesc,
- 			offset = 0;
- 			pg++;
- 		}
--		i++;
--	} while (nbytes>0);
-+
-+		if (!nbytes)
-+			break;
-+		sg = sg_next(sg);
-+	}
- 
- 	return 0;
- }
-
+Ryan Harper
+Software Engineer; Linux Technology Center
+IBM Corp., Austin, Tx
+(512) 838-9253   T/L: 678-9253
+ryanh@us.ibm.com
