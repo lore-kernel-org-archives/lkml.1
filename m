@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbYDQL7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933324AbYDQMBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933568AbYDQL7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYDQL7I
+	id S933324AbYDQMBs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 08:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYDQMBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:59:08 -0400
-Received: from verein.lst.de ([213.95.11.210]:54002 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbYDQL7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 07:59:07 -0400
-Date: Thu, 17 Apr 2008 13:58:48 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: swhiteho@redhat.com
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 36/48] [GFS2] fix file_system_type leak on gfs2meta mount
-Message-ID: <20080417115848.GA8642@lst.de>
-References: <12084216241802-git-send-email-swhiteho@redhat.com> <12084216262937-git-send-email-swhiteho@redhat.com> <12084216281152-git-send-email-swhiteho@redhat.com> <12084216301107-git-send-email-swhiteho@redhat.com> <12084216323165-git-send-email-swhiteho@redhat.com> <1208421634101-git-send-email-swhiteho@redhat.com> <12084216372363-git-send-email-swhiteho@redhat.com> <12084216391215-git-send-email-swhiteho@redhat.com> <12084216402644-git-send-email-swhiteho@redhat.com> <12084216431261-git-send-email-swhiteho@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Apr 2008 08:01:38 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:50804 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbYDQMBg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 08:01:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hszLzTsOI7y1TOLfSmMAupWLD2M/mzppa0nFnJF3DewfF3xMU76BDW2U0nYzYx9+csw48kC5fapuTbBvMw5aNoqSscF+zC5AO+gHpldEunWsEi1A0bQg4oGpA3EOhvhz35CNPJzi/+s2d9u9GfVQPE/BItli9JvuX4vejyuxoEg=
+Message-ID: <9ea470500804170501s5e794cd2u8cda1b46fb6fbf9f@mail.gmail.com>
+Date: Thu, 17 Apr 2008 14:01:34 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Roel Kluin" <12o3l@tiscali.nl>
+Subject: Re: [PATCH 3/6] IDE: ide-cd: fix test unsigned var < 0
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <48072ED7.7030002@tiscali.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <12084216431261-git-send-email-swhiteho@redhat.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+References: <48055F1A.9020706@tiscali.nl>
+	 <200804170040.07397.bzolnier@gmail.com> <4806C952.6030102@tiscali.nl>
+	 <9ea470500804170212md8ce430p42b3c1787ba95631@mail.gmail.com>
+	 <48072ED7.7030002@tiscali.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 09:39:12AM +0100, swhiteho@redhat.com wrote:
-> From: Christoph Hellwig <hch@lst.de>
-> 
-> get_gfs2_sb does a get_fs_type without doing a put_filesystem and
-> thus leaking a file_system_type reference everytime it's called.
-> 
-> Just use gfs2_fs_type directly instead of doing the lookup and thus
-> fix the problem.
+On Thu, Apr 17, 2008 at 1:04 PM, Roel Kluin <12o3l@tiscali.nl> wrote:
+> Boris Petkov wrote:
+>
+>  > I'd rather keep the "unsigned long bio_sectors;" part and do something
+>  > of the likes of:
+>  >
+>  > bio_sectors = bio_sectors(failed_command->bio);
+>  >
+>  >
+>  > (remove the "if (bio_sectors < 4)"-test)
+>  >
+>  > ... and later...
+>  >
+>  > sector &= ~(max(bio_sectors - 1, 3));
+>  >
+>  > which is, IMO, more readable.
+>  >
+>  > Roel, would you redo your patch please? Thanks.
+>
+>  While at it I also cleaned up some whitespace
+>
+> ---
+>  Clean up cdrom_analyze_sense_data()
+>
+>  Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-Btw, after this patch we should remove the get_fs_type export.  It's
-not used by modules and because put_filesystem is not exported every
-modular user would fundamentally have the same leak as the one fixed in
-this patch.
+Thanks a lot.
 
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
+
+
+-- 
+Regards/Gruﬂ,
+Boris
