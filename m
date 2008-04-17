@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYDQUQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYDQUR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbYDQUQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 16:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYDQUQt
+	id S1755567AbYDQUR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 16:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYDQURM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 16:16:49 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:61684 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753028AbYDQUQs convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 16:16:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEABpNB0hMROPA/2dsb2JhbACBYKtv
-Date: Thu, 17 Apr 2008 16:16:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080417201644.GC31616@Krystal>
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415132512.GA22351@Krystal> <1208361084.6395.80.camel@twins> <20080417191910.GI28235@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 17 Apr 2008 16:17:12 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54736 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbYDQURK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 16:17:10 -0400
+Date: Thu, 17 Apr 2008 21:16:57 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Newall <davidn@davidnewall.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>, sverre@rabbelier.nl,
+       git@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       david@lang.hm, Stephen Clark <sclark46@earthlink.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Tilman Schmidt <tilman@imap.cc>,
+       Valdis.Kletnieks@vt.edu, Mark Lord <lkml@rtr.ca>,
+       David Miller <davem@davemloft.net>, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, netdev@vger.kernel.org
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080417201657.GF27459@ZenIV.linux.org.uk>
+References: <47FEADCB.7070104@rtr.ca> <9a8748490804161417n4ad6c1den54ccd302831a66c6@mail.gmail.com> <48078323.4010109@davidnewall.com> <200804172109.35027.rjw@sisk.pl> <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20080417191910.GI28235@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:15:36 up 48 days, 16:26,  4 users,  load average: 0.47, 0.38,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <2c0942db0804171235o49238b99u6cdbd3e5c8d6ebb7@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-[..]
-> > >﻿+       trace_mark(futex_wake_called, "uaddr:%p fshared:%p nr_wake:%d "
-> > > +                       "bitset:%d",
-> > > +                       uaddr, fshared, nr_wake, bitset);
-> > 
-> > > +       INIT_FUTEX_DEBUG_PROBE(futex_wake_called,
-> > > +                       "uaddr:%p fshared:%p nr_wake:%d bitset:%d"),
-> > 
-> > Why the need to duplicate it; that's utter madness.
+On Thu, Apr 17, 2008 at 12:35:12PM -0700, Ray Lee wrote:
+> On Thu, Apr 17, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >  > Finger-pointing, in these extreme cases, gives incentive to improve
+> >  > quality.  It's a positive thing.
+> >
+> >  Sorry, but I have to disagree.  Negative finger-pointing is never a good thing.
 > 
-> This second instance is optional and is used as a consistency check
-> for the event consumer to hook up exactly to the intended producer.
-> The string could be empty.
-> 
+> Correct, but let's be careful here. The original suggestion was,
+> effectively, to get better metrics on the quality of contributions.
 
-empty -> NULL , yes :)
+	There already is one: reputation with people working on the tree,
+be it actively modifying/reviewing/bug hunting/etc.  _We_ _already_ _know_;
+generally one gets a decent idea of what to expect pretty soon.
 
-> 
-> - FChE
+	And frankly, that's the only thing that matters anyway; I suspect
+I'd do rather well by proposed criteria, but you know what?  I don't give
+a flying f*ck through the rolling doughnut for self-appointed PHBs and
+their idea of performance reviews.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Think of it as a modified Turing test: convince me that you are
+not a script piped through an Eng.Lit. wanker or an MBA, then I might care
+for your opinion.
+
+	Al, who never had problems with pointing fingers and laughing, but
+likes an informed human brain to be the source of it...
