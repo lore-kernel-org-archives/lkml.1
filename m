@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934302AbYDQPqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbYDQPr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934302AbYDQPqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934090AbYDQPp6
+	id S934126AbYDQPr7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762471AbYDQPru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:45:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49974 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933970AbYDQPp4 (ORCPT
+	Thu, 17 Apr 2008 11:47:50 -0400
+Received: from webmail1.posta.tim.it ([213.230.128.226]:43541 "EHLO
+	fep08-svc.tim.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761258AbYDQPru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:45:56 -0400
-Subject: Re: Semphore -> mutex in the device tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0804171117450.18040-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0804171117450.18040-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 17:45:53 +0200
-Message-Id: <1208447153.7115.23.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Thu, 17 Apr 2008 11:47:50 -0400
+Message-ID: <48077120.8030007@unimore.it>
+Date: Thu, 17 Apr 2008 17:47:44 +0200
+From: Paolo Valente <paolo.valente@unimore.it>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Avi Kivity <avi@qumranet.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <20080417083047.GV12774@kernel.dk> <48076A97.9060003@qumranet.com>
+In-Reply-To: <48076A97.9060003@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-17 at 11:22 -0400, Alan Stern wrote:
-> Peter:
-> 
-> The obstacle to converting the semaphore in struct device to a mutex 
-> has been that its tree-oriented usage pattern isn't compatible with 
-> lockdep.
-> 
-> In order to get around this and at least begin the conversion process,
-> how about adding a provision for making some classes of mutex invisible
-> to lockdep?  I know it doesn't solve the fundamental problem, but maybe
-> it's a step in the right direction.
+Avi Kivity ha scritto:
+> Jumping in at random, does "process" here mean task or mms_struct?  If 
+> the former, doesn't that mean that a 100-thread process can starve out 
+> a single-threaded process?
+>
+> Perhaps we need hierarchical io scheduling, like cfs has for the cpu.
+>
+Hierarchical would simplify isolating groups of threads or processes.
+However, some simple solution is already available with bfq. For 
+example, if you have to fairly share the disk bandwidth between the 
+above 100 threads and another important thread, you get it by just 
+assigning weight 1 to each of these 100 threads, and weight 100 to the 
+important one.
 
-the device lock has two problems with lockdep:
+Paolo
 
- 1) on suspend it takes more than MAX_LOCK_DEPTH (48) locks
-
- 2) tree nesting
-
-
-Lets start with the easy one first; would a similar solution to the
-radix tree locking as found in -rt work?
-
-http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
-
-That does mean you have to set an effective max depth to the tree, is
-that a practical issue?
-
-The harder part is 1), holding _that_ many locks. Would something
-obscene like this work for you:
-
-
-struct device_suspend {
-	wait_queue_head_t	wait_queue;
-	struct srcu_struct	srcu;
-	int			suspend;
-} dev_suspend_state;
-
-void device_lock(struct device *dev)
-{
-again:
-	srcu_read_lock(&dev_suspend_state.srcu);
-	if (unlikely(rcu_dereference(dev_suspend_state.suspend))) {
-		srcu_read_unlock(&dev_suspend_state.srcu);
-		wait_event(&dev_suspend_state.wait_queue,
-			   !dev_suspend_state.suspend);
-		goto again;
-	}
-	mutex_lock(&dev->mutex);
-}
-
-void device_unlock(struct device *dev)
-{
-	mutex_unlock(&dev->mutex);
-	srcu_read_unlock(&dev_suspend_state.srcu);
-}
-
-
-void device_suspend(void)
-{
-	rcu_assign_pointer(dev_suspend_state.suspend, 1);
-	synchronize_srcu(&dev_suspend_state.srcu);
-}
-
-void device_resume(void)
-{
-	rcu_assign_pointer(dev_suspend_state.suspend, 0);
-	wake_up_all(&dev_suspend_state.wait_queue);
-}
-
-
-
+-- 
+-----------------------------------------------------------
+| Paolo Valente              |                            |
+| Algogroup                  |                            |
+| Dip. Ing. Informazione     | tel:   +39 059 2056318     |
+| Via Vignolese 905/b	     | fax:   +39 059 2056199     |
+| 41100 Modena               | 				  |
+|     home:  http://algo.ing.unimo.it/people/paolo/       |
+-----------------------------------------------------------
 
