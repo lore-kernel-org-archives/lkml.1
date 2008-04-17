@@ -1,70 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYDQGaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYDQGeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759107AbYDQGaP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 02:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYDQGaC
+	id S1759347AbYDQGeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 02:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYDQGeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 02:30:02 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42740 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbYDQGaB (ORCPT
+	Thu, 17 Apr 2008 02:34:01 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57120 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbYDQGeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 02:30:01 -0400
-Message-ID: <4806EE5F.1040305@firstfloor.org>
-Date: Thu, 17 Apr 2008 08:29:51 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: SL Baur <steve@xemacs.org>
-CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: gart: factor out common code
-References: <20080415104357.GA13441@elf.ucw.cz>	 <ed10ee420804151625i1e30abb7r98ddda53ec6e8da6@mail.gmail.com>	 <20080416081418.GA5105@elf.ucw.cz> <ed10ee420804161955o221539f9p5cbfcc9eaf4b375d@mail.gmail.com>
-In-Reply-To: <ed10ee420804161955o221539f9p5cbfcc9eaf4b375d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Apr 2008 02:34:00 -0400
+Date: Thu, 17 Apr 2008 15:38:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       linux-mm@kvack.org, npiggin@suse.de, y-goto@jp.fujitsu.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Warning on memory offline (possible in migration ?)
+Message-Id: <20080417153818.d40ddfd8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080417091930.cbac6286.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080414145806.c921c927.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0804141044030.6296@schroedinger.engr.sgi.com>
+	<20080416200036.2ea9b5c2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080416113642.8ffd5684.akpm@linux-foundation.org>
+	<20080417091930.cbac6286.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SL Baur wrote:
-> On 4/16/08, Pavel Machek <pavel@ucw.cz> wrote:
->> On Tue 2008-04-15 16:25:29, SL Baur wrote:
->>  > On 4/15/08, Pavel Machek <pavel@ucw.cz> wrote:
+On Thu, 17 Apr 2008 09:19:30 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > I'd expect that you could reproduce this by disabling readahead with
+> > fadvise(POSIX_FADV_RANDOM) and then issuing the above four reads.
+> > 
+> Thank you for advice. I'll try.
 > 
->>  > Other reviewer comments:
->>  > The casting between struct pci_dev * and u64 is kind of ugly,
->>  > I presume the reason for the narrowing casts in the block of
->>  > code you moved is documented somewhere.
->>
->>
->> Where am I doing that?
-> 
-> The struct pci_dev */u64 casting is in init_k8_gatt.  If Ingo is happy, then
-> forget my comment.  I don't have this kind of system to test the patch on, it
-> was just that as I was looking it over, all the casts kind of made my head
-> swim.
+(Added lkml to CC:)
 
-I think the casts make it more clear because the register is 32bit.
-The only truly ugly bit is naming a variable "tmp".
+What happens:
+  When I do memory offline on ia64/NUMA box, __set_page_dirty_buffers() printed
+  out WARNINGS because the page under migration is not up-to-date.
 
-> The narrowing cast is here:
-> +static inline void enable_gart_translation(struct pci_dev *dev, u64 addr)
-> +{
-> +       u32 tmp, ctl;
-> +
-> +        /* address of the mappings table */
-> +        addr >>= 12;
-> +        tmp = (u32) addr<<4;
-> 
-> Also, putting on my Andrew Morton cap, which I should have done before,
-> that function is too big to be inlined so you should probably drop the explicit
-> `inline' and let the compiler decide.
+Following is my investigation.
 
-In a header static inline is needed, otherwise the compiler will warn
-about an unused static if it's not used which is unfortunate because
-not every includer wants to use all functions.
+Assume 16k pages / 4 buffers of 4096bytes block (ext3).
+4 buffers on a page of ext3.
 
-That said the function should probably not be in a header.
+At page offlining, we can find a page which is not up-to-date.
+But all buffers of the page seems up-to-date.
 
--Andi
+buffers on a page by prink().
+    buffer 0, block_nr= some vaule, state= BH_uptodate | BH_Req| BH_Mapped
+    buffer 1, block_nr= -1,         state= BH_uptodate
+    buffer 2, block_nr= -1,         state= BH_uptodate
+    buffer 3, block_nr= -1,         state= BH_uptodate
+
+It seems no I/O for 3 buffers. It's because the page is the last page of inode
+and blocks for buffer[1,2,3] is not assgined.
+(maybe BH_uptodate is set by block_write_full_page().
+
+Adding below check can hide the warning....but I can't say this is correct.
+Can we set this page dirty silently in this case ? 
+
+===
++
++static int check_fragment_page(struct page *page, struct address_space *mapping
+)
++{
++       struct inode *inode = mapping->host;
++       unsigned long lastblock, coverblock;
++
++       if (!page_has_buffers(page))
++               return 0;
++
++       lastblock = (i_size_read(inode) - 1) >> inode->i_blkbits;
++       coverblock = (page->index + 1) << (PAGE_SHIFT - inode->i_blkbits);
++
++       return coverblock > lastblock;
++}
++
++
++
+ static int __set_page_dirty(struct page *page,
+                struct address_space *mapping, int warn)
+ {
+@@ -717,7 +734,9 @@ static int __set_page_dirty(struct page
+
+        write_lock_irq(&mapping->tree_lock);
+        if (page->mapping) {    /* Race with truncate? */
+-               WARN_ON_ONCE(warn && !PageUptodate(page));
++               WARN_ON_ONCE(warn
++                            && !PageUptodate(page)
++                            && !check_fragment_page(page, mapping));
+
+                if (mapping_cap_account_dirty(mapping)) {
+                        __inc_zone_page_state(page, NR_FILE_DIRTY);
+==
+
+Thanks,
+-Kame
+
