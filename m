@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbYDQESM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYDQES3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbYDQESM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbYDQERy
+	id S1758823AbYDQES3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYDQESM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:17:54 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:50835 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbYDQERw (ORCPT
+	Thu, 17 Apr 2008 00:18:12 -0400
+Received: from qb-out-0506.google.com ([72.14.204.229]:37306 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbYDQESK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:17:52 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Subject: Re: Possible mem leak in copy_process()
-Date: Thu, 17 Apr 2008 06:17:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
-In-Reply-To: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 17 Apr 2008 00:18:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=kbFi1+ugoXnDVNpZwHxxW22RptsQ9tWjUz/kfdok9QPp4DtbpW9a0jhhZbvXzDy4OOjAbLmEUVBIhmFVILfppdZ8mH6l0D23ucsEP3z27JbHyL6DOj8S1L0jhOvV8Ey7377HTEHrhoOdqKMOLuOuvNgBuT8v6AURtkML2Bgb2R4=
+Date: Thu, 17 Apr 2008 12:13:56 +0800 (CST)
+Message-Id: <20080417.121356.08390959.xiyou.wangcong@gmail.com>
+To: jdike@addtoit.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] UML: Clean up arch/um/drivers/ubd_kern.c
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <20080416152019.GA8693@c2.user-mode-linux.org>
+References: <20080415133325.GA7882@c2.user-mode-linux.org>
+	<20080416.133919.133424295.xiyou.wangcong@gmail.com>
+	<20080416152019.GA8693@c2.user-mode-linux.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804170617.36010.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19+RIZ+TwMl70WfFSYzMgnnG6D0uhz5UPyZmC8
- 0SbwFe8YGs847wY2AXOpxKxLVKNnqTAZNbdHjKKqGtn0GvUxcu
- WhI6wSOd8klzWNVjo0/HA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008, Jesper Juhl wrote:
+From: Jeff Dike <jdike@addtoit.com>
+Date: Wed, 16 Apr 2008 11:20:19 -0400
+> On Wed, Apr 16, 2008 at 01:39:19PM +0800, WANG Cong wrote:
+> > From: Jeff Dike <jdike@addtoit.com>
+> > Date: Tue, 15 Apr 2008 09:33:25 -0400
+> > > On Mon, Apr 14, 2008 at 11:42:37PM -0700, Andrew Morton wrote:
+> > > > omg, when checkpatch bit into this patch my CPU melted.
 > 
-> Perhaps it can never happen the way Coverity thinks it can. You are a much 
-> better judge of that than I, but it looks to me like it's at least 
-> possible in theory - in which case we have a potential leak every time we 
-> create a new process and that can't be good...
+> Here's a cleaned up version.
+> 
+>        	 	    Jeff
 
-I think you're just looking at the common case here, which is correct:
-The pid is allocated for task creation and stays around as long as the
-task does. It gets freed when the last reference to it goes away,
-usually in the put_pid() called from exit().
-
-	Arnd <><
+Looks OK for me. Thank you!
