@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765927AbYDQKgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbYDQKiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765927AbYDQKgx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbYDQKgp
+	id S932438AbYDQKiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYDQKiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:36:45 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:46431 "EHLO smtp4.pp.htv.fi"
+	Thu, 17 Apr 2008 06:38:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60615 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbYDQKgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:36:44 -0400
-Date: Thu, 17 Apr 2008 13:36:35 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       akpm@osdl.org
-Subject: Re: [RFC patch 15/27] Immediate Values - Documentation
-Message-ID: <20080417103635.GG1677@cs181133002.pp.htv.fi>
-References: <20080416213426.298498397@polymtl.ca> <20080416213552.942797527@polymtl.ca> <20080417184930.A8CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	id S1752840AbYDQKiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 06:38:15 -0400
+Date: Thu, 17 Apr 2008 12:38:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-ID: <20080417103800.GA27250@elte.hu>
+References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org> <20080417090626.GA14383@elte.hu> <20080417021813.04df7912.akpm@linux-foundation.org> <20080417093025.GA17389@elte.hu> <20080417023603.672d1032.akpm@linux-foundation.org> <84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com> <20080417033333.947dfcc9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080417184930.A8CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080417033333.947dfcc9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 06:52:54PM +0900, KOSAKI Motohiro wrote:
-> > +Memory read:
-> > +644.09ツア11.39 - 88.16ツア1.35 = 555.93ツア11.46 cycles
-> > +
-> > +Getppid without memory pressure:
-> > +1462.09ツア18.87 - 150.92ツア1.01 = 1311.17ツア18.90 cycles
-> > +
-> > +Getppid with memory pressure:
-> > +17113.33ツア1655.92 - 578.22ツア269.51 = 16535.11ツア1677.71 cycles
-> > +
-> > +Therefore, if we add 2 markers not based on immediate values to the getppid
-> > +code, which would add 2 memory reads, we would add
-> > +2 * 555.93ツア12.74 = 1111.86ツア25.48 cycles
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> Thank you whoever wrote kmemcheck.txt
 > 
-> sorry..
+> How come slub uses one byte to track the status of each byte when it 
+> could use a single bit?
 > 
-> non ascii character is harmful for some language region user.
-> Couldn't you write ascii only?
+> We (still!) have not made the decision whether to proceed with slab or 
+> slub.  How hard would it be to port kmemcheck into slab?
 
-The kernel is UTF-8, and this shouldn't be a problem.
+i think slab is clearly out, unless some catastrophic regression is 
+found. But Nick's SLQB might replace SLUB ;-)
 
-The problem seems to be that Mathieu's emails don't contain a header 
-indicating the charset.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
