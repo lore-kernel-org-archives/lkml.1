@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934607AbYDQLKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934748AbYDQLLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934607AbYDQLKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932811AbYDQLGo
+	id S934748AbYDQLLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932907AbYDQLGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:06:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41602 "EHLO hera.kernel.org"
+	Thu, 17 Apr 2008 07:06:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41606 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761011AbYDQLGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 07:06:33 -0400
+	id S1761146AbYDQLGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 07:06:34 -0400
 From: James Morris <jmorris@namei.org>
 To: linux-security-module@vger.kernel.org
 Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: [PATCH 11/12] Security: Introduce security= boot parameter
-Date: Thu, 17 Apr 2008 11:06:08 +0000
-Message-Id: <a2520f9ce91a8fe56a922ab6fc5a8961af25c9bc.1208428766.git.jmorris@namei.org>
+       "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: [PATCH 08/12] SELinux: use new audit hooks, remove redundant exports
+Date: Thu, 17 Apr 2008 11:06:05 +0000
+Message-Id: <202b200065ec7e33d7d33f8b2e8fab5d6d44e372.1208428766.git.jmorris@namei.org>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208430369-23156-1-git-send-email-jmorris@namei.org>
 References: <1208430369-23156-1-git-send-email-jmorris@namei.org>
@@ -27,270 +28,326 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Add the security= boot parameter. This is done to avoid LSM
-registration clashes in case of more than one bult-in module.
+Setup the new Audit LSM hooks for SELinux.
+Remove the now redundant exported SELinux Audit interface.
 
-User can choose a security module to enable at boot. If no
-security= boot parameter is specified, only the first LSM
-asking for registration will be loaded. An invalid security
-module name will be treated as if no module has been chosen.
+Audit: Export 'audit_krule' and 'audit_field' to the public
+since their internals are needed by the implementation of the
+new LSM hook 'audit_rule_known'.
 
-LSM modules must check now if they are allowed to register
-by calling security_module_enable(ops) first. Modify SELinux
-and SMACK to do so.
-
-Do not let SMACK register smackfs if it was not chosen on
-boot. Smackfs assumes that smack hooks are registered and
-the initial task security setup (swapper->security) is done.
-
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 Acked-by: James Morris <jmorris@namei.org>
 ---
- Documentation/kernel-parameters.txt |    6 +++++
- include/linux/security.h            |   12 +++++++++++
- security/dummy.c                    |    4 ++-
- security/security.c                 |   38 ++++++++++++++++++++++++++++++++++-
- security/selinux/hooks.c            |    7 ++++++
- security/smack/smack.h              |    2 +
- security/smack/smack_lsm.c          |    7 +++++-
- security/smack/smackfs.c            |   11 +++++++++-
- 8 files changed, 83 insertions(+), 4 deletions(-)
+ include/linux/audit.h          |   29 ++++++++++++++++
+ include/linux/selinux.h        |   72 ----------------------------------------
+ kernel/audit.h                 |   25 --------------
+ security/selinux/hooks.c       |    8 ++++
+ security/selinux/ss/services.c |   45 +++++++++++++++++++------
+ 5 files changed, 71 insertions(+), 108 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index dafd001..436790f 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -366,6 +366,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			possible to determine what the correct size should be.
- 			This option provides an override for these situations.
- 
-+	security=	[SECURITY] Choose a security module to enable at boot. 
-+			If this boot parameter is not specified, only the first 
-+			security module asking for security registration will be
-+			loaded. An invalid security module name will be treated
-+			as if no module has been chosen.
+diff --git a/include/linux/audit.h b/include/linux/audit.h
+index 2af9ec0..04869c9 100644
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -353,6 +353,33 @@ struct netlink_skb_parms;
+ struct linux_binprm;
+ struct mq_attr;
+ struct mqstat;
++struct audit_watch;
++struct audit_tree;
 +
- 	capability.disable=
- 			[SECURITY] Disable capabilities.  This would normally
- 			be used only if an alternative security model is to be
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 697f228..f4116d6 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -36,6 +36,9 @@
- 
- extern unsigned securebits;
- 
-+/* Maximum number of letters for an LSM name string */
-+#define SECURITY_NAME_MAX	10
++struct audit_krule {
++	int			vers_ops;
++	u32			flags;
++	u32			listnr;
++	u32			action;
++	u32			mask[AUDIT_BITMASK_SIZE];
++	u32			buflen; /* for data alloc on list rules */
++	u32			field_count;
++	char			*filterkey; /* ties events to rules */
++	struct audit_field	*fields;
++	struct audit_field	*arch_f; /* quick access to arch field */
++	struct audit_field	*inode_f; /* quick access to an inode field */
++	struct audit_watch	*watch;	/* associated watch */
++	struct audit_tree	*tree;	/* associated watched tree */
++	struct list_head	rlist;	/* entry in audit_{watch,tree}.rules list */
++};
 +
- struct ctl_table;
- struct audit_krule;
- 
-@@ -137,6 +140,12 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
- /**
-  * struct security_operations - main security structure
-  *
-+ * Security module identifier.
-+ *
-+ * @name:
-+ *	A string that acts as a unique identifeir for the LSM with max number
-+ *	of characters = SECURITY_NAME_MAX.
-+ *
-  * Security hooks for program execution operations.
-  *
-  * @bprm_alloc_security:
-@@ -1270,6 +1279,8 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  * This is the main security structure.
-  */
- struct security_operations {
-+	char name[SECURITY_NAME_MAX + 1];
-+
- 	int (*ptrace) (struct task_struct * parent, struct task_struct * child);
- 	int (*capget) (struct task_struct * target,
- 		       kernel_cap_t * effective,
-@@ -1537,6 +1548,7 @@ struct security_operations {
- 
- /* prototypes */
- extern int security_init	(void);
-+extern int security_module_enable(struct security_operations *ops);
- extern int register_security	(struct security_operations *ops);
- extern int mod_reg_security	(const char *name, struct security_operations *ops);
- extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
-diff --git a/security/dummy.c b/security/dummy.c
-index 1ac9f8e..374d2ae 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -1017,7 +1017,9 @@ static inline void dummy_audit_rule_free(void *lsmrule)
- 
- #endif /* CONFIG_AUDIT */
- 
--struct security_operations dummy_security_ops;
-+struct security_operations dummy_security_ops = { 
-+	.name = "dummy", 
++struct audit_field {
++	u32				type;
++	u32				val;
++	u32				op;
++	char				*se_str;
++	void				*se_rule;
 +};
  
- #define set_to_dummy_if_null(ops, function)				\
- 	do {								\
-diff --git a/security/security.c b/security/security.c
-index bf189d2..2ed153c 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -17,6 +17,8 @@
- #include <linux/kernel.h>
- #include <linux/security.h>
- 
-+/* Boot-time LSM user choice */
-+static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1];
- 
- /* things that live in dummy.c */
- extern struct security_operations dummy_security_ops;
-@@ -67,13 +69,47 @@ int __init security_init(void)
- 	return 0;
- }
- 
-+/* Save user chosen LSM */
-+static int __init choose_lsm(char *str)
-+{
-+	strncpy(chosen_lsm, str, SECURITY_NAME_MAX);
-+	return 1;
-+}
-+__setup("security=", choose_lsm);
+ #define AUDITSC_INVALID 0
+ #define AUDITSC_SUCCESS 1
+@@ -536,6 +563,8 @@ extern void		    audit_log_d_path(struct audit_buffer *ab,
+ 					     const char *prefix,
+ 					     struct path *path);
+ extern void		    audit_log_lost(const char *message);
++extern int		    audit_update_lsm_rules(void);
 +
-+/**
-+ * security_module_enable - Load given security module on boot ?
-+ * @ops: a pointer to the struct security_operations that is to be checked.
-+ *
-+ * Each LSM must pass this method before registering its own operations
-+ * to avoid security registration races. This method may also be used
-+ * to check if your LSM is currently loaded.
-+ *
-+ * Return true if:
-+ *	-The passed LSM is the one chosen by user at boot time,
-+ *	-or user didsn't specify a specific LSM and we're the first to ask
-+ *	 for registeration permissoin,
-+ *	-or the passed LSM is currently loaded.
-+ * Otherwise, return false.
-+ */
-+int __init security_module_enable(struct security_operations *ops)
-+{
-+	if (!*chosen_lsm)
-+		strncpy(chosen_lsm, ops->name, SECURITY_NAME_MAX);
-+	else if (strncmp(ops->name, chosen_lsm, SECURITY_NAME_MAX))
-+		return 0;
-+
-+	return 1;
-+}
-+
+ 				/* Private API (for audit.c only) */
+ extern int audit_filter_user(struct netlink_skb_parms *cb, int type);
+ extern int audit_filter_type(int type);
+diff --git a/include/linux/selinux.h b/include/linux/selinux.h
+index 24b0af1..20f965d 100644
+--- a/include/linux/selinux.h
++++ b/include/linux/selinux.h
+@@ -21,54 +21,6 @@ struct kern_ipc_perm;
+ #ifdef CONFIG_SECURITY_SELINUX
+ 
  /**
-  * register_security - registers a security framework with the kernel
-  * @ops: a pointer to the struct security_options that is to be registered
-  *
-  * This function is to allow a security module to register itself with the
-  * kernel security subsystem.  Some rudimentary checking is done on the @ops
-- * value passed to this function.
-+ * value passed to this function. You'll need to check first if your LSM
-+ * is allowed to register its @ops by calling security_module_enable(@ops).
-  *
-  * If there is already a security module registered with the kernel,
-  * an error will be returned.  Otherwise 0 is returned on success.
+- *	selinux_audit_rule_init - alloc/init an selinux audit rule structure.
+- *	@field: the field this rule refers to
+- *	@op: the operater the rule uses
+- *	@rulestr: the text "target" of the rule
+- *	@rule: pointer to the new rule structure returned via this
+- *
+- *	Returns 0 if successful, -errno if not.  On success, the rule structure
+- *	will be allocated internally.  The caller must free this structure with
+- *	selinux_audit_rule_free() after use.
+- */
+-int selinux_audit_rule_init(u32 field, u32 op, char *rulestr,
+-                            struct selinux_audit_rule **rule);
+-
+-/**
+- *	selinux_audit_rule_free - free an selinux audit rule structure.
+- *	@rule: pointer to the audit rule to be freed
+- *
+- *	This will free all memory associated with the given rule.
+- *	If @rule is NULL, no operation is performed.
+- */
+-void selinux_audit_rule_free(struct selinux_audit_rule *rule);
+-
+-/**
+- *	selinux_audit_rule_match - determine if a context ID matches a rule.
+- *	@sid: the context ID to check
+- *	@field: the field this rule refers to
+- *	@op: the operater the rule uses
+- *	@rule: pointer to the audit rule to check against
+- *	@actx: the audit context (can be NULL) associated with the check
+- *
+- *	Returns 1 if the context id matches the rule, 0 if it does not, and
+- *	-errno on failure.
+- */
+-int selinux_audit_rule_match(u32 sid, u32 field, u32 op,
+-                             struct selinux_audit_rule *rule,
+-                             struct audit_context *actx);
+-
+-/**
+- *	selinux_audit_set_callback - set the callback for policy reloads.
+- *	@callback: the function to call when the policy is reloaded
+- *
+- *	This sets the function callback function that will update the rules
+- *	upon policy reloads.  This callback should rebuild all existing rules
+- *	using selinux_audit_rule_init().
+- */
+-void selinux_audit_set_callback(int (*callback)(void));
+-
+-/**
+  *     selinux_string_to_sid - map a security context string to a security ID
+  *     @str: the security context string to be mapped
+  *     @sid: ID value returned via this.
+@@ -111,30 +63,6 @@ void selinux_secmark_refcount_inc(void);
+ void selinux_secmark_refcount_dec(void);
+ #else
+ 
+-static inline int selinux_audit_rule_init(u32 field, u32 op,
+-                                          char *rulestr,
+-                                          struct selinux_audit_rule **rule)
+-{
+-	return -EOPNOTSUPP;
+-}
+-
+-static inline void selinux_audit_rule_free(struct selinux_audit_rule *rule)
+-{
+-	return;
+-}
+-
+-static inline int selinux_audit_rule_match(u32 sid, u32 field, u32 op,
+-                                           struct selinux_audit_rule *rule,
+-                                           struct audit_context *actx)
+-{
+-	return 0;
+-}
+-
+-static inline void selinux_audit_set_callback(int (*callback)(void))
+-{
+-	return;
+-}
+-
+ static inline int selinux_string_to_sid(const char *str, u32 *sid)
+ {
+        *sid = 0;
+diff --git a/kernel/audit.h b/kernel/audit.h
+index 2554bd5..3cfc54e 100644
+--- a/kernel/audit.h
++++ b/kernel/audit.h
+@@ -65,34 +65,9 @@ struct audit_watch {
+ 	struct list_head	rules;	/* associated rules */
+ };
+ 
+-struct audit_field {
+-	u32				type;
+-	u32				val;
+-	u32				op;
+-	char				*se_str;
+-	struct selinux_audit_rule	*se_rule;
+-};
+-
+ struct audit_tree;
+ struct audit_chunk;
+ 
+-struct audit_krule {
+-	int			vers_ops;
+-	u32			flags;
+-	u32			listnr;
+-	u32			action;
+-	u32			mask[AUDIT_BITMASK_SIZE];
+-	u32			buflen; /* for data alloc on list rules */
+-	u32			field_count;
+-	char			*filterkey; /* ties events to rules */
+-	struct audit_field	*fields;
+-	struct audit_field	*arch_f; /* quick access to arch field */
+-	struct audit_field	*inode_f; /* quick access to an inode field */
+-	struct audit_watch	*watch;	/* associated watch */
+-	struct audit_tree	*tree;	/* associated watched tree */
+-	struct list_head	rlist;	/* entry in audit_{watch,tree}.rules list */
+-};
+-
+ struct audit_entry {
+ 	struct list_head	list;
+ 	struct rcu_head		rcu;
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index afbaa07..44741ac 100644
+index 65bf7f7..afbaa07 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5252,6 +5252,8 @@ static int selinux_key_permission(key_ref_t key_ref,
+@@ -82,6 +82,7 @@
+ #include "netnode.h"
+ #include "xfrm.h"
+ #include "netlabel.h"
++#include "audit.h"
+ 
+ #define XATTR_SELINUX_SUFFIX "selinux"
+ #define XATTR_NAME_SELINUX XATTR_SECURITY_PREFIX XATTR_SELINUX_SUFFIX
+@@ -5435,6 +5436,13 @@ static struct security_operations selinux_ops = {
+ 	.key_free =                     selinux_key_free,
+ 	.key_permission =               selinux_key_permission,
  #endif
- 
- static struct security_operations selinux_ops = {
-+	.name =				"selinux",
 +
- 	.ptrace =			selinux_ptrace,
- 	.capget =			selinux_capget,
- 	.capset_check =			selinux_capset_check,
-@@ -5449,6 +5451,11 @@ static __init int selinux_init(void)
- {
- 	struct task_security_struct *tsec;
++#ifdef CONFIG_AUDIT
++	.audit_rule_init =		selinux_audit_rule_init,
++	.audit_rule_known =		selinux_audit_rule_known,
++	.audit_rule_match =		selinux_audit_rule_match,
++	.audit_rule_free =		selinux_audit_rule_free,
++#endif
+ };
  
-+	if (!security_module_enable(&selinux_ops)) {
-+		selinux_enabled = 0;
-+		return 0;
-+	}
+ static __init int selinux_init(void)
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index 3f2bad2..934f9d0 100644
+--- a/security/selinux/ss/services.c
++++ b/security/selinux/ss/services.c
+@@ -56,6 +56,7 @@
+ #include "netlabel.h"
+ #include "xfrm.h"
+ #include "ebitmap.h"
++#include "audit.h"
+ 
+ extern void selnl_notify_policyload(u32 seqno);
+ unsigned int policydb_loaded_version;
+@@ -2273,21 +2274,23 @@ struct selinux_audit_rule {
+ 	struct context au_ctxt;
+ };
+ 
+-void selinux_audit_rule_free(struct selinux_audit_rule *rule)
++void selinux_audit_rule_free(void *vrule)
+ {
++	struct selinux_audit_rule *rule = vrule;
 +
- 	if (!selinux_enabled) {
- 		printk(KERN_INFO "SELinux:  Disabled at boot.\n");
- 		return 0;
-diff --git a/security/smack/smack.h b/security/smack/smack.h
-index 62c1e98..4a4477f 100644
---- a/security/smack/smack.h
-+++ b/security/smack/smack.h
-@@ -15,6 +15,7 @@
- 
- #include <linux/capability.h>
- #include <linux/spinlock.h>
-+#include <linux/security.h>
- #include <net/netlabel.h>
- 
- /*
-@@ -187,6 +188,7 @@ extern struct smack_known smack_known_star;
- extern struct smack_known smack_known_unset;
- 
- extern struct smk_list_entry *smack_list;
-+extern struct security_operations smack_ops;
- 
- /*
-  * Stricly for CIPSO level manipulation.
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 732ba27..904bdc0 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -2424,7 +2424,9 @@ static void smack_release_secctx(char *secdata, u32 seclen)
- {
+ 	if (rule) {
+ 		context_destroy(&rule->au_ctxt);
+ 		kfree(rule);
+ 	}
  }
  
--static struct security_operations smack_ops = {
-+struct security_operations smack_ops = {
-+	.name =				"smack",
-+
- 	.ptrace = 			smack_ptrace,
- 	.capget = 			cap_capget,
- 	.capset_check = 		cap_capset_check,
-@@ -2557,6 +2559,9 @@ static struct security_operations smack_ops = {
-  */
- static __init int smack_init(void)
+-int selinux_audit_rule_init(u32 field, u32 op, char *rulestr,
+-                            struct selinux_audit_rule **rule)
++int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule)
  {
-+	if (!security_module_enable(&smack_ops))
-+		return 0;
-+
- 	printk(KERN_INFO "Smack:  Initializing.\n");
+ 	struct selinux_audit_rule *tmprule;
+ 	struct role_datum *roledatum;
+ 	struct type_datum *typedatum;
+ 	struct user_datum *userdatum;
++	struct selinux_audit_rule **rule = (struct selinux_audit_rule **)vrule;
+ 	int rc = 0;
  
- 	/*
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index cfae8af..6ba2837 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -965,12 +965,21 @@ static struct vfsmount *smackfs_mount;
-  *
-  * register the smackfs
-  *
-- * Returns 0 unless the registration fails.
-+ * Do not register smackfs if Smack wasn't enabled
-+ * on boot. We can not put this method normally under the
-+ * smack_init() code path since the security subsystem get
-+ * initialized before the vfs caches.
-+ *
-+ * Returns true if we were not chosen on boot or if
-+ * we were chosen and filesystem registration succeeded.
-  */
- static int __init init_smk_fs(void)
+ 	*rule = NULL;
+@@ -2374,12 +2377,37 @@ int selinux_audit_rule_init(u32 field, u32 op, char *rulestr,
+ 	return rc;
+ }
+ 
+-int selinux_audit_rule_match(u32 sid, u32 field, u32 op,
+-                             struct selinux_audit_rule *rule,
++/* Check to see if the rule contains any selinux fields */
++int selinux_audit_rule_known(struct audit_krule *rule)
++{
++	int i;
++
++	for (i = 0; i < rule->field_count; i++) {
++		struct audit_field *f = &rule->fields[i];
++		switch (f->type) {
++		case AUDIT_SUBJ_USER:
++		case AUDIT_SUBJ_ROLE:
++		case AUDIT_SUBJ_TYPE:
++		case AUDIT_SUBJ_SEN:
++		case AUDIT_SUBJ_CLR:
++		case AUDIT_OBJ_USER:
++		case AUDIT_OBJ_ROLE:
++		case AUDIT_OBJ_TYPE:
++		case AUDIT_OBJ_LEV_LOW:
++		case AUDIT_OBJ_LEV_HIGH:
++			return 1;
++		}
++	}
++
++	return 0;
++}
++
++int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
+                              struct audit_context *actx)
  {
- 	int err;
+ 	struct context *ctxt;
+ 	struct mls_level *level;
++	struct selinux_audit_rule *rule = vrule;
+ 	int match = 0;
  
-+	if (!security_module_enable(&smack_ops))
-+		return 0;
-+
- 	err = register_filesystem(&smk_fs_type);
- 	if (!err) {
- 		smackfs_mount = kern_mount(&smk_fs_type);
+ 	if (!rule) {
+@@ -2486,7 +2514,7 @@ out:
+ 	return match;
+ }
+ 
+-static int (*aurule_callback)(void) = NULL;
++static int (*aurule_callback)(void) = audit_update_lsm_rules;
+ 
+ static int aurule_avc_callback(u32 event, u32 ssid, u32 tsid,
+                                u16 class, u32 perms, u32 *retained)
+@@ -2511,11 +2539,6 @@ static int __init aurule_init(void)
+ }
+ __initcall(aurule_init);
+ 
+-void selinux_audit_set_callback(int (*callback)(void))
+-{
+-	aurule_callback = callback;
+-}
+-
+ #ifdef CONFIG_NETLABEL
+ /**
+  * security_netlbl_cache_add - Add an entry to the NetLabel cache
 -- 
 1.5.4.2
 
