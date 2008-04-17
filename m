@@ -1,103 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbYDQTj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYDQTjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbYDQTj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYDQTjU
+	id S1755575AbYDQTjz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYDQTjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:39:20 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:11333 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbYDQTjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:39:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wOL4/UYQ1HbX42zJVg+BMTconpMr5oGZ2RV+Bk3BtPV+K1vnEkhlLZElMAGNwn6QErW2JGOJsUbWS+wtUZDWgE8HNQvbCW2IfcS9p8QgatqLGYVUOnJPqljEsrmPHb4WQHhxVTPutrIcUJ+HpaqrO60iP+iLJTc9fWVxzAomsTg=
-Message-ID: <19f34abd0804171239v66e5efe6xe887ef89d518baf2@mail.gmail.com>
-Date: Thu, 17 Apr 2008 21:39:18 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080417193537.GA6253@elte.hu>
+	Thu, 17 Apr 2008 15:39:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45870 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbYDQTjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 15:39:43 -0400
+Message-ID: <4807A771.2020405@pobox.com>
+Date: Thu, 17 Apr 2008 15:39:29 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Adrian Bunk <bunk@kernel.org>
+CC: chris@zankel.net, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] xtensa: don't offer ATA
+References: <20080414195521.GB26885@cs181133002.pp.htv.fi>
+In-Reply-To: <20080414195521.GB26885@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080416202338.GA6007@elte.hu> <20080417083000.GA4935@elte.hu>
-	 <20080417014054.ea788f1f.akpm@linux-foundation.org>
-	 <20080417090626.GA14383@elte.hu>
-	 <20080417021813.04df7912.akpm@linux-foundation.org>
-	 <20080417093025.GA17389@elte.hu>
-	 <20080417023603.672d1032.akpm@linux-foundation.org>
-	 <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com>
-	 <20080417192729.GA3058@elte.hu> <20080417193537.GA6253@elte.hu>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 9:35 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Ingo Molnar <mingo@elte.hu> wrote:
->
->
-> > > Actually it doesn't. I attach a patch which gets rid of the page flag,
->  > > and we rely instead on the PTE flag for page-trackedness.
->  > [...]
->  > > Ingo, will you take this for some additional testing?
->  >
->  > thanks Vegard, i've applied it - looks good to me too.
->
->  x86.git randconfig testing found a build bug - fix below.
->
->         Ingo
->
+Adrian Bunk wrote:
+> Trying to build libata for xtensa fails with the following error:
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC [M]  drivers/ata/libata-core.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_devchk':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1034: error: implicit declaration of function 'iowrite8'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1043: error: implicit declaration of function 'ioread8'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_data_xfer':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5027: error: implicit declaration of function 'ioread16_rep'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5029: error: implicit declaration of function 'iowrite16_rep'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5037: error: implicit declaration of function 'ioread16'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5041: error: implicit declaration of function 'iowrite16'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_wait_register':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:7700: error: implicit declaration of function 'ioread32'
+> make[3]: *** [drivers/ata/libata-core.o] Error 1
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> aa579e7ab065e41a9d1e27e1f4b7af6b0508018c diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index 25aba69..f34e9d1 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -6,7 +6,7 @@ menuconfig ATA
+>  	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
+>  	depends on HAS_IOMEM
+>  	depends on BLOCK
+> -	depends on !(M32R || M68K) || BROKEN
+> +	depends on !(M32R || M68K || XTENSA) || BROKEN
+>  	depends on !SUN4 || BROKEN
+>  	select SCSI
 
-Oh, oops. Of course... Thanks, you shouldn't have had to do that :-(
+XTENSA offers HAS_IOMEM but not iomem functions?  That seems like the 
+problem to me.
 
-Vegard
+Overall, we should not be adding specific arches to an exclusion list, 
+we should defining HAS_IOFOO or MISSING_IOFOO or another symbol in the 
+appropriate arch.
 
->  ------------>
->  Subject: kmemcheck: fix build
->  From: Ingo Molnar <mingo@elte.hu>
->  Date: Thu Apr 17 21:20:43 CEST 2008
->
->  Signed-off-by: Ingo Molnar <mingo@elte.hu>
->  ---
->   include/linux/kmemcheck.h |    3 +++
->   1 file changed, 3 insertions(+)
->
->  Index: linux/include/linux/kmemcheck.h
->  ===================================================================
->  --- linux.orig/include/linux/kmemcheck.h
->  +++ linux/include/linux/kmemcheck.h
->  @@ -1,6 +1,8 @@
->   #ifndef LINUX_KMEMCHECK_H
->   #define LINUX_KMEMCHECK_H
->
->  +#include <linux/types.h>
->  +
->   #ifdef CONFIG_KMEMCHECK
->   extern int kmemcheck_enabled;
->
->  @@ -24,6 +26,7 @@ void kmemcheck_mark_uninitialized_pages(
->   #ifndef CONFIG_KMEMCHECK
->   #define kmemcheck_enabled 0
->   static inline void kmemcheck_init(void) { }
->  +static inline bool kmemcheck_page_is_tracked(struct page *p) { return false; }
->   #endif /* CONFIG_KMEMCHECK */
->
->   #endif /* LINUX_KMEMCHECK_H */
->
+	Jeff
 
 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+
