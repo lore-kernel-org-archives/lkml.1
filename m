@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbYDQOB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbYDQOFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbYDQOB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 10:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYDQOBr
+	id S1762038AbYDQOFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 10:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYDQOFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 10:01:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46131 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbYDQOBr (ORCPT
+	Thu, 17 Apr 2008 10:05:09 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46532 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753892AbYDQOFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 10:01:47 -0400
-Date: Thu, 17 Apr 2008 07:01:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080417070129.2bb99e2c@laptopd505.fenrus.org>
-In-Reply-To: <20080417103800.GA27250@elte.hu>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<20080417083000.GA4935@elte.hu>
-	<20080417014054.ea788f1f.akpm@linux-foundation.org>
-	<20080417090626.GA14383@elte.hu>
-	<20080417021813.04df7912.akpm@linux-foundation.org>
-	<20080417093025.GA17389@elte.hu>
-	<20080417023603.672d1032.akpm@linux-foundation.org>
-	<84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com>
-	<20080417033333.947dfcc9.akpm@linux-foundation.org>
-	<20080417103800.GA27250@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 17 Apr 2008 10:05:07 -0400
+Date: Thu, 17 Apr 2008 10:05:06 -0400
+To: Tejun Heo <htejun@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: No IDE drivers loaded for Toshiba Satellite 320 CDS
+Message-ID: <20080417140506.GC7385@csclub.uwaterloo.ca>
+References: <200804021524.27222.elendil@planet.nl> <20080415144748.GO7385@csclub.uwaterloo.ca> <48053AD1.8010007@gmail.com> <200804162008.27655.elendil@planet.nl> <480679D3.7030705@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480679D3.7030705@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 12:38:00 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Apr 17, 2008 at 07:12:35AM +0900, Tejun Heo wrote:
+> Asking when no harddisk is detected w/ the option to choose it 
+> explicitly should do for most cases.  No?
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > Thank you whoever wrote kmemcheck.txt
-> > 
-> > How come slub uses one byte to track the status of each byte when
-> > it could use a single bit?
-> > 
-> > We (still!) have not made the decision whether to proceed with slab
-> > or slub.  How hard would it be to port kmemcheck into slab?
-> 
-> i think slab is clearly out, unless some catastrophic regression is 
-> found. 
+I suppose it might, although I could still see an older machine have a
+PCI controller as well as an ISA legacy controller on an ISA sound card,
+and might even have a CDROM drive connected to the sound card.  Not very
+likely though, but not imposible.  In that case you might detect the HD
+connected to the HD, but not the CDROM connected to the sound card.
+That might be confusing to the user.  On the other hand anyone running
+such old hardware might just have a pretty good idea what they are doing
+and could run in expert mode and tell the installer to also load the
+generic driver.
 
-SLUB still has that several percent TPC-C regression....
-Christoph has a small reproducer testcase.
+I still think the correct solution is to always try loading it, posibly
+with a boot option to make the installer not do so for any machines that
+have issues with that.  Any such machines should then have bug reports
+filed so that the driver that runs their chipset's IDE controller in a
+native mode can ensure they reserve the legacy IDE ports so that nothing
+else (like the generic driver) can go poking at them.
 
+After all I thought the whole point of all the ports listed in
+/proc/ioports was to indicate which io ports were currently reserved by
+which driver so that no other driver could try to access them.  If it
+doesn't in fact work that way then it probably should.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Len Sorensen
