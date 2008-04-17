@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765645AbYDQBQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbYDQBQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765645AbYDQBQO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbYDQBHo
+	id S1765757AbYDQBQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYDQBHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:44 -0400
-Received: from sous-sol.org ([216.99.217.87]:58868 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:49 -0400
+Received: from sous-sol.org ([216.99.217.87]:58879 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757637AbYDQBHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:40 -0400
-Message-Id: <20080417010205.251905099@sous-sol.org>
+	id S1759213AbYDQBHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:48 -0400
+Message-Id: <20080417010348.192847503@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:23 -0700
+Date: Wed, 16 Apr 2008 18:02:02 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sedat Dilek <sedat.dilek@googlemail.com>
-Subject: time: prevent the loop in timespec_add_ns() from being optimised away
-Content-Disposition: inline; filename=time-prevent-the-loop-in-timespec_add_ns-from-being-optimised-away.patch
+       Patrick McHardy <kaber@trash.net>, David S Miller <davem@davemloft.net>
+Subject: TCP: Fix shrinking windows with window scaling
+Content-Disposition: inline; filename=tcp-fix-shrinking-windows-with-window-scaling.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,35 +33,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
+From: Patrick McHardy <kaber@trash.net>
 
-upstream commit: 38332cb98772f5ea757e6486bed7ed0381cb5f98
+Upstream commit: 607bfbf2d55dd1cfe5368b41c2a81a8c9ccf4723
 
-Since some architectures don't support __udivdi3().
+When selecting a new window, tcp_select_window() tries not to shrink
+the offered window by using the maximum of the remaining offered window
+size and the newly calculated window size. The newly calculated window
+size is always a multiple of the window scaling factor, the remaining
+window size however might not be since it depends on rcv_wup/rcv_nxt.
+This means we're effectively shrinking the window when scaling it down.
 
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc:  Sedat Dilek <sedat.dilek@googlemail.com>
+
+The dump below shows the problem (scaling factor 2^7):
+
+- Window size of 557 (71296) is advertised, up to 3111907257:
+
+IP 172.2.2.3.33000 > 172.2.2.2.33000: . ack 3111835961 win 557 <...>
+
+- New window size of 514 (65792) is advertised, up to 3111907217, 40 bytes
+  below the last end:
+
+IP 172.2.2.3.33000 > 172.2.2.2.33000: . 3113575668:3113577116(1448) ack 3111841425 win 514 <...>
+
+The number 40 results from downscaling the remaining window:
+
+3111907257 - 3111841425 = 65832
+65832 / 2^7 = 514
+65832 % 2^7 = 40
+
+If the sender uses up the entire window before it is shrunk, this can have
+chaotic effects on the connection. When sending ACKs, tcp_acceptable_seq()
+will notice that the window has been shrunk since tcp_wnd_end() is before
+tp->snd_nxt, which makes it choose tcp_wnd_end() as sequence number.
+This will fail the receivers checks in tcp_sequence() however since it
+is before it's tp->rcv_wup, making it respond with a dupack.
+
+If both sides are in this condition, this leads to a constant flood of
+ACKs until the connection times out.
+
+Make sure the window is never shrunk by aligning the remaining window to
+the window scaling factor.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- include/linux/time.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ net/ipv4/tcp_output.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -173,6 +173,10 @@ static inline void timespec_add_ns(struc
- {
- 	ns += a->tv_nsec;
- 	while(unlikely(ns >= NSEC_PER_SEC)) {
-+		/* The following asm() prevents the compiler from
-+		 * optimising this loop into a modulo operation.  */
-+		asm("" : "+r"(ns));
-+
- 		ns -= NSEC_PER_SEC;
- 		a->tv_sec++;
+--- a/net/ipv4/tcp_output.c
++++ b/net/ipv4/tcp_output.c
+@@ -258,7 +258,7 @@ static u16 tcp_select_window(struct sock
+ 		 *
+ 		 * Relax Will Robinson.
+ 		 */
+-		new_win = cur_win;
++		new_win = ALIGN(cur_win, 1 << tp->rx_opt.rcv_wscale);
  	}
+ 	tp->rcv_wnd = new_win;
+ 	tp->rcv_wup = tp->rcv_nxt;
 
 -- 
