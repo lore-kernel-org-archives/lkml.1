@@ -1,120 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYDQAIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYDQANv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYDQAIQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 20:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYDQAHt
+	id S1756303AbYDQANv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 20:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYDQANn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 20:07:49 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44982 "EHLO gir.skynet.ie"
+	Wed, 16 Apr 2008 20:13:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59346 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758598AbYDQAHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 20:07:48 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: linux-mm@kvack.org
-Cc: Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Message-Id: <20080417000744.18399.84537.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20080417000624.18399.35041.sendpatchset@skynet.skynet.ie>
-References: <20080417000624.18399.35041.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 4/4] Print out the zonelists on request for manual verification
-Date: Thu, 17 Apr 2008 01:07:44 +0100 (IST)
+	id S1750798AbYDQANm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 20:13:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Subject: Re: APM lockups since 2.6.25
+Date: Thu, 17 Apr 2008 02:14:25 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162239560.25729@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162243550.25729@artax.karlin.mff.cuni.cz>
+In-Reply-To: <Pine.LNX.4.64.0804162243550.25729@artax.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804170214.26368.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday, 16 of April 2008, Mikulas Patocka wrote:
+> > So it didn't help, I just got this (2.6.25-rc8):
+> > 
+> > (I have turned lockdep on few days ago, and it seems to try to release a 
+> > lock that's not held ... and then reacquire that lock again and deadlock)
+> 
+> BTW. the first one message happened immediatelly after APM resume, the 
+> second message 2 minutes later.
+> 
+> APMD didn't set time after resume, it's completely locked up.
 
-This patch prints out the zonelists during boot for manual verification
-by the user. This is useful for checking if the zonelists were somehow
-corrupt during initialisation. Note that this patch will not work in -mm
-due to differences in how zonelists are used.
+Well, unfortunately, APM uses the generic code for suspending and resuming
+devices, but it doesn't use the freezing of tasks, so it's not very reliable in
+its present form.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
-
- mm/internal.h   |    5 +++++
- mm/mm_init.c    |   40 ++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c |    1 +
- 3 files changed, 46 insertions(+)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/internal.h linux-2.6.25-rc9-0030_display_zonelist/mm/internal.h
---- linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/internal.h	2008-04-17 00:20:47.000000000 +0100
-+++ linux-2.6.25-rc9-0030_display_zonelist/mm/internal.h	2008-04-17 00:21:07.000000000 +0100
-@@ -81,6 +81,7 @@ do { \
- extern void mminit_verify_pageflags(void);
- extern void mminit_verify_page_links(struct page *page,
- 		enum zone_type zone, unsigned long nid, unsigned long pfn);
-+extern void mminit_verify_zonelist(void);
- 
- #else
- 
-@@ -97,6 +98,10 @@ static inline void mminit_verify_page_li
- 		enum zone_type zone, unsigned long nid, unsigned long pfn)
- {
- }
-+
-+static inline void mminit_verify_zonelist(void)
-+{
-+}
- #endif /* CONFIG_DEBUG_MEMORY_INIT */
- 
- /* mminit_validate_physlimits is independent of CONFIG_DEBUG_MEMORY_INIT */
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/mm_init.c linux-2.6.25-rc9-0030_display_zonelist/mm/mm_init.c
---- linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/mm_init.c	2008-04-17 00:20:33.000000000 +0100
-+++ linux-2.6.25-rc9-0030_display_zonelist/mm/mm_init.c	2008-04-17 00:21:07.000000000 +0100
-@@ -11,6 +11,46 @@
- 
- int __initdata mminit_debug_level;
- 
-+/* Note that the verification of correctness is required from the user */
-+void mminit_verify_zonelist(void)
-+{
-+	int nid;
-+
-+	if (mminit_debug_level < MMINIT_VERIFY)
-+		return;
-+
-+	for_each_online_node(nid) {
-+		pg_data_t *pgdat = NODE_DATA(nid);
-+		struct zone *zone;
-+		struct zone **z;
-+		int listid;
-+
-+		for (listid = 0; listid < MAX_ZONELISTS; listid++) {
-+			zone = &pgdat->node_zones[listid % MAX_NR_ZONES];
-+
-+			if (!populated_zone(zone))
-+				continue;
-+
-+			printk(KERN_INFO "mminit::zonelist %s %d:%s = ",
-+				listid >= MAX_NR_ZONES ? "thisnode" : "general",
-+				nid,
-+				zone->name);
-+			z = pgdat->node_zonelists[listid].zones;
-+
-+			while (*z != NULL) {
-+#ifdef CONFIG_NUMA
-+				printk(KERN_CONT "%d:%s ",
-+						(*z)->node, (*z)->name);
-+#else
-+				printk(KERN_CONT "0:%s ", (*z)->name);
-+#endif
-+				z++;
-+			}
-+			printk(KERN_CONT "\n");
-+		}
-+	}
-+}
-+
- void __init mminit_verify_pageflags(void)
- {
- 	unsigned long shift;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/page_alloc.c linux-2.6.25-rc9-0030_display_zonelist/mm/page_alloc.c
---- linux-2.6.25-rc9-0025_defensive_pfn_checks/mm/page_alloc.c	2008-04-17 00:20:47.000000000 +0100
-+++ linux-2.6.25-rc9-0030_display_zonelist/mm/page_alloc.c	2008-04-17 00:21:07.000000000 +0100
-@@ -2353,6 +2353,7 @@ void build_all_zonelists(void)
- 
- 	if (system_state == SYSTEM_BOOTING) {
- 		__build_all_zonelists(NULL);
-+		mminit_verify_zonelist();
- 		cpuset_init_current_mems_allowed();
- 	} else {
- 		/* we have to stop all cpus to guarantee there is no user
+Thanks,
+Rafael
