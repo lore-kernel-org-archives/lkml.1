@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYDQCKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbYDQCKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbYDQCKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 22:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYDQCJ7
+	id S1757507AbYDQCKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 22:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYDQCKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 22:09:59 -0400
-Received: from sous-sol.org ([216.99.217.87]:54946 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 22:10:07 -0400
+Received: from sous-sol.org ([216.99.217.87]:54950 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbYDQCJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 22:09:58 -0400
-Message-Id: <20080417010206.817647157@sous-sol.org>
+	id S1753189AbYDQCKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 22:10:05 -0400
+Message-Id: <20080417010400.234642889@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:24 -0700
+Date: Wed, 16 Apr 2008 18:02:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sam Ravnborg <sam@uranus.ravnborg.org>, Michael Buesch <mb@bu3sch.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: kbuild: soften modpost checks when doing cross builds
-Content-Disposition: inline; filename=kbuild-soften-modpost-checks-when-doing-cross-builds.patch
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Parisc List <linux-parisc@vger.kernel.org>,
+       Kyle McMartin <kyle@shortfin.cabal.ca>,
+       Kyle McMartin <kyle@mcmartin.ca>
+Subject: PARISC futex: special case cmpxchg NULL in kernel space
+Content-Disposition: inline; filename=parisc-futex-special-case-cmpxchg-null-in-kernel-space.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,120 +36,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Sam Ravnborg <sam@uranus.ravnborg.org>
+From: Kyle McMartin <kyle@shortfin.cabal.ca>
 
-upstream commit: 4ce6efed48d736e3384c39ff87bda723e1f8e041
+upstream commit: c20a84c91048c76c1379011c96b1a5cee5c7d9a0
 
-The module alias support in the kernel have a consistency
-check where it is checked that the size of a structure
-in the kernel and on the build host are the same.
-For cross builds this check does not make sense so detect
-when we do cross builds and silently skip the check in these
-situations.
-This fixes a build bug for a wireless driver when cross building
-for arm.
+commit f9e77acd4060fefbb60a351cdb8d30fca27fe194
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Sun Feb 24 02:10:05 2008 +0000
 
-Acked-by: Michael Buesch <mb@bu3sch.de>
-Tested-by: Gordon Farquharson <gordonfarquharson@gmail.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-[chrisw@sous-sol.org: backport to 2.6.24.4]
+    futex: runtime enable pi and robust functionality
+ 
+
+which was backported to stable based on mainline Commit
+a0c1e9073ef7428a14309cba010633a6cd6719ea added code to futex.c
+to detect whether futex_atomic_cmpxchg_inatomic was implemented at run
+time:
+
++       curval = cmpxchg_futex_value_locked(NULL, 0, 0);
++       if (curval == -EFAULT)
++               futex_cmpxchg_enabled = 1;
+
+This is bogus on parisc, since page zero in kernel virtual space is the
+gateway page for syscall entry, and should not be read from the kernel.
+(That, and we really don't like the kernel faulting on its own address
+ space...)
+
+Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- Makefile                 |    2 +-
- scripts/Makefile.modpost |    6 +++++-
- scripts/mod/file2alias.c |    4 ++++
- scripts/mod/modpost.c    |    5 ++++-
- scripts/mod/modpost.h    |    1 +
- 5 files changed, 15 insertions(+), 3 deletions(-)
+ include/asm-parisc/futex.h |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/Makefile
-+++ b/Makefile
-@@ -189,7 +189,7 @@ SUBARCH := $(shell uname -m | sed -e s/i
- # Alternatively CROSS_COMPILE can be set in the environment.
- # Default value for CROSS_COMPILE is not to prefix executables
- # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
--
-+export KBUILD_BUILDHOST := $(SUBARCH)
- ARCH		?= $(SUBARCH)
- CROSS_COMPILE	?=
+--- a/include/asm-parisc/futex.h
++++ b/include/asm-parisc/futex.h
+@@ -56,6 +56,12 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 	int err = 0;
+ 	int uval;
  
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -53,6 +53,9 @@ modules   := $(patsubst %.o,%.ko, $(wild
- # Stop after building .o files if NOFINAL is set. Makes compile tests quicker
- _modpost: $(if $(KBUILD_MODPOST_NOFINAL), $(modules:.ko:.o),$(modules))
++	/* futex.c wants to do a cmpxchg_inatomic on kernel NULL, which is
++	 * our gateway page, and causes no end of trouble...
++	 */
++	if (segment_eq(KERNEL_DS, get_fs()) && !uaddr)
++		return -EFAULT;
++
+ 	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
+ 		return -EFAULT;
  
-+ifneq ($(KBUILD_BUILDHOST),$(ARCH))
-+        cross_build := 1
-+endif
+@@ -67,5 +73,5 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 	return uval;
+ }
  
- # Step 2), invoke modpost
- #  Includes step 3,4
-@@ -62,7 +65,8 @@ modpost = scripts/mod/modpost           
-  $(if $(KBUILD_EXTMOD),-i,-o) $(kernelsymfile)   \
-  $(if $(KBUILD_EXTMOD),-I $(modulesymfile))      \
-  $(if $(KBUILD_EXTMOD),-o $(modulesymfile))      \
-- $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w)
-+ $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w) \
-+ $(if $(cross_build),-c)
- 
- quiet_cmd_modpost = MODPOST $(words $(filter-out vmlinux FORCE, $^)) modules
-       cmd_modpost = $(modpost) -s
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -51,11 +51,13 @@ do {                                    
-                 sprintf(str + strlen(str), "*");                \
- } while(0)
- 
-+unsigned int cross_build = 0;
- /**
-  * Check that sizeof(device_id type) are consistent with size of section
-  * in .o file. If in-consistent then userspace and kernel does not agree
-  * on actual size which is a bug.
-  * Also verify that the final entry in the table is all zeros.
-+ * Ignore both checks if build host differ from target host and size differs.
-  **/
- static void device_id_check(const char *modname, const char *device_id,
- 			    unsigned long size, unsigned long id_size,
-@@ -64,6 +66,8 @@ static void device_id_check(const char *
- 	int i;
- 
- 	if (size % id_size || size < id_size) {
-+		if (cross_build != 0)
-+			return;
- 		fatal("%s: sizeof(struct %s_device_id)=%lu is not a modulo "
- 		      "of the size of section __mod_%s_device_table=%lu.\n"
- 		      "Fix definition of struct %s_device_id "
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1659,7 +1659,7 @@ int main(int argc, char **argv)
- 	int opt;
- 	int err;
- 
--	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
-+	while ((opt = getopt(argc, argv, "i:I:cmso:aw")) != -1) {
- 		switch(opt) {
- 			case 'i':
- 				kernel_read = optarg;
-@@ -1668,6 +1668,9 @@ int main(int argc, char **argv)
- 				module_read = optarg;
- 				external_module = 1;
- 				break;
-+		case 'c':
-+			cross_build = 1;
-+			break;
- 			case 'm':
- 				modversions = 1;
- 				break;
---- a/scripts/mod/modpost.h
-+++ b/scripts/mod/modpost.h
-@@ -130,6 +130,7 @@ struct elf_info {
- };
- 
- /* file2alias.c */
-+extern unsigned int cross_build;
- void handle_moddevtable(struct module *mod, struct elf_info *info,
- 			Elf_Sym *sym, const char *symname);
- void add_moddevtable(struct buffer *buf, struct module *mod);
+-#endif
+-#endif
++#endif /*__KERNEL__*/
++#endif /*_ASM_PARISC_FUTEX_H*/
 
 -- 
