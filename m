@@ -1,220 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYDQSrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYDQSwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYDQSrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 14:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYDQSrP
+	id S1760254AbYDQSwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 14:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYDQSwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 14:47:15 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:51931 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbYDQSrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 14:47:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=KyLEg+nKpE0oa6lEoEhlGx4hjvrp7ZVU2Gqbj72vkxkELFqkPI7hcLQ8zB17Jzj0a9iG8seiJV0PWkzvyN+uwrJc0issH9Kpd8zzhh3E+/holNNUA5NQJ2um1eAOg/NooZE4Iafh3l48Ymh9UFgsiS8rQhGv7spbduvylU+2Sbw=
-Message-ID: <19f34abd0804171147l4403d49aoeab005105a90392b@mail.gmail.com>
-Date: Thu, 17 Apr 2008 20:47:06 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>
+	Thu, 17 Apr 2008 14:52:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35242 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751603AbYDQSwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 14:52:14 -0400
+Date: Thu, 17 Apr 2008 20:51:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Cc: linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080417023603.672d1032.akpm@linux-foundation.org>
+Message-ID: <20080417185158.GA26603@elte.hu>
+References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com> <20080417012051.ed56f4ab.akpm@linux-foundation.org> <Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI> <84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com> <20080417014217.ab0453a9.akpm@linux-foundation.org> <20080417114900.GA17033@infradead.org> <20080417110135.08b076ac.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_1022_11338866.1208458032134"
-References: <20080416202338.GA6007@elte.hu>
-	 <20080417002552.5742ad65.akpm@linux-foundation.org>
-	 <20080417083000.GA4935@elte.hu>
-	 <20080417014054.ea788f1f.akpm@linux-foundation.org>
-	 <20080417090626.GA14383@elte.hu>
-	 <20080417021813.04df7912.akpm@linux-foundation.org>
-	 <20080417093025.GA17389@elte.hu>
-	 <20080417023603.672d1032.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080417110135.08b076ac.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_1022_11338866.1208458032134
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Thu, Apr 17, 2008 at 11:36 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 17 Apr 2008 11:30:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->  > you mean kmemcheck? Yes, that's planned. We've been working 4 months
->  > non-stop on kmemcheck to make it mergeable and usable, it's at version 7
->  > right now, and it caught a handful of real bugs already (such as
->  > 63a7138671c - unfortunately not credited in the log to kmemcheck). But
->  > because it touches SLUB (because it has to - and they are acked by
->  > Pekka) i never had the chance to move it into the for-akpm branch.
->
->  Does it really really really need to consume one of our few remaining page
->  flags?  We'll be in a mess when we run out.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Actually it doesn't. I attach a patch which gets rid of the page flag,
-and we rely instead on the PTE flag for page-trackedness.
+> afaik the sysprof-vs-oprofile issue still hasn't been settled.  Maybe 
+> it's no longer a relevant question with the new code - I just don't 
+> know. Everything went all quiet and then this stuff happened.
 
-The reason we didn't do this at once is that the making of kmemcheck
-has been pretty much my first introduction to SLUB, x86, page flags,
-etc., and the actual semantics of the various introduced flags have
-varied since the first version of kmemcheck. At this point, the struct
-page flags weren't actually needed anymore, but they were convenient.
+i dont think there's any big issue here. Sysprof is a time and stack 
+system-wide tracer/profiler, oprofile profiles CPU events - deep 
+stacktracing is an afterthought there. And how do you set up oprofile to 
+do precise time events?
 
-My apologies for not inlining the patch -- I don't have a mail client
-that won't mess up whitespace. It can also be downloaded at:
-http://folk.uio.no/vegardno/linux/0001-kmemcheck-remove-use-of-tracked-page-flag.patch
+with sysprof you can do:
 
-The patch has received minimal amount of testing, but I've
-double-checked the logic. It boots fine on my laptop, boot log at:
-http://folk.uio.no/vegardno/linux/kmemcheck-20080417.txt
+  cd /sys/kernel/debug/tracing
+  echo sysprof > current_tracer
+  cat trace_pipe
 
-Ingo, will you take this for some additional testing?
+and you'll see the trace events go by, live. The user-space bits of 
+sysprof have been ported over to ftrace/sysprof already and it's a 
+really nice tool that shows a deep stack-trace based hierarchical 
+"vertical" profile instead of the usual finegrained profile.
 
+It certainly helps that the author of the tracer plugin (Soeren 
+Sandmann) is the author of the userspace app too - so there's a rather 
+well-working feedback loop here ;-)
 
-Vegard
+With oprofile all these things are rather indirect, the API is more 
+complex, it forces per-CPU buffers, etc. etc. I think for 
+instrumentation the driving force must be usability, and sysprof/ftrace 
+is hands down more usable - to me at least.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-------=_Part_1022_11338866.1208458032134
-Content-Type: text/x-patch;
- name=0001-kmemcheck-remove-use-of-tracked-page-flag.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ff5nnyxc0
-Content-Disposition: attachment;
- filename=0001-kmemcheck-remove-use-of-tracked-page-flag.patch
-
-RnJvbSA5ODYwY2ZhM2EzOGY3MmI4MmE4MzAyNGI3NjVkMmFhYjM5YTkxN2U5IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmQubm9zc3VtQGdtYWlsLmNv
-bT4KRGF0ZTogVGh1LCAxNyBBcHIgMjAwOCAxOTo1Mzo0OCArMDIwMApTdWJqZWN0OiBbUEFUQ0hd
-IGttZW1jaGVjazogcmVtb3ZlIHVzZSBvZiAidHJhY2tlZCIgcGFnZSBmbGFnCgpUaGlzIHBhdGNo
-IHJlcGxhY2VzIHRoZSB1c2Ugb2YgdGhlIFBHX3RyYWNrZWQgcGFnZSBmbGFnIGFuZCByZWx5IGlu
-c3RlYWQKb24gdGhlIFBURSBmbGFnIFBBR0VfSElEREVOIHRvIGRldGVybWluZSB3aGV0aGVyIGEg
-cGFnZSBpcyB0cmFja2VkLgoKU2lnbmVkLW9mZi1ieTogVmVnYXJkIE5vc3N1bSA8dmVnYXJkLm5v
-c3N1bUBnbWFpbC5jb20+Ci0tLQogYXJjaC94ODYva2VybmVsL2ttZW1jaGVjay5jIHwgIDEwNSAr
-KysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIGluY2x1ZGUvbGludXgv
-a21lbWNoZWNrLmggICB8ICAgIDIgKwogaW5jbHVkZS9saW51eC9wYWdlLWZsYWdzLmggIHwgICAg
-NSAtLQogbW0vc2x1Yi5jICAgICAgICAgICAgICAgICAgIHwgICAgMiArLQogNCBmaWxlcyBjaGFu
-Z2VkLCA0NiBpbnNlcnRpb25zKCspLCA2OCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9hcmNo
-L3g4Ni9rZXJuZWwva21lbWNoZWNrLmMgYi9hcmNoL3g4Ni9rZXJuZWwva21lbWNoZWNrLmMKaW5k
-ZXggMTZkY2UxMC4uZDgyZjM1ZCAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2ttZW1jaGVj
-ay5jCisrKyBiL2FyY2gveDg2L2tlcm5lbC9rbWVtY2hlY2suYwpAQCAtMjMzLDEyICsyMzMsMjcg
-QEAgcGFyYW1fa21lbWNoZWNrKGNoYXIgKnN0cikKIAlpZiAoIXN0cikKIAkJcmV0dXJuIC1FSU5W
-QUw7CiAKLQlzc2NhbmYoIiVkIiwgc3RyLCAma21lbWNoZWNrX2VuYWJsZWQpOworCXNzY2FuZihz
-dHIsICIlZCIsICZrbWVtY2hlY2tfZW5hYmxlZCk7CiAJcmV0dXJuIDA7CiB9CiAKIGVhcmx5X3Bh
-cmFtKCJrbWVtY2hlY2siLCBwYXJhbV9rbWVtY2hlY2spOwogCitzdGF0aWMgcHRlX3QgKgorYWRk
-cmVzc19nZXRfcHRlKHVuc2lnbmVkIGludCBhZGRyZXNzKQoreworCXB0ZV90ICpwdGU7CisJaW50
-IGxldmVsOworCisJcHRlID0gbG9va3VwX2FkZHJlc3MoYWRkcmVzcywgJmxldmVsKTsKKwlpZiAo
-IXB0ZSkKKwkJcmV0dXJuIE5VTEw7CisJaWYgKCFwdGVfaGlkZGVuKCpwdGUpKQorCQlyZXR1cm4g
-TlVMTDsKKworCXJldHVybiBwdGU7Cit9CisKIC8qCiAgKiBSZXR1cm4gdGhlIHNoYWRvdyBhZGRy
-ZXNzIGZvciB0aGUgZ2l2ZW4gYWRkcmVzcy4gUmV0dXJucyBOVUxMIGlmIHRoZQogICogYWRkcmVz
-cyBpcyBub3QgdHJhY2tlZC4KQEAgLTI0OSw4OCArMjY0LDUzIEBAIGVhcmx5X3BhcmFtKCJrbWVt
-Y2hlY2siLCBwYXJhbV9rbWVtY2hlY2spOwogc3RhdGljIHZvaWQgKgogYWRkcmVzc19nZXRfc2hh
-ZG93KHVuc2lnbmVkIGxvbmcgYWRkcmVzcykKIHsKKwlwdGVfdCAqcHRlOwogCXN0cnVjdCBwYWdl
-ICpwYWdlOwogCXN0cnVjdCBwYWdlICpoZWFkOwogCiAJaWYgKCF2aXJ0X2FkZHJfdmFsaWQoYWRk
-cmVzcykpCiAJCXJldHVybiBOVUxMOwogCisJcHRlID0gYWRkcmVzc19nZXRfcHRlKGFkZHJlc3Mp
-OworCWlmICghcHRlKQorCQlyZXR1cm4gTlVMTDsKKwogCS8qIFRoZSBhY2Nlc3NlZCBwYWdlICov
-CiAJcGFnZSA9IHZpcnRfdG9fcGFnZShhZGRyZXNzKTsKLQlpZiAoIVBhZ2VDb21wb3VuZChwYWdl
-KSkKLQkJcmV0dXJuIE5VTEw7CisJQlVHX09OKCFQYWdlQ29tcG91bmQocGFnZSkpOwogCiAJLyog
-VGhlIGhlYWQgcGFnZSAqLwogCWhlYWQgPSBjb21wb3VuZF9oZWFkKHBhZ2UpOwotCWlmICghUGFn
-ZVRyYWNrZWQoaGVhZCkpCi0JCXJldHVybiBOVUxMOworCUJVR19PTihjb21wb3VuZF9vcmRlciho
-ZWFkKSA9PSAwKTsKIAogCXJldHVybiAodm9pZCAqKSBhZGRyZXNzICsgKFBBR0VfU0laRSA8PCAo
-Y29tcG91bmRfb3JkZXIoaGVhZCkgLSAxKSk7CiB9CiAKIHN0YXRpYyBpbnQKLXNob3dfYWRkcih1
-aW50MzJfdCBhZGRyKQorc2hvd19hZGRyKHVpbnQzMl90IGFkZHJlc3MpCiB7CiAJcHRlX3QgKnB0
-ZTsKLQlpbnQgbGV2ZWw7Ci0KLQlpZiAoIWFkZHJlc3NfZ2V0X3NoYWRvdyhhZGRyKSkKLQkJcmV0
-dXJuIDA7Ci0KLQlwdGUgPSBsb29rdXBfYWRkcmVzcyhhZGRyLCAmbGV2ZWwpOwotCUJVR19PTigh
-cHRlKTsKLQotCWlmIChsZXZlbCAhPSBQR19MRVZFTF80SykKLQkJcmV0dXJuIDA7Ci0KLQlzZXRf
-cHRlKHB0ZSwgX19wdGUocHRlX3ZhbCgqcHRlKSB8IF9QQUdFX1BSRVNFTlQpKTsKLQlfX2ZsdXNo
-X3RsYl9vbmUoYWRkcik7Ci0JcmV0dXJuIDE7Ci19CiAKLS8qCi0gKiBJbiBjYXNlIHRoZXJlJ3Mg
-c29tZXRoaW5nIHNlcmlvdXNseSB3cm9uZyB3aXRoIGttZW1jaGVjayAobGlrZSBhIHJlY3Vyc2l2
-ZQotICogb3IgbG9vcGluZyBwYWdlIGZhdWx0KSwgd2Ugc2hvdWxkIGRpc2FibGUgdHJhY2tpbmcg
-Zm9yIHRoZSBwYWdlIGFzIGEgbGFzdAotICogYXR0ZW1wdCB0byBub3QgaGFuZyB0aGUgbWFjaGlu
-ZS4KLSAqLwotc3RhdGljIHZvaWQKLWVtZXJnZW5jeV9zaG93X2FkZHIodWludDMyX3QgYWRkcmVz
-cykKLXsKLQlwdGVfdCAqcHRlOwotCWludCBsZXZlbDsKLQotCXB0ZSA9IGxvb2t1cF9hZGRyZXNz
-KGFkZHJlc3MsICZsZXZlbCk7CisJcHRlID0gYWRkcmVzc19nZXRfcHRlKGFkZHJlc3MpOwogCWlm
-ICghcHRlKQotCQlyZXR1cm47Ci0JaWYgKGxldmVsICE9IFBHX0xFVkVMXzRLKQotCQlyZXR1cm47
-Ci0KLQkvKiBEb24ndCBjaGFuZ2UgcGFnZXMgdGhhdCB3ZXJlbid0IGhpZGRlbiBpbiB0aGUgZmly
-c3QgcGxhY2UgLS0gdGhleQotCSAqIGFyZW4ndCBvdXJzIHRvIG1vZGlmeS4gKi8KLQlpZiAoIShw
-dGVfdmFsKCpwdGUpICYgX1BBR0VfSElEREVOKSkKLQkJcmV0dXJuOworCQlyZXR1cm4gMDsKIAog
-CXNldF9wdGUocHRlLCBfX3B0ZShwdGVfdmFsKCpwdGUpIHwgX1BBR0VfUFJFU0VOVCkpOwogCV9f
-Zmx1c2hfdGxiX29uZShhZGRyZXNzKTsKKwlyZXR1cm4gMTsKIH0KIAogc3RhdGljIGludAotaGlk
-ZV9hZGRyKHVpbnQzMl90IGFkZHIpCitoaWRlX2FkZHIodWludDMyX3QgYWRkcmVzcykKIHsKIAlw
-dGVfdCAqcHRlOwotCWludCBsZXZlbDsKLQotCWlmICghYWRkcmVzc19nZXRfc2hhZG93KGFkZHIp
-KQotCQlyZXR1cm4gMDsKIAotCXB0ZSA9IGxvb2t1cF9hZGRyZXNzKGFkZHIsICZsZXZlbCk7Ci0J
-QlVHX09OKCFwdGUpOwotCi0JaWYgKGxldmVsICE9IFBHX0xFVkVMXzRLKQorCXB0ZSA9IGFkZHJl
-c3NfZ2V0X3B0ZShhZGRyZXNzKTsKKwlpZiAoIXB0ZSkKIAkJcmV0dXJuIDA7CiAKIAlzZXRfcHRl
-KHB0ZSwgX19wdGUocHRlX3ZhbCgqcHRlKSAmIH5fUEFHRV9QUkVTRU5UKSk7Ci0JX19mbHVzaF90
-bGJfb25lKGFkZHIpOworCV9fZmx1c2hfdGxiX29uZShhZGRyZXNzKTsKIAlyZXR1cm4gMTsKIH0K
-IApAQCAtMzY1LDggKzM0NSw4IEBAIGttZW1jaGVja19zaG93KHN0cnVjdCBwdF9yZWdzICpyZWdz
-KQogCUJVR19PTighaXJxc19kaXNhYmxlZCgpKTsKIAogCWlmICh1bmxpa2VseShkYXRhLT5iYWxh
-bmNlICE9IDApKSB7Ci0JCWVtZXJnZW5jeV9zaG93X2FkZHIoZGF0YS0+YWRkcjEpOwotCQllbWVy
-Z2VuY3lfc2hvd19hZGRyKGRhdGEtPmFkZHIyKTsKKwkJc2hvd19hZGRyKGRhdGEtPmFkZHIxKTsK
-KwkJc2hvd19hZGRyKGRhdGEtPmFkZHIyKTsKIAkJZXJyb3Jfc2F2ZV9idWcocmVncyk7CiAJCWRh
-dGEtPmJhbGFuY2UgPSAwOwogCQlyZXR1cm47CkBAIC00MTQsOCArMzk0LDggQEAga21lbWNoZWNr
-X2hpZGUoc3RydWN0IHB0X3JlZ3MgKnJlZ3MpCiAJCXJldHVybjsKIAogCWlmICh1bmxpa2VseShk
-YXRhLT5iYWxhbmNlICE9IDEpKSB7Ci0JCWVtZXJnZW5jeV9zaG93X2FkZHIoZGF0YS0+YWRkcjEp
-OwotCQllbWVyZ2VuY3lfc2hvd19hZGRyKGRhdGEtPmFkZHIyKTsKKwkJc2hvd19hZGRyKGRhdGEt
-PmFkZHIxKTsKKwkJc2hvd19hZGRyKGRhdGEtPmFkZHIyKTsKIAkJZXJyb3Jfc2F2ZV9idWcocmVn
-cyk7CiAJCWRhdGEtPmFkZHIxID0gMDsKIAkJZGF0YS0+YWRkcjIgPSAwOwpAQCAtNDU2LDkgKzQz
-Niw2IEBAIGttZW1jaGVja19zaG93X3BhZ2VzKHN0cnVjdCBwYWdlICpwLCB1bnNpZ25lZCBpbnQg
-bikKIHsKIAl1bnNpZ25lZCBpbnQgaTsKIAotCUJVR19PTighUGFnZUNvbXBvdW5kKHApKTsKLQlD
-bGVhclBhZ2VUcmFja2VkKGNvbXBvdW5kX2hlYWQocCkpOwotCiAJZm9yIChpID0gMDsgaSA8IG47
-ICsraSkgewogCQl1bnNpZ25lZCBsb25nIGFkZHJlc3M7CiAJCXB0ZV90ICpwdGU7CkBAIC00Nzcs
-MTQgKzQ1NCwxOCBAQCBrbWVtY2hlY2tfc2hvd19wYWdlcyhzdHJ1Y3QgcGFnZSAqcCwgdW5zaWdu
-ZWQgaW50IG4pCiAJfQogfQogCitib29sCitrbWVtY2hlY2tfcGFnZV9pc190cmFja2VkKHN0cnVj
-dCBwYWdlICpwKQoreworCS8qIFRoaXMgd2lsbCBhbHNvIGNoZWNrIHRoZSAiaGlkZGVuIiBmbGFn
-IG9mIHRoZSBQVEUuICovCisJcmV0dXJuIGFkZHJlc3NfZ2V0X3B0ZSgodW5zaWduZWQgbG9uZykg
-cGFnZV9hZGRyZXNzKHApKTsKK30KKwogdm9pZAoga21lbWNoZWNrX2hpZGVfcGFnZXMoc3RydWN0
-IHBhZ2UgKnAsIHVuc2lnbmVkIGludCBuKQogewogCXVuc2lnbmVkIGludCBpOwogCi0JQlVHX09O
-KCFQYWdlQ29tcG91bmQocCkpOwotCVNldFBhZ2VUcmFja2VkKGNvbXBvdW5kX2hlYWQocCkpOwot
-CiAJZm9yIChpID0gMDsgaSA8IG47ICsraSkgewogCQl1bnNpZ25lZCBsb25nIGFkZHJlc3M7CiAJ
-CXB0ZV90ICpwdGU7CkBAIC03NjIsNyArNzQzLDcgQEAga21lbWNoZWNrX2FjY2VzcyhzdHJ1Y3Qg
-cHRfcmVncyAqcmVncywKIAogCS8qIFJlY3Vyc2l2ZSBmYXVsdCAtLSBvdWNoLiAqLwogCWlmIChk
-YXRhLT5idXN5KSB7Ci0JCWVtZXJnZW5jeV9zaG93X2FkZHIoZmFsbGJhY2tfYWRkcmVzcyk7CisJ
-CXNob3dfYWRkcihmYWxsYmFja19hZGRyZXNzKTsKIAkJZXJyb3Jfc2F2ZV9idWcocmVncyk7CiAJ
-CXJldHVybjsKIAl9CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2ttZW1jaGVjay5oIGIvaW5j
-bHVkZS9saW51eC9rbWVtY2hlY2suaAppbmRleCA4MDFkYTUwLi44ZDEyOWViIDEwMDY0NAotLS0g
-YS9pbmNsdWRlL2xpbnV4L2ttZW1jaGVjay5oCisrKyBiL2luY2x1ZGUvbGludXgva21lbWNoZWNr
-LmgKQEAgLTksNiArOSw4IEBAIHZvaWQga21lbWNoZWNrX2luaXQodm9pZCk7CiB2b2lkIGttZW1j
-aGVja19zaG93X3BhZ2VzKHN0cnVjdCBwYWdlICpwLCB1bnNpZ25lZCBpbnQgbik7CiB2b2lkIGtt
-ZW1jaGVja19oaWRlX3BhZ2VzKHN0cnVjdCBwYWdlICpwLCB1bnNpZ25lZCBpbnQgbik7CiAKK2Jv
-b2wga21lbWNoZWNrX3BhZ2VfaXNfdHJhY2tlZChzdHJ1Y3QgcGFnZSAqcCk7CisKIHZvaWQga21l
-bWNoZWNrX21hcmtfdW5hbGxvY2F0ZWQodm9pZCAqYWRkcmVzcywgdW5zaWduZWQgaW50IG4pOwog
-dm9pZCBrbWVtY2hlY2tfbWFya191bmluaXRpYWxpemVkKHZvaWQgKmFkZHJlc3MsIHVuc2lnbmVk
-IGludCBuKTsKIHZvaWQga21lbWNoZWNrX21hcmtfaW5pdGlhbGl6ZWQodm9pZCAqYWRkcmVzcywg
-dW5zaWduZWQgaW50IG4pOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wYWdlLWZsYWdzLmgg
-Yi9pbmNsdWRlL2xpbnV4L3BhZ2UtZmxhZ3MuaAppbmRleCA2M2Y1ZmQ4Li4zNjk2ODg5IDEwMDY0
-NAotLS0gYS9pbmNsdWRlL2xpbnV4L3BhZ2UtZmxhZ3MuaAorKysgYi9pbmNsdWRlL2xpbnV4L3Bh
-Z2UtZmxhZ3MuaApAQCAtODksNyArODksNiBAQAogI2RlZmluZSBQR19tYXBwZWR0b2Rpc2sJCTE2
-CS8qIEhhcyBibG9ja3MgYWxsb2NhdGVkIG9uLWRpc2sgKi8KICNkZWZpbmUgUEdfcmVjbGFpbQkJ
-MTcJLyogVG8gYmUgcmVjbGFpbWVkIGFzYXAgKi8KICNkZWZpbmUgUEdfYnVkZHkJCTE5CS8qIFBh
-Z2UgaXMgZnJlZSwgb24gYnVkZHkgbGlzdHMgKi8KLSNkZWZpbmUgUEdfdHJhY2tlZAkJMjAJLyog
-VHJhY2tlZCBieSBrbWVtY2hlY2sgKi8KIAogLyogUEdfcmVhZGFoZWFkIGlzIG9ubHkgdXNlZCBm
-b3IgZmlsZSByZWFkczsgUEdfcmVjbGFpbSBpcyBvbmx5IGZvciB3cml0ZXMgKi8KICNkZWZpbmUg
-UEdfcmVhZGFoZWFkCQlQR19yZWNsYWltIC8qIFJlbWluZGVyIHRvIGRvIGFzeW5jIHJlYWQtYWhl
-YWQgKi8KQEAgLTI5NywxMCArMjk2LDYgQEAgc3RhdGljIGlubGluZSB2b2lkIF9fQ2xlYXJQYWdl
-VGFpbChzdHJ1Y3QgcGFnZSAqcGFnZSkKICNkZWZpbmUgU2V0UGFnZVVuY2FjaGVkKHBhZ2UpCXNl
-dF9iaXQoUEdfdW5jYWNoZWQsICYocGFnZSktPmZsYWdzKQogI2RlZmluZSBDbGVhclBhZ2VVbmNh
-Y2hlZChwYWdlKQljbGVhcl9iaXQoUEdfdW5jYWNoZWQsICYocGFnZSktPmZsYWdzKQogCi0jZGVm
-aW5lIFBhZ2VUcmFja2VkKHBhZ2UpCXRlc3RfYml0KFBHX3RyYWNrZWQsICYocGFnZSktPmZsYWdz
-KQotI2RlZmluZSBTZXRQYWdlVHJhY2tlZChwYWdlKQlzZXRfYml0KFBHX3RyYWNrZWQsICYocGFn
-ZSktPmZsYWdzKQotI2RlZmluZSBDbGVhclBhZ2VUcmFja2VkKHBhZ2UpCWNsZWFyX2JpdChQR190
-cmFja2VkLCAmKHBhZ2UpLT5mbGFncykKLQogCiBzdHJ1Y3QgcGFnZTsJLyogZm9yd2FyZCBkZWNs
-YXJhdGlvbiAqLwogCmRpZmYgLS1naXQgYS9tbS9zbHViLmMgYi9tbS9zbHViLmMKaW5kZXggOWI1
-ODk3OS4uN2E1NDRlNiAxMDA2NDQKLS0tIGEvbW0vc2x1Yi5jCisrKyBiL21tL3NsdWIuYwpAQCAt
-MTEyNSw3ICsxMTI1LDcgQEAgc3RhdGljIHZvaWQgX19mcmVlX3NsYWIoc3RydWN0IGttZW1fY2Fj
-aGUgKnMsIHN0cnVjdCBwYWdlICpwYWdlKQogCQlDbGVhclNsYWJEZWJ1ZyhwYWdlKTsKIAl9CiAK
-LQlpZiAoUGFnZVRyYWNrZWQocGFnZSkgJiYgIShzLT5mbGFncyAmIFNMQUJfTk9UUkFDSykpIHsK
-KwlpZiAoa21lbWNoZWNrX3BhZ2VfaXNfdHJhY2tlZChwYWdlKSAmJiAhKHMtPmZsYWdzICYgU0xB
-Ql9OT1RSQUNLKSkgewogCQlrbWVtY2hlY2tfZnJlZV9zbGFiKHMsIHBhZ2UsIHBhZ2VzKTsKIAkJ
-cmV0dXJuOwogCX0KLS0gCjEuNS40LjEKCg==
-------=_Part_1022_11338866.1208458032134--
+	Ingo
