@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbYDQHJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYDQHK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759305AbYDQHJz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 03:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYDQHJq
+	id S1756949AbYDQHK3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 03:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYDQHKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 03:09:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57363
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753433AbYDQHJp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 03:09:45 -0400
-Date: Thu, 17 Apr 2008 00:09:46 -0700 (PDT)
-Message-Id: <20080417.000946.44234467.davem@davemloft.net>
-To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [LMB][2/2] Restructure allocation loops to avoid unsigned
- underflow
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18432.18107.854417.50018@cargo.ozlabs.ibm.com>
-References: <18432.18107.854417.50018@cargo.ozlabs.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 03:10:16 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21428 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753628AbYDQHKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 03:10:15 -0400
+Date: Thu, 17 Apr 2008 09:10:12 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Paolo Valente <paolo.valente@unimore.it>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417071012.GP12774@kernel.dk>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4806EACB.7040408@unimore.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sat, 12 Apr 2008 15:20:59 +1000
+On Thu, Apr 17 2008, Paolo Valente wrote:
+> Pavel Machek ha scritto:
+> >
+> >>In the first type of tests, to achieve a higher throughput than CFQ
+> >>(with the default 100 ms time slice), the maximum budget for BFQ
+> >>had to be set to at least 4k sectors.  Using the same value for the
+> >>    
+> >
+> >Hmm, 4k sectors is ~40 seconds worst case, no? That's quite long...
+> >  
+> Actually, in the worst case among our tests, the aggregate throughput 
+> with 4k sectors was ~ 20 MB/s, hence the time for 4k sectors ~ 4k * 512 
+> / 20M = 100 ms.
 
-> There is a potential bug in __lmb_alloc_base where we subtract `size'
-> from the base address of a reserved region without checking whether
-> the subtraction could wrap around and produce a very large unsigned
-> value.  In fact it probably isn't possible to hit the bug in practice
-> since it would only occur in the situation where we can't satisfy the
-> allocation request and there is a reserved region starting at 0.
-> 
-> This fixes the potential bug by breaking out of the loop when we get
-> to the point where the base of the reserved region is less than the
-> size requested.  This also restructures the loop to be a bit easier to
-> follow. 
-> 
-> The same logic got copied into lmb_alloc_nid_unreserved, so this makes
-> a similar change there.  Here the bug is more likely to be hit because
-> the outer loop  (in lmb_alloc_nid) goes through the memory regions in
-> increasing order rather than decreasing order as __lmb_alloc_base
-> does, and we are therefore more likely to hit the case where we are
-> testing against a reserved region with a base address of 0.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+That's not worse case, it is pretty close to BEST case. Worst case is 4k
+of sectors, with each being a 512b IO and causing a full stroke seek.
+For that type of workload, even a modern sata hard drive will be doing
+500kb/sec or less. That's rougly a thousand sectors per seconds, so ~4
+seconds worst case for 4k sectors.
 
-This looks great, thanks for doing this work Paul.
+-- 
+Jens Axboe
 
-I'll try to find some cycles to validate these changes alongside
-the pending sparc64 NUMA changes I have.
