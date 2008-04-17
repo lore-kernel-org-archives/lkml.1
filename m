@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbYDQJRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbYDQJRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbYDQJRM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbYDQJLM
+	id S932511AbYDQJRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760527AbYDQJLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:11:12 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58956
+	Thu, 17 Apr 2008 05:11:13 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:59015
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759434AbYDQJK6 (ORCPT
+	with ESMTP id S1759355AbYDQJK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Apr 2008 05:10:58 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH 15/45] s390: KVM guest: detect when running on kvm
-Date: Thu, 17 Apr 2008 12:10:20 +0300
-Message-Id: <1208423450-29415-16-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>
+Subject: [PATCH 13/45] KVM: s390: API documentation
+Date: Thu, 17 Apr 2008 12:10:18 +0300
+Message-Id: <1208423450-29415-14-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208423450-29415-1-git-send-email-avi@qumranet.com>
 References: <1208423450-29415-1-git-send-email-avi@qumranet.com>
@@ -24,93 +23,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-
 From: Carsten Otte <cotte@de.ibm.com>
 
-This patch adds functionality to detect if the kernel runs under the KVM
-hypervisor. A macro MACHINE_IS_KVM is exported for device drivers. This
-allows drivers to skip device detection if the systems runs non-virtualized.
-We also define a preferred console to avoid having the ttyS0, which is a line
-mode only console.
+This patch adds Documentation/s390/kvm.txt, which describes specifics of kvm's
+user interface that are unique to s390 architecture.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Carsten Otte <cotte@de.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/s390/Kconfig        |    7 +++++++
- arch/s390/kernel/early.c |    4 ++++
- arch/s390/kernel/setup.c |   10 +++++++---
- include/asm-s390/setup.h |    1 +
- 4 files changed, 19 insertions(+), 3 deletions(-)
+ Documentation/s390/kvm.txt |  125 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 125 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/s390/kvm.txt
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index c43b250..235ddce 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -533,6 +533,13 @@ config ZFCPDUMP
- 	  Select this option if you want to build an zfcpdump enabled kernel.
- 	  Refer to <file:Documentation/s390/zfcpdump.txt> for more details on this.
- 
-+config S390_GUEST
-+bool "s390 guest support (EXPERIMENTAL)"
-+	depends on 64BIT && EXPERIMENTAL
-+	select VIRTIO
-+	select VIRTIO_RING
-+	help
-+	  Select this option if you want to run the kernel under s390 linux
- endmenu
- 
- source "net/Kconfig"
-diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
-index 01832c4..9886578 100644
---- a/arch/s390/kernel/early.c
-+++ b/arch/s390/kernel/early.c
-@@ -143,6 +143,10 @@ static noinline __init void detect_machine_type(void)
- 	/* Running on a P/390 ? */
- 	if (cpuinfo->cpu_id.machine == 0x7490)
- 		machine_flags |= 4;
+diff --git a/Documentation/s390/kvm.txt b/Documentation/s390/kvm.txt
+new file mode 100644
+index 0000000..6f5ceb0
+--- /dev/null
++++ b/Documentation/s390/kvm.txt
+@@ -0,0 +1,125 @@
++*** BIG FAT WARNING ***
++The kvm module is currently in EXPERIMENTAL state for s390. This means that
++the interface to the module is not yet considered to remain stable. Thus, be
++prepared that we keep breaking your userspace application and guest
++compatibility over and over again until we feel happy with the result. Make sure
++your guest kernel, your host kernel, and your userspace launcher are in a
++consistent state.
 +
-+	/* Running under KVM ? */
-+	if (cpuinfo->cpu_id.version == 0xfe)
-+		machine_flags |= 64;
- }
- 
- #ifdef CONFIG_64BIT
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index 526c135..c64bfb4 100644
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -793,9 +793,13 @@ setup_arch(char **cmdline_p)
- 	       "This machine has an IEEE fpu\n" :
- 	       "This machine has no IEEE fpu\n");
- #else /* CONFIG_64BIT */
--	printk((MACHINE_IS_VM) ?
--	       "We are running under VM (64 bit mode)\n" :
--	       "We are running native (64 bit mode)\n");
-+	if (MACHINE_IS_VM)
-+		printk("We are running under VM (64 bit mode)\n");
-+	else if (MACHINE_IS_KVM) {
-+		printk("We are running under KVM (64 bit mode)\n");
-+		add_preferred_console("ttyS", 1, NULL);
-+	} else
-+		printk("We are running native (64 bit mode)\n");
- #endif /* CONFIG_64BIT */
- 
- 	/* Save unparsed command line copy for /proc/cmdline */
-diff --git a/include/asm-s390/setup.h b/include/asm-s390/setup.h
-index a76a6b8..aaf4b51 100644
---- a/include/asm-s390/setup.h
-+++ b/include/asm-s390/setup.h
-@@ -62,6 +62,7 @@ extern unsigned long machine_flags;
- #define MACHINE_IS_VM		(machine_flags & 1)
- #define MACHINE_IS_P390		(machine_flags & 4)
- #define MACHINE_HAS_MVPG	(machine_flags & 16)
-+#define MACHINE_IS_KVM		(machine_flags & 64)
- #define MACHINE_HAS_IDTE	(machine_flags & 128)
- #define MACHINE_HAS_DIAG9C	(machine_flags & 256)
- 
++This Documentation describes the unique ioctl calls to /dev/kvm, the resulting
++kvm-vm file descriptors, and the kvm-vcpu file descriptors that differ from x86.
++
++1. ioctl calls to /dev/kvm
++KVM does support the following ioctls on s390 that are common with other
++architectures and do behave the same:
++KVM_GET_API_VERSION
++KVM_CREATE_VM		(*) see note
++KVM_CHECK_EXTENSION
++KVM_GET_VCPU_MMAP_SIZE
++
++Notes:
++* KVM_CREATE_VM may fail on s390, if the calling process has multiple
++threads and has not called KVM_S390_ENABLE_SIE before.
++
++In addition, on s390 the following architecture specific ioctls are supported:
++ioctl:		KVM_S390_ENABLE_SIE
++args:		none
++see also:	include/linux/kvm.h
++This call causes the kernel to switch on PGSTE in the user page table. This
++operation is needed in order to run a virtual machine, and it requires the
++calling process to be single-threaded. Note that the first call to KVM_CREATE_VM
++will implicitly try to switch on PGSTE if the user process has not called
++KVM_S390_ENABLE_SIE before. User processes that want to launch multiple threads
++before creating a virtual machine have to call KVM_S390_ENABLE_SIE, or will
++observe an error calling KVM_CREATE_VM. Switching on PGSTE is a one-time
++operation, is not reversible, and will persist over the entire lifetime of
++the calling process. It does not have any user-visible effect other than a small
++performance penalty.
++
++2. ioctl calls to the kvm-vm file descriptor
++KVM does support the following ioctls on s390 that are common with other
++architectures and do behave the same:
++KVM_CREATE_VCPU
++KVM_SET_USER_MEMORY_REGION      (*) see note
++KVM_GET_DIRTY_LOG		(**) see note
++
++Notes:
++*  kvm does only allow exactly one memory slot on s390, which has to start
++   at guest absolute address zero and at a user address that is aligned on any
++   page boundary. This hardware "limitation" allows us to have a few unique
++   optimizations. The memory slot doesn't have to be filled
++   with memory actually, it may contain sparse holes. That said, with different
++   user memory layout this does still allow a large flexibility when
++   doing the guest memory setup.
++** KVM_GET_DIRTY_LOG doesn't work properly yet. The user will receive an empty
++log. This ioctl call is only needed for guest migration, and we intend to
++implement this one in the future.
++
++In addition, on s390 the following architecture specific ioctls for the kvm-vm
++file descriptor are supported:
++ioctl:		KVM_S390_INTERRUPT
++args:		struct kvm_s390_interrupt *
++see also:	include/linux/kvm.h
++This ioctl is used to submit a floating interrupt for a virtual machine.
++Floating interrupts may be delivered to any virtual cpu in the configuration.
++Only some interrupt types defined in include/linux/kvm.h make sense when
++submitted as floating interrupts. The following interrupts are not considered
++to be useful as floating interrupts, and a call to inject them will result in
++-EINVAL error code: program interrupts and interprocessor signals. Valid
++floating interrupts are:
++KVM_S390_INT_VIRTIO
++KVM_S390_INT_SERVICE
++
++3. ioctl calls to the kvm-vcpu file descriptor
++KVM does support the following ioctls on s390 that are common with other
++architectures and do behave the same:
++KVM_RUN
++KVM_GET_REGS
++KVM_SET_REGS
++KVM_GET_SREGS
++KVM_SET_SREGS
++KVM_GET_FPU
++KVM_SET_FPU
++
++In addition, on s390 the following architecture specific ioctls for the
++kvm-vcpu file descriptor are supported:
++ioctl:		KVM_S390_INTERRUPT
++args:		struct kvm_s390_interrupt *
++see also:	include/linux/kvm.h
++This ioctl is used to submit an interrupt for a specific virtual cpu.
++Only some interrupt types defined in include/linux/kvm.h make sense when
++submitted for a specific cpu. The following interrupts are not considered
++to be useful, and a call to inject them will result in -EINVAL error code:
++service processor calls and virtio interrupts. Valid interrupt types are:
++KVM_S390_PROGRAM_INT
++KVM_S390_SIGP_STOP
++KVM_S390_RESTART
++KVM_S390_SIGP_SET_PREFIX
++KVM_S390_INT_EMERGENCY
++
++ioctl:		KVM_S390_STORE_STATUS
++args:		unsigned long
++see also:	include/linux/kvm.h
++This ioctl stores the state of the cpu at the guest real address given as
++argument, unless one of the following values defined in include/linux/kvm.h
++is given as arguement:
++KVM_S390_STORE_STATUS_NOADDR - the CPU stores its status to the save area in
++absolute lowcore as defined by the principles of operation
++KVM_S390_STORE_STATUS_PREFIXED - the CPU stores its status to the save area in
++its prefix page just like the dump tool that comes with zipl. This is useful
++to create a system dump for use with lkcdutils or crash.
++
++ioctl:		KVM_S390_SET_INITIAL_PSW
++args:		struct kvm_s390_psw *
++see also:	include/linux/kvm.h
++This ioctl can be used to set the processor status word (psw) of a stopped cpu
++prior to running it with KVM_RUN. Note that this call is not required to modify
++the psw during sie intercepts that fall back to userspace because struct kvm_run
++does contain the psw, and this value is evaluated during reentry of KVM_RUN
++after the intercept exit was recognized.
++
++ioctl:		KVM_S390_INITIAL_RESET
++args:		none
++see also:	include/linux/kvm.h
++This ioctl can be used to perform an initial cpu reset as defined by the
++principles of operation. The target cpu has to be in stopped state.
 -- 
 1.5.5
 
