@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935598AbYDQKAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935665AbYDQKAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935598AbYDQKAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbYDQJdG
+	id S935665AbYDQKAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934390AbYDQJed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:33:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49462 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934308AbYDQJdE (ORCPT
+	Thu, 17 Apr 2008 05:34:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54758 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933417AbYDQJeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:33:04 -0400
-Date: Thu, 17 Apr 2008 11:33:53 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: Self-snapshotting in Linux
-Message-ID: <20080417093353.GC7314@elf.ucw.cz>
-References: <804dabb00804160144j25584229t6673bc182fa13b3@mail.gmail.com> <20080416111412.GB32432@atrey.karlin.mff.cuni.cz> <804dabb00804160821n4872c65fh44f2c07ead67fc49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <804dabb00804160821n4872c65fh44f2c07ead67fc49@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 17 Apr 2008 05:34:31 -0400
+Date: Thu, 17 Apr 2008 02:33:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-Id: <20080417023331.3350e217.akpm@linux-foundation.org>
+In-Reply-To: <20080417.021935.170766914.davem@davemloft.net>
+References: <20080417014054.ea788f1f.akpm@linux-foundation.org>
+	<20080417.014534.258800340.davem@davemloft.net>
+	<20080417015425.312d34c0.akpm@linux-foundation.org>
+	<20080417.021935.170766914.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-04-16 23:21:05, Peter Teoh wrote:
-> Thank you for your reply.
-> 
-> Just some questions...
-> 
-> On 4/16/08, Pavel Machek <pavel@ucw.cz> wrote:
-> > > Sorry if this is a a crazy idea.....just be forewarned....
-> >  >
-> >  > First, I would like to make a reference to VMWare's snapshot (name not
-> >  > important, emphasize the idea) feature - hopefully u are familiar with
-> >  > it.   This is a feature whereby u can freeze the entire OS (kernel +
-> >  > userspace application running) and then later reload itself next time,
-> >  > continuing where it left off, without reboot from ground zero.
-> >  >
-> >  > Next, can I ask, is such a feature useful in Linux?   Ie, able to
-> >  > restart the kernel + userspace application from where u left off, the
-> >  > last time round.    Not JUST the normal suspend/resume feature, but
-> >  > more important able to CHOOSE among the different available images
-> >  > for
-> >  > u to resume on.   Eg, u want to freeze the current 2.6.25-rc6
-> >  > kernel,
-> >
-> >
-> > Could we use english on this list?
-> >
-> >  Anyway, hibernate, cp /dev/root /somewhere/root.1; cp /dev/swap
-> >  /somewhere/swap.1
-> >
-> 
-> The current userspace suspend actually saved the entire state of the
-> memory (which applications are oepne/closed) into the swap area,
-> right?
+On Thu, 17 Apr 2008 02:19:35 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 
-> So the 2nd line above of backingup the swap should allow us to restore
->  back state of the userspace applications later - correct?
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Thu, 17 Apr 2008 01:54:25 -0700
+> 
+> > linux-next ramped up across the 2.6.25-rc window and I wanted to give it
+> > some time to see how it would pan out.
+> ...
+> > I don't know what you mena by this.  But linux-next integrates only the
+> > other subsystem trees and they have rarely caused me integration problems
+> > against git-net.  
 
-Yes, but you need to match memory state with filesystem state...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+There are maybe as many as 100 "subsystem trees" hosted in -mm.  Stuff like
+md, ipmi, tty, elf, keys, procfs, char drivers, nbd, fbdev, aoe, fuse, edac
+and the list goes on.
+
+Once I get -mm based on linux-next, the next step is to somehow feed those
+trees (well, the "stable" parts thereof) back into linux-next while not
+losing track of all the patches.  I haven't a clue how I'll do this ;)
+
+But I haven't thought about it much yet.
