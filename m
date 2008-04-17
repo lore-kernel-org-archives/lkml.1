@@ -1,99 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYDQTt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYDQTug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYDQTt5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYDQTts
+	id S1754302AbYDQTug (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 15:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYDQTu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:49:48 -0400
-Received: from nn7.de ([85.214.94.156]:39891 "EHLO nn7.de"
+	Thu, 17 Apr 2008 15:50:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58749 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbYDQTtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:49:47 -0400
-Subject: Re: [Suspend-devel] 2.6.25-rc6 regression - hang on resume
-	[Bug	10319]
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Stefan Seyfried <seife@suse.de>
-Cc: Romano Giannetti <romanol@upcomillas.es>,
-       "Rafael J\. Wysocki" <rjw@sisk.pl>, suspend-devel@lists.sourceforge.net,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <480794D4.9020503@suse.de>
-References: <pdj7pZVURbL.A.42H.kDW9HB@albercik>
-	 <pdYe6zNQVl.A.fp.nEW9HB@albercik> <1207290689.4511.1.camel@localhost>
-	 <1207552602.26185.13.camel@pern>  <480794D4.9020503@suse.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 17 Apr 2008 21:49:40 +0200
-Message-Id: <1208461780.17078.5.camel@localhost>
+	id S1752429AbYDQTu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 15:50:26 -0400
+Date: Thu, 17 Apr 2008 15:19:10 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
+Message-ID: <20080417191910.GI28235@redhat.com>
+References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415132512.GA22351@Krystal> <1208361084.6395.80.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1208361084.6395.80.camel@twins>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-17 at 20:20 +0200, Stefan Seyfried wrote:
-> Romano Giannetti schrieb:
-> > 
-> > On Fri, 2008-04-04 at 08:31 +0200, Soeren Sonnenburg wrote:
-> >> On Fri, 2008-04-04 at 01:22 +0200, Rafael J. Wysocki wrote:
-> > 
-> >>> Bug-Entry   : http://bugzilla.kernel.org/show_bug.cgi?id=10319
-> >>> Subject             : 2.6.25-rc6 regression - hang on resume
-> >>> Submitter   : Soeren Sonnenburg <kernel@nn7.de>
-> >>> Date                : 2008-03-25 04:44 (10 days old)
-> >> Yes. The machine resumes and display stays black using s2ram -f -p
-> >> (blindly typing reboot etc on keyboard does what is expected).
-> However
-> >> display comes back on 2.6.24.
-> > 
-> > I can add that on my laptop (toshiba U305, Intel 945GM chipset),
-> s2ram
-> > -f -p -m which used to work ok, in X and console, in 2.6.24 stopped
-> to
-> > work (I tested -rc8, but I think it's like that since a long time).
-> > Machine resumes but the screen stays off after that, although
-> machine is
-> > working (exactly as Soeren said). 
+Hi -
+
+On Wed, Apr 16, 2008 at 05:51:24PM +0200, Peter Zijlstra wrote:
+> [...]
+> > > > > What is wrong with a few simple hooks like:
+> > > > >   trace_futex_wait(uaddr, fshares, val, abs_time, bitset);
+> > > > > and then deal with that.
+> [...]
+> > Yes, but then you would have to create new code for each event you want
+> > to trace. In the end, it would increase the icache footprint
+> > considerably and would also make addition of new events cumbersome.
+> > [...]
+
+That, plus the new hand-written function (trace_futex_wait) would
+still need to manage the packaging of the arguments for consumption by
+separately compiled pieces.  It is desirable not to require such
+hand-written functions to *also* be declared in headers for these
+event consumers to compile against.
+
+
+> So I'm not sure what adding all these character strings buy you.
+
+The main thing is type checking by engaging gcc's printf format
+checking logic.  In my original markers proposal, the types were
+encoded into the function name, sort of as in C++:
+
+  trace_mark_nnnnn(futex_wake_called, uaddr, fshares, val, abs_time, bitset);
+
+where each "n" stands for some integral value, and could be chosen
+amongst a small number of other types (say -- "s": char* string, "p":
+void*, "l":64-bit long).  Then, type checking could be done by the
+core compiler for both event producers and consumers.  One downside
+was that the trace_mark_* permutations themselves would have to be
+generated by some shell/perl script [1], and some deemed this probably
+unacceptable.  I'm still not sure...
+
+[1] some systemtap archaeology:
+http://sourceware.org/git/?p=systemtap.git;a=commit;h=b171146c8e8d4fa749b8829c47750750dc19f11c
+
+
+> >﻿+       trace_mark(futex_wake_called, "uaddr:%p fshared:%p nr_wake:%d "
+> > +                       "bitset:%d",
+> > +                       uaddr, fshared, nr_wake, bitset);
 > 
-> can you try if this patch to libx86 (make sure it gets installed and
-> used...)
-> fixes the problem?
-
-for me it won't (core 1 duo), not clear whether his toshiba is a core 2
-duo though supporting that flag...
-
-anyway I tried again with the patch and 2.6.25 and same thing, display
-stays black on console. then i s2ram'd again and - the display came
-back!!
-
-all my further attempts never made it come back... however from inside X
-it works now (radeonhd...).
-
-> Index: libx86-0.99/x86-common.c
-> ===================================================================
-> --- libx86-0.99.orig/x86-common.c
-> +++ libx86-0.99/x86-common.c
-> @@ -232,7 +232,7 @@ int LRMI_common_init(void)
->         }
+> > +       INIT_FUTEX_DEBUG_PROBE(futex_wake_called,
+> > +                       "uaddr:%p fshared:%p nr_wake:%d bitset:%d"),
 > 
->         m = mmap((void *)0xa0000, 0x100000 - 0xa0000,
-> -        PROT_READ | PROT_WRITE,
-> +        PROT_READ | PROT_WRITE | PROT_EXEC,
->          MAP_FIXED | MAP_SHARED, fd_mem, 0xa0000);
-> 
->         if (m == (void *)-1) {
-> 
-> > On the other hand, now the plain "echo mem > /sys/power/state" works
-> > perfectly, from X and console. So some of the magic vbe save/restore
-> of
-> > s2ram mess something up for this card. 
-> 
-> Especially the userspace stuff (VBE_*) should not interfere with the
-> restoring
-> now done inside the kernel drivers.
+> Why the need to duplicate it; that's utter madness.
 
-Hmmhh maybe when the radeon(hd) fb driver enters the kernel it will work
-for me nicely again...
+This second instance is optional and is used as a consistency check
+for the event consumer to hook up exactly to the intended producer.
+The string could be empty.
 
-Soeren
+
+- FChE
