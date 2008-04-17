@@ -1,274 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYDQDcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYDQDcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYDQDcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 23:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYDQDcG
+	id S1754289AbYDQDcu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 23:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYDQDcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 23:32:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50976 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752177AbYDQDcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 23:32:04 -0400
-Date: Wed, 16 Apr 2008 20:32:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.25
-Message-ID: <alpine.LFD.1.00.0804162009080.2879@woody.linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Apr 2008 23:32:35 -0400
+Received: from mga02.intel.com ([134.134.136.20]:8931 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756875AbYDQDc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 23:32:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,668,1199692800"; 
+   d="scan'208";a="271402824"
+Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+In-Reply-To: <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
+References: <1207723262.18313.37.camel@caritas-dev.intel.com>
+	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
+	 <1208333949.4322.5.camel@caritas-dev.intel.com>
+	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
+Content-Type: multipart/mixed; boundary="=-Y6pv7NZ+Jaj27uINcS5i"
+Date: Thu, 17 Apr 2008 11:36:43 +0800
+Message-Id: <1208403403.4322.27.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 17 Apr 2008 03:32:22.0971 (UTC) FILETIME=[A61110B0:01C8A03B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-It's been long promised, but there it is now. Special thanks to Ingo who 
-found and fixed a nasty-looking regression that turned out to not be a 
-regression at all, but an old bug that just had not been triggering as 
-reliably before.
-
-That said, that was just the last particular regression fix I was holding 
-things up for, and it's not like there weren't a lot of other fixes too, 
-they just didn't end up being the final things that triggered my 
-particular worries.
-
-The full changelog from 2.6.24 is 7.5M, with a 12MB compressed patch. Tons 
-and tons has changed, but if you've been following the -rc releases, 
-you'll already know about the big things. The changes from the last rc 
-(-rc9) are fairly small and mostly pretty trivial, and the shortlog is 
-appended.
-
-So it's mostly one-liners, with some updates to drivers (net and usb) and 
-to networking that are a bit larger (although a number of the driver 
-updates are things like just new ID's etc).
-
-For those of you who haven't followed -rc's, and want the more readable 
-overview of what has changed since 2.6.24, I'd suggest the usual sites, 
-notably http://kernelnewbies.org/.
-
-And a reminder for git users: while the _full_ changelogs are huge and 
-unwieldly and you easily lose sight of the big picture from just bring 
-overwhelmed by the details, if you're interested in some particular 
-subsystem, using "gitk v2.6.24.. <path-limiter>" is a good way to see what 
-has changed in that particular area.
-
-				Linus
-
----
-Adrian Bunk (3):
-      [libata] make ali_atapi_dma static
-      sh64: add missing #include <asm/fpu.h>'s
-      avr32 mustn't select HAVE_IDE
-
-Alexey Dobriyan (1):
-      fbdev: fix /proc/fb oops after module removal
-
-Alexey Korolev (1):
-      JFFS2 Fix of panics caused by wrong condition for hole frag creation in write_begin
-
-Andrew Morton (2):
-      sh: arch/sh/kernel/traps_32.c needs asm/fpu.h
-      sh: export empty_zero_page
-
-Atsushi Nemoto (2):
-      macb: Call phy_disconnect on removing
-      macb: Use semicolon instead of comma for statement
-
-Ayaz Abdulla (1):
-      forcedeth: mac address fix
-
-Ben Dooks (3):
-      spi: spi_s3c24xx driver must init completion
-      spi: spi_s3c24xx must initialize bus_num
-      spi: spi_s3c24xx must initialize num_chipselect
-
-Ben Hutchings (1):
-      [NET]: Fix kernel-doc for skb_segment
-
-Carlos Corbacho (1):
-      rfkill: Fix device type check when toggling states
-
-Chuck Ebbert (1):
-      acpi: bus: check once more for an empty list after locking it
-
-David Howells (1):
-      FRV: Correctly determine the address of an illegal instruction
-
-David S. Miller (1):
-      [IPV6]: Fix ipv6 address fetching in raw6_icmp_error().
-
-Dmitri Vorobiev (1):
-      Fix typos in Documentation/filesystems/seq_file.txt
-
-Eric Dumazet (1):
-      [SOCK] sk_stamp: should be initialized to ktime_set(-1L, 0)
-
-Greg Kroah-Hartman (1):
-      USB: remove broken usb-serial num_endpoints check
-
-Gui Jianfeng (1):
-      [SCTP]: Fix protocol violation when receiving an error lenght INIT-ACK
-
-Herton Ronaldo Krzesinski (1):
-      rtl8187: Add missing priv->vif assignments
-
-Ingo Molnar (2):
-      revert "sched: fix fair sleepers"
-      mm: sparsemem memory_present() fix
-
-Ivo van Doorn (2):
-      Add rfkill to MAINTAINERS file
-      Update rt2x00 MAINTAINERS entry
-
-J. Bruce Fields (1):
-      locks: fix possible infinite loop in fcntl(F_SETLKW) over nfs
-
-James Cameron (1):
-      USB: Obscure Maxon BP3-USB Device Support 16d8:6280 for option driver
-
-Jan Kara (1):
-      vfs: fix possible deadlock in ext2, ext3, ext4 when using xattrs
-
-Jarek Poplawski (2):
-      [NET_SCHED] cls_u32: refcounting fix for u32_delete()
-      [NET_SCHED] sch_api: fix qdisc_tree_decrease_qlen() loop
-
-Jeff Garzik (1):
-      [libata] sata_svw: fix reversed port count
-
-Jens Axboe (2):
-      io context: increment task attachment count in ioc_task_link()
-      block: update git url for blktrace
-
-Joakim Tjernlund (1):
-      ucc_geth: fix non-functional fixed phy support
-
-Johannes Berg (1):
-      mac80211: remove message on receiving unexpected unencrypted frames
-
-KOSAKI Motohiro (1):
-      add "Isolate" migratetype name to /proc/pagetypeinfo
-
-Kay Sievers (5):
-      mmc: fix platform driver hotplug/coldplug
-      leds: fix platform driver hotplug/coldplug
-      misc: fix platform driver hotplug/coldplug
-      pcmcia: fix platform driver hotplug/coldplug
-      serial: fix platform driver hotplug/coldplug
-
-Krzysztof Halasa (1):
-      Mark generic HDLC + PPP as broken.
-
-Krzysztof Helt (1):
-      acpi thermal trip points increased to 12
-
-Kyle McMartin (1):
-      [PARISC] fix signal trampoline cache flushing
-
-Laurent Pinchart (1):
-      fs_enet: Don't call NAPI functions when NAPI is not used.
-
-Li Zefan (1):
-      memcg: fix oops in oom handling
-
-Linus Torvalds (2):
-      Fix locking bug in "acquire_console_semaphore_for_printk()"
-      Linux 2.6.25
-
-Manuel Lauss (1):
-      sh: fix compressed kernel build
-
-Masakazu Mokuno (1):
-      PS3: gelic: fix the oops on the broken IE returned from the hypervisor
-
-Matthias Urlichs (1):
-      USB: option.c: add more device IDs
-
-Michael Buesch (2):
-      ssb: Fix usage of struct device used for DMAing
-      b43legacy: Fix usage of struct device used for DMAing
-
-Michael Ellerman (1):
-      netconsole: only set CON_PRINTBUFFER if the user specifies a netconsole
-
-Nishanth Aravamudan (1):
-      Documentation: correct overcommit caveat in hugetlbpage.txt
-
-Oliver Hartkopp (1):
-      [CAN]: Update documentation of struct sockaddr_can
-
-Patrick McHardy (3):
-      [DCCP]: Fix skb->cb conflicts with IP
-      [NET]: Return more appropriate error from eth_validate_addr().
-      [BRIDGE]: Fix crash in __ip_route_output_key with bridge netfilter
-
-Paul Bolle (4):
-      [ISDN]: Do not validate ISDN net device address prior to interface-up
-      MAINTAINERS: isdn4linux@listserv.isdn4linux.de is subscribers-only
-      AFS: Do not describe debug parameters with their value
-      it821x: do not describe noraid parameter with its value
-
-Pavel Emelyanov (3):
-      [AX25]: Potential ax25_uid_assoc-s leaks on module unload.
-      [SCTP]: IPv4 vs IPv6 addresses mess in sctp_inet[6]addr_event.
-      [NETFILTER]: ipt_CLUSTERIP: fix race between clusterip_config_find_get and _entry_put
-
-Reinette Chatre (1):
-      MAINTAINERS: move to generic repository for iwlwifi
-
-Rusty Russell (2):
-      net: make struct tun_struct private to tun.c
-      net: check for underlength tap writes
-
-Sergei Shtylyov (4):
-      tg3: fix MMIO for PPC 44x platforms
-      Au1200: kill IDE driver function prototypes
-      Au1200: IDE driver build fix
-      Pb1200/DBAu1200: fix bad IDE resource size
-
-Sonic Zhang (1):
-      smc91x driver: fix bug: print warning only in interrupt mode
-
-Stefano Brivio (2):
-      b43legacy: fix initvals loading on bcm4303
-      b43legacy: fix DMA mapping leakage
-
-Stephen Hemminger (2):
-      sky2: missing chip name for Yukon Supreme
-      sc92031: sysfs link missing
-
-Thomas Klein (1):
-      ehea: Fix DLPAR memory add support
-
-Vitaliy Gusev (2):
-      [TCP]: Fix never pruned tcp out-of-order queue.
-      [TCP]: Add return value indication to tcp_prune_ofo_queue().
-
-Vlad Yasevich (1):
-      [SCTP]: Fix compiler warning about const qualifiers
-
-WANG Cong (1):
-      uml: compile error fix
-
-Wei Yongjun (1):
-      [SCTP]: Add check for hmac_algo parameter in sctp_verify_param()
-
-YOSHIFUJI Hideaki (4):
-      [IPV6]: IPv6 extension header structures need to be packed.
-      [IPV6]: Use appropriate sock tclass setting for routing lookup.
-      [IPV6] ADDRCONF: Ensure disabling multicast RS even if privacy extensions are disabled.
-      [IPV6] ADDRCONF: Don't generate temporary address for ip6-ip6 interface.
-
-Zhao Yakui (1):
-      rtc: fix the error in the function of cmos_set_alarm
-
-fangxiaozhi (1):
-      USB: support more Huawei data card product IDs
-
-tang kai (1):
-      USB: option: Add new vendor ID and device ID for AMOI HSDPA modem
-
-yakui.zhao@intel.com (1):
-      acpi: unneccessary to scan the PCI bus already scanned
-
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+Hi, Sebastian,
+
+The files attached is the separated patches, from step1 to step 7. Thank
+you very much for your help.
+
+Best Regards,
+Huang Ying
+
+On Wed, 2008-04-16 at 20:40 +0200, Sebastian Siewior wrote:
+> cut Alexander Kjeldaas <astor@fast.no> from CC coz his mails bounce.
+> 
+> * Huang, Ying | 2008-04-16 16:19:09 [+0800]:
+> 
+> >Can you help me to test these patches
+> >to find out the reason for degradation on AMD CPU.
+> Sure. 
+> 
+> >> >--- a/include/crypto/aes.h
+> >> >+++ b/include/crypto/aes.h
+> >> >@@ -19,6 +19,7 @@
+> >> > 
+> >> > struct crypto_aes_ctx {
+> >> > 	u32 key_length;
+> >> >+	u32 _pad1;
+> >> 
+> >> Why is this pad required? Do you want special alignment of the keys?
+> >
+> >Because the key is loaded in 64bit in this patch, I want to align the
+> >key with 64bit address.
+> 
+> Than this won't work all the time. To make it bulletproof
+> - set .cra_alignmask in the glue code properly
+> - use the attribute aligned thing
+> - retrieve your private struct via crypto_tfm_ctx_aligned()
+> 
+> You might want to take a look on padlock-aes.c. The same thing is done
+> there but instead of crypto_tfm_ctx_aligned() a private function is
+> used (to let the compiler optimize most of the code away). Depending on
+> Herbert's mood you might get away with this as well (what would be
+> probably the case since you might prefer to do it asm) :)
+> 
+> >> > 	u32 key_enc[AES_MAX_KEYLENGTH_U32];
+> >> > 	u32 key_dec[AES_MAX_KEYLENGTH_U32];
+> >> > };
+> >> >
+> >
+> >Best Regards,
+> >Huang Ying
+> >
+> 
+> Sebastian
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step1.patch
+Content-Type: text/x-vhdl; name=step1.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgIDExICsrKysrKysr
+LS0tDQogMSBmaWxlIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCg0K
+LS0tIGEvYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMNCisrKyBiL2FyY2gveDg2
+L2NyeXB0by9hZXMteDg2XzY0LWFzbV82NC5TDQpAQCAtNDksMTMgKzQ5LDE3IEBADQogI2RlZmlu
+ZSBSOQklcjkNCiAjZGVmaW5lIFIxMAklcjEwDQogI2RlZmluZSBSMTEJJXIxMQ0KKyNkZWZpbmUg
+UjEyCSVyMTINCisjZGVmaW5lIFIxNQklcjE1DQorI2RlZmluZSBSMTYJJXJzcA0KIA0KICNkZWZp
+bmUgcHJvbG9ndWUoRlVOQyxLRVksQjEyOCxCMTkyLHIxLHIyLHIzLHI0LHI1LHI2LHI3LHI4LHI5
+LHIxMCxyMTEpIFwNCiAJLmdsb2JhbAlGVU5DOwkJCVwNCiAJLnR5cGUJRlVOQyxAZnVuY3Rpb247
+CQlcDQogCS5hbGlnbgk4OwkJCVwNCi1GVU5DOgltb3ZxCXIxLHIyOwkJCVwNCi0JbW92cQlyMyxy
+NDsJCQlcDQorRlVOQzoJc3VicQkkOCwgUjE2OwkJXA0KKwltb3ZxCXIzLCByNDsJCQlcDQorCW1v
+dnEJcjEsIChSMTYpOwkJXA0KIAlsZWFxCUJBU0UrS0VZKzQ4KzQocjgpLHI5OwlcDQogCW1vdnEJ
+cjEwLHIxMTsJCVwNCiAJbW92bAkocjcpLHI1ICMjIEU7CQlcDQpAQCAtNzQsNyArNzgsOCBAQCBG
+VU5DOgltb3ZxCXIxLHIyOwkJCVwNCiAJbGVhcQkzMihyOSkscjk7DQogDQogI2RlZmluZSBlcGls
+b2d1ZShyMSxyMixyMyxyNCxyNSxyNixyNyxyOCxyOSkgXA0KLQltb3ZxCXIxLHIyOwkJCVwNCisJ
+bW92cQkoUjE2KSxyMjsJCVwNCisJYWRkcQkkOCxSMTY7CQkJXA0KIAltb3ZxCXIzLHI0OwkJCVwN
+CiAJbW92bAlyNSAjIyBFLChyOSk7CQlcDQogCW1vdmwJcjYgIyMgRSw0KHI5KTsJCVwNCg==
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step2.patch
+Content-Type: text/x-vhdl; name=step2.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgICA4ICsrKystLS0t
+DQogMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCg0KLS0t
+IGEvYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMNCisrKyBiL2FyY2gveDg2L2Ny
+eXB0by9hZXMteDg2XzY0LWFzbV82NC5TDQpAQCAtOTAsMTMgKzkwLDEzIEBAIEZVTkM6CXN1YnEJ
+JDgsIFIxNjsJCVwNCiAjZGVmaW5lIHJvdW5kKFRBQixPRkZTRVQscjEscjIscjMscjQscjUscjYs
+cjcscjgscmEscmIscmMscmQpIFwNCiAJbW92emJsCXIyICMjIEgscjUgIyMgRTsJXA0KIAltb3Z6
+YmwJcjIgIyMgTCxyNiAjIyBFOwlcDQorCW1vdnEJcjQsUjg7CQkJXA0KKwlzaHJsCSQxNixyNCAj
+IyBFOwkJXA0KIAltb3ZsCVRBQisxMDI0KCxyNSw0KSxyNSAjIyBFO1wNCi0JbW92dwlyNCAjIyBY
+LHIyICMjIFg7CVwNCiAJbW92bAlUQUIoLHI2LDQpLHI2ICMjIEU7CVwNCi0Jcm9sbAkkMTYscjIg
+IyMgRTsJCVwNCi0Jc2hybAkkMTYscjQgIyMgRTsJCVwNCiAJbW92emJsCXI0ICMjIEgscjcgIyMg
+RTsJXA0KIAltb3Z6YmwJcjQgIyMgTCxyNCAjIyBFOwlcDQorCXNocmwJJDE2LHIyICMjIEU7CQlc
+DQogCXhvcmwJT0ZGU0VUKHI4KSxyYSAjIyBFOwlcDQogCXhvcmwJT0ZGU0VUKzQocjgpLHJiICMj
+IEU7CVwNCiAJeG9ybAlUQUIrMzA3MigscjcsNCkscjUgIyMgRTtcDQpAQCAtMTIzLDcgKzEyMyw3
+IEBAIEZVTkM6CXN1YnEJJDgsIFIxNjsJCVwNCiAJeG9ybAlUQUIoLHIxLDQpLHIzICMjIEU7CVwN
+CiAJbW92emJsCXIyICMjIEgscjEgIyMgRTsJXA0KIAltb3Z6YmwJcjIgIyMgTCxyNyAjIyBFOwlc
+DQotCXNocmwJJDE2LHIyICMjIEU7CQlcDQorCW1vdnEJUjgscjI7CQkJXA0KIAl4b3JsCVRBQisz
+MDcyKCxyMSw0KSxyMyAjIyBFO1wNCiAJeG9ybAlUQUIrMjA0OCgscjcsNCkscjQgIyMgRTtcDQog
+CW1vdnpibAlyMiAjIyBILHIxICMjIEU7CVwNCg==
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step3.patch
+Content-Type: text/x-vhdl; name=step3.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgIDEyICsrKysrKy0t
+LS0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pDQoN
+Ci0tLSBhL2FyY2gveDg2L2NyeXB0by9hZXMteDg2XzY0LWFzbV82NC5TDQorKysgYi9hcmNoL3g4
+Ni9jcnlwdG8vYWVzLXg4Nl82NC1hc21fNjQuUw0KQEAgLTU3LDEzICs1NywxMyBAQA0KIAkuZ2xv
+YmFsCUZVTkM7CQkJXA0KIAkudHlwZQlGVU5DLEBmdW5jdGlvbjsJCVwNCiAJLmFsaWduCTg7CQkJ
+XA0KLUZVTkM6CXN1YnEJJDgsIFIxNjsJCVwNCi0JbW92cQlyMywgcjQ7CQkJXA0KLQltb3ZxCXIx
+LCAoUjE2KTsJCVwNCitGVU5DOglzdWJxCSQxNiwgUjE2OwkJXA0KKwltb3ZsCShyNykscjUgIyMg
+RTsJCVwNCiAJbGVhcQlCQVNFK0tFWSs0OCs0KHI4KSxyOTsJXA0KIAltb3ZxCXIxMCxyMTE7CQlc
+DQotCW1vdmwJKHI3KSxyNSAjIyBFOwkJXA0KKwltb3ZxCXIxLCAoUjE2KTsJCVwNCiAJbW92bAk0
+KHI3KSxyMSAjIyBFOwkJXA0KKwltb3ZxCXIzLCA4KFIxNik7CQlcDQogCW1vdmwJOChyNykscjYg
+IyMgRTsJCVwNCiAJbW92bAkxMihyNykscjcgIyMgRTsJCVwNCiAJbW92bAlCQVNFKzAocjgpLHIx
+MCAjIyBFOwlcDQpAQCAtNzksMTEgKzc5LDExIEBAIEZVTkM6CXN1YnEJJDgsIFIxNjsJCVwNCiAN
+CiAjZGVmaW5lIGVwaWxvZ3VlKHIxLHIyLHIzLHI0LHI1LHI2LHI3LHI4LHI5KSBcDQogCW1vdnEJ
+KFIxNikscjI7CQlcDQotCWFkZHEJJDgsUjE2OwkJCVwNCi0JbW92cQlyMyxyNDsJCQlcDQogCW1v
+dmwJcjUgIyMgRSwocjkpOwkJXA0KKwltb3ZxCTgoUjE2KSxyNDsJCVwNCiAJbW92bAlyNiAjIyBF
+LDQocjkpOwkJXA0KIAltb3ZsCXI3ICMjIEUsOChyOSk7CQlcDQorCWFkZHEJJDE2LFIxNjsJCVwN
+CiAJbW92bAlyOCAjIyBFLDEyKHI5KTsJCVwNCiAJcmV0Ow0KIA0K
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step4.patch
+Content-Type: text/x-vhdl; name=step4.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgIDEwICsrKysrLS0t
+LS0NCiAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQ0KDQot
+LS0gYS9hcmNoL3g4Ni9jcnlwdG8vYWVzLXg4Nl82NC1hc21fNjQuUw0KKysrIGIvYXJjaC94ODYv
+Y3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMNCkBAIC05OSwxNCArOTksMTQgQEAgRlVOQzoJc3Vi
+cQkkMTYsIFIxNjsJCVwNCiAJc2hybAkkMTYscjIgIyMgRTsJCVwNCiAJeG9ybAlPRkZTRVQocjgp
+LHJhICMjIEU7CVwNCiAJeG9ybAlPRkZTRVQrNChyOCkscmIgIyMgRTsJXA0KKwltb3ZxCXIzLFI5
+OwkJCVwNCiAJeG9ybAlUQUIrMzA3MigscjcsNCkscjUgIyMgRTtcDQogCXhvcmwJVEFCKzIwNDgo
+LHI0LDQpLHI2ICMjIEU7XA0KLQltb3Z6YmwJcjEgIyMgTCxyNyAjIyBFOwlcDQogCW1vdnpibAly
+MSAjIyBILHI0ICMjIEU7CVwNCi0JbW92bAlUQUIrMTAyNCgscjQsNCkscjQgIyMgRTtcDQotCW1v
+dncJcjMgIyMgWCxyMSAjIyBYOwlcDQotCXJvbGwJJDE2LHIxICMjIEU7CQlcDQorCW1vdnpibAly
+MSAjIyBMLHI3ICMjIEU7CVwNCiAJc2hybAkkMTYscjMgIyMgRTsJCVwNCisJc2hybAkkMTYscjEg
+IyMgRTsJCVwNCisJbW92bAlUQUIrMTAyNCgscjQsNCkscjQgIyMgRTtcDQogCXhvcmwJVEFCKCxy
+Nyw0KSxyNSAjIyBFOwlcDQogCW1vdnpibAlyMyAjIyBILHI3ICMjIEU7CVwNCiAJbW92emJsCXIz
+ICMjIEwscjMgIyMgRTsJXA0KQEAgLTExNCw3ICsxMTQsNyBAQCBGVU5DOglzdWJxCSQxNiwgUjE2
+OwkJXA0KIAl4b3JsCVRBQisyMDQ4KCxyMyw0KSxyNSAjIyBFO1wNCiAJbW92emJsCXIxICMjIEgs
+cjcgIyMgRTsJXA0KIAltb3Z6YmwJcjEgIyMgTCxyMyAjIyBFOwlcDQotCXNocmwJJDE2LHIxICMj
+IEU7CQlcDQorCW1vdnEJUjkscjE7CQkJXA0KIAl4b3JsCVRBQiszMDcyKCxyNyw0KSxyNiAjIyBF
+O1wNCiAJbW92bAlUQUIrMjA0OCgscjMsNCkscjMgIyMgRTtcDQogCW1vdnpibAlyMSAjIyBILHI3
+ICMjIEU7CVwNCg==
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step5.patch
+Content-Type: text/x-vhdl; name=step5.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgICA4ICsrKysrLS0t
+DQogaW5jbHVkZS9jcnlwdG8vYWVzLmggICAgICAgICAgICAgICAgfCAgICAxICsNCiAyIGZpbGVz
+IGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCg0KLS0tIGEvYXJjaC94
+ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMNCisrKyBiL2FyY2gveDg2L2NyeXB0by9hZXMt
+eDg2XzY0LWFzbV82NC5TDQpAQCAtNTcsMTQgKzU3LDE1IEBADQogCS5nbG9iYWwJRlVOQzsJCQlc
+DQogCS50eXBlCUZVTkMsQGZ1bmN0aW9uOwkJXA0KIAkuYWxpZ24JODsJCQlcDQotRlVOQzoJc3Vi
+cQkkMTYsIFIxNjsJCVwNCitGVU5DOglzdWJxCSQyNCwgUjE2OwkJXA0KIAltb3ZsCShyNykscjUg
+IyMgRTsJCVwNCi0JbGVhcQlCQVNFK0tFWSs0OCs0KHI4KSxyOTsJXA0KKwlsZWFxCUJBU0UrS0VZ
+KzQ4KzgocjgpLHI5OwlcDQogCW1vdnEJcjEwLHIxMTsJCVwNCiAJbW92cQlyMSwgKFIxNik7CQlc
+DQogCW1vdmwJNChyNykscjEgIyMgRTsJCVwNCiAJbW92cQlyMywgOChSMTYpOwkJXA0KIAltb3Zs
+CTgocjcpLHI2ICMjIEU7CQlcDQorCW1vdnEJUjEyLCAxNihSMTYpOwkJXA0KIAltb3ZsCTEyKHI3
+KSxyNyAjIyBFOwkJXA0KIAltb3ZsCUJBU0UrMChyOCkscjEwICMjIEU7CVwNCiAJeG9ybAktNDgo
+cjkpLHI1ICMjIEU7CVwNCkBAIC04Miw4ICs4Myw5IEBAIEZVTkM6CXN1YnEJJDE2LCBSMTY7CQlc
+DQogCW1vdmwJcjUgIyMgRSwocjkpOwkJXA0KIAltb3ZxCTgoUjE2KSxyNDsJCVwNCiAJbW92bAly
+NiAjIyBFLDQocjkpOwkJXA0KKwltb3ZxCTE2KFIxNiksUjEyOwkJXA0KIAltb3ZsCXI3ICMjIEUs
+OChyOSk7CQlcDQotCWFkZHEJJDE2LFIxNjsJCVwNCisJYWRkcQkkMjQsUjE2OwkJXA0KIAltb3Zs
+CXI4ICMjIEUsMTIocjkpOwkJXA0KIAlyZXQ7DQogDQotLS0gYS9pbmNsdWRlL2NyeXB0by9hZXMu
+aA0KKysrIGIvaW5jbHVkZS9jcnlwdG8vYWVzLmgNCkBAIC0xOSw2ICsxOSw3IEBADQogDQogc3Ry
+dWN0IGNyeXB0b19hZXNfY3R4IHsNCiAJdTMyIGtleV9sZW5ndGg7DQorCXUzMiBfcGFkMTsNCiAJ
+dTMyIGtleV9lbmNbQUVTX01BWF9LRVlMRU5HVEhfVTMyXTsNCiAJdTMyIGtleV9kZWNbQUVTX01B
+WF9LRVlMRU5HVEhfVTMyXTsNCiB9Ow0K
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step6.patch
+Content-Type: text/x-vhdl; name=step6.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgICA2ICsrKystLQ0K
+IDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQoNCi0tLSBh
+L2FyY2gveDg2L2NyeXB0by9hZXMteDg2XzY0LWFzbV82NC5TDQorKysgYi9hcmNoL3g4Ni9jcnlw
+dG8vYWVzLXg4Nl82NC1hc21fNjQuUw0KQEAgLTk4LDkgKzk4LDggQEAgRlVOQzoJc3VicQkkMjQs
+IFIxNjsJCVwNCiAJbW92bAlUQUIoLHI2LDQpLHI2ICMjIEU7CVwNCiAJbW92emJsCXI0ICMjIEgs
+cjcgIyMgRTsJXA0KIAltb3Z6YmwJcjQgIyMgTCxyNCAjIyBFOwlcDQorCW1vdnEJT0ZGU0VUKHI4
+KSxSMTI7CQlcDQogCXNocmwJJDE2LHIyICMjIEU7CQlcDQotCXhvcmwJT0ZGU0VUKHI4KSxyYSAj
+IyBFOwlcDQotCXhvcmwJT0ZGU0VUKzQocjgpLHJiICMjIEU7CVwNCiAJbW92cQlyMyxSOTsJCQlc
+DQogCXhvcmwJVEFCKzMwNzIoLHI3LDQpLHI1ICMjIEU7XA0KIAl4b3JsCVRBQisyMDQ4KCxyNCw0
+KSxyNiAjIyBFO1wNCkBAIC0xMTYsNyArMTE1LDkgQEAgRlVOQzoJc3VicQkkMjQsIFIxNjsJCVwN
+CiAJeG9ybAlUQUIrMjA0OCgscjMsNCkscjUgIyMgRTtcDQogCW1vdnpibAlyMSAjIyBILHI3ICMj
+IEU7CVwNCiAJbW92emJsCXIxICMjIEwscjMgIyMgRTsJXA0KKwl4b3JxCVIxMixyYTsJCQlcDQog
+CW1vdnEJUjkscjE7CQkJXA0KKwlzaHJxCSQzMixSMTI7CQlcDQogCXhvcmwJVEFCKzMwNzIoLHI3
+LDQpLHI2ICMjIEU7XA0KIAltb3ZsCVRBQisyMDQ4KCxyMyw0KSxyMyAjIyBFO1wNCiAJbW92emJs
+CXIxICMjIEgscjcgIyMgRTsJXA0KQEAgLTEyNiw2ICsxMjcsNyBAQCBGVU5DOglzdWJxCSQyNCwg
+UjE2OwkJXA0KIAltb3Z6YmwJcjIgIyMgSCxyMSAjIyBFOwlcDQogCW1vdnpibAlyMiAjIyBMLHI3
+ICMjIEU7CVwNCiAJbW92cQlSOCxyMjsJCQlcDQorCXhvcnEJUjEyLHJiOwkJCVwNCiAJeG9ybAlU
+QUIrMzA3MigscjEsNCkscjMgIyMgRTtcDQogCXhvcmwJVEFCKzIwNDgoLHI3LDQpLHI0ICMjIEU7
+XA0KIAltb3Z6YmwJcjIgIyMgSCxyMSAjIyBFOwlcDQo=
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i
+Content-Disposition: attachment; filename=step7.patch
+Content-Type: text/x-vhdl; name=step7.patch; charset=utf-8
+Content-Transfer-Encoding: base64
+
+LS0tDQogYXJjaC94ODYvY3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMgfCAgIDEwICsrKysrKy0t
+LS0NCiAxIGZpbGUgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KDQot
+LS0gYS9hcmNoL3g4Ni9jcnlwdG8vYWVzLXg4Nl82NC1hc21fNjQuUw0KKysrIGIvYXJjaC94ODYv
+Y3J5cHRvL2Flcy14ODZfNjQtYXNtXzY0LlMNCkBAIC0xMTcsNiArMTE3LDcgQEAgRlVOQzoJc3Vi
+cQkkMjQsIFIxNjsJCVwNCiAJbW92emJsCXIxICMjIEwscjMgIyMgRTsJXA0KIAl4b3JxCVIxMixy
+YTsJCQlcDQogCW1vdnEJUjkscjE7CQkJXA0KKwltb3ZxCU9GRlNFVCs4KHI4KSxSOTsJXA0KIAlz
+aHJxCSQzMixSMTI7CQlcDQogCXhvcmwJVEFCKzMwNzIoLHI3LDQpLHI2ICMjIEU7XA0KIAltb3Zs
+CVRBQisyMDQ4KCxyMyw0KSxyMyAjIyBFO1wNCkBAIC0xMjYsMTYgKzEyNywxNyBAQCBGVU5DOglz
+dWJxCSQyNCwgUjE2OwkJXA0KIAl4b3JsCVRBQigscjEsNCkscjMgIyMgRTsJXA0KIAltb3Z6YmwJ
+cjIgIyMgSCxyMSAjIyBFOwlcDQogCW1vdnpibAlyMiAjIyBMLHI3ICMjIEU7CVwNCisJeG9ycQlS
+OSxyYzsJCQlcDQogCW1vdnEJUjgscjI7CQkJXA0KKwlzaHJxCSQzMixSOTsJCQlcDQogCXhvcnEJ
+UjEyLHJiOwkJCVwNCiAJeG9ybAlUQUIrMzA3MigscjEsNCkscjMgIyMgRTtcDQogCXhvcmwJVEFC
+KzIwNDgoLHI3LDQpLHI0ICMjIEU7XA0KIAltb3Z6YmwJcjIgIyMgSCxyMSAjIyBFOwlcDQorCXhv
+cnEJUjkscmQ7CQkJXA0KIAltb3Z6YmwJcjIgIyMgTCxyMiAjIyBFOwlcDQotCXhvcmwJT0ZGU0VU
+KzgocjgpLHJjICMjIEU7CVwNCi0JeG9ybAlPRkZTRVQrMTIocjgpLHJkICMjIEU7CVwNCi0JeG9y
+bAlUQUIrMTAyNCgscjEsNCkscjMgIyMgRTtcDQotCXhvcmwJVEFCKCxyMiw0KSxyNCAjIyBFOw0K
+Kwl4b3JsCVRBQigscjIsNCkscjQgIyMgRTsJXA0KKwl4b3JsCVRBQisxMDI0KCxyMSw0KSxyMyAj
+IyBFOw0KIA0KICNkZWZpbmUgbW92ZV9yZWdzKHIxLHIyLHIzLHI0KSBcDQogCW1vdmwJcjMgIyMg
+RSxyMSAjIyBFOwlcDQo=
+
+
+--=-Y6pv7NZ+Jaj27uINcS5i--
