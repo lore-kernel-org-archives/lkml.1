@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbYDQNwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbYDQNzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759094AbYDQNwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 09:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYDQNwd
+	id S1761282AbYDQNzG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 09:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYDQNy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 09:52:33 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:50334 "EHLO fieldses.org"
+	Thu, 17 Apr 2008 09:54:56 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:28338 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYDQNwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 09:52:31 -0400
-Date: Thu, 17 Apr 2008 09:50:13 -0400
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sverre@rabbelier.nl,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org, jmorris@namei.org,
-       viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
-       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
-       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
-       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
-       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
-Subject: Re: Reporting bugs and bisection
-Message-ID: <20080417135013.GA2017@fieldses.org>
-References: <20080414043939.GA6862@1wt.eu> <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416120247.c665859c.akpm@linux-foundation.org> <20080416195503.GR1677@cs181133002.pp.htv.fi>
+	id S1754076AbYDQNyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 09:54:55 -0400
+Date: Thu, 17 Apr 2008 15:54:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Aaron Carroll <aaronc@cse.unsw.edu.au>
+Cc: Fabio Checconi <fchecconi@gmail.com>,
+       Paolo Valente <paolo.valente@unimore.it>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417135448.GF12774@kernel.dk>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <48072549.7040104@cse.unsw.edu.au> <20080417111407.GS62286@gandalf.sssup.it> <48073F15.7070502@cse.unsw.edu.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080416195503.GR1677@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <48073F15.7070502@cse.unsw.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 10:55:03PM +0300, Adrian Bunk wrote:
-> On Wed, Apr 16, 2008 at 12:02:47PM -0700, Andrew Morton wrote:
-> > On Wed, 16 Apr 2008 16:26:34 +0300
-> > Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > On Wed, Apr 16, 2008 at 02:15:22PM +0200, Sverre Rabbelier wrote:
-> > > > I'm not subscribed to the kernel mailing list, so please include me in
-> > > > the cc if you don't reply to the git list (which I am subscribed to).
-> > > > 
-> > > > Git is participating in Google Summer of Code this year and I've
-> > > > proposed to write a 'git statistics' command. This command would allow
-> > > > the user to gather data about a repository, ranging from "how active
-> > > > is dev x" to "what did x work on in the last 3 weeks". It's main
-> > > > feature however, would be an algorithm that ranks commits as being
-> > > > either 'buggy', 'bugfix' or 'enhancement'. (There are several clues
-> > > > that can aid in determining this, a commit msg along the lines of
-> > > > "fixes ..." being the most obvious.)
-> > > >...
-> > 
-> > Sounds like an interesting project.
-> > 
-> > > At least with the data we have currently in git it's impossible to 
-> > > figure that out automatically.
-> > > 
-> > > E.g. if you look at commit f743d04dcfbeda7439b78802d35305781999aa11 
-> > > (ide/legacy/q40ide.c: add MODULE_LICENSE), how could you determine 
-> > > automatically that it is a bugfix, and the commit that introduced
-> > > the bug?
-> > > 
-> > > You can always get some data, but if you want to get usable statistics 
-> > > you need explicit tags in the commits, not some algorithm that tries 
-> > > to guess.
-> > 
-> > Well yes.  One outcome of the project would be to tell us what changes we'd
-> > need to make to our processes to make such data gathering more effective.
-> > 
-> > Of course, we may not actually implement such changes.  That would depend
-> > upon how useful the output is to us.
+On Thu, Apr 17 2008, Aaron Carroll wrote:
+> Fabio Checconi wrote:
+> >>From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+> >>How do you figure that?  This is a situation where time-slices work 
+> >>nicely,
+> >>because they implicitly account for the performance penalty of poor access
+> >>patterns.  The sequential-accessing processes (and the system overall) 
+> >>ends
+> >>up with higher throughput.
+> >>
+> >
+> >The unfairness is not WRT tasks generating poor access patterns.
+> >If you have two tasks doing sequential accesses on two different
+> >regions of the disk the exact amount of service they receive in the
+> >same amount of time depends on the transfer rate of the disk on
+> >that regions, and, depending on the media, it is not always the same.
 > 
-> That you can add this information through tags is clear, but according
-> to his SoC application that's not what he wants to do.
+> Ok... you're talking about ZBR.
 > 
-> According to his application he wants to determine automatically whether 
-> a commit was a fix or whether a commit introduced a bug by doing stuff 
-> like tracking whether a changed line was modified again shortly after a 
-> commit.
-> 
-> This plan of him will simply not result in accurate numbers.
+> I'm not convinced this should be treated differently to, say, random vs.
+> sequential workloads.  You still end up with reduced global throughput as
+> you've shown in the ``Short-term time guarantees'' table.  It is an
+> interesting case though... since the lower performance is not though fault
+> of the process it doesn't seem fair to ``punish'' it.
 
-They won't be completely accurate, but who knows, maybe they'd turn out
-to have a higher rate of accuracy than we'd expect.  (I assume you could
-do a closer manual study of a small random sample of the results to
-estimate the accuracy.)  Seems worth a try.
+It is indeed a valid observation, but I think we are getting into
+details still. CFQ wants to provide fair access to the drive, it doesn't
+claim to be 100% fair wrt throughput or transfer sums at all costs. This
+is where fairness and real life for an all round scheduler divert
+somewhat.
 
-> Sure, you will get some numbers, but if anyone would e.g. wrongly accuse 
-> me that 2% of my commits last year introduced bugs I would get 
-> ***really*** angry.
+So while it IS true that you could have 40mb/sec at one end and 65mb/sec
+at the other and thus give the process at the start an 'unfair' share of
+bandwidth, it's honestly mostly a theoretical problem. I can envision
+some valid concerns for media streaming filling the entire drive, but
+then my solution would be to just bump the time slice if you are not
+meeting deadlines. I've never heard anyone complain about this issue.
 
-It's just an experiment; reasonable people won't take it as the final
-word.
+-- 
+Jens Axboe
 
---b.
