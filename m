@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYDQIOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYDQIR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbYDQIOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYDQIOU
+	id S1758895AbYDQIR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYDQIRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:14:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54912 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753353AbYDQIOT (ORCPT
+	Thu, 17 Apr 2008 04:17:34 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59587 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173AbYDQIRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:14:19 -0400
-Date: Thu, 17 Apr 2008 01:14:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417011401.ea3e70f0.akpm@linux-foundation.org>
-In-Reply-To: <20080417002552.5742ad65.akpm@linux-foundation.org>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 04:17:32 -0400
+To: jamie@shareable.org
+CC: szaka@ntfs-3g.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20080417065059.GA21524@shareable.org> (message from Jamie Lokier
+	on Thu, 17 Apr 2008 07:50:59 +0100)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <1208121358.2700.4.camel@shinybook.infradead.org> <E1JlJ4U-0004xa-Sf@pomaz-ex.szeredi.hu> <20080414094215.GD2076@shareable.org> <E1JlLRt-0005JD-QR@pomaz-ex.szeredi.hu> <20080414115540.GA5802@shareable.org> <E1JlNly-0005bt-2v@pomaz-ex.szeredi.hu> <20080414223556.GA21340@shareable.org> <E1JljQD-0008Ae-5H@pomaz-ex.szeredi.hu> <20080415152313.GB8513@shareable.org> <Pine.LNX.4.61.0804170357290.4657@dhcppc2> <20080417065059.GA21524@shareable.org>
+Message-Id: <E1JmPJ3-0003k7-PJ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 17 Apr 2008 10:17:21 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 00:25:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> (Btw, The NTFS-3g release notes, on it's decision to replace the FUSE
+> userspace libs (which is what makes it work with 2.4 kernels too),
+> suggest there may be serious problems in the standard FUSE libs,
+> especially on small devices.
 
-> A quick grep indicates that only 644 of
-> these 884 patches are in -mm.  And a lot of them only turned up a week or
-> two ago.
+There were compatibility problems with uClibc, but those have now been
+addressed in the standard fuse libs as well.
 
-I did a test merge.
+I actually think fuse-lite is a good thing (as long as someone is
+maintining it): it allows dynamically changing projects like ntfs-3g
+to distribute and link their own version of libfuse, which contains
+the latest features they need.  Not having to wait for these features
+to slowly make it into distributions can be a big advantage.
 
-- About 13 patch rejects agaisnt git-kvm
+At the same time fuse-lite doesn't need to carry all the source and
+binary compatibility cruft that the standard fuse lib needs, so
+statically linking it has a relatively small overhead.
 
-- Multiple minor rejects aginst the IDE tree, the PCI tree
-
-- Minor bustage of git-semaphore
-
-- Several core MM patches which I also had merged.  I didn't check fully
-  whether they are the same.
-
-- extensive damage to the page-flags patches
-
-  Did you check that all architectures and configurations still have
-  sufficient page flags for us to be able to consume another one for
-  kmemcheck?  The MM developers have put much, much effort into avoiding
-  running out of flags over numerous years and afaik none of them even know
-  that this debug feature is using one of the few remaining ones.
-
-  What do we do when we run out?
-
-- rejects in capabilities-implement-per-process-securebits.patch
-
-- The proposed PR_GET_TSC and PR_SET_TSC have the same values as
-  PR_GET_SECUREBITS and PR_SET_SECUREBITS.  Because we never knew this
-  before we didn't get to discuss which one needs to be altered as we
-  normally would.
-
-- several rejects in
-  x86-olpc-add-one-laptop-per-child-architecture-support.patch
-
-- several bitops patches (use-__fls-for-fls64-on-64-bit-archs, etc) were
-  also in -mm.  I did not check for differences between the two versions.
-
-  These are not x86 patches.
-
-- maybe ten-odd minor rejects in other places.
-
-
-So not as bad as it might have been.  kvm and page-flags are the major
-problems.  Of course, none of this has been compiled and this proposed code
-combination has never been tested by anyone at runtime.
-
+Miklos
