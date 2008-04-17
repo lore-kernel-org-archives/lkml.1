@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932804AbYDQL63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbYDQL7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932804AbYDQL63 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYDQL6R
+	id S933568AbYDQL7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYDQL7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:58:17 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:65457 "EHLO smtp.wine.ocn.ne.jp"
+	Thu, 17 Apr 2008 07:59:08 -0400
+Received: from verein.lst.de ([213.95.11.210]:54002 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552AbYDQL6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 07:58:16 -0400
-To: pavel@ucw.cz
-Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
-       serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
-	<484889.77284.qm@web36604.mail.mud.yahoo.com>
-	<200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
-	<20080416191315.GB3923@ucw.cz>
-In-Reply-To: <20080416191315.GB3923@ucw.cz>
-Message-Id: <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 17 Apr 2008 20:58:12 +0900
+	id S1753157AbYDQL7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 07:59:07 -0400
+Date: Thu, 17 Apr 2008 13:58:48 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: swhiteho@redhat.com
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 36/48] [GFS2] fix file_system_type leak on gfs2meta mount
+Message-ID: <20080417115848.GA8642@lst.de>
+References: <12084216241802-git-send-email-swhiteho@redhat.com> <12084216262937-git-send-email-swhiteho@redhat.com> <12084216281152-git-send-email-swhiteho@redhat.com> <12084216301107-git-send-email-swhiteho@redhat.com> <12084216323165-git-send-email-swhiteho@redhat.com> <1208421634101-git-send-email-swhiteho@redhat.com> <12084216372363-git-send-email-swhiteho@redhat.com> <12084216391215-git-send-email-swhiteho@redhat.com> <12084216402644-git-send-email-swhiteho@redhat.com> <12084216431261-git-send-email-swhiteho@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12084216431261-git-send-email-swhiteho@redhat.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 17, 2008 at 09:39:12AM +0100, swhiteho@redhat.com wrote:
+> From: Christoph Hellwig <hch@lst.de>
+> 
+> get_gfs2_sb does a get_fs_type without doing a put_filesystem and
+> thus leaking a file_system_type reference everytime it's called.
+> 
+> Just use gfs2_fs_type directly instead of doing the lookup and thus
+> fix the problem.
 
-Pavel Machek wrote:
-> > It is true that namespace may differ between processes,
-> > but I think that that is the matter of how to restrict namespace manipulation operations.
-> > As I said, a system can't survive if namespace is madly manipulated.
-> > To keep the system workable, /bin/ must be the directory for binary programs,
-> > /etc/ must be the directory for configuration files, and so on in all namespaces.
-> 
-> Ehm? Where did you get those ideas?
-> 
-> I'm free to name my directories any way I want, and keep config files
-> in /pavlix_config, thank you... There is even distro that does
-> something like that, IIRC...
-> 
-We can make processes have different namespace by using clone() with CLONE_NEWNS.
-But even if some process got a different namespace, it need to follow conventional rules.
-Optional files (e.g. /pavlix_config) need not to follow conventional rules.
-What I'm talking about is essetial files (e.g. /bin/sh and /etc/passwd).
-Can your system continue running even if essetial files are not in place
-(like /bin/sh moved to /etc/sh and /etc/passwd moved to /bin/passwd) ?
-I don't think so...
+Btw, after this patch we should remove the get_fs_type export.  It's
+not used by modules and because put_filesystem is not exported every
+modular user would fundamentally have the same leak as the one fixed in
+this patch.
 
-Thanks.
