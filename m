@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934623AbYDQQsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934669AbYDQQtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934623AbYDQQsB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 12:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYDQQru
+	id S934669AbYDQQtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 12:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764172AbYDQQti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 12:47:50 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:33521 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753809AbYDQQrt (ORCPT
+	Thu, 17 Apr 2008 12:49:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:34958 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760764AbYDQQth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 12:47:49 -0400
-Subject: Re: [PATCH-mm 1/3] mac80211: tkip.c use get/put_unaligned helpers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jiri Benc <jbenc@suse.cz>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0804171102370.19002@twin.jikos.cz>
-References: <1208370570.11920.107.camel@brick>
-	 <20080417105859.45092413@griffin.suse.cz>
-	 <Pine.LNX.4.64.0804171102370.19002@twin.jikos.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-MLCqqe8DCdjPwCAI0aIS"
-Date: Thu, 17 Apr 2008 18:40:54 +0200
-Message-Id: <1208450454.4066.20.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Thu, 17 Apr 2008 12:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZTTWcoaCx8/tJHv+fZ2B5P/zJvi+s00KJ5/YY+GAxeM/EjWwrVC6Wu4D5fRvpoV9V6XA0Y0Q9ew2jlSSXCgHlzWAseQK0s3UbKr8PEa4iA+ek7PkZdEpZfRknmb6bqC4KRCx+o6jEi8i3LFQJneNJ2FOkO2+U92MBWcgJVNqkho=
+Message-ID: <e2e108260804170949p6cceb4em78455d8dc5ff7261@mail.gmail.com>
+Date: Thu, 17 Apr 2008 18:49:36 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <greg@kroah.com>,
+       "Chris Wright" <chrisw@sous-sol.org>
+Subject: Re: 2.6.25 section mismatches
+Cc: rufus-azrael@numericable.fr
+In-Reply-To: <e2e108260804170246i673a2e08q333eeae48467ed4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e2e108260804170246i673a2e08q333eeae48467ed4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 17, 2008 at 11:46 AM, Bart Van Assche
+<bart.vanassche@gmail.com> wrote:
+> Apparently there is a significant number of section mismatches in the
+>  2.6.25 kernel. These were already reported against 2.6.25-rc1 and are
+>  still present in the final 2.6.25 release. These section mismatches
+>  show up at least on the i386 and x86_64 architectures. Maybe it's a
+>  good idea before a patch is merged not only to check whether the patch
+>  applies cleanly but also to check whether it doesn't create any new
+>  section mismatches ?
+>
+>  See also http://bugzilla.kernel.org/show_bug.cgi?id=9974.
 
---=-MLCqqe8DCdjPwCAI0aIS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Who should look into this ?
 
-
-> > I guess you are going to push this stuff through -mm altogether, right?=
-=20
-> > I can hardly take this into my tree right now, as the helpers are not i=
-n=20
-> > Linus' tree yet.
->=20
-> yeah, sorry, that's been confusing a few people.
->=20
-> Strictly I'd merge the core infrastructure and then send the dependent=20
-> patches into the relevant maintainers.  But that can mean than we=20
-> needlessly miss the merge window, so it's most parctical to send along an=
-=20
-> acked-by and I'll merge the dependent patch directly with the appropriate=
-=20
-> ordering.
-
-I guess what Jiri (Benc) is saying that *I* should ack them, not him.
-Jiri (Benc), maybe you care to move yourself down in the maintainers
-file?
-
-johannes
-
---=-MLCqqe8DCdjPwCAI0aIS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASAd9laVg1VMiehFYAQLyDg//VHBiVt6/jocSLpe+BtPFeI+iOOCbp3Pp
-JuAV7s9dHT27NConvZ0lnqwmL/zgPJPjMtMCbPYJDEI3XLcyeKAr331PFXRcuOGn
-124/IQpniRKheOtjAj4r3XFG1gVd+Zl5pv4MP+JZan+AvX86HF3ZFbBr0onUVGmb
-e5RGEtZqAeNnt2GFR56cNRdxJbhiQ7Td0ue3VDL0o/FVL9FUIzBGggtQK1sUf5k/
-8ZbZHIao2P5Csi0sate/wRQWirFu4oXSZHBQaonCt6jrKNzjM/p+/4+IY+N5kRHU
-xJTsdKA76ibkQ9D/s2TmW5q5u5esKM9OvHq9INs5dDlB0Ud0O8mapW1MPF/T6+Gd
-xszfDts99oIpAzBQbpYibJQrjPaHdzLbwBX9eLjjre877OYgv3YUdMyT21FQQYnM
-Ywd61/QxYJO9Ur8bzJEIGcG44FEHXiTe9bwua+VBeF4EFqzaI07qNcijdn9c62HO
-+eGqrC+9iOT6DHaVywRfuCO5beiyjyI5XmEEIKqBxysL04fX9twrZStOK9C5X4Xq
-JbWjK9vFDrKSTXaViOZH+KCANq+DyzHAYTRLLVD/nTKYbd+7saaPLbqTXQfzlFxr
-V5QS03Qr269+3vFN4W/mpPJI6vZ5uKbg9cuz77Kx7uUoyNzAa5kI1IYiyDpeYTEF
-TExk+WlmhyI=
-=6zar
------END PGP SIGNATURE-----
-
---=-MLCqqe8DCdjPwCAI0aIS--
-
+Bart.
