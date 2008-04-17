@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbYDQCKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYDQC4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbYDQCKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 22:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYDQCKH
+	id S1755395AbYDQC4J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 22:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYDQCz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 22:10:07 -0400
-Received: from sous-sol.org ([216.99.217.87]:54950 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbYDQCKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 22:10:05 -0400
-Message-Id: <20080417010400.234642889@sous-sol.org>
-References: <20080417010122.148289106@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:21 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Parisc List <linux-parisc@vger.kernel.org>,
-       Kyle McMartin <kyle@shortfin.cabal.ca>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: PARISC futex: special case cmpxchg NULL in kernel space
-Content-Disposition: inline; filename=parisc-futex-special-case-cmpxchg-null-in-kernel-space.patch
+	Wed, 16 Apr 2008 22:55:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:64638 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbYDQCz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 22:55:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=OcYeNAypgwf3nvjp9y7ya6EUdlE6025x09ZyIgqf4E8IKGGDYaMfufE2z+9WD7nJDlz0J5DCeuTbQMSROV2RV8rG2VXPoVBawXtp39WfpWejvHIb0c2iZjV1pDtdjIrA2SeeHxG8VfLloLk3LkIHVbqpWX98t4gARmFYazjq5po=
+Message-ID: <ed10ee420804161955o221539f9p5cbfcc9eaf4b375d@mail.gmail.com>
+Date: Wed, 16 Apr 2008 19:55:52 -0700
+From: "SL Baur" <steve@xemacs.org>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: gart: factor out common code
+Cc: "kernel list" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20080416081418.GA5105@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080415104357.GA13441@elf.ucw.cz>
+	 <ed10ee420804151625i1e30abb7r98ddda53ec6e8da6@mail.gmail.com>
+	 <20080416081418.GA5105@elf.ucw.cz>
+X-Google-Sender-Auth: 158ee870a4b1fdce
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On 4/16/08, Pavel Machek <pavel@ucw.cz> wrote:
+> On Tue 2008-04-15 16:25:29, SL Baur wrote:
+>  > On 4/15/08, Pavel Machek <pavel@ucw.cz> wrote:
 
-From: Kyle McMartin <kyle@shortfin.cabal.ca>
+>  > Other reviewer comments:
+>  > The casting between struct pci_dev * and u64 is kind of ugly,
+>  > I presume the reason for the narrowing casts in the block of
+>  > code you moved is documented somewhere.
+>
+>
+> Where am I doing that?
 
-upstream commit: c20a84c91048c76c1379011c96b1a5cee5c7d9a0
+The struct pci_dev */u64 casting is in init_k8_gatt.  If Ingo is happy, then
+forget my comment.  I don't have this kind of system to test the patch on, it
+was just that as I was looking it over, all the casts kind of made my head
+swim.
 
-commit f9e77acd4060fefbb60a351cdb8d30fca27fe194
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Sun Feb 24 02:10:05 2008 +0000
-
-    futex: runtime enable pi and robust functionality
- 
-
-which was backported to stable based on mainline Commit
-a0c1e9073ef7428a14309cba010633a6cd6719ea added code to futex.c
-to detect whether futex_atomic_cmpxchg_inatomic was implemented at run
-time:
-
-+       curval = cmpxchg_futex_value_locked(NULL, 0, 0);
-+       if (curval == -EFAULT)
-+               futex_cmpxchg_enabled = 1;
-
-This is bogus on parisc, since page zero in kernel virtual space is the
-gateway page for syscall entry, and should not be read from the kernel.
-(That, and we really don't like the kernel faulting on its own address
- space...)
-
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- include/asm-parisc/futex.h |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
---- a/include/asm-parisc/futex.h
-+++ b/include/asm-parisc/futex.h
-@@ -56,6 +56,12 @@ futex_atomic_cmpxchg_inatomic(int __user
- 	int err = 0;
- 	int uval;
- 
-+	/* futex.c wants to do a cmpxchg_inatomic on kernel NULL, which is
-+	 * our gateway page, and causes no end of trouble...
-+	 */
-+	if (segment_eq(KERNEL_DS, get_fs()) && !uaddr)
-+		return -EFAULT;
+The narrowing cast is here:
++static inline void enable_gart_translation(struct pci_dev *dev, u64 addr)
++{
++       u32 tmp, ctl;
 +
- 	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
- 		return -EFAULT;
- 
-@@ -67,5 +73,5 @@ futex_atomic_cmpxchg_inatomic(int __user
- 	return uval;
- }
- 
--#endif
--#endif
-+#endif /*__KERNEL__*/
-+#endif /*_ASM_PARISC_FUTEX_H*/
++        /* address of the mappings table */
++        addr >>= 12;
++        tmp = (u32) addr<<4;
 
--- 
+Also, putting on my Andrew Morton cap, which I should have done before,
+that function is too big to be inlined so you should probably drop the explicit
+`inline' and let the compiler decide.
+
+Add a
+Reviewed-by: SL Baur <steve@xemacs.org>
+if that's appropriate.  I'm satisified that you did a one-for-one code move.
+
+-sb
