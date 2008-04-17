@@ -1,24 +1,24 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765991AbYDQO5W (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 17 Apr 2008 10:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYDQO5L
+	id S1763146AbYDQSrs (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 17 Apr 2008 14:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759834AbYDQSrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 10:57:11 -0400
-Received: from avas6.coqui.net ([196.28.61.139]:32591 "EHLO avas6.coqui.net"
+	Thu, 17 Apr 2008 14:47:33 -0400
+Received: from avas6.coqui.net ([196.28.61.139]:36254 "EHLO avas6.coqui.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753826AbYDQO5K convert rfc822-to-8bit (ORCPT
+	id S1759724AbYDQSrc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 10:57:10 -0400
+	Thu, 17 Apr 2008 14:47:32 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjsRAPIBB0jEHD1ieGdsb2JhbACQPn0hAQwECgUYRwWVJIUoAQ
-X-IronPort-AV: E=Sophos;i="4.25,671,1199678400"; 
-   d="scan'208";a="1342017769"
-Message-ID: <20080417072032.35mk1q8uxds04oww@webmail.coqui.net>
-Date: Thu, 17 Apr 2008 07:20:32 -0400
-From: EURO WINNERS <euro@winners.org>
-Reply-to: nationaltrustp@aim.com
+X-IronPort-Anti-Spam-Result: AsZFAMc3B0jEHD1kZmdsb2JhbACLC4V0PSENAgwFGEeVMIUf
+X-IronPort-AV: E=Sophos;i="4.25,673,1199678400"; 
+   d="scan'208";a="1342318152"
+Message-ID: <20080417053920.8p3h4f2s5q80ko8w@webmail.coqui.net>
+Date: Thu, 17 Apr 2008 05:39:20 -0400
+From: PEUGEOT ONLINE <info@Peugeot.co.uk>
+Reply-to: peugeoticarltucker@gmail.com
 To: undisclosed-recipients:;
-Subject: 
+Subject: AWARD!!!
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
@@ -27,17 +27,13 @@ User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1765991AbYDQO5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1763146AbYDQSrs@vger.kernel.org>
 
 
-YOU WON CONTACT MR.PAUL GREEN EMAIL:NATIONALTRUTP@AIM.COM PHONE:+346286=
-52243
-FOR THE CLAIM OF YOUR $950,000 Batch. N=C2=BA:EULO/2907/444/908/07.,(v)=
-Ref.N=C2=BA:ESM/
-WIN/008/05/10/MA
+Contact  Dr.Carl Tucker via Email: peugeoticarltucker@gmail.com
+for your Winnings of =C2=A3300,000.00 and a peugeot 607 car
 
-BEST REGARDS,
-MR. EMILY SIMON.
+
 
 
 
