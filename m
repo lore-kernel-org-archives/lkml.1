@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYDQFQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbYDQFRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbYDQFQw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 01:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYDQFQn
+	id S1757886AbYDQFRW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 01:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYDQFRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 01:16:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46075 "EHLO
+	Thu, 17 Apr 2008 01:17:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43583 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751323AbYDQFQn (ORCPT
+	by vger.kernel.org with ESMTP id S1751424AbYDQFRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 01:16:43 -0400
-Date: Wed, 16 Apr 2008 22:16:02 -0700
+	Thu, 17 Apr 2008 01:17:11 -0400
+Date: Wed, 16 Apr 2008 22:16:55 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Paul Menage <menage@google.com>,
@@ -22,13 +22,11 @@ Cc: Paul Menage <menage@google.com>,
        Paul Jackson <pj@sgi.com>
 Subject: Re: [PATCH] cgroup: fix a race condition in manipulating
  tsk->cg_list
-Message-Id: <20080416221602.0a13b94b.akpm@linux-foundation.org>
-In-Reply-To: <4806DBC9.3090607@cn.fujitsu.com>
+Message-Id: <20080416221655.c73d219f.akpm@linux-foundation.org>
+In-Reply-To: <4806DA6F.3000405@cn.fujitsu.com>
 References: <4806C5EB.3040102@cn.fujitsu.com>
-	<20080416211144.a38f6fc0.akpm@linux-foundation.org>
-	<6599ad830804162117w14364b7cg20d3694ffdfeb867@mail.gmail.com>
-	<20080416215907.63d71409.akpm@linux-foundation.org>
-	<4806DBC9.3090607@cn.fujitsu.com>
+	<6599ad830804162118g6b24d8ebq26b0d72133b0e19e@mail.gmail.com>
+	<4806DA6F.3000405@cn.fujitsu.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,23 +35,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 13:10:33 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Thu, 17 Apr 2008 13:04:47 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> Andrew Morton wrote:
-> > On Wed, 16 Apr 2008 21:17:34 -0700 "Paul Menage" <menage@google.com> wrote:
 > > 
-> >> On Wed, Apr 16, 2008 at 9:11 PM, Andrew Morton
-> >> <akpm@linux-foundation.org> wrote:
-> >>>  I don't fully understand the race.  Both paths hold css_set_lock.
-> >>>
-> >>>  Can you describe it in more detail please?
-> >> Task A starts exiting, passes the check for unlinking current->cg_list.
-> > 
-> > So cgroup_exit() sees !list_empty(tsk->cg_list)
+> > Yes, that looks like it could be the same one - great. But this
+> > corruption can only be triggered the first time you cat a tasks file
+> > after a reboot, right? That would partly explain why it was hard to
+> > reproduce (at least, I had trouble).
 > > 
 > 
-> cgroup_exit() sees list_empty(tsk->cg_list), then cgroup_enable_task_cg_list()
-> links the task to the list, and then the task exited, so the list entry won't
-> get deleted.
+> Right. I was lucky to trigger this and thus knew how to reproduce.
+> 
+> > My only thought about the downside of this is that an exiting task
+> > that gets stuck somewhere  between setting PF_EXITING and calling
+> > cgroup_exit() won't show up in its cgroup's tasks file, since we'll
+> > enable cgroup links but skip it. I guess that's not a big deal.
+> > 
+> 
+> Agree. I think it won't be a problem.
+> 
+> > Maybe it would be better to not do a cgroup_exit() until we're
+> > unhashed, so that cgroup_enable_task_cg_list() can't find the exiting
+> > task?
 
-OK.
+So we won't be doing what Paul suggested?
