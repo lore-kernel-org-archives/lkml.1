@@ -1,122 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933797AbYDQRou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbYDQRrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933797AbYDQRou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbYDQRo3
+	id S933010AbYDQRrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbYDQRq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:44:29 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47468 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933812AbYDQRo1 (ORCPT
+	Thu, 17 Apr 2008 13:46:59 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50002 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755653AbYDQRq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:44:27 -0400
-To: bfields@fieldses.org
-CC: trond.myklebust@fys.uio.no, eshel@almaden.ibm.com, neilb@suse.de,
-       akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: nfs: lock stuck after interrupt
-Message-Id: <E1JmY9Y-0004e4-7R@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 17 Apr 2008 19:44:08 +0200
+	Thu, 17 Apr 2008 13:46:58 -0400
+Date: Thu, 17 Apr 2008 19:46:56 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
+       serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+Message-ID: <20080417174656.GA5880@atrey.karlin.mff.cuni.cz>
+References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil> <484889.77284.qm@web36604.mail.mud.yahoo.com> <200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp> <20080416191315.GB3923@ucw.cz> <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) on server lock file X
-2) on client lock file X
-     blocks
-3) on client send interrupt to process doing locking
-     locking syscall restarted, continues blocking
-4) on server release lock on file X
-     on client lock is acquired
-5) on client release lock on file X
-6) on client lock file X
-     blocks
+> 
+> Pavel Machek wrote:
+> > > It is true that namespace may differ between processes,
+> > > but I think that that is the matter of how to restrict namespace manipulation operations.
+> > > As I said, a system can't survive if namespace is madly manipulated.
+> > > To keep the system workable, /bin/ must be the directory for binary programs,
+> > > /etc/ must be the directory for configuration files, and so on in all namespaces.
+> > 
+> > Ehm? Where did you get those ideas?
+> > 
+> > I'm free to name my directories any way I want, and keep config files
+> > in /pavlix_config, thank you... There is even distro that does
+> > something like that, IIRC...
+> > 
+> We can make processes have different namespace by using clone() with CLONE_NEWNS.
+> But even if some process got a different namespace, it need to follow conventional rules.
+> Optional files (e.g. /pavlix_config) need not to follow conventional rules.
+> What I'm talking about is essetial files (e.g. /bin/sh and
+> /etc/passwd).
 
-Everything up to the last step is fine, but something goes wrong
-during the final unlock.  Stopping the nfs-server removes the stray
-lock.
+Why would I need to follow rules?
 
-Here's a trace on the server:
+> Can your system continue running even if essetial files are not in place
+> (like /bin/sh moved to /etc/sh and /etc/passwd moved to /bin/passwd) ?
 
-lockd: request from 192.168.1.1, port=862
-lockd: LOCK          called
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nsm_monitor(tucsk)
-lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: creating file for (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: found file 0ad074c0 (count 0)
-lockd: nlmsvc_lock(ubda/96317, ty=1, pi=1, 0-99, bl=1)
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nlmsvc_lookup_block f=0ad074c0 pd=1 0-99 ty=1
-lockd: get host tucsk
-lockd: created block 0aeabf80...
-lockd: vfs_lock_file returned 1
-lockd: nlmsvc_insert_block(0aeabf80, -1)
-lockd: release host tucsk
-lockd: nlmsvc_lock returned 50331648
-lockd: LOCK         status 3
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 2)
-lockd: request from 192.168.1.1, port=862
-lockd: CANCEL        called
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: found file 0ad074c0 (count 1)
-lockd: nlmsvc_cancel(ubda/96317, pi=1, 0-99)
-lockd: nlmsvc_lookup_block f=0ad074c0 pd=1 0-99 ty=1
-lockd: check f=0ad074c0 pd=1 0-99 ty=1 cookie=36120000
-lockd: unlinking block 0aeabf80...
-lockd: freeing block 0aeabf80...
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 2)
-lockd: CANCEL        status 0
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 1)
-lockd: closing file ubda/96317
-lockd: request from 192.168.1.1, port=862
-lockd: LOCK          called
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nsm_monitor(tucsk)
-lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: creating file for (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: found file 0ad074c0 (count 0)
-lockd: nlmsvc_lock(ubda/96317, ty=1, pi=2, 0-99, bl=1)
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nlmsvc_lookup_block f=0ad074c0 pd=2 0-99 ty=1
-lockd: get host tucsk
-lockd: created block 0aeab240...
-lockd: vfs_lock_file returned 0
-lockd: freeing block 0aeab240...
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 2)
-lockd: release host tucsk
-lockd: nlmsvc_lock returned 0
-lockd: LOCK         status 0
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 1)
-lockd: request from 192.168.1.1, port=862
-lockd: UNLOCK        called
-lockd: nlm_lookup_host(192.168.1.2->192.168.1.1, p=6, v=4, my role=server, name=tucsk)
-lockd: get host tucsk
-lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 7f54ef79 00017801 d06c5915 00000000)
-lockd: found file 0ad074c0 (count 0)
-lockd: nlmsvc_unlock(ubda/96317, pi=3, 0-9223372036854775807)
-lockd: nlmsvc_cancel(ubda/96317, pi=3, 0-9223372036854775807)
-lockd: nlmsvc_lookup_block f=0ad074c0 pd=3 0-9223372036854775807 ty=2
-lockd: UNLOCK        status 0
-lockd: release host tucsk
-lockd: nlm_release_file(0ad074c0, ct = 1)
+Why not? They are just a names, they can be changed as log as you
+change them everywhere. Which is rather easy for small
+systems... think openembedded.
+									Pavel
 
-
-Everything looks normal, yet...
-
-This is 100% reproducable for me (ext3 exported over nfs, server and
-client: 2.6-git).
-
-Miklos
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
