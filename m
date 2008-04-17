@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763944AbYDQNSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbYDQNWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763944AbYDQNSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 09:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYDQNSK
+	id S1757143AbYDQNWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 09:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYDQNWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 09:18:10 -0400
-Received: from THAUM.MIT.EDU ([18.95.3.27]:42648 "EHLO luto.stanford.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750724AbYDQNSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 09:18:09 -0400
-X-Greylist: delayed 475 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Apr 2008 09:18:09 EDT
-Message-ID: <48074C35.2020707@myrealbox.com>
-Date: Thu, 17 Apr 2008 09:10:13 -0400
-From: Andy Lutomirski <luto@myrealbox.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Thu, 17 Apr 2008 09:22:41 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:47809 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbYDQNWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 09:22:40 -0400
+Message-ID: <48074F18.7050802@tiscali.nl>
+Date: Thu, 17 Apr 2008 15:22:32 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: Ben Dooks <ben@fluff.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Smartmedia/xd card support - request for comments
-References: <20080417090137.GB16284@fluff.org.uk> <257448.48285.qm@web36701.mail.mud.yahoo.com>
-In-Reply-To: <257448.48285.qm@web36701.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: phil.el@wanadoo.fr
+CC: oprofile-list@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] oprofile: vma_map: fix test on overlay_tbl_offset
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Dubov wrote:
-> --- Ben Dooks <ben@fluff.org> wrote:
-> 
->> On Thu, Apr 17, 2008 at 01:50:33AM -0700, Alex Dubov wrote:
->>> I've implemented, with generous help from JMicron, a native support for Smartmedia/xD picture
->> card
->>> media. Currently, only JMicron backend is available, but TI expressed some interest in this
->> too,
->>> so TI Flashmedia backend may soon follow.
->>>
->>> Smartmedia cards are quite akin to the dumb flash chips, but they have their quirks that put
->> them
->>> aside as a separate media type.
->> They're NAND chips, just with a standard ECC/block replacement
->> stratergy... why isn't this under drivers/mtd ?
->>
-> 
-> They have nothing to do with JFFS or UBI (it's an interchange format).
-> They require FTL.
+Offset is unsigned and when an address isn't found in the vma map
+vma_map_lookup() returns the vma physical address + 0x10000000.
 
-Or does using them according to the interchange spec require FTL?
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/powerpc/oprofile/cell/vma_map.c b/arch/powerpc/oprofile/cell/vma_map.c
+index 9a93217..1c28e2e 100644
+--- a/arch/powerpc/oprofile/cell/vma_map.c
++++ b/arch/powerpc/oprofile/cell/vma_map.c
+@@ -229,7 +229,7 @@ struct vma_to_fileoffset_map *create_vma_map(const struct spu *aSpu,
+ 	 */
+ 	overlay_tbl_offset = vma_map_lookup(map, ovly_table_sym,
+ 					    aSpu, &grd_val);
+-	if (overlay_tbl_offset < 0) {
++	if (overlay_tbl_offset >= 0x10000000) {
+ 		printk(KERN_ERR "SPU_PROF: "
+ 		       "%s, line %d: Error finding SPU overlay table\n",
+ 		       __FUNCTION__, __LINE__);
 
-(That is, it would be really cool to finally have a supported MTD device 
-that doesn't need to be soldered on to the motherboard, so I could plug 
-the thing in and run UBIFS / JFFS2 / whatever.  I wouldn't be able to 
-use it for a camera, then, but it would be great for little machines 
-that don't need full hard drives, or for developing MTD filesystems on 
-readily-available hardware.)
-
---Andy
