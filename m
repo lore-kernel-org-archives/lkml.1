@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbYDQPNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbYDQPRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933017AbYDQPNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759346AbYDQPNA
+	id S932170AbYDQPRk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbYDQPRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:13:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42189 "EHLO
+	Thu, 17 Apr 2008 11:17:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45104 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932131AbYDQPM6 (ORCPT
+	with ESMTP id S1757103AbYDQPRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:12:58 -0400
-Date: Thu, 17 Apr 2008 08:11:06 -0700
+	Thu, 17 Apr 2008 11:17:32 -0400
+Date: Thu, 17 Apr 2008 08:15:28 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Avi Kivity <avi@qumranet.com>
 Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: Re: [PATCH 13/45] KVM: s390: API documentation
-Message-Id: <20080417081106.aab87b1a.randy.dunlap@oracle.com>
-In-Reply-To: <1208423450-29415-14-git-send-email-avi@qumranet.com>
+       Xiantao Zhang <xiantao.zhang@intel.com>
+Subject: Re: [PATCH 45/45] KVM: ia64: Add a guide about how to create kvm
+ guests on ia64
+Message-Id: <20080417081528.77a5bd24.randy.dunlap@oracle.com>
+In-Reply-To: <1208423450-29415-46-git-send-email-avi@qumranet.com>
 References: <1208423450-29415-1-git-send-email-avi@qumranet.com>
-	<1208423450-29415-14-git-send-email-avi@qumranet.com>
+	<1208423450-29415-46-git-send-email-avi@qumranet.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -33,157 +34,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 12:10:18 +0300 Avi Kivity wrote:
+On Thu, 17 Apr 2008 12:10:50 +0300 Avi Kivity wrote:
 
-> From: Carsten Otte <cotte@de.ibm.com>
+> From: Xiantao Zhang <xiantao.zhang@intel.com>
 > 
-> This patch adds Documentation/s390/kvm.txt, which describes specifics of kvm's
-> user interface that are unique to s390 architecture.
+> Guide for creating virtual machine on kvm/ia64.
 > 
-> Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+> Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
 > Signed-off-by: Avi Kivity <avi@qumranet.com>
 > ---
->  Documentation/s390/kvm.txt |  125 ++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 125 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/s390/kvm.txt
+>  Documentation/ia64/kvm.txt |   82 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 82 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/ia64/kvm.txt
 > 
-> diff --git a/Documentation/s390/kvm.txt b/Documentation/s390/kvm.txt
+> diff --git a/Documentation/ia64/kvm.txt b/Documentation/ia64/kvm.txt
 > new file mode 100644
-> index 0000000..6f5ceb0
+> index 0000000..bec9d81
 > --- /dev/null
-> +++ b/Documentation/s390/kvm.txt
-> @@ -0,0 +1,125 @@
-> +*** BIG FAT WARNING ***
-> +The kvm module is currently in EXPERIMENTAL state for s390. This means that
-> +the interface to the module is not yet considered to remain stable. Thus, be
-> +prepared that we keep breaking your userspace application and guest
-> +compatibility over and over again until we feel happy with the result. Make sure
-> +your guest kernel, your host kernel, and your userspace launcher are in a
-> +consistent state.
-> +
-> +This Documentation describes the unique ioctl calls to /dev/kvm, the resulting
-> +kvm-vm file descriptors, and the kvm-vcpu file descriptors that differ from x86.
-> +
-> +1. ioctl calls to /dev/kvm
-> +KVM does support the following ioctls on s390 that are common with other
-> +architectures and do behave the same:
-> +KVM_GET_API_VERSION
-> +KVM_CREATE_VM		(*) see note
-> +KVM_CHECK_EXTENSION
-> +KVM_GET_VCPU_MMAP_SIZE
-> +
-> +Notes:
-> +* KVM_CREATE_VM may fail on s390, if the calling process has multiple
-> +threads and has not called KVM_S390_ENABLE_SIE before.
-> +
-> +In addition, on s390 the following architecture specific ioctls are supported:
-> +ioctl:		KVM_S390_ENABLE_SIE
-> +args:		none
-> +see also:	include/linux/kvm.h
-> +This call causes the kernel to switch on PGSTE in the user page table. This
-> +operation is needed in order to run a virtual machine, and it requires the
-> +calling process to be single-threaded. Note that the first call to KVM_CREATE_VM
-> +will implicitly try to switch on PGSTE if the user process has not called
-> +KVM_S390_ENABLE_SIE before. User processes that want to launch multiple threads
-> +before creating a virtual machine have to call KVM_S390_ENABLE_SIE, or will
-> +observe an error calling KVM_CREATE_VM. Switching on PGSTE is a one-time
-> +operation, is not reversible, and will persist over the entire lifetime of
-> +the calling process. It does not have any user-visible effect other than a small
-> +performance penalty.
-> +
-> +2. ioctl calls to the kvm-vm file descriptor
-> +KVM does support the following ioctls on s390 that are common with other
-> +architectures and do behave the same:
-> +KVM_CREATE_VCPU
-> +KVM_SET_USER_MEMORY_REGION      (*) see note
-> +KVM_GET_DIRTY_LOG		(**) see note
-> +
-> +Notes:
-> +*  kvm does only allow exactly one memory slot on s390, which has to start
-> +   at guest absolute address zero and at a user address that is aligned on any
-> +   page boundary. This hardware "limitation" allows us to have a few unique
-> +   optimizations. The memory slot doesn't have to be filled
-> +   with memory actually, it may contain sparse holes. That said, with different
-> +   user memory layout this does still allow a large flexibility when
-> +   doing the guest memory setup.
-> +** KVM_GET_DIRTY_LOG doesn't work properly yet. The user will receive an empty
-> +log. This ioctl call is only needed for guest migration, and we intend to
-> +implement this one in the future.
-> +
-> +In addition, on s390 the following architecture specific ioctls for the kvm-vm
-> +file descriptor are supported:
-> +ioctl:		KVM_S390_INTERRUPT
-> +args:		struct kvm_s390_interrupt *
-> +see also:	include/linux/kvm.h
-> +This ioctl is used to submit a floating interrupt for a virtual machine.
-> +Floating interrupts may be delivered to any virtual cpu in the configuration.
-> +Only some interrupt types defined in include/linux/kvm.h make sense when
-> +submitted as floating interrupts. The following interrupts are not considered
-> +to be useful as floating interrupts, and a call to inject them will result in
-> +-EINVAL error code: program interrupts and interprocessor signals. Valid
-> +floating interrupts are:
-> +KVM_S390_INT_VIRTIO
-> +KVM_S390_INT_SERVICE
-> +
-> +3. ioctl calls to the kvm-vcpu file descriptor
-> +KVM does support the following ioctls on s390 that are common with other
-> +architectures and do behave the same:
-> +KVM_RUN
-> +KVM_GET_REGS
-> +KVM_SET_REGS
-> +KVM_GET_SREGS
-> +KVM_SET_SREGS
-> +KVM_GET_FPU
-> +KVM_SET_FPU
-> +
-> +In addition, on s390 the following architecture specific ioctls for the
-> +kvm-vcpu file descriptor are supported:
-> +ioctl:		KVM_S390_INTERRUPT
-> +args:		struct kvm_s390_interrupt *
-> +see also:	include/linux/kvm.h
-> +This ioctl is used to submit an interrupt for a specific virtual cpu.
-> +Only some interrupt types defined in include/linux/kvm.h make sense when
-> +submitted for a specific cpu. The following interrupts are not considered
-> +to be useful, and a call to inject them will result in -EINVAL error code:
-> +service processor calls and virtio interrupts. Valid interrupt types are:
-> +KVM_S390_PROGRAM_INT
-> +KVM_S390_SIGP_STOP
-> +KVM_S390_RESTART
-> +KVM_S390_SIGP_SET_PREFIX
-> +KVM_S390_INT_EMERGENCY
-> +
-> +ioctl:		KVM_S390_STORE_STATUS
-> +args:		unsigned long
-> +see also:	include/linux/kvm.h
-> +This ioctl stores the state of the cpu at the guest real address given as
-> +argument, unless one of the following values defined in include/linux/kvm.h
-> +is given as arguement:
-> +KVM_S390_STORE_STATUS_NOADDR - the CPU stores its status to the save area in
-                                      ~~~
-> +absolute lowcore as defined by the principles of operation
-> +KVM_S390_STORE_STATUS_PREFIXED - the CPU stores its status to the save area in
-                                        ~~~
+> +++ b/Documentation/ia64/kvm.txt
+> @@ -0,0 +1,82 @@
+> +Currently, kvm module in EXPERIMENTAL stage on IA64. This means that
 
-Please use "CPU" consistently throughout the file (i.e., not "cpu").
+s/in /is in /
 
-> +its prefix page just like the dump tool that comes with zipl. This is useful
-> +to create a system dump for use with lkcdutils or crash.
+> +interfaces are not stable enough to use. So, plase had better don't run
+
+s/plase had better/please/
+
+> +critical applications in virtual machine. We will try our best to make it
+> +strong in future versions!
+> +				Guide: How to boot up guests on kvm/ia64
 > +
-> +ioctl:		KVM_S390_SET_INITIAL_PSW
-> +args:		struct kvm_s390_psw *
-> +see also:	include/linux/kvm.h
-> +This ioctl can be used to set the processor status word (psw) of a stopped cpu
-> +prior to running it with KVM_RUN. Note that this call is not required to modify
-> +the psw during sie intercepts that fall back to userspace because struct kvm_run
-> +does contain the psw, and this value is evaluated during reentry of KVM_RUN
-> +after the intercept exit was recognized.
+> +This guide is to describe how to enable kvm support for IA-64 systems.
 > +
-> +ioctl:		KVM_S390_INITIAL_RESET
-> +args:		none
-> +see also:	include/linux/kvm.h
-> +This ioctl can be used to perform an initial cpu reset as defined by the
-> +principles of operation. The target cpu has to be in stopped state.
-> -- 
+> +1. Get the kvm source from git.kernel.org.
+> +	Userspace source:
+> +		git clone git://git.kernel.org/pub/scm/virt/kvm/kvm-userspace.git
+> +	Kernel Source:
+> +		git clone git://git.kernel.org/pub/scm/linux/kernel/git/xiantao/kvm-ia64.git
+> +
+> +2. Compile the source code.
+
+...
+
+> +3. Get Guest Firmware named as Flash.fd, and put it under right place:
+> +	(1) If you have the guest firmware (binary) released by Intel Corp for Xen, use it directly.
+> +
+> +	(2) If you have no firmware at hand, Please download its source from
+
+s/Please/please/
+
+> +		hg clone http://xenbits.xensource.com/ext/efi-vfirmware.hg
+> +	    you can get the firmware's binary in the directory of efi-vfirmware.hg/binaries.
+> +
+> +	(3) Rename the firware you owned to Flash.fd, and copy it to /usr/local/share/qemu
+> +
+> +4. Boot up Linux or Windows guests:
+> +	4.1 Create or install a image for guest boot. If you have xen experience, it should be easy.
+
+s/a image/an image/
+
+> +
+> +	4.2 Boot up guests use the following command.
+
+s/use/using/
+
+> +		/usr/local/bin/qemu-system-ia64 -smp xx -m 512 -hda $your_image
+> +		(xx is the number of virtual processors for the guest, now the maximum value is 4)
+> +
+> +5. Known possibile issue on some platforms with old Firmware.
+
+s/issue/issues/
+
+> +
+> +If meet strange host crashe issues, try to solve it through either of the following ways:
+
+s/meet/you have/
+s/crashe/crash/
+s/solve it/solve them/
+
+> +(1): Upgrade your Firmware to the latest one.
+> +
+> +(2): Applying the below patch to kernel source.
+> +diff --git a/arch/ia64/kernel/pal.S b/arch/ia64/kernel/pal.S
+> +index 0b53344..f02b0f7 100644
+> +--- a/arch/ia64/kernel/pal.S
+> ++++ b/arch/ia64/kernel/pal.S
+> +@@ -84,7 +84,8 @@ GLOBAL_ENTRY(ia64_pal_call_static)
+> +	mov ar.pfs = loc1
+> +	mov rp = loc0
+> +	;;
+> +-	srlz.d				// seralize restoration of psr.l
+> ++	srlz.i			// seralize restoration of psr.l
+> ++	;;
+> +	br.ret.sptk.many b0
+> + END(ia64_pal_call_static)
+> +
+> +6. Bug report:
+> +	If you found any issues when use kvm/ia64, Please post the bug info to kvm-ia64-devel mailing list.
+
+s/Please/please/
+
+> +	https://lists.sourceforge.net/lists/listinfo/kvm-ia64-devel/
+> +
+> +Thanks for your interest! Let's work together, and make kvm/ia64 stronger and stronger!
+> +
+> +
+> +								Xiantao Zhang <xiantao.zhang@intel.com>
+> +											2008.3.10
 
 ---
 ~Randy
