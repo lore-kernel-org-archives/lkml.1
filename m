@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765811AbYDQKeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765927AbYDQKgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765811AbYDQKeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYDQKeG
+	id S1765927AbYDQKgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbYDQKgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:34:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34785 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757620AbYDQKeD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:34:03 -0400
-Date: Thu, 17 Apr 2008 03:33:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417033333.947dfcc9.akpm@linux-foundation.org>
-In-Reply-To: <84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<20080417083000.GA4935@elte.hu>
-	<20080417014054.ea788f1f.akpm@linux-foundation.org>
-	<20080417090626.GA14383@elte.hu>
-	<20080417021813.04df7912.akpm@linux-foundation.org>
-	<20080417093025.GA17389@elte.hu>
-	<20080417023603.672d1032.akpm@linux-foundation.org>
-	<84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 06:36:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46431 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753701AbYDQKgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 06:36:44 -0400
+Date: Thu, 17 Apr 2008 13:36:35 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       akpm@osdl.org
+Subject: Re: [RFC patch 15/27] Immediate Values - Documentation
+Message-ID: <20080417103635.GG1677@cs181133002.pp.htv.fi>
+References: <20080416213426.298498397@polymtl.ca> <20080416213552.942797527@polymtl.ca> <20080417184930.A8CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080417184930.A8CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 13:19:32 +0300 "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-
-> On Thu, Apr 17, 2008 at 12:36 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > > you mean kmemcheck? Yes, that's planned. We've been working 4 months
-> > > non-stop on kmemcheck to make it mergeable and usable, it's at version 7
-> > > right now, and it caught a handful of real bugs already (such as
-> > > 63a7138671c - unfortunately not credited in the log to kmemcheck). But
-> > > because it touches SLUB (because it has to - and they are acked by
-> > > Pekka) i never had the chance to move it into the for-akpm branch.
-> >
-> >  Does it really really really need to consume one of our few remaining page
-> >  flags?  We'll be in a mess when we run out.
+On Thu, Apr 17, 2008 at 06:52:54PM +0900, KOSAKI Motohiro wrote:
+> > +Memory read:
+> > +644.09ツア11.39 - 88.16ツア1.35 = 555.93ツア11.46 cycles
+> > +
+> > +Getppid without memory pressure:
+> > +1462.09ツア18.87 - 150.92ツア1.01 = 1311.17ツア18.90 cycles
+> > +
+> > +Getppid with memory pressure:
+> > +17113.33ツア1655.92 - 578.22ツア269.51 = 16535.11ツア1677.71 cycles
+> > +
+> > +Therefore, if we add 2 markers not based on immediate values to the getppid
+> > +code, which would add 2 memory reads, we would add
+> > +2 * 555.93ツア12.74 = 1111.86ツア25.48 cycles
 > 
-> FYI, the initial version of kmemcheck didn't have a separate page flag
-> (it abused SLUB internals) but it got really hairy and I think I
-> finally convinced Vegard to switch over to page flags after some
-> hair-pulling when we hit a bug. So yes, from SLUB maintainer point of
-> view, we _really, really_ want to use a page flag here.
+> sorry..
+> 
+> non ascii character is harmful for some language region user.
+> Couldn't you write ascii only?
 
-Thank you whoever wrote kmemcheck.txt
+The kernel is UTF-8, and this shouldn't be a problem.
 
-How come slub uses one byte to track the status of each byte when it could
-use a single bit?
+The problem seems to be that Mathieu's emails don't contain a header 
+indicating the charset.
 
-We (still!) have not made the decision whether to proceed with slab or
-slub.  How hard would it be to port kmemcheck into slab?
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
