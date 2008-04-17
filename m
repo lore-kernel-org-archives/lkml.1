@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbYDQPCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932632AbYDQPDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764690AbYDQPCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbYDQPCM
+	id S932632AbYDQPDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbYDQPDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:02:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46127 "EHLO mx1.redhat.com"
+	Thu, 17 Apr 2008 11:03:07 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51408 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758735AbYDQPCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:02:11 -0400
-Message-ID: <4807666E.7070803@redhat.com>
-Date: Thu, 17 Apr 2008 17:02:06 +0200
-From: Ivan Vecera <ivecera@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: romieu@fr.zoreil.com
-Subject: [PATCH] NET: r8169: fix oops in r8169_get_mac_version
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1758806AbYDQPDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 11:03:05 -0400
+Date: Thu, 17 Apr 2008 18:02:46 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: fork_idle && pid problems ? (was: Possible mem leak in copy_process())
+Message-ID: <20080417140246.GA257@tv-sign.ru>
+References: <alpine.LNX.1.00.0804162336480.9837@dragon.funnycrock.com> <20080417115718.GC103@tv-sign.ru> <20080417130252.GB6640@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080417130252.GB6640@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When does r8169_get_mac_version find unknown MAC then kernel crash occurs
-because tp->pci_dev is NULL and is dereferenced. Problem is that the function
-r8169_get_mac_version is called from rtl8169_init_one at line 1704 but
-tp->pci_dev is filled at line 1780.
+On 04/17, Ingo Molnar wrote:
+> 
+> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > > 1331 		if (likely(p->pid)) {
+> 
+> > > 1351 		}
+> 
+> > > Event leaked_storage: Returned without freeing storage "pid" Also 
+> > > see events: [alloc_fn][var_assign][pass_arg]
+> > 
+> > this looks like a false alarm.
+> > 
+> > p->pid == pid->numbers[0].nr. If "struct pid *pid" was allocated, its 
+> > .nr can't be 0.
+> > 
+> > IOW, !p->pid means that pid == init_struct_pid, it wasn't allocated 
+> > but was passed from the caller.
+> 
+> should we perhaps codify this rule via adding something like this to the 
+> else branch:
+> 
+>    WARN_ON_ONCE(task_pid(p) != &init_struct_pid);
+> 
+> ?
 
-Ivan
+Perhaps yes, I don't know...
 
----
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 3acfeea..a45c8e8 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -1700,6 +1700,9 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		msleep_interruptible(1);
- 	}
- 
-+	/* rtl8169_get_mac_version uses tp->pci_dev when unknown MAC found */
-+	tp->pci_dev = pdev;
-+
- 	/* Identify chip attached to board */
- 	rtl8169_get_mac_version(tp, ioaddr);
- 
-@@ -1777,7 +1780,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- #endif
- 
- 	tp->intr_mask = 0xffff;
--	tp->pci_dev = pdev;
- 	tp->mmio_addr = ioaddr;
- 	tp->align = cfg->align;
- 	tp->hw_start = cfg->hw_start;
+But please note that we heavily rely on the fact that nobody except idle
+threads can have pid_nr == 0, and more importantly, each "struct pid" must
+have the unique .nr withing the same namespace (init_pid_ns in this case).
+I'd suggest to just add a small comment.
+
+
+But wait... What _is_ the task_pid() after fork_idle() ???
+
+fork_idle() doesn't really attach the new thread to the init_struct_pid,
+so ->pids[PIDTYPE_PID].pid just points the parent's pid, no?
+
+As for x86, the parent is /sbin/init (kernel_init->smp_prepare_cpus),
+not so bad, it can't exit.
+
+But what about HOTPLUG_CPU? Suppose we add CPU, use some non-idle
+kernel thread (workqueue) to fork the idle thread. CPU goes down,
+parent exits and frees the pid. Now, if this CPU goes up again, the
+idle thread runs with its ->pid pointing to the freed memory, not
+good.
+
+Not serious perhaps, afaics we only need this ->pid to ensure that
+swapper can safely fork /sbin/init, but still.
+
+Pavel, Eric, Sukadev? Please say I missed something! ;)
+
+Otherwise, we can change init_idle() to do attach_pid(init_struct_pid),
+afaics we can do this lockless. In that case we should also change
+INIT_STRUCT_PID() and remove the initialization of .tasks.
+
+Oleg.
+
