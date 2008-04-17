@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYDQBcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765660AbYDQBdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbYDQBcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763193AbYDQBM4
+	id S1765660AbYDQBdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbYDQBOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:12:56 -0400
-Received: from sous-sol.org ([216.99.217.87]:59877 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:14:21 -0400
+Received: from sous-sol.org ([216.99.217.87]:59888 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765963AbYDQBMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:12:54 -0400
-Message-Id: <20080417010405.373315819@sous-sol.org>
+	id S1760702AbYDQBOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:14:19 -0400
+Message-Id: <20080417010339.321227891@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:27 -0700
+Date: Wed, 16 Apr 2008 18:01:49 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Serge Hallyn <serge@hallyn.com>, Andrew G Morgan <morgan@kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: file capabilities: remove cap_task_kill()
-Content-Disposition: inline; filename=file-capabilities-remove-cap_task_kill.patch
+       Carol Hebert <cah@us.ibm.com>, Corey Minyard <cminyard@mvista.com>
+Subject: ipmi: change device node ordering to reflect probe order
+Content-Disposition: inline; filename=ipmi-change-device-node-ordering-to-reflect-probe-order.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,124 +33,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Serge Hallyn <serge@hallyn.com>
+From: Carol Hebert <cah@us.ibm.com>
 
-upstream commit: aedb60a67c10a0861af179725d060765262ba0fb
+upstream commit: abd24df828f1a72971db29d1b74fefae104ea9e2
 
-The original justification for cap_task_kill() was as follows:
+In 2.6.14 a patch was merged which switching the order of the ipmi device
+naming from in-order-of-discovery over to reverse-order-of-discovery.
 
-	check_kill_permission() does appropriate uid equivalence checks.
-	However with file capabilities it becomes possible for an
-	unprivileged user to execute a file with file capabilities
-	resulting in a more privileged task with the same uid.
+So on systems with multiple BMC interfaces, the ipmi device names are being
+created in reverse order relative to how they are discovered on the system
+(e.g.  on an IBM x3950 multinode server with N nodes, the device name for the
+BMC in the first node is /dev/ipmiN-1 and the device name for the BMC in the
+last node is /dev/ipmi0, etc.).
 
-However now that cap_task_kill() always returns 0 (permission
-granted) when p->uid==current->uid, the whole hook is worthless,
-and only likely to create more subtle problems in the corner cases
-where it might still be called but return -EPERM.  Those cases
-are basically when uids are different but euid/suid is equivalent
-as per the check in check_kill_permission().
+The problem is caused by the list handling routines chosen in dmi_scan.c.
+Using list_add() causes the multiple ipmi devices to be added to the device
+list using a stack-paradigm and so the ipmi driver subsequently pulls them off
+during initialization in LIFO order.  This patch changes the
+dmi_save_ipmi_device() list handling paradigm to a queue, thereby allowing the
+ipmi driver to build the ipmi device names in the order in which they are
+found on the system.
 
-One example of a still-broken application is 'at' for non-root users.
-
-This patch removes cap_task_kill().
-
-Signed-off-by: Serge Hallyn <serge@hallyn.com>
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
-Earlier-version-tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+Signed-off-by: Carol Hebert <cah@us.ibm.com>
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-[chrisw@sous-sol.org: backport to 2.6.24.4]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- include/linux/security.h |    3 +--
- security/capability.c    |    1 -
- security/commoncap.c     |   39 ---------------------------------------
- 3 files changed, 1 insertion(+), 42 deletions(-)
+ drivers/firmware/dmi_scan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -62,7 +62,6 @@ extern int cap_inode_need_killpriv(struc
- extern int cap_inode_killpriv(struct dentry *dentry);
- extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
- extern void cap_task_reparent_to_init (struct task_struct *p);
--extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
- extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
- extern int cap_task_setioprio (struct task_struct *p, int ioprio);
- extern int cap_task_setnice (struct task_struct *p, int nice);
-@@ -2112,7 +2111,7 @@ static inline int security_task_kill (st
- 				      struct siginfo *info, int sig,
- 				      u32 secid)
- {
--	return cap_task_kill(p, info, sig, secid);
-+	return 0;
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -219,7 +219,7 @@ static void __init dmi_save_ipmi_device(
+ 	dev->name = "IPMI controller";
+ 	dev->device_data = data;
+ 
+-	list_add(&dev->list, &dmi_devices);
++	list_add_tail(&dev->list, &dmi_devices);
  }
  
- static inline int security_task_wait (struct task_struct *p)
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -40,7 +40,6 @@ static struct security_operations capabi
- 	.inode_need_killpriv =		cap_inode_need_killpriv,
- 	.inode_killpriv =		cap_inode_killpriv,
- 
--	.task_kill =			cap_task_kill,
- 	.task_setscheduler =		cap_task_setscheduler,
- 	.task_setioprio =		cap_task_setioprio,
- 	.task_setnice =			cap_task_setnice,
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -527,40 +527,6 @@ int cap_task_setnice (struct task_struct
- 	return cap_safe_nice(p);
- }
- 
--int cap_task_kill(struct task_struct *p, struct siginfo *info,
--				int sig, u32 secid)
--{
--	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
--		return 0;
--
--	/*
--	 * Running a setuid root program raises your capabilities.
--	 * Killing your own setuid root processes was previously
--	 * allowed.
--	 * We must preserve legacy signal behavior in this case.
--	 */
--	if (p->uid == current->uid)
--		return 0;
--
--	/* sigcont is permitted within same session */
--	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
--		return 0;
--
--	if (secid)
--		/*
--		 * Signal sent as a particular user.
--		 * Capabilities are ignored.  May be wrong, but it's the
--		 * only thing we can do at the moment.
--		 * Used only by usb drivers?
--		 */
--		return 0;
--	if (cap_issubset(p->cap_permitted, current->cap_permitted))
--		return 0;
--	if (capable(CAP_KILL))
--		return 0;
--
--	return -EPERM;
--}
- #else
- int cap_task_setscheduler (struct task_struct *p, int policy,
- 			   struct sched_param *lp)
-@@ -575,11 +541,6 @@ int cap_task_setnice (struct task_struct
- {
- 	return 0;
- }
--int cap_task_kill(struct task_struct *p, struct siginfo *info,
--				int sig, u32 secid)
--{
--	return 0;
--}
- #endif
- 
- void cap_task_reparent_to_init (struct task_struct *p)
+ /*
 
 -- 
