@@ -1,113 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761692AbYDQIrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYDQIsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761692AbYDQIrW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYDQIrL
+	id S1760121AbYDQIsZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbYDQIsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:47:11 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:46091 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbYDQIrJ (ORCPT
+	Thu, 17 Apr 2008 04:48:18 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41398 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756676AbYDQIsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:47:09 -0400
-Date: Thu, 17 Apr 2008 09:45:22 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, paul.moore@hp.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
-Message-ID: <20080417084522.GA23301@shareable.org>
-Mail-Followup-To: Crispin Cowan <crispin@crispincowan.com>,
-	Stephen Smalley <sds@tycho.nsa.gov>,
-	"Serge E. Hallyn" <serue@us.ibm.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-	paul.moore@hp.com, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-	takedakn@nttdata.co.jp, linux-fsdevel@vger.kernel.org,
-	netdev@vger.kernel.org
-References: <47FC8052.9070409@nttdata.co.jp> <20080409131151.GK11962@parisc-linux.org> <200804112312.HGE69734.LFOOHQOSFFMJtV@I-love.SAKURA.ne.jp> <20080411143013.GB11962@parisc-linux.org> <20080413163658.GC7010@sergelap.austin.ibm.com> <4802BBDC.1030707@crispincowan.com> <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil> <48043648.1000502@crispincowan.com> <1208363519.18883.232.camel@moss-spartans.epoch.ncsc.mil> <4807011D.8060009@crispincowan.com>
+	Thu, 17 Apr 2008 04:48:17 -0400
+Date: Thu, 17 Apr 2008 10:48:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Paolo Valente <paolo.valente@unimore.it>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417084815.GA31835@atrey.karlin.mff.cuni.cz>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4807011D.8060009@crispincowan.com>
+In-Reply-To: <20080417071012.GP12774@kernel.dk>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Crispin Cowan wrote:
-> Of *course* AppArmor protects the integrity of /etc/shadow, and 
-> unauthorized parties are not permitted to feed data into that file 
-> unless explicit access is granted. The difference is in how it is done:
+> On Thu, Apr 17 2008, Paolo Valente wrote:
+> > Pavel Machek ha scritto:
+> > >
+> > >>In the first type of tests, to achieve a higher throughput than CFQ
+> > >>(with the default 100 ms time slice), the maximum budget for BFQ
+> > >>had to be set to at least 4k sectors.  Using the same value for the
+> > >>    
+> > >
+> > >Hmm, 4k sectors is ~40 seconds worst case, no? That's quite long...
+> > >  
+> > Actually, in the worst case among our tests, the aggregate throughput 
+> > with 4k sectors was ~ 20 MB/s, hence the time for 4k sectors ~ 4k * 512 
+> > / 20M = 100 ms.
 > 
->    * SELinux marks the inode with a label, and only processes with the
->      right permissions can mess with the label.
->          o Residual problem: someone could rename the inode and drop a
->            new inode into place named "/etc/shadow". SELinux addresses
->            this with access control on the parent directory.
+> That's not worse case, it is pretty close to BEST case. Worst case is 4k
+> of sectors, with each being a 512b IO and causing a full stroke seek.
+> For that type of workload, even a modern sata hard drive will be doing
+> 500kb/sec or less. That's rougly a thousand sectors per seconds, so ~4
+> seconds worst case for 4k sectors.
 
-<small> I have actually hacked a system by renaming /etc/passwd in
-this way.  /etc was owned by user "bin", and I had a login as "bin"
-due to a misfeature in some program.  So I substituted another
-/etc/passwd, and gave myself a root shell. </small>
+One seek is still 10msec on modern drive, right? So 4k seeks =
+40seconds, no? 4seconds would correspond to 1msec per seek, which
+seems low.
 
-The trouble with access control on the parent directory is that
-occasionally some human accidentally forgets how important that is,
-thinking that permissions on the /etc/shadow file are important.
-
-Also *programs* care about a file with that name.  They reference it
-by name, apply security decisions based on a process which starts with
-that name.  So the name is the most relevant point of communication
-between the policy setter and programs which need to be affected.
-
-So I think AppArmor's approach is good here.
-
->    * AppArmor checks the name "/etc/shadow" so that you cannot access
->      that name without explicit permission.
->          o AppArmor cares about the integrity of what the OS returns
->            when you access the name "/etc/shadow" and does not care a
->            wit what happens to the inode that was *previously* named
->            "/etc/shadow".
-> 
-> Now, without running off into the weeds again, tell me again why I 
-> should care about the *integrity* of an inode that was *previously* 
-> known as "/etc/shadow"?
-
-But insufficient here.
-
-If you rename /etc/shadow legitimately, after changing a password,
-there might be a program which still has a handle to the _old_ inode
-and is still reading it, still comparing a password against its contents.
-
-If policy was entirely name based, so modifications may be possible to
-that file after it's renamed from /etc/shadow to /etc/shadow.bak,
-_while_ some programs are still reading it (because it was /etc/shadow
-when they opened it, and they got swapped for a moment), that's a failure.
-
-So you *should* care about the integrity of an inode that was
-previously known as /etc/shadow - at least until you can prove that
-nobody is still dependent on it's earlier security properties.  That's
-a garbage collection problem.
-
-> So associating a security property with a name is ok if you do it 
-> statically at some arbitrary point in time, but not if you consider it 
-> at the time of access? WtF? Isn't that a gigantic race condition?
-
-Both are race conditions.
-
-> To the contrary, I argue that the *current* name of a file is vastly 
-> more meaningful for security properties than the name the file had some 
-> months ago when someone ran restorecon over the file system.
-
-I agree that the current name is meaningful, but it's not watertight
-when your systems change.  To avoid unexpected weaknesses, you'll need
-to apply the intersection of permissions over a time period, using
-name based policy but having it follow renames until you can prove
-it's safe to release the following.
-
--- Jamie
+writes with O_SYNC could force full seek on each request, right?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
