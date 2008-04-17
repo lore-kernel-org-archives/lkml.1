@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765660AbYDQBdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbYDQBdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765660AbYDQBdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbYDQBOV
+	id S932712AbYDQBdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbYDQBOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:14:21 -0400
-Received: from sous-sol.org ([216.99.217.87]:59888 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:14:50 -0400
+Received: from sous-sol.org ([216.99.217.87]:59895 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760702AbYDQBOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:14:19 -0400
-Message-Id: <20080417010339.321227891@sous-sol.org>
+	id S932503AbYDQBOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:14:48 -0400
+Message-Id: <20080417010337.793546930@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:49 -0700
+Date: Wed, 16 Apr 2008 18:01:47 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Carol Hebert <cah@us.ibm.com>, Corey Minyard <cminyard@mvista.com>
-Subject: ipmi: change device node ordering to reflect probe order
-Content-Disposition: inline; filename=ipmi-change-device-node-ordering-to-reflect-probe-order.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Joy Latten <latten@austin.ibm.com>
+Subject: CRYPTO xcbc: Fix crash when ipsec uses xcbc-mac with big data chunk
+Content-Disposition: inline; filename=crypto-xcbc-fix-crash-when-ipsec-uses-xcbc-mac-with-big-data-chunk.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,46 +34,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Carol Hebert <cah@us.ibm.com>
+From: Joy Latten <latten@austin.ibm.com>
 
-upstream commit: abd24df828f1a72971db29d1b74fefae104ea9e2
+upstream commit: 1edcf2e1ee2babb011cfca80ad9d202e9c491669
 
-In 2.6.14 a patch was merged which switching the order of the ipmi device
-naming from in-order-of-discovery over to reverse-order-of-discovery.
+The kernel crashes when ipsec passes a udp packet of about 14XX bytes
+of data to aes-xcbc-mac.
 
-So on systems with multiple BMC interfaces, the ipmi device names are being
-created in reverse order relative to how they are discovered on the system
-(e.g.  on an IBM x3950 multinode server with N nodes, the device name for the
-BMC in the first node is /dev/ipmiN-1 and the device name for the BMC in the
-last node is /dev/ipmi0, etc.).
+It seems the first xxxx bytes of the data are in first sg entry,
+and remaining xx bytes are in next sg entry. But we don't
+check next sg entry to see if we need to go look the page up.
 
-The problem is caused by the list handling routines chosen in dmi_scan.c.
-Using list_add() causes the multiple ipmi devices to be added to the device
-list using a stack-paradigm and so the ipmi driver subsequently pulls them off
-during initialization in LIFO order.  This patch changes the
-dmi_save_ipmi_device() list handling paradigm to a queue, thereby allowing the
-ipmi driver to build the ipmi device names in the order in which they are
-found on the system.
+I noticed in hmac.c, we do a scatterwalk_sg_next(), to do this check
+and possible lookup, thus xcbc.c needs to use this routine too.
 
-Signed-off-by: Carol Hebert <cah@us.ibm.com>
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+A 15-hour run of an ipsec stress test sending streams of tcp and
+udp packets of various sizes,  using this patch and
+aes-xcbc-mac completed successfully, so hopefully this fixes the
+problem.
+
+Signed-off-by: Joy Latten <latten@austin.ibm.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/firmware/dmi_scan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ crypto/xcbc.c |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -219,7 +219,7 @@ static void __init dmi_save_ipmi_device(
- 	dev->name = "IPMI controller";
- 	dev->device_data = data;
+--- a/crypto/xcbc.c
++++ b/crypto/xcbc.c
+@@ -116,13 +116,11 @@ static int crypto_xcbc_digest_update2(st
+ 	struct crypto_xcbc_ctx *ctx = crypto_hash_ctx_aligned(parent);
+ 	struct crypto_cipher *tfm = ctx->child;
+ 	int bs = crypto_hash_blocksize(parent);
+-	unsigned int i = 0;
  
--	list_add(&dev->list, &dmi_devices);
-+	list_add_tail(&dev->list, &dmi_devices);
+-	do {
+-
+-		struct page *pg = sg_page(&sg[i]);
+-		unsigned int offset = sg[i].offset;
+-		unsigned int slen = sg[i].length;
++	for (;;) {
++		struct page *pg = sg_page(sg);
++		unsigned int offset = sg->offset;
++		unsigned int slen = sg->length;
+ 
+ 		if (unlikely(slen > nbytes))
+ 			slen = nbytes;
+@@ -182,8 +180,11 @@ static int crypto_xcbc_digest_update2(st
+ 			offset = 0;
+ 			pg++;
+ 		}
+-		i++;
+-	} while (nbytes>0);
++
++		if (!nbytes)
++			break;
++		sg = scatterwalk_sg_next(sg);
++	}
+ 
+ 	return 0;
  }
- 
- /*
 
 -- 
