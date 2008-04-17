@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYDQAe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYDQAfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYDQAe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 20:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYDQAeR
+	id S1757309AbYDQAfY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 20:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYDQAfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 20:34:17 -0400
-Received: from [85.114.38.90] ([85.114.38.90]:37358 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753892AbYDQAeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 20:34:12 -0400
-X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Apr 2008 20:34:12 EDT
-Date: Wed, 16 Apr 2008 11:54:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jan Kara <jack@suse.cz>, Bodo Eggert <7eggert@gmx.de>,
-       Diego Calleja <diegocg@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Michal Hocko <mhocko@suse.cz>, Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: file offset corruption on 32-bit machines?
-Message-ID: <20080416115441.5c40c3c4@the-village.bc.nu>
-In-Reply-To: <20080416081523.GB5105@elf.ucw.cz>
-References: <20080414190308.GJ15824@duck.suse.cz>
-	<20080414192928.GM7385@csclub.uwaterloo.ca>
-	<20080415085740.GA7603@atrey.karlin.mff.cuni.cz>
-	<20080415153221.GD7387@csclub.uwaterloo.ca>
-	<20080415173430.GB4994@elf.ucw.cz>
-	<20080415182453.GR7385@csclub.uwaterloo.ca>
-	<20080415191238.GC4994@elf.ucw.cz>
-	<20080415194922.GT7385@csclub.uwaterloo.ca>
-	<20080415200647.GF4994@elf.ucw.cz>
-	<1208291336.7053.16.camel@lappy>
-	<20080416081523.GB5105@elf.ucw.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Apr 2008 20:35:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:53817 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753711AbYDQAfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 20:35:12 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18438.39737.921541.359469@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Apr 2008 10:35:05 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC patch 23/27] Immediate Values - Powerpc Optimization NMI
+	MCE support
+In-Reply-To: <20080416233331.GA9225@Krystal>
+References: <20080416213426.298498397@polymtl.ca>
+	<20080416213556.704299869@polymtl.ca>
+	<18438.34621.508450.720068@cargo.ozlabs.ibm.com>
+	<20080416233331.GA9225@Krystal>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why not? Kernel syscalls are traditionally atomic, and Lennard seems
-> to have found sentence in POSIX that says so.
+Mathieu Desnoyers writes:
 
-Almost no call is atomic or has atomicity guarantees. There are specific
-rules for certain disk access and pipe queueing but almost nothing else.
-The same is as true (often more true) for all Unix systems
+> * Paul Mackerras (paulus@samba.org) wrote:
+> > Mathieu Desnoyers writes:
+> > 
+> > > Use an atomic update for immediate values.
+> > 
+> > What is meant by an "atomic" update in this context?  AFAICS you are
+> > using memcpy, which is not in any way guaranteed to be atomic.
+> > 
+> > Paul.
+> 
+> I expect memcpy to perform the copy in one memory access, given I put a 
+> 
+>   .align 2
+> 
+> before the 2 bytes instruction. It makes sure the instruction modified
+> fits in a single, aligned, memory write.
 
-Alan
+My original question was in the context of the powerpc architecture,
+where instructions are always 4 bytes long and aligned.  So that's not
+an issue.
+
+> Or maybe am I expecting too much from memcpy ?
+
+I don't think memcpy gives you any such guarantees.  It would be quite
+within its rights to say "it's only a few bytes, I'll do it byte by
+byte".
+
+If you really want it to be atomic (which I agree is probably a good
+idea), I think the best way to do it is to use an asm to generate a
+sth (store halfword) instruction to the immediate field (instruction
+address + 2).  That's on powerpc of course; I don't know what you
+would do on other architectures.
+
+Paul.
