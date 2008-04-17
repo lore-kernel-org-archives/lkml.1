@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933324AbYDQMBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764867AbYDQMPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933324AbYDQMBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 08:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYDQMBi
+	id S1764867AbYDQMPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 08:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYDQMPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 08:01:38 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:50804 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbYDQMBg convert rfc822-to-8bit (ORCPT
+	Thu, 17 Apr 2008 08:15:40 -0400
+Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:58016 "EHLO
+	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbYDQMPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 08:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hszLzTsOI7y1TOLfSmMAupWLD2M/mzppa0nFnJF3DewfF3xMU76BDW2U0nYzYx9+csw48kC5fapuTbBvMw5aNoqSscF+zC5AO+gHpldEunWsEi1A0bQg4oGpA3EOhvhz35CNPJzi/+s2d9u9GfVQPE/BItli9JvuX4vejyuxoEg=
-Message-ID: <9ea470500804170501s5e794cd2u8cda1b46fb6fbf9f@mail.gmail.com>
-Date: Thu, 17 Apr 2008 14:01:34 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Roel Kluin" <12o3l@tiscali.nl>
-Subject: Re: [PATCH 3/6] IDE: ide-cd: fix test unsigned var < 0
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <48072ED7.7030002@tiscali.nl>
+	Thu, 17 Apr 2008 08:15:40 -0400
+From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+To: Fabio Checconi <fchecconi@gmail.com>
+Date: Thu, 17 Apr 2008 22:14:13 +1000
+Message-ID: <48073F15.7070502@cse.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080316)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <48055F1A.9020706@tiscali.nl>
-	 <200804170040.07397.bzolnier@gmail.com> <4806C952.6030102@tiscali.nl>
-	 <9ea470500804170212md8ce430p42b3c1787ba95631@mail.gmail.com>
-	 <48072ED7.7030002@tiscali.nl>
+CC: Paolo Valente <paolo.valente@unimore.it>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <48072549.7040104@cse.unsw.edu.au> <20080417111407.GS62286@gandalf.sssup.it>
+In-Reply-To: <20080417111407.GS62286@gandalf.sssup.it>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 1:04 PM, Roel Kluin <12o3l@tiscali.nl> wrote:
-> Boris Petkov wrote:
->
->  > I'd rather keep the "unsigned long bio_sectors;" part and do something
->  > of the likes of:
->  >
->  > bio_sectors = bio_sectors(failed_command->bio);
->  >
->  >
->  > (remove the "if (bio_sectors < 4)"-test)
->  >
->  > ... and later...
->  >
->  > sector &= ~(max(bio_sectors - 1, 3));
->  >
->  > which is, IMO, more readable.
->  >
->  > Roel, would you redo your patch please? Thanks.
->
->  While at it I also cleaned up some whitespace
->
-> ---
->  Clean up cdrom_analyze_sense_data()
->
->  Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Fabio Checconi wrote:
+>> From: Aaron Carroll <aaronc@cse.unsw.edu.au>
+>> How do you figure that?  This is a situation where time-slices work nicely,
+>> because they implicitly account for the performance penalty of poor access
+>> patterns.  The sequential-accessing processes (and the system overall) ends
+>> up with higher throughput.
+>>
+> 
+> The unfairness is not WRT tasks generating poor access patterns.
+> If you have two tasks doing sequential accesses on two different
+> regions of the disk the exact amount of service they receive in the
+> same amount of time depends on the transfer rate of the disk on
+> that regions, and, depending on the media, it is not always the same.
 
-Thanks a lot.
+Ok... you're talking about ZBR.
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+I'm not convinced this should be treated differently to, say, random vs.
+sequential workloads.  You still end up with reduced global throughput as
+you've shown in the ``Short-term time guarantees'' table.  It is an
+interesting case though... since the lower performance is not though fault
+of the process it doesn't seem fair to ``punish'' it.
 
+ -- Aaron
 
--- 
-Regards/Gruﬂ,
-Boris
