@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935162AbYDQKJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934683AbYDQKIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935162AbYDQKJO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 06:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934510AbYDQKGh
+	id S934683AbYDQKIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 06:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934326AbYDQJ7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 06:06:37 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37665 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764845AbYDQKGe (ORCPT
+	Thu, 17 Apr 2008 05:59:45 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48620 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935628AbYDQJ7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 06:06:34 -0400
-Message-Id: <1208426793.10305.1248377703@webmail.messagingengine.com>
-X-Sasl-Enc: wq4t9ndhwgpKrEtA2h+yA3/B2cS2QumDAKhFWl7vP99o 1208426793
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
+	Thu, 17 Apr 2008 05:59:41 -0400
+Date: Thu, 17 Apr 2008 10:59:16 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
+Message-ID: <20080417095916.GD1449@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <20080415221002.GL1677@cs181133002.pp.htv.fi> <20080415223928.GH5676@flint.arm.linux.org.uk> <200804160126.11116.bzolnier@gmail.com> <20080417093753.GF1677@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080416202338.GA6007@elte.hu> <878wzdikwk.fsf@basil.nowhere.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-In-Reply-To: <878wzdikwk.fsf@basil.nowhere.org>
-Date: Thu, 17 Apr 2008 12:06:33 +0200
+In-Reply-To: <20080417093753.GF1677@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 17, 2008 at 12:37:53PM +0300, Adrian Bunk wrote:
+> Any objections against the patch below?
 
-On Wed, 16 Apr 2008 22:50:51 +0200, "Andi Kleen" <andi@firstfloor.org>
-said:
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> >  - generalized bitops - they are faster and smaller.
-> 
-> Faster in a 100% bogus benchmark with the most unrealistic input data
-> set one can imagine with some effort. They might be faster or they
-> might be slower, nobody really knows currently.
+Let's look at the rest of the situation surrounding HAVE_IDE first.
+It's something of a mess:
 
-Hello Andi, Ingo,
+avr32, m68knommu, ppc, s390 and v850 do not have asm/ide.h
 
-The input for the first 'benchmark' was indeed completely unrealistic.
-They did show a very convincing speedup, though. This program was
-really written to verify the implementation and was later converted
-to a benchmark. Many benchmarks are unrealistic. I also wrote a
-benchmark for find_first_bit and find_next_bit:
-        http://heukelum.fastmail.fm/find_first_bit
+avr32, m68knommu, ppc, v850 all set HAVE_IDE, arch/s390/Kconfig contains
+no reference.
 
-My conclusion would be: the speed of the generic bitmap implementation
-is either better than or at least comparable to the current private
-implementations in i386/x86_64. The generic version is out-of-line,
-while the private implementation of i386 was inlined: this causes a
-regression for very small bitmaps. However, if the bitmap size is
-a constant and fits a long integer, the updated generic code should
-inline an optimized version, like x86_64 currently does it.
+avr32 supports PATA (which is IDE).
 
-I think the change is a good one.
+Everything else provides an asm/ide.h and sets HAVE_IDE.
 
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+So:
+
+Q1. Do avr32, m68knommu, ppc, v850 have IDE support or do they not?
+Q2. Should avr32, m68knommu, ppc, v850 supply an asm/ide.h header?
+Q3. Is it worth supporting HAVE_IDE for all kernel architectures when
+    its just one (s390) which supports neither IDE nor ATA - or would
+    something more generic covering both be appropriate.
 
 -- 
-http://www.fastmail.fm - The professional email service
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
