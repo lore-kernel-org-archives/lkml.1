@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbYDQP0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934018AbYDQP1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933934AbYDQP0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933732AbYDQPZw
+	id S934018AbYDQP1F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760806AbYDQP0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:25:52 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:38944 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933684AbYDQPZv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:25:51 -0400
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Bart Samwel <bart@samwel.tk>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, Jens Axboe <axboe@suse.de>
-Subject: remount for commit=600 taking more than 90 min CPU time
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.2.1
-Date: Thu, 17 Apr 2008 11:24:52 -0400
-From: Sanjoy Mahajan <sanjoy@MIT.EDU>
-Message-Id: <E1JmVym-0001QV-4X@approx.mit.edu>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 17 Apr 2008 11:26:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37276 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760255AbYDQP0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 11:26:44 -0400
+Date: Thu, 17 Apr 2008 18:26:33 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sverre@rabbelier.nl,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org, jmorris@namei.org,
+       viro@zeniv.linux.org.uk, w@1wt.eu, david@lang.hm,
+       sclark46@earthlink.net, johnpol@2ka.mipt.ru, rjw@sisk.pl,
+       tilman@imap.cc, Valdis.Kletnieks@vt.edu, lkml@rtr.ca,
+       davem@davemloft.net, jesper.juhl@gmail.com, yoshfuji@linux-ipv6.org,
+       jeff@garzik.org, netdev@vger.kernel.org, davidn@davidnewall.com
+Subject: Re: Reporting bugs and bisection
+Message-ID: <20080417152633.GA12951@cs181133002.pp.htv.fi>
+References: <20080414053943.GU9785@ZenIV.linux.org.uk> <20080413232441.e216a02c.akpm@linux-foundation.org> <20080414072328.GW9785@ZenIV.linux.org.uk> <Xine.LNX.4.64.0804150131300.4160@us.intercode.com.au> <4804765B.2070300@davidnewall.com> <bd6139dc0804160515s64a36748v49556c56d475dda4@mail.gmail.com> <20080416132634.GA545@cs181133002.pp.htv.fi> <20080416120247.c665859c.akpm@linux-foundation.org> <20080416195503.GR1677@cs181133002.pp.htv.fi> <20080417135013.GA2017@fieldses.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080417135013.GA2017@fieldses.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC'ing ext3 maintainers and, in case it involves io priorities, Jens Axboe]
+On Thu, Apr 17, 2008 at 09:50:13AM -0400, J. Bruce Fields wrote:
+> On Wed, Apr 16, 2008 at 10:55:03PM +0300, Adrian Bunk wrote:
+>...
+> > Sure, you will get some numbers, but if anyone would e.g. wrongly accuse 
+> > me that 2% of my commits last year introduced bugs I would get 
+> > ***really*** angry.
+> 
+> It's just an experiment; reasonable people won't take it as the final
+> word.
 
-The report started with <http://bugs.debian.org/471465/>
-("laptop-mode-tools: mount takes 100% of CPU after unplugging AC")
+Take e.g. [1] as an example how git statistics about the Linux kernel 
+are already used to "prove" things that aren't true.
 
-The problem first happened when unplugging the AC power a few minutes
-after the daily 'locate' cron job started.  The 'mount', spawned by the
-laptop-mode tools (to remount the / partition with commit=600), took
-about 25 minutes to complete!
+> --b.
 
-I can now reproduce the problem without unplugging the AC power:
+cu
+Adrian
 
->From Bart Samwel <bart@samwel.tk>:
-> I think this is definitely getting to the point where it looks like a
-> kernel problem. Could you report this to the Linux Kernel mailing list
-> and to the ext3 maintainers?
+[1] http://digitalvampire.org/blog/index.php/2008/04/11/lies-d-oh-forget-it/
 
-Hardware : Thinkpad T60 (Intel graphics and wireless)
-Kernel   : Debian package linux-image-2.6.24-1-686, version 2.6.24-5
-uname -a :
-  Linux approx 2.6.24-1-686 #1 SMP Thu Mar 27 17:45:04 UTC 2008 i686 GNU/Linux
+-- 
 
-The changelog.Debian.gz for the kernel package indicates that it's
-basically the 2.6.24.4 upstream kernel with a few Debian changes (mostly
-to enable a few options).
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-mount -V says:
-  mount (util-linux-ng 2.13.1)  [from the Debian 2.13.1-4 package]
-
-To reproduce the problem, I rebooted this morning at 7:20am and saw the
-'locate' cron job start at 7:30.  A few minutes later, at 7:35:11, I ran
-the following mount command while leaving the AC power plugged in (and
-leaving the laptop-mode settings unchanged, so I didn't turn off laptop
-mode).
-
-Here is the command (given to bash):
-
-  time mount /dev/sda2 -t ext3 / -o remount,rw,errors=remount-ro,commit=600
-
-It was still running at 9.00am!  The system was sluggish, and was
-especially sluggish with anything requiring disk I/O, like saving or
-loading new files in Emacs.
-
-Here are the first two lines of the 'top' output (at 9:10):
-
-  4637 root      20   0  3260  756  644 R  106  0.0  93:39.75 mount
-  4509 nobody    39  19  6916 4680  908 R   96  0.3  67:10.69 find
-
-One guess is that the mount keeps waiting for the 'find' to do something
-or other, but the 'find' never gets a chance because its ionice priority
-is too low:
-
-  $ ionice -p 4509
-  idle
-
-At 9.05am I did:
-
-  ionice -p4509 -c2 -n0
-
-but it didn't help (the 'mount' kept running strong).
-
-'top' claims that all the CPU time is system time, on both cores.  
-The 'find' process is probably in system time with all its 'stat' calls.
-But 'strace -p 4637' (on the 'mount' process) produces no output, so I
-cannot figure out what system calls are taking up so much system time.
-
-And the 'strace' is not interruptable with ^C.  It needed to be stopped
-with ^Z and the 'kill -9 %1' to get rid of it (which I just did).
-
-I tried to kill the 'mount' process.  Neither ^C, 'kill', nor 'kill -9'
-worked.  I tried to reboot after the 'mount' had been running for almost
-two hours, and the CPU had become hot (92 C).
-
-But it wouldn't reboot because of the 'mount' command, so I had to
-hard-reset the machine by holding down the power button.
-
--Sanjoy
