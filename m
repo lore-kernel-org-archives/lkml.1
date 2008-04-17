@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbYDQBY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933764AbYDQBZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933802AbYDQBY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760863AbYDQBJD
+	id S933764AbYDQBZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760907AbYDQBJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:09:03 -0400
-Received: from sous-sol.org ([216.99.217.87]:58970 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:09:07 -0400
+Received: from sous-sol.org ([216.99.217.87]:58973 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760857AbYDQBJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:09:01 -0400
-Message-Id: <20080417010402.909235872@sous-sol.org>
+	id S1759487AbYDQBJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:09:05 -0400
+Message-Id: <20080417010327.627675797@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:23 -0700
+Date: Wed, 16 Apr 2008 18:01:36 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: PARISC fix signal trampoline cache flushing
-Content-Disposition: inline; filename=fix-signal-trampoline-cache-flushing.patch
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>
+Subject: xen: mask out SEP from CPUID
+Content-Disposition: inline; filename=xen-mask-out-sep-from-cpuid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,32 +33,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Kyle McMartin <kyle@mcmartin.ca>
+From: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-upstream commit: cf39cc3b56bc4a562db6242d3069f65034ec7549
+upstream commit: d40e705903397445c6861a0a56c23e5b2e8f9b9a
 
-The signal trampolines were accidently flushing the kernel I$ instead of
-the users.  Fix that up, and also add a missing user D$ flush while
-we're at it.
+Fix 32-on-64 pvops kernel:
 
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+we don't want userspace using syscall/sysenter, even if the hypervisor
+supports it, so mask it out from CPUID.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/parisc/kernel/signal.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/xen/enlighten.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/parisc/kernel/signal.c
-+++ b/arch/parisc/kernel/signal.c
-@@ -534,7 +534,8 @@ insert_restart_trampoline(struct pt_regs
- 		 * Flushing one cacheline is cheap.
- 		 * "sync" on bigger (> 4 way) boxes is not.
- 		 */
--		flush_icache_range(regs->gr[30], regs->gr[30] + 4);
-+		flush_user_dcache_range(regs->gr[30], regs->gr[30] + 4);
-+		flush_user_icache_range(regs->gr[30], regs->gr[30] + 4);
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -153,6 +153,7 @@ static void xen_cpuid(unsigned int *eax,
+ 	if (*eax == 1)
+ 		maskedx = ~((1 << X86_FEATURE_APIC) |  /* disable APIC */
+ 			    (1 << X86_FEATURE_ACPI) |  /* disable ACPI */
++			    (1 << X86_FEATURE_SEP)  |  /* disable SEP */
+ 			    (1 << X86_FEATURE_ACC));   /* thermal monitoring */
  
- 		regs->gr[31] = regs->gr[30] + 8;
- 		/* Preserve original r28. */
+ 	asm(XEN_EMULATE_PREFIX "cpuid"
 
 -- 
