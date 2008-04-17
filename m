@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933991AbYDQB3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934005AbYDQB3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933991AbYDQB3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762062AbYDQBJs
+	id S934005AbYDQB3c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbYDQBJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:09:48 -0400
-Received: from sous-sol.org ([216.99.217.87]:59015 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:09:51 -0400
+Received: from sous-sol.org ([216.99.217.87]:59020 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758769AbYDQBJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:09:46 -0400
-Message-Id: <20080417010356.315553878@sous-sol.org>
+	id S1762116AbYDQBJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:09:50 -0400
+Message-Id: <20080417010326.442366326@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:15 -0700
+Date: Wed, 16 Apr 2008 18:01:35 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alok Kataria <akataria@vmware.com>, Dan Arai <arai@vmware.com>,
-       Len Brown <lenb@kernel.org>
-Subject: acpi: fix "buggy BIOS check" when CPUs are hot removed
-Content-Disposition: inline; filename=acpi-fix-buggy-bios-check-when-cpus-are-hot-removed.patch
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: xen: fix RMW when unmasking events
+Content-Disposition: inline; filename=xen-fix-rmw-when-unmasking-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,37 +35,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alok Kataria <akataria@vmware.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-upstream commit: ba62b077871a5255e271f4fdae57167651839277
+upstream commit: 04c44a080d2f699a3042d4e743f7ad2ffae9d538
 
-Fixes a BUG in ACPI hotplugging.
+xen_irq_enable_direct and xen_sysexit were using "andw $0x00ff,
+XEN_vcpu_info_pending(vcpu)" to unmask events and test for pending ones
+in one instuction.
 
-processor_device_array[pr->id] needs to be set to NULL when removing a CPU.
-Else the "buggy BIOS check" in acpi_processor_start mistakenly fires when a
-CPU is removed from the system and then later re-added.
+Unfortunately, the pending flag must be modified with a locked operation
+since it can be set by another CPU, and the unlocked form of this
+operation was causing the pending flag to get lost, allowing the processor
+to return to usermode with pending events and ultimately deadlock.
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Signed-off-by: Dan Arai <arai@vmware.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The simple fix would be to make it a locked operation, but that's rather
+costly and unnecessary.  The fix here is to split the mask-clearing and
+pending-testing into two instructions; the interrupt window between
+them is of no concern because either way pending or new events will
+be processed.
+
+This should fix lingering bugs in using direct vcpu structure access too.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/acpi/processor_core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/xen/enlighten.c |    2 +-
+ arch/x86/xen/xen-asm.S   |    9 +++++++--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -792,7 +792,7 @@ static int acpi_processor_remove(struct 
- 	acpi_processor_remove_fs(device);
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -95,7 +95,7 @@ struct shared_info *HYPERVISOR_shared_in
+  *
+  * 0: not available, 1: available
+  */
+-static int have_vcpu_info_placement = 0;
++static int have_vcpu_info_placement = 1;
  
- 	processors[pr->id] = NULL;
--
-+	processor_device_array[pr->id] = NULL;
- 	kfree(pr);
- 
- 	return 0;
+ static void __init xen_vcpu_setup(int cpu)
+ {
+--- a/arch/x86/xen/xen-asm.S
++++ b/arch/x86/xen/xen-asm.S
+@@ -33,12 +33,17 @@
+ 	events, then enter the hypervisor to get them handled.
+  */
+ ENTRY(xen_irq_enable_direct)
+-	/* Clear mask and test pending */
+-	andw $0x00ff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
++	/* Unmask events */
++	movb $0, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
++
+ 	/* Preempt here doesn't matter because that will deal with
+ 	   any pending interrupts.  The pending check may end up being
+ 	   run on the wrong CPU, but that doesn't hurt. */
++
++	/* Test for pending */
++	testb $0xff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
+ 	jz 1f
++
+ 2:	call check_events
+ 1:
+ ENDPATCH(xen_irq_enable_direct)
 
 -- 
