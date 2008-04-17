@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934010AbYDQR42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbYDQR7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934010AbYDQR42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761554AbYDQR4S
+	id S933585AbYDQR7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762038AbYDQR7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:56:18 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:36141 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761481AbYDQR4R (ORCPT
+	Thu, 17 Apr 2008 13:59:00 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:55816 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758001AbYDQR67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:56:17 -0400
-Message-ID: <48078F3D.80704@tiscali.nl>
-Date: Thu, 17 Apr 2008 19:56:13 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 17 Apr 2008 13:58:59 -0400
+Date: Thu, 17 Apr 2008 23:28:43 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: alex@clusterfs.com, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mballoc: fix hot spins after err_freebuddy and
+	err_freemeta
+Message-ID: <20080417175843.GA7517@skywalker>
+References: <4807762A.9090202@tiscali.nl>
 MIME-Version: 1.0
-To: dbrownell@users.sourceforge.net
-CC: linux-usb@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ehci-dbg: evaluate negative snprintf() retvals in qh_lines()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4807762A.9090202@tiscali.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only when signed, a snprintf() retval below zero can be evaluated.
+On Thu, Apr 17, 2008 at 06:09:14PM +0200, Roel Kluin wrote:
+> ext4_mb_init_backend() has a variable i of type ext4_group_t. which is typedefined
+> in include/linux/ext4_fs_i.h:34 to unsigned long. Since unsigned, i >= 0 is always
+> true, so fix hot spins after err_freebuddy and err_freemeta.
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+> index ef97f19..afba9b8 100644
+> --- a/fs/ext4/mballoc.c
+> +++ b/fs/ext4/mballoc.c
+> @@ -2618,14 +2618,14 @@ static int ext4_mb_init_backend(struct super_block *sb)
+>  	return 0;
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/usb/host/ehci-dbg.c b/drivers/usb/host/ehci-dbg.c
-index 64ebfc5..25a98c1 100644
---- a/drivers/usb/host/ehci-dbg.c
-+++ b/drivers/usb/host/ehci-dbg.c
-@@ -394,7 +394,7 @@ static void qh_lines (
- 	u32			hw_curr;
- 	struct list_head	*entry;
- 	struct ehci_qtd		*td;
--	unsigned		temp;
-+	int			temp;
- 	unsigned		size = *sizep;
- 	char			*next = *nextp;
- 	char			mark;
-@@ -459,9 +459,9 @@ static void qh_lines (
- 		else if (size < temp)
- 			temp = size;
- 		size -= temp;
--		next += temp;
- 		if (temp == size)
- 			goto done;
-+		next += temp;
- 	}
- 
- 	temp = snprintf (next, size, "\n");
-@@ -470,11 +470,10 @@ static void qh_lines (
- 	else if (size < temp)
- 		temp = size;
- 	size -= temp;
--	next += temp;
- 
- done:
- 	*sizep = size;
--	*nextp = next;
-+	*nextp = next + temp;
- }
- 
- static ssize_t fill_async_buffer(struct debug_buffer *buf)
+The function needs more changes. For ex:
+
+2279     if (meta_group_info[j] == NULL) {
+2280               printk(KERN_ERR "EXT4-fs: can't allocate buddy mem\n");
+2281               i--;
+2282               goto err_freebuddy;
+2283     }
+
+That decrement  i--; could result in bad value if i == 0;.
+
+
+> 
+>  err_freebuddy:
+> -	while (i >= 0) {
+> +	do {
+>  		kfree(ext4_get_group_info(sb, i));
+> -		i--;
+> -	}
+> -	i = num_meta_group_infos;
+> +	} while (i-- != 0);
+> +	i = num_meta_group_infos - 1;
+>  err_freemeta:
+> -	while (--i >= 0)
+> +	do {
+>  		kfree(sbi->s_group_info[i]);
+> +	} while (i-- != 0);
+>  	iput(sbi->s_buddy_cache);
+>  err_freesgi:
+>  	kfree(sbi->s_group_info);
+
+-aneesh
