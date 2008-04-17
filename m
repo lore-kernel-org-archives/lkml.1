@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764833AbYDQL4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932804AbYDQL63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764833AbYDQL4t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 07:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYDQL4j
+	id S932804AbYDQL63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 07:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYDQL6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 07:56:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39921 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Apr 2008 07:58:17 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:65457 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbYDQL4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 07:56:38 -0400
-Date: Thu, 17 Apr 2008 13:56:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080417115623.GA16337@elte.hu>
-References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org> <84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com> <20080417012051.ed56f4ab.akpm@linux-foundation.org> <Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI> <84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com> <20080417014217.ab0453a9.akpm@linux-foundation.org> <20080417114900.GA17033@infradead.org>
-MIME-Version: 1.0
+	id S1752552AbYDQL6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 07:58:16 -0400
+To: pavel@ucw.cz
+Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, crispin@crispincowan.com,
+       serue@us.ibm.com, matthew@wil.cx, paul.moore@hp.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [TOMOYO #7 30/30] Hooks for SAKURA and TOMOYO.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <1208182620.18883.92.camel@moss-spartans.epoch.ncsc.mil>
+	<484889.77284.qm@web36604.mail.mud.yahoo.com>
+	<200804152014.IAB35427.tFLHSMOQOFOFJV@I-love.SAKURA.ne.jp>
+	<20080416191315.GB3923@ucw.cz>
+In-Reply-To: <20080416191315.GB3923@ucw.cz>
+Message-Id: <200804172058.BHI60408.OtFFMOJHOLQVSF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 17 Apr 2008 20:58:12 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080417114900.GA17033@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Thu, Apr 17, 2008 at 01:42:17AM -0700, Andrew Morton wrote:
-> > Apparently that code is not being proposed for merge and it all got
-> > reimplemented and moved elsewhere.  I knew nothing of this.
+Pavel Machek wrote:
+> > It is true that namespace may differ between processes,
+> > but I think that that is the matter of how to restrict namespace manipulation operations.
+> > As I said, a system can't survive if namespace is madly manipulated.
+> > To keep the system workable, /bin/ must be the directory for binary programs,
+> > /etc/ must be the directory for configuration files, and so on in all namespaces.
 > 
-> It's not just you, I haven't heard anythinh either :) I'm also still 
-> not comfortable with adding another quick-hacker interface instead of 
-> making sure the existing one doesn't suck.
+> Ehm? Where did you get those ideas?
+> 
+> I'm free to name my directories any way I want, and keep config files
+> in /pavlix_config, thank you... There is even distro that does
+> something like that, IIRC...
+> 
+We can make processes have different namespace by using clone() with CLONE_NEWNS.
+But even if some process got a different namespace, it need to follow conventional rules.
+Optional files (e.g. /pavlix_config) need not to follow conventional rules.
+What I'm talking about is essetial files (e.g. /bin/sh and /etc/passwd).
+Can your system continue running even if essetial files are not in place
+(like /bin/sh moved to /etc/sh and /etc/passwd moved to /bin/passwd) ?
+I don't think so...
 
-it's all in debugfs so no stable interface worries. Not much has changed 
-since we last posted it to lkml. Posting the full patchset is 
-impractical as it's in excess of 100 commits (but we did post various 
-versions of it) - you can pick up the latest from:
-
-   http://people.redhat.com/mingo/sched-devel.git/README
-
-check out kernel/trace/. Usage: check out 
-/sys/kernel/debug/tracing/README :-)
-
-	Ingo
+Thanks.
