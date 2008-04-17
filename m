@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbYDQBfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYDQBr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762792AbYDQBfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934017AbYDQB3n
+	id S1755188AbYDQBr7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYDQBrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:29:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52252
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S934013AbYDQB3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:29:42 -0400
-Date: Wed, 16 Apr 2008 18:29:38 -0700 (PDT)
-Message-Id: <20080416.182938.23275180.davem@davemloft.net>
-To: ivdoorn@gmail.com
-Cc: linville@tuxdriver.com, hmh@hmh.eng.br, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] rfkill support for r/w and r/o rfkill switches
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200804162240.38704.IvDoorn@gmail.com>
-References: <200804162126.43771.IvDoorn@gmail.com>
-	<20080416195822.GA25066@tuxdriver.com>
-	<200804162240.38704.IvDoorn@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 16 Apr 2008 21:47:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21346 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750887AbYDQBrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:47:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,668,1199692800"; 
+   d="scan'208";a="373410230"
+Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+In-Reply-To: <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
+References: <1207723262.18313.37.camel@caritas-dev.intel.com>
+	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
+	 <1208333949.4322.5.camel@caritas-dev.intel.com>
+	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 17 Apr 2008 09:52:03 +0800
+Message-Id: <1208397123.4322.21.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 17 Apr 2008 01:47:43.0547 (UTC) FILETIME=[073D00B0:01C8A02D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ivo van Doorn <ivdoorn@gmail.com>
-Date: Wed, 16 Apr 2008 22:40:38 +0200
+On Wed, 2008-04-16 at 20:40 +0200, Sebastian Siewior wrote:
+[...]
+> >> >--- a/include/crypto/aes.h
+> >> >+++ b/include/crypto/aes.h
+> >> >@@ -19,6 +19,7 @@
+> >> > 
+> >> > struct crypto_aes_ctx {
+> >> > 	u32 key_length;
+> >> >+	u32 _pad1;
+> >> 
+> >> Why is this pad required? Do you want special alignment of the keys?
+> >
+> >Because the key is loaded in 64bit in this patch, I want to align the
+> >key with 64bit address.
+> 
+> Than this won't work all the time. To make it bulletproof
+> - set .cra_alignmask in the glue code properly
+> - use the attribute aligned thing
+> - retrieve your private struct via crypto_tfm_ctx_aligned()
 
-> Dave, do you want the rfkill patches directly, or should they go through
-> the wireless tree first?
+As far as I know, the CRYPTO_MINALIGN is defined in
+include/linux/crypto.h as __alignof__(unsigned long long), and the
+__crt_ctx in crypto_tfm is aligned in CRYPTO_MINALIGN. So I think adding
+a pad is sufficient for x86_64 implementation.
 
-I'm happy if it goes through the wireless tree.
+Best Regards,
+Huang Ying
 
-That way experts like John and the others can review it
-from a wireless perspective, and it's one less pull
-for me to do :-)
