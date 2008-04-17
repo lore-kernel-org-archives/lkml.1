@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbYDQPix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbYDQPlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbYDQPix (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 11:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbYDQPio
+	id S933232AbYDQPlf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 11:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbYDQPl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 11:38:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34601 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761250AbYDQPin (ORCPT
+	Thu, 17 Apr 2008 11:41:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39634 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760565AbYDQPl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 11:38:43 -0400
-Date: Thu, 17 Apr 2008 08:44:33 -0700
-From: Greg KH <greg@kroah.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-security-module@vger.kernel.org, linux-audit@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/12] Tell git about security/selinux/include/audit.h
-Message-ID: <20080417154433.GA2120@kroah.com>
-References: <88d8811229b02f6b14ff1f0682dc5502a1f61b41.1208428765.git.jmorris@namei.org> <751bc5f7460a0337b7e463bd9a7c4ad60ed6176e.1208428766.git.jmorris@namei.org>
+	Thu, 17 Apr 2008 11:41:26 -0400
+Date: Thu, 17 Apr 2008 11:41:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       akpm@goodmis.org
+Subject: [PATCH] lockdep: comment hidden releases of graph_lock 
+Message-ID: <Pine.LNX.4.58.0804171139170.12839@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <751bc5f7460a0337b7e463bd9a7c4ad60ed6176e.1208428766.git.jmorris@namei.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 11:06:07AM +0000, James Morris wrote:
-> Signed-off-by: James Morris <jmorris@namei.org>
-> ---
->  security/selinux/include/audit.h |   65 ++++++++++++++++++++++++++++++++++++++
 
-Shouldn't this be merged with the previous patch that needed this?
+While reviewing the lockdep.c code, it looked to me that I found a bug where
+the release of the graph_lock was not done on failure. This turns out not
+to be the case, because the graph_unlock is performed within the internal
+functions of lockdep when a failure occurs.
 
-That way no one gets hit with a build error doing a 'git bisect'.
+To help out others when visually reviewing this code, I've added comments
+to the places where it looks like it may be a bug not to call graph_unlock.
 
-thanks,
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/lockdep.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-greg k-h
+Index: linux-sched-devel.git/kernel/lockdep.c
+===================================================================
+--- linux-sched-devel.git.orig/kernel/lockdep.c	2008-04-17 10:52:40.000000000 -0400
++++ linux-sched-devel.git/kernel/lockdep.c	2008-04-17 11:20:49.000000000 -0400
+@@ -1566,6 +1566,7 @@ static int validate_chain(struct task_st
+ 		/*
+ 		 * Add dependency only if this lock is not the head
+ 		 * of the chain, and if it's not a secondary read-lock:
++		 * (will do graph_unlock on failure)
+ 		 */
+ 		if (!chain_head && ret != 2)
+ 			if (!check_prevs_add(curr, hlock))
+@@ -2284,6 +2285,7 @@ static int mark_lock(struct task_struct
+
+ 	this->class->usage_mask |= new_mask;
+
++	/* save_trace does graph_unlock on failure */
+ 	if (!save_trace(this->class->usage_traces + new_bit))
+ 		return 0;
+
+@@ -2296,6 +2298,7 @@ static int mark_lock(struct task_struct
+ 	case LOCK_ENABLED_SOFTIRQS:
+ 	case LOCK_ENABLED_HARDIRQS_READ:
+ 	case LOCK_ENABLED_SOFTIRQS_READ:
++		/* mark_lock_irq does graph_unlock on failure */
+ 		ret = mark_lock_irq(curr, this, new_bit);
+ 		if (!ret)
+ 			return 0;
+
