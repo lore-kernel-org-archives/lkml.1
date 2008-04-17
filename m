@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbYDQBNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYDQBOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbYDQBNo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYDQBH3
+	id S1760918AbYDQBOP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbYDQBHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:58846 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:32 -0400
+Received: from sous-sol.org ([216.99.217.87]:58851 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758793AbYDQBH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:27 -0400
-Message-Id: <20080417010344.527179466@sous-sol.org>
+	id S1758877AbYDQBHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:30 -0400
+Message-Id: <20080417010347.660452049@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:01:58 -0700
+Date: Wed, 16 Apr 2008 18:02:01 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David S Miller <davem@davemloft.net>
-Subject: NET: Add preemption point in qdisc_run
-Content-Disposition: inline; filename=net-add-preemption-point-in-qdisc_run.patch
+       Patrick McHardy <kaber@trash.net>, David S Miller <davem@davemloft.net>
+Subject: NET: Fix multicast device ioctl checks
+Content-Disposition: inline; filename=net-fix-multicast-device-ioctl-checks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,54 +33,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Patrick McHardy <kaber@trash.net>
 
-Upstream commit: 2ba2506ca7ca62c56edaa334b0fe61eb5eab6ab0
+Upstream commit: 61ee6bd487b9cc160e533034eb338f2085dc7922
 
-The qdisc_run loop is currently unbounded and runs entirely in a
-softirq.  This is bad as it may create an unbounded softirq run.
+SIOCADDMULTI/SIOCDELMULTI check whether the driver has a set_multicast_list
+method to determine whether it supports multicast. Drivers implementing
+secondary unicast support use set_rx_mode however.
 
-This patch fixes this by calling need_resched and breaking out if
-necessary.
+Check for both dev->set_multicast_mode and dev->set_rx_mode to determine
+multicast capabilities.
 
-It also adds a break out if the jiffies value changes since that would
-indicate we've been transmitting for too long which starves other
-softirqs.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/sched/sch_generic.c |   18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ net/core/dev.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -178,10 +178,22 @@ static inline int qdisc_restart(struct n
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3240,7 +3240,7 @@ static int dev_ifsioc(struct net *net, s
+ 			return -EOPNOTSUPP;
  
- void __qdisc_run(struct net_device *dev)
- {
--	do {
--		if (!qdisc_restart(dev))
-+	unsigned long start_time = jiffies;
-+
-+	while (qdisc_restart(dev)) {
-+		if (netif_queue_stopped(dev))
-+			break;
-+
-+		/*
-+		 * Postpone processing if
-+		 * 1. another process needs the CPU;
-+		 * 2. we've been doing it for too long.
-+		 */
-+		if (need_resched() || jiffies != start_time) {
-+			netif_schedule(dev);
- 			break;
--	} while (!netif_queue_stopped(dev));
-+		}
-+	}
+ 		case SIOCADDMULTI:
+-			if (!dev->set_multicast_list ||
++			if ((!dev->set_multicast_list && !dev->set_rx_mode) ||
+ 			    ifr->ifr_hwaddr.sa_family != AF_UNSPEC)
+ 				return -EINVAL;
+ 			if (!netif_device_present(dev))
+@@ -3249,7 +3249,7 @@ static int dev_ifsioc(struct net *net, s
+ 					  dev->addr_len, 1);
  
- 	clear_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
- }
+ 		case SIOCDELMULTI:
+-			if (!dev->set_multicast_list ||
++			if ((!dev->set_multicast_list && !dev->set_rx_mode) ||
+ 			    ifr->ifr_hwaddr.sa_family != AF_UNSPEC)
+ 				return -EINVAL;
+ 			if (!netif_device_present(dev))
 
 -- 
