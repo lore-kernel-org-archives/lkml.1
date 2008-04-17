@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbYDQETL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYDQEZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759094AbYDQETL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 00:19:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYDQES4
+	id S1755791AbYDQEZo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 00:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYDQEZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 00:18:56 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38104 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbYDQESz (ORCPT
+	Thu, 17 Apr 2008 00:25:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:46212 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbYDQEZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 00:18:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=J9vwxog6RmdrCCbQJTQRLgveujZAuIQpGWlSnABdv9BJ2kbF2v5UCXqXrk42DxyuV
-	M/8vCZOyHeEesPbUyAkiw==
-Message-ID: <6599ad830804162118g6b24d8ebq26b0d72133b0e19e@mail.gmail.com>
-Date: Wed, 16 Apr 2008 21:18:41 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup: fix a race condition in manipulating tsk->cg_list
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Paul Jackson" <pj@sgi.com>
-In-Reply-To: <4806C5EB.3040102@cn.fujitsu.com>
+	Thu, 17 Apr 2008 00:25:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F31K97pTLaKOhhrzdFGFIVFuxVLZyGz+AV/Mi54TaVf6kWN3hY38FPHR2KD4OrFnQX8Qsi/A/YlTUbOZCR6Zv35yQU9YCQXjkJmhCm8pUgGfaCLaWb2xwwgxk2OGE5vwOaEZMaleoTC3EZ+S6khQ+XQ0wkq6SP0e0XdRxj4lSAk=
+Message-ID: <aa79d98a0804162125u45bde1edq550acf51784a5b5@mail.gmail.com>
+Date: Thu, 17 Apr 2008 08:25:32 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: [patch 1/3] NFS: fix potential NULL pointer dereference
+Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
+       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1208378428.8598.12.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4806C5EB.3040102@cn.fujitsu.com>
+References: <20080416174421.442716301@gmail.com>
+	 <48063bc9.2234440a.747d.09ea@mx.google.com>
+	 <1208369492.5376.9.camel@heimdal.trondhjem.org>
+	 <20080416181336.GA7657@cvg>
+	 <1208372123.5376.43.camel@heimdal.trondhjem.org>
+	 <aa79d98a0804161319l4be9bb12k7bacae815b1d6d9c@mail.gmail.com>
+	 <1208378428.8598.12.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 16, 2008 at 8:37 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> When I ran a test program to fork mass processes and at the same time
->  'cat /cgroup/tasks', I got the following oops:
+On Thu, Apr 17, 2008 at 12:40 AM, Trond Myklebust
+<trond.myklebust@fys.uio.no> wrote:
 >
->  ------------[ cut here ]------------
->  kernel BUG at lib/list_debug.c:72!
->  invalid opcode: 0000 [#1] SMP
->  Pid: 4178, comm: a.out Not tainted (2.6.25-rc9 #72)
->  ...
->  Call Trace:
->   [<c044a5f9>] ? cgroup_exit+0x55/0x94
->   [<c0427acf>] ? do_exit+0x217/0x5ba
->   [<c0427ed7>] ? do_group_exit+0.65/0x7c
->   [<c0427efd>] ? sys_exit_group+0xf/0x11
->   [<c0404842>] ? syscall_call+0x7/0xb
->   [<c05e0000>] ? init_cyrix+0x2fa/0x479
->  ...
->  EIP: [<c04df671>] list_del+0x35/0x53 SS:ESP 0068:ebc7df4
->  ---[ end trace caffb7332252612b ]---
->  Fixing recursive fault but reboot is needed!
+>  On Thu, 2008-04-17 at 00:19 +0400, Cyrill Gorcunov wrote:
+>  > Trond, I've just pointed the problem and its solution (which is seems
+>  > to be a bit ugly, according to the rest nfs coding principle). So if
+>  > you prefer to have such a check in 'walk_path' function - just say me
+>  > that. You choose :) Thanks for comments
 >
->  After digging into the code and debugging, I finlly found out a race
->  situation:
->                                 do_exit()
->                                   ->cgroup_exit()
->                                     ->if (!list_empty(&tsk->cg_list))
->                                         list_del(&tsk->cg_list);
 >
->  cgroup_iter_start()
->   ->cgroup_enable_task_cg_list()
->     ->list_add(&tsk->cg_list, ..);
+> > > So? The defensive coding principle is that you perform validity checks
+>  > > when the pointer is created. Otherwise, we could equally well have added
+>  > > the NULL deref check to nfs4_path_walk()...
 >
->  In this case the list won't be deleted though the process has exited.
+>  No, your fix was correct, it was just incomplete.
 >
->  We got two bug reports in the past, which seem to be the same bug as
->  this one:
->         http://lkml.org/lkml/2008/3/5/332
->         http://lkml.org/lkml/2007/10/17/224
+>  The point I was making above was that defensive programming means that
+>  _all_ these validity/NULL pointer checks should really be done in
+>  nfs4_validate_mount_data and nfs_validate_mount_data. We shouldn't rely
+>  on checks in other parts of the code.
+>
+>  In fact, as an example: it looks to me as if the lack of a
+>  nfs_server.hostname, leads to a lack of nfs_client->cl_hostname, which
+>  will eventually cause an Oops if you 'cat /proc/fs/nfsfs/servers', or if
+>  you hit the printk in nfs_update_inode(), or various other dprintk()s.
+>
+>  Trond
+>
+>
 
-Yes, that looks like it could be the same one - great. But this
-corruption can only be triggered the first time you cat a tasks file
-after a reboot, right? That would partly explain why it was hard to
-reproduce (at least, I had trouble).
-
-My only thought about the downside of this is that an exiting task
-that gets stuck somewhere  between setting PF_EXITING and calling
-cgroup_exit() won't show up in its cgroup's tasks file, since we'll
-enable cgroup links but skip it. I guess that's not a big deal.
-
-Maybe it would be better to not do a cgroup_exit() until we're
-unhashed, so that cgroup_enable_task_cg_list() can't find the exiting
-task?
-
-Paul
+Thanks Trond, I'll remake it ASAP (but can't guarantie that it will be soon ;)
