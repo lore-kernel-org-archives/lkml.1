@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYDQILc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYDQIOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYDQILc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYDQILV
+	id S1758576AbYDQIOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYDQIOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:11:21 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:51098 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbYDQILT (ORCPT
+	Thu, 17 Apr 2008 04:14:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753353AbYDQIOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:11:19 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-Subject: Re: ehci-hcd affects hda speed
-Date: Thu, 17 Apr 2008 10:20:11 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       David Brownell <david-b@pacbell.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200804160738.13437.oliver@neukum.org> <alpine.LFD.1.10.0804170211220.8464@nev.ubzr>
-In-Reply-To: <alpine.LFD.1.10.0804170211220.8464@nev.ubzr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 17 Apr 2008 04:14:19 -0400
+Date: Thu, 17 Apr 2008 01:14:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-Id: <20080417011401.ea3e70f0.akpm@linux-foundation.org>
+In-Reply-To: <20080417002552.5742ad65.akpm@linux-foundation.org>
+References: <20080416202338.GA6007@elte.hu>
+	<20080417002552.5742ad65.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804171020.14189.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 17. April 2008 00:23:08 schrieb Lev A. Melnikovsky:
-> Oliver,
-> 
-> ON> EHCI should not scan an empty async. However this manufacturer
-> ON> has shown a liberal attitude about conforming with specifications.
-> ON> If the root hub is suspended, it can't do DMA. So it might help.
-> Yes, it does, thank you. No DMA when suspended. Auto-suspend is executed 
-> if external hub is the only attached device. Can this be used to block 
-> spurious schedule traversal?
+On Thu, 17 Apr 2008 00:25:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Obviously, yes, if only hubs are attached. The question is whether it
-should be. It would be better to find a way to fix the chip bug in the active
-state. However, as fixing all hardware bugs for that vendor may be difficult
-I wanted to test whether a partial work around is available.
+> A quick grep indicates that only 644 of
+> these 884 patches are in -mm.  And a lot of them only turned up a week or
+> two ago.
 
-	Regards
-		Oliver
+I did a test merge.
+
+- About 13 patch rejects agaisnt git-kvm
+
+- Multiple minor rejects aginst the IDE tree, the PCI tree
+
+- Minor bustage of git-semaphore
+
+- Several core MM patches which I also had merged.  I didn't check fully
+  whether they are the same.
+
+- extensive damage to the page-flags patches
+
+  Did you check that all architectures and configurations still have
+  sufficient page flags for us to be able to consume another one for
+  kmemcheck?  The MM developers have put much, much effort into avoiding
+  running out of flags over numerous years and afaik none of them even know
+  that this debug feature is using one of the few remaining ones.
+
+  What do we do when we run out?
+
+- rejects in capabilities-implement-per-process-securebits.patch
+
+- The proposed PR_GET_TSC and PR_SET_TSC have the same values as
+  PR_GET_SECUREBITS and PR_SET_SECUREBITS.  Because we never knew this
+  before we didn't get to discuss which one needs to be altered as we
+  normally would.
+
+- several rejects in
+  x86-olpc-add-one-laptop-per-child-architecture-support.patch
+
+- several bitops patches (use-__fls-for-fls64-on-64-bit-archs, etc) were
+  also in -mm.  I did not check for differences between the two versions.
+
+  These are not x86 patches.
+
+- maybe ten-odd minor rejects in other places.
+
+
+So not as bad as it might have been.  kvm and page-flags are the major
+problems.  Of course, none of this has been compiled and this proposed code
+combination has never been tested by anyone at runtime.
+
