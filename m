@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYDQBOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbYDQBOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYDQBOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Apr 2008 21:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbYDQBHc
+	id S1761452AbYDQBOg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Apr 2008 21:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbYDQBHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Apr 2008 21:07:32 -0400
-Received: from sous-sol.org ([216.99.217.87]:58851 "EHLO sous-sol.org"
+	Wed, 16 Apr 2008 21:07:34 -0400
+Received: from sous-sol.org ([216.99.217.87]:58853 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758877AbYDQBHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Apr 2008 21:07:30 -0400
-Message-Id: <20080417010347.660452049@sous-sol.org>
+	id S1758912AbYDQBHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Apr 2008 21:07:32 -0400
+Message-Id: <20080417010348.780146429@sous-sol.org>
 References: <20080417010122.148289106@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Apr 2008 18:02:01 -0700
+Date: Wed, 16 Apr 2008 18:02:03 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>, David S Miller <davem@davemloft.net>
-Subject: NET: Fix multicast device ioctl checks
-Content-Disposition: inline; filename=net-fix-multicast-device-ioctl-checks.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David S Miller <davem@davemloft.net>
+Subject: TCP: Let skbs grow over a page on fast peers
+Content-Disposition: inline; filename=tcp-let-skbs-grow-over-a-page-on-fast-peers.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,43 +34,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-Upstream commit: 61ee6bd487b9cc160e533034eb338f2085dc7922
+Upstream commit: 69d1506731168d6845a76a303b2c45f7c05f3f2c
 
-SIOCADDMULTI/SIOCDELMULTI check whether the driver has a set_multicast_list
-method to determine whether it supports multicast. Drivers implementing
-secondary unicast support use set_rx_mode however.
+While testing the virtio-net driver on KVM with TSO I noticed
+that TSO performance with a 1500 MTU is significantly worse
+compared to the performance of non-TSO with a 16436 MTU.  The
+packet dump shows that most of the packets sent are smaller
+than a page.
 
-Check for both dev->set_multicast_mode and dev->set_rx_mode to determine
-multicast capabilities.
+Looking at the code this actually is quite obvious as it always
+stop extending the packet if it's the first packet yet to be
+sent and if it's larger than the MSS.  Since each extension is
+bound by the page size, this means that (given a 1500 MTU) we're
+very unlikely to construct packets greater than a page, provided
+that the receiver and the path is fast enough so that packets can
+always be sent immediately.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+The fix is also quite obvious.  The push calls inside the loop
+is just an optimisation so that we don't end up doing all the
+sending at the end of the loop.  Therefore there is no specific
+reason why it has to do so at MSS boundaries.  For TSO, the
+most natural extension of this optimisation is to do the pushing
+once the skb exceeds the TSO size goal.
+
+This is what the patch does and testing with KVM shows that the
+TSO performance with a 1500 MTU easily surpasses that of a 16436
+MTU and indeed the packet sizes sent are generally larger than
+16436.
+
+I don't see any obvious downsides for slower peers or connections,
+but it would be prudent to test this extensively to ensure that
+those cases don't regress.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/core/dev.c |    4 ++--
+ net/ipv4/tcp.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3240,7 +3240,7 @@ static int dev_ifsioc(struct net *net, s
- 			return -EOPNOTSUPP;
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -583,7 +583,7 @@ new_segment:
+ 		if (!(psize -= copy))
+ 			goto out;
  
- 		case SIOCADDMULTI:
--			if (!dev->set_multicast_list ||
-+			if ((!dev->set_multicast_list && !dev->set_rx_mode) ||
- 			    ifr->ifr_hwaddr.sa_family != AF_UNSPEC)
- 				return -EINVAL;
- 			if (!netif_device_present(dev))
-@@ -3249,7 +3249,7 @@ static int dev_ifsioc(struct net *net, s
- 					  dev->addr_len, 1);
+-		if (skb->len < mss_now || (flags & MSG_OOB))
++		if (skb->len < size_goal || (flags & MSG_OOB))
+ 			continue;
  
- 		case SIOCDELMULTI:
--			if (!dev->set_multicast_list ||
-+			if ((!dev->set_multicast_list && !dev->set_rx_mode) ||
- 			    ifr->ifr_hwaddr.sa_family != AF_UNSPEC)
- 				return -EINVAL;
- 			if (!netif_device_present(dev))
+ 		if (forced_push(tp)) {
+@@ -829,7 +829,7 @@ new_segment:
+ 			if ((seglen -= copy) == 0 && iovlen == 0)
+ 				goto out;
+ 
+-			if (skb->len < mss_now || (flags & MSG_OOB))
++			if (skb->len < size_goal || (flags & MSG_OOB))
+ 				continue;
+ 
+ 			if (forced_push(tp)) {
 
 -- 
