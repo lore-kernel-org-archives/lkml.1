@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbYDQJ5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935512AbYDQJ56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763088AbYDQJ5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 05:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbYDQJ2B
+	id S935512AbYDQJ56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 05:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763785AbYDQJaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 05:28:01 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23832 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933934AbYDQJ17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 05:27:59 -0400
-Date: Thu, 17 Apr 2008 11:27:55 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paolo Valente <paolo.valente@unimore.it>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
-Message-ID: <20080417092751.GX12774@kernel.dk>
-References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it> <20080417083047.GV12774@kernel.dk> <4807173E.4060300@unimore.it>
+	Thu, 17 Apr 2008 05:30:05 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36805 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934090AbYDQJaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 05:30:01 -0400
+Date: Thu, 17 Apr 2008 18:30:11 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Tom May" <tom@tommay.com>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
+References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com> <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
+Message-Id: <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4807173E.4060300@unimore.it>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17 2008, Paolo Valente wrote:
-> Jens Axboe ha scritto:
-> >
-> >
-> >I was thinking about that too. Generally I've been opposed to doing
-> >scheduling decisions on anything but time, since that is always
-> >relevant. When to hand out slices and to what process, that algorithm is
-> >really basic in CFQ and could do with an improvement.
-> >
-> >  
-> Maybe there is also another middle-ground solution. I'll try to sketch 
-> it out:
-> . use sectors instead of time
-> . impose a penalty to each thread in proportion to the distance between 
-> its disk requests
-> . reduce the maximum budget of each thread as a function of this seek 
-> penalty so as to prevent the thread from stealing more than a given time 
-> slice (the simple mechanism to limit per-thread budget is already 
-> implemented in bfq).
-> 
-> By doing so, both fairness and time isolation should be guaranteed.
-> Finally, this policy should be safe in that, given the maximum time used 
-> by a seeky thread to consume its maximum budget on a reference disk, the 
-> time used on any faster disk should be shorter.
-> 
-> Does it seem reasonable?
+Hi Tom
 
-Not for CFQ, that will stay time based. The problem with #2 above is
-that it then quickly turns to various heuristics, which is just
-impossible to tune for general behaviour. Or it just falls apart for
-other real life situations.
+> Here's a test program that allocates memory and frees on notification.
+>  It takes an argument which is the number of pages to use; use a
+> number considerably higher than the amount of memory in the system.
+> I'm running this on a system without swap.  Each time it gets a
+> notification, it frees memory and writes out the /proc/meminfo
+> contents.  What I see is that Cached gradually decreases, then Mapped
+> decreases, and eventually the kernel invokes the oom killer.  It may
+> be necessary to tune some of the constants that control the allocation
+> and free rates and latency; these values work for my system.
 
--- 
-Jens Axboe
+may be...
+
+I think you misunderstand madvise(MADV_DONTNEED).  
+madvise(DONTNEED) indicate drop process page table.
+it mean become easily swap.
+
+when run on system without swap, madvise(DONTNEED) almost doesn't work
+as your expected.
+
+I am sorry for being not able to help you. ;)
+
+
 
