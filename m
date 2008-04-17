@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbYDQFcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYDQGKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbYDQFcw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 01:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYDQFco
+	id S1755597AbYDQGKU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 02:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYDQGKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 01:32:44 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59088 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbYDQFcn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 01:32:43 -0400
-Message-ID: <4806E0BA.3020209@ah.jp.nec.com>
-Date: Thu, 17 Apr 2008 14:31:38 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, vgoyal@redhat.com
-CC: Neil Horman <nhorman@redhat.com>, nickpiggin@yahoo.com.au,
-       k-miyoshi@cb.jp.nec.com, greg@kroah.com, bwalle@suse.de,
-       kdb@oss.sgi.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-       ebiederm@xmission.com, kaos@ocs.com.au
-Subject: Re: [PATCH 0/2] add new notifier function ,take3
-References: <47FF190B.6030406@ah.jp.nec.com>	<20080411210751.e4a468b2.akpm@linux-foundation.org>	<20080414134622.GB6941@redhat.com>	<20080414144228.GD1193@hmsendeavour.rdu.redhat.com>	<20080414145323.GE6941@redhat.com>	<20080414160146.GE1193@hmsendeavour.rdu.redhat.com> <20080414123311.01d537b4.akpm@linux-foundation.org>
-In-Reply-To: <20080414123311.01d537b4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 02:10:06 -0400
+Received: from home.keithp.com ([63.227.221.253]:3283 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbYDQGKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 02:10:05 -0400
+Subject: RE: Mapping PCI BAR through /sys/devices/pci* sets cache-disable
+	andwrite-through
+From: Keith Packard <keithp@keithp.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEE5CEA9@orsmsx423.amr.corp.intel.com>
+References: <1208367626.5245.5.camel@koto.keithp.com>
+	 <924EFEDD5F540B4284297C4DC59F3DEEE5CEA9@orsmsx423.amr.corp.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3Og6keiqYkYO7NauJhiI"
+Date: Wed, 16 Apr 2008 22:20:31 -0700
+Message-Id: <1208409631.10327.5.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 14 Apr 2008 12:01:46 -0400
-> Neil Horman <nhorman@redhat.com> wrote:
-> 
->> On Mon, Apr 14, 2008 at 10:53:23AM -0400, Vivek Goyal wrote:
->>> On Mon, Apr 14, 2008 at 10:42:28AM -0400, Neil Horman wrote:
->>>> On Mon, Apr 14, 2008 at 09:46:22AM -0400, Vivek Goyal wrote:
->>>>> On Fri, Apr 11, 2008 at 09:07:51PM -0700, Andrew Morton wrote:
->>>>>
->>>>> [..]
->>>>>>> Kernel panic - not syncing: Panic by panic_module.
->>>>>>> __tunable_atomic_notifier_call_chain enter
->>>>>>> msg_handler:panic_event was called.
->>>>>>> ipmi_wdog:wdog_panic_handler was called.
->>>>>>> notifier_test: notifier_test_panic() is called.
->>>>>>> notifier_test: notifier_test_panic2() is called.
->>>>>> OK.  But I don't see anywhere in here the most important piece of
->>>>>> information: why do we need this feature in Linux?
->>>>>>
->>>>>> What are the use-cases?  What is the value?  etc.
->>>>>>
->>>>>> Often I can guess (but I like the originator to remove the guesswork).  In
->>>>>> this case I'm stumped - I can't see any reason why anyone would want this.
->>>>>>
->>>>> Hi Andrew,
->>>>>
->>>>> To begin with, he wants kdb, kgdb etc to co-exist with kdump. He wants
->>>>> to put all the RAS tools (who are interested in panic event) on a list
->>>>> and export it to user space and let user decide in what order do the tool get
->>>>> executed at panic time (based on priority).
->>>>>
->>>>> This brings in little bit reliability concerns for kdump due to notifier
->>>>> code being run after panic.
->>>>>
->>>>> I think people want to use this infrastrutucure beyond RAS tools. I
->>>>> remember somebody wanting to send a message to remote node after a
->>>>> panic (before kdump kicks in)  so that remote node can initiate failover
->>>>> etc.
->>>>>
->>>> I know it doesn't particularly relate to this patch, but FWIW, for cases like
->>>> failover, I've inserted infrastrucutre in the userspace part of kdump for
->>>> Fedora/RHEL to support this sort of thing.  We can run arbitrary scripts righte
->>>> before and after a capture so that notifications can be sent to remote nodes in
->>>> a much safer fashion than using the notifier chain after a panic.
->>>> Neil
->>>>
->>> That's great. I did not know about these. So user can write custom
->>> scripts/binaries which can be packed into kdump initrd and executed either
->>> before or after dump capture? Any idea, if somebody has started using it
->>> already?
->>>
->> Thats exactly right.  I'm not sure if there is any serious use as of yet, but
->> I've had some interrogatories about it.  Specific cases that I recall include:
->>
->> 1) A set of users in japan that are using the pre-dump script to block execution
->> until a scsi controller detects all its drives (it apparently takes up to three
->> minues to scan its bus)
->>
->> 2) I think some people using clustering services were using the pre-script to
->> notify cluster peers of the failure to avoid power fencing while a node
->> completed the crash dump
->>
->> 3) A national lab had an interest in using the pre script to send an email to an
->> administrative address to log the failure in a cluster 
->>
-> 
-> OK, thanks.
-> 
-> I think I'll duck the patch for now as it seems that a littlee more thought
-> and coordination is neeed.
-> 
-> Plus it appears that the only users of this infrastructure are provided via
-> presently-out-of-tree patches, so people who are already patching and
-> building their own kernels can easily add this other patch as well, for now.
-> 
-> 
 
-Hi,
+--=-3Og6keiqYkYO7NauJhiI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The one of the reason why I want this functionality is managing RAS
-tool behavior for postmotem actions, initially from kdb invocation.
-(I used kdb for debugging and crash analysis very useful in lkcd days,
-but it is "want" and it is not "must" today ;-))
+On Wed, 2008-04-16 at 15:23 -0700, Pallipadi, Venkatesh wrote:
 
-The other postmotem action is disabling hardware watchdog.
-Watch dog handler would stop keepalive heartbeat when system panics
-and we must disable hardware watchdog as soon as possible, since 2nd
-kernel startup takes some time (10 or 100? secs) and there may be
-miss-firing window. But currently we have no chance to do anything
-before crash_exec().
+> Setting flags "_PAGE_PCD | _PAGE_PWT" maps to PAT_3 which is "UC". So,
+> the mapping X server will get is UC and if X sets MTRR to WC, it will
+> not have any effect on this mapping, which will be still UC. There may
+> be apps which depend on this /sys/ interface giving UC mapping always...
 
-And thinking about a clustering software. If the system encounter
-the panic, system must notify standby node. But... :-(
+Sure, but X wants WC in the biggest way (our measurements show WC being
+more than 6 times faster for writes, the operation we do the most of).
 
-I am interested in pre-dump scripts Neil mentioned. I think it can
-resolve some of our requirements. I will try it.
+Jesse Barnes suggested using the fact that the BAR was prefetchable to
+guess that this region should not be mapped UC. I don't know of any
+other information available at this API that would help make a better
+choice; there are no ioctls on /sys files that we could use to
+manipulate the mapping.
 
-For quick invocation of kdump, I partially agree with the idea of
-"kdump should be invoked as soon as system panic, since we can not
-trust broken kernels", but we would like to have some choise what
-to do on panic (and if notifier is controllable by my patch,
-you can still call kdump first)
+> With PAT patches, we now have /sys/devices/pci*resource_wc (in addition
+> to resource) for any PREFETCHABLE region. So, X has to change to use
+> that new interface to get WC mapping.
 
-Anyway, completely broken kernel can not call kdump or any other
-mechanism  ;-P  and I feel it is somewhat matter of degree.
+Yeah, we'll do that when it becomes available. Would it make sense in
+the pre-PAT world to use Jesse's guess?
 
-Thanks,
-    Takenori
+In any case, we'll continue to use the fact that mprotect is also broken
+to get our WC mapping working (using mprotect PROT_NONE followed by
+mprotect PROT_READ|PROT_WRITE causes the CD and WT bits to get cleared).
+We're fortunate in this case that we've found a bug to exploit that
+gives us the desired behaviour.
+
+--=20
+keith.packard@intel.com
+
+--=-3Og6keiqYkYO7NauJhiI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIBt4eQp8BWwlsTdMRAl1jAKCMk9J7W7OmuuSCkapZAjjMv6G1UgCgjqnZ
+O6/a8LvJ2SHFiQtwRCDU7mg=
+=RN8M
+-----END PGP SIGNATURE-----
+
+--=-3Og6keiqYkYO7NauJhiI--
+
