@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbYDQT6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYDQUJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbYDQT6m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 15:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYDQT6V
+	id S1753983AbYDQUJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 16:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYDQUJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 15:58:21 -0400
-Received: from 1wt.eu ([62.212.114.60]:3187 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbYDQT6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 15:58:20 -0400
-Date: Thu, 17 Apr 2008 21:46:51 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] libata: implement ATA_IOC_GET_IO32/ATA_IOC_SET_IO32 ioctls
-Message-ID: <20080417194651.GA5783@1wt.eu>
-References: <20080217211810.GA15001@1wt.eu> <20080217211922.GA15327@1wt.eu> <4807A9B0.3010108@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Apr 2008 16:09:03 -0400
+Received: from outbound-mail-26.bluehost.com ([69.89.17.191]:34351 "HELO
+	outbound-mail-26.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753045AbYDQUJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 16:09:01 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jean Delvare <jdelvare@suse.de>
+Subject: Re: PCI MSI breaks when booting with nosmp
+Date: Thu, 17 Apr 2008 13:08:36 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Pavel Machek <pavel@ucw.cz>, Tejun Heo <htejun@gmail.com>,
+       Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Reuben Farrelly <reuben-lkml@reub.net>, Jeff Garzik <jgarzik@pobox.com>
+References: <200804172140.02311.jdelvare@suse.de>
+In-Reply-To: <200804172140.02311.jdelvare@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4807A9B0.3010108@garzik.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200804171308.37328.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 03:49:04PM -0400, Jeff Garzik wrote:
-> Willy Tarreau wrote:
-> >>From 40a8174d27cb9d93b859bc073c8f075b9ff71578 Mon Sep 17 00:00:00 2001
-> >From: Willy Tarreau <w@1wt.eu>
-> >Date: Sun, 17 Feb 2008 21:11:46 +0100
-> >Subject: [PATCH 1/2] libata: implement ATA_IOC_GET_IO32/ATA_IOC_SET_IO32 
-> >ioctls
-> >
-> >This patch implements the aforementionned ioctls and get/set the
-> >new ATA_DFLAG_32BIT_PIO ata flag accordingly for the device. It
-> >only supports values 0 and 1 (disable/enable), as I have no plan
-> >to implement the sync VLB transfers.
-> >
-> >Signed-off-by: Willy Tarreau <w@1wt.eu>
-> 
-> this patch should be combined into the second patch, because it's not 
-> much use without both
+On Thursday, April 17, 2008 12:40 pm Jean Delvare wrote:
+> Booting with "nosmp" doesn't work on my Thinkpad T60p laptop while
+> booting with "nosmp pci=nomsi" works. Forcibly disabling PCI MSI
+> when booting with nosmp fixes the problem. I'm not sure if it's the
+> correct fix though.
 
-OK will do and resend. I will also add Alan's Acked line.
+Seems like this is fixing the symptom, not the cause.  I'll see if I can 
+reproduce locally...
 
-Regards,
-Willy
-
+Jesse
