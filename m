@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbYDQXe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYDQXiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756486AbYDQXe2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 19:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYDQXeS
+	id S1756430AbYDQXiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 19:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYDQXiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 19:34:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37133 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755343AbYDQXeR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 19:34:17 -0400
-Date: Thu, 17 Apr 2008 16:24:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: 2.6.25-mm1: not looking good
-Message-ID: <20080417232441.GA19281@kroah.com>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	Thu, 17 Apr 2008 19:38:46 -0400
+Received: from sous-sol.org ([216.99.217.87]:53354 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754198AbYDQXip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 19:38:45 -0400
+Date: Thu, 17 Apr 2008 16:33:46 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Joy Latten <latten@austin.ibm.com>
+Subject: Re: CRYPTO xcbc: Fix crash when ipsec uses xcbc-mac with big data
+	chunk
+Message-ID: <20080417233346.GI17220@sequoia.sous-sol.org>
+References: <20080417010122.148289106@sous-sol.org> <20080417010337.793546930@sous-sol.org> <200804171426.15334.caglar@pardus.org.tr> <20080417142259.GA12808@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080417142259.GA12808@gondor.apana.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 04:03:31PM -0700, Andrew Morton wrote:
-> 
-> I repulled all the trees an hour or two ago, installed everything on an
-> 8-way x86_64 box and:
-> 
-> 
-> stack-protector:
-> 
-> Testing -fstack-protector-all feature
-> No -fstack-protector-stack-frame!
-> -fstack-protector-all test failed
-> ------------[ cut here ]------------
-> WARNING: at kernel/panic.c:369 __stack_chk_test+0x4b/0x51()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #4
-> 
-> Call Trace:
->  [<ffffffff80256692>] ? print_modules+0x88/0x8f
->  [<ffffffff80237b70>] warn_on_slowpath+0x58/0x7f
->  [<ffffffff802388fe>] ? printk+0x67/0x69
->  [<ffffffff8034ec74>] ? debug_write_lock_after+0x18/0x1f
->  [<ffffffff8034ed43>] ? _raw_write_unlock+0x29/0x7b
->  [<ffffffff804f0254>] ? _write_unlock+0x9/0xb
->  [<ffffffff8023d25e>] ? insert_resource+0xe3/0xea
->  [<ffffffff80237be2>] __stack_chk_test+0x4b/0x51
->  [<ffffffff8092f912>] kernel_init+0x16c/0x29e
->  [<ffffffff8020ce58>] child_rip+0xa/0x12
->  [<ffffffff8092f7a6>] ? kernel_init+0x0/0x29e
->  [<ffffffff8020ce4e>] ? child_rip+0x0/0x12
-> 
-> ---[ end trace da2bc9ee81defeda ]---
-> 
-> 
-> usb/sysfs:
-> 
-> ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 17 (level, low) -> IRQ 17
-> uhci_hcd 0000:00:1d.0: UHCI Host Controller
-> uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
-> uhci_hcd 0000:00:1d.0: irq 17, io base 0x00002080
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 2 ports detected
-> sysfs: duplicate filename '189:0' can not be created
+* Herbert Xu (herbert@gondor.apana.org.au) wrote:
+> Sorry, my fault.  That should've been sg_next for 2.6.24.
 
-Interesting, that's the new major:minor code.  I'll go poke at it...
-
-thanks,
-
-greg k-h
+Thanks, fixed it up.
+-chris
