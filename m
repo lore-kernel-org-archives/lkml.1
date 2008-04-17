@@ -1,154 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYDQIae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbYDQIbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbYDQIae (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYDQIaZ
+	id S1760860AbYDQIbF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYDQIax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:30:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43311 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Apr 2008 04:30:53 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17243 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbYDQIaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:30:23 -0400
-Date: Thu, 17 Apr 2008 10:30:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080417083000.GA4935@elte.hu>
-References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org>
+	id S1755611AbYDQIaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 04:30:52 -0400
+Date: Thu, 17 Apr 2008 10:30:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Paolo Valente <paolo.valente@unimore.it>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+Message-ID: <20080417083047.GV12774@kernel.dk>
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk> <480709A2.7040606@unimore.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080417002552.5742ad65.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <480709A2.7040606@unimore.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 17 2008, Paolo Valente wrote:
+> Jens Axboe ha scritto:
+> >>Actually, in the worst case among our tests, the aggregate throughput 
+> >>with 4k sectors was ~ 20 MB/s, hence the time for 4k sectors ~ 4k * 512 
+> >>/ 20M = 100 ms.
+> >>    
+> >
+> >That's not worse case, it is pretty close to BEST case. 
+> Yes. 100 ms is just the worst case among our tests with 4k, but these 
+> tests are limited to not much more than simultaneous sequential reads.
+> >Worst case is 4k
+> >of sectors, with each being a 512b IO and causing a full stroke seek.
+> >For that type of workload, even a modern sata hard drive will be doing
+> >500kb/sec or less. That's rougly a thousand sectors per seconds, so ~4
+> >seconds worst case for 4k sectors.
+> >  
+> In my opinion, the time-slice approach of cfq is definitely better 
+> suited than the (sector) budget approach for this type of workloads. On 
+> the opposite end, the price of time-slices is unfairness towards, e.g., 
+> threads doing sequential accesses. In bfq we were mainly thinking about 
+> file copy, ftp, video streaming and so on. I was not able to find a good 
+> solution for both types of workloads.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Which is fine, nothing wrong with a scheduler tuned for a specific
+workload. High lighting the short comings are also interesting :-)
 
-> On Wed, 16 Apr 2008 22:23:38 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > what's brewing in x86.git for v2.6.26?
->
-> How much of this has not been in -mm?
+> BTW, there is also another possibility. The internal scheduler of bfq 
+> may be used to schedule time-slices instead of budgets. By doing so, the 
+> O(1) instead of O(N) delay/jitter would still be guaranteed (as it is 
+> probably already clear, bfq is obtained from cfq by just turning slices 
+> into budgets, and the Round Robin-like scheduling policy into a Weighted 
+> Fair Queueuing one).
 
-all of these are in linux-next, and most of them are in -mm.
- 
-the for-akpm branch has 646 commits at the moment (these are the ones 
-that are in -mm), out of 890 patches. These are the "pure arch/x86" 
-topic patches, and which will be offered in the first wave of pull 
-requests.
+I was thinking about that too. Generally I've been opposed to doing
+scheduling decisions on anything but time, since that is always
+relevant. When to hand out slices and to what process, that algorithm is
+really basic in CFQ and could do with an improvement.
 
-Of the remaining patches, they'll be offered under different topics, in 
-different temporary branches (or trees) depending on which subsystem 
-they interact with. There will be no "take it or leave it" big pull 
-request.
+-- 
+Jens Axboe
 
-Some patches are later in the queue because they depend on generic 
-infrastructure.
-
-Some wont be offered for a pull at all because they belong into other 
-subsystems and we just track them via x86.git because it's some 
-important topic or dangerous-looking patch we'd like to see the effects 
-of first-hand.
-
-[ sorry about not having described this in detail in my mail - i spent 
-  the last 3 work days on a 2.6.25 regression almost non-stop, so x86 
-  queue cleanup lagged behind a bit and my description of the changes 
-  was rather terse. ]
-
-> How much of this has not been in linux-next?
-
-none.
-
-but we do much more testing than just getting code into other trees. We 
-cross-build 96 different configurations on other non-x86 architectures:
-
-  http://www.tglx.de/autoqa-cgi/index?run=81&tree=1
-
-last night's run was: 96 out of 96 configs built successfully.
-
-This covers: alpha, arm, mips, powerpc, sparc64, x86, m32r, powerpc, 
-xtensa, mips, sh, sparc, parisc, powerpc. We test the various branches 
-(amongst them for-akpm) and combination trees as well.
-
-and the backbone of arch/x86 QA we do are the build, boot and stress 
-tests we do on x86: we ran and booted thousands of x86 randconfigs in 
-the past few days alone. x86/latest boots and works from the smallest 
-boxes up to a 64-way testbox. On the 64-way box i did a 1 week burn-in 
-stress-test last week as well, for any longer-term effects.
-
-> >  - ftrace plugin for sysprof
-> 
-> sysprof is crap.
-
-you mean the original hack? Sure, that had a number of problems and we 
-are not offering that for a merge.
-
-But have you seen the latest code we are offering for merge? Check out 
-sched-devel/latest and kernel/trace/trace_sysprof.c. Nicely generalized 
-on top of stacktrace.h, put into the ftrace framework, userspace has 
-been ported to that too. No more special sysprof-only API hack.
-
-> >  - debug helper: view kernel pagetable layout via debugfs
-> 
-> Needs documentation.
-
-ok, will fix.
-
-> >       x86: introduce /dev/mem restrictions with a config option
-> 
-> This should be runtime-settable, not build-time settable.
-
-... that defeats one of the security purposes of this feature. (which is 
-to make it a bit harder for rootkits to just patch themselves in via 
-/dev/mem)
-
-> > Randy Dunlap (2):
-> > ...
-> >       linux-next: Tree for April 10 (arch/x86)
-> 
-> borked patch title.
-
-thanks, fixed. This patch will be backmerged shortly before pushout 
-anyway (like you do for -mm, to maintain bisectability) so the title 
-does not matter (the fix and credit will be added to the original 
-patch).
-
-Note that this is from the tail of the queue - not all commit entries 
-are sanitized yet.
-
-> > Soren Sandmann (1):
-> >       x86: add the debugfs interface for the sysprof tool
-> 
-> There were serious objections that this is weaker than and duplicative 
-> of oprofile which were not adequately addressed.
-> 
-> Also, I (and apparently only I) actually reviewed the implementation 
-> and found it to be riddled with bugs and shortcomings.  afacit this 
-> was completely ignored and you propose to merge it anwyay?
-
-no.
-
-I think what caused the confusion is that the cleaned up sysprof ftrace 
-plugin depends on the presence of the ftrace infrastructure, which is in 
-sched-devel. The patch you see in x86.git is the (now obsolete, and 
-removed) sysprof code. Those interim commits show up in the shortlog but 
-we (of course) wont push them upstream. Sorry about the confusion ...
-
-i just cleaned this up and pushed out a new x86.git and sched.git.
-
-	Ingo
