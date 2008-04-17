@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYDQIVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYDQI02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbYDQIVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 04:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYDQIVM
+	id S1759536AbYDQI02 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 04:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYDQI0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 04:21:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35241 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754173AbYDQIVK (ORCPT
+	Thu, 17 Apr 2008 04:26:21 -0400
+Received: from webmail1.posta.tim.it ([213.230.128.226]:41700 "EHLO
+	fep07-svc.tim.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753553AbYDQI0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 04:21:10 -0400
-Date: Thu, 17 Apr 2008 01:20:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-Id: <20080417012051.ed56f4ab.akpm@linux-foundation.org>
-In-Reply-To: <84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com>
-References: <20080416202338.GA6007@elte.hu>
-	<20080417002552.5742ad65.akpm@linux-foundation.org>
-	<84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Apr 2008 04:26:19 -0400
+Message-ID: <480709A2.7040606@unimore.it>
+Date: Thu, 17 Apr 2008 10:26:10 +0200
+From: Paolo Valente <paolo.valente@unimore.it>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
+References: <20080401152903.GB34860@gandalf.sssup.it> <20080416184441.GA3923@ucw.cz> <4806EACB.7040408@unimore.it> <20080417071012.GP12774@kernel.dk>
+In-Reply-To: <20080417071012.GP12774@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 10:45:59 +0300 "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+Jens Axboe ha scritto:
+>> Actually, in the worst case among our tests, the aggregate throughput 
+>> with 4k sectors was ~ 20 MB/s, hence the time for 4k sectors ~ 4k * 512 
+>> / 20M = 100 ms.
+>>     
+>
+> That's not worse case, it is pretty close to BEST case. 
+Yes. 100 ms is just the worst case among our tests with 4k, but these 
+tests are limited to not much more than simultaneous sequential reads.
+> Worst case is 4k
+> of sectors, with each being a 512b IO and causing a full stroke seek.
+> For that type of workload, even a modern sata hard drive will be doing
+> 500kb/sec or less. That's rougly a thousand sectors per seconds, so ~4
+> seconds worst case for 4k sectors.
+>   
+In my opinion, the time-slice approach of cfq is definitely better 
+suited than the (sector) budget approach for this type of workloads. On 
+the opposite end, the price of time-slices is unfairness towards, e.g., 
+threads doing sequential accesses. In bfq we were mainly thinking about 
+file copy, ftp, video streaming and so on. I was not able to find a good 
+solution for both types of workloads.
 
-> On Thu, Apr 17, 2008 at 10:25 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >  > Soren Sandmann (1):
-> >  >       x86: add the debugfs interface for the sysprof tool
-> >
-> >  Also, I (and apparently only I) actually reviewed the implementation and
-> >  found it to be riddled with bugs and shortcomings.  afacit this was
-> >  completely ignored and you propose to merge it anwyay?
-> 
-> No, I fixed some of those and I think Ingo/Soren did the rest. But it
-> needs another round of review on LKML for sure.
+BTW, there is also another possibility. The internal scheduler of bfq 
+may be used to schedule time-slices instead of budgets. By doing so, the 
+O(1) instead of O(N) delay/jitter would still be guaranteed (as it is 
+probably already clear, bfq is obtained from cfq by just turning slices 
+into budgets, and the Round Robin-like scheduling policy into a Weighted 
+Fair Queueuing one).
 
-afaict none of my review comments have been addressed in the sysprof.c which
-is in -mm.  It has the following commits:
 
-    x86, sysprof: merge header to compilation unit
-    x86, sysprof: clean up stack frame copying
-    x86, sysprof: remove dead code
-    sysprof: user pointer verification
-    sysprof: minor cleanups
-    x86: add the debugfs interface for the sysprof tool
-
-I received no email even acknowledging the review comments.
