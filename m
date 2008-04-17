@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934374AbYDQRTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbYDQRW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934374AbYDQRTe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 13:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbYDQRTZ
+	id S934425AbYDQRW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 13:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbYDQRWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 13:19:25 -0400
-Received: from sous-sol.org ([216.99.217.87]:51999 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761430AbYDQRTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 13:19:24 -0400
-Date: Thu, 17 Apr 2008 10:16:16 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kenichi Ohmichi <oomichi@mxs.nes.nec.co.jp>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: vmcoreinfo: add the symbol "phys_base"
-Message-ID: <20080417171616.GE17220@sequoia.sous-sol.org>
-References: <20080417010122.148289106@sous-sol.org> <20080417010334.951283202@sous-sol.org> <m17iewvnot.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m17iewvnot.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 17 Apr 2008 13:22:17 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:32640 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761614AbYDQRWQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 13:22:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nopruAsJ72C4bT8eyynHUke5hYKgfXQuwwSOQiVzQ46ttjvgh/mtInTeXzfK4cZKpTH09tyWfdze6EPkWtPc3vehP4NpPFeDJHSWvhmjSxu3qJmj4IzuK9n8G0Y0hkQiAYFgdJJ4O6hmQFaJxwnh/olwZKc9yz5laRIQYN7HPYI=
+Subject: Re: [PATCH-mm 1/3] mac80211: tkip.c use get/put_unaligned helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jiri Benc <jbenc@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
+In-Reply-To: <1208450454.4066.20.camel@johannes.berg>
+References: <1208370570.11920.107.camel@brick>
+	 <20080417105859.45092413@griffin.suse.cz>
+	 <Pine.LNX.4.64.0804171102370.19002@twin.jikos.cz>
+	 <1208450454.4066.20.camel@johannes.berg>
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 10:22:26 -0700
+Message-Id: <1208452946.17196.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric W. Biederman (ebiederm@xmission.com) wrote:
-> Chris Wright <chrisw@sous-sol.org> writes:
+On Thu, 2008-04-17 at 18:40 +0200, Johannes Berg wrote:
+> > > I guess you are going to push this stuff through -mm altogether, right? 
+> > > I can hardly take this into my tree right now, as the helpers are not in 
+> > > Linus' tree yet.
+> > 
+> > yeah, sorry, that's been confusing a few people.
+> > 
+> > Strictly I'd merge the core infrastructure and then send the dependent 
+> > patches into the relevant maintainers.  But that can mean than we 
+> > needlessly miss the merge window, so it's most parctical to send along an 
+> > acked-by and I'll merge the dependent patch directly with the appropriate 
+> > ordering.
 > 
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > ---------------------
-> 
-> This patch seems quite reasonable.  However as I read it, it is
-> a feature enhancement, that allows a user space tool to function
-> better.  Do we backport trivial features into stable now?
+> I guess what Jiri (Benc) is saying that *I* should ack them, not him.
+> Jiri (Benc), maybe you care to move yourself down in the maintainers
+> file?
 
-Function better, meaning work reliably?  Sounds like a fix not a
-feature.
+I'll resubmit a cleaned up series anyways once the unaligned access
+helpers get into mainline, so don't worry too much about this set I
+suppose.
 
-thanks,
--chris
+Cheers,
+
+Harvey
+
