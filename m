@@ -1,75 +1,324 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYDRQC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYDRQHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbYDRQC5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 12:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbYDRQCj
+	id S1756674AbYDRQHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 12:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYDRQHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 12:02:39 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59629 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757429AbYDRQCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 12:02:37 -0400
-To: jamie@shareable.org
-CC: miklos@szeredi.hu, szaka@ntfs-3g.org, me@bobcopeland.com,
-       hch@infradead.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20080418125718.GD25089@shareable.org> (message from Jamie Lokier
-	on Fri, 18 Apr 2008 13:57:18 +0100)
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-References: <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <20080414004521.GA30489@hash.localnet> <Pine.LNX.4.61.0804181302180.29728@dhcppc2> <20080418115237.GA25089@shareable.org> <E1JmpZz-0005pB-8q@pomaz-ex.szeredi.hu> <20080418125718.GD25089@shareable.org>
-Message-Id: <E1Jmt23-0006Bq-Kk@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 Apr 2008 18:01:47 +0200
+	Fri, 18 Apr 2008 12:07:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:49831 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751484AbYDRQHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 12:07:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Removal of FUTEX_FD (and related code)
+Date: Sat, 19 Apr 2008 02:07:14 +1000
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804190207.14598.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > There are also plans to add some sort of cache coherency protocol,
-> > where the filesystem can asynchronously call back to fuse to
-> > invalidate data or metadata.
-> 
-> Great!
-> 
-> I suggest adding another option (as well) where the filesystem can ask
-> fuse to send it synchronous validation requests - some things require
-> that.  (In my own work, the choice of A->B async invalidation and B->A
-> synchronous validation is heuristic: some usage patterns benefit from
-> one, some from the other.)
+From: Eric Sesterhenn <snakebyte@gmx.de>
+Date: Fri, 25 Jan 2008 10:40:46 +0100
 
-Yes, that makes sense.  I expect this could be done by extending the
-existing requests with a flag saying the result is already cached.
-And then the filesystem can either reply with a special "cached data
-is valid" code, or it can reply normally with the fresh data.
+hi,
 
-> > > Otherwise I don't see how the kernel could coherently cache file pages
-> > > for some kinds of FUSE filesystems.  (E.g. sshfs, for example: every
-> > > operation must surely invoke a user space request or involve granting
-> > > a caching right to the kernel, to keep accesses coherent with other
-> > > users of the same remote files).
-> > > 
-> > > Ergo, either its not coherent, or there is some coherency protocol,
-> > > which does require _some_ work in the user space implementation.
-> > 
-> > Sshfs is not coherent (but neither is NFS), it just has timeouts for
-> > caches and invalidation based on modification time.
-> 
-> Fwiw, I think NFS version 4 is coherent (it uses leases), and older
-> NFS should be coherent when you use fcntl file locks (it's not very
-> efficient though).
-> 
-> I have been bitten a few times by timeout based caches in the past
-> (NFS and SMB (pre-oplock)).  Simple things like editing a file, then
-> running "ssh compiler-box make" from the editor quietly building
-> incorrect code - and even subsequent make commands don't fix it.  Or
-> when I edit a file, then tell someone I've changed the file - and then
-> they edit the file, and my edits are lost.  Very annoying.  Nobody
-> should build those kind of caches into new software.  :-)
+since FUTEX_FD was scheduled for removal in June 2007 lets remove it.
+Google Code search found no users for it and NGPT was abandoned in 2003
+according to IBM. futex.h is left untouched to make sure the id does
+not get reassigned. Since queue_me() has no users left it is commented
+out to avoid a warning, i didnt remove it completely since it is part
+of the internal api (matching unqueue_me())
 
-Oh well, you can turn off caching if it bothers you :)  OTOH it would
-be rather hard (and probably against the point) to try to extend the
-sftp protocol to handle cache coherency.  Sshfs is not meant to be a
-normal filesystem (although some people are trying to use it for home
-directories and such), just a simple way to access remote files.
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (removed rest)
+---
+ kernel/futex.c |  176 +--------------------------------------------------------
+ 1 file changed, 6 insertions(+), 170 deletions(-)
 
-Miklos
+diff -r a1496ab2d0e2 kernel/futex.c
+--- a/kernel/futex.c	Mon Apr 07 15:13:56 2008 +1000
++++ b/kernel/futex.c	Mon Apr 07 15:27:30 2008 +1000
+@@ -104,10 +104,6 @@ struct futex_q {
+ 	/* Key which the futex is hashed on: */
+ 	union futex_key key;
+ 
+-	/* For fd, sigio sent using these: */
+-	int fd;
+-	struct file *filp;
+-
+ 	/* Optional priority inheritance state: */
+ 	struct futex_pi_state *pi_state;
+ 	struct task_struct *task;
+@@ -125,9 +121,6 @@ struct futex_hash_bucket {
+ };
+ 
+ static struct futex_hash_bucket futex_queues[1<<FUTEX_HASHBITS];
+-
+-/* Futex-fs vfsmount entry: */
+-static struct vfsmount *futex_mnt;
+ 
+ /*
+  * Take mm->mmap_sem, when futex is shared
+@@ -610,8 +603,6 @@ static void wake_futex(struct futex_q *q
+ static void wake_futex(struct futex_q *q)
+ {
+ 	plist_del(&q->list, &q->list.plist);
+-	if (q->filp)
+-		send_sigio(&q->filp->f_owner, q->fd, POLL_IN);
+ 	/*
+ 	 * The lock in wake_up_all() is a crucial memory barrier after the
+ 	 * plist_del() and also before assigning to q->lock_ptr.
+@@ -988,13 +979,9 @@ out:
+ }
+ 
+ /* The key must be already stored in q->key. */
+-static inline struct futex_hash_bucket *
+-queue_lock(struct futex_q *q, int fd, struct file *filp)
++static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
+ {
+ 	struct futex_hash_bucket *hb;
+-
+-	q->fd = fd;
+-	q->filp = filp;
+ 
+ 	init_waitqueue_head(&q->waiters);
+ 
+@@ -1006,7 +993,7 @@ queue_lock(struct futex_q *q, int fd, st
+ 	return hb;
+ }
+ 
+-static inline void __queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
++static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
+ {
+ 	int prio;
+ 
+@@ -1040,15 +1027,6 @@ queue_unlock(struct futex_q *q, struct f
+  * queue_me and unqueue_me must be called as a pair, each
+  * exactly once.  They are called with the hashed spinlock held.
+  */
+-
+-/* The key must be already stored in q->key. */
+-static void queue_me(struct futex_q *q, int fd, struct file *filp)
+-{
+-	struct futex_hash_bucket *hb;
+-
+-	hb = queue_lock(q, fd, filp);
+-	__queue_me(q, hb);
+-}
+ 
+ /* Return 1 if we were still queued (ie. 0 means we were woken) */
+ static int unqueue_me(struct futex_q *q)
+@@ -1194,7 +1172,7 @@ static int futex_wait(u32 __user *uaddr,
+ 	if (unlikely(ret != 0))
+ 		goto out_release_sem;
+ 
+-	hb = queue_lock(&q, -1, NULL);
++	hb = queue_lock(&q);
+ 
+ 	/*
+ 	 * Access the page AFTER the futex is queued.
+@@ -1238,7 +1216,7 @@ static int futex_wait(u32 __user *uaddr,
+ 		goto out_unlock_release_sem;
+ 
+ 	/* Only actually queue if *uaddr contained val.  */
+-	__queue_me(&q, hb);
++	queue_me(&q, hb);
+ 
+ 	/*
+ 	 * Now the futex is queued and we have checked the data, we
+@@ -1381,7 +1359,7 @@ static int futex_lock_pi(u32 __user *uad
+ 		goto out_release_sem;
+ 
+  retry_unlocked:
+-	hb = queue_lock(&q, -1, NULL);
++	hb = queue_lock(&q);
+ 
+  retry_locked:
+ 	ret = lock_taken = 0;
+@@ -1494,7 +1472,7 @@ static int futex_lock_pi(u32 __user *uad
+ 	/*
+ 	 * Only actually queue now that the atomic ops are done:
+ 	 */
+-	__queue_me(&q, hb);
++	queue_me(&q, hb);
+ 
+ 	/*
+ 	 * Now the futex is queued and we have checked the data, we
+@@ -1733,121 +1711,6 @@ pi_faulted:
+ 		goto retry;
+ 
+ 	return ret;
+-}
+-
+-static int futex_close(struct inode *inode, struct file *filp)
+-{
+-	struct futex_q *q = filp->private_data;
+-
+-	unqueue_me(q);
+-	kfree(q);
+-
+-	return 0;
+-}
+-
+-/* This is one-shot: once it's gone off you need a new fd */
+-static unsigned int futex_poll(struct file *filp,
+-			       struct poll_table_struct *wait)
+-{
+-	struct futex_q *q = filp->private_data;
+-	int ret = 0;
+-
+-	poll_wait(filp, &q->waiters, wait);
+-
+-	/*
+-	 * plist_node_empty() is safe here without any lock.
+-	 * q->lock_ptr != 0 is not safe, because of ordering against wakeup.
+-	 */
+-	if (plist_node_empty(&q->list))
+-		ret = POLLIN | POLLRDNORM;
+-
+-	return ret;
+-}
+-
+-static const struct file_operations futex_fops = {
+-	.release	= futex_close,
+-	.poll		= futex_poll,
+-};
+-
+-/*
+- * Signal allows caller to avoid the race which would occur if they
+- * set the sigio stuff up afterwards.
+- */
+-static int futex_fd(u32 __user *uaddr, int signal)
+-{
+-	struct futex_q *q;
+-	struct file *filp;
+-	int ret, err;
+-	struct rw_semaphore *fshared;
+-	static unsigned long printk_interval;
+-
+-	if (printk_timed_ratelimit(&printk_interval, 60 * 60 * 1000)) {
+-		printk(KERN_WARNING "Process `%s' used FUTEX_FD, which "
+-		       "will be removed from the kernel in June 2007\n",
+-		       current->comm);
+-	}
+-
+-	ret = -EINVAL;
+-	if (!valid_signal(signal))
+-		goto out;
+-
+-	ret = get_unused_fd();
+-	if (ret < 0)
+-		goto out;
+-	filp = get_empty_filp();
+-	if (!filp) {
+-		put_unused_fd(ret);
+-		ret = -ENFILE;
+-		goto out;
+-	}
+-	filp->f_op = &futex_fops;
+-	filp->f_path.mnt = mntget(futex_mnt);
+-	filp->f_path.dentry = dget(futex_mnt->mnt_root);
+-	filp->f_mapping = filp->f_path.dentry->d_inode->i_mapping;
+-
+-	if (signal) {
+-		err = __f_setown(filp, task_pid(current), PIDTYPE_PID, 1);
+-		if (err < 0) {
+-			goto error;
+-		}
+-		filp->f_owner.signum = signal;
+-	}
+-
+-	q = kmalloc(sizeof(*q), GFP_KERNEL);
+-	if (!q) {
+-		err = -ENOMEM;
+-		goto error;
+-	}
+-	q->pi_state = NULL;
+-
+-	fshared = &current->mm->mmap_sem;
+-	down_read(fshared);
+-	err = get_futex_key(uaddr, fshared, &q->key);
+-
+-	if (unlikely(err != 0)) {
+-		up_read(fshared);
+-		kfree(q);
+-		goto error;
+-	}
+-
+-	/*
+-	 * queue_me() must be called before releasing mmap_sem, because
+-	 * key->shared.inode needs to be referenced while holding it.
+-	 */
+-	filp->private_data = q;
+-
+-	queue_me(q, ret, filp);
+-	up_read(fshared);
+-
+-	/* Now we map fd to filp, so userspace can access it */
+-	fd_install(ret, filp);
+-out:
+-	return ret;
+-error:
+-	put_unused_fd(ret);
+-	put_filp(filp);
+-	ret = err;
+-	goto out;
+ }
+ 
+ /*
+@@ -2081,10 +1944,6 @@ long do_futex(u32 __user *uaddr, int op,
+ 	case FUTEX_WAKE_BITSET:
+ 		ret = futex_wake(uaddr, fshared, val, val3);
+ 		break;
+-	case FUTEX_FD:
+-		/* non-zero val means F_SETOWN(getpid()) & F_SETSIG(val) */
+-		ret = futex_fd(uaddr, val);
+-		break;
+ 	case FUTEX_REQUEUE:
+ 		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, NULL);
+ 		break;
+@@ -2145,19 +2004,6 @@ asmlinkage long sys_futex(u32 __user *ua
+ 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+ }
+ 
+-static int futexfs_get_sb(struct file_system_type *fs_type,
+-			  int flags, const char *dev_name, void *data,
+-			  struct vfsmount *mnt)
+-{
+-	return get_sb_pseudo(fs_type, "futex", NULL, FUTEXFS_SUPER_MAGIC, mnt);
+-}
+-
+-static struct file_system_type futex_fs_type = {
+-	.name		= "futexfs",
+-	.get_sb		= futexfs_get_sb,
+-	.kill_sb	= kill_anon_super,
+-};
+-
+ static int __init futex_init(void)
+ {
+ 	u32 curval;
+@@ -2182,16 +2028,6 @@ static int __init futex_init(void)
+ 		spin_lock_init(&futex_queues[i].lock);
+ 	}
+ 
+-	i = register_filesystem(&futex_fs_type);
+-	if (i)
+-		return i;
+-
+-	futex_mnt = kern_mount(&futex_fs_type);
+-	if (IS_ERR(futex_mnt)) {
+-		unregister_filesystem(&futex_fs_type);
+-		return PTR_ERR(futex_mnt);
+-	}
+-
+ 	return 0;
+ }
+ __initcall(futex_init);
