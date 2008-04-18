@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYDRWOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYDRWVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbYDRWOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 18:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbYDRWOe
+	id S1753143AbYDRWVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 18:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYDRWVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 18:14:34 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:32475 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYDRWOd (ORCPT
+	Fri, 18 Apr 2008 18:21:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50165 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751100AbYDRWVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 18:14:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=MHTgo1GO8UDYwrWmM4/9RWu/91Hsoyk72AnoNFHCyBivClqiox1qtXlu8R2aRbdN+r7NlQhGB+4MPRHiziuSQ65gU0Qnfsh8jy2pmV91ZV9HWuND419fOhjJmqcAsGe1tjm9OE0ewNhzehQwgdwOv8jXff5Tt3AntGar1ZmD4M8=
-Date: Sat, 19 Apr 2008 03:09:59 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: 2.6.25-mm1: orphaned files after build
-Message-ID: <20080418230959.GA8445@martell.zuzino.mipt.ru>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 18 Apr 2008 18:21:06 -0400
+Date: Fri, 18 Apr 2008 15:20:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kgdb: add kgdb internal test suite
+Message-Id: <20080418152043.5beea7b2.akpm@linux-foundation.org>
+In-Reply-To: <200804181900.m3IJ0mn0011597@hera.kernel.org>
+References: <200804181900.m3IJ0mn0011597@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At least the following files aren't removed by "make mrproper":
+On Fri, 18 Apr 2008 19:00:48 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-	Module.markers
-	arch/x86/kernel/acpi/realmode/wakeup.lds
-	crypto/.tmp_aes_generic.ver
-	fs/.tmp_buffer.ver
-	kernel/time/.tmp_timekeeping.ver
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e8d31c204e36e019b9134f2a11926cac0fcf9b19
+> Commit:     e8d31c204e36e019b9134f2a11926cac0fcf9b19
+> Parent:     737a460f21febe551ff1d2299b63bae9b154078f
+> Author:     Jason Wessel <jason.wessel@windriver.com>
+> AuthorDate: Fri Mar 7 16:34:17 2008 -0600
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu Apr 17 20:05:42 2008 +0200
+> 
+>     kgdb: add kgdb internal test suite
+>
+> ...
+>
+> +static const char hexchars[] = "0123456789abcdef";
 
-Noticed by "git-ls-files -o".
+42!  That's a great place to stop.
 
-*.ver , I think, remain after abruptdly terminated build.
+> +static char get_buf[BUFMAX];
 
+This really needs to be renamed.
+
+> +	int (*run_test) (int, int);
+> +	int (*validate_put) (char *);
+> +};
+> +
+> +static struct test_state ts;
+> +
+> +static int kgdbts_unreg_thread(void *ptr)
+> +{
+> +	/* Wait until the tests are complete and then ungresiter the I/O
+> +	 * driver.
+> +	 */
+> +	while (!final_ack)
+> +		msleep_interruptible(1500);
+
+Why 1.5 seconds?  Seems like a pointless wats of time - can we use just 1
+here?
+
+> +#ifdef CONFIG_X86
+
+btw, is the selftest code known to work on any other architectures?
+
+
+
+afacit pretty much all of this code could/should be __init, but isn't?
