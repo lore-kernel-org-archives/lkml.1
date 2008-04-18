@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbYDRUvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYDRUwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760548AbYDRUvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 16:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbYDRUvf
+	id S1758042AbYDRUwl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 16:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbYDRUvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:51:35 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:16148 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756600AbYDRUvd (ORCPT
+	Fri, 18 Apr 2008 16:51:39 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:20712 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756608AbYDRUvd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Apr 2008 16:51:33 -0400
-Message-Id: <20080418204955.342963315@ldl.fc.hp.com>
+Message-Id: <20080418205047.236350695@ldl.fc.hp.com>
+References: <20080418204955.342963315@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:49:55 -0600
+Date: Fri, 18 Apr 2008 14:49:56 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: Adam Belay <ambx1@neo.rr.com>
 Cc: Li Shaohua <shaohua.li@intel.com>
@@ -24,57 +25,57 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 00/53] PNP cleanup and convert to dynamic resources, v3
+Subject: [patch 01/53] ISAPNP: move config register addresses out of isapnp.h
+Content-Disposition: inline; filename=isapnp-remove-register-addrs-from-header
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This finally replaces the fixed-size pnp_resource_table
-with something more dynamic so we can quit worrying about
-table overflows.
+These are used only in drivers/pnp/isapnp/core.c, so no need to
+expose them to the world.
 
-Most of the patches here just lead up to the dynamic
-resources patch by incrementally cleaning things up
-and reducing the amount of code that knows about the
-pnp_resource_table.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Acked-By: Rene Herman <rene.herman@gmail.com>
 
-There are a *lot* of changes from v2, mostly to fix the
-ISAPNP problem Rene pointed out (we need to track the
-config register index so we write things back to the
-same register we read them from).
-
-Rene, you acked many of these patches previously, and
-I noted those in the patches.  But where I made more than
-trivial changes, I removed your ack.
-
-Changes between v2 and v3:
-
-  - several updates from Rene Herman's review:
-	- tweak EISA ID conversion and keep high-order bit for ISAPNP
-	- fix pnp_add_card_id() to bisection works better
-	- fix some "x <= 0" tests when x is unsigned
-	- make resource accessors inlines, not #defines
-	- fix pnp_{port,mem,irq,dma}_valid() return int, not resource_size_t
-	- fold isapnp_read_resources() back into isapnp_get_resources()
-  - factored out pnp_init_resource() from pnp_{init,clean}_resource_table()
-  - initialize generic pnp_dev fields earlier, to help dev_printk
-  - add pnp_resource to hold ISAPNP register index
-  - convert to resource management from table to list (finally)
-  - remove pnp_dev->regs (only set by ISAPNP, never used)
-  - in /sys/.../resources, don't sort resources by type
-
-Changes between first post and v2:
-
-  - export pnp_get_resource()
-  - fix EISA ID conversion and make a common function for ISAPNP/PNPBIOS
-  - fix typos in pnp_check_{port,mem,etc} that made resource assign fail
-
-  - the following fixes should precede this series (they're in -mm already):
-	- parport_pc: wrap PNP probe code in CONFIG_PNP
-	- radio-cadet: wrap PNP probe code in CONFIG_PNP
-	- smsc-ircc2: wrap PNP probe code in CONFIG_PNP
-	- nsc-ircc: wrap PNP probe code in CONFIG_PNP
-
-Bjorn
+Index: work7/drivers/pnp/isapnp/core.c
+===================================================================
+--- work7.orig/drivers/pnp/isapnp/core.c	2008-03-21 11:52:12.000000000 -0600
++++ work7/drivers/pnp/isapnp/core.c	2008-03-21 11:53:24.000000000 -0600
+@@ -88,6 +88,14 @@
+ #define _LTAG_MEM32RANGE	0x85
+ #define _LTAG_FIXEDMEM32RANGE	0x86
+ 
++/* Logical device control and configuration registers */
++
++#define ISAPNP_CFG_ACTIVATE	0x30	/* byte */
++#define ISAPNP_CFG_MEM		0x40	/* 4 * dword */
++#define ISAPNP_CFG_PORT		0x60	/* 8 * word */
++#define ISAPNP_CFG_IRQ		0x70	/* 2 * word */
++#define ISAPNP_CFG_DMA		0x74	/* 2 * byte */
++
+ /*
+  * Sizes of ISAPNP logical device configuration register sets.
+  * See PNP-ISA-v1.0a.pdf, Appendix A.
+Index: work7/include/linux/isapnp.h
+===================================================================
+--- work7.orig/include/linux/isapnp.h	2008-03-21 11:45:41.000000000 -0600
++++ work7/include/linux/isapnp.h	2008-03-21 11:52:39.000000000 -0600
+@@ -26,16 +26,6 @@
+ #include <linux/pnp.h>
+ 
+ /*
+- *  Configuration registers (TODO: change by specification)
+- */ 
+-
+-#define ISAPNP_CFG_ACTIVATE		0x30	/* byte */
+-#define ISAPNP_CFG_MEM			0x40	/* 4 * dword */
+-#define ISAPNP_CFG_PORT			0x60	/* 8 * word */
+-#define ISAPNP_CFG_IRQ			0x70	/* 2 * word */
+-#define ISAPNP_CFG_DMA			0x74	/* 2 * byte */
+-
+-/*
+  *
+  */
+ 
 
 -- 
