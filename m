@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYDRF5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYDRGCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYDRF5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 01:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYDRF5J
+	id S1757333AbYDRGCW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 02:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYDRGCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 01:57:09 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49997 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbYDRF5I (ORCPT
+	Fri, 18 Apr 2008 02:02:13 -0400
+Received: from mail1.physik.fu-berlin.de ([160.45.35.12]:52179 "EHLO
+	mail1.physik.fu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752286AbYDRGCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 01:57:08 -0400
-Date: Fri, 18 Apr 2008 14:57:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Shi Weihua <shiwh@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       hugh@veritas.com
-Subject: Re: [PATCH] memcgroup: check and initialize page->cgroup in
- memmap_init_zone
-Message-Id: <20080418145716.afa70f76.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48083506.7080909@cn.fujitsu.com>
-References: <48080706.50305@cn.fujitsu.com>
-	<48080930.5090905@cn.fujitsu.com>
-	<48080B86.7040200@cn.fujitsu.com>
-	<20080417201432.36b1c326.akpm@linux-foundation.org>
-	<20080418123256.da4d1db0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080418140946.e265c1f3.kamezawa.hiroyu@jp.fujitsu.com>
-	<48083506.7080909@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Fri, 18 Apr 2008 02:02:12 -0400
+Subject: Re: [PATCH] usb-serial: option: Don't match Huawei driver CD images
+From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
+To: Greg KH <greg@kroah.com>
+Cc: smurf@smurf.noris.de, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+In-Reply-To: <20080418032405.GB8754@kroah.com>
+References: <1208472569.14194.5.camel@hermes2.karcher.local>
+	 <20080418032405.GB8754@kroah.com>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 08:01:34 +0200
+Message-Id: <1208498494.14194.28.camel@hermes2.karcher.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
+X-HELO-Warning: Remote host 89.247.224.62 (i59f7e03e.versanet.de) incorrectly presented itself as [192.168.0.121]
+X-ZEDV-Virus-Scanned: No viruses found. [ClamAV 0.92/6817/Fri Apr 18 03:15:07 2008]
+X-ZEDV-Spam-Level: ----
+X-ZEDV-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on zs01.physik.fu-berlin.de
+X-ZEDV-Spam-Status: No, score=-4.4 required=5.0 tests=ALL_TRUSTED,BAYES_00 autolearn=ham version=3.2.3
+X-ZEDV-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+X-Scan-Signature: 573c884b685e4c0b3a02a2d482af22fc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 13:43:34 +0800
-Shi Weihua <shiwh@cn.fujitsu.com> wrote:
+Am Donnerstag, den 17.04.2008, 20:24 -0700 schrieb Greg KH:
+> What is this patch against?  We have a change that went into 2.6.25
+> after 2.6.25-rc9 that should make this patch not be needed.
+The patch is developed against 2.6.25-rc8 + some git patches, but I have
+forward-ported it to current git.
 
-> KAMEZAWA Hiroyuki wrote::
-> > On Fri, 18 Apr 2008 12:32:56 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> >>> Or perhaps that page was used and then later freed before we got to
-> >>> memmap_init_zone() and was freed with a non-zero ->page_cgroup.  Which is
-> >>> unlikely given that page.page_cgroup was only just added and is only
-> >>> present if CONFIG_CGROUP_MEM_RES_CTLR.
-> >>>
-> >> Hmm, I'll try his .config and see what happens.
-> >>
-> > I reproduced the hang with his config and confirmed his fix works well.
-> > But I can't find why...I'll dig a bit more.
-> 
-> If i use CONFIG_SPARSEMEM instead of CONFIG_DISCONTIGMEM, the kernel 
-> boots successfully.
-> 
-Hmmm....ok. I'll check DISCONTIGMEM's boot codes.
+I *guess* you are talking about commit aad8a278 (USB: support more
+Huawei data card product IDs), as I could not find . The header of this
+patch talks about three changes (declaration of unusual devices,
+disabling product ID matching in driver.c and finally declaring the
+product in option.c). I find only the first and the last point if this
+reflected in the patch, and there are *no* patches at all to
+drivers/usb/core/driver.c in the timeframe you mentioned. This patch
+addresses the second point of that list, but in another way.
 
-Thanks,
--Kame
+The problem is that those huawei products have four USB interfaces,
+three usb-serial like interfaces handled by the option driver and a
+fourth one to be handled by usb-storage. When the stick gets initially
+plugged, only the mass storage device is visible and needs a magic kick
+to expose the other interfaces. aad8a278 contains a valid and working
+patch to kick those USB devices if the mass storage interface gets bound
+by usb-storage. At least in 2.6.25-rc8, if the option module is loaded,
+the mass storage device gets bound to the option driver instead that
+exposes a useless and non-functional serial interface on the mass
+storage endpoint. This prevents the usb-storage driver to perform the
+needed kicking.
+
+> Can you try that release and verify this?
+I will try with a current git kernel without my patch and report back,
+but I will be surprised if the problem described above is gone. System
+is currently compiling.
+
+> thanks,
+You're welcome.
+
+Kind regards,
+  Michael Karcher
+
 
