@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYDRPWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbYDRP2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497AbYDRPWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 11:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYDRPWo
+	id S1754958AbYDRP2s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 11:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYDRP2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 11:22:44 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39563 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751873AbYDRPWn (ORCPT
+	Fri, 18 Apr 2008 11:28:40 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:65233 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751904AbYDRP2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 11:22:43 -0400
-Date: Fri, 18 Apr 2008 11:22:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       <linux-pm@lists.linux-foundation.org>, Greg KH <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-mm1: not looking good
-In-Reply-To: <20080418094220.GB23572@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0804181120270.6252-100000@iolanthe.rowland.org>
+	Fri, 18 Apr 2008 11:28:39 -0400
+Date: Fri, 18 Apr 2008 16:28:35 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] dontdiff: ignore timeconst.h
+Message-ID: <20080418152835.GA18296@fluff.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Pavel Machek wrote:
+Ignore the autobuilt kernel/timeconst.h when
+using diff on an built kernel tree.
 
-> On Fri 2008-04-18 00:53:23, Andrew Morton wrote:
-> > On Fri, 18 Apr 2008 00:50:34 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > dmesg: http://userweb.kernel.org/~akpm/x.txt
-> > > config: http://userweb.kernel.org/~akpm/config-t61p.txt
-> > 
-> > oop, there's more:
-> > 
-> > 
-> > sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > firewire_core: created device fw0: GUID 00016c2000174bad, S400
-> > PM: Device usb4 failed to restore: error -113
-> > eth0: Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
-> > eth0: 10/100 speed: disabling TSO
-> > PM: Device usb5 failed to restore: error -113
-> > PM: Device usb7 failed to restore: error -113
-> > sd 0:0:0:0: [sda] Starting disk
-> > PM: Image restored successfully.
-> > Restarting tasks ... done.
-> > PM: Basic memory bitmaps freed
-> > 
-> > Those USB restore failures are new.  They're similar to the ones on the
-> > doesnt-resume-properly-any-more Vaio.  They came out from the machine's
-> > second (successful) resume-from-disk.
-> 
-> Try rmmod usb / insmod usb around suspend to see if it is
-> usb-specific, or if something went seriously wrong in core.
-> 
-> Or you might just bisect it ;-).
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-There's no need to worry about them.  They merely indicate that the 
-root hubs didn't resume along with everything else, because they were 
-already suspended when the system went to sleep and so they were left 
-suspended.  The return codes in usbcore will be changed soon so that 
-this won't appear to be an error.
-
-Alan Stern
+diff -urp linux-2.6.25-dontdiff/Documentation/dontdiff linux-2.6.25-dontdiff2/Documentation/dontdiff
+--- linux-2.6.25-dontdiff/Documentation/dontdiff	2008-04-18 16:16:45.000000000 +0100
++++ linux-2.6.25-dontdiff2/Documentation/dontdiff	2008-04-18 16:26:14.000000000 +0100
+@@ -173,6 +173,7 @@ sm_tbl*
+ split-include
+ tags
+ tftpboot.img
++timeconst.h
+ times.h*
+ tkparse
+ trix_boot.h
 
