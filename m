@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbYDRXBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYDRXHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbYDRXBY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 19:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYDRXBQ
+	id S1754794AbYDRXHG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 19:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYDRXGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 19:01:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36004 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751099AbYDRXBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 19:01:15 -0400
-Date: Fri, 18 Apr 2008 16:00:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: add mp_bus_not_pci bitmap to mpparse_32.c
-Message-Id: <20080418160054.4d6410a1.akpm@linux-foundation.org>
-In-Reply-To: <200804181711.m3IHBSAk025658@hera.kernel.org>
-References: <200804181711.m3IHBSAk025658@hera.kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 19:06:54 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:41478 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751793AbYDRXGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 19:06:53 -0400
+Date: Fri, 18 Apr 2008 16:06:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] slub: add hooks for kmemcheck
+In-Reply-To: <19f34abd0804181527i3b65e82bk2a5d8b3c2b196f9e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804181604310.4046@schroedinger.engr.sgi.com>
+References: <20080418220339.GC16586@damson.getinternet.no> 
+ <Pine.LNX.4.64.0804181507130.31394@schroedinger.engr.sgi.com>
+ <19f34abd0804181527i3b65e82bk2a5d8b3c2b196f9e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 17:11:28 GMT
-Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+On Sat, 19 Apr 2008, Vegard Nossum wrote:
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a6333c3ccbdc0ae001cff6ee1d3633942ef763f4
-> Commit:     a6333c3ccbdc0ae001cff6ee1d3633942ef763f4
-> Parent:     8643f9d02a7bb9db74634b4c062d8e70ce7c59b9
-> Author:     Alexey Starikovskiy <astarikovskiy@suse.de>
-> AuthorDate: Thu Mar 20 14:54:09 2008 +0300
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu Apr 17 17:40:58 2008 +0200
+> We set it to zero to allow the compiler to optimize out code if
+> CONFIG_KMEMCHECK=n. For instance
 > 
->     x86: add mp_bus_not_pci bitmap to mpparse_32.c
->     
->     Signed-off: Alexey Starikovskiy <astarikovskiy@suse.de>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>         if (kmemcheck_page_is_tracked(page) && !(s->flags & SLAB_NOTRACK)) {
+> 
+> Will be turned into if(0 && !(s->flags & 0)), which can be completely
+> optimized away. On the other hand, if SLAB_NOTRACK is non-zero, this
+> is not the case, since the flag must be tested.
 
-Where are all these patches coming from?!?!?  Google does (or at least
-did) index discuss@x86-64.org so I am out of ideas.
+The compiler will optize it again regardless of SLAB_NOTRACK. if (0 && 
+whatever) is still 0.
+
+> >  Should this not go into some kmemcheck.h file?
+> 
+> The implementations of these prototypes are in mm/slub_kmemcheck.c.
+> They are only ever called from slub.c since they represent the
+> interface between SLUB and kmemcheck.
+> 
+> Would you rather have it in include/linux/slub_kmemcheck.h?
+
+Well lets see what Pekka says.
+
+> Currently, with SLAB/SLUB debugging enabled, the page flag will be
+> cleared, then accessed in check_object(), thus generating a few
+> accesses to the page. It is safer to delay the clearing of the page
+> flag until no more accesses can be generated for the page.
+
+Hmmmm.. Okay that is already dealt with by a patch in Pekka's tree.
