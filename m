@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbYDRMdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYDRMfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685AbYDRMdt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 08:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYDRMdk
+	id S1756453AbYDRMfJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 08:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDRMe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 08:33:40 -0400
-Received: from www.tglx.de ([62.245.132.106]:36887 "EHLO www.tglx.de"
+	Fri, 18 Apr 2008 08:34:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34848 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYDRMdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 08:33:39 -0400
-Date: Fri, 18 Apr 2008 14:33:20 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] ftrace: simplify hex print
-Message-ID: <alpine.LFD.1.10.0804181430310.3261@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1752588AbYDRMe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 08:34:57 -0400
+Date: Fri, 18 Apr 2008 14:34:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
+       sds@tycho.nsa.gov
+Subject: Re: 2.6.25-mm1: not looking good
+Message-ID: <20080418123439.GA17013@elte.hu>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080417164034.e406ef53.akpm@linux-foundation.org> <20080417171413.6f8458e4.akpm@linux-foundation.org> <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu> <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-simplify hex to ascii conversion with a lookup table.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
----
- kernel/trace/trace.c |   23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+> With the patch below, it seems 100% reproducible to me (7 out of 7 
+> bootups hung).
+> 
+> The number of loops it could do before hanging were, in order: 697, 
+> 898, 237, 55, 45, 92, 59
 
-Index: linux/kernel/trace/trace.c
-===================================================================
---- linux.orig/kernel/trace/trace.c
-+++ linux/kernel/trace/trace.c
-@@ -248,19 +248,18 @@ trace_seq_putmem(struct trace_seq *s, vo
- }
- 
- #define HEX_CHARS 17
-+static const char hex2asc[] = "0123456789abcdef";
- 
- static int
- trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len)
- {
- 	unsigned char hex[HEX_CHARS];
--	unsigned char *data;
-+	unsigned char *data = mem;
- 	unsigned char byte;
- 	int i, j;
- 
- 	BUG_ON(len >= HEX_CHARS);
- 
--	data = mem;
--
- #ifdef __BIG_ENDIAN
- 	for (i = 0, j = 0; i < len; i++) {
- #else
-@@ -268,22 +267,10 @@ trace_seq_putmem_hex(struct trace_seq *s
- #endif
- 		byte = data[i];
- 
--		hex[j]   = byte & 0x0f;
--		if (hex[j] >= 10)
--			hex[j] += 'a' - 10;
--		else
--			hex[j] += '0';
--		j++;
--
--		hex[j] = byte >> 4;
--		if (hex[j] >= 10)
--			hex[j] += 'a' - 10;
--		else
--			hex[j] += '0';
--		j++;
-+		hex[j++] = hex2asc[byte & 0x0f];
-+		hex[j++] = hex2asc[byte >> 4];
- 	}
--	hex[j] = ' ';
--	j++;
-+	hex[j++] = ' ';
- 
- 	return trace_seq_putmem(s, hex, j);
- }
+cool! Jason: i think that particular self-test should be repeated 1000 
+times before reporting success ;-)
+
+	Ingo
