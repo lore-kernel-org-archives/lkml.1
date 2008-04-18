@@ -1,158 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYDRKIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbYDRKIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYDRKIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 06:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYDRKIM
+	id S1756828AbYDRKIk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 06:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755695AbYDRKI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 06:08:12 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54134 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754143AbYDRKIL (ORCPT
+	Fri, 18 Apr 2008 06:08:29 -0400
+Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:29029 "EHLO
+	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756165AbYDRKI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 06:08:11 -0400
-Date: Fri, 18 Apr 2008 19:07:49 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Tom May" <tom@tommay.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
-References: <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com> <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
-Message-Id: <20080418170129.A8DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 18 Apr 2008 06:08:28 -0400
+X-Greylist: delayed 2124 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 06:08:27 EDT
+Date: Fri, 18 Apr 2008 11:33:01 +0200 (CEST)
+From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+In-Reply-To: <20080417185158.GA26603@elte.hu>
+Message-ID: <Pine.BSO.4.63.0804181059090.2102@rudy.mif.pg.gda.pl>
+References: <20080416202338.GA6007@elte.hu> <20080417002552.5742ad65.akpm@linux-foundation.org>
+ <84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com>
+ <20080417012051.ed56f4ab.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI>
+ <84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com>
+ <20080417014217.ab0453a9.akpm@linux-foundation.org> <20080417114900.GA17033@infradead.org>
+ <20080417110135.08b076ac.akpm@linux-foundation.org> <20080417185158.GA26603@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------_4808555800000000A969_MULTIPART_MIXED_"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-189012854-1208509882=:2102"
+Content-ID: <Pine.BSO.4.63.0804181111540.2102@rudy.mif.pg.gda.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------_4808555800000000A969_MULTIPART_MIXED_
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> madvise can be replaced with munmap and the same behavior occurs.
-> 
-> --- test.c.orig 2008-04-17 11:41:47.000000000 -0700
-> +++ test.c 2008-04-17 11:44:04.000000000 -0700
-> @@ -127,7 +127,7 @@
->     /* Release FREE_CHUNK pages. */
-> 
->     for (i = 0; i < FREE_CHUNK; i++) {
-> -       int r = madvise(p + page*PAGESIZE, PAGESIZE, MADV_DONTNEED);
-> +       int r = munmap(p + page*PAGESIZE, PAGESIZE);
->         if (r == -1) {
->             perror("madvise");
->             exit(1);
-> 
-> Here's what I'm seeing on my system.  This is with munmap, but I see
-> the same thing with madvise.  First, /proc/meminfo on my system before
-> running the test:
+--0-189012854-1208509882=:2102
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2; FORMAT=flowed
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.BSO.4.63.0804181111541.2102@rudy.mif.pg.gda.pl>
 
-Oh sorry my bad!
-I investigated again and found 2 problem in your test program.
+On Thu, 17 Apr 2008, Ingo Molnar wrote:
 
-1. text segment isn't locked.
+>
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> afaik the sysprof-vs-oprofile issue still hasn't been settled.  Maybe
+>> it's no longer a relevant question with the new code - I just don't
+>> know. Everything went all quiet and then this stuff happened.
+>
+> i dont think there's any big issue here. Sysprof is a time and stack
+> system-wide tracer/profiler, oprofile profiles CPU events - deep
+> stacktracing is an afterthought there. And how do you set up oprofile to
+> do precise time events?
+>
+> with sysprof you can do:
+>
+>  cd /sys/kernel/debug/tracing
+>  echo sysprof > current_tracer
+>  cat trace_pipe
+>
+> and you'll see the trace events go by, live. The user-space bits of
+> sysprof have been ported over to ftrace/sysprof already and it's a
+> really nice tool that shows a deep stack-trace based hierarchical
+> "vertical" profile instead of the usual finegrained profile.
 
-   if strong memory pressure happned, kernel may drop program text region.
-   then your test program suddenly slow down.
+Does it meany Linux give up implementing DTrace way of 
+tracing/instrumntation ? In last time I observe more and more signs 
+inroducing parallel ways of tracing/instrumentations infrasctructures in 
+Linux kernel where all this can be rolled into only one .. common. Strange 
+but some of this tracing/instrumentations does not uses "zero cost probes"
+but "near zero cost probes" (like this) and this will result only more and 
+more bloated kernel code with statically injected instrumentations.
 
-   please use mlockall(MCL_CURRENT) before large buffer allocation.
+(DTrace have very hermecic source code. In this case it mean DTrace have 
+*very* limited point of entry to all other source code. In case Linux 
+numbers of points of entry to instrumented code seems constantly growing 
+by introducing sometimes duplicationg instrumentations infrastructures: 
+oprofile, Text editor, sysprof/ftrace, utrace, blktrace .. what will be 
+next ?).
 
-2. repeat open/close to /proc/meminfo.
-   
-   in the fact, open(2) system call use a bit memory.
-   if call open(2) in strong memory pressure, doesn't return until
-   memory freed enough.
-   thus, it cause slow down your program sometimes.
+Is this any explanation this (looks like completly) ad hoc/haotic Linux
+way ?
 
-attached changed test program :)
-it works well on my test environment.
-
-
-> If it's possible to get a notification when MemFree + Cached + Mapped
-> (I'm not sure whether this is the right formula) falls below some
-> threshold, so that the program has time to find memory to discard
-> before the system runs out, that would prevent the oom -- as long as
-> the application(s) can ensure that there is not too much memory
-> allocated while it is looking for memory to free.   But at least the
-> threshold would give it a reasonable amount of time to handle the
-> notification.
-
-your proposal is interesting.
-but I hope try to my attached test program at first.
-
---------_4808555800000000A969_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="tom.c"
-Content-Disposition: attachment;
- filename="tom.c"
-Content-Transfer-Encoding: base64
-
-I2RlZmluZSBfR05VX1NPVVJDRQ0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVkZSA8c3RkbGli
-Lmg+DQojaW5jbHVkZSA8c3lzL21tYW4uaD4NCiNpbmNsdWRlIDxzeXMvdHlwZXMuaD4NCiNpbmNs
-dWRlIDxzeXMvc3RhdC5oPg0KI2luY2x1ZGUgPGZjbnRsLmg+DQojaW5jbHVkZSA8cG9sbC5oPg0K
-I2luY2x1ZGUgPHNjaGVkLmg+DQojaW5jbHVkZSA8dGltZS5oPg0KI2luY2x1ZGUgPHVuaXN0ZC5o
-Pg0KI2luY2x1ZGUgPHB0aHJlYWQuaD4NCg0KI2RlZmluZSBQQUdFU0laRSAoNjQqMTAyNCkNCg0K
-LyogSG93IG1hbnkgcGFnZXMgd2UndmUgbW1hcCdkLiAqLw0Kc3RhdGljIGxvbmcgcGFnZXM7DQoN
-Ci8qIFBvaW50ZXIgdG8gbW1hcCdkIG1lbW9yeSB1c2VkIGFzIGEgY2lyY3VsYXIgYnVmZmVyLiAg
-T25lIHRocmVhZA0KICAgdG91Y2hlcyBwYWdlcywgYW5vdGhlciB0aHJlYWQgcmVsZWFzZXMgdGhl
-bSBvbiBub3RpZmljYXRpb24uICovDQpzdGF0aWMgY2hhciAqcDsNCg0KLyogSG93IG1hbnkgcGFn
-ZXMgdG8gdG91Y2ggZWFjaCA1bXMuICBUaGlzIG1ha2VzIGF0IG1vc3QgMjAwMA0KICAgcGFnZXMv
-c2VjLiAqLw0KI2RlZmluZSBUT1VDSF9DSFVOSyAxMA0KDQovKiBIb3cgbWFueSBwYWdlcyB0byBm
-cmVlIHdoZW4gd2UncmUgbm90aWZpZWQuICBXaXRoIGEgMTAwbXMgRlJFRV9ERUxBWSwNCiAgIHdl
-IGNhbiBmcmVlIH45MTEwIHBhZ2VzL3NlYywgb3IgcGVyaGFwcyBvbmx5IDUqOTExID0gNDU1NSBw
-YWdlcy9zZWMgaWYgd2UncmUNCiAgIG5vdGlmaWVkIG9ubHkgNSB0aW1lcy9zZWMuICovDQojZGVm
-aW5lIEZSRUVfQ0hVTksgOTExDQoNCi8qIERlbGF5IGluIG1pbGxpc2Vjb25kcyBiZWZvcmUgZnJl
-ZWluZyBwYWdlcywgdG8gc2ltdWxhdGUgbGF0ZW5jeSB3aGlsZSBmaW5kaW5nDQogICBwYWdlcyB0
-byBmcmVlLiAqLw0KI2RlZmluZSBGUkVFX0RFTEFZIDEwMA0KDQpzdGF0aWMgdm9pZCB0b3VjaCh2
-b2lkKTsNCnN0YXRpYyBpbnQgcmVsZWFzZSh2b2lkICphcmcpOw0Kc3RhdGljIHZvaWQgcmVsZWFz
-ZV9wYWdlcyh2b2lkKTsNCnN0YXRpYyB2b2lkIHNob3dfbWVtaW5mbyh2b2lkKTsNCnN0YXRpYyB2
-b2lkKiBfcmVsZWFzZSAodm9pZCAqYXJnKTsNCg0KaW50DQptYWluIChpbnQgYXJnYywgY2hhciAq
-KmFyZ3YpDQp7DQoJcHRocmVhZF90IHRocjsNCg0KCW1sb2NrYWxsKE1DTF9DVVJSRU5UKTsgLyog
-bG9jayB0ZXh0Ki8NCglzZXR2YnVmKHN0ZG91dCwgKGNoYXIgKilOVUxMLCBfSU9MQkYsIDApOw0K
-DQoJcGFnZXMgPSBhdG9sKGFyZ3ZbMV0pICogMTAyNCAqIDEwMjQgLyBQQUdFU0laRTsNCg0KCXAg
-PSBtbWFwKE5VTEwsIHBhZ2VzICogUEFHRVNJWkUsIFBST1RfUkVBRCB8IFBST1RfV1JJVEUsDQoJ
-CSBNQVBfUFJJVkFURSB8IE1BUF9BTk9OWU1PVVMgfCBNQVBfTk9SRVNFUlZFLCAwLCAwKTsNCglp
-ZiAocCA9PSBNQVBfRkFJTEVEKSB7DQoJCXBlcnJvcigibW1hcCIpOw0KCQlleGl0KDEpOw0KCX0N
-Cg0KCWlmKHB0aHJlYWRfY3JlYXRlKCZ0aHIsIE5VTEwsIF9yZWxlYXNlLCBOVUxMKSkgew0KCQlw
-ZXJyb3IoInB0aHJlYWRfY3JlYXRlIik7DQoJCWV4aXQoMSk7DQoJfQ0KDQoNCgl0b3VjaCgpOw0K
-CXJldHVybiAwOw0KfQ0KDQpzdGF0aWMgdm9pZA0KdG91Y2ggKHZvaWQpDQp7DQoJbG9uZyBwYWdl
-ID0gMDsNCg0KCXdoaWxlICgxKSB7DQoJCWludCBpOw0KCQlzdHJ1Y3QgdGltZXNwZWMgdDsNCgkJ
-Zm9yIChpID0gMDsgaSA8IFRPVUNIX0NIVU5LOyBpKyspIHsNCgkJCXBbcGFnZSAqIFBBR0VTSVpF
-XSA9IDE7DQoJCQlpZiAoKytwYWdlID49IHBhZ2VzKSB7DQoJCQkJcGFnZSA9IDA7DQoJCQl9DQoJ
-CX0NCg0KI2lmIDENCgkJdC50dl9zZWMgPSAwOw0KCQl0LnR2X25zZWMgPSA1ICogMTAwMCAqIDEw
-MDA7IC8qIDVtcyAqLw0KCQlpZiAobmFub3NsZWVwKCZ0LCBOVUxMKSA9PSAtMSkgew0KCQkJcGVy
-cm9yKCJuYW5vc2xlZXAiKTsNCgkJfQ0KI2VuZGlmDQoJfQ0KfQ0KDQpzdGF0aWMgaW50DQpyZWxl
-YXNlICh2b2lkICphcmcpDQp7DQoJaW50IGZkID0gb3BlbigiL2Rldi9tZW1fbm90aWZ5IiwgT19S
-RE9OTFkpOw0KCWlmIChmZCA9PSAtMSkgew0KCQlwZXJyb3IoIm9wZW4oL2Rldi9tZW1fbm90aWZ5
-KSIpOw0KCQlleGl0KDEpOw0KCX0NCg0KCXdoaWxlICgxKSB7DQoJCXN0cnVjdCBwb2xsZmQgcGZk
-Ow0KCQlpbnQgbmZkczsNCg0KCQlwZmQuZmQgPSBmZDsNCgkJcGZkLmV2ZW50cyA9IFBPTExJTjsN
-Cg0KCQlwcmludGYoInBvbGxcbiIpOw0KCQluZmRzID0gcG9sbCgmcGZkLCAxLCAtMSk7DQoJCWlm
-IChuZmRzID09IC0xKSB7DQoJCQlwZXJyb3IoInBvbGwiKTsNCgkJCWV4aXQoMSk7DQoJCX0NCgkJ
-cHJpbnRmKCJub3RpZnlcbiIpOw0KCQlpZiAobmZkcyA9PSAxKSB7DQoJCQlzdHJ1Y3QgdGltZXNw
-ZWMgdDsNCgkJCXQudHZfc2VjID0gMDsNCgkJCXQudHZfbnNlYyA9IEZSRUVfREVMQVkgKiAxMDAw
-ICogMTAwMDsNCgkJCWlmIChuYW5vc2xlZXAoJnQsIE5VTEwpID09IC0xKSB7DQoJCQkJcGVycm9y
-KCJuYW5vc2xlZXAiKTsNCgkJCX0NCgkJCXByaW50Zigid2FrZXVwXG4iKTsNCgkJCXJlbGVhc2Vf
-cGFnZXMoKTsNCgkJCXByaW50ZigidGltZTogJWxkXG4iLCB0aW1lKE5VTEwpKTsNCi8vCQkJc2hv
-d19tZW1pbmZvKCk7DQoJCX0NCgl9DQp9DQoNCnN0YXRpYyB2b2lkKg0KX3JlbGVhc2UgKHZvaWQg
-KmFyZykNCnsNCglyZWxlYXNlKGFyZyk7DQoJcmV0dXJuIE5VTEw7DQp9DQoNCnN0YXRpYyB2b2lk
-DQpyZWxlYXNlX3BhZ2VzICh2b2lkKQ0Kew0KCS8qIEluZGV4IG9mIHRoZSBuZXh0IHBhZ2UgdG8g
-ZnJlZS4gKi8NCglzdGF0aWMgbG9uZyBwYWdlID0gMDsNCglpbnQgaTsNCg0KCS8qIFJlbGVhc2Ug
-RlJFRV9DSFVOSyBwYWdlcy4gKi8NCg0KCWZvciAoaSA9IDA7IGkgPCBGUkVFX0NIVU5LOyBpKysp
-IHsNCgkJaW50IHIgPSBtYWR2aXNlKHAgKyBwYWdlKlBBR0VTSVpFLCBQQUdFU0laRSwgTUFEVl9E
-T05UTkVFRCk7DQoJCWlmIChyID09IC0xKSB7DQoJCQlwZXJyb3IoIm1hZHZpc2UiKTsNCgkJCWV4
-aXQoMSk7DQoJCX0NCi8vCQlwcmludGYoImZyZWUgJXBcbiIsIHAgKyBwYWdlKlBBR0VTSVpFKTsN
-CgkJaWYgKCsrcGFnZSA+PSBwYWdlcykgew0KCQkJcGFnZSA9IDA7DQoJCX0NCgl9DQp9DQoNCnN0
-YXRpYyB2b2lkDQpzaG93X21lbWluZm8gKHZvaWQpDQp7DQoJY2hhciBidWZmZXJbMjAwMF07DQoJ
-aW50IGZkOw0KCXNzaXplX3QgbjsNCg0KCWZkID0gb3BlbigiL3Byb2MvbWVtaW5mbyIsIE9fUkRP
-TkxZKTsNCglpZiAoZmQgPT0gLTEpIHsNCgkJcGVycm9yKCJvcGVuKC9wcm9jL21lbWluZm8pIik7
-DQoJCWV4aXQoMSk7DQoJfQ0KDQoJbiA9IHJlYWQoZmQsIGJ1ZmZlciwgc2l6ZW9mKGJ1ZmZlcikp
-Ow0KCWlmIChuID09IC0xKSB7DQoJCXBlcnJvcigicmVhZCgvcHJvYy9tZW1pbmZvKSIpOw0KCQll
-eGl0KDEpOw0KCX0NCg0KCW4gPSB3cml0ZSgxLCBidWZmZXIsIG4pOw0KCWlmIChuID09IC0xKSB7
-DQoJCXBlcnJvcigid3JpdGUoc3Rkb3V0KSIpOw0KCQlleGl0KDEpOw0KCX0NCg0KCWlmIChjbG9z
-ZShmZCkgPT0gLTEpIHsNCgkJcGVycm9yKCJjbG9zZSgvcHJvYy9tZW1pbmZvKSIpOw0KCQlleGl0
-KDEpOw0KCX0NCn0NCg==
---------_4808555800000000A969_MULTIPART_MIXED_--
-
-
+kloczek
+-- 
+-----------------------------------------------------------
+*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
+-----------------------------------------------------------
+Tomasz K³oczko | *e-mail: kloczek@rudy.mif.pg.gda.pl*
+--0-189012854-1208509882=:2102--
