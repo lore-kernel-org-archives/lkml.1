@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYDRWVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbYDRW0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYDRWVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 18:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYDRWVH
+	id S1753839AbYDRW0Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 18:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYDRW0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 18:21:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50165 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751100AbYDRWVG (ORCPT
+	Fri, 18 Apr 2008 18:26:15 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60188 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbYDRW0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 18:21:06 -0400
-Date: Fri, 18 Apr 2008 15:20:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kgdb: add kgdb internal test suite
-Message-Id: <20080418152043.5beea7b2.akpm@linux-foundation.org>
-In-Reply-To: <200804181900.m3IJ0mn0011597@hera.kernel.org>
-References: <200804181900.m3IJ0mn0011597@hera.kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Apr 2008 18:26:14 -0400
+Message-ID: <480920BB.9010506@keyaccess.nl>
+Date: Sat, 19 Apr 2008 00:29:15 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
+References: <20080418204955.342963315@ldl.fc.hp.com> <20080418205051.704761191@ldl.fc.hp.com>
+In-Reply-To: <20080418205051.704761191@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 19:00:48 GMT
-Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+On 18-04-08 22:50, Bjorn Helgaas wrote:
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e8d31c204e36e019b9134f2a11926cac0fcf9b19
-> Commit:     e8d31c204e36e019b9134f2a11926cac0fcf9b19
-> Parent:     737a460f21febe551ff1d2299b63bae9b154078f
-> Author:     Jason Wessel <jason.wessel@windriver.com>
-> AuthorDate: Fri Mar 7 16:34:17 2008 -0600
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu Apr 17 20:05:42 2008 +0200
-> 
->     kgdb: add kgdb internal test suite
->
-> ...
->
-> +static const char hexchars[] = "0123456789abcdef";
+> Move the common part of pnp_init_resource_table() and
+> pnp_clean_resource_table() into a new pnp_init_resource().
+> This reduces a little code duplication and will be
+> useful later to initialize an individual resource.
 
-42!  That's a great place to stop.
+This can't be right, can it? :
 
-> +static char get_buf[BUFMAX];
-
-This really needs to be renamed.
-
-> +	int (*run_test) (int, int);
-> +	int (*validate_put) (char *);
-> +};
-> +
-> +static struct test_state ts;
-> +
-> +static int kgdbts_unreg_thread(void *ptr)
+> +void pnp_init_resource(struct resource *res)
 > +{
-> +	/* Wait until the tests are complete and then ungresiter the I/O
-> +	 * driver.
-> +	 */
-> +	while (!final_ack)
-> +		msleep_interruptible(1500);
+> +	unsigned long type;
+> +
+> +	type = res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
+> +			     IORESOURCE_IRQ | IORESOURCE_DMA);
+> +
+> +	res->name = NULL;
+> +	res->flags = type | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> +	if (type == IORESOURCE_IRQ || type == IORESOURCE_DMA) {
+> +		res->start = -1;
+> +		res->end = -1;
+> +	} else {
+> +		res->start = 0;
+> +		res->end = 0;
+> +	}
+> +}
 
-Why 1.5 seconds?  Seems like a pointless wats of time - can we use just 1
-here?
+This depends on the type already being set in res->flags, yet:
 
-> +#ifdef CONFIG_X86
+>  /**
+>   * pnp_init_resources - Resets a resource table to default values.
+>   * @table: pointer to the desired resource table
+> @@ -209,34 +227,14 @@
+>  	struct pnp_resource_table *table = &dev->res;
+>  	int idx;
+>  
+> -	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
+> -		table->irq_resource[idx].name = NULL;
+> -		table->irq_resource[idx].start = -1;
+> -		table->irq_resource[idx].end = -1;
+> -		table->irq_resource[idx].flags =
+> -		    IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> -	}
+> -	for (idx = 0; idx < PNP_MAX_DMA; idx++) {
+> -		table->dma_resource[idx].name = NULL;
+> -		table->dma_resource[idx].start = -1;
+> -		table->dma_resource[idx].end = -1;
+> -		table->dma_resource[idx].flags =
+> -		    IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> -	}
+> -	for (idx = 0; idx < PNP_MAX_PORT; idx++) {
+> -		table->port_resource[idx].name = NULL;
+> -		table->port_resource[idx].start = 0;
+> -		table->port_resource[idx].end = 0;
+> -		table->port_resource[idx].flags =
+> -		    IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> -	}
+> -	for (idx = 0; idx < PNP_MAX_MEM; idx++) {
+> -		table->mem_resource[idx].name = NULL;
+> -		table->mem_resource[idx].start = 0;
+> -		table->mem_resource[idx].end = 0;
+> -		table->mem_resource[idx].flags =
+> -		    IORESOURCE_MEM | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> -	}
+> +	for (idx = 0; idx < PNP_MAX_IRQ; idx++)
+> +		pnp_init_resource(&table->irq_resource[idx]);
+> +	for (idx = 0; idx < PNP_MAX_DMA; idx++)
+> +		pnp_init_resource(&table->dma_resource[idx]);
+> +	for (idx = 0; idx < PNP_MAX_PORT; idx++)
+> +		pnp_init_resource(&table->port_resource[idx]);
+> +	for (idx = 0; idx < PNP_MAX_MEM; idx++)
+> +		pnp_init_resource(&table->mem_resource[idx]);
+>  }
 
-btw, is the selftest code known to work on any other architectures?
+... it's not being set.
 
-
-
-afacit pretty much all of this code could/should be __init, but isn't?
+Rene.
