@@ -1,27 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbYDRTH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbYDRTPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760846AbYDRTH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 15:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYDRTHN
+	id S932743AbYDRTPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 15:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932618AbYDRTPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 15:07:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45571 "EHLO
+	Fri, 18 Apr 2008 15:15:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45408 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759286AbYDRTHL (ORCPT
+	by vger.kernel.org with ESMTP id S932617AbYDRTPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 15:07:11 -0400
-Date: Fri, 18 Apr 2008 12:06:34 -0700
+	Fri, 18 Apr 2008 15:15:40 -0400
+Date: Fri, 18 Apr 2008 12:14:31 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] tun: vringfd xmit support.
-Message-Id: <20080418120634.986e30f1.akpm@linux-foundation.org>
-In-Reply-To: <200804190115.15983.rusty@rustcorp.com.au>
-References: <200804181433.48488.rusty@rustcorp.com.au>
-	<200804181443.24812.rusty@rustcorp.com.au>
-	<20080418043120.ff78eab5.akpm@linux-foundation.org>
-	<200804190115.15983.rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Paalanen <pq@iki.fi>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Soeren Sandmann Pedersen <sandmann@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH sched-devel] ftrace: trace_entries to change trace
+ buffer size
+Message-Id: <20080418121431.7f1c05f1.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.58.0804180822510.5642@gandalf.stny.rr.com>
+References: <20080411163923.439680284@goodmis.org>
+	<20080411164037.219665668@goodmis.org>
+	<20080411214328.25c06a5d@daedalus.pq.iki.fi>
+	<Pine.LNX.4.58.0804112021200.4500@gandalf.stny.rr.com>
+	<20080413145604.3fb396a2@daedalus.pq.iki.fi>
+	<20080414095645.GC3761@elte.hu>
+	<20080414211433.3bfa5649@daedalus.pq.iki.fi>
+	<Pine.LNX.4.58.0804142139240.16591@gandalf.stny.rr.com>
+	<20080418032301.0f7bef7d.akpm@linux-foundation.org>
+	<Pine.LNX.4.58.0804180822510.5642@gandalf.stny.rr.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,39 +39,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008 01:15:15 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+On Fri, 18 Apr 2008 08:48:09 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
 
+> > > +		data->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+> > > +		max_tr.data[i]->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
 > >
-> > What is the maximum numbet of pages which an unpriviliged user can
-> > concurrently pin with this code?
+> > eww.  This *really* needs explanatory comments.
+> >
 > 
-> Since only root can open the tun device, it's currently OK.  The old code
-> kmalloced and copied: is there some mm-fu reason why pinning userspace memory
-> is worse?
+> Actually, that's just a way of doing spin_lock_init for raw spin locks. I
+> didn't see any other way.
 
-We generally try to avoid it - it allows users to dos the box.  Although I
-suspect that direct-io presently permits users to transiently pin an amount
-of memory which is proportional to the number of disks upon which they can
-open files.
+Maybe we need raw_spin_lock_init().  And DEFINE_RAW_SPINLOCK()?
 
-> Subject: Export release_pages; nice undo for get_user_pages.
-> 
-> Andrew Morton suggests tun/tap use release_pages, but it's not
-> exported.  It's not clear to me why this is in swap.c, but it exists
-> even without CONFIG_SWAP, so that's OK.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> diff -r abd2ad431e5c mm/swap.c
-> --- a/mm/swap.c	Sat Apr 19 00:34:54 2008 +1000
-> +++ b/mm/swap.c	Sat Apr 19 01:11:40 2008 +1000
-> @@ -346,6 +346,7 @@ void release_pages(struct page **pages, 
->  
->  	pagevec_free(&pages_to_free);
->  }
-> +EXPORT_SYMBOL(release_pages);
->  
->  /*
->   * The pages which we're about to release may be in the deferred lru-addition
-
-acked-by: me.
+Although it isn't a great idea to be encouraging the use of raw 
+spinlocks.
