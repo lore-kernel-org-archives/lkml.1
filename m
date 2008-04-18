@@ -1,132 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbYDRHtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbYDRHvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbYDRHtZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 03:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbYDRHtC
+	id S1758658AbYDRHvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 03:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYDRHvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 03:49:02 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:31471 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758336AbYDRHtA (ORCPT
+	Fri, 18 Apr 2008 03:51:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51485 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752692AbYDRHvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 03:49:00 -0400
-Date: Fri, 18 Apr 2008 03:48:59 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-       tony.luck@intel.com
-Subject: [PATCH 2/2] kallsyms: move get_func_addr to <asm/processor.h>
-Message-ID: <20080418074859.GD16276@phobos.i.cabal.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 18 Apr 2008 03:51:06 -0400
+Date: Fri, 18 Apr 2008 00:50:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-Id: <20080418005034.6e4dd9e7.akpm@linux-foundation.org>
+In-Reply-To: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While debugging something on parisc a few weeks ago, I noticed
-kallsyms was all busted because print_symbol was printing the
-descriptor address. Since we don't use addr[0] for the function
-address, and we don't want a mess of #ifdef ARCH1 #elseif ARCH2
-garbage, move the definitions to <asm/processor.h>
 
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
----
- include/asm-ia64/processor.h    |    6 ++++++
- include/asm-parisc/processor.h  |    8 ++++++++
- include/asm-powerpc/processor.h |    8 ++++++++
- include/linux/kallsyms.h        |   13 ++++---------
- 4 files changed, 26 insertions(+), 9 deletions(-)
+Another runtime warning on the t61p:
 
-diff --git a/include/asm-ia64/processor.h b/include/asm-ia64/processor.h
-index 741f7ec..9edbf0e 100644
---- a/include/asm-ia64/processor.h
-+++ b/include/asm-ia64/processor.h
-@@ -701,6 +701,12 @@ prefetchw (const void *x)
- 
- extern unsigned long boot_option_idle_override;
- 
-+#define get_func_addr(x)	({	\
-+					unsigned long *addr =	\
-+						(unsigned long *)x;	\
-+					addr[0];	\
-+				})
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif /* _ASM_IA64_PROCESSOR_H */
-diff --git a/include/asm-parisc/processor.h b/include/asm-parisc/processor.h
-index 3c9d348..a82c122 100644
---- a/include/asm-parisc/processor.h
-+++ b/include/asm-parisc/processor.h
-@@ -352,6 +352,14 @@ static inline int parisc_requires_coherency(void)
- #endif
- }
- 
-+#ifdef CONFIG_64BIT
-+#define get_func_addr(x)	({	\
-+					unsigned long *addr =	\
-+						(unsigned long *)x;	\
-+					addr[2];	\
-+				})
-+#endif /*CONFIG_64BIT*/
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __ASM_PARISC_PROCESSOR_H */
-diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
-index fd98ca9..604ad95 100644
---- a/include/asm-powerpc/processor.h
-+++ b/include/asm-powerpc/processor.h
-@@ -281,6 +281,14 @@ static inline void prefetchw(const void *x)
- #define HAVE_ARCH_PICK_MMAP_LAYOUT
- #endif
- 
-+#ifdef CONFIG_PPC64
-+#define get_func_addr(x)	({	\
-+					unsigned long *addr =	\
-+						(unsigned long *)x;	\
-+					addr[0];	\
-+				})
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_PROCESSOR_H */
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 6734a3f..9259d1f 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -8,6 +8,8 @@
- #include <linux/errno.h>
- #include <linux/stddef.h>
- 
-+#include <asm/processor.h>
-+
- #define KSYM_NAME_LEN 128
- #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1) + \
- 			 2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
-@@ -84,16 +86,9 @@ static inline void __check_printsym_format(const char *fmt, ...)
- {
- }
- 
--/* ia64 and ppc64 use function descriptors, which contain the real address */
--#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
--#define get_func_addr(x)	({				\
--					unsigned long *addr =	\
--						(unsigned long *)x;	\
--					addr[0];		\
--				})
--#else
-+#ifndef get_func_addr
- #define get_func_addr(x)	x
--#endif
-+#endif /*get_func_addr*/
- 
- #define print_fn_descriptor_symbol(fmt, addr)	\
- 		print_symbol(fmt, get_func_addr(addr))
--- 
-1.5.4.5
+
+Brought up 2 CPUs
+Total of 2 processors activated (9583.80 BogoMIPS).
+CPU0 attaching sched-domain:
+ domain 0: span 00000000,00000003
+  groups: 00000000,00000001 00000000,00000002
+  domain 1: span 00000000,00000003
+   groups: 00000000,00000003
+CPU1 attaching sched-domain:
+ domain 0: span 00000000,00000003
+  groups: 00000000,00000002 00000000,00000001
+  domain 1: span 00000000,00000003
+   groups: 00000000,00000003
+------------[ cut here ]------------
+WARNING: at kernel/lockdep.c:2677 check_flags+0x84/0x11f()
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.25-mm1 #15
+
+Call Trace:
+ [<ffffffff8105f7ec>] ? print_modules+0x88/0x8f
+ [<ffffffff81037b55>] warn_on_slowpath+0x58/0x7f
+ [<ffffffff81056143>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff810560b7>] ? trace_hardirqs_off_caller+0x1d/0x9c
+ [<ffffffff81056143>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff810560b7>] ? trace_hardirqs_off_caller+0x1d/0x9c
+ [<ffffffff81056143>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff81058576>] ? __lock_acquire+0x809/0x893
+ [<ffffffff810560b7>] ? trace_hardirqs_off_caller+0x1d/0x9c
+ [<ffffffff81056143>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff812b94d1>] ? __atomic_notifier_call_chain+0x0/0x81
+ [<ffffffff8105627e>] check_flags+0x84/0x11f
+ [<ffffffff81058914>] lock_acquire+0x54/0xb4
+ [<ffffffff812b9515>] __atomic_notifier_call_chain+0x44/0x81
+ [<ffffffff8100a2c2>] ? mwait_idle+0x0/0x49
+ [<ffffffff812b9561>] atomic_notifier_call_chain+0xf/0x11
+ [<ffffffff8100a228>] __exit_idle+0x27/0x29
+ [<ffffffff8100b33c>] cpu_idle+0xdf/0xf7
+ [<ffffffff812b10da>] start_secondary+0xb2/0xb4
+
+---[ end trace 93d72a36b9146f22 ]---
+possible reason: unannotated irqs-on.
+irq event stamp: 34
+hardirqs last  enabled at (33): [<ffffffff812b63f0>] trace_hardirqs_on_thunk+0x3a/0x3f
+hardirqs last disabled at (34): [<ffffffff81056143>] trace_hardirqs_off+0xd/0xf
+softirqs last  enabled at (32): [<ffffffff8103cfe8>] __do_softirq+0xc5/0xce
+softirqs last disabled at (25): [<ffffffff8100d32c>] call_softirq+0x1c/0x28
+calling  init_cpufreq_transition_notifier_list+0x0/0x1b()
+initcall init_cpufreq_transition_notifier_list+0x0/0x1b() returned 0 after 0 msecs
+calling  net_ns_init+0x0/0x12a()
+net_namespace: 1352 bytes
+initcall net_ns_init+0x0/0x12a() returned 0 after 0 msecs
+calling  cpufreq_tsc+0x0/0x16()
+
+dmesg: http://userweb.kernel.org/~akpm/x.txt
+config: http://userweb.kernel.org/~akpm/config-t61p.txt
+
+but it lumbered to a login prompt, which is more than good enough for this
+pile of dung.
+
+The number of runtime warnings, compile errors and runtime failures which
+have been added since 2.6.25-rc8-mm2 is astonishing.
 
