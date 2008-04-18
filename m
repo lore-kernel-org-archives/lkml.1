@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYDRJnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYDRJuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbYDRJnL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 05:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYDRJm6
+	id S1756633AbYDRJuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 05:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYDRJuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 05:42:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57489 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Apr 2008 05:50:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:47376 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754250AbYDRJm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 05:42:57 -0400
-Date: Fri, 18 Apr 2008 11:42:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Message-ID: <20080418094239.GA26393@elte.hu>
-References: <20080417002552.5742ad65.akpm@linux-foundation.org> <84144f020804170045s24cbb802u3358ec6b5d391a10@mail.gmail.com> <20080417012051.ed56f4ab.akpm@linux-foundation.org> <Pine.LNX.4.64.0804171130090.4929@sbz-30.cs.Helsinki.FI> <84144f020804170134k4c98f022xc247442592fb1a44@mail.gmail.com> <20080417014217.ab0453a9.akpm@linux-foundation.org> <20080417114900.GA17033@infradead.org> <20080417110135.08b076ac.akpm@linux-foundation.org> <20080417185158.GA26603@elte.hu> <Pine.BSO.4.63.0804181059090.2102@rudy.mif.pg.gda.pl>
+	id S1754409AbYDRJt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 05:49:59 -0400
+Message-ID: <48086EBC.3070904@goop.org>
+Date: Fri, 18 Apr 2008 19:49:48 +1000
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.BSO.4.63.0804181059090.2102@rudy.mif.pg.gda.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu> <48062343.50606@goop.org> <20080418004800.GA7758@Krystal>
+In-Reply-To: <20080418004800.GA7758@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Tomasz Kłoczko <kloczek@rudy.mif.pg.gda.pl> wrote:
-
->> and you'll see the trace events go by, live. The user-space bits of 
->> sysprof have been ported over to ftrace/sysprof already and it's a 
->> really nice tool that shows a deep stack-trace based hierarchical 
->> "vertical" profile instead of the usual finegrained profile.
+Mathieu Desnoyers wrote:
+> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>   
+>>>       
+>>>> thanks Mathieu, i've picked this up into x86.git for more testing.
+>>>>     
+>>>>         
+>>> ... but had to drop it due to missing PARAVIRT support which broke the 
+>>> build. I guess on paravirt we could just initially define 
+>>> INTERRUPT_RETURN_NMI_SAFE to iret, etc.?
+>>>       
+>> I have not yet implemented Xen's support for paravirtual NMI, so there's no 
+>> scope for breaking anything from my perspective.  When I get around to NMI, 
+>> I'll work around whatever's there.  I don't know if lguest or VMI has any 
+>> guest NMI support.
+>>
+>>    J
+>>
+>>     
 >
-> Does it meany Linux give up implementing DTrace way of 
-> tracing/instrumntation ? In last time I observe more and more signs 
-> inroducing parallel ways of tracing/instrumentations infrasctructures 
-> in Linux kernel where all this can be rolled into only one .. common. 
+> I wonder if we could simply paravirtualize the popf instruction, which
+> seems to be the only one requiring to run in ring 0.
 
-the goal of having more generic markers is still possible and being 
-aimed for - for in-kernel utilization like SystemTap, lttng, utrace, 
-ftrace and similar. The latest iteration of markers looks rather 
-promising in terms of giving us near-zero-cost probe points.
+Hm, I'd need to think about it more.  There's more to NMI's than just 
+the popf.
 
-(and last i checked dtrace was not capable of doing something like 
-mmiotrace - so it's a different thing.)
+    J
 
-so dont worry :)
-
-	Ingo
