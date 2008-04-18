@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbYDRX1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbYDRX1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbYDRX1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 19:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYDRXXV
+	id S1761351AbYDRX1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 19:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYDRXXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 19:23:21 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:40631 "EHLO havoc.gtf.org"
+	Fri, 18 Apr 2008 19:23:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:57005 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754655AbYDRXXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 19:23:16 -0400
-Message-Id: <1fe60a9e2aaf5ddc410e5eefd7aa1163821c59b5.1208559659.git.jgarzik@redhat.com>
+	id S1752358AbYDRXXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 19:23:19 -0400
+Message-Id: <ff3fae70ff950602df4271d8f4a6e36a85421e58.1208559659.git.jgarzik@redhat.com>
 In-Reply-To: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
 References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-To: ralf@linux-mips.org
+To: tglx@linutronix.de, mingo@redhat.com
 From: Jeff Garzik <jeff@garzik.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 12/15] [MIPS] pmc-sierra/msp71xx/msp_hwbutton.c: minor irq handler cleanups
-Date: Fri, 18 Apr 2008 19:23:01 -0400 (EDT)
+Subject: [PATCH 13/15] [X86] standard vm86 irq handler
+Date: Fri, 18 Apr 2008 19:23:03 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove always-true test
-
-- neaten request_irq() indentation
+Prefer 'void *dev_id' argument for passing data from request_irq() to
+each per-irq handler invocation.
 
 This change's main purpose is to prepare for the patchset in
 jgarzik/misc-2.6.git#irq-remove, that explores removal of the
@@ -32,32 +31,35 @@ never-used 'irq' argument in each interrupt handler.
 
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- arch/mips/pmc-sierra/msp71xx/msp_hwbutton.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ arch/x86/kernel/vm86_32.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mips/pmc-sierra/msp71xx/msp_hwbutton.c b/arch/mips/pmc-sierra/msp71xx/msp_hwbutton.c
-index ab96a2d..11769b5 100644
---- a/arch/mips/pmc-sierra/msp71xx/msp_hwbutton.c
-+++ b/arch/mips/pmc-sierra/msp71xx/msp_hwbutton.c
-@@ -126,9 +126,6 @@ static irqreturn_t hwbutton_handler(int irq, void *data)
- 	struct hwbutton_interrupt *hirq = data;
- 	unsigned long cic_ext = *CIC_EXT_CFG_REG;
+diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
+index 38f566f..e610c08 100644
+--- a/arch/x86/kernel/vm86_32.c
++++ b/arch/x86/kernel/vm86_32.c
+@@ -735,9 +735,9 @@ static int irqbits;
+ 	| (1 << SIGUSR1) | (1 << SIGUSR2) | (1 << SIGIO)  | (1 << SIGURG) \
+ 	| (1 << SIGUNUSED))
  
--	if (irq != hirq->irq)
--		return IRQ_NONE;
--
- 	if (CIC_EXT_IS_ACTIVE_HI(cic_ext, hirq->eirq)) {
- 		/* Interrupt: pin is now HI */
- 		CIC_EXT_SET_ACTIVE_LO(cic_ext, hirq->eirq);
-@@ -164,7 +161,7 @@ static int msp_hwbutton_register(struct hwbutton_interrupt *hirq)
- 	*CIC_EXT_CFG_REG = cic_ext;
+-static irqreturn_t irq_handler(int intno, void *dev_id)
++static irqreturn_t irq_handler(int dummy, void *dev_id)
+ {
+-	int irq_bit;
++	int irq_bit, intno = (int)(unsigned long) dev_id;
+ 	unsigned long flags;
  
- 	return request_irq(hirq->irq, hwbutton_handler, IRQF_DISABLED,
--				hirq->name, (void *)hirq);
-+			   hirq->name, hirq);
- }
- 
- static int __init msp_hwbutton_setup(void)
+ 	spin_lock_irqsave(&irqbits_lock, flags);
+@@ -818,7 +818,8 @@ static int do_vm86_irq_handling(int subfunction, int irqnumber)
+ 			if (!((1 << sig) & ALLOWED_SIGS)) return -EPERM;
+ 			if (invalid_vm86_irq(irq)) return -EPERM;
+ 			if (vm86_irqs[irq].tsk) return -EPERM;
+-			ret = request_irq(irq, &irq_handler, 0, VM86_IRQNAME, NULL);
++			ret = request_irq(irq, irq_handler, 0, VM86_IRQNAME,
++					  (void *)(unsigned long) irq);
+ 			if (ret) return ret;
+ 			vm86_irqs[irq].sig = sig;
+ 			vm86_irqs[irq].tsk = current;
 -- 
 1.5.4.1
 
