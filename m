@@ -1,72 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYDRBhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYDRBoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYDRBhI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 21:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYDRBg4
+	id S1755530AbYDRBoz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 21:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYDRBop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 21:36:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34486 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751719AbYDRBg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 21:36:56 -0400
-Date: Thu, 17 Apr 2008 18:35:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Moore <paul.moore@hp.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, penberg@cs.helsinki.fi,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, jmorris@namei.org, sds@tycho.nsa.gov
-Subject: Re: 2.6.25-mm1: not looking good
-Message-Id: <20080417183538.d88feff5.akpm@linux-foundation.org>
-In-Reply-To: <200804171955.46600.paul.moore@hp.com>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<200804171955.46600.paul.moore@hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Apr 2008 21:44:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56116 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbYDRBoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 21:44:44 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ptrace_signal subroutine
+X-Fcc: ~/Mail/linus
+X-Shopping-List: (1) Repugnant consoles
+   (2) Grandiloquent oblivion
+   (3) Archaic ambition
+   (4) Expeditious ponderous dice
+   (5) Fragrant translation exhibitions
+Message-Id: <20080418014438.1C93C27037D@magilla.localdomain>
+Date: Thu, 17 Apr 2008 18:44:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 19:55:46 -0400
-Paul Moore <paul.moore@hp.com> wrote:
+This breaks out the ptrace handling from get_signal_to_deliver
+into a new subroutine.  The actual code there doesn't change, and
+it gets inlined into nearly identical compiled code.  This makes
+the function substantially shorter and thus easier to read, and
+it nicely isolates the ptrace magic.
 
-> > security/selinux/netnode.c looks to be doing simple old
-> > kzalloc/kfree, so I'd be suspecting slab.  But there are significant
-> > changes netnode.c in git-selinux.
-> >
-> > I have maybe two hours in which to weed out whatever
-> > very-recently-added dud patches are causing this.  Any suggestions
-> > are welcome.
-> 
-> For what it's worth I just looked over the changes in netnode.c and 
-> nothing is jumping out at me.  The changes ran fine for me when tested 
-> on the later 2.6.25-rcX kernels but I suppose that doesn't mean a whole 
-> lot.
-> 
-> I've got a 4-way x86_64 box but it needs to be installed (which means 
-> I'm not going to be able to do anything useful with it until tomorrow 
-> at the earliest).  I'll try it out and see if I can recreate the 
-> problem.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/signal.c |   71 ++++++++++++++++++++++++++++++++----------------------
+ 1 files changed, 42 insertions(+), 29 deletions(-)
 
-I dropped git-selinux and that crash seems to have gone away.  It took about
-five minutes before, but would presumably have happened earlier if I'd
-reduced the cache size.
-
-btw, wouldn't this
-
---- a/security/selinux/netnode.c~a
-+++ a/security/selinux/netnode.c
-@@ -190,7 +190,7 @@ static int sel_netnode_insert(struct sel
- 	if (sel_netnode_hash[idx].size == SEL_NETNODE_HASH_BKT_LIMIT) {
- 		struct sel_netnode *tail;
- 		tail = list_entry(node->list.prev, struct sel_netnode, list);
--		list_del_rcu(node->list.prev);
-+		list_del_rcu(&tail->list);
- 		call_rcu(&tail->rcu, sel_netnode_free);
- 	} else
- 		sel_netnode_hash[idx].size++;
-_
-
-be a bit clearer?  If it's correct - I didn't try too hard :)
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 977b3cd..144590c 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1757,6 +1757,45 @@ static int do_signal_stop(int signr)
+ 	return 1;
+ }
+ 
++static int ptrace_signal(int signr, siginfo_t *info,
++			 struct pt_regs *regs, void *cookie)
++{
++	if (!(current->ptrace & PT_PTRACED))
++		return signr;
++
++	ptrace_signal_deliver(regs, cookie);
++
++	/* Let the debugger run.  */
++	ptrace_stop(signr, 0, info);
++
++	/* We're back.  Did the debugger cancel the sig?  */
++	signr = current->exit_code;
++	if (signr == 0)
++		return signr;
++
++	current->exit_code = 0;
++
++	/* Update the siginfo structure if the signal has
++	   changed.  If the debugger wanted something
++	   specific in the siginfo structure then it should
++	   have updated *info via PTRACE_SETSIGINFO.  */
++	if (signr != info->si_signo) {
++		info->si_signo = signr;
++		info->si_errno = 0;
++		info->si_code = SI_USER;
++		info->si_pid = task_pid_vnr(current->parent);
++		info->si_uid = current->parent->uid;
++	}
++
++	/* If the (new) signal is now blocked, requeue it.  */
++	if (sigismember(&current->blocked, signr)) {
++		specific_send_sig_info(signr, info, current);
++		signr = 0;
++	}
++
++	return signr;
++}
++
+ int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
+ 			  struct pt_regs *regs, void *cookie)
+ {
+@@ -1785,36 +1824,10 @@ relock:
+ 		if (!signr)
+ 			break; /* will return 0 */
+ 
+-		if ((current->ptrace & PT_PTRACED) && signr != SIGKILL) {
+-			ptrace_signal_deliver(regs, cookie);
+-
+-			/* Let the debugger run.  */
+-			ptrace_stop(signr, 0, info);
+-
+-			/* We're back.  Did the debugger cancel the sig?  */
+-			signr = current->exit_code;
+-			if (signr == 0)
+-				continue;
+-
+-			current->exit_code = 0;
+-
+-			/* Update the siginfo structure if the signal has
+-			   changed.  If the debugger wanted something
+-			   specific in the siginfo structure then it should
+-			   have updated *info via PTRACE_SETSIGINFO.  */
+-			if (signr != info->si_signo) {
+-				info->si_signo = signr;
+-				info->si_errno = 0;
+-				info->si_code = SI_USER;
+-				info->si_pid = task_pid_vnr(current->parent);
+-				info->si_uid = current->parent->uid;
+-			}
+-
+-			/* If the (new) signal is now blocked, requeue it.  */
+-			if (sigismember(&current->blocked, signr)) {
+-				specific_send_sig_info(signr, info, current);
++		if (signr != SIGKILL) {
++			signr = ptrace_signal(signr, info, regs, cookie);
++			if (!signr)
+ 				continue;
+-			}
+ 		}
+ 
+ 		ka = &current->sighand->action[signr-1];
