@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYDRCrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYDRCva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbYDRCrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 22:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYDRCrL
+	id S1756595AbYDRCva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 22:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYDRCvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 22:47:11 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49744 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753330AbYDRCrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 22:47:10 -0400
-Message-ID: <48080B86.7040200@cn.fujitsu.com>
-Date: Fri, 18 Apr 2008 10:46:30 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Thu, 17 Apr 2008 22:51:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56292 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752855AbYDRCvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 22:51:22 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH update] firewire: fw-ohci: work around generation bug =?iso-8859-1?q?in=09TI_controllers?= (fix AV/C and more)
+Date: Thu, 17 Apr 2008 22:51:05 -0400
+User-Agent: KMail/1.9.9
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <tkrat.95472d87fa4e6c81@s5r6.in-berlin.de> <200804141330.22131.jwilson@redhat.com> <4807D374.8090608@s5r6.in-berlin.de>
+In-Reply-To: <4807D374.8090608@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
-Subject: [PATCH] memcgroup: check and initialize page->cgroup in memmap_init_zone
-References: <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com>
-In-Reply-To: <48080930.5090905@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804172251.06018.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we test memory controller in Fujitsu PrimeQuest(arch: ia64),
-the compiled kernel boots failed, the following message occured on
-the telnet terminal.
--------------------------------------
-..........
-ELILO boot: Uncompressing Linux... done
-Loading file initrd-2.6.25-rc9-00067-gb87e81e.img...done
-_ (system freezed)
--------------------------------------
+On Thursday 17 April 2008 06:47:16 pm Stefan Richter wrote:
+> Jarod Wilson wrote:
+> > On Saturday 12 April 2008 04:31:25 pm Stefan Richter wrote:
+> >> +	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
+> >> +
+> >
+> > I have a few cards with PCI_VENDOR_ID_CREATIVE with a TI TSB41AB2 chip on
+> > 'em (SoundBlaster Audigy w/FireWire port). I've not had any issues on any
+> > of the cards I've got, but do we want to add them to the work-around list
+> > just to be safe?
+>
+> No, we don't need to.  TSB41AB2 is only a PHY, not a link layer
+> controller.  While the PHYs (the combination of PHYs which are present
+> on the bus) influence the conditions under which the bug can happen, the
+> cause for the bug is in the link layer controller alone.
+>
+> So unless Creative used a TI design in their link layer controller or
+> otherwise managed to implement this same quirk as TI (Agere, NEC, and
+> VIA didn't according to my tests so far), the presence of TSB41AB2 on a
+> card does not make it necessary to activate the quirk workaround.
 
-We found commit 9442ec9df40d952b0de185ae5638a74970388e01
-causes this boot failure by git-bisect.
-And, we found the following change caused the boot failure.
--------------------------------------
-@@ -2528,7 +2535,6 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zon
-                set_page_links(page, zone, nid, pfn);
-                init_page_count(page);
-                reset_page_mapcount(page);
--               page_assign_page_cgroup(page, NULL);
-                SetPageReserved(page);
+Ah, I'll have to take a closer look at these cards and see if I can figure out 
+what drives the link layer... But barring the discovery of another TI chip, 
+I'm assuming an attempt to reproduce the generation issue will be fruitless.
 
-                /*
--------------------------------------
-In this patch, the Author Hugh Dickins said 
-"...memmap_init_zone doesn't need it either, ...
-Linux assumes pointers in zeroed structures are NULL pointers."
-But it seems it's not always the case, so we should check and initialize
-page->cgroup anyways.
+Well, based on the positive results we've seen thus far with TI controllers 
+and this patch in Fedora kernels:
 
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
----
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 402a504..506d4cf 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2518,6 +2518,7 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
- 	struct page *page;
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
-+	void *pc;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
- 		/*
-@@ -2535,6 +2536,9 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
- 		reset_page_mapcount(page);
-+		pc = page_get_page_cgroup(page);
-+		if (pc) 
-+			page_reset_bad_cgroup(page);
- 		SetPageReserved(page);
- 
- 		/*
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-
-
-
-
-
-
+-- 
+Jarod Wilson
+jwilson@redhat.com
