@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbYDRXZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYDRXZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbYDRXZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 19:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYDRXXO
+	id S1759386AbYDRXZB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 19:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYDRXXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 19:23:14 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:59000 "EHLO havoc.gtf.org"
+	Fri, 18 Apr 2008 19:23:04 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:46553 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753199AbYDRXW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 19:22:57 -0400
-Message-Id: <f8e24302d74ee5066900b6f650d4e558d4f930c1.1208559659.git.jgarzik@redhat.com>
+	id S1752729AbYDRXWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 19:22:55 -0400
+Message-Id: <70159e4a9060dee3fee3d41e22a4d78c5ba95120.1208559659.git.jgarzik@redhat.com>
 In-Reply-To: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
 References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
+To: linux-scsi@vger.kernel.org
 From: Jeff Garzik <jeff@garzik.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/15] [ISDN] minor irq handler cleanups
-Date: Fri, 18 Apr 2008 19:22:55 -0400 (EDT)
+Subject: [PATCH 07/15] [SCSI] aha1542: minor irq handler cleanups
+Date: Fri, 18 Apr 2008 19:22:54 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove pointless casts from void*
+- where the 'irq' function argument is known never to be used, rename
+  it to 'dummy' to make this more obvious
 
-- remove braces around singleton C statements
-
-- remove unused 'intno' argument from rs_interrupt_elsa()
-
-- cs->irq_func() should be defined using standard irq_handler_t
+- replace per-irq lookup functions and tables with a direct reference
+  to data object obtained via 'dev_id' function argument, passed from
+  request_irq()
 
 This change's main purpose is to prepare for the patchset in
 jgarzik/misc-2.6.git#irq-remove, that explores removal of the
@@ -36,66 +35,79 @@ never-used 'irq' argument in each interrupt handler.
 
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- drivers/isdn/hisax/elsa.c     |    4 ++--
- drivers/isdn/hisax/elsa_ser.c |    4 ++--
- drivers/isdn/hisax/hisax.h    |    2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/scsi/aha1542.c |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
-index d272d8c..2c3691f 100644
---- a/drivers/isdn/hisax/elsa.c
-+++ b/drivers/isdn/hisax/elsa.c
-@@ -299,7 +299,7 @@ elsa_interrupt(int intno, void *dev_id)
- 		val = serial_inp(cs, UART_IIR);
- 		if (!(val & UART_IIR_NO_INT)) {
- 			debugl1(cs,"IIR %02x", val);
--			rs_interrupt_elsa(intno, cs);
-+			rs_interrupt_elsa(cs);
- 		}
- 	}
- #endif
-@@ -379,7 +379,7 @@ elsa_interrupt_ipac(int intno, void *dev_id)
- 		val = serial_inp(cs, UART_IIR);
- 		if (!(val & UART_IIR_NO_INT)) {
- 			debugl1(cs,"IIR %02x", val);
--			rs_interrupt_elsa(intno, cs);
-+			rs_interrupt_elsa(cs);
- 		}
- 	}
- #endif
-diff --git a/drivers/isdn/hisax/elsa_ser.c b/drivers/isdn/hisax/elsa_ser.c
-index 1642dca..f181db4 100644
---- a/drivers/isdn/hisax/elsa_ser.c
-+++ b/drivers/isdn/hisax/elsa_ser.c
-@@ -384,13 +384,13 @@ static inline void transmit_chars(struct IsdnCardState *cs, int *intr_done)
+diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
+index 5a1471c..1375915 100644
+--- a/drivers/scsi/aha1542.c
++++ b/drivers/scsi/aha1542.c
+@@ -153,8 +153,6 @@ struct aha1542_hostdata {
+ 
+ #define HOSTDATA(host) ((struct aha1542_hostdata *) &host->hostdata)
+ 
+-static struct Scsi_Host *aha_host[7];	/* One for each IRQ level (9-15) */
+-
+ static DEFINE_SPINLOCK(aha1542_lock);
+ 
+ 
+@@ -163,8 +161,7 @@ static DEFINE_SPINLOCK(aha1542_lock);
+ 
+ static void setup_mailboxes(int base_io, struct Scsi_Host *shpnt);
+ static int aha1542_restart(struct Scsi_Host *shost);
+-static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id);
+-static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id);
++static void aha1542_intr_handle(struct Scsi_Host *shost);
+ 
+ #define aha1542_intr_reset(base)  outb(IRST, CONTROL(base))
+ 
+@@ -404,23 +401,19 @@ fail:
  }
  
- 
--static void rs_interrupt_elsa(int irq, struct IsdnCardState *cs)
-+static void rs_interrupt_elsa(struct IsdnCardState *cs)
+ /* A quick wrapper for do_aha1542_intr_handle to grab the spin lock */
+-static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id)
++static irqreturn_t do_aha1542_intr_handle(int dummy, void *dev_id)
  {
- 	int status, iir, msr;
- 	int pass_counter = 0;
- 	
- #ifdef SERIAL_DEBUG_INTR
--	printk("rs_interrupt_single(%d)...", irq);
-+	printk(KERN_DEBUG "rs_interrupt_single(%d)...", cs->irq);
- #endif
+ 	unsigned long flags;
+-	struct Scsi_Host *shost;
+-
+-	shost = aha_host[irq - 9];
+-	if (!shost)
+-		panic("Splunge!");
++	struct Scsi_Host *shost = dev_id;
  
- 	do {
-diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index 34733c9..e8d429f 100644
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -925,7 +925,7 @@ struct IsdnCardState {
- 	int		(*cardmsg) (struct IsdnCardState *, int, void *);
- 	void		(*setstack_d) (struct PStack *, struct IsdnCardState *);
- 	void		(*DC_Close) (struct IsdnCardState *);
--	int		(*irq_func) (int, void *);
-+	irq_handler_t	irq_func;
- 	int		(*auxcmd) (struct IsdnCardState *, isdn_ctrl *);
- 	struct Channel	channel[2+MAX_WAITING_CALLS];
- 	struct BCState	bcs[2+MAX_WAITING_CALLS];
+ 	spin_lock_irqsave(shost->host_lock, flags);
+-	aha1542_intr_handle(shost, dev_id);
++	aha1542_intr_handle(shost);
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+ 	return IRQ_HANDLED;
+ }
+ 
+ /* A "high" level interrupt handler */
+-static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id)
++static void aha1542_intr_handle(struct Scsi_Host *shost)
+ {
+ 	void (*my_done) (Scsi_Cmnd *) = NULL;
+ 	int errstatus, mbi, mbo, mbistatus;
+@@ -1197,7 +1190,8 @@ fail:
+ 
+ 			DEB(printk("aha1542_detect: enable interrupt channel %d\n", irq_level));
+ 			spin_lock_irqsave(&aha1542_lock, flags);
+-			if (request_irq(irq_level, do_aha1542_intr_handle, 0, "aha1542", NULL)) {
++			if (request_irq(irq_level, do_aha1542_intr_handle, 0,
++					"aha1542", shpnt)) {
+ 				printk(KERN_ERR "Unable to allocate IRQ for adaptec controller.\n");
+ 				spin_unlock_irqrestore(&aha1542_lock, flags);
+ 				goto unregister;
+@@ -1214,7 +1208,7 @@ fail:
+ 					enable_dma(dma_chan);
+ 				}
+ 			}
+-			aha_host[irq_level - 9] = shpnt;
++
+ 			shpnt->this_id = scsi_id;
+ 			shpnt->unique_id = base_io;
+ 			shpnt->io_port = base_io;
 -- 
 1.5.4.1
 
