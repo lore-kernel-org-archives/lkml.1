@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYDRK26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbYDRKcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbYDRK26 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 06:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbYDRK2u
+	id S1756410AbYDRKcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 06:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYDRKcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 06:28:50 -0400
-Received: from emh03.mail.saunalahti.fi ([62.142.5.109]:42837 "EHLO
-	emh03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754984AbYDRK2t (ORCPT
+	Fri, 18 Apr 2008 06:32:15 -0400
+Received: from relay2.globalproof.net ([194.146.153.25]:54021 "EHLO
+	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbYDRKcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 06:28:49 -0400
-Date: Fri, 18 Apr 2008 13:30:22 +0300 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc2
-To: Bob Copeland <me@bobcopeland.com>
-cc: Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/7] OMFS filesystem version 3
-In-Reply-To: <20080414004521.GA30489@hash.localnet>
-Message-ID: <Pine.LNX.4.61.0804181302180.29728@dhcppc2>
-References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
- <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet>
- <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org>
- <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org>
- <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <20080414004521.GA30489@hash.localnet>
+	Fri, 18 Apr 2008 06:32:14 -0400
+From: Denys Fedoryshchenko <denys@visp.net.lb>
+Organization: Virtual ISP S.A.L.
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.25 released with bug, which leads to XFS crash?
+Date: Fri, 18 Apr 2008 13:32:30 +0300
+User-Agent: KMail/1.9.5
+Cc: Eric Sandeen <sandeen@sandeen.net>, linux-kernel@vger.kernel.org
+References: <200804170949.36864.denys@visp.net.lb> <4807EDD6.8000705@sandeen.net> <20080418074041.GA9839@infradead.org>
+In-Reply-To: <20080418074041.GA9839@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804181332.31177.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+AUFS(same as COSS, UFS, NULL) is way of handling with cache storage in squid, and nothing else. It is userspace and not involved deeply with kernel things.
+Since long long time i didn't had any single problem with it.
+Kernel is fully vanilla.
 
-On Sun, 13 Apr 2008, Bob Copeland wrote:
-
-> I don't have hard numbers, but anecdotally my FUSE version is quite 
-> a bit less performant.  That's no criticism of FUSE - I just haven't
-> put the time into optimizing and adding various caches.
-
-Thankfully you need none, it's already there by FUSE and the kernel. The 
-trick is exactly that you can have the kernel performance and the left is 
-moved to user space with typically negligible performance overhead which is 
-usually well compensated with faster delivered new features and bug fixes.
-
-The completely unoptimized ntfs-3g read/write saturates my USB disks with 
-25-30 MB/sec using 8% (read), 35% (write) CPU time on a 2.5 GHz Core 2 Duo 
-with cold caches.
-
-If you have the free hot caches then it performs the same as in-kernel 
-file systems, user space isn't involved at all.
-
-I noticed that the OMFS kernel driver supports only the USB interface and 
-the FUSE one both the network and the USB one. Isn't it possible that you 
-compared the performance using the USB with the kernel vs the much slower 
-and lower latency network with FUSE? You should compare performances using 
-only the USB interface in both cases.
-
-If you did use the USB interface with FUSE then what exactly do you mean by 
-"quite a bit less performance" in numbers and workloads? What you did, how 
-long it took using what CPU?
-
-Thanks,
-	    Szaka
+On Friday 18 April 2008 10:40, Christoph Hellwig wrote:
+> On Thu, Apr 17, 2008 at 07:39:50PM -0500, Eric Sandeen wrote:
+> > Denys Fedoryshchenko wrote:
+> > > Hi again
+> > > 
+> > > I reported about http://bugzilla.kernel.org/show_bug.cgi?id=10421 , and it is triggerable on different loaded servers with XFS (squid with aufs),
+> > 
+> > Oh, aufs was not listed in the bug report.  that's an out of tree
+> > module, right?  Is it completely up to date and safe with 2.6.25?
+> 
+> And it's a completely crappy one.  I personally would through away every
+> bug report with that piece of junk involved.
+> 
+> 
 
 -- 
-NTFS-3G:  http://ntfs-3g.org
+------
+Technical Manager
+Virtual ISP S.A.L.
+Lebanon
