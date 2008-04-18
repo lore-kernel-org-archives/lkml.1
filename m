@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbYDRU6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbYDRU6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762608AbYDRU6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 16:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758317AbYDRUwT
+	id S1762422AbYDRU6H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 16:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbYDRUwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:52:19 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:20829 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758888AbYDRUvp (ORCPT
+	Fri, 18 Apr 2008 16:52:13 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:29840 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760347AbYDRUvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:51:45 -0400
-Message-Id: <20080418205049.850057335@ldl.fc.hp.com>
+	Fri, 18 Apr 2008 16:51:53 -0400
+Message-Id: <20080418205051.913072509@ldl.fc.hp.com>
 References: <20080418204955.342963315@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:50:08 -0600
+Date: Fri, 18 Apr 2008 14:50:18 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -25,54 +25,74 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 13/53] PNPACPI: hoist dma_flags() out of pnpacpi_parse_allocated_dmaresource()
-Content-Disposition: inline; filename=pnpacpi-hoist-dma-flags
+Subject: [patch 23/53] PNP: add pnp_get_resource() interface
+Content-Disposition: inline; filename=pnp-add-get-resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hoist dma_flags() out of pnpacpi_parse_allocated_dmaresource() into its
-caller.  This makes pnpacpi_parse_allocated_dmaresource() more similar
-to pnpbios_parse_allocated_dmaresource().
+This adds a pnp_get_resource() that works the same way as
+platform_get_resource().  This will enable us to consolidate
+many pnp_resource_table references in one place, which will
+make it easier to make the table dynamic.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Index: work7/drivers/pnp/pnpacpi/rsparser.c
+---
+ drivers/pnp/resource.c |   27 +++++++++++++++++++++++++++
+ include/linux/pnp.h    |    1 +
+ 2 files changed, 28 insertions(+)
+
+Index: work8/include/linux/pnp.h
 ===================================================================
---- work7.orig/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:08:36.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:10:22.000000000 -0600
-@@ -167,8 +167,7 @@
+--- work8.orig/include/linux/pnp.h	2008-04-10 13:28:45.000000000 -0600
++++ work8/include/linux/pnp.h	2008-04-10 13:31:52.000000000 -0600
+@@ -25,6 +25,7 @@
+ /*
+  * Resource Management
+  */
++struct resource *pnp_get_resource(struct pnp_dev *, unsigned int, unsigned int);
+ 
+ /* Use these instead of directly reading pnp_dev to get resource information */
+ #define pnp_port_start(dev,bar)   ((dev)->res.port_resource[(bar)].start)
+Index: work8/drivers/pnp/resource.c
+===================================================================
+--- work8.orig/drivers/pnp/resource.c	2008-04-10 12:26:08.000000000 -0600
++++ work8/drivers/pnp/resource.c	2008-04-10 13:31:52.000000000 -0600
+@@ -461,6 +461,33 @@
+ #endif
  }
  
- static void pnpacpi_parse_allocated_dmaresource(struct pnp_resource_table *res,
--						u32 dma, int type,
--						int bus_master, int transfer)
-+						u32 dma, int flags)
++struct resource *pnp_get_resource(struct pnp_dev *dev,
++				  unsigned int type, unsigned int num)
++{
++	struct pnp_resource_table *res = &dev->res;
++
++	switch (type) {
++	case IORESOURCE_IO:
++		if (num >= PNP_MAX_PORT)
++			return NULL;
++		return &res->port_resource[num];
++	case IORESOURCE_MEM:
++		if (num >= PNP_MAX_MEM)
++			return NULL;
++		return &res->mem_resource[num];
++	case IORESOURCE_IRQ:
++		if (num >= PNP_MAX_IRQ)
++			return NULL;
++		return &res->irq_resource[num];
++	case IORESOURCE_DMA:
++		if (num >= PNP_MAX_DMA)
++			return NULL;
++		return &res->dma_resource[num];
++	}
++	return NULL;
++}
++EXPORT_SYMBOL(pnp_get_resource);
++
+ /* format is: pnp_reserve_irq=irq1[,irq2] .... */
+ static int __init pnp_setup_reserve_irq(char *str)
  {
- 	int i = 0;
- 	static unsigned char warned;
-@@ -178,8 +177,7 @@
- 		i++;
- 	if (i < PNP_MAX_DMA) {
- 		res->dma_resource[i].flags = IORESOURCE_DMA;	// Also clears _UNSET flag
--		res->dma_resource[i].flags |=
--		    dma_flags(type, bus_master, transfer);
-+		res->dma_resource[i].flags |= flags;
- 		if (dma == -1) {
- 			res->dma_resource[i].flags |= IORESOURCE_DISABLED;
- 			return;
-@@ -309,9 +307,8 @@
- 		if (dma->channel_count > 0)
- 			pnpacpi_parse_allocated_dmaresource(res_table,
- 				dma->channels[0],
--				dma->type,
--				dma->bus_master,
--				dma->transfer);
-+				dma_flags(dma->type, dma->bus_master,
-+					  dma->transfer));
- 		break;
- 
- 	case ACPI_RESOURCE_TYPE_IO:
 
 -- 
