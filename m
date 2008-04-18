@@ -1,35 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYDRXYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYDRXXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbYDRXYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 19:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDRXW7
+	id S1756269AbYDRXXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 19:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYDRXW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 19:22:59 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:53854 "EHLO havoc.gtf.org"
+	Fri, 18 Apr 2008 19:22:58 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:53223 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbYDRXWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 19:22:50 -0400
-Message-Id: <633e3f1106fd888b93a0f18c73449fd86054cc05.1208559659.git.jgarzik@redhat.com>
+	id S1751789AbYDRXWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 19:22:48 -0400
+Message-Id: <0fc974582553292880b65973b4095297056eec03.1208559659.git.jgarzik@redhat.com>
 In-Reply-To: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
 References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-To: vitb@kernel.crashing.org, linuxppc-dev@ozlabs.org
+To: cooloney@kernel.org
 From: Jeff Garzik <jeff@garzik.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 04/15] [PPC] minor irq handler cleanups
-Date: Fri, 18 Apr 2008 19:22:49 -0400 (EDT)
+Subject: [PATCH 03/15] [BLACKFIN] minor irq handler cleanups
+Date: Fri, 18 Apr 2008 19:22:48 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- whitespace cleanups
+- time_sched_init() should use standard irq_handler_t
 
-- remove pointless prototype (uses always follow func implementation)
+- sys_timer0_int_handler() should not take 'regs' third argument
 
-- 'irq' argument is often used purely as a local variable.  rename
-  argument to 'dummy' and define 'irq' as local to make this plain.
-
-- remove pointless casts from void*
+- remove pointless cast from void*
 
 This change's main purpose is to prepare for the patchset in
 jgarzik/misc-2.6.git#irq-remove, that explores removal of the
@@ -37,47 +34,50 @@ never-used 'irq' argument in each interrupt handler.
 
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- arch/ppc/8xx_io/fec.c        |    3 +--
- arch/ppc/platforms/sbc82xx.c |    4 +++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/blackfin/kernel/time.c        |    5 ++---
+ arch/blackfin/oprofile/timer_int.c |    5 ++---
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ppc/8xx_io/fec.c b/arch/ppc/8xx_io/fec.c
-index 11b0aa6..d7b7ba9 100644
---- a/arch/ppc/8xx_io/fec.c
-+++ b/arch/ppc/8xx_io/fec.c
-@@ -199,7 +199,6 @@ static int fec_enet_start_xmit(struct sk_buff *skb, struct net_device *dev);
- #ifdef	CONFIG_USE_MDIO
- static void fec_enet_mii(struct net_device *dev);
- #endif	/* CONFIG_USE_MDIO */
--static irqreturn_t fec_enet_interrupt(int irq, void * dev_id);
- #ifdef CONFIG_FEC_PACKETHOOK
- static void  fec_enet_tx(struct net_device *dev, __u32 regval);
- static void  fec_enet_rx(struct net_device *dev, __u32 regval);
-@@ -472,7 +471,7 @@ fec_timeout(struct net_device *dev)
-  * This is called from the MPC core interrupt.
-  */
- static	irqreturn_t
--fec_enet_interrupt(int irq, void * dev_id)
-+fec_enet_interrupt(int irq, void *dev_id)
- {
- 	struct	net_device *dev = dev_id;
- 	volatile fec_t	*fecp;
-diff --git a/arch/ppc/platforms/sbc82xx.c b/arch/ppc/platforms/sbc82xx.c
-index cc0935c..0df6aac 100644
---- a/arch/ppc/platforms/sbc82xx.c
-+++ b/arch/ppc/platforms/sbc82xx.c
-@@ -121,8 +121,10 @@ struct hw_interrupt_type sbc82xx_i8259_ic = {
- 	.end = sbc82xx_i8259_end_irq,
- };
+diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
+index 9bdc8f9..715b394 100644
+--- a/arch/blackfin/kernel/time.c
++++ b/arch/blackfin/kernel/time.c
+@@ -39,8 +39,7 @@
+ /* This is an NTP setting */
+ #define	TICK_SIZE (tick_nsec / 1000)
  
--static irqreturn_t sbc82xx_i8259_demux(int irq, void *dev_id)
-+static irqreturn_t sbc82xx_i8259_demux(int dummy, void *dev_id)
- {
-+	int irq;
-+
- 	spin_lock(&sbc82xx_i8259_lock);
+-static void time_sched_init(irqreturn_t(*timer_routine)
+-			(int, void *));
++static void time_sched_init(irq_handler_t timer_routine);
+ static unsigned long gettimeoffset(void);
  
- 	sbc82xx_i8259_map[0] = 0x0c;	/* OCW3: Read IR register on RD# pulse */
+ static struct irqaction bfin_timer_irq = {
+@@ -64,7 +63,7 @@ static struct irqaction bfin_timer_irq = {
+ #define TIME_SCALE 1
+ 
+ static void
+-time_sched_init(irqreturn_t(*timer_routine) (int, void *))
++time_sched_init(irq_handler_t timer_routine)
+ {
+ 	u32 tcount;
+ 
+diff --git a/arch/blackfin/oprofile/timer_int.c b/arch/blackfin/oprofile/timer_int.c
+index 6c6f860..e2c825a 100644
+--- a/arch/blackfin/oprofile/timer_int.c
++++ b/arch/blackfin/oprofile/timer_int.c
+@@ -40,10 +40,9 @@ static void disable_sys_timer0()
+ {
+ }
+ 
+-static irqreturn_t sys_timer0_int_handler(int irq, void *dev_id,
+-					  struct pt_regs *regs)
++static irqreturn_t sys_timer0_int_handler(int irq, void *dev_id)
+ {
+-	oprofile_add_sample(regs, 0);
++	oprofile_add_sample(get_irq_regs(), 0);
+ 	return IRQ_HANDLED;
+ }
+ 
 -- 
 1.5.4.1
 
