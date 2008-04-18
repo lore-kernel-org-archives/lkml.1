@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYDRD2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbYDRD34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYDRD2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 23:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbYDRD2G
+	id S1757456AbYDRD34 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 23:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbYDRD3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 23:28:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38631 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754063AbYDRD2E (ORCPT
+	Thu, 17 Apr 2008 23:29:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44361 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbYDRD3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 23:28:04 -0400
-Date: Thu, 17 Apr 2008 20:22:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, shiwh@cn.fujitsu.com,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>
-Subject: Re: [PATCH] fix page_reset_bad_cgroup
-Message-Id: <20080417202221.063aa171.akpm@linux-foundation.org>
-In-Reply-To: <20080418121046.892c44a5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080418121046.892c44a5.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 17 Apr 2008 23:29:48 -0400
+Date: Fri, 18 Apr 2008 12:32:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       hugh@veritas.com
+Subject: Re: [PATCH] memcgroup: check and initialize page->cgroup in
+ memmap_init_zone
+Message-Id: <20080418123256.da4d1db0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080417201432.36b1c326.akpm@linux-foundation.org>
+References: <48080706.50305@cn.fujitsu.com>
+	<48080930.5090905@cn.fujitsu.com>
+	<48080B86.7040200@cn.fujitsu.com>
+	<20080417201432.36b1c326.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,30 +33,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 12:10:46 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Thu, 17 Apr 2008 20:14:32 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> page->page_cgroup is unsigned long. Should be cleared by 0UL.
+> >  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+> >  		/*
+> > @@ -2535,6 +2536,9 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
+> >  		set_page_links(page, zone, nid, pfn);
+> >  		init_page_count(page);
+> >  		reset_page_mapcount(page);
+> > +		pc = page_get_page_cgroup(page);
+> > +		if (pc) 
+> > +			page_reset_bad_cgroup(page);
+> >  		SetPageReserved(page);
+> >  
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> hm, fishy.  Perhaps the architecture isn't zeroing the memmap arrays?
 > 
+AFAIK, No. memmap is allocated by alloc_bootmem() and returned memory is
+cleared by memset().
+
+> Or perhaps that page was used and then later freed before we got to
+> memmap_init_zone() and was freed with a non-zero ->page_cgroup.  Which is
+> unlikely given that page.page_cgroup was only just added and is only
+> present if CONFIG_CGROUP_MEM_RES_CTLR.
 > 
-> Index: linux-2.6.25/include/linux/memcontrol.h
-> ===================================================================
-> --- linux-2.6.25.orig/include/linux/memcontrol.h
-> +++ linux-2.6.25/include/linux/memcontrol.h
-> @@ -30,7 +30,7 @@ struct mm_struct;
->  extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
->  extern void mm_free_cgroup(struct mm_struct *mm);
->  
-> -#define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
-> +#define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0UL)
+Hmm, I'll try his .config and see what happens.
 
-That's pretty cosmetic.
-
-In fact it could be argued that we shouldn't do this.  "0" is zero
-regardless of the type of the LHS.  So if we later change page_cgroup to
-u32 or u16 or `struct superblock *', the old page_reset_bad_cgroup() will
-happily continue to work.  There's no need to make this code aware of
-page_cgroup's type, to this extent?
-
+Thanks,
+-Kame
 
