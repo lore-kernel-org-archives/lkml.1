@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYDRVw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYDRVyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbYDRVw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 17:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYDRVwS
+	id S1758880AbYDRVyA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 17:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDRVxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 17:52:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751354AbYDRVwR (ORCPT
+	Fri, 18 Apr 2008 17:53:53 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46315 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751354AbYDRVxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 17:52:17 -0400
-Date: Fri, 18 Apr 2008 14:52:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel.send@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: memtest bootparam
-Message-Id: <20080418145202.c96460a2.akpm@linux-foundation.org>
-In-Reply-To: <200804181717.m3IHHicT031344@hera.kernel.org>
-References: <200804181717.m3IHHicT031344@hera.kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Apr 2008 17:53:52 -0400
+From: Jonathan Lim <jlim@sgi.com>
+Message-Id: <200804182154.m3ILsUAO097324@sabah.engr.sgi.com>
+Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
+To: linux-kernel@vger.kernel.org
+Date: Fri, 18 Apr 2008 14:54:30 -0700 (PDT)
+Cc: akpm@linux-foundation.org, randy.dunlap@oracle.com, zippel@linux-m68k.org,
+       tglx@linutronix.de
+In-Reply-To: <no.id> from "jlim" at Feb 25, 2008 02:27:58 PM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 17:17:44 GMT
-Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+It's possible that the values used in and returned from jiffies_to_usecs() are
+incorrect because of truncation when variables of type u64 are involved.  So a
+function specific to that type is used instead.
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c64df70793a9c344874eb4af19f85e0662d2d3ee
-> Commit:     c64df70793a9c344874eb4af19f85e0662d2d3ee
-> Parent:     9b967106da0357ef8b08847dce35584a04134f20
-> Author:     Yinghai Lu <yhlu.kernel.send@gmail.com>
-> AuthorDate: Fri Mar 21 18:56:19 2008 -0700
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu Apr 17 17:41:21 2008 +0200
-> 
->     x86: memtest bootparam
->     
-> ...
->
->  
-> +	memtest=	[KNL,X86_64] Enable memtest
-> +			Format: <integer>
-> +			range: 0,4 : pattern number
-> +			default : 0 <disable>
+This version implements a correction to jiffies_64_to_usecs() based on feedback
+from Randy Dunlap and Roman Zippel.
 
-OK.  Did the new memtest feature get documented anywhere, btw?  I'm only
-vaguely aware of its existence.
+Diff'd against: linux/kernel/git/torvalds/linux-2.6.git
 
->  
-> +config MEMTEST_BOOTPARAM
-> +	bool "Memtest boot parameter"
-> +	depends on X86_64
-> +	default y
-> +	help
-> +	  This option adds a kernel parameter 'memtest', which allows memtest
-> +	  to be disabled at boot.  If this option is selected, memtest
-> +	  functionality can be disabled with memtest=0 on the kernel
-> +	  command line.  The purpose of this option is to allow a single
-> +	  kernel image to be distributed with memtest built in, but not
-> +	  necessarily enabled.
-> +
-> +	  If you are unsure how to answer this question, answer Y.
-> +
-> +config MEMTEST_BOOTPARAM_VALUE
-> +	int "Memtest boot parameter default value (0-4)"
-> +	depends on MEMTEST_BOOTPARAM
-> +	range 0 4
-> +	default 0
-> +	help
-> +	  This option sets the default value for the kernel parameter
-> +	  'memtest', which allows memtest to be disabled at boot.  If this
-> +	  option is set to 0 (zero), the memtest kernel parameter will
-> +	  default to 0, disabling memtest at bootup.  If this option is
-> +	  set to 4, the memtest kernel parameter will default to 4,
-> +	  enabling memtest at bootup, and use that as pattern number.
-> +
-> +	  If you are unsure how to answer this question, answer 0.
+Signed-off-by: Jonathan Lim <jlim@sgi.com>
 
-These seem pointless.  Why not just unconditionally implement memtest=? 
-All the code for that should be __init anyway so we're hardly saving
-anything here.
-
-
+--- a/include/linux/jiffies.h	Thu Feb 14 18:04:14 PST 2008
++++ b/include/linux/jiffies.h	Thu Feb 14 18:07:17 PST 2008
+@@ -42,7 +42,7 @@
+ /* LATCH is used in the interval timer and ftape setup. */
+ #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
+ 
+-/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
++/* Suppose we want to divide two numbers NOM and DEN: NOM/DEN, then we can
+  * improve accuracy by shifting LSH bits, hence calculating:
+  *     (NOM << LSH) / DEN
+  * This however means trouble for large NOM, because (NOM << LSH) may no
+@@ -204,7 +204,7 @@ extern unsigned long preset_lpj;
+  * operator if the result is a long long AND at least one of the
+  * operands is cast to long long (usually just prior to the "*" so as
+  * not to confuse it into thinking it really has a 64-bit operand,
+- * which, buy the way, it can do, but it takes more code and at least 2
++ * which, by the way, it can do, but it takes more code and at least 2
+  * mpys).
+ 
+  * We also need to be aware that one second in nanoseconds is only a
+@@ -269,6 +269,7 @@ extern unsigned long preset_lpj;
+  */
+ extern unsigned int jiffies_to_msecs(const unsigned long j);
+ extern unsigned int jiffies_to_usecs(const unsigned long j);
++extern u64 jiffies_64_to_usecs(const u64 j);
+ extern unsigned long msecs_to_jiffies(const unsigned int m);
+ extern unsigned long usecs_to_jiffies(const unsigned int u);
+ extern unsigned long timespec_to_jiffies(const struct timespec *value);
+--- a/kernel/time.c	Thu Feb 14 18:05:12 PST 2008
++++ b/kernel/time.c	Fri Apr 18 14:44:54 PDT 2008
+@@ -38,6 +38,7 @@
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
++#include <asm/div64.h>
+ 
+ #include "timeconst.h"
+ 
+@@ -267,6 +268,16 @@ unsigned int inline jiffies_to_usecs(con
+ #endif
+ }
+ EXPORT_SYMBOL(jiffies_to_usecs);
++
++u64 jiffies_64_to_usecs(const u64 j)
++{
++# if BITS_PER_LONG == 32
++	return ((u64)HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
++# else
++	return div64_64(j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1, HZ_TO_USEC_DEN);
++# endif
++}
++EXPORT_SYMBOL(jiffies_64_to_usecs);
+ 
+ /**
+  * timespec_trunc - Truncate timespec to a granularity
+--- a/kernel/tsacct.c	Thu Feb 14 18:06:17 PST 2008
++++ b/kernel/tsacct.c	Thu Feb 14 18:08:47 PST 2008
+@@ -85,8 +85,8 @@ void xacct_add_tsk(struct taskstats *sta
+ 	struct mm_struct *mm;
+ 
+ 	/* convert pages-jiffies to Mbyte-usec */
+-	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+-	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
++	stats->coremem = jiffies_64_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
++	stats->virtmem = jiffies_64_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+ 	mm = get_task_mm(p);
+ 	if (mm) {
+ 		/* adjust to KB unit */
