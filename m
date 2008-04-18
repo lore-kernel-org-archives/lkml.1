@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYDRRQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYDRR2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbYDRRQX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 13:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757577AbYDRRQI
+	id S1758598AbYDRR2P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 13:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYDRR16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 13:16:08 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:45772 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757016AbYDRRQG (ORCPT
+	Fri, 18 Apr 2008 13:27:58 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:9943 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758283AbYDRR15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 13:16:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=kHQz4S2X3zyoyn9qA7X7U0WQRNu0nH1T9UAVAoHdM3zOYXUWoIiISSp9BWxhoKQ1kC4qXLq3I9SlMgmO5hH8+Ai1AUDT0S9tj0k1PitF/lPK2s76+iEd4G5BY/vqWSHaZjpCsb4MP7bzoou8RKJNdjbbELBl68Ok2UADZo/ZkMg=
-Date: Fri, 18 Apr 2008 13:15:58 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: khali@linux-fr.org, andre@bitwigglers.org, linux-input@vger.kernel.org,
-       i2c@lm-sensors.org, linux-kernel@vger.kernel.org, vapier.adi@gmail.com,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] Input/Joystick Driver: add support AD7142 joystick
-	driver (v2)
-Message-ID: <20080418131149.ZZRA012@mailhub.coreip.homeip.net>
-References: <1206643110-8789-1-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206643110-8789-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 18 Apr 2008 13:27:57 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 13:27:57 EDT
+Date: Fri, 18 Apr 2008 12:27:34 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Linux 2.6.25
+In-reply-to: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+To: Matthew <jackdachef@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-id: <200804181227.34365.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
+On Friday 18 April 2008, Matthew wrote:
+>Hi everyone, hi Linus,
+>
+>congratulations on this new great kernel-release :)
+>
+>I've another "regression" to report for 2.6.25:
+>
+>it's concerning much higher temperatures being read out by the
+>"coretemp" kernel-module in comparison to 2.6.24* series
+>
+>e.g. where temperatures were around 40-47°C they are now constantly
+>jumping around 55-70°C (even in idle !)
+>
+>several other users/testers have reported this issue too (both on
+>zen-sources [heavy patched] & latest gentoo-sources) [slightly
+>patched]:
+>
+>http://forums.gentoo.org/viewtopic-t-684812-highlight-.html
+>
+>if I understood git right it (also) happens in conjunction with an 3
+>weeks old acpi-snapshot
+>(http://repo.or.cz/w/linux-2.6/zen-sources.git?a=heads) integrated in
+>zen-sources
+>
+>I can "reproduce" this on an Intel Core 2 Duo 6600 (Conroe) with a P5W
+>DH Deluxe mainboard (by Asus) since at least 2.6.25-rc8 (or possibly
+>also rc7)
+>
+>the temperatures on mobile core (2) duo intel processors [e.g. an
+>T7500] seem to be read out correctly - I can't tell it exactly but
+>this seems to be an entirely "cosmetical" issue
+>(hopefully it's not the opposite and the values are now read out
+>correctly since such high temps would be very worrying ;) )
+>
+>Keep up the great work & please don't forget your growing amount of
+>linux-desktop users :)
+>
+And then, after killing the make clean statement, it still dies when making a 
+new initrd-2.6.25.img.  Has something in the Makefile gone doofy?
 
-On Thu, Mar 27, 2008 at 11:38:30AM -0700, Bryan Wu wrote:
-> +	input->keybit[BIT_WORD(BTN_BASE)] = BIT_MASK(BTN_BASE) |
-> +						BIT_MASK(BTN_BASE2) |
-> +						BIT_MASK(BTN_BASE3) |
-> +						BIT_MASK(BTN_BASE4);
-> +	input->keybit[BIT_WORD(KEY_UP)] |=  BIT_MASK(KEY_UP) |
-> +						BIT_MASK(KEY_DOWN) |
-> +						BIT_MASK(KEY_LEFT) |
-> +						BIT_MASK(KEY_RIGHT);
-> +
+>Regards
+>
+>Mat
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-Why don't you use REL_X/REL_Y to report directional movement? Using
-buttons for that is pretty unusual.
+
 
 -- 
-Dmitry
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Check it out, send me comments, and dance joyously in the streets,
+	-- Linus Torvalds announcing 2.0.27
