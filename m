@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbYDRT07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760963AbYDRTi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761004AbYDRT07 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 15:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760761AbYDRT0v
+	id S1760963AbYDRTi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 15:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759765AbYDRTiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 15:26:51 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33222 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759760AbYDRT0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 15:26:50 -0400
-Subject: Re: [PATCH 0/4] jbd: possible filesystem corruption fixes
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Josef Bacik <jbacik@redhat.com>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, akpm@linux-foundation.org,
-       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-In-Reply-To: <20080418140946.GA26062@unused.rdu.redhat.com>
-References: <48089B86.5020108@hitachi.com>
-	 <20080418140946.GA26062@unused.rdu.redhat.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 18 Apr 2008 12:26:47 -0700
-Message-Id: <1208546807.9475.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 15:38:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:50470 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYDRTip (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 15:38:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=p3xa2ghmgfRgrSFrSjCUuznYtoOsqLE+LpwThj52VWX6gWay09pxwrz4oiy7bExOOAmk5hWidbmArnxsXb0CAzxP56i09PgZwZ3kukbob1QtJKs1JQ42jsGgZkN/WVHXXZHsoW+WJ+Qjq+Pk4+WMhhM3sOEu7f68qL7mi/K5AaI=
+Date: Fri, 18 Apr 2008 23:38:02 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew <jackdachef@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.25
+Message-ID: <20080418193802.GK7674@cvg>
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com> <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-18 at 10:09 -0400, Josef Bacik wrote:
-> On Fri, Apr 18, 2008 at 10:00:54PM +0900, Hidehiro Kawai wrote:
-> > Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
-> > 
-> > The current JBD is not sufficient for I/O error handling.  It can
-> > cause filesystem corruption.   An example scenario:
-> > 
-> > 1. fail to write a metadata buffer to block B in the journal
-> > 2. succeed to write the commit record
-> > 3. the system crashes, reboots and mount the filesystem
-> > 4. in the recovery phase, succeed to read data from block B
-> > 5. write back the read data to the filesystem, but it is a stale
-> >    metadata
-> > 6. lose some files and directories!
-> > 
-> > This scenario is a rare case, but it (temporal I/O error)
-> > can occur.  If we abort the journal between 1. and 2., this
-> > tragedy can be avoided.
-> > 
-> > This patch set fixes several error handling problems to protect
-> > from filesystem corruption caused by I/O errors.  It has been
-> > done only for JBD and ext3 parts.
-> >
-> 
+[Linus Torvalds - Fri, Apr 18, 2008 at 08:43:35AM -0700]
+| 
+| 
+| On Fri, 18 Apr 2008, Matthew wrote:
+| > 
+| > I can "reproduce" this on an Intel Core 2 Duo 6600 (Conroe) with a P5W
+| > DH Deluxe mainboard (by Asus) since at least 2.6.25-rc8 (or possibly
+| > also rc7)
+| 
+| Can you bisect it? 
+| 
+| 		Linus
 
-Could you sent Ext4/JBD2 version patches? Thanks!
+it seems drivers/acpi/thermal.c has a small nit
 
-> There doesn't seem like much point in taking these patches as Jan is rewriting
-> the ordered mode path and most of these functions will be going away soon.
-> Those patches seem like they will be coming soon and will obsolete these.
-> 
+881:	/* sys I/F for generic thermal sysfs support */
+882:	#define KELVIN_TO_MILLICELSIUS(t) (t * 100 - 273200)
 
-I hope we have a better ordered mode very soon too. Just thought it's
-still valid to fix the current ordered mode for people who uses
-linux-2.6.25 kernel today. 
+but it should multiply by 1000 meguess
 
-Mingming
-> Josef 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+		- Cyrill -
