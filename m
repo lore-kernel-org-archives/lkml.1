@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbYDRSTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYDRSTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbYDRSTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 14:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760418AbYDRSTb
+	id S1760360AbYDRSTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 14:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759578AbYDRSRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 14:19:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47917 "EHLO mx1.redhat.com"
+	Fri, 18 Apr 2008 14:17:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55261 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760419AbYDRSTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 14:19:30 -0400
+	id S1759547AbYDRSRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 14:17:40 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>
-Subject: [PATCH 2/6] dlm: make dlm_print_rsb() static
-Date: Fri, 18 Apr 2008 13:12:44 -0500
-Message-Id: <1208542368-13417-3-git-send-email-teigland@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [PATCH 1/6] dlm: match signedness between dlm_config_info and cluster_set
+Date: Fri, 18 Apr 2008 13:12:43 -0500
+Message-Id: <1208542368-13417-2-git-send-email-teigland@redhat.com>
 X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Harvey Harrison <harvey.harrison@gmail.com>
 
-dlm_print_rsb() can now become static.
+cluster_set is only called from the macro CLUSTER_ATTR which defines read/write
+access functions.  Make the signedness match to avoid sparse warnings every time
+CLUSTER_ATTR is used (lines 149-159) all of the form:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+fs/dlm/config.c:149:1: warning: incorrect type in argument 3 (different signedness)
+fs/dlm/config.c:149:1:    expected unsigned int *info_field
+fs/dlm/config.c:149:1:    got int extern [toplevel] *<noident>
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/lock.c |    2 +-
- fs/dlm/lock.h |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ fs/dlm/config.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 8f250ac..1e9e8eb 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -165,7 +165,7 @@ void dlm_print_lkb(struct dlm_lkb *lkb)
- 	       lkb->lkb_grmode, lkb->lkb_wait_type, lkb->lkb_ast_type);
- }
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index c3ad1df..7ceaea3 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -114,7 +114,7 @@ struct cluster_attribute {
+ };
  
--void dlm_print_rsb(struct dlm_rsb *r)
-+static void dlm_print_rsb(struct dlm_rsb *r)
+ static ssize_t cluster_set(struct cluster *cl, unsigned int *cl_field,
+-			   unsigned int *info_field, int check_zero,
++			   int *info_field, int check_zero,
+ 			   const char *buf, size_t len)
  {
- 	printk(KERN_ERR "rsb: nodeid %d flags %lx first %x rlc %d name %s\n",
- 	       r->res_nodeid, r->res_flags, r->res_first_lkid,
-diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
-index 05d9c82..88e93c8 100644
---- a/fs/dlm/lock.h
-+++ b/fs/dlm/lock.h
-@@ -13,7 +13,6 @@
- #ifndef __LOCK_DOT_H__
- #define __LOCK_DOT_H__
- 
--void dlm_print_rsb(struct dlm_rsb *r);
- void dlm_dump_rsb(struct dlm_rsb *r);
- void dlm_print_lkb(struct dlm_lkb *lkb);
- void dlm_receive_message_saved(struct dlm_ls *ls, struct dlm_message *ms);
+ 	unsigned int x;
 -- 
 1.5.3.3
 
