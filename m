@@ -1,116 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYDRNgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYDRNhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYDRNgn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYDRNgb
+	id S1758109AbYDRNhT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYDRNhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 09:36:31 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:33990 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYDRNga (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:36:30 -0400
-X-AuditID: 0ac90647-ae9a5ba0000012c0-a8-4808a3dcc1b2
-Message-ID: <4808A3D6.3050608@hitachi.com>
-Date: Fri, 18 Apr 2008 22:36:22 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Fri, 18 Apr 2008 09:37:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42714 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753045AbYDRNhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 09:37:04 -0400
+Date: Fri, 18 Apr 2008 15:36:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Reuben Farrelly <reuben-linuxkernel@reub.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: StackProtector Oopses - Re: 2.6.25-mm1
+Message-ID: <20080418133645.GF31797@elte.hu>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <48089BDE.6040100@reub.net>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
-References: <48089B86.5020108@hitachi.com>
-In-Reply-To: <48089B86.5020108@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48089BDE.6040100@reub.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0101]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
 
-In ordered mode, we should abort journaling when an I/O error has
-occurred on a file data buffer in the committing transaction.  But
-there can be data buffers which are not checked for error:
+* Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
 
-  (a) the buffer which has already been written out by pdflush
-  (b) the buffer which has been unlocked before scanned in the
-      t_locked_list loop
+> is enough to prevent my system booting, viz:
 
-This patch adds missing error checks and aborts journaling
-appropriately.
+hm, does it boot up fine with the attached patch and stackprotector 
+enabled? It appears that your system got to the self-test so 
+stackprotector is working mostly - it's just that the self-test went 
+wrong.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitacih.com>
+	Ingo
+
+----------------->
+Subject: x86: disable stackprotector selftest
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri Apr 18 15:21:49 CEST 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/jbd/commit.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ kernel/panic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6.25/fs/jbd/commit.c
+Index: linux-x86.q/kernel/panic.c
 ===================================================================
---- linux-2.6.25.orig/fs/jbd/commit.c
-+++ linux-2.6.25/fs/jbd/commit.c
-@@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
- /*
-  *  Submit all the data buffers to disk
-  */
--static void journal_submit_data_buffers(journal_t *journal,
-+static int journal_submit_data_buffers(journal_t *journal,
- 				transaction_t *commit_transaction)
- {
- 	struct journal_head *jh;
-@@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
- 	int locked;
- 	int bufs = 0;
- 	struct buffer_head **wbuf = journal->j_wbuf;
-+	int err = 0;
- 
- 	/*
- 	 * Whenever we unlock the journal and sleep, things can get added
-@@ -253,6 +254,8 @@ write_out_data:
- 			put_bh(bh);
- 		} else {
- 			BUFFER_TRACE(bh, "writeout complete: unfile");
-+			if (unlikely(!buffer_uptodate(bh)))
-+				err = -EIO;
- 			__journal_unfile_buffer(jh);
- 			jbd_unlock_bh_state(bh);
- 			if (locked)
-@@ -271,6 +274,8 @@ write_out_data:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 	journal_do_submit_data(wbuf, bufs);
-+
-+	return err;
+--- linux-x86.q.orig/kernel/panic.c
++++ linux-x86.q/kernel/panic.c
+@@ -394,5 +394,5 @@ void __stack_chk_fail(void)
  }
+ EXPORT_SYMBOL(__stack_chk_fail);
  
- /*
-@@ -426,8 +431,7 @@ void journal_commit_transaction(journal_
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
--	err = 0;
--	journal_submit_data_buffers(journal, commit_transaction);
-+	err = journal_submit_data_buffers(journal, commit_transaction);
- 
- 	/*
- 	 * Wait for all previously submitted IO to complete.
-@@ -442,10 +446,10 @@ void journal_commit_transaction(journal_
- 		if (buffer_locked(bh)) {
- 			spin_unlock(&journal->j_list_lock);
- 			wait_on_buffer(bh);
--			if (unlikely(!buffer_uptodate(bh)))
--				err = -EIO;
- 			spin_lock(&journal->j_list_lock);
- 		}
-+		if (unlikely(!buffer_uptodate(bh)))
-+			err = -EIO;
- 		if (!inverted_lock(journal, bh)) {
- 			put_bh(bh);
- 			spin_lock(&journal->j_list_lock);
-
-
+-late_initcall(__stack_chk_test);
++/* late_initcall(__stack_chk_test); */
+ #endif
