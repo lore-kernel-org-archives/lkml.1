@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763733AbYDRVMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763845AbYDRVMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763733AbYDRVMP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 17:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761550AbYDRUxe
+	id S1763845AbYDRVMf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 17:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbYDRUxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:53:34 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:7658 "EHLO
+	Fri, 18 Apr 2008 16:53:36 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:7604 "EHLO
 	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761329AbYDRUwf (ORCPT
+	with ESMTP id S1759044AbYDRUw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:52:35 -0400
-Message-Id: <20080418205056.769763376@ldl.fc.hp.com>
+	Fri, 18 Apr 2008 16:52:26 -0400
+Message-Id: <20080418205055.323760011@ldl.fc.hp.com>
 References: <20080418204955.342963315@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:50:42 -0600
+Date: Fri, 18 Apr 2008 14:50:35 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -25,153 +25,229 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 47/53] PNPACPI: move _CRS/_PRS warnings closer to the action
-Content-Disposition: inline; filename=pnpacpi-cleanup-CRS-PRS-warnings
+Subject: [patch 40/53] PNP: make generic pnp_add_dma_resource()
+Content-Disposition: inline; filename=pnp-common-add-dma-resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move warnings about _CRS and _PRS problems to the place where we
-actually make the ACPI calls.  Then we don't have to pass around
-acpi_status values any more than necessary.
+Add a pnp_add_dma_resource() that can be used by all the PNP
+backends.  This consolidates a little more pnp_resource_table
+knowledge into one place.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work8/drivers/pnp/pnpacpi/pnpacpi.h
+---
+ drivers/pnp/base.h             |    2 +
+ drivers/pnp/resource.c         |   24 +++++++++++++++++++++++
+ drivers/pnp/interface.c        |   12 +++--------
+ drivers/pnp/isapnp/core.c      |    8 ++-----
+ drivers/pnp/pnpacpi/rsparser.c |   42 +++++++----------------------------------
+ drivers/pnp/pnpbios/rsparser.c |   26 +++----------------------
+ 6 files changed, 45 insertions(+), 69 deletions(-)
+
+Index: work8/drivers/pnp/base.h
 ===================================================================
---- work8.orig/drivers/pnp/pnpacpi/pnpacpi.h	2008-04-17 15:58:17.000000000 -0600
-+++ work8/drivers/pnp/pnpacpi/pnpacpi.h	2008-04-17 15:58:22.000000000 -0600
-@@ -5,8 +5,8 @@
- #include <linux/acpi.h>
- #include <linux/pnp.h>
+--- work8.orig/drivers/pnp/base.h	2008-04-18 11:00:36.000000000 -0600
++++ work8/drivers/pnp/base.h	2008-04-18 11:03:34.000000000 -0600
+@@ -38,3 +38,5 @@
  
--acpi_status pnpacpi_parse_allocated_resource(struct pnp_dev *);
--acpi_status pnpacpi_parse_resource_option_data(struct pnp_dev *);
-+int pnpacpi_parse_allocated_resource(struct pnp_dev *);
-+int pnpacpi_parse_resource_option_data(struct pnp_dev *);
- int pnpacpi_encode_resources(struct pnp_dev *, struct acpi_buffer *);
- int pnpacpi_build_resource_template(struct pnp_dev *, struct acpi_buffer *);
- #endif
-Index: work8/drivers/pnp/pnpacpi/core.c
+ struct pnp_resource *pnp_add_irq_resource(struct pnp_dev *dev, int irq,
+ 					  int flags);
++struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
++					  int flags);
+Index: work8/drivers/pnp/resource.c
 ===================================================================
---- work8.orig/drivers/pnp/pnpacpi/core.c	2008-04-17 16:00:00.000000000 -0600
-+++ work8/drivers/pnp/pnpacpi/core.c	2008-04-17 16:04:22.000000000 -0600
-@@ -75,10 +75,7 @@
- 
- static int pnpacpi_get_resources(struct pnp_dev *dev)
- {
--	acpi_status status;
--
--	status = pnpacpi_parse_allocated_resource(dev);
--	return ACPI_FAILURE(status) ? -ENODEV : 0;
-+	return pnpacpi_parse_allocated_resource(dev);
+--- work8.orig/drivers/pnp/resource.c	2008-04-18 11:00:36.000000000 -0600
++++ work8/drivers/pnp/resource.c	2008-04-18 11:03:34.000000000 -0600
+@@ -583,6 +583,30 @@
+ 	return pnp_res;
  }
  
- static int pnpacpi_set_resources(struct pnp_dev *dev)
-@@ -180,22 +177,11 @@
- 	else
- 		strncpy(dev->name, acpi_device_bid(device), sizeof(dev->name));
- 
--	if (dev->active) {
--		/* parse allocated resource */
--		status = pnpacpi_parse_allocated_resource(dev);
--		if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--			pnp_err("PnPACPI: METHOD_NAME__CRS failure for %s",
--				acpi_device_hid(device));
--		}
--	}
-+	if (dev->active)
-+		pnpacpi_parse_allocated_resource(dev);
- 
--	if (dev->capabilities & PNP_CONFIGURABLE) {
--		status = pnpacpi_parse_resource_option_data(dev);
--		if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--			pnp_err("PnPACPI: METHOD_NAME__PRS failure for %s",
--				acpi_device_hid(device));
--		}
--	}
-+	if (dev->capabilities & PNP_CONFIGURABLE)
-+		pnpacpi_parse_resource_option_data(dev);
- 
- 	if (device->flags.compatible_ids) {
- 		struct acpi_compatible_id_list *cid_list = device->pnp.cid_list;
++struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
++					  int flags)
++{
++	struct pnp_resource *pnp_res;
++	struct resource *res;
++	static unsigned char warned;
++
++	pnp_res = pnp_new_resource(dev, IORESOURCE_DMA);
++	if (!pnp_res) {
++		if (!warned) {
++			dev_err(&dev->dev, "can't add resource for DMA %d\n",
++				dma);
++			warned = 1;
++		}
++		return NULL;
++	}
++
++	res = &pnp_res->res;
++	res->flags = IORESOURCE_DMA | flags;
++	res->start = dma;
++	res->end = dma;
++	return pnp_res;
++}
++
+ /* format is: pnp_reserve_irq=irq1[,irq2] .... */
+ static int __init pnp_setup_reserve_irq(char *str)
+ {
+Index: work8/drivers/pnp/interface.c
+===================================================================
+--- work8.orig/drivers/pnp/interface.c	2008-04-18 11:02:06.000000000 -0600
++++ work8/drivers/pnp/interface.c	2008-04-18 11:04:17.000000000 -0600
+@@ -438,14 +438,10 @@
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
+-				res = pnp_get_resource(dev, IORESOURCE_DMA,
+-						       ndma);
+-				if (!res)
+-					break;
+-				res->start = res->end =
+-				    simple_strtoul(buf, &buf, 0);
+-				res->flags = IORESOURCE_DMA;
+-				ndma++;
++				start = simple_strtoul(buf, &buf, 0);
++				pnp_res = pnp_add_dma_resource(dev, start, 0);
++				if (pnp_res)
++					pnp_res->index = ndma++;
+ 				continue;
+ 			}
+ 			break;
+Index: work8/drivers/pnp/isapnp/core.c
+===================================================================
+--- work8.orig/drivers/pnp/isapnp/core.c	2008-04-18 11:00:36.000000000 -0600
++++ work8/drivers/pnp/isapnp/core.c	2008-04-18 11:03:34.000000000 -0600
+@@ -964,11 +964,9 @@
+ 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
+ 			if (ret == 4)
+ 				continue;
+-			pnp_res = &dev->res->dma[tmp];
+-			pnp_res->index = tmp;
+-			res = &pnp_res->res;
+-			res->start = res->end = ret;
+-			res->flags = IORESOURCE_DMA;
++			pnp_res = pnp_add_dma_resource(dev, ret, 0);
++			if  (pnp_res)
++				pnp_res->index = tmp;
+ 		}
+ 	}
+ 	return 0;
 Index: work8/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work8.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-17 15:58:29.000000000 -0600
-+++ work8/drivers/pnp/pnpacpi/rsparser.c	2008-04-17 16:17:08.000000000 -0600
-@@ -339,14 +339,21 @@
- 	return AE_OK;
+--- work8.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-18 11:00:36.000000000 -0600
++++ work8/drivers/pnp/pnpacpi/rsparser.c	2008-04-18 11:03:34.000000000 -0600
+@@ -158,34 +158,6 @@
+ 	return flags;
  }
  
--acpi_status pnpacpi_parse_allocated_resource(struct pnp_dev *dev)
-+int pnpacpi_parse_allocated_resource(struct pnp_dev *dev)
+-static void pnpacpi_parse_allocated_dmaresource(struct pnp_dev *dev,
+-						u32 dma, int flags)
+-{
+-	struct resource *res;
+-	int i;
+-	static unsigned char warned;
+-
+-	for (i = 0; i < PNP_MAX_DMA; i++) {
+-		res = &dev->res->dma[i].res;
+-		if (res->flags & IORESOURCE_UNSET)
+-			break;
+-	}
+-	if (i < PNP_MAX_DMA) {
+-		res->flags = IORESOURCE_DMA;	// Also clears _UNSET flag
+-		res->flags |= flags;
+-		if (dma == -1) {
+-			res->flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->start = dma;
+-		res->end = dma;
+-	} else if (!warned) {
+-		printk(KERN_WARNING "pnpacpi: exceeded the max number of DMA "
+-				"resources: %d \n", PNP_MAX_DMA);
+-		warned = 1;
+-	}
+-}
+-
+ static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev,
+ 					       u64 io, u64 len, int io_decode)
  {
- 	acpi_handle handle = dev->data;
-+	acpi_status status;
+@@ -285,7 +257,7 @@
+ 	struct acpi_resource_memory32 *memory32;
+ 	struct acpi_resource_fixed_memory32 *fixed_memory32;
+ 	struct acpi_resource_extended_irq *extended_irq;
+-	int i;
++	int i, flags;
  
- 	pnp_init_resources(dev);
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+@@ -305,11 +277,13 @@
  
--	return acpi_walk_resources(handle, METHOD_NAME__CRS,
--				   pnpacpi_allocated_resource, dev);
-+	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
-+				     pnpacpi_allocated_resource, dev);
-+	if (ACPI_FAILURE(status)) {
-+		if (status != AE_NOT_FOUND)
-+			dev_err(&dev->dev, "can't evaluate _CRS: %d", status);
-+		return -EPERM;
-+	}
-+	return 0;
- }
+ 	case ACPI_RESOURCE_TYPE_DMA:
+ 		dma = &res->data.dma;
+-		if (dma->channel_count > 0)
+-			pnpacpi_parse_allocated_dmaresource(dev,
+-				dma->channels[0],
+-				dma_flags(dma->type, dma->bus_master,
+-					  dma->transfer));
++		if (dma->channel_count > 0) {
++			flags = dma_flags(dma->type, dma->bus_master,
++					  dma->transfer);
++			if (dma->channels[0] == (u8) -1)
++				flags |= IORESOURCE_DISABLED;
++			pnp_add_dma_resource(dev, dma->channels[0], flags);
++		}
+ 		break;
  
- static __init void pnpacpi_parse_dma_option(struct pnp_option *option,
-@@ -656,7 +663,7 @@
- 	return AE_OK;
- }
+ 	case ACPI_RESOURCE_TYPE_IO:
+Index: work8/drivers/pnp/pnpbios/rsparser.c
+===================================================================
+--- work8.orig/drivers/pnp/pnpbios/rsparser.c	2008-04-18 11:00:36.000000000 -0600
++++ work8/drivers/pnp/pnpbios/rsparser.c	2008-04-18 11:03:34.000000000 -0600
+@@ -54,27 +54,6 @@
+  * Allocated Resources
+  */
  
--acpi_status __init pnpacpi_parse_resource_option_data(struct pnp_dev *dev)
-+int __init pnpacpi_parse_resource_option_data(struct pnp_dev *dev)
+-static void pnpbios_parse_allocated_dmaresource(struct pnp_dev *dev, int dma)
+-{
+-	struct resource *res;
+-	int i;
+-
+-	for (i = 0; i < PNP_MAX_DMA; i++) {
+-		res = &dev->res->dma[i].res;
+-		if (res->flags & IORESOURCE_UNSET)
+-			break;
+-	}
+-
+-	if (i < PNP_MAX_DMA) {
+-		res->flags = IORESOURCE_DMA;	// Also clears _UNSET flag
+-		if (dma == -1) {
+-			res->flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->start = res->end = (unsigned long)dma;
+-	}
+-}
+-
+ static void pnpbios_parse_allocated_ioresource(struct pnp_dev *dev,
+ 					       int io, int len)
  {
- 	acpi_handle handle = dev->data;
- 	acpi_status status;
-@@ -664,13 +671,19 @@
+@@ -197,12 +176,15 @@
+ 		case SMALL_TAG_DMA:
+ 			if (len != 2)
+ 				goto len_err;
++			flags = 0;
+ 			io = -1;
+ 			mask = p[1];
+ 			for (i = 0; i < 8; i++, mask = mask >> 1)
+ 				if (mask & 0x01)
+ 					io = i;
+-			pnpbios_parse_allocated_dmaresource(dev, io);
++			if (io == -1)
++				flags = IORESOURCE_DISABLED;
++			pnp_add_dma_resource(dev, io, flags);
+ 			break;
  
- 	parse_data.option = pnp_register_independent_option(dev);
- 	if (!parse_data.option)
--		return AE_ERROR;
-+		return -ENOMEM;
-+
- 	parse_data.option_independent = parse_data.option;
- 	parse_data.dev = dev;
- 	status = acpi_walk_resources(handle, METHOD_NAME__PRS,
- 				     pnpacpi_option_resource, &parse_data);
- 
--	return status;
-+	if (ACPI_FAILURE(status)) {
-+		if (status != AE_NOT_FOUND)
-+			dev_err(&dev->dev, "can't evaluate _PRS: %d", status);
-+		return -EPERM;
-+	}
-+	return 0;
- }
- 
- static int pnpacpi_supported_resource(struct acpi_resource *res)
-@@ -729,7 +742,7 @@
- 	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
- 				     pnpacpi_count_resources, &res_cnt);
- 	if (ACPI_FAILURE(status)) {
--		dev_err(&dev->dev, "can't evaluate _CRS\n");
-+		dev_err(&dev->dev, "can't evaluate _CRS: %d\n", status);
- 		return -EINVAL;
- 	}
- 	if (!res_cnt)
-@@ -744,7 +757,7 @@
- 				     pnpacpi_type_resources, &resource);
- 	if (ACPI_FAILURE(status)) {
- 		kfree(buffer->pointer);
--		dev_err(&dev->dev, "can't evaluate _CRS\n");
-+		dev_err(&dev->dev, "can't evaluate _CRS: %d\n", status);
- 		return -EINVAL;
- 	}
- 	/* resource will pointer the end resource now */
+ 		case SMALL_TAG_PORT:
 
 -- 
