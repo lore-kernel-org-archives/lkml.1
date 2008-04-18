@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbYDRN3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbYDRNaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbYDRN3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbYDRN3P
+	id S1757757AbYDRNaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYDRNaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 09:29:15 -0400
-Received: from mail.windriver.com ([147.11.1.11]:35176 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbYDRN3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:29:14 -0400
-Message-ID: <4808A1C7.7000907@windriver.com>
-Date: Fri, 18 Apr 2008 08:27:35 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 18 Apr 2008 09:30:12 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:54507 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbYDRNaK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 09:30:10 -0400
+X-Greylist: delayed 1751 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 09:30:09 EDT
+X-AuditID: 0ac90646-aa325ba0000042c3-00-4808a260561c
+Message-ID: <4808A255.1050008@hitachi.com>
+Date: Fri, 18 Apr 2008 22:29:57 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tglx@linutronix.de, penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
-       sds@tycho.nsa.gov
-Subject: Re: 2.6.25-mm1: not looking good
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>	 <20080417164034.e406ef53.akpm@linux-foundation.org>	 <20080417171413.6f8458e4.akpm@linux-foundation.org>	 <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu>	 <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>	 <20080418123439.GA17013@elte.hu>	 <19f34abd0804180541l7b4d14a6tb13bdd51dd533d70@mail.gmail.com>	 <48089BCA.1090704@windriver.com> <19f34abd0804180622l4f89191cp4cc7833822e058f5@mail.gmail.com>
-In-Reply-To: <19f34abd0804180622l4f89191cp4cc7833822e058f5@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Apr 2008 13:27:28.0748 (UTC) FILETIME=[F2C802C0:01C8A157]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Fri, Apr 18, 2008 at 3:02 PM, Jason Wessel
-> <jason.wessel@windriver.com> wrote:
->   
->> Vegard Nossum wrote:
->>  > On Fri, Apr 18, 2008 at 2:34 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>  >
->>  >>  * Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>  >>
->>  >>  > With the patch below, it seems 100% reproducible to me (7 out of 7
->>  >>  > bootups hung).
->>  >>  >
->>  >>  > The number of loops it could do before hanging were, in order: 697,
->>  >>  > 898, 237, 55, 45, 92, 59
->>  >>
->>  >>  cool! Jason: i think that particular self-test should be repeated 1000
->>  >>  times before reporting success ;-)
->>  >>
->>  >
->>  > BTW, I just tested a 32-bit config and it hung after 55 iterations as well.
->>  >
->>  > Vegard
->>  >
->>  >
->>  >
->>  I assume this was SMP?
->>     
->
-> Yes. But now that I realize this, I tried running same kernel with
-> qemu, using -smp 16, and it seems to be stuck here:
->
->   
+Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
 
-Unless you have a qemu with the NMI patches, kgdb does not work on SMP
-with qemu.  The very first test is going to fail because the IPI sent by
-the kernel is not handled in qemu's hardware emulation.
+The current JBD is not sufficient for I/O error handling.  It can
+cause filesystem corruption.   An example scenario:
 
-Jason.
+1. fail to write a metadata buffer to block B in the journal
+2. succeed to write the commit record
+3. the system crashes, reboots and mount the filesystem
+4. in the recovery phase, succeed to read data from block B
+5. write back the read data to the filesystem, but it is a stale
+   metadata
+6. lose some files and directories!
+
+This scenario is a rare case, but it (temporal I/O error)
+can occur.  If we abort the journal between 1. and 2., this
+tragedy can be avoided.
+
+This patch set fixes several error handling problems to protect
+from filesystem corruption caused by I/O errors.  It has been
+done only for JBD and ext3 parts.
+
+This patch is against 2.6.25
+
+[PATCH 1/4] jbd: strictly check for write errors on data buffers
+[PATCH 2/4] jbd: ordered data integrity fix
+[PATCH 3/4] jbd: abort when failed to log metadata buffers
+[PATCH 4/4] jbd: fix error handling for checkpoint io
+
+Regards,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
+
+
