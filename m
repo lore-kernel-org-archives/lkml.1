@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbYDRQCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYDRQC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757802AbYDRQCo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 12:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYDRQCc
+	id S1758131AbYDRQC5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 12:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbYDRQCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 12:02:32 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:64537 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754863AbYDRQCb (ORCPT
+	Fri, 18 Apr 2008 12:02:39 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59629 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757429AbYDRQCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 12:02:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oHMxGEDMk6j9PToZvZrCF7MeKGJj4JqwdymPhH4LU/RgBy7z5hRxBxPpqpbYX9CgR2MFfcBL0BKFovHhaYu7R3NyGABTysw14cWfm7VidqcpiHAPinTEeN5srN1+V9hZf18yUs0jce9ZBXxH2kzQxfrrpf19AdP7gMqG4SwMKZs=
-Message-ID: <19f34abd0804180902k7a91ace3q84720e0352c3aa40@mail.gmail.com>
-Date: Fri, 18 Apr 2008 18:02:29 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Jason Wessel" <jason.wessel@windriver.com>
-Subject: Re: 2.6.25-mm1: not looking good
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       tglx@linutronix.de, penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
-       sds@tycho.nsa.gov
-In-Reply-To: <19f34abd0804180747i244c483flf8421f42a330c519@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	 <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu>
-	 <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
-	 <20080418123439.GA17013@elte.hu>
-	 <19f34abd0804180541l7b4d14a6tb13bdd51dd533d70@mail.gmail.com>
-	 <48089BCA.1090704@windriver.com>
-	 <19f34abd0804180622l4f89191cp4cc7833822e058f5@mail.gmail.com>
-	 <4808A1C7.7000907@windriver.com>
-	 <19f34abd0804180747i244c483flf8421f42a330c519@mail.gmail.com>
+	Fri, 18 Apr 2008 12:02:37 -0400
+To: jamie@shareable.org
+CC: miklos@szeredi.hu, szaka@ntfs-3g.org, me@bobcopeland.com,
+       hch@infradead.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080418125718.GD25089@shareable.org> (message from Jamie Lokier
+	on Fri, 18 Apr 2008 13:57:18 +0100)
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+References: <20080413033344.GA27494@hash.localnet> <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org> <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org> <E1JkzaV-0003Lm-NB@pomaz-ex.szeredi.hu> <20080414004521.GA30489@hash.localnet> <Pine.LNX.4.61.0804181302180.29728@dhcppc2> <20080418115237.GA25089@shareable.org> <E1JmpZz-0005pB-8q@pomaz-ex.szeredi.hu> <20080418125718.GD25089@shareable.org>
+Message-Id: <E1Jmt23-0006Bq-Kk@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 18 Apr 2008 18:01:47 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 4:47 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->
-> On 4/18/08, Jason Wessel <jason.wessel@windriver.com> wrote:
->  > Vegard Nossum wrote:
->  > > On Fri, Apr 18, 2008 at 3:02 PM, Jason Wessel
->  > > <jason.wessel@windriver.com> wrote:
->  > >>  I assume this was SMP?
-...
+> > There are also plans to add some sort of cache coherency protocol,
+> > where the filesystem can asynchronously call back to fuse to
+> > invalidate data or metadata.
+> 
+> Great!
+> 
+> I suggest adding another option (as well) where the filesystem can ask
+> fuse to send it synchronous validation requests - some things require
+> that.  (In my own work, the choice of A->B async invalidation and B->A
+> synchronous validation is heuristic: some usage patterns benefit from
+> one, some from the other.)
 
->  But booting with nosmp on real hardware gets easily above 100,000
->  iterations of the loop (before I reboot), so it seems to be related to
->  that, anyway.
+Yes, that makes sense.  I expect this could be done by extending the
+existing requests with a flag saying the result is already cached.
+And then the filesystem can either reply with a special "cached data
+is valid" code, or it can reply normally with the fresh data.
 
-It gets stuck in kgdb_roundup_cpus(), verified by putting a printk()
-before and after this call (in kgdb_handle_exception()). Simple, but
-effective :-)
+> > > Otherwise I don't see how the kernel could coherently cache file pages
+> > > for some kinds of FUSE filesystems.  (E.g. sshfs, for example: every
+> > > operation must surely invoke a user space request or involve granting
+> > > a caching right to the kernel, to keep accesses coherent with other
+> > > users of the same remote files).
+> > > 
+> > > Ergo, either its not coherent, or there is some coherency protocol,
+> > > which does require _some_ work in the user space implementation.
+> > 
+> > Sshfs is not coherent (but neither is NFS), it just has timeouts for
+> > caches and invalidation based on modification time.
+> 
+> Fwiw, I think NFS version 4 is coherent (it uses leases), and older
+> NFS should be coherent when you use fcntl file locks (it's not very
+> efficient though).
+> 
+> I have been bitten a few times by timeout based caches in the past
+> (NFS and SMB (pre-oplock)).  Simple things like editing a file, then
+> running "ssh compiler-box make" from the editor quietly building
+> incorrect code - and even subsequent make commands don't fix it.  Or
+> when I edit a file, then tell someone I've changed the file - and then
+> they edit the file, and my edits are lost.  Very annoying.  Nobody
+> should build those kind of caches into new software.  :-)
 
+Oh well, you can turn off caching if it bothers you :)  OTOH it would
+be rather hard (and probably against the point) to try to extend the
+sftp protocol to handle cache coherency.  Sshfs is not meant to be a
+normal filesystem (although some people are trying to use it for home
+directories and such), just a simple way to access remote files.
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Miklos
