@@ -1,110 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbYDRUJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbYDRUJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761282AbYDRUJB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 16:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760307AbYDRUIv
+	id S1761377AbYDRUJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 16:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761097AbYDRUIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:08:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52269 "EHLO
+	Fri, 18 Apr 2008 16:08:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48175 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757710AbYDRUIv (ORCPT
+	with ESMTP id S1758145AbYDRUIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Apr 2008 16:08:51 -0400
-Message-Id: <20080418200849.968033091@goodmis.org>
+Message-Id: <20080418200850.141548878@goodmis.org>
 References: <20080418200538.788522018@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 16:05:39 -0400
+Date: Fri, 18 Apr 2008 16:05:40 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        akpm@osdl.org, Peter Zijlstra <peterz@infradead.org>,
        Soeren Sandmann Pedersen <sandmann@redhat.com>,
        Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/5] ftrace: simple clean ups
-Content-Disposition: inline; filename=ftrace-small-clean-ups.patch
+Subject: [PATCH 2/5] ftrace: replace simple_strtoul with strict_strtoul
+Content-Disposition: inline; filename=ftrace-use-strict_strtoul.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton mentioned some clean ups that should be done to ftrace.
-This patch does some of the simple clean ups.
+Andrew Morton suggested using strict_strtoul over simple_strtoul.
+This patch replaces them in ftrace.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |   25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ kernel/trace/trace.c |   28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
 
 Index: linux-sched-devel.git/kernel/trace/trace.c
 ===================================================================
---- linux-sched-devel.git.orig/kernel/trace/trace.c	2008-04-18 15:47:22.000000000 -0400
-+++ linux-sched-devel.git/kernel/trace/trace.c	2008-04-18 15:47:40.000000000 -0400
-@@ -36,8 +36,7 @@ unsigned long __read_mostly	tracing_max_
- unsigned long __read_mostly	tracing_thresh;
+--- linux-sched-devel.git.orig/kernel/trace/trace.c	2008-04-18 15:47:40.000000000 -0400
++++ linux-sched-devel.git/kernel/trace/trace.c	2008-04-18 15:49:09.000000000 -0400
+@@ -92,9 +92,16 @@ void trace_wake_up(void)
  
- /* dummy trace to disable tracing */
--static struct tracer no_tracer __read_mostly =
--{
-+static struct tracer no_tracer __read_mostly = {
- 	.name		= "none",
- };
- 
-@@ -1961,8 +1960,8 @@ tracing_iter_ctrl_write(struct file *fil
- 	int neg = 0;
- 	int i;
- 
--	if (cnt > 63)
--		cnt = 63;
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
- 
- 	if (copy_from_user(&buf, ubuf, cnt))
- 		return -EFAULT;
-@@ -2054,8 +2053,8 @@ tracing_ctrl_write(struct file *filp, co
- 	long val;
- 	char buf[64];
- 
--	if (cnt > 63)
--		cnt = 63;
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
- 
- 	if (copy_from_user(&buf, ubuf, cnt))
- 		return -EFAULT;
-@@ -2154,10 +2153,10 @@ tracing_max_lat_read(struct file *filp, 
- 	char buf[64];
- 	int r;
- 
--	r = snprintf(buf, 64, "%ld\n",
-+	r = snprintf(buf, sizeof(buf), "%ld\n",
- 		     *ptr == (unsigned long)-1 ? -1 : nsecs_to_usecs(*ptr));
--	if (r > 64)
--		r = 64;
-+	if (r > sizeof(buf))
-+		r = sizeof(buf);
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+ static int __init set_nr_entries(char *str)
+ {
++	unsigned long nr_entries;
++	int ret;
++
+ 	if (!str)
+ 		return 0;
+-	trace_nr_entries = simple_strtoul(str, &str, 0);
++	ret = strict_strtoul(str, 0, &nr_entries);
++	/* nr_entries can not be zero */
++	if (ret < 0 || nr_entries == 0)
++		return 0;
++	trace_nr_entries = nr_entries;
+ 	return 1;
  }
- 
-@@ -2169,8 +2168,8 @@ tracing_max_lat_write(struct file *filp,
- 	long val;
+ __setup("trace_entries=", set_nr_entries);
+@@ -2050,8 +2057,9 @@ tracing_ctrl_write(struct file *filp, co
+ 		   size_t cnt, loff_t *ppos)
+ {
+ 	struct trace_array *tr = filp->private_data;
+-	long val;
  	char buf[64];
++	long val;
++	int ret;
  
--	if (cnt > 63)
--		cnt = 63;
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
+ 	if (cnt >= sizeof(buf))
+ 		return -EINVAL;
+@@ -2061,7 +2069,9 @@ tracing_ctrl_write(struct file *filp, co
  
- 	if (copy_from_user(&buf, ubuf, cnt))
- 		return -EFAULT;
-@@ -2434,8 +2433,8 @@ tracing_entries_write(struct file *filp,
+ 	buf[cnt] = 0;
+ 
+-	val = simple_strtoul(buf, NULL, 10);
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
+ 
+ 	val = !!val;
+ 
+@@ -2165,8 +2175,9 @@ tracing_max_lat_write(struct file *filp,
+ 		      size_t cnt, loff_t *ppos)
+ {
+ 	long *ptr = filp->private_data;
+-	long val;
+ 	char buf[64];
++	long val;
++	int ret;
+ 
+ 	if (cnt >= sizeof(buf))
+ 		return -EINVAL;
+@@ -2176,7 +2187,9 @@ tracing_max_lat_write(struct file *filp,
+ 
+ 	buf[cnt] = 0;
+ 
+-	val = simple_strtoul(buf, NULL, 10);
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
+ 
+ 	*ptr = val * 1000;
+ 
+@@ -2432,6 +2445,7 @@ tracing_entries_write(struct file *filp,
+ {
  	unsigned long val;
  	char buf[64];
++	int ret;
  
--	if (cnt > 63)
--		cnt = 63;
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
+ 	if (cnt >= sizeof(buf))
+ 		return -EINVAL;
+@@ -2441,7 +2455,9 @@ tracing_entries_write(struct file *filp,
  
- 	if (copy_from_user(&buf, ubuf, cnt))
- 		return -EFAULT;
+ 	buf[cnt] = 0;
+ 
+-	val = simple_strtoul(buf, NULL, 10);
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
+ 
+ 	/* must have at least 1 entry */
+ 	if (!val)
 
 -- 
