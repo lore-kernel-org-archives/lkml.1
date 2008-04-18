@@ -1,106 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYDRVsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYDRVw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbYDRVsr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 17:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYDRVsi
+	id S1757808AbYDRVw0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 17:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYDRVwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 17:48:38 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:44286 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbYDRVsh (ORCPT
+	Fri, 18 Apr 2008 17:52:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751354AbYDRVwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 17:48:37 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: pnpacpi: reduce printk severity for "pnpacpi: exceeded the max number of ..."
-Date: Fri, 18 Apr 2008 15:48:33 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linux-acpi@vger.kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>
-References: <20080417010122.148289106@sous-sol.org> <20080417010359.629397865@sous-sol.org>
-In-Reply-To: <20080417010359.629397865@sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 18 Apr 2008 17:52:17 -0400
+Date: Fri, 18 Apr 2008 14:52:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel.send@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: memtest bootparam
+Message-Id: <20080418145202.c96460a2.akpm@linux-foundation.org>
+In-Reply-To: <200804181717.m3IHHicT031344@hera.kernel.org>
+References: <200804181717.m3IHHicT031344@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804181548.33872.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 April 2008 07:02:20 pm Chris Wright wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
+On Fri, 18 Apr 2008 17:17:44 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-I don't object to the point of the patch (changing KERN_ERR to
-KERN_WARNING), but there is a more serious bug lurking here that
-corrupts memory, and if we're doing a -stable patch, we should
-fix it.
-
-The test is:
-
-	if (i >= PNP_MAX_IRQ && !warned) {
-		printk(...);
-		warned = 1;
-		return;
-	}
-
-But it should be:
-
-	if (i >= PNP_MAX_IRQ) {
-		if (!warned) {
-			printk(...);
-			warned = 1;
-		}
-		return;
-	}
-
-> --- a/drivers/pnp/pnpacpi/rsparser.c
-> +++ b/drivers/pnp/pnpacpi/rsparser.c
-> @@ -85,7 +85,7 @@ static void pnpacpi_parse_allocated_irqr
->  	       i < PNP_MAX_IRQ)
->  		i++;
->  	if (i >= PNP_MAX_IRQ && !warned) {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of IRQ "
-> +		printk(KERN_WARNING "pnpacpi: exceeded the max number of IRQ "
->  				"resources: %d \n", PNP_MAX_IRQ);
->  		warned = 1;
->  		return;
-> @@ -187,7 +187,7 @@ static void pnpacpi_parse_allocated_dmar
->  		res->dma_resource[i].start = dma;
->  		res->dma_resource[i].end = dma;
->  	} else if (!warned) {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of DMA "
-> +		printk(KERN_WARNING "pnpacpi: exceeded the max number of DMA "
->  				"resources: %d \n", PNP_MAX_DMA);
->  		warned = 1;
->  	}
-> @@ -213,7 +213,7 @@ static void pnpacpi_parse_allocated_iore
->  		res->port_resource[i].start = io;
->  		res->port_resource[i].end = io + len - 1;
->  	} else if (!warned) {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
-> +		printk(KERN_WARNING "pnpacpi: exceeded the max number of IO "
->  				"resources: %d \n", PNP_MAX_PORT);
->  		warned = 1;
->  	}
-> @@ -241,7 +241,7 @@ static void pnpacpi_parse_allocated_memr
->  		res->mem_resource[i].start = mem;
->  		res->mem_resource[i].end = mem + len - 1;
->  	} else if (!warned) {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
-> +		printk(KERN_WARNING "pnpacpi: exceeded the max number of mem "
->  				"resources: %d\n", PNP_MAX_MEM);
->  		warned = 1;
->  	}
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c64df70793a9c344874eb4af19f85e0662d2d3ee
+> Commit:     c64df70793a9c344874eb4af19f85e0662d2d3ee
+> Parent:     9b967106da0357ef8b08847dce35584a04134f20
+> Author:     Yinghai Lu <yhlu.kernel.send@gmail.com>
+> AuthorDate: Fri Mar 21 18:56:19 2008 -0700
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu Apr 17 17:41:21 2008 +0200
 > 
+>     x86: memtest bootparam
+>     
+> ...
+>
+>  
+> +	memtest=	[KNL,X86_64] Enable memtest
+> +			Format: <integer>
+> +			range: 0,4 : pattern number
+> +			default : 0 <disable>
+
+OK.  Did the new memtest feature get documented anywhere, btw?  I'm only
+vaguely aware of its existence.
+
+>  
+> +config MEMTEST_BOOTPARAM
+> +	bool "Memtest boot parameter"
+> +	depends on X86_64
+> +	default y
+> +	help
+> +	  This option adds a kernel parameter 'memtest', which allows memtest
+> +	  to be disabled at boot.  If this option is selected, memtest
+> +	  functionality can be disabled with memtest=0 on the kernel
+> +	  command line.  The purpose of this option is to allow a single
+> +	  kernel image to be distributed with memtest built in, but not
+> +	  necessarily enabled.
+> +
+> +	  If you are unsure how to answer this question, answer Y.
+> +
+> +config MEMTEST_BOOTPARAM_VALUE
+> +	int "Memtest boot parameter default value (0-4)"
+> +	depends on MEMTEST_BOOTPARAM
+> +	range 0 4
+> +	default 0
+> +	help
+> +	  This option sets the default value for the kernel parameter
+> +	  'memtest', which allows memtest to be disabled at boot.  If this
+> +	  option is set to 0 (zero), the memtest kernel parameter will
+> +	  default to 0, disabling memtest at bootup.  If this option is
+> +	  set to 4, the memtest kernel parameter will default to 4,
+> +	  enabling memtest at bootup, and use that as pattern number.
+> +
+> +	  If you are unsure how to answer this question, answer 0.
+
+These seem pointless.  Why not just unconditionally implement memtest=? 
+All the code for that should be __init anyway so we're hardly saving
+anything here.
 
 
