@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYDRSSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYDRSS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbYDRSSA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 14:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759546AbYDRSRk
+	id S1759997AbYDRSS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 14:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbYDRSRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 18 Apr 2008 14:17:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55253 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([66.187.233.31]:55255 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759535AbYDRSRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759467AbYDRSRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Apr 2008 14:17:39 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/6] dlm patches for 2.6.26
-Date: Fri, 18 Apr 2008 13:12:42 -0500
-Message-Id: <1208542368-13417-1-git-send-email-teigland@redhat.com>
+Subject: [PATCH 3/6] dlm: save master info after failed no-queue request
+Date: Fri, 18 Apr 2008 13:12:45 -0500
+Message-Id: <1208542368-13417-4-git-send-email-teigland@redhat.com>
 X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When a NOQUEUE request fails, the rsb res_master field is unnecessarily
+reset to -1, instead of leaving the valid master setting in place.  We
+want to save the looked-up master values while the rsb is on the "toss
+list" so that another lookup can be avoided if the rsb is soon reused.
+The fix is to simply leave res_master value alone.
 
-Hi,
+Signed-off-by: David Teigland <teigland@redhat.com>
+---
+ fs/dlm/lock.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-These are the pending dlm patches for the 2.6.26 merge.  They have all been
-in linux-next and -mm for some time.  The only really notable patch is the
-one that moves gfs2's posix lock handling into the dlm so that it can be
-shared by both gfs2 and ocfs2.  The plock code isn't technically related to
-the dlm, but it seems like a sensible common place for both gfs2 and ocfs2 to
-get to it.  It can also take advantage of the userspace cluster pieces
-already in place for the dlm instead of replicating it.  The plock code
-was never closely tied to gfs2 either, so the move required no functional
-changes.  Dave
-
-
-Adrian Bunk (1):
-      dlm: make dlm_print_rsb() static
-
-David Teigland (4):
-      dlm: save master info after failed no-queue request
-      dlm: recover nodes that are removed and re-added
-      dlm: move plock code from gfs2
-      dlm: common max length definitions
-
-Harvey Harrison (1):
-      dlm: match signedness between dlm_config_info and cluster_set
-
-
- fs/dlm/Makefile                |    1 +
- fs/dlm/config.c                |   50 ++++-
- fs/dlm/config.h                |    3 +-
- fs/dlm/dlm_internal.h          |    8 +-
- fs/dlm/lock.c                  |    5 +-
- fs/dlm/lock.h                  |    1 -
- fs/dlm/main.c                  |    7 +
- fs/dlm/member.c                |   34 +++-
- fs/dlm/plock.c                 |  439 ++++++++++++++++++++++++++++++++++++++++
- fs/dlm/recoverd.c              |    1 +
- fs/gfs2/locking/dlm/Makefile   |    2 +-
- fs/gfs2/locking/dlm/lock_dlm.h |   11 +-
- fs/gfs2/locking/dlm/main.c     |    8 -
- fs/gfs2/locking/dlm/mount.c    |   21 ++
- fs/gfs2/locking/dlm/plock.c    |  406 -------------------------------------
- include/linux/Kbuild           |    2 +-
- include/linux/dlm.h            |    4 -
- include/linux/dlm_device.h     |    3 -
- include/linux/dlm_plock.h      |   50 +++++
- include/linux/dlmconstants.h   |    4 +
- include/linux/lock_dlm_plock.h |   41 ----
- 21 files changed, 604 insertions(+), 497 deletions(-)
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index 1e9e8eb..2d3d102 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -1956,8 +1956,7 @@ static void confirm_master(struct dlm_rsb *r, int error)
+ 			list_del_init(&lkb->lkb_rsb_lookup);
+ 			r->res_first_lkid = lkb->lkb_id;
+ 			_request_lock(r, lkb);
+-		} else
+-			r->res_nodeid = -1;
++		}
+ 		break;
+ 
+ 	default:
+-- 
+1.5.3.3
 
