@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYDRIy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYDRJGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbYDRIy5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 04:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYDRIyr
+	id S1756589AbYDRJGT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 05:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYDRJGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 04:54:47 -0400
-Received: from rv-out-0708.google.com ([209.85.198.242]:44439 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751509AbYDRIyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 04:54:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=esRUtcC/+qKCF9hf5BRhctoNRfqPdeyFZ7k8lIChN/BaJqlSe8cgCtADzYtYJCJ2bjUmjVSEL4TI2fk/D9hZGhQcJ93jquutTZuj4FCSQUIuMfMUj2opHOjZ3oBfkGeQMlkCxYV5gomsd6lydeYBDim5e7t697cxVk9G9SNTRNU=
-Message-ID: <a72f6a3c0804180154x28d0b528gc1cbd3d11279c4a1@mail.gmail.com>
-Date: Fri, 18 Apr 2008 09:54:45 +0100
-From: "Jack Harvard" <jack.harvard@googlemail.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: gettimeofday() in 2.6.24
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48079356.2090307@nortel.com>
+	Fri, 18 Apr 2008 05:06:10 -0400
+Received: from www.tglx.de ([62.245.132.106]:36487 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754144AbYDRJGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 05:06:09 -0400
+Date: Fri, 18 Apr 2008 11:05:47 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] UBIFS - new flash file system
+In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+Message-ID: <alpine.LFD.1.10.0804181101000.3261@apollo.tec.linutronix.de>
+References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a72f6a3c0804171031qbba17d6pb470119d5f2ff010@mail.gmail.com>
-	 <48079356.2090307@nortel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 7:13 PM, Chris Friesen <cfriesen@nortel.com> wrote:
-> Jack Harvard wrote:
->
->
-> > http://lxr.linux.no/linux+v2.6.24/arch/arm/kernel/time.c#L240
-> >  239#ifndef CONFIG_GENERIC_TIME
-> >  240void do_gettimeofday(struct timeval *tv)
-> >  241{
-> >  242        unsigned long flags;
-> >  243        unsigned long seq;
-> >  244        unsigned long usec, sec;
-> >  245
-> >  246        do {
-> >  247                seq = read_seqbegin_irqsave(&xtime_lock, flags);
-> >  248                usec = system_timer->offset();
-> >  249                sec = xtime.tv_sec;
-> >  250                usec += xtime.tv_nsec / 1000;
-> >  251        } while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
-> >
->
->
->
-> > but I haven't quite figured out how gettimeofday() actually gets time
-> > from this added timer, also how xtime is updated?
-> >
->
->
->  system_timer->offset() uses the added timer to return the number of usecs
-> since the last timer tick.  It's potentially different for each specific
-> type of arm blade, and the function often has "gettimeoffset" in the name.
+On Thu, 27 Mar 2008, Artem Bityutskiy wrote:
+> UBIFS mount time is considerably faster as well. For example,
+> In case of OLPC we observed 10-15 seconds faster boot time
+> comparing to JFFS2 (fast mount, no full media check).
 
->
->  "xtime" is updated in the core kernel code.
+The mount time compared to JFFS2 on a 700MiB partition went down from
+1min40s to 5sec on the same hardware. Pretty impressive
+ 
+> UBIFS is quite complex because it is difficult to maintain
+> indexing information on the flash media and be fast at the same
+> time. Please, refer the UBIFS white paper for information
+> about UBIFS design.
 
-is "xtime" updated by the time tick clock timer, i.e., the timer which
-generates interrupts every 1/HZ second to the kernel. Put it in
-another way,
-does gettimeofday get time in two parts 1) seconds from xtime.tv_sec,
-updated by timer0, 2) microseconds from xtime.tv_nsec +
-system_timer->offset(), updated by timer0 and timer3.
+We did some initial stress tests and so far it looks pretty robust.
 
-Do you mean the code here
-"http://lxr.linux.no/linux+v2.6.24/kernel/time/timekeeping.c#L45"
+Great job !
+
+Thanks,
+	tglx
