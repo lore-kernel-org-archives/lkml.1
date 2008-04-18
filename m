@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYDRQlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYDRQn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYDRQlH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 12:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYDRQk4
+	id S1755358AbYDRQn2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 12:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYDRQnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 12:40:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:18082 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754143AbYDRQkz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 12:40:55 -0400
-Date: Fri, 18 Apr 2008 09:40:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh <greg@kroah.com>
-Subject: Re: 2.6.25-mm1 (build error: driver core)
-Message-Id: <20080418094041.86b082bb.randy.dunlap@oracle.com>
-In-Reply-To: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 18 Apr 2008 12:43:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55285 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754474AbYDRQnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 12:43:21 -0400
+Subject: Re: [PATCH] gfs2: fix assertion in log_refund()
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: cluster-devel@redhat.com, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <48076BF1.9080204@tiscali.nl>
+References: <48076BF1.9080204@tiscali.nl>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Fri, 18 Apr 2008 17:42:05 +0100
+Message-Id: <1208536925.3635.412.camel@quoit>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 01:47:57 -0700 Andrew Morton wrote:
+Hi,
 
+Now in the GFS2 -nmw git tree, which I'm just about to send a pull
+request for,
+
+Steve.
+
+On Thu, 2008-04-17 at 17:25 +0200, Roel Kluin wrote:
+> since unsigned, unused >= 0 is always true.
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+> index 161ab6f..211dc2d 100644
+> --- a/fs/gfs2/log.c
+> +++ b/fs/gfs2/log.c
+> @@ -769,8 +769,8 @@ static void log_refund(struct gfs2_sbd *sdp, struct gfs2_trans *tr)
+>  	sdp->sd_log_commited_revoke += tr->tr_num_revoke - tr->tr_num_revoke_rm;
+>  	gfs2_assert_withdraw(sdp, ((int)sdp->sd_log_commited_revoke) >= 0);
+>  	reserved = calc_reserved(sdp);
+> +	gfs2_assert_withdraw(sdp, sdp->sd_log_blks_reserved + tr->tr_reserved >= reserved);
+>  	unused = sdp->sd_log_blks_reserved - reserved + tr->tr_reserved;
+> -	gfs2_assert_withdraw(sdp, unused >= 0);
+>  	atomic_add(unused, &sdp->sd_log_blks_free);
+>  	gfs2_assert_withdraw(sdp, atomic_read(&sdp->sd_log_blks_free) <=
+>  			     sdp->sd_jdesc->jd_blocks);
 
-with CONFIG_BLOCK=n:
-
-linux-2.6.25-mm1/drivers/base/core.c: In function 'device_to_dev_kobj':
-linux-2.6.25-mm1/drivers/base/core.c:768: error: 'block_class' undeclared (first use in this function)
-make[3]: *** [drivers/base/core.o] Error 1
-
----
-~Randy
