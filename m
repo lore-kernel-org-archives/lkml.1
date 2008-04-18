@@ -1,50 +1,36 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763146AbYDQSrs (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 17 Apr 2008 14:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759834AbYDQSrd
+	id S1756807AbYDRMhe (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 18 Apr 2008 08:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYDRMh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 14:47:33 -0400
-Received: from avas6.coqui.net ([196.28.61.139]:36254 "EHLO avas6.coqui.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759724AbYDQSrc convert rfc822-to-8bit (ORCPT
+	Fri, 18 Apr 2008 08:37:26 -0400
+Received: from mail-out1.fuse.net ([216.68.8.175]:50395 "EHLO
+	mail-out1.fuse.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752950AbYDRMhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 14:47:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsZFAMc3B0jEHD1kZmdsb2JhbACLC4V0PSENAgwFGEeVMIUf
-X-IronPort-AV: E=Sophos;i="4.25,673,1199678400"; 
-   d="scan'208";a="1342318152"
-Message-ID: <20080417053920.8p3h4f2s5q80ko8w@webmail.coqui.net>
-Date: Thu, 17 Apr 2008 05:39:20 -0400
-From: PEUGEOT ONLINE <info@Peugeot.co.uk>
-Reply-to: peugeoticarltucker@gmail.com
-To: undisclosed-recipients:;
-Subject: AWARD!!!
+	Fri, 18 Apr 2008 08:37:25 -0400
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 08:37:25 EDT
+X-CNFS-Analysis: v=1.0 c=1 a=Wv_F8AaM2AMA:15 a=24cvOvpsfPUA:10 a=fKRhgE-oo80A:10 a=pZmP9RTn-EsA:10 a=fFMuO6mTP8cLsdKLTIkA:9 a=yh0j9qlKxX60BHPTaFhcgEZk-RIA:4 a=EELjmqfcinwA:10 a=trPmDcgzO54A:10 a=EQAfqBx5Yn8A:10
+X-CM-Score: 0
+Authentication-Results: gwout1 smtp.user=202200@fuse.net; auth=pass (LOGIN)
+Message-ID: <33363541.1208521479003.JavaMail.root@wmvirt33>
+Date: Fri, 18 Apr 2008 8:24:28 -0400
+From: EUROMILLION <202200@fuse.net>
+Reply-To: apextrustagency@aim.com
+Subject: CONGRATULATIONS ...YOUR E-MAIL WON...
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1763146AbYDQSrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756807AbYDRMhe@vger.kernel.org>
 
+CONGRATULATIONS ...YOUR E-MAIL WON...
+SELECTED E-MAIL WON YOU CONTACT MR PAUL GREEN FOR MORE INFORMATION FOR
+THE CLAIM OF YOUR $950,000.00 AS SOON AS POSSIBLE VIA EMAIL
+(APEXTRUSTAGENCY@AIM.COM) OR CALL +34628652243
 
-Contact  Dr.Carl Tucker via Email: peugeoticarltucker@gmail.com
-for your Winnings of =C2=A3300,000.00 and a peugeot 607 car
-
-
-
-
-
-
-
-
-----------------------------------------------------------------
-This message was sent using http://webmail.coqui.net
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
