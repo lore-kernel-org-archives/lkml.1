@@ -1,156 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761486AbYDRX2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbYDRX21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761486AbYDRX2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 19:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYDRXX1
+	id S1761512AbYDRX21 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 19:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbYDRXXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 19:23:27 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:36013 "EHLO havoc.gtf.org"
+	Fri, 18 Apr 2008 19:23:32 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:55965 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbYDRXXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 19:23:25 -0400
-Message-Id: <4e2ec1b6d54fae7c49007b8debf839c5cd24cb84.1208559659.git.jgarzik@redhat.com>
+	id S1752777AbYDRXX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 19:23:29 -0400
+Message-Id: <a1b99cb872489214225e44e479180b6e9ccdb621.1208559659.git.jgarzik@redhat.com>
 In-Reply-To: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
 References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-To: netdev@vger.kernel.org, khali@linux-fr.org, dtor@mail.ru,
-       lethal@linux-sh.org, linux-serial@vger.kernel.org
+To: dtor@mail.ru
 From: Jeff Garzik <jeff@garzik.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 14/15] Canonicalize several irq handlers.
-Date: Fri, 18 Apr 2008 19:23:04 -0400 (EDT)
+Subject: [PATCH 15/15] [INPUT, PCMCIA] avoid use of 'irq' function arg
+Date: Fri, 18 Apr 2008 19:23:07 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* prefer passing data to irq handler using 'void *dev_id' argument
+NOTE: NOT FOR MERGE, NOT FOR UPSTREAM
 
-* remove references to 'irq' function arg that either duplicate
-  a member of our private struct, or are always [true|false].
-
-* add linux/interrupt.h include where needed
+Not-signed-off-by: ...
 
 This change's main purpose is to prepare for the patchset in
 jgarzik/misc-2.6.git#irq-remove, that explores removal of the
 never-used 'irq' argument in each interrupt handler.
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- drivers/atm/ambassador.c               |    7 ++++---
- drivers/i2c/chips/tps65010.c           |    4 ++--
- drivers/input/touchscreen/ucb1400_ts.c |   11 ++++-------
- drivers/serial/8250.c                  |    5 +++--
- include/asm-sh/push-switch.h           |    2 +-
- 5 files changed, 14 insertions(+), 15 deletions(-)
+ drivers/input/serio/i8042.c |   23 +++++++++++++----------
+ drivers/pcmcia/i82365.c     |   15 ++++++++++-----
+ 2 files changed, 23 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/atm/ambassador.c b/drivers/atm/ambassador.c
-index 7b44a59..da41d26 100644
---- a/drivers/atm/ambassador.c
-+++ b/drivers/atm/ambassador.c
-@@ -862,8 +862,9 @@ static inline void interrupts_off (amb_dev * dev) {
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index 65a74cf..ee2dfab 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -108,8 +108,6 @@ static unsigned char i8042_aux_irq_registered;
+ static unsigned char i8042_suppress_kbd_ack;
+ static struct platform_device *i8042_platform_device;
  
- /********** interrupt handling **********/
+-static irqreturn_t i8042_interrupt(int irq, void *dev_id);
+-
+ /*
+  * The i8042_wait_read() and i8042_wait_write functions wait for the i8042 to
+  * be ready for reading values from it / writing values to it.
+@@ -302,7 +300,7 @@ static void i8042_stop(struct serio *serio)
+  * to the upper layers.
+  */
  
--static irqreturn_t interrupt_handler(int irq, void *dev_id) {
--  amb_dev * dev = dev_id;
-+static irqreturn_t interrupt_handler(int irq, void *dev_id)
+-static irqreturn_t i8042_interrupt(int irq, void *dev_id)
++static irqreturn_t __i8042_interrupt(bool polled)
+ {
+ 	struct i8042_port *port;
+ 	unsigned long flags;
+@@ -315,7 +313,7 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
+ 	str = i8042_read_status();
+ 	if (unlikely(~str & I8042_STR_OBF)) {
+ 		spin_unlock_irqrestore(&i8042_lock, flags);
+-		if (irq) dbg("Interrupt %d, without any data", irq);
++		if (!polled) dbg("Interrupt without any data");
+ 		ret = 0;
+ 		goto out;
+ 	}
+@@ -370,8 +368,8 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
+ 
+ 	port = &i8042_ports[port_no];
+ 
+-	dbg("%02x <- i8042 (interrupt, %d, %d%s%s)",
+-	    data, port_no, irq,
++	dbg("%02x <- i8042 (interrupt, %d, %s%s)",
++	    data, port_no,
+ 	    dfl & SERIO_PARITY ? ", bad parity" : "",
+ 	    dfl & SERIO_TIMEOUT ? ", timeout" : "");
+ 
+@@ -389,6 +387,11 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
+ 	return IRQ_RETVAL(ret);
+ }
+ 
++static irqreturn_t i8042_interrupt(int dummy, void *dev_id)
 +{
-+  amb_dev *dev = dev_id;
-   
-   PRINTD (DBG_IRQ|DBG_FLOW, "interrupt_handler: %p", dev_id);
-   
-@@ -872,7 +873,7 @@ static irqreturn_t interrupt_handler(int irq, void *dev_id) {
-   
-     // for us or someone else sharing the same interrupt
-     if (!interrupt) {
--      PRINTD (DBG_IRQ, "irq not for me: %d", irq);
-+      PRINTD (DBG_IRQ, "no irq events pending");
-       return IRQ_NONE;
-     }
++	return __i8042_interrupt(false);
++}
++
+ /*
+  * i8042_enable_kbd_port enables keybaord port on chip
+  */
+@@ -650,7 +653,7 @@ static int __devinit i8042_check_aux(void)
+ 	}
+ 
+ 	if (request_irq(I8042_AUX_IRQ, i8042_aux_test_irq, IRQF_SHARED,
+-			"i8042", i8042_platform_device))
++			"i8042", NULL))
+ 		goto out;
+ 
+ 	irq_registered = 1;
+@@ -953,7 +956,7 @@ static int i8042_resume(struct platform_device *dev)
+ 	if (i8042_ports[I8042_KBD_PORT_NO].serio)
+ 		i8042_enable_kbd_port();
+ 
+-	i8042_interrupt(0, NULL);
++	__i8042_interrupt(true);
+ 
+ 	dev->dev.power.power_state = PMSG_ON;
+ 
+@@ -1104,7 +1107,7 @@ static int __devinit i8042_setup_aux(void)
+ 	}
+ 
+ 	error = request_irq(I8042_AUX_IRQ, i8042_interrupt, IRQF_SHARED,
+-			    "i8042", i8042_platform_device);
++			    "i8042", NULL);
+ 	if (error)
+ 		goto err_free_ports;
+ 
+@@ -1130,7 +1133,7 @@ static int __devinit i8042_setup_kbd(void)
+ 		return error;
+ 
+ 	error = request_irq(I8042_KBD_IRQ, i8042_interrupt, IRQF_SHARED,
+-			    "i8042", i8042_platform_device);
++			    "i8042", NULL);
+ 	if (error)
+ 		goto err_free_port;
+ 
+diff --git a/drivers/pcmcia/i82365.c b/drivers/pcmcia/i82365.c
+index 32a2ab1..ce9364b 100644
+--- a/drivers/pcmcia/i82365.c
++++ b/drivers/pcmcia/i82365.c
+@@ -82,7 +82,8 @@ module_param(pc_debug, int, 0644);
+ static irqreturn_t i365_count_irq(int, void *);
+ static inline int _check_irq(int irq, int flags)
+ {
+-    if (request_irq(irq, i365_count_irq, flags, "x", i365_count_irq) != 0)
++    if (request_irq(irq, i365_count_irq, flags, "x",
++    		    (void *)(unsigned long) irq) != 0)
+ 	return -1;
+     free_irq(irq, i365_count_irq);
+     return 0;
+@@ -497,8 +498,10 @@ static u_int __init set_bridge_opts(u_short s, u_short ns)
+ static volatile u_int irq_hits;
+ static u_short irq_sock;
+ 
+-static irqreturn_t i365_count_irq(int irq, void *dev)
++static irqreturn_t i365_count_irq(int dummy, void *dev_id)
+ {
++    int irq = (int)(unsigned long) dev_id;
++
+     i365_get(irq_sock, I365_CSC);
+     irq_hits++;
+     debug(2, "-> hit on irq %d\n", irq);
+@@ -509,7 +512,7 @@ static u_int __init test_irq(u_short sock, int irq)
+ {
+     debug(2, "  testing ISA irq %d\n", irq);
+     if (request_irq(irq, i365_count_irq, IRQF_PROBE_SHARED, "scan",
+-			i365_count_irq) != 0)
++		    (void *)(unsigned long) irq) != 0)
+ 	return 1;
+     irq_hits = 0; irq_sock = sock;
+     msleep(10);
+@@ -847,8 +850,9 @@ static void __init isa_probe(void)
+ 
+ /*====================================================================*/
+ 
+-static irqreturn_t pcic_interrupt(int irq, void *dev)
++static irqreturn_t pcic_interrupt(int dummy, void *dev_id)
+ {
++    int irq = (int)(unsigned long) dev_id;
+     int i, j, csc;
+     u_int events, active;
+     u_long flags = 0;
+@@ -1293,7 +1297,8 @@ static int __init init_i82365(void)
+ 
+     /* Set up interrupt handler(s) */
+     if (grab_irq != 0)
+-	request_irq(cs_irq, pcic_interrupt, 0, "i82365", pcic_interrupt);
++	request_irq(cs_irq, pcic_interrupt, 0, "i82365",
++		    (void *)(unsigned long) cs_irq);
      
-diff --git a/drivers/i2c/chips/tps65010.c b/drivers/i2c/chips/tps65010.c
-index 4154a91..78b365c 100644
---- a/drivers/i2c/chips/tps65010.c
-+++ b/drivers/i2c/chips/tps65010.c
-@@ -437,11 +437,11 @@ static void tps65010_work(struct work_struct *work)
- 	mutex_unlock(&tps->lock);
- }
- 
--static irqreturn_t tps65010_irq(int irq, void *_tps)
-+static irqreturn_t tps65010_irq(int dummy, void *_tps)
- {
- 	struct tps65010		*tps = _tps;
- 
--	disable_irq_nosync(irq);
-+	disable_irq_nosync(tps->client->irq);
- 	set_bit(FLAG_IRQ_ENABLE, &tps->flags);
- 	(void) schedule_work(&tps->work.work);
- 	return IRQ_HANDLED;
-diff --git a/drivers/input/touchscreen/ucb1400_ts.c b/drivers/input/touchscreen/ucb1400_ts.c
-index 607f993..079cddc 100644
---- a/drivers/input/touchscreen/ucb1400_ts.c
-+++ b/drivers/input/touchscreen/ucb1400_ts.c
-@@ -358,13 +358,10 @@ static irqreturn_t ucb1400_hard_irq(int irqnr, void *devid)
- {
- 	struct ucb1400 *ucb = devid;
- 
--	if (irqnr == ucb->irq) {
--		disable_irq(ucb->irq);
--		ucb->irq_pending = 1;
--		wake_up(&ucb->ts_wait);
--		return IRQ_HANDLED;
--	}
--	return IRQ_NONE;
-+	disable_irq(ucb->irq);
-+	ucb->irq_pending = 1;
-+	wake_up(&ucb->ts_wait);
-+	return IRQ_HANDLED;
- }
- 
- static int ucb1400_ts_open(struct input_dev *idev)
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 96a585e..109921e 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -40,6 +40,7 @@
- #include <linux/serial_8250.h>
- #include <linux/nmi.h>
- #include <linux/mutex.h>
-+#include <linux/interrupt.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -1457,7 +1458,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 	struct list_head *l, *end = NULL;
- 	int pass_counter = 0, handled = 0;
- 
--	DEBUG_INTR("serial8250_interrupt(%d)...", irq);
-+	DEBUG_INTR("serial8250_interrupt...");
- 
- 	spin_lock(&i->lock);
- 
-@@ -1496,7 +1497,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 		if (l == i->head && pass_counter++ > PASS_LIMIT) {
- 			/* If we hit this, we're dead. */
- 			printk(KERN_ERR "serial8250: too much work for "
--				"irq%d\n", irq);
-+				"irq%d\n", up->port.irq);
- 			break;
- 		}
- 	} while (l != end);
-diff --git a/include/asm-sh/push-switch.h b/include/asm-sh/push-switch.h
-index 4903f9e..73ecaf2 100644
---- a/include/asm-sh/push-switch.h
-+++ b/include/asm-sh/push-switch.h
-@@ -19,7 +19,7 @@ struct push_switch {
- 
- struct push_switch_platform_info {
- 	/* IRQ handler */
--	irqreturn_t		(*irq_handler)(int irq, void *data);
-+	irq_handler_t		irq_handler;
- 	/* Special IRQ flags */
- 	unsigned int		irq_flags;
- 	/* Bit location of switch */
+     /* register sockets with the pcmcia core */
+     for (i = 0; i < sockets; i++) {
 -- 
 1.5.4.1
 
