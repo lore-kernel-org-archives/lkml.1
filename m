@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYDRB0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYDRBhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbYDRB0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 21:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYDRB0P
+	id S1755019AbYDRBhI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 21:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYDRBg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 21:26:15 -0400
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:35361 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751207AbYDRB0P (ORCPT
+	Thu, 17 Apr 2008 21:36:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34486 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751719AbYDRBg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 21:26:15 -0400
-From: Aaron Carroll <aaronc@cse.unsw.edu.au>
-To: Fabio Checconi <fchecconi@gmail.com>
-Date: Fri, 18 Apr 2008 11:26:00 +1000
-Message-ID: <4807F8A8.4090605@cse.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080316)
-MIME-Version: 1.0
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       paolo.valente@unimore.it
-Subject: Re: [RESEND][RFC] BFQ I/O Scheduler
-References: <20080401152903.GB34860@gandalf.sssup.it> <20080415082236.GD12774@kernel.dk>
-In-Reply-To: <20080415082236.GD12774@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 17 Apr 2008 21:36:56 -0400
+Date: Thu, 17 Apr 2008 18:35:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Moore <paul.moore@hp.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, penberg@cs.helsinki.fi,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jmorris@namei.org, sds@tycho.nsa.gov
+Subject: Re: 2.6.25-mm1: not looking good
+Message-Id: <20080417183538.d88feff5.akpm@linux-foundation.org>
+In-Reply-To: <200804171955.46600.paul.moore@hp.com>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	<200804171955.46600.paul.moore@hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Apr 01 2008, Fabio Checconi wrote:
->> [sorry for reposting, wrong subject]
->>
->> Hi,
->>     we are working to a new I/O scheduler based on CFQ, aiming at
->> improved predictability and fairness of the service, while maintaining
->> the high throughput it already provides.
+On Thu, 17 Apr 2008 19:55:46 -0400
+Paul Moore <paul.moore@hp.com> wrote:
 
-Here are some microbenchmark results.  Test setup is a 2-way IA64 with a
-single 15k RPM 73GiB SCSI disk with TCQ depth set to 1.  Workloads are
-generated with FIO: 128 processes issuing synchronous, O_DIRECT, 16KiB
-block size requests.
+> > security/selinux/netnode.c looks to be doing simple old
+> > kzalloc/kfree, so I'd be suspecting slab.  But there are significant
+> > changes netnode.c in git-selinux.
+> >
+> > I have maybe two hours in which to weed out whatever
+> > very-recently-added dud patches are causing this.  Any suggestions
+> > are welcome.
+> 
+> For what it's worth I just looked over the changes in netnode.c and 
+> nothing is jumping out at me.  The changes ran fine for me when tested 
+> on the later 2.6.25-rcX kernels but I suppose that doesn't mean a whole 
+> lot.
+> 
+> I've got a 4-way x86_64 box but it needs to be installed (which means 
+> I'm not going to be able to do anything useful with it until tomorrow 
+> at the earliest).  I'll try it out and see if I can recreate the 
+> problem.
 
-Figures are quoted as average (stdev).  CFQ (i=0) means idle window
-disabled.  All other tunables are default.
+I dropped git-selinux and that crash seems to have gone away.  It took about
+five minutes before, but would presumably have happened earlier if I'd
+reduced the cache size.
 
-==================================x8=======================================
+btw, wouldn't this
 
-                Random Readers
------------------------------------------------
-           Latency (ms)       Bandwidth (KiB/s)
------------------------------------------------
-CFQ        841.788 (4070.3)   2428.032 (23.1)
-CFQ (i=0)  536.728 (216.9)    3841.024 (8.5)
-BFQ        884.4 (8816.0)     2439.04 (1375.0)
+--- a/security/selinux/netnode.c~a
++++ a/security/selinux/netnode.c
+@@ -190,7 +190,7 @@ static int sel_netnode_insert(struct sel
+ 	if (sel_netnode_hash[idx].size == SEL_NETNODE_HASH_BKT_LIMIT) {
+ 		struct sel_netnode *tail;
+ 		tail = list_entry(node->list.prev, struct sel_netnode, list);
+-		list_del_rcu(node->list.prev);
++		list_del_rcu(&tail->list);
+ 		call_rcu(&tail->rcu, sel_netnode_free);
+ 	} else
+ 		sel_netnode_hash[idx].size++;
+_
 
-
-            Sequential 1MiB Readers
------------------------------------------------
-           Latency (ms)       Bandwidth (KiB/s)
------------------------------------------------
-CFQ        2865.331 (737.2)   46866.048 (103.1)
-CFQ (i=0)  2544.618 (1047.2)  52685.952 (294.2)
-BFQ        2860.795 (419.1)   46850.944 (81.5)
-
-
-Clearly BFQ suffers from the same idle window problems as CFQ, but otherwise
-the performance seems comparable in bandwidth terms.  I'm guessing variability
-in random workload service is due to max budget being too large compared to
-CFQ's default time-slice.  Sequential access looks nice and consistent, though.
-
+be a bit clearer?  If it's correct - I didn't try too hard :)
