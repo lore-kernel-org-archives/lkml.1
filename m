@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbYDRTZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbYDRT07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbYDRTZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 15:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbYDRTZE
+	id S1761004AbYDRT07 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 15:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760761AbYDRT0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 15:25:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56977 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760801AbYDRTZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 15:25:03 -0400
-Date: Fri, 18 Apr 2008 15:25:00 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Pekka Paalanen <pq@iki.fi>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH sched-devel] ftrace: trace_entries to change trace buffer
- size
-In-Reply-To: <20080418121431.7f1c05f1.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0804181521200.14933@gandalf.stny.rr.com>
-References: <20080411163923.439680284@goodmis.org> <20080411164037.219665668@goodmis.org>
- <20080411214328.25c06a5d@daedalus.pq.iki.fi> <Pine.LNX.4.58.0804112021200.4500@gandalf.stny.rr.com>
- <20080413145604.3fb396a2@daedalus.pq.iki.fi> <20080414095645.GC3761@elte.hu>
- <20080414211433.3bfa5649@daedalus.pq.iki.fi> <Pine.LNX.4.58.0804142139240.16591@gandalf.stny.rr.com>
- <20080418032301.0f7bef7d.akpm@linux-foundation.org>
- <Pine.LNX.4.58.0804180822510.5642@gandalf.stny.rr.com>
- <20080418121431.7f1c05f1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Apr 2008 15:26:51 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33222 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759760AbYDRT0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 15:26:50 -0400
+Subject: Re: [PATCH 0/4] jbd: possible filesystem corruption fixes
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Josef Bacik <jbacik@redhat.com>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, akpm@linux-foundation.org,
+       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+In-Reply-To: <20080418140946.GA26062@unused.rdu.redhat.com>
+References: <48089B86.5020108@hitachi.com>
+	 <20080418140946.GA26062@unused.rdu.redhat.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 18 Apr 2008 12:26:47 -0700
+Message-Id: <1208546807.9475.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 18 Apr 2008, Andrew Morton wrote:
+On Fri, 2008-04-18 at 10:09 -0400, Josef Bacik wrote:
+> On Fri, Apr 18, 2008 at 10:00:54PM +0900, Hidehiro Kawai wrote:
+> > Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
+> > 
+> > The current JBD is not sufficient for I/O error handling.  It can
+> > cause filesystem corruption.   An example scenario:
+> > 
+> > 1. fail to write a metadata buffer to block B in the journal
+> > 2. succeed to write the commit record
+> > 3. the system crashes, reboots and mount the filesystem
+> > 4. in the recovery phase, succeed to read data from block B
+> > 5. write back the read data to the filesystem, but it is a stale
+> >    metadata
+> > 6. lose some files and directories!
+> > 
+> > This scenario is a rare case, but it (temporal I/O error)
+> > can occur.  If we abort the journal between 1. and 2., this
+> > tragedy can be avoided.
+> > 
+> > This patch set fixes several error handling problems to protect
+> > from filesystem corruption caused by I/O errors.  It has been
+> > done only for JBD and ext3 parts.
 > >
-> > Actually, that's just a way of doing spin_lock_init for raw spin locks. I
-> > didn't see any other way.
->
-> Maybe we need raw_spin_lock_init().  And DEFINE_RAW_SPINLOCK()?
->
-> Although it isn't a great idea to be encouraging the use of raw
-> spinlocks.
->
+> 
 
-I was thinking the same thing. Raw spin_locks should not be used, unless
-there's a really good reason to use them. Strange things like mcount is
-one example, but I cant think of many more. I'd be hesitant to add such an
-API, which might lead to other users of raw_spin_locks when they really
-shouldn't.
+Could you sent Ext4/JBD2 version patches? Thanks!
 
-Not to mention that we also have raw_spinlock_t in -rt that has a little
-different meaning.
+> There doesn't seem like much point in taking these patches as Jan is rewriting
+> the ordered mode path and most of these functions will be going away soon.
+> Those patches seem like they will be coming soon and will obsolete these.
+> 
 
--- Steve
+I hope we have a better ordered mode very soon too. Just thought it's
+still valid to fix the current ordered mode for people who uses
+linux-2.6.25 kernel today. 
+
+Mingming
+> Josef 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
