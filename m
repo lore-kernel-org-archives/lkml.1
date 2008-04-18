@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbYDRMl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYDRMl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756455AbYDRMl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 08:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYDRMlW
+	id S1757280AbYDRMl4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 08:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYDRMlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 08:41:22 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3096 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752785AbYDRMlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 08:41:21 -0400
-Date: Fri, 18 Apr 2008 14:41:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
-       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] ThinkPad ACPI: fix possible NULL pointer dereference
-Message-ID: <20080418124111.GB4966@ucw.cz>
-References: <20080416174421.442716301@gmail.com>> <48063bc9.2533440a.1932.1fc1@mx.google.com>
-Mime-Version: 1.0
+	Fri, 18 Apr 2008 08:41:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40401 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752785AbYDRMlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 08:41:45 -0400
+Date: Fri, 18 Apr 2008 14:41:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+Message-ID: <20080418124100.GD17013@elte.hu>
+References: <20080417083000.GA4935@elte.hu> <20080417014054.ea788f1f.akpm@linux-foundation.org> <20080417090626.GA14383@elte.hu> <20080417021813.04df7912.akpm@linux-foundation.org> <20080417093025.GA17389@elte.hu> <20080417023603.672d1032.akpm@linux-foundation.org> <84144f020804170319g6e0b90ffq1c42179e084d18f@mail.gmail.com> <20080417033333.947dfcc9.akpm@linux-foundation.org> <20080417103800.GA27250@elte.hu> <20080417070129.2bb99e2c@laptopd505.fenrus.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48063bc9.2533440a.1932.1fc1@mx.google.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080417070129.2bb99e2c@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Fix potential NULL pointer dereference if kstrdup failed
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> 
-> ---
-> 
-> Index: linux-2.6.git/drivers/misc/thinkpad_acpi.c
-> ===================================================================
-> --- linux-2.6.git.orig/drivers/misc/thinkpad_acpi.c	2008-04-16 20:35:34.000000000 +0400
-> +++ linux-2.6.git/drivers/misc/thinkpad_acpi.c	2008-04-16 20:36:38.000000000 +0400
-> @@ -5826,7 +5826,7 @@ static void __init get_thinkpad_model_da
->  
->  	tp->model_str = kstrdup(dmi_get_system_info(DMI_PRODUCT_VERSION),
->  					GFP_KERNEL);
-> -	if (strnicmp(tp->model_str, "ThinkPad", 8) != 0) {
-> +	if (tp->model_str && strnicmp(tp->model_str, "ThinkPad", 8) != 0) {
->  		kfree(tp->model_str);
->  		tp->model_str = NULL;
->  	}
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-are you sure? This seems to assume machine is thinkpad if kstrdup
-fails... which is very wrong.
+> > i think slab is clearly out, unless some catastrophic regression is 
+> > found.
+> 
+> SLUB still has that several percent TPC-C regression.... Christoph has 
+> a small reproducer testcase.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+btw., several percent of TPC-C is bad... so i take back the 'SLAB is 
+out' observation for now :-/
+
+	Ingo
