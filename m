@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbYDRVPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbYDRVPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbYDRVPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 17:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761778AbYDRUyc
+	id S1764209AbYDRVPv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 17:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761939AbYDRU5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:54:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:63327 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761739AbYDRUyb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:54:31 -0400
-Subject: Re: [RFC PATCH try2] sysfs: add /sys/dev/{char,block} to lookup
-	sysfs path by major:minor
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Greg KH <greg@kroah.com>, Mark Lord <lkml@rtr.ca>,
-       NeilBrown <neilb@suse.de>, SL Baur <steve@xemacs.org>,
-       Tejun Heo <htejun@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1208547223.5083.17.camel@dwillia2-linux.ch.intel.com>
-References: <1208547223.5083.17.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 22:53:54 +0200
-Message-Id: <1208552034.8589.16.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX198hK05Bu7c0v9xXQQPsnqsXtyx6KXqK5V1kHb
- xeKmjmPP2J9fYCcrP03jSdsBcr9OxJ1YxuwsZLm+L7vVI6dCHe
- ZovccFsAfby5wFsnK9Ai4CBdWfeE+10
+	Fri, 18 Apr 2008 16:57:48 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:50928 "EHLO ms.trustica.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762011AbYDRU5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 16:57:39 -0400
+X-Greylist: delayed 405 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 16:57:38 EDT
+Message-ID: <4809099C.9010308@assembler.cz>
+Date: Fri, 18 Apr 2008 22:50:36 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>, Matthew <jackdachef@gmail.com>,
+       torvalds@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gene Heskett <gene.heskett@gmail.com>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: Linux 2.6.25
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com> <e2e108260804181218u70f096dfr864cdd13d1d4d2f3@mail.gmail.com> <48090395.6080202@gmail.com>
+In-Reply-To: <48090395.6080202@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-18 at 12:33 -0700, Dan Williams wrote:
-> --- a/Documentation/filesystems/sysfs.txt
-> +++ b/Documentation/filesystems/sysfs.txt
-> @@ -248,6 +248,7 @@ The top level sysfs directory looks like:
->  block/
->  bus/
->  class/
-> +dev/
->  devices/
+Hi all,
 
-Lots of stuff in that file is pretty damn wrong, and at it should
-probably just be deleted. Care to put this new documentation into:
-  Documentation/ABI/
+I will keep the rest of the mail intact for the lm-sensors list. The temperature 
+is stored in hardware relative to maximum temperature. Mobile processors have 
+some undocumented bits that calibrate the temperature to 85 or 100C. Intel 
+claims that this does not work for desktops, so I changed the driver [1] and 
+scale for desktop CPUs is from 0 to 100.
 
-> --- a/drivers/base/class.c
-> +++ b/drivers/base/class.c
-> @@ -134,6 +134,18 @@ static void remove_class_attrs(struct class *cls)
->  	}
->  }
->  
-> +static void class_set_dev_kobj(struct class *class)
-> +{
-> +#ifdef CONFIG_BLOCK
-> +	if (class == &block_class) {
-> +		class->dev_kobj = block_kobj;
-> +		return;
-> +	}
-> +#endif
-> +
-> +	class->dev_kobj = char_kobj;
-> +}
-> +
+In your case, the MAX temperature is changed from 85 to 100 for desktops But the 
+relative change is same, in your case -40C below the max [2]. You should now see 
+instead of 40 around 60. Because it was 85 - 40 and now it is 100 - 40. Second 
+problem is that the scale is not linear so it works more fine close to the MAX.
 
-If you do:
-  struct class block_class = {
-    .name = "block",
-    .dev_kobj = block_kobj,
-  }
+I think it is what happened. If you change the driver, so it will take 85C 
+instead of 100C everything should go back to "normal". I'm sorry I did not 
+invent relative only temp measurements, therefore I would recommend to watch how 
+much is left to max temperature.
 
-in:
-  block/genhd.c
-and put:
-  if (!class->dev_kobj)
-          class->dev_kobj = char_kobj;
-in:
-  class_register()
-we can get rid of all this logic and the BLOCK #ifdef, right?
-
-Also:
-  class_create(THIS_MODULE, "usb_device");
-in:
-  drivers/usb/core/devio.c
-should probably clear the dev_kobj after registration, and we can get
-rid of the "parent has the same dev_t" logic?
-
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -192,6 +192,7 @@ struct class {
->  	struct class_attribute		*class_attrs;
->  	struct class_device_attribute	*class_dev_attrs;
->  	struct device_attribute		*dev_attrs;
-> +	struct kobject			*dev_kobj;
->  
->  	int (*uevent)(struct class_device *dev, struct kobj_uevent_env *env);
->  	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
-> @@ -204,6 +205,8 @@ struct class {
->  	int (*resume)(struct device *dev);
->  };
->  
-> +extern struct kobject *block_kobj;
-> +extern struct kobject *char_kobj;
-
-These global symbols should get better names, to make it obvious that
-it's "only" the /sys/dev/ stuff.
-
+Hope it explains it,
 
 Thanks,
-Kay
+Rudolf
 
+[1] 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=118a88718886a6cb7fb2cf7fb77ef2eea30c73a1
+[2]
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/hwmon/coretemp;hb=HEAD
+
+
+Jiri Slaby napsal(a):
+> On 04/18/2008 09:18 PM, Bart Van Assche wrote:
+>> On Fri, Apr 18, 2008 at 5:37 PM, Matthew <jackdachef@gmail.com> wrote:
+>>>  I've another "regression" to report for 2.6.25:
+>>>
+>>>  it's concerning much higher temperatures being read out by the
+>>>  "coretemp" kernel-module in comparison to 2.6.24* series
+>>>
+>>>  e.g. where temperatures were around 40-47°C they are now constantly
+>>>  jumping around 55-70°C (even in idle !)
+>>
+>> The coretemp kernel module reports 25°C on my PC when idle, and 34°C
+>> after having performed some computations (lmbench2). This looks
+>> normal. This test has been performed with a vanilla 2.6.25 kernel and
+>> a Core 2 Duo E6750 CPU (Asus motherboard). The 2.6.22 and 2.6.24
+>> kernels report an incorrect temperature on the same system however
+>> (10°C). So there is either an issue with the patches that have been
+>> applied to your kernel or the behavior of the coretemp module for the
+>> 6600 and E6750 CPU's is different. Can you repeat the test with a
+>> vanilla 2.6.25 kernel ?
+>>
+>> (Added Rudolf Marek in CC, the coretemp author.)
+> 
+> I see a change on my rrd graphs on Mar 5th 11:30 AM (from 25 to 40 
+> average centigrades). This is when I booted 2.6.25-rc3-mm1 instead of 
+> 2.6.25-rc2-mm1, according to logs. [I have no idea whether the values 
+> were correct before or are correct now.]
+> 
+> I might bisect it, if needed.
