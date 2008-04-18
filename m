@@ -1,96 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYDRO1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYDROc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbYDRO1S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 10:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYDRO1H
+	id S1756629AbYDROc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 10:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYDROcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 10:27:07 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34664 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751873AbYDRO1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 10:27:06 -0400
-Date: Fri, 18 Apr 2008 10:27:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: Semphore -> mutex in the device tree
-In-Reply-To: <1208500372.7115.52.camel@twins>
-Message-ID: <Pine.LNX.4.44L0.0804181014170.5443-100000@iolanthe.rowland.org>
+	Fri, 18 Apr 2008 10:32:45 -0400
+Received: from ozlabs.org ([203.10.76.45]:42866 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751153AbYDROco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 10:32:44 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
+Date: Sat, 19 Apr 2008 00:32:39 +1000
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200804181433.48488.rusty@rustcorp.com.au> <200804181439.49051.rusty@rustcorp.com.au> <20080418041846.db15150b.akpm@linux-foundation.org>
+In-Reply-To: <20080418041846.db15150b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804190032.39626.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Peter Zijlstra wrote:
+On Friday 18 April 2008 21:18:46 Andrew Morton wrote:
+> > +	/* Must be a power of two, and limit indices to a u16. */
+> > +	if (!num_descs || (num_descs & (num_descs-1)) || num_descs > 65536)
+>
+> We have an is_power_of_2().
 
-> > Even so there is a potential for trouble.  I don't know of any concrete
-> > examples like this in the kernel, but they might exist.  Suppose a
-> > driver keeps a private mutex associated with each device it manages.  
-> > Normally the device's lock would be acquired first and the private
-> > mutex second.  But there could be places where the driver acquires a
-> > child device's lock while holding the parent's mutex; this would look
-> > to lockdep like a violation.
-> 
-> So lockdep cares about classes and the hierarchy of thereof; so given
-> your example:
-> 
->    parent_tree_level
->      child_tree_level
->        device_lock
-> 
-> Its perfectly fine to take a lock from 'parent_tree_level' and then a
-> lock from 'device_lock', skipping the class in the middle - as long as
-> you thereafter never acquire a lock from it.
-> 
-> So given a pre-determined class hierarchy, you're not required to take
-> all locks in that hierarchy; as long as you always go down. If you ever
-> take a lock so that moves up in the hierarchy you're in trouble.
+Thanks, fixed.
 
-We must be talking at cross purposes.  Are classes and subclasses all 
-that lockdep looks at?
+> > + * vring_get - check out a vring file descriptor
+> > + * @filp: the file structure to attach to (eg. from fget()).
+> > + *
+> > + * Userspace opens /dev/vring and mmaps it, then hands that fd to the
+> > + * kernel subsystem it wants to communicate with.  That subsystem uses
+> > + * this routine and vring_set_ops() to attach to it.
+> > + *
+> > + * This simply checks that it really is a vring fd (otherwise it
+> > + * returns NULL), the other routine checks that it's not already
+> > + * attached.
+> > + */
+>
+> hm, I don't understand the big picture here yet.
+>
+> Isn't this kinda-sorta like what a relayfs file does?  The oprofile
+> buffers?  etc?  Nothing in common at all, no hope?
 
-Let's take a simpler example.  Suppose driver D's probe routine 
-registers a child device.  Then we have:
+An excellent question, but I thought the modern kernel etiquette was to only 
+comment on whitespace and formatting, and call it "review"? :)
 
-	Subsystem:		Register device A with driver core
+Yes, kinda-sorta in that it's a ring buffer.  No, in that it's bidir and 
+consumption can be out-of-order (kind of important for I/O buffers).
 
-	Driver core:		Lock device A with NESTING_PARENT
-				Call D:probe()
+But the reason I'm not proposing it as a syscall is that I'm not convinced 
+it's the One True Solution which everyone should be using.  Time will tell: 
+it's clearly not tied to tun and it's been generically useful for virtual 
+I/O, but history has not been kind to new userspace interfaces.
 
-	D:probe():		Register device B with driver core
-				as a child of A
+> > +	mutex_unlock(&vr->lock);
+> > +	local_irq_enable();
+>
+> what's this doing here?
 
-	Driver core:		Lock device B with NESTING_PARENT
-				Call E:probe()
+Snot from previous version.  Removed.
 
-(where E is the appropriate driver for B).  Is this a lockdep 
-violation?  Both A and B are locked with the same nesting level, 
-because they are locked by the same code in the driver core, but 
-one is the parent of the other in the device tree.
+> > +void vring_unset_ops(struct vring_info *vr)
+> > +{
+> > +	BUG_ON(!vr->ops);
+> > +	mutex_lock(&vr->lock);
+> > +	vr->ops = NULL;
+> > +	mutex_unlock(&vr->lock);
+> > +}
+> > +EXPORT_SYMBOL_GPL(vring_unset_ops);
+>
+> Isn't this just vring_set_ops(vr, NULL, NULL)?
 
+Yes, except I like the clarity and the BUG_ON.
 
-Or maybe I misunderstood, and you're proposing to use a node's level in
-the tree as its lockdep nesting level.  In that case, consider this
-example.  Suppose driver D associates a private mutex M with each of
-its devices.  Suppose D is managing device A at level 4 and device B at
-level 5.  Then we might have:
+> ponders #include <copyright.h>
 
-	D:		Lock device B at level 5
-	D:		Lock B's associated M
+"#include <copyright-gpl2-plus>" for me, just to add more inclement weather to 
+that teacup...
 
-(which tells lockdep that M comes after level 5), together with
-
-	D:		Lock device A at level 4
-	D:		Lock A's associated M
-	D:		Lock A's child at level 5
-
-Won't this then be a lockdep violation (since M is now locked before a
-device at level 5)?
-
-Alan Stern
-
+Thanks,
+Rusty.
