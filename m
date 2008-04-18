@@ -1,44 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYDRGvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbYDRG4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbYDRGvA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 02:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYDRGux
+	id S1757381AbYDRG4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 02:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYDRG4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 02:50:53 -0400
-Received: from main.gmane.org ([80.91.229.2]:46904 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753592AbYDRGuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 02:50:52 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
-Subject: Re: 2.6.25: Reported regressions from 2.6.24
-Date: Fri, 18 Apr 2008 08:50:37 +0200
-Message-ID: <fu9gbt$ki9$1@ger.gmane.org>
-References: <alpine.LFD.1.00.0804162009080.2879@woody.linux-foundation.org> <alpine.DEB.1.10.0804162120130.17133@asgard> <OWZNsD2DjtM.A.d_C.327BIB@albercik>
+	Fri, 18 Apr 2008 02:56:12 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:54867 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755180AbYDRG4L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 02:56:11 -0400
+Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20080417191910.GI28235@redhat.com>
+References: <20080415115058.GA6788@in.ibm.com>
+	 <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins>
+	 <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins>
+	 <20080415132512.GA22351@Krystal> <1208361084.6395.80.camel@twins>
+	 <20080417191910.GI28235@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 18 Apr 2008 08:56:07 +0200
+Message-Id: <1208501767.7115.67.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 0-086.vpn.rwth-aachen.de
-User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
-In-Reply-To: <OWZNsD2DjtM.A.d_C.327BIB@albercik>
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki schrieb:
-> As promised, below is the list of reported regressions from 2.6.24 for which
-> there are no fixes in 2.6.25, AFAICS.
+On Thu, 2008-04-17 at 15:19 -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> I'm now going to start tracking regressions from 2.6.25, but bug #9832 used
-> for tracking the regressions from 2.6.24 will stay there, so if you report
-> a regression from 2.6.24 through the Bugzilla, please make it block that bug.
+> On Wed, Apr 16, 2008 at 05:51:24PM +0200, Peter Zijlstra wrote:
+> > [...]
+> > > > > > What is wrong with a few simple hooks like:
+> > > > > >   trace_futex_wait(uaddr, fshares, val, abs_time, bitset);
+> > > > > > and then deal with that.
+> > [...]
+> > > Yes, but then you would have to create new code for each event you want
+> > > to trace. In the end, it would increase the icache footprint
+> > > considerably and would also make addition of new events cumbersome.
+> > > [...]
+> 
+> That, plus the new hand-written function (trace_futex_wait) would
+> still need to manage the packaging of the arguments for consumption by
+> separately compiled pieces.  It is desirable not to require such
+> hand-written functions to *also* be declared in headers for these
+> event consumers to compile against.
 
-Got another regression:
+*blink* so all this is so you don't have to put a declarion in a header
+file?
 
-Wakeup from ACPI S3 is broken in 2.6.25, x86_64, last known version is 
-2.6.25-rc8git8. My Lenovo Laptop does not wake up from S3. I have no 
-time to analyze this further now, but I will try to find out what 
-happened later today, will open a bugzilla then.
+How about we put these premanent markers in a header - Mathieu says
+there are <200. Surely that's not too much trouble.
+
+Then you can keep this trace_mark() (perhaps trace_printf() is a better
+name) around for the ad-hoc debug hacks.
+
+> > So I'm not sure what adding all these character strings buy you.
+> 
+> The main thing is type checking by engaging gcc's printf format
+> checking logic.  In my original markers proposal, the types were
+> encoded into the function name, sort of as in C++:
+> 
+>   trace_mark_nnnnn(futex_wake_called, uaddr, fshares, val, abs_time, bitset);
+> 
+> where each "n" stands for some integral value, and could be chosen
+> amongst a small number of other types (say -- "s": char* string, "p":
+> void*, "l":64-bit long).  Then, type checking could be done by the
+> core compiler for both event producers and consumers.  One downside
+> was that the trace_mark_* permutations themselves would have to be
+> generated by some shell/perl script [1], and some deemed this probably
+> unacceptable.  I'm still not sure...
+> 
+> [1] some systemtap archaeology:
+> http://sourceware.org/git/?p=systemtap.git;a=commit;h=b171146c8e8d4fa749b8829c47750750dc19f11c
+> 
+> 
+> > >﻿+       trace_mark(futex_wake_called, "uaddr:%p fshared:%p nr_wake:%d "
+> > > +                       "bitset:%d",
+> > > +                       uaddr, fshared, nr_wake, bitset);
+> > 
+> > > +       INIT_FUTEX_DEBUG_PROBE(futex_wake_called,
+> > > +                       "uaddr:%p fshared:%p nr_wake:%d bitset:%d"),
+> > 
+> > Why the need to duplicate it; that's utter madness.
+> 
+> This second instance is optional and is used as a consistency check
+> for the event consumer to hook up exactly to the intended producer.
+> The string could be empty.
+
+So instead of writing normal C code and placing a declarion in a header,
+you've come up with a scheme that needs to duplicate a text string to
+check integrity. Sounds like a real good way to confuse people.
 
