@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYDRKgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYDRKhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbYDRKgE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 06:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYDRKfy
+	id S1755180AbYDRKhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 06:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYDRKhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 06:35:54 -0400
-Received: from namei.org ([69.55.235.186]:55698 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750778AbYDRKfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 06:35:52 -0400
-Date: Fri, 18 Apr 2008 20:32:39 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Stephen Smalley <sds@tycho.nsa.gov>, Paul Moore <paul.moore@hp.com>
-Subject: Re: 2.6.25-mm1: not looking good
-In-Reply-To: <20080418072457.GB18044@elte.hu>
-Message-ID: <Xine.LNX.4.64.0804182029110.5998@us.intercode.com.au>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
- <84144f020804172340l79f9c815u42e4dad69dada299@mail.gmail.com>
- <20080418072457.GB18044@elte.hu>
+	Fri, 18 Apr 2008 06:37:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45415 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYDRKhd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 06:37:33 -0400
+Date: Fri, 18 Apr 2008 06:37:31 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 released with bug, which leads to XFS crash?
+Message-ID: <20080418103731.GA29204@infradead.org>
+References: <200804170949.36864.denys@visp.net.lb> <4807EDD6.8000705@sandeen.net> <20080418074041.GA9839@infradead.org> <200804181332.31177.denys@visp.net.lb>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804181332.31177.denys@visp.net.lb>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Ingo Molnar wrote:
+On Fri, Apr 18, 2008 at 01:32:30PM +0300, Denys Fedoryshchenko wrote:
+> AUFS(same as COSS, UFS, NULL) is way of handling with cache storage in squid, and nothing else. It is userspace and not involved deeply with kernel things.
+> Since long long time i didn't had any single problem with it.
+> Kernel is fully vanilla.
 
-> 
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
-> > Andrew, you don't seem to have slab debugging enabled:
-> > 
-> > # CONFIG_DEBUG_SLAB is not set
-> > 
-> > And quite frankly, the oops looks unlikely to be a slab bug but rather 
-> > a plain old slab corruption cause by the callers...
-> 
-> hm, there's sel_netnode_free() in the stackframe - that's from 
-> security/selinux/netnode.c. Andrew, any recent changes in that area?
+Ah, okay.  There's also a kernel filesystem driver doing unioning that's
+also called aufs that I'm referring to.  sorry for the noise.
 
-I've reverted the -mm only change to that file in 
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
-
-
-commit f777964ad75cf4a119d911d12e81948d2402677f
-Author: James Morris <jmorris@namei.org>
-Date:   Fri Apr 18 20:27:24 2008 +1000
-
-    Revert "SELinux: Made netnode cache adds faster"
-    
-    This reverts commit 6bf8f41d4efdf9d4eeb4f7df9c591e281f7da93e.
-    
-    Possible cause of slab corruption in -mm.
-
-
-
--- 
-James Morris
-<jmorris@namei.org>
