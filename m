@@ -1,97 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYDRWCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYDRWCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbYDRWCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 18:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYDRWCJ
+	id S1754806AbYDRWCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 18:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYDRWCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 18:02:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:7543 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbYDRWCH (ORCPT
+	Fri, 18 Apr 2008 18:02:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:64336 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbYDRWCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 18:02:07 -0400
+	Fri, 18 Apr 2008 18:02:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AuqLLMxNi7G4UDTynwrRvMYlSWBCxyTt3NnIrgJD31FxALSZZP3oDCFNWYzZHCmLZPQuWbh/NI7vVpqPHHRD4e8KCgf6KgSna2qU1G/2lLn0OALEeorN+cPcKzYYRcOXCnR1YRtvKDqZ9sYoJUpmwSy3DtPIDl04NdfpaypK3aM=
-Message-ID: <86802c440804181501w4e9563f2oe154c0744076e91e@mail.gmail.com>
-Date: Fri, 18 Apr 2008 15:01:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jack Steiner" <steiner@sgi.com>
-Subject: Re: [PATCH] - Increase MAX_APICS for large configs
-Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       "mike travis" <travis@sgi.com>
-In-Reply-To: <20080418211423.GA4151@sgi.com>
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=Yh3gFNrhf96SZtzeYl9+gFq06iorUEpSJSgAqvRFF/X97d9Z2Vkj8tqbfJgihZ0D5lNJ1vxDcrcpA1VoDlfGbtPo5yFgiyLNzWwy+FLM0h1EpEspMKtqIzAlezClvQKV1Zq/gUJAd6I89bAK+mgZGtMAr2nQgqozfOVp6IytHmI=
+Date: Sat, 19 Apr 2008 00:02:04 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Cristoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: add hooks for kmemcheck
+Message-ID: <20080418220203.GB16586@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080416163936.GA23099@sgi.com> <20080417110727.GA942@elte.hu>
-	 <20080418211423.GA4151@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 2:14 PM, Jack Steiner <steiner@sgi.com> wrote:
-> On Thu, Apr 17, 2008 at 01:07:27PM +0200, Ingo Molnar wrote:
->  >
->  > * Jack Steiner <steiner@sgi.com> wrote:
->  >
->  > > Increase the maximum number of apics when running very large
->  > > configurations. This patch has no affect on most systems.
->  >
->  > x86.git overnight random-qa testing found a boot crash and i bisected it
->  > down to this patch. The config is:
->  >
->  >  http://redhat.com/~mingo/misc/config-Thu_Apr_17_10_17_14_CEST_2008.bad
->  >
->  > the failure is attached below. (I needed the exact boot parameters
->  > listed in that bootup log to see this failure.)
->  >
->  > it seems to be CONFIG_MAXSMP=y triggers the new more-apic-ids code and
->  > that causes some breakage elsewhere. [btw., this again shows how useful
->  > the CONFIG_MAXSMP debug feature is!]
->  >
->  >       Ingo
->  >
->  > [    0.000000] Linux version 2.6.25-rc9-sched-devel.git-x86-latest.git (mingo@dione) (gcc version 4.2.3) #260 SMP Thu Apr 17 10:58:11 CEST 2008
->  > [    0.000000] Command line: root=/dev/sda6 console=ttyS0,115200 earlyprintk=serial,ttyS0,115200 debug initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel selinux=0 nmi_watchdog=2 profile=0 nosmp highres=0 nolapic_timer hpet=disable idle=poll highmem=512m nopat acpi=off
->  > [    0.000000] BIOS-provided physical RAM map:
->
->  Has anyone seen this failure?? (Using git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
->  from 4/18 AM).
->
->  I tried to reproduce the above failure on a small system & was not successful.
->
->  Switched to a larger system (XE310 Intel-based 8p, 6GB). All attempts to boot fail
->  with the following. I backed out the MAX_APIC change, & changed NR_CPUS=8. Still fails.
->
->         ...
->         [   32.010000] ehci_hcd 0000:00:1d.7: port 6 high speed
->         [   32.010000] ehci_hcd 0000:00:1d.7: GetStatus port 6 status 001005 POWER sig=se0 PE CONNECT
->         [   32.054003] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
->         [   32.058003] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
->         [   32.062003] usb usb2: Product: UHCI Host Controller
->         [   32.066004] usb usb2: Manufacturer: Linux 2.6.25-x86-latest.git uhci_hcd
->         [   32.070004] usb usb2: SerialNumber: 0000:00:1d.0
->         [   32.074004] PCI: Found IRQ 10 for device 0000:00:1d.1
->         [   32.078004] PCI: Sharing IRQ 10 with 0000:00:1f.2
->         [   32.082005] PCI: Sharing IRQ 10 with 0000:00:1f.3
->         [   32.086005] PCI: Sharing IRQ 10 with 0000:04:00.1
->         [   32.090005] PCI: Setting latency timer of device 0000:00:1d.1 to 64
->         [   32.094005] uhci_hcd 0000:00:1d.1: UHCI Host Controller
->         [   32.098006] usb 1-6: new high speed USB device using ehci_hcd and address 2
->         [   32.102006] nommu_map_single: overflow 1af757720+8
->
->  Full log:
->
->
->  [    0.000000] Linux version 2.6.25-x86-latest.git (root@cleopatra1) (gcc version 4.1.1 20070105 (Red Hat 4.1.1-52)) #2 SMP Fri Apr 18 09:36:33 CDT 2008
->  [    0.000000] Command line: root=/dev/sda2 console=ttyS1,38400n8 debug initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel selinux=0 nmi_watchdog=2 profile=0 nosmp highres=0 nolapic_timer hpet=disable idle=poll highmem=512m nopat acpi=off
+>From e508eccb7a1dd8f4b0fd6056cdeff9ce93dad47c Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Fri, 4 Apr 2008 00:53:23 +0200
+Subject: [PATCH] x86: add hooks for kmemcheck
 
-how about without acpi=off?
+The hooks that we modify are:
+- Page fault handler (to handle kmemcheck faults)
+- Debug exception handler (to hide pages after single-stepping
+  the instruction that caused the page fault)
 
-can you make sure acpi=off works with previous kernel in that box?
+Also redefine memset() to use the optimized version if kmemcheck
+is enabled.
 
-YH
+Signed-off-by: Vegard Nossum <vegardno@ifi.uio.no>
+---
+ arch/x86/kernel/cpu/common.c |    7 +++++++
+ arch/x86/kernel/entry_32.S   |    8 ++++----
+ arch/x86/kernel/traps_32.c   |   14 +++++++++++++-
+ arch/x86/mm/fault.c          |   25 +++++++++++++++++++++----
+ include/asm-x86/string_32.h  |    8 ++++++++
+ 5 files changed, 53 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index a38aafa..040c650 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -634,6 +634,13 @@ void __init early_cpu_init(void)
+ 	nexgen_init_cpu();
+ 	umc_init_cpu();
+ 	early_cpu_detect();
++
++#ifdef CONFIG_KMEMCHECK
++	/*
++	 * We need 4K granular PTEs for kmemcheck:
++	 */
++	setup_clear_cpu_cap(X86_FEATURE_PSE);
++#endif
+ }
+ 
+ /* Make sure %fs is initialized properly in idle threads */
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 4b87c32..54f477c 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -289,7 +289,7 @@ ENTRY(ia32_sysenter_target)
+ 	CFI_DEF_CFA esp, 0
+ 	CFI_REGISTER esp, ebp
+ 	movl TSS_sysenter_sp0(%esp),%esp
+-sysenter_past_esp:
++ENTRY(sysenter_past_esp)
+ 	/*
+ 	 * No need to follow this irqs on/off section: the syscall
+ 	 * disabled irqs and here we enable it straight after entry:
+@@ -767,7 +767,7 @@ label:						\
+ 	CFI_ADJUST_CFA_OFFSET 4;		\
+ 	CFI_REL_OFFSET eip, 0
+ 
+-KPROBE_ENTRY(debug)
++KPROBE_ENTRY(x86_debug)
+ 	RING0_INT_FRAME
+ 	cmpl $ia32_sysenter_target,(%esp)
+ 	jne debug_stack_correct
+@@ -781,7 +781,7 @@ debug_stack_correct:
+ 	call do_debug
+ 	jmp ret_from_exception
+ 	CFI_ENDPROC
+-KPROBE_END(debug)
++KPROBE_END(x86_debug)
+ 
+ /*
+  * NMI is doubly nasty. It can happen _while_ we're handling
+@@ -835,7 +835,7 @@ nmi_debug_stack_check:
+ 	/* We have a RING0_INT_FRAME here */
+ 	cmpw $__KERNEL_CS,16(%esp)
+ 	jne nmi_stack_correct
+-	cmpl $debug,(%esp)
++	cmpl $x86_debug,(%esp)
+ 	jb nmi_stack_correct
+ 	cmpl $debug_esp_fix_insn,(%esp)
+ 	ja nmi_stack_correct
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index b22c01e..4d61f72 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -56,6 +56,7 @@
+ #include <asm/arch_hooks.h>
+ #include <linux/kdebug.h>
+ #include <asm/stacktrace.h>
++#include <asm/kmemcheck.h>
+ 
+ #include <linux/module.h>
+ 
+@@ -841,6 +842,8 @@ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ }
+ #endif
+ 
++extern void x86_debug(void);
++
+ /*
+  * Our handling of the processor debug registers is non-trivial.
+  * We do not clear them on entry and exit from the kernel. Therefore
+@@ -872,6 +875,14 @@ void __kprobes do_debug(struct pt_regs * regs, long error_code)
+ 
+ 	get_debugreg(condition, 6);
+ 
++	/* Catch kmemcheck conditions first of all! */
++	if (condition & DR_STEP) {
++		if (kmemcheck_active(regs)) {
++			kmemcheck_hide(regs);
++			return;
++		}
++	}
++
+ 	/*
+ 	 * The processor cleared BTF, so don't mark that we need it set.
+ 	 */
+@@ -881,6 +892,7 @@ void __kprobes do_debug(struct pt_regs * regs, long error_code)
+ 	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
+ 					SIGTRAP) == NOTIFY_STOP)
+ 		return;
++
+ 	/* It's safe to allow irq's after DR6 has been saved */
+ 	if (regs->flags & X86_EFLAGS_IF)
+ 		local_irq_enable();
+@@ -1154,7 +1166,7 @@ void __init trap_init(void)
+ #endif
+ 
+ 	set_trap_gate(0,&divide_error);
+-	set_intr_gate(1,&debug);
++	set_intr_gate(1,&x86_debug);
+ 	set_intr_gate(2,&nmi);
+ 	set_system_intr_gate(3, &int3); /* int3/4 can be called from all */
+ 	set_system_gate(4,&overflow);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index ec08d83..fe493b4 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -33,6 +33,7 @@
+ #include <asm/smp.h>
+ #include <asm/tlbflush.h>
+ #include <asm/proto.h>
++#include <asm/kmemcheck.h>
+ #include <asm-generic/sections.h>
+ 
+ /*
+@@ -491,7 +492,8 @@ static int spurious_fault(unsigned long address,
+  *
+  * This assumes no large pages in there.
+  */
+-static int vmalloc_fault(unsigned long address)
++static int vmalloc_fault(struct pt_regs *regs, unsigned long address,
++	unsigned long error_code)
+ {
+ #ifdef CONFIG_X86_32
+ 	unsigned long pgd_paddr;
+@@ -509,8 +511,16 @@ static int vmalloc_fault(unsigned long address)
+ 	if (!pmd_k)
+ 		return -1;
+ 	pte_k = pte_offset_kernel(pmd_k, address);
+-	if (!pte_present(*pte_k))
+-		return -1;
++	if (!pte_present(*pte_k)) {
++		if (!pte_hidden(*pte_k))
++			return -1;
++
++		if (error_code & 2)
++			kmemcheck_access(regs, address, KMEMCHECK_WRITE);
++		else
++			kmemcheck_access(regs, address, KMEMCHECK_READ);
++		kmemcheck_show(regs);
++	}
+ 	return 0;
+ #else
+ 	pgd_t *pgd, *pgd_ref;
+@@ -599,6 +609,13 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 
+ 	si_code = SEGV_MAPERR;
+ 
++	/*
++	 * Detect and handle instructions that would cause a page fault for
++	 * both a tracked kernel page and a userspace page.
++	 */
++	if(kmemcheck_active(regs))
++		kmemcheck_hide(regs);
++
+ 	if (notify_page_fault(regs))
+ 		return;
+ 
+@@ -621,7 +638,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 	if (unlikely(address >= TASK_SIZE64)) {
+ #endif
+ 		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
+-		    vmalloc_fault(address) >= 0)
++		    vmalloc_fault(regs, address, error_code) >= 0)
+ 			return;
+ 
+ 		/* Can handle a stale RO->RW TLB */
+diff --git a/include/asm-x86/string_32.h b/include/asm-x86/string_32.h
+index c5d13a8..6138aa4 100644
+--- a/include/asm-x86/string_32.h
++++ b/include/asm-x86/string_32.h
+@@ -262,6 +262,14 @@ __asm__  __volatile__( \
+  __constant_c_x_memset((s),(0x01010101UL*(unsigned char)(c)),(count)) : \
+  __memset((s),(c),(count)))
+ 
++/* If kmemcheck is enabled, our best bet is a custom memset() that disables
++ * checking in order to save a whole lot of (unnecessary) page faults. */
++#ifdef CONFIG_KMEMCHECK
++void *kmemcheck_memset(void *s, int c, size_t n);
++#undef memset
++#define memset(s, c, n) kmemcheck_memset((s), (c), (n))
++#endif
++
+ /*
+  * find the first occurrence of byte 'c', or 1 past the area if none
+  */
+-- 
+1.5.4.1
+
