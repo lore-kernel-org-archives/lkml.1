@@ -1,203 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbYDRSYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbYDRSbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932121AbYDRSYy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 14:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760240AbYDRSYd
+	id S1760359AbYDRSbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 14:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759883AbYDRSbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 14:24:33 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:39171 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760204AbYDRSYa (ORCPT
+	Fri, 18 Apr 2008 14:31:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:44194 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759730AbYDRSbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 14:24:30 -0400
+	Fri, 18 Apr 2008 14:31:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bm8eA7PEm1c81d2B2PnghH6OdI8ChlidfJizCzeQCatFmjiwClk6tvOatWX/rvUWEpWrzsBT/c9d4ASs5oKjClIepFpx6MHQVWWe/HKaLF9AQnQ9nPl+0hA3pOk7lKGrhjTJbt0BD6oSi+eMRhWte+LsbJ5BLGAAz4Lz5d1KT6I=
-Message-ID: <a44ae5cd0804181124s772fa61bp22035c2b758471b1@mail.gmail.com>
-Date: Fri, 18 Apr 2008 14:24:27 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Greg KH" <gregkh@suse.de>,
-       "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: 2.6.25-mm1 -- WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=MCxhcVUeEHKsjmU1sl4ymB5PVSqoTsn1RcKOkdkXznk+dB1ESvD0vU13K1HRTlEElg9TABEe762j7fmiSTtXo4Yq/KvvcpVx5ojjB17sC4r+9hC3BsFA8zYuuuXn91lK7McfIi+Yj7ckWEdINgqNUuOpXLOdbwm1JHJURk0t5Uc=
+Subject: [PATCH] kgdb: trivial sparse fixes in kgdb test-suite
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 11:31:15 -0700
+Message-Id: <1208543475.17196.44.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[    5.097022] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
-[    5.097026] Modules linked in: floppy ohci1394(+) ieee1394
-pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
-usbcore ssb thermal processor fan fuse
-[    5.097051] Pid: 1112, comm: modprobe Not tainted 2.6.25-mm1 #7
-[    5.097057]  [<c012883a>] warn_on_slowpath+0x41/0x67
-[    5.097354]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
-[    5.097363]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
-[    5.097379]  [<c0189ba5>] ? ifind+0x55/0x5f
-[    5.097391]  [<c02d7450>] ? _spin_unlock+0x38/0x44
-[    5.097403]  [<c0189ba5>] ? ifind+0x55/0x5f
-[    5.097411]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
-[    5.097421]  [<c01292f3>] ? printk+0x15/0x17
-[    5.097430]  [<c01b2703>] sysfs_add_one+0x33/0x9a
-[    5.097438]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
-[    5.097449]  [<c0259fef>] device_add+0x123/0x405
-[    5.097466]  [<c025a2e3>] device_register+0x12/0x15
-[    5.097474]  [<c025a35b>] device_create+0x75/0x9a
-[    5.097484]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
-[    5.097522]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
-[    5.097536]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
-[    5.097547]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
-[    5.097556]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
-[    5.097581]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
-[    5.097606]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
-[    5.097628]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.097637]  [<c025b984>] __device_attach+0x8/0xa
-[    5.097644]  [<c025b060>] bus_for_each_drv+0x39/0x63
-[    5.097653]  [<c025b9f6>] device_attach+0x51/0x67
-[    5.097660]  [<c025b97c>] ? __device_attach+0x0/0xa
-[    5.097668]  [<c025af18>] bus_attach_device+0x24/0x4e
-[    5.097676]  [<c025a190>] device_add+0x2c4/0x405
-[    5.097689]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
-[    5.097711]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
-[    5.097735]  [<c028191f>] ? pcibios_set_master+0x78/0x81
-[    5.097748]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
-[    5.097774]  [<c01fe704>] pci_device_probe+0x39/0x59
-[    5.097785]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.097793]  [<c025b95a>] __driver_attach+0x3d/0x5f
-[    5.097801]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
-[    5.097811]  [<c025b739>] driver_attach+0x14/0x16
-[    5.097817]  [<c025b91d>] ? __driver_attach+0x0/0x5f
-[    5.097825]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
-[    5.097834]  [<c025baa3>] driver_register+0x47/0xa3
-[    5.097841]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
-[    5.097852]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
-[    5.097861]  [<f8811035>] ohci_hcd_mod_init+0x35/0x63 [ohci_hcd]
-[    5.097874]  [<c014af69>] sys_init_module+0x15e5/0x177b
-[    5.097892]  [<c016a3c5>] ? vma_link+0x66/0x71
-[    5.097904]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
-[    5.097915]  [<c016aa18>] ? mmap_region+0x2cd/0x377
-[    5.097925]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
-[    5.097956]  [<c0106c32>] syscall_call+0x7/0xb
-[    5.097970]  =======================
-[    5.097975] ---[ end trace 3d0d724a7c8aa619 ]---
-[    5.097978] disabling CONFIG_USB_DEVICE_CLASS might fix this
+Shadowed variable and integer as NULL pointer fixes:
+drivers/misc/kgdbts.c:877:6: warning: symbol 'sys_open_test' shadows an earlier one
+drivers/misc/kgdbts.c:537:27: originally declared here
+drivers/misc/kgdbts.c:378:22: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:386:22: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:468:30: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:472:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:502:30: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:506:30: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:509:30: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:523:20: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:527:20: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:530:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:541:21: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:545:21: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:548:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:559:30: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:563:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:573:16: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:574:19: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:578:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:588:16: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:589:19: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:593:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:602:16: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:604:15: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:925:3: warning: Using plain integer as NULL pointer
+drivers/misc/kgdbts.c:938:3: warning: Using plain integer as NULL pointer
 
-[...]
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Introduced since v2.6.25
 
-[    5.258579] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
-[    5.258583] Modules linked in: floppy ohci1394(+) ieee1394
-pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
-usbcore ssb thermal processor fan fuse
-[    5.258610] Pid: 1112, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-[    5.258617]  [<c012883a>] warn_on_slowpath+0x41/0x67
-[    5.258633]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
-[    5.258642]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
-[    5.258656]  [<c0189b66>] ? ifind+0x16/0x5f
-[    5.258668]  [<c02d7450>] ? _spin_unlock+0x38/0x44
-[    5.258680]  [<c0189ba5>] ? ifind+0x55/0x5f
-[    5.258687]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
-[    5.258696]  [<c01292f3>] ? printk+0x15/0x17
-[    5.258704]  [<c01b2703>] sysfs_add_one+0x33/0x9a
-[    5.258712]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
-[    5.258722]  [<c0259fef>] device_add+0x123/0x405
-[    5.258739]  [<c025a2e3>] device_register+0x12/0x15
-[    5.258746]  [<c025a35b>] device_create+0x75/0x9a
-[    5.258755]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
-[    5.258793]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
-[    5.258806]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
-[    5.258817]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
-[    5.258825]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
-[    5.258849]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
-[    5.258874]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
-[    5.258895]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.258904]  [<c025b984>] __device_attach+0x8/0xa
-[    5.258910]  [<c025b060>] bus_for_each_drv+0x39/0x63
-[    5.258919]  [<c025b9f6>] device_attach+0x51/0x67
-[    5.258925]  [<c025b97c>] ? __device_attach+0x0/0xa
-[    5.258934]  [<c025af18>] bus_attach_device+0x24/0x4e
-[    5.258941]  [<c025a190>] device_add+0x2c4/0x405
-[    5.258953]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
-[    5.258974]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
-[    5.258998]  [<c028191f>] ? pcibios_set_master+0x78/0x81
-[    5.259011]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
-[    5.259036]  [<c01fe704>] pci_device_probe+0x39/0x59
-[    5.259046]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.259054]  [<c025b95a>] __driver_attach+0x3d/0x5f
-[    5.259062]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
-[    5.259071]  [<c025b739>] driver_attach+0x14/0x16
-[    5.259077]  [<c025b91d>] ? __driver_attach+0x0/0x5f
-[    5.259084]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
-[    5.259092]  [<c025baa3>] driver_register+0x47/0xa3
-[    5.259098]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
-[    5.259109]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
-[    5.259117]  [<f8811035>] ohci_hcd_mod_init+0x35/0x63 [ohci_hcd]
-[    5.259130]  [<c014af69>] sys_init_module+0x15e5/0x177b
-[    5.259149]  [<c016a3c5>] ? vma_link+0x66/0x71
-[    5.259160]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
-[    5.259171]  [<c016aa18>] ? mmap_region+0x2cd/0x377
-[    5.259181]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
-[    5.259212]  [<c0106c32>] syscall_call+0x7/0xb
-[    5.259226]  =======================
-[    5.259230] ---[ end trace 3d0d724a7c8aa619 ]---
-[    5.259234] disabling CONFIG_USB_DEVICE_CLASS might fix this
+ drivers/misc/kgdbts.c |   60 ++++++++++++++++++++++++------------------------
+ 1 files changed, 30 insertions(+), 30 deletions(-)
 
-[...]
+diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
+index 6d6286c..eef66b6 100644
+--- a/drivers/misc/kgdbts.c
++++ b/drivers/misc/kgdbts.c
+@@ -375,7 +375,7 @@ static void emul_sstep_get(char *arg)
+ 		break;
+ 	case 1:
+ 		/* set breakpoint */
+-		break_helper("Z0", 0, sstep_addr);
++		break_helper("Z0", NULL, sstep_addr);
+ 		break;
+ 	case 2:
+ 		/* Continue */
+@@ -383,7 +383,7 @@ static void emul_sstep_get(char *arg)
+ 		break;
+ 	case 3:
+ 		/* Clear breakpoint */
+-		break_helper("z0", 0, sstep_addr);
++		break_helper("z0", NULL, sstep_addr);
+ 		break;
+ 	default:
+ 		eprintk("kgdbts: ERROR failed sstep get emulation\n");
+@@ -465,11 +465,11 @@ static struct test_struct sw_breakpoint_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "kgdbts_break_test", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "kgdbts_break_test", 0, check_and_rewind_pc },
++	{ "g", "kgdbts_break_test", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs },
+ 	{ "kgdbts_break_test", "OK", sw_rem_break }, /*remove breakpoint */
+ 	{ "D", "OK" }, /* Detach */
+-	{ "D", "OK", 0,  got_break }, /* If the test worked we made it here */
++	{ "D", "OK", NULL,  got_break }, /* If the test worked we made it here */
+ 	{ "", "" },
+ };
+ 
+@@ -499,14 +499,14 @@ static struct test_struct singlestep_break_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "kgdbts_break_test", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "kgdbts_break_test", 0, check_and_rewind_pc },
++	{ "g", "kgdbts_break_test", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs }, /* Write registers */
+ 	{ "kgdbts_break_test", "OK", sw_rem_break }, /*remove breakpoint */
+ 	{ "s", "T0*", emul_sstep_get, emul_sstep_put }, /* Single step */
+-	{ "g", "kgdbts_break_test", 0, check_single_step },
++	{ "g", "kgdbts_break_test", NULL, check_single_step },
+ 	{ "kgdbts_break_test", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "kgdbts_break_test", 0, check_and_rewind_pc },
++	{ "g", "kgdbts_break_test", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs }, /* Write registers */
+ 	{ "D", "OK" }, /* Remove all breakpoints and continues */
+ 	{ "", "" },
+@@ -520,14 +520,14 @@ static struct test_struct do_fork_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "do_fork", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "do_fork", 0, check_and_rewind_pc }, /* check location */
++	{ "g", "do_fork", NULL, check_and_rewind_pc }, /* check location */
+ 	{ "write", "OK", write_regs }, /* Write registers */
+ 	{ "do_fork", "OK", sw_rem_break }, /*remove breakpoint */
+ 	{ "s", "T0*", emul_sstep_get, emul_sstep_put }, /* Single step */
+-	{ "g", "do_fork", 0, check_single_step },
++	{ "g", "do_fork", NULL, check_single_step },
+ 	{ "do_fork", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "7", "T0*", skip_back_repeat_test }, /* Loop based on repeat_test */
+-	{ "D", "OK", 0, final_ack_set }, /* detach and unregister I/O */
++	{ "D", "OK", NULL, final_ack_set }, /* detach and unregister I/O */
+ 	{ "", "" },
+ };
+ 
+@@ -538,14 +538,14 @@ static struct test_struct sys_open_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "sys_open", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "sys_open", 0, check_and_rewind_pc }, /* check location */
++	{ "g", "sys_open", NULL, check_and_rewind_pc }, /* check location */
+ 	{ "write", "OK", write_regs }, /* Write registers */
+ 	{ "sys_open", "OK", sw_rem_break }, /*remove breakpoint */
+ 	{ "s", "T0*", emul_sstep_get, emul_sstep_put }, /* Single step */
+-	{ "g", "sys_open", 0, check_single_step },
++	{ "g", "sys_open", NULL, check_single_step },
+ 	{ "sys_open", "OK", sw_break, }, /* set sw breakpoint */
+ 	{ "7", "T0*", skip_back_repeat_test }, /* Loop based on repeat_test */
+-	{ "D", "OK", 0, final_ack_set }, /* detach and unregister I/O */
++	{ "D", "OK", NULL, final_ack_set }, /* detach and unregister I/O */
+ 	{ "", "" },
+ };
+ 
+@@ -556,11 +556,11 @@ static struct test_struct hw_breakpoint_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "kgdbts_break_test", "OK", hw_break, }, /* set hw breakpoint */
+ 	{ "c", "T0*", }, /* Continue */
+-	{ "g", "kgdbts_break_test", 0, check_and_rewind_pc },
++	{ "g", "kgdbts_break_test", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs },
+ 	{ "kgdbts_break_test", "OK", hw_rem_break }, /*remove breakpoint */
+ 	{ "D", "OK" }, /* Detach */
+-	{ "D", "OK", 0,  got_break }, /* If the test worked we made it here */
++	{ "D", "OK", NULL,  got_break }, /* If the test worked we made it here */
+ 	{ "", "" },
+ };
+ 
+@@ -570,12 +570,12 @@ static struct test_struct hw_breakpoint_test[] = {
+ static struct test_struct hw_write_break_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "hw_break_val", "OK", hw_write_break, }, /* set hw breakpoint */
+-	{ "c", "T0*", 0, got_break }, /* Continue */
+-	{ "g", "silent", 0, check_and_rewind_pc },
++	{ "c", "T0*", NULL, got_break }, /* Continue */
++	{ "g", "silent", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs },
+ 	{ "hw_break_val", "OK", hw_rem_write_break }, /*remove breakpoint */
+ 	{ "D", "OK" }, /* Detach */
+-	{ "D", "OK", 0,  got_break }, /* If the test worked we made it here */
++	{ "D", "OK", NULL,  got_break }, /* If the test worked we made it here */
+ 	{ "", "" },
+ };
+ 
+@@ -585,12 +585,12 @@ static struct test_struct hw_write_break_test[] = {
+ static struct test_struct hw_access_break_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+ 	{ "hw_break_val", "OK", hw_access_break, }, /* set hw breakpoint */
+-	{ "c", "T0*", 0, got_break }, /* Continue */
+-	{ "g", "silent", 0, check_and_rewind_pc },
++	{ "c", "T0*", NULL, got_break }, /* Continue */
++	{ "g", "silent", NULL, check_and_rewind_pc },
+ 	{ "write", "OK", write_regs },
+ 	{ "hw_break_val", "OK", hw_rem_access_break }, /*remove breakpoint */
+ 	{ "D", "OK" }, /* Detach */
+-	{ "D", "OK", 0,  got_break }, /* If the test worked we made it here */
++	{ "D", "OK", NULL,  got_break }, /* If the test worked we made it here */
+ 	{ "", "" },
+ };
+ 
+@@ -599,9 +599,9 @@ static struct test_struct hw_access_break_test[] = {
+  */
+ static struct test_struct nmi_sleep_test[] = {
+ 	{ "?", "S0*" }, /* Clear break points */
+-	{ "c", "T0*", 0, got_break }, /* Continue */
++	{ "c", "T0*", NULL, got_break }, /* Continue */
+ 	{ "D", "OK" }, /* Detach */
+-	{ "D", "OK", 0,  got_break }, /* If the test worked we made it here */
++	{ "D", "OK", NULL,  got_break }, /* If the test worked we made it here */
+ 	{ "", "" },
+ };
+ 
+@@ -874,15 +874,15 @@ static void kgdbts_run_tests(void)
+ {
+ 	char *ptr;
+ 	int fork_test = 0;
+-	int sys_open_test = 0;
++	int do_sys_open_test = 0;
+ 	int nmi_sleep = 0;
+ 
+ 	ptr = strstr(config, "F");
+ 	if (ptr)
+-		fork_test = simple_strtol(ptr+1, NULL, 10);
++		fork_test = simple_strtol(ptr + 1, NULL, 10);
+ 	ptr = strstr(config, "S");
+ 	if (ptr)
+-		sys_open_test = simple_strtol(ptr+1, NULL, 10);
++		do_sys_open_test = simple_strtol(ptr + 1, NULL, 10);
+ 	ptr = strstr(config, "N");
+ 	if (ptr)
+ 		nmi_sleep = simple_strtol(ptr+1, NULL, 10);
+@@ -922,7 +922,7 @@ static void kgdbts_run_tests(void)
+ 		repeat_test = fork_test;
+ 		printk(KERN_INFO "kgdbts:RUN do_fork for %i breakpoints\n",
+ 			repeat_test);
+-		kthread_run(kgdbts_unreg_thread, 0, "kgdbts_unreg");
++		kthread_run(kgdbts_unreg_thread, NULL, "kgdbts_unreg");
+ 		run_do_fork_test();
+ 		return;
+ 	}
+@@ -931,11 +931,11 @@ static void kgdbts_run_tests(void)
+ 	 * executed because a kernel thread will be spawned at the very
+ 	 * end to unregister the debug hooks.
+ 	 */
+-	if (sys_open_test) {
+-		repeat_test = sys_open_test;
++	if (do_sys_open_test) {
++		repeat_test = do_sys_open_test;
+ 		printk(KERN_INFO "kgdbts:RUN sys_open for %i breakpoints\n",
+ 			repeat_test);
+-		kthread_run(kgdbts_unreg_thread, 0, "kgdbts_unreg");
++		kthread_run(kgdbts_unreg_thread, NULL, "kgdbts_unreg");
+ 		run_sys_open_test();
+ 		return;
+ 	}
+-- 
+1.5.5.144.g3e42
 
-[    5.347825] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
-[    5.347829] Modules linked in: floppy ohci1394(+) ieee1394
-pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
-usbcore ssb thermal processor fan fuse
-[    5.347855] Pid: 1117, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-[    5.347862]  [<c012883a>] warn_on_slowpath+0x41/0x67
-[    5.347879]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
-[    5.347888]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
-[    5.347902]  [<c0189b66>] ? ifind+0x16/0x5f
-[    5.347914]  [<c02d7450>] ? _spin_unlock+0x38/0x44
-[    5.347926]  [<c0189ba5>] ? ifind+0x55/0x5f
-[    5.347933]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
-[    5.347942]  [<c01292f3>] ? printk+0x15/0x17
-[    5.347950]  [<c01b2703>] sysfs_add_one+0x33/0x9a
-[    5.347958]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
-[    5.347968]  [<c0259fef>] device_add+0x123/0x405
-[    5.347984]  [<c025a2e3>] device_register+0x12/0x15
-[    5.347992]  [<c025a35b>] device_create+0x75/0x9a
-[    5.348000]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
-[    5.348039]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
-[    5.348052]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
-[    5.348063]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
-[    5.348071]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
-[    5.348095]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
-[    5.348120]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
-[    5.348141]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.348150]  [<c025b984>] __device_attach+0x8/0xa
-[    5.348156]  [<c025b060>] bus_for_each_drv+0x39/0x63
-[    5.348165]  [<c025b9f6>] device_attach+0x51/0x67
-[    5.348171]  [<c025b97c>] ? __device_attach+0x0/0xa
-[    5.348179]  [<c025af18>] bus_attach_device+0x24/0x4e
-[    5.348186]  [<c025a190>] device_add+0x2c4/0x405
-[    5.348198]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
-[    5.348219]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
-[    5.348243]  [<c028191f>] ? pcibios_set_master+0x78/0x81
-[    5.348256]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
-[    5.348281]  [<c01fe704>] pci_device_probe+0x39/0x59
-[    5.348291]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
-[    5.348299]  [<c025b95a>] __driver_attach+0x3d/0x5f
-[    5.348306]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
-[    5.348316]  [<c025b739>] driver_attach+0x14/0x16
-[    5.348322]  [<c025b91d>] ? __driver_attach+0x0/0x5f
-[    5.348329]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
-[    5.348337]  [<c025baa3>] driver_register+0x47/0xa3
-[    5.348343]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
-[    5.348354]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
-[    5.348362]  [<f8831017>] ehci_hcd_init+0x17/0x19 [ehci_hcd]
-[    5.348374]  [<c014af69>] sys_init_module+0x15e5/0x177b
-[    5.348394]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
-[    5.348408]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
-[    5.348439]  [<c0106c32>] syscall_call+0x7/0xb
-[    5.348453]  =======================
-[    5.348457] ---[ end trace 3d0d724a7c8aa619 ]---
-[    5.348461] disabling CONFIG_USB_DEVICE_CLASS might fix this
+
+
