@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYDRNbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYDRNgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbYDRNbK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYDRNa4
+	id S1757409AbYDRNgn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYDRNgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 09:30:56 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:37725 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754797AbYDRNaz (ORCPT
+	Fri, 18 Apr 2008 09:36:31 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:33990 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbYDRNga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:30:55 -0400
-X-AuditID: 0ac90647-aad9fba0000012c0-e0-48089b88e23b
-Message-ID: <48089B86.5020108@hitachi.com>
-Date: Fri, 18 Apr 2008 22:00:54 +0900
+	Fri, 18 Apr 2008 09:36:30 -0400
+X-AuditID: 0ac90647-ae9a5ba0000012c0-a8-4808a3dcc1b2
+Message-ID: <4808A3D6.3050608@hitachi.com>
+Date: Fri, 18 Apr 2008 22:36:22 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
 X-Accept-Language: ja
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
+To: akpm@linux-foundation.org, sct@redhat.com
 Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
        sugita <yumiko.sugita.yf@hitachi.com>,
        Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
+Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
+References: <48089B86.5020108@hitachi.com>
+In-Reply-To: <48089B86.5020108@hitachi.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAA==
@@ -30,39 +32,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
+Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
 
-The current JBD is not sufficient for I/O error handling.  It can
-cause filesystem corruption.   An example scenario:
+In ordered mode, we should abort journaling when an I/O error has
+occurred on a file data buffer in the committing transaction.  But
+there can be data buffers which are not checked for error:
 
-1. fail to write a metadata buffer to block B in the journal
-2. succeed to write the commit record
-3. the system crashes, reboots and mount the filesystem
-4. in the recovery phase, succeed to read data from block B
-5. write back the read data to the filesystem, but it is a stale
-   metadata
-6. lose some files and directories!
+  (a) the buffer which has already been written out by pdflush
+  (b) the buffer which has been unlocked before scanned in the
+      t_locked_list loop
 
-This scenario is a rare case, but it (temporal I/O error)
-can occur.  If we abort the journal between 1. and 2., this
-tragedy can be avoided.
+This patch adds missing error checks and aborts journaling
+appropriately.
 
-This patch set fixes several error handling problems to protect
-from filesystem corruption caused by I/O errors.  It has been
-done only for JBD and ext3 parts.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitacih.com>
+---
+ fs/jbd/commit.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-This patch is against 2.6.25
-
-[PATCH 1/4] jbd: strictly check for write errors on data buffers
-[PATCH 2/4] jbd: ordered data integrity fix
-[PATCH 3/4] jbd: abort when failed to log metadata buffers
-[PATCH 4/4] jbd: fix error handling for checkpoint io
-
-Regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+Index: linux-2.6.25/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.25.orig/fs/jbd/commit.c
++++ linux-2.6.25/fs/jbd/commit.c
+@@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
+ /*
+  *  Submit all the data buffers to disk
+  */
+-static void journal_submit_data_buffers(journal_t *journal,
++static int journal_submit_data_buffers(journal_t *journal,
+ 				transaction_t *commit_transaction)
+ {
+ 	struct journal_head *jh;
+@@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
+ 	int locked;
+ 	int bufs = 0;
+ 	struct buffer_head **wbuf = journal->j_wbuf;
++	int err = 0;
+ 
+ 	/*
+ 	 * Whenever we unlock the journal and sleep, things can get added
+@@ -253,6 +254,8 @@ write_out_data:
+ 			put_bh(bh);
+ 		} else {
+ 			BUFFER_TRACE(bh, "writeout complete: unfile");
++			if (unlikely(!buffer_uptodate(bh)))
++				err = -EIO;
+ 			__journal_unfile_buffer(jh);
+ 			jbd_unlock_bh_state(bh);
+ 			if (locked)
+@@ -271,6 +274,8 @@ write_out_data:
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+ 	journal_do_submit_data(wbuf, bufs);
++
++	return err;
+ }
+ 
+ /*
+@@ -426,8 +431,7 @@ void journal_commit_transaction(journal_
+ 	 * Now start flushing things to disk, in the order they appear
+ 	 * on the transaction lists.  Data blocks go first.
+ 	 */
+-	err = 0;
+-	journal_submit_data_buffers(journal, commit_transaction);
++	err = journal_submit_data_buffers(journal, commit_transaction);
+ 
+ 	/*
+ 	 * Wait for all previously submitted IO to complete.
+@@ -442,10 +446,10 @@ void journal_commit_transaction(journal_
+ 		if (buffer_locked(bh)) {
+ 			spin_unlock(&journal->j_list_lock);
+ 			wait_on_buffer(bh);
+-			if (unlikely(!buffer_uptodate(bh)))
+-				err = -EIO;
+ 			spin_lock(&journal->j_list_lock);
+ 		}
++		if (unlikely(!buffer_uptodate(bh)))
++			err = -EIO;
+ 		if (!inverted_lock(journal, bh)) {
+ 			put_bh(bh);
+ 			spin_lock(&journal->j_list_lock);
 
 
