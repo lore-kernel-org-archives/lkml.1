@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYDRMfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYDRMfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYDRMfJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 08:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDRMe5
+	id S1756980AbYDRMfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 08:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDRMfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 08:34:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34848 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Apr 2008 08:35:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34898 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752588AbYDRMe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 08:34:57 -0400
-Date: Fri, 18 Apr 2008 14:34:39 +0200
+	id S1756609AbYDRMfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 08:35:14 -0400
+Date: Fri, 18 Apr 2008 14:35:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
-       sds@tycho.nsa.gov
-Subject: Re: 2.6.25-mm1: not looking good
-Message-ID: <20080418123439.GA17013@elte.hu>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080417164034.e406ef53.akpm@linux-foundation.org> <20080417171413.6f8458e4.akpm@linux-foundation.org> <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu> <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: simplify hex print
+Message-ID: <20080418123502.GB17013@elte.hu>
+References: <alpine.LFD.1.10.0804181430310.3261@apollo.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0804181430310.3261@apollo.tec.linutronix.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,15 +34,10 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> With the patch below, it seems 100% reproducible to me (7 out of 7 
-> bootups hung).
-> 
-> The number of loops it could do before hanging were, in order: 697, 
-> 898, 237, 55, 45, 92, 59
+> simplify hex to ascii conversion with a lookup table.
 
-cool! Jason: i think that particular self-test should be repeated 1000 
-times before reporting success ;-)
+thanks Thomas, applied.
 
 	Ingo
