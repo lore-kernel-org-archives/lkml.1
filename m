@@ -1,119 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYDRGdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbYDRGjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbYDRGdK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 02:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYDRGc4
+	id S1757293AbYDRGjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 02:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYDRGi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 02:32:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45034 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477AbYDRGc4 (ORCPT
+	Fri, 18 Apr 2008 02:38:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55273
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753355AbYDRGi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 02:32:56 -0400
-Subject: Re: Semphore -> mutex in the device tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0804171425350.19418-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0804171425350.19418-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 08:32:52 +0200
-Message-Id: <1208500372.7115.52.camel@twins>
+	Fri, 18 Apr 2008 02:38:57 -0400
+Date: Thu, 17 Apr 2008 23:38:56 -0700 (PDT)
+Message-Id: <20080417.233856.238029159.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080417232747.4c04f413.akpm@linux-foundation.org>
+References: <20080416202338.GA6007@elte.hu>
+	<20080417232747.4c04f413.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-17 at 14:43 -0400, Alan Stern wrote:
-> On Thu, 17 Apr 2008, Peter Zijlstra wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 17 Apr 2008 23:27:47 -0700
+
+> On Wed, 16 Apr 2008 22:23:38 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > > > That does mean you have to set an effective max depth to the tree, is
-> > > > that a practical issue?
-> > > 
-> > > I don't know.  But I suspect it wouldn't be sufficient to solve the 
-> > > problems associated with tree nesting.
-> > 
-> > It works for strict top-down locking. The sideways locking you do:
-> > 
-> > > For example, it's quite likely that some code somewhere needs to hold
-> > > two sibling nodes' locks at the same time.  Provided the parent node is
-> > > already locked, this operation is perfectly safe.  But is lockdep able
-> > > to handle it?
-> > 
-> > Your siblings are ordered; so a simple mutex_lock_nested() should work
-> > between siblings as long as you never need more than 8 siblings locked
-> > at any one time.
+> > Arjan van de Ven (6):
+> >	...
+> >       x86: mark init_mm deprecated
 > 
-> I don't fully understand the implications here.  Let A and B be sibling
-> device nodes.  Suppose task 0 locks device A with NESTING_PARENT and
-> then device B with NESTING_CHILD, while at about the same time task 1
-> locks B with NESTING PARENT and then A with NESTING_CHILD.  This is
-> perfectly safe provided both tasks acquire the parent lock first, but
-> otherwise it isn't.  How would lockdep account for this?
-
-Lockdep only cares about class order; if you always lock NESTING_PARENT
--> NESTING_CHILD it won't complain; but it will not require you to hold
-the parent lock (although I can provide you with an annotation to that
-effect if you want; lockdep_assert_held(dev->parent->lock) - or
-something like that).
-
-So using these annotations you can annotate a real deadlock 'away'.
-
-> And don't say that one task is ignoring the ordering of the siblings.  
-> In fact the ordering is a rather weak one (time of registration), there
-> might be different orderings that are more relevant (e.g., the numbers
-> of the ports into which the siblings are plugged), and it isn't
-> particularly easy to tell which of two siblings should come first.  
-> Furthermore the order of locking isn't always under our control; there
-> _will_ be times when the order has to be "backward".
-
-As long as you're sure there aren't any actual deadlocks; and ensure you
-use your annotated classes in the same order:
-
-  tree_level_n -> tree_level_n+1
-
-and
-
-  tree_leve_n_sub_m -> tree_level_n_sub_m+1
-
-(subclasses are from the _nesting() annotation)
-
-lockdep will not complain,
-
-> > > There are other, more subtle problems too; this is just one example.
-> > 
-> > Can you think of a situation where the top-down class annotation and the
-> > sideways _nesting() isn't sufficient? If so, please share.
+> Why can't I find this patch on the mailing list?
 > 
-> I don't understand all the intricacies of lockdep.  In principle
-> ordering of siblings gives rise to a total ordering of the entire tree,
-> so let's assume we have such a total ordering and that everyone always
-> obeys it.
+> It's an MM patch which touches sched.h.  It should not be in git-x86.
 > 
-> Even so there is a potential for trouble.  I don't know of any concrete
-> examples like this in the kernel, but they might exist.  Suppose a
-> driver keeps a private mutex associated with each device it manages.  
-> Normally the device's lock would be acquired first and the private
-> mutex second.  But there could be places where the driver acquires a
-> child device's lock while holding the parent's mutex; this would look
-> to lockdep like a violation.
+> It generates over a megabyte of warnings on sparc64.
 
-So lockdep cares about classes and the hierarchy of thereof; so given
-your example:
-
-   parent_tree_level
-     child_tree_level
-       device_lock
-
-Its perfectly fine to take a lock from 'parent_tree_level' and then a
-lock from 'device_lock', skipping the class in the middle - as long as
-you thereafter never acquire a lock from it.
-
-So given a pre-determined class hierarchy, you're not required to take
-all locks in that hierarchy; as long as you always go down. If you ever
-take a lock so that moves up in the hierarchy you're in trouble.
-
+If you're going to touch generic code, test build on other
+platforms or get it into a tree where such build testing is
+done for you.
