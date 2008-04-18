@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYDRH3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYDRHcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbYDRH3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 03:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYDRH3e
+	id S1758201AbYDRHcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 03:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbYDRHcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 03:29:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47265 "EHLO
+	Fri, 18 Apr 2008 03:32:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46147 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751600AbYDRH3d (ORCPT
+	by vger.kernel.org with ESMTP id S1750722AbYDRHcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 03:29:33 -0400
-Date: Fri, 18 Apr 2008 00:28:58 -0700
+	Fri, 18 Apr 2008 03:32:47 -0400
+Date: Fri, 18 Apr 2008 00:32:17 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: 2.6.25-mm1: not looking good
-Message-Id: <20080418002858.de236663.akpm@linux-foundation.org>
-In-Reply-To: <20080418071945.GA18044@elte.hu>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080417224908.67cec814@laptopd505.fenrus.org>
-	<20080417231038.72363123.akpm@linux-foundation.org>
-	<20080418071945.GA18044@elte.hu>
+To: Ben Hutchings <bhutchings@solarflare.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] Add default CPU topology information
+Message-Id: <20080418003217.94e25f2f.akpm@linux-foundation.org>
+In-Reply-To: <20080418001024.7377c52d.akpm@linux-foundation.org>
+References: <20080331114412.GH21637@solarflare.com>
+	<20080418001024.7377c52d.akpm@linux-foundation.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,56 +27,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008 09:19:45 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 18 Apr 2008 00:10:24 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Mon, 31 Mar 2008 12:44:13 +0100 Ben Hutchings <bhutchings@solarflare.com> wrote:
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 17 Apr 2008 22:49:08 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+> > Not all architectures and configurations define CPU topology information.
+> > This can result in an empty topology directory in sysfs, and requires
+> > in-kernel users to protect all uses with #ifdef - see
+> > <http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
 > > 
-> > > On Thu, 17 Apr 2008 16:03:31 -0700
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > 
-> > > > I repulled all the trees an hour or two ago, installed everything on
-> > > > an 8-way x86_64 box and:
-> > > > 
-> > > > 
-> > > > stack-protector:
-> > > > 
-> > > > Testing -fstack-protector-all feature
-> > > > No -fstack-protector-stack-frame!
-> > > > -fstack-protector-all test failed
-> > > 
-> > > do you have a stack-protector capable GCC? I guess not.
-> > > 
-> > > This is a catch-22. You do not have stack-protector. Should we make that 
-> > > a silent failure? or do you want to know that you don't have a security
-> > > feature you thought you had.... complaining seems to be the right thing to do imo.
+> > The documentation of CPU topology specifies what the defaults should be
+> > if only partial information is available from the hardware.  So we can
+> > provide these defaults as a fallback.
 > > 
-> > A #warning sounds more appropriate.
+> > This patch:
+> > 
+> > - Adds default definitions of the 4 topology macros to
+> >   include/asm-generic/topology.h.
+> > - Changes include/asm-*/topology.h to include <asm-generic/topology.h>
+> >   unconditionally.
+> > - Changes drivers/base/topology.c to use the topology macros unconditionally
+> >   and to cope with definitions that aren't lvalues.
+> > - Updates documentation accordingly.
 > 
-> this warning is telling the user that the security feature that got 
-> enabled in the .config is completely, 100% not working due to using a
-> stack-protector-incapable GCC.
-
-I doubt if anyone will care much.
-
-> it's analogous as if there was a bug in gcc that made SELinux totally 
-> ineffective in some mitigate-exploit-damage scenarios.
-
-Not really.  In the selinux case we don't know that it'll break at compile
-time.  
-
-> No harm done on a 
-> perfectly bug-free system - but once a bug happens that SELinux should 
-> have mitigated, the breakage becomes real. Having a prominent warning is 
-> the _minimum_.
+> I get a huuuuuuuge crash early in boot on the t61p dual x86_64 laptop. 
+> Before netconsole has started and it has no serial port, so all I have is a
+> partially-scrolled-off jpg, sorry.
 > 
-> having a build failure would be nice too because this is a build 
-> environment problem. (not a build warning - warnings can easily be 
-> missed because on a typical kernel build there's so many false positives 
-> that get emitted by various other warning mechanisms) Arjan?
+> I'll drop the patch.
+> 
+> http://userweb.kernel.org/~akpm/p4175278.jpg
+> http://userweb.kernel.org/~akpm/config-t61p.txt
+> http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+> 
+> 
+> If I didn't have all that wrong crap on the stack we'd have a full
+> trace here.  I have CONFIG_FRAME_POINTER=y, but that doesn't seem to
+> have helped.
 > 
 
-Yeah, #error would work too.
+ooh, I just discovered kstack=.  That should be hoisted up to core kernel
+then pushed out to other architectures, not hidden in x86_64 code.
+
+But first I guess it should be make to work - it fails miserably, because
+only one of our seventy fix stack-dumping functions actually looks at it.
+
+
+This:
+
+--- a/arch/x86/kernel/traps_64.c~a
++++ a/arch/x86/kernel/traps_64.c
+@@ -426,7 +426,7 @@ _show_stack(struct task_struct *tsk, str
+ 		printk(" %016lx", *stack++);
+ 		touch_nmi_watchdog();
+ 	}
+-	show_trace(tsk, regs, sp, bp);
++//	show_trace(tsk, regs, sp, bp);
+ }
+ 
+ void show_stack(struct task_struct *tsk, unsigned long * sp)
+
+
+works heaps better.
+
+Here's the rest of your oops: http://userweb.kernel.org/~akpm/p4175279.jpg
+
+I'd be suspecting startup ordering problems - maybe the page allocator
+isn't ready yet.
+
+otoh, it _should_ be ready by the time we run init_sched_domains().
+
