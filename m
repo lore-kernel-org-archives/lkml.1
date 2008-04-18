@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbYDRNhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYDRNhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758407AbYDRNhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYDRNhY
+	id S1757754AbYDRNhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbYDRNh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 18 Apr 2008 09:37:26 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:34263 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755613AbYDRNhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Apr 2008 09:37:24 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:50305 "EHLO mr1.bfh.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758206AbYDRNhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:37:23 -0400
-Message-ID: <4808A409.3080406@bfh.ch>
-Date: Fri, 18 Apr 2008 15:37:13 +0200
-From: Seewer Philippe <philippe.seewer@bfh.ch>
-Organization: BFH
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+X-AuditID: 0ac90647-ab7a0ba0000012c0-9a-4808a4127487
+Message-ID: <4808A40E.7010200@hitachi.com>
+Date: Fri, 18 Apr 2008 22:37:18 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Francis Moreau <francis.moro@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>	 <480354C9.1050600@bfh.ch>	 <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>	 <4805AF93.90209@bfh.ch> <38b2ab8a0804170709m58830adagcba46f059ed10809@mail.gmail.com> <4807635E.9060101@bfh.ch> <4808A09B.6090106@rtr.ca>
-In-Reply-To: <4808A09B.6090106@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: akpm@linux-foundation.org, sct@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [PATCH 2/4] jbd: ordered data integrity fix
+References: <48089B86.5020108@hitachi.com>
+In-Reply-To: <48089B86.5020108@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Apr 2008 13:36:47.0453 (UTC) FILETIME=[3FCBA0D0:01C8A159]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Subject: [PATCH 2/4] jbd: ordered data integrity fix
 
-Mark Lord wrote:
-> That can sound a bit misleading.  The complete story, for ATA/SATA drives,
-> is that the disk has two geometries:  an internal physical one, with a 
-> fixed number of heads and cylinders, but variable sectors/track
-> (which normally varies by cylinder zone).
-> 
-> Software *never* sees or knows about that geometry, so ignore it.
-> 
-> The second geometry, is the one that the drive reports to software
-> as its "native" geometry.  This is what you see from "hdparm -I"
-> and friends, and this geometry is what has to be used by software
-> when using cylinder/head/sector (CHS) addressing for I/O operations.
-> The hardware interface has a limit of 4-bits for the head value,
-> so the maximum number of heads can never be more than 16.
-> 
-> Nobody uses CHS addressing for I/O operations, at least not on
-> any hardware newer than at least ten years old, so this geometry
-> is also unimportant for most uses.
-> 
-> That's what the drive knows about.
-> 
-> Software, for compatibility with the MS-DOS partition table scheme,
-> sometimes uses a "logical" geometry, where we "pretend" that a drive
-> can have up to 255 heads, which then allows more of the disk to be
-> described within the limitations of the partition table data layout.
-> That's where one frequently sees "255 heads", even though the drive
-> underneath uses 16 at the interface level, and probably as only 2
-> or 4 real heads inside the shell.
+In ordered mode, if a buffer being dirtied exists in the committing
+transaction, we write the buffer to the disk, move it from the
+committing transaction to the running transaction, then dirty it.
+But we don't have to remove the buffer from the committing
+transaction when the buffer couldn't be written out, otherwise it
+breaks the ordered mode rule.
 
-Aye. Though I prefer the term virtual geometry. But thats cosmetics. 
-Sorry for beeing unclear, and many thanks for untangling my post.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ fs/jbd/transaction.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-If anyones interested in even more Details about C/H/S adressing and so 
-on, there's a very good document about that to be found here:
-http://www.mossywell.com/boot-sequence/
+Index: linux-2.6.25/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.25.orig/fs/jbd/transaction.c
++++ linux-2.6.25/fs/jbd/transaction.c
+@@ -941,9 +941,10 @@ int journal_dirty_data(handle_t *handle,
+ 	journal_t *journal = handle->h_transaction->t_journal;
+ 	int need_brelse = 0;
+ 	struct journal_head *jh;
++	int ret = 0;
+ 
+ 	if (is_handle_aborted(handle))
+-		return 0;
++		return ret;
+ 
+ 	jh = journal_add_journal_head(bh);
+ 	JBUFFER_TRACE(jh, "entry");
+@@ -1054,7 +1055,16 @@ int journal_dirty_data(handle_t *handle,
+ 				   time if it is redirtied */
+ 			}
+ 
+-			/* journal_clean_data_list() may have got there first */
++			/*
++			 * We shouldn't remove the buffer from the committing
++			 * transaction if it has failed to be written.
++			 * Otherwise, it breaks the ordered mode rule.
++			 */
++			if (unlikely(!buffer_uptodate(bh))) {
++				ret = -EIO;
++				goto no_journal;
++			}
++
+ 			if (jh->b_transaction != NULL) {
+ 				JBUFFER_TRACE(jh, "unfile from commit");
+ 				__journal_temp_unlink_buffer(jh);
+@@ -1095,7 +1105,7 @@ no_journal:
+ 	}
+ 	JBUFFER_TRACE(jh, "exit");
+ 	journal_put_journal_head(jh);
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+
+
