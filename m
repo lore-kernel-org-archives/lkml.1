@@ -1,55 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbYDRAP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYDRAkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbYDRAP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 20:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbYDRAPM
+	id S1756621AbYDRAkD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 20:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYDRAjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 20:15:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51993 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755775AbYDRAPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 20:15:11 -0400
-Date: Thu, 17 Apr 2008 17:14:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mingo@elte.hu, tglx@linutronix.de, penberg@cs.helsinki.fi,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, jmorris@namei.org, sds@tycho.nsa.gov
-Subject: Re: 2.6.25-mm1: not looking good
-Message-Id: <20080417171413.6f8458e4.akpm@linux-foundation.org>
-In-Reply-To: <20080417164034.e406ef53.akpm@linux-foundation.org>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080417164034.e406ef53.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Apr 2008 20:39:52 -0400
+Received: from sandeen.net ([209.173.210.139]:26315 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750915AbYDRAjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 20:39:51 -0400
+Message-ID: <4807EDD6.8000705@sandeen.net>
+Date: Thu, 17 Apr 2008 19:39:50 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+MIME-Version: 1.0
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 released with bug, which leads to XFS crash?
+References: <200804170949.36864.denys@visp.net.lb>
+In-Reply-To: <200804170949.36864.denys@visp.net.lb>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Apr 2008 16:40:34 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Denys Fedoryshchenko wrote:
+> Hi again
+> 
+> I reported about http://bugzilla.kernel.org/show_bug.cgi?id=10421 , and it is triggerable on different loaded servers with XFS (squid with aufs),
 
-> On Thu, 17 Apr 2008 16:03:31 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > 
-> > I have maybe two hours in which to weed out whatever very-recently-added
-> > dud patches are causing this.  Any suggestions are welcome.
-> > 
-> 
-> With git-selinux at top-of tree it's repeatably hanging in the CPA
-> self-tests (git-x86 stuff).  Last two lines are:
-> 
-> CPA self-test:
->  4k 8704 large 4847 gb 0 x 0[0-0] miss 0
-> 
-> (clear as mud ;))
-> 
-> I will find the config knob to disable that test.  Of course, it could be
-> telling me that CPA is buggy.
+Oh, aufs was not listed in the bug report.  that's an out of tree
+module, right?  Is it completely up to date and safe with 2.6.25?
 
-Disabling CPA_DEBUG didn't help.  It's still hanging.  The final initcall
-is init_kgdbts() and disabling KGDB prevents the hang.
-
+-Eric
