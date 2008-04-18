@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYDRP7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYDRQCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYDRP7H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 11:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYDRP6x
+	id S1756857AbYDRQCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 12:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYDRQCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 11:58:53 -0400
-Received: from ZSM1387.piap.pl ([195.187.100.11]:50972 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbYDRP6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 11:58:52 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m3prtzsszg.fsf@maximus.localdomain>
-	<m3tzj92xq6.fsf@maximus.localdomain>
-	<m33aqedg0a.fsf@maximus.localdomain>
-	<m37if4oz1g.fsf@maximus.localdomain>
-	<20080411221448.22b69ff5.akpm@linux-foundation.org>
-	<m3prsva3y7.fsf@maximus.localdomain> <20080412115950.1cbb9cfa@core>
-	<m33apqomgf.fsf@maximus.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 18 Apr 2008 17:58:48 +0200
-In-Reply-To: <m33apqomgf.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Sat\, 12 Apr 2008 22\:19\:28 +0200")
-Message-ID: <m33apjp32f.fsf@maximus.localdomain>
+	Fri, 18 Apr 2008 12:02:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:47525 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752636AbYDRQCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 12:02:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q59qvZsyXDCjza4gZsUpKsC6pAaY8gTn8MJxZF5E44eY0018A8Uzz9hhKuMy+w7vbPpeOdGyOcAogOjAwE7IYT5gnqhkQLSzdzFskyf85nrI6NiplEeyO4TdsbPmXO5vPAMDVqJTbr51nI16IrwGfOOwtL3PSD1aBMEJwNyCkQY=
+Message-ID: <e85b9d30804180902o6d1bce5fk86bd5f48e18fda54@mail.gmail.com>
+Date: Fri, 18 Apr 2008 18:02:14 +0200
+From: Matthew <jackdachef@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.25
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+	 <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update:
-
-> Yes, I could add another dirty "interface fix" to the HDLC + syncppp
-> combo (hdlc_ppp), but I don't really see a sense, especially that I
-> have the new implementation ready and working (my time resources are
-> currently quite limited and if I have to choose between adding another
-> glue fix and writing a better PPP replacement I pick the latter).
+On Fri, Apr 18, 2008 at 5:43 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
 >
-> My original post: http://lkml.org/lkml/2008/3/12/277
+>  On Fri, 18 Apr 2008, Matthew wrote:
+>  >
+>  > I can "reproduce" this on an Intel Core 2 Duo 6600 (Conroe) with a P5W
+>  > DH Deluxe mainboard (by Asus) since at least 2.6.25-rc8 (or possibly
+>  > also rc7)
+>
+>  Can you bisect it?
+>
+>                 Linus
+>
 
-David doesn't want the new PPP, insisting that I fix existing
-hdlc_ppp.c + syncppp.c combo instead, and that there are related bugs
-in drivers using syncppp.c alone (not hdlc_ppp) which I have to fix as
-well.
+sorry, unfortunately I don't have the time right now to do it (exams-time),
 
-Unfortunately I'm unable to do that. Even if I could add another
-workaround to hdlc_ppp to make it work with syncppp.c again, I can't
-fix the other drivers (if they are indeed broken) because of lack of
-hardware, and I can't really make significant changes to syncppp.c
-(to make them available to all drivers) because that could and would
-break those drivers.
+I hope that someone out of the gentoo-community would be willing to do
+so, I'll post a link to this entry in the forums & hope that someone
+can be found to do it
 
-Comments?
--- 
-Krzysztof Halasa
+Regards
+
+Mat
