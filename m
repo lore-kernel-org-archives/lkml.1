@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYDRGCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbYDRGD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYDRGCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 02:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYDRGCN
+	id S1758021AbYDRGD3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 02:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYDRGDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 02:02:13 -0400
-Received: from mail1.physik.fu-berlin.de ([160.45.35.12]:52179 "EHLO
-	mail1.physik.fu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbYDRGCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 02:02:12 -0400
-Subject: Re: [PATCH] usb-serial: option: Don't match Huawei driver CD images
-From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
-To: Greg KH <greg@kroah.com>
-Cc: smurf@smurf.noris.de, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <20080418032405.GB8754@kroah.com>
-References: <1208472569.14194.5.camel@hermes2.karcher.local>
-	 <20080418032405.GB8754@kroah.com>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 08:01:34 +0200
-Message-Id: <1208498494.14194.28.camel@hermes2.karcher.local>
+	Fri, 18 Apr 2008 02:03:21 -0400
+Received: from cnc.isely.net ([64.81.146.143]:60449 "EHLO cnc.isely.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753370AbYDRGDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 02:03:20 -0400
+Date: Fri, 18 Apr 2008 01:03:17 -0500 (CDT)
+From: Mike Isely <isely@isely.net>
+Reply-To: Mike Isely <isely@pobox.com>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Video4Linux list <video4linux-list@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Isely at pobox <isely@pobox.com>
+Subject: Re: [2.6 patch] video/pvrusb2/pvrusb2-hdw.c cleanups
+In-Reply-To: <20080414184153.GZ6695@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0804180100180.31065@cnc.isely.net>
+References: <20080414184153.GZ6695@cs181133002.pp.htv.fi>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-HELO-Warning: Remote host 89.247.224.62 (i59f7e03e.versanet.de) incorrectly presented itself as [192.168.0.121]
-X-ZEDV-Virus-Scanned: No viruses found. [ClamAV 0.92/6817/Fri Apr 18 03:15:07 2008]
-X-ZEDV-Spam-Level: ----
-X-ZEDV-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on zs01.physik.fu-berlin.de
-X-ZEDV-Spam-Status: No, score=-4.4 required=5.0 tests=ALL_TRUSTED,BAYES_00 autolearn=ham version=3.2.3
-X-ZEDV-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-X-Scan-Signature: 573c884b685e4c0b3a02a2d482af22fc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, den 17.04.2008, 20:24 -0700 schrieb Greg KH:
-> What is this patch against?  We have a change that went into 2.6.25
-> after 2.6.25-rc9 that should make this patch not be needed.
-The patch is developed against 2.6.25-rc8 + some git patches, but I have
-forward-ported it to current git.
+On Mon, 14 Apr 2008, Adrian Bunk wrote:
 
-I *guess* you are talking about commit aad8a278 (USB: support more
-Huawei data card product IDs), as I could not find . The header of this
-patch talks about three changes (declaration of unusual devices,
-disabling product ID matching in driver.c and finally declaring the
-product in option.c). I find only the first and the last point if this
-reflected in the patch, and there are *no* patches at all to
-drivers/usb/core/driver.c in the timeframe you mentioned. This patch
-addresses the second point of that list, but in another way.
+> This patch contains the following cleanups:
+> - make the following needlessly global function static:
+>   - pvr2_hdw_set_cur_freq()
+> - #if 0 the following unused global functions:
+>   - pvr2_hdw_get_state_name()
+>   - pvr2_hdw_get_debug_info_unlocked()
+>   - pvr2_hdw_get_debug_info_locked()
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
 
-The problem is that those huawei products have four USB interfaces,
-three usb-serial like interfaces handled by the option driver and a
-fourth one to be handled by usb-storage. When the stick gets initially
-plugged, only the mass storage device is visible and needs a magic kick
-to expose the other interfaces. aad8a278 contains a valid and working
-patch to kick those USB devices if the mass storage interface gets bound
-by usb-storage. At least in 2.6.25-rc8, if the option module is loaded,
-the mass storage device gets bound to the option driver instead that
-exposes a useless and non-functional serial interface on the mass
-storage endpoint. This prevents the usb-storage driver to perform the
-needed kicking.
+FYI, I've merged this change into my local repository, and expect to 
+push it back up for 2.6.26 as part of a pent-up pile of pvrusb2 changes.
 
-> Can you try that release and verify this?
-I will try with a current git kernel without my patch and report back,
-but I will be surprised if the problem described above is gone. System
-is currently compiling.
-
-> thanks,
-You're welcome.
-
-Kind regards,
-  Michael Karcher
+  -Mike
 
 
+-- 
+
+Mike Isely
+isely @ pobox (dot) com
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
