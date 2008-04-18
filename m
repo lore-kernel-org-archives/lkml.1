@@ -1,257 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYDRREU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbYDRRIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbYDRREU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 13:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYDRREN
+	id S1757688AbYDRRIJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 13:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbYDRRHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 13:04:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43731 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753471AbYDRREL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 13:04:11 -0400
-Date: Fri, 18 Apr 2008 10:04:10 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 updates for 2.6.26-rc1
-Message-ID: <20080418170410.GL31299@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
+	Fri, 18 Apr 2008 13:07:53 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:46075 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbYDRRHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 13:07:52 -0400
+Subject: Re: [PATCH 0/4] - v2 -  Object creation with a specified id
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nadia.Derbey@bull.net
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       nick@nick-andrew.net
+In-Reply-To: <20080418054459.891481000@bull.net>
+References: <20080418054459.891481000@bull.net>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 10:07:07 -0700
+Message-Id: <1208538427.25363.40.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 2008-04-18 at 07:44 +0200, Nadia.Derbey@bull.net wrote:
+> The syntax is one of:
+>    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
+>      next object to be created will have an id set to XX
+>    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
+>      next object to be created will have its ids set to XX0, ... X<n-1>
+>      This is particularly useful for processes that may have several ids if
+>      they belong to nested namespaces.
 
-	This is the Ocfs2 patchset for 2.6.26-rc1. The vast majority of
-these patches were e-mailed to LKML a couple weeks ago for comment. For
-convenience, I've placed my original description of these changes in this
-e-mail, after the shortlog.
+I still think, in its current form, this is pretty dangerous.  
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+It might be nice to have a central place to set ids, but there's no real
+safety here for when we get a mishmash of 50 of these things.  We have a
+queue and we fix the order in which things are inserted, but how do we
+control the order in which the kernel extracts them?  Can we 100%
+conform to that order in the future and be consistent?  Won't that also
+be dictated by the way userspace behaves?
 
-to receive the following updates:
+If we're going to go this route, I think we need to do a few things.
+First, these need to be more "type safe".  That means that sticking an
+ids in here that you mean to go to an IPC should never, ever, ever be
+able to get interpreted as a PID or as an inode number or anything else.
 
- Documentation/ABI/obsolete/o2cb            |   11 +
- Documentation/ABI/stable/o2cb              |   10 +
- Documentation/ABI/testing/sysfs-ocfs2      |   89 +++
- Documentation/feature-removal-schedule.txt |   10 +
- MAINTAINERS                                |    1 +
- fs/Kconfig                                 |   26 +
- fs/ocfs2/Makefile                          |   14 +-
- fs/ocfs2/alloc.c                           |  465 +++++++++++++--
- fs/ocfs2/aops.c                            |    6 +-
- fs/ocfs2/cluster/Makefile                  |    2 +-
- fs/ocfs2/cluster/netdebug.c                |  441 ++++++++++++++
- fs/ocfs2/cluster/nodemanager.c             |    5 +-
- fs/ocfs2/cluster/sys.c                     |    9 +
- fs/ocfs2/cluster/tcp.c                     |  164 ++++--
- fs/ocfs2/cluster/tcp.h                     |   32 +
- fs/ocfs2/cluster/tcp_internal.h            |   26 +-
- fs/ocfs2/dlm/Makefile                      |    2 +-
- fs/ocfs2/dlm/dlmcommon.h                   |   49 ++
- fs/ocfs2/dlm/dlmdebug.c                    |  911 +++++++++++++++++++++++++---
- fs/ocfs2/dlm/dlmdebug.h                    |   86 +++
- fs/ocfs2/dlm/dlmdomain.c                   |   70 ++-
- fs/ocfs2/dlm/dlmlock.c                     |   22 +-
- fs/ocfs2/dlm/dlmmaster.c                   |  200 ++-----
- fs/ocfs2/dlmglue.c                         |  645 ++++++++++++--------
- fs/ocfs2/dlmglue.h                         |    5 +-
- fs/ocfs2/file.c                            |    4 +-
- fs/ocfs2/heartbeat.c                       |  184 +------
- fs/ocfs2/heartbeat.h                       |   17 +-
- fs/ocfs2/ioctl.c                           |   13 +-
- fs/ocfs2/ioctl.h                           |    3 +-
- fs/ocfs2/journal.c                         |  211 ++++++-
- fs/ocfs2/journal.h                         |    4 +
- fs/ocfs2/localalloc.c                      |    4 +
- fs/ocfs2/namei.c                           |    4 +-
- fs/ocfs2/ocfs2.h                           |   77 ++-
- fs/ocfs2/ocfs2_fs.h                        |   79 +++-
- fs/ocfs2/ocfs2_lockid.h                    |    2 +-
- fs/ocfs2/slot_map.c                        |  454 +++++++++++---
- fs/ocfs2/slot_map.h                        |   32 +-
- fs/ocfs2/stack_o2cb.c                      |  420 +++++++++++++
- fs/ocfs2/stack_user.c                      |  883 +++++++++++++++++++++++++++
- fs/ocfs2/stackglue.c                       |  568 +++++++++++++++++
- fs/ocfs2/stackglue.h                       |  261 ++++++++
- fs/ocfs2/suballoc.c                        |  103 +++-
- fs/ocfs2/suballoc.h                        |    1 +
- fs/ocfs2/super.c                           |  208 ++++---
- fs/sysfs/symlink.c                         |    9 +-
- 47 files changed, 5800 insertions(+), 1042 deletions(-)
- create mode 100644 Documentation/ABI/obsolete/o2cb
- create mode 100644 Documentation/ABI/stable/o2cb
- create mode 100644 Documentation/ABI/testing/sysfs-ocfs2
- create mode 100644 fs/ocfs2/cluster/netdebug.c
- create mode 100644 fs/ocfs2/dlm/dlmdebug.h
- create mode 100644 fs/ocfs2/stack_o2cb.c
- create mode 100644 fs/ocfs2/stack_user.c
- create mode 100644 fs/ocfs2/stackglue.c
- create mode 100644 fs/ocfs2/stackglue.h
+	echo "IPC_SEM_ID NN" > /proc/self/task/<my_tid>/next_id
+	echo "PID MM" > /proc/self/task/<my_tid>/next_id
 
-Andi Kleen (1):
-      ocfs2: Convert ocfs2 over to unlocked_ioctl
+Maybe we should include the types in there as well, but those are kinda
+implied by the kind of id you're setting.  Have you thought about 32-bit
+userspace with 64-bit kernels?  Does that cause any issues?
 
-David Teigland (2):
-      ocfs2: handle async EAGAIN from NOQUEUE request
-      ocfs2: add fsdlm to stackglue
+I also feel like we should have the kernel able to enumerate which
+things in a process *are* settable.  What are the valid values for that
+first word being echoed in the file?
 
-Jan Kara (1):
-      ocfs2: Improve rename locking
+Does anyone have a list of these ids that we're going to want to set
+like this?  Oren?  I'm a bit worried that we might want to set things
+other than ids with an interface like this and that it won't transition
+well.
 
-Jeff Mahoney (1):
-      ocfs2/cluster: Get rid of arguments to the timeout routines
+-- Dave
 
-Joel Becker (33):
-      ocfs2: Make ocfs2_slot_info private.
-      ocfs2: Change the recovery map to an array of node numbers.
-      ocfs2: slot_map I/O based on max_slots.
-      ocfs2: De-magic the in-memory slot map.
-      ocfs2: Define the contents of the slot_map file.
-      ocfs2: New slot map format
-      ocfs2: Separate out dlm lock functions.
-      ocfs2: Use global DLM_ constants in generic code.
-      ocfs2: Use -errno instead of dlm_status for ocfs2_dlm_lock/unlock() API.
-      ocfs2: Create the lock status block union.
-      ocfs2: Introduce the new ocfs2_cluster_connect/disconnect() API.
-      ocfs2: Abstract out node number queries.
-      ocfs2: Move o2hb functionality into the stack glue.
-      ocfs2: Remove CANCELGRANT from the view of dlmglue.
-      ocfs2: Abstract out a debugging function for underlying dlms.
-      ocfs2: Clean up stackglue initialization
-      ocfs2: Split o2cb code from generic stack functions.
-      ocfs2: Create ocfs2_stack_operations and split out the o2cb stack.
-      ocfs2: Break out stackglue into modules.
-      ocfs2: Create stack glue sysfs files.
-      ocfs2: Add the USERSPACE_STACK incompat bit.
-      ocfs2: Add the 'cluster_stack' sysfs file.
-      ocfs2: Add the user stack module.
-      ocfs2: Add the ocfs2_control misc device.
-      ocfs2: Start the ocfs2_control handshake.
-      ocfs2: Introduce the DOWN message to ocfs2_control
-      ocfs2: Add the local node id to the handshake.
-      ocfs2: Add the 'set version' message to the ocfs2_control device.
-      ocfs2: Change mlog_bug_on to BUG_ON in ocfs2_lockid.h
-      ocfs2: Add kbuild for ocfs2_stack_user.ko
-      ocfs2: Allow selection of cluster plug-ins.
-      ocfs2: Document /sys/fs/ocfs2
-      ocfs2: Put tree in MAINTAINERS
-
-Julia Lawall (2):
-      fs/ocfs2/aops.c: test for IS_ERR rather than 0
-      ocfs2: Use BUG_ON
-
-Mark Fasheh (5):
-      ocfs2: Move slot map access into slot_map.c
-      ocfs2: Fill node number during cluster stack init
-      sysfs: Allow removal of symlinks in the sysfs root
-      ocfs2: Move /sys/o2cb to /sys/fs/o2cb
-      ocfs2: Only build ocfs2/dlm with the o2cb stack module
-
-Sunil Mushran (13):
-      ocfs2/dlm: Rename slabcache dlm_mle_cache to o2dlm_mle
-      ocfs2/dlm: Create slabcaches for lock and lockres
-      ocfs2/dlm: Link all lockres' to a tracking list
-      ocfs2/dlm: Create debugfs dirs
-      ocfs2/dlm: Dump the dlm state in a debugfs file
-      ocfs2/dlm: Dumps the lockres' into a debugfs file
-      ocfs2/dlm: Move struct dlm_master_list_entry to dlmcommon.h
-      ocfs2/dlm: Dumps the mles into a debugfs file
-      ocfs2/dlm: Dumps the purgelist into a debugfs file
-      ocfs2/dlm: Move dlm_print_one_mle() from dlmmaster.c to dlmdebug.c
-      ocfs2/dlm: Fix lockname in lockres print function
-      ocfs2/dlm: Cleanup lockres print
-      ocfs2/net: Add debug interface to o2net
-
-Tao Ma (6):
-      ocfs2:  Reconnect after idle time out.
-      ocfs2: Add support for cross extent block
-      ocfs2: Enable cross extent block merge.
-      ocfs2: Add a new parameter for ocfs2_reserve_suballoc_bits
-      ocfs2: Add ac_alloc_slot in ocfs2_alloc_context
-      ocfs2: Add inode stealing for ocfs2_reserve_new_inode
-
-
-Aside from the usual set of cleanups and fixes that were inappropriate for
-2.6.25, there are a few highlights:
-
-
-The '/sys/o2cb' directory has been moved to '/sys/fs/o2cb'. The new location
-meshes better with modern sysfs layout. A symbolic link has been placed in
-the old location so as to not break old versions of ocfs2-tools. New
-versions of ocfs2-tools know to look in /sys/fs/o2cb. When an appropriate
-amount of time has passed (decided to be two years), we can remove the link.
-This change required a small patch to sysfs (entirely external to Ocfs2)
-which is included here with the appropriate 'Acked-by' lines.
-
-
-Inode allocation in Ocfs2 has been modified to better handle an annoying
-corner case. When a node's local inode allocator fills up, it attempts to
-grow the allocator by adding an inode group. This might be impossible
-though, if the main file system bitmap is too full or fragmented to provide
-the required space. This used to be treated as an ENOSPC condition, but with
-the addition of Tao's "inode stealing" patches, the allocation code will
-attempt to allocate from other node's inode allocators before throwing an
-error.
-
-
-Merging of unwritten extents has also undergone an incremental but
-significant improvement - extents can now be merged between leaf nodes. This
-ensures that the allocation btree stays as compact as possible, even if
-previous write patterns had caused it to fragment. Thanks again goes to Tao
-for this improvement.
-
-
-Sunil has improved our ability to debug the Ocfs2 DLM by allowing us to
-track DLM state via a set of debugfs files. It's now possible to get a
-point-in-time view of master list entries, lock resource states and more.
-Debugfs.ocfs2 has been patched to make this process even easier.
-
-
-And finally, we have Joel's work to allow Ocfs2 to use userspace cluster
-stacks. This series of patches is the last step in a multi-year process of
-seperating the Ocfs2 file system code from the underlying cluster stack.
-The file system is now cluster stack agnostic. Users can choose between
-the "o2cb" stack which is comprised of the traditional Ocfs2 cluster
-components (including fs/ocfs2/dlm, also referred to as "o2dlm") or the new
-"user" cluster stack. The "user" cluster stack requires a userspace
-component to communicate node membership information to the file system via
-a misc device. In "user" cluster stack mode, Dave Teigland's dlm (fs/dlm) is
-used as it already contains a cluster stack agnostic userspace API.
-
-This all has several benefits. The most obvious is that we now get to share
-code and maintenance cost with other cluster-related projects instead of
-re-implementing cluster and dlm features in parallel. Additionally, Ocfs2
-users can now run the cluster stack of their choice. For example, while we
-anticipate that some users will want to stick with o2cb for it's simplicity
-of setup and use, many will want access to some of the advanced features
-(clustered volume management, hardware fencing, service failover, etc) that
-are already provided by most userspace cluster stacks. These patches allow
-for that sort of decision to be made.
-
-Of course, all of this is 100% backwards compatible with old versions of
-Ocfs2-tools. Users only need to download a new version of Ocfs2-tools if
-they want to take advantage of the userspace cluster stack feature. An
-ocfs2-tools tree with code to enable userspace cluster stacks can be found
-at:
-
-http://oss.oracle.com/git/?p=ocfs2-tools.git;a=shortlog;h=stack-user
-
-Right now, the sole stack interface implemented in the toolchain is to Red
-Hat's "cluster" project. In time, we anticipate that ocfs2-tools will grow
-support for other cluster stacks, including linux-ha. Our thanks go to the
-folks involved in the "cluster" project. Their help and advice was
-instrumental to getting this together.
-
-Thanks,
-	--Mark
---
-Mark Fasheh
