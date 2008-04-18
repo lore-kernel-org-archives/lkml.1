@@ -1,48 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYDRJGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbYDRJXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbYDRJGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 05:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYDRJGK
+	id S1755634AbYDRJXz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 05:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYDRJXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 05:06:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:36487 "EHLO www.tglx.de"
+	Fri, 18 Apr 2008 05:23:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56797 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754144AbYDRJGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 05:06:09 -0400
-Date: Fri, 18 Apr 2008 11:05:47 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH] UBIFS - new flash file system
-In-Reply-To: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-Message-ID: <alpine.LFD.1.10.0804181101000.3261@apollo.tec.linutronix.de>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1752901AbYDRJXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 05:23:43 -0400
+Date: Fri, 18 Apr 2008 11:22:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-pm@lists.linux-foundation.org, Greg KH <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Jack Steiner <steiner@sgi.com>, Mike Travis <travis@sgi.com>,
+       Alan Mayer <ajm@sgi.com>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-ID: <20080418092254.GA20661@elte.hu>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080418005034.6e4dd9e7.akpm@linux-foundation.org> <20080418005323.7c015c42.akpm@linux-foundation.org> <20080418005733.aa3e8250.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080418005733.aa3e8250.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Mar 2008, Artem Bityutskiy wrote:
-> UBIFS mount time is considerably faster as well. For example,
-> In case of OLPC we observed 10-15 seconds faster boot time
-> comparing to JFFS2 (fast mount, no full media check).
 
-The mount time compared to JFFS2 on a 700MiB partition went down from
-1min40s to 5sec on the same hardware. Pretty impressive
- 
-> UBIFS is quite complex because it is difficult to maintain
-> indexing information on the flash media and be fast at the same
-> time. Please, refer the UBIFS white paper for information
-> about UBIFS design.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-We did some initial stress tests and so far it looks pretty robust.
+> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x31/0x67()
+>
+> [<ffffffff803523e6>] ? debug_smp_processor_id+0x32/0xc4
+> [<ffffffff8021ede5>] read_apic_id+0x31/0x67
+> [<ffffffff8066f7f2>] verify_local_APIC+0xa7/0x163
+> [<ffffffff8066e837>] native_smp_prepare_cpus+0x1ed/0x301
+> [<ffffffff80669ab2>] kernel_init+0x5a/0x276
 
-Great job !
+that came in via the UV-APIC patchset but the warning is entirely 
+harmless. At that point we've got a single CPU running only so 
+preemption of that code to another CPU is not possible.
 
-Thanks,
-	tglx
+native_smp_prepare_cpus() should probably just disable preemption, that 
+way we could remove all those ugly preempt disable-enable calls from the 
+called functions - per the patch below. (not boot tested yet - might 
+provoke atomic-scheduling warnings if i forgot about some schedule point 
+in this rather large codepath)
+
+	Ingo
+
+------------------->
+Subject: x86: disable preemption in native_smp_prepare_cpus
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri Apr 18 11:07:10 CEST 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/smpboot.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-x86.q/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/smpboot.c
++++ linux-x86.q/arch/x86/kernel/smpboot.c
+@@ -1181,6 +1181,7 @@ static void __init smp_cpu_index_default
+  */
+ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ {
++	preempt_disable();
+ 	nmi_watchdog_default();
+ 	smp_cpu_index_default();
+ 	current_cpu_data = boot_cpu_data;
+@@ -1237,6 +1238,7 @@ void __init native_smp_prepare_cpus(unsi
+ 	printk(KERN_INFO "CPU%d: ", 0);
+ 	print_cpu_info(&cpu_data(0));
+ 	setup_boot_clock();
++	preempt_enable();
+ }
+ /*
+  * Early setup to make printk work.
