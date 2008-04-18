@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYDRHU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbYDRHVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYDRHU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 03:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYDRHUN
+	id S1757029AbYDRHVj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 03:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYDRHVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 03:20:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56942 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752349AbYDRHUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 03:20:11 -0400
-Date: Fri, 18 Apr 2008 09:19:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: 2.6.25-mm1: not looking good
-Message-ID: <20080418071945.GA18044@elte.hu>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080417224908.67cec814@laptopd505.fenrus.org> <20080417231038.72363123.akpm@linux-foundation.org>
+	Fri, 18 Apr 2008 03:21:32 -0400
+Received: from s200aog11.obsmtp.com ([207.126.144.125]:47896 "EHLO
+	s200aog11.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYDRHVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 03:21:31 -0400
+Message-ID: <48084B60.3040208@st.com>
+Date: Fri, 18 Apr 2008 09:18:56 +0200
+From: Richard MUSIL <richard.musil@st.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080417231038.72363123.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Greg KH <greg@kroah.com>
+Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: Problem with accessing stable git over http
+References: <47EA26E4.8060602@st.com> <20080404050718.GE23796@1wt.eu> <47F5E701.6020706@st.com> <4804A58E.5070104@st.com> <20080417212849.GA17653@kroah.com>
+In-Reply-To: <20080417212849.GA17653@kroah.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 17 Apr 2008 22:49:08 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+On 17.4.2008 23:28, Greg KH wrote:
+> On Tue, Apr 15, 2008 at 02:54:38PM +0200, Richard MUSIL wrote:
+>> Just to give an update on the topic. I tried to clone stable 2.6.24.y
+>> branch and got a bit more info then on fetch:
+>>
+>>> rmusil@prglx09 ~ $ git clone http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git linux-2.6.24.y
+>>> Initialized empty Git repository in /home/rmusil/linux-2.6.24.y/.git/
+>>> Cannot get remote repository information.
+>>> Perhaps git-update-server-info needs to be run there?
+>>> rmusil@prglx09 ~ $
+>> This is from machine which is behind proxy, but I tried it from another
+>> one, which has direct access and got exactly the same output.
+>> Is it possible that perhaps git-update-server-info should be run there?
+>> Who is responsible for the repository maintenance?
+>> So far it looks like the http access is simply not set up on the repo,
+>> even though it is advertised on project web page.
+>>
+>> Greg, could you help me with this?
 > 
-> > On Thu, 17 Apr 2008 16:03:31 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > I repulled all the trees an hour or two ago, installed everything on
-> > > an 8-way x86_64 box and:
-> > > 
-> > > 
-> > > stack-protector:
-> > > 
-> > > Testing -fstack-protector-all feature
-> > > No -fstack-protector-stack-frame!
-> > > -fstack-protector-all test failed
-> > 
-> > do you have a stack-protector capable GCC? I guess not.
-> > 
-> > This is a catch-22. You do not have stack-protector. Should we make that 
-> > a silent failure? or do you want to know that you don't have a security
-> > feature you thought you had.... complaining seems to be the right thing to do imo.
-> 
-> A #warning sounds more appropriate.
+> I've now run git-update-server-info on that repo, let me know if that
+> solves the problem or not.
 
-this warning is telling the user that the security feature that got 
-enabled in the .config is completely, 100% not working due to using a
-stack-protector-incapable GCC.
+Thanks, this seems has solved the problem. Now, I can fetch from stable
+branch over http without any problems.
 
-it's analogous as if there was a bug in gcc that made SELinux totally 
-ineffective in some mitigate-exploit-damage scenarios. No harm done on a 
-perfectly bug-free system - but once a bug happens that SELinux should 
-have mitigated, the breakage becomes real. Having a prominent warning is 
-the _minimum_.
-
-having a build failure would be nice too because this is a build 
-environment problem. (not a build warning - warnings can easily be 
-missed because on a typical kernel build there's so many false positives 
-that get emitted by various other warning mechanisms) Arjan?
-
-	Ingo
+Richard
