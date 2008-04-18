@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYDRTjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbYDRToR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbYDRTjW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 15:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbYDRTix
+	id S1761017AbYDRToR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 15:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759708AbYDRToJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 15:38:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:50470 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760890AbYDRTiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 15:38:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=uaHwJVjoVvOF/WX+DVtmOSXkS0x111iCa8TY0jqrdprwh+opQGIY5smkXP00GmdPqWh/4QHMZ/SCWV1iP9uNo0AfpZcvH+2tmVm2XOgXfvTl9TafKc2Ok/QBKfWmkkuutCVBEH15B3RcCyZ0NGGBsivaRmgWbUmH5EURrjwkEts=
-Message-ID: <517f3f820804181238s79326d10tf898691f997715e5@mail.gmail.com>
-Date: Fri, 18 Apr 2008 21:38:50 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, netdev@vger.kernel.org,
-       "Max Krasnyansky" <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Michael Kerrisk" <mtk.manpages@gmail.com>
-In-Reply-To: <20080418115959.6b8fdfa7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804181433.48488.rusty@rustcorp.com.au>
-	 <200804181439.49051.rusty@rustcorp.com.au>
-	 <20080418041846.db15150b.akpm@linux-foundation.org>
-	 <200804190032.39626.rusty@rustcorp.com.au>
-	 <20080418115959.6b8fdfa7.akpm@linux-foundation.org>
-X-Google-Sender-Auth: b8b2685cd3512730
+	Fri, 18 Apr 2008 15:44:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753610AbYDRToI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 15:44:08 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: prevent unconditional writes to DebugCtl MSR
+X-Fcc: ~/Mail/linus
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20080418194334.7483627037C@magilla.localdomain>
+Date: Fri, 18 Apr 2008 12:43:34 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/18/08, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sat, 19 Apr 2008 00:32:39 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
->
->  > > Isn't this kinda-sorta like what a relayfs file does?  The oprofile
->  > > buffers?  etc?  Nothing in common at all, no hope?
->  >
->  > An excellent question, but I thought the modern kernel etiquette was to only
->  > comment on whitespace and formatting, and call it "review"? :)
->  >
->  > Yes, kinda-sorta in that it's a ring buffer.  No, in that it's bidir and
->  > consumption can be out-of-order (kind of important for I/O buffers).
->  >
->  > But the reason I'm not proposing it as a syscall is that I'm not convinced
->  > it's the One True Solution which everyone should be using.  Time will tell:
->  > it's clearly not tied to tun and it's been generically useful for virtual
->  > I/O, but history has not been kind to new userspace interfaces.
->
->
-> This is may be our third high-bandwidth user/kernel interface to transport
->  bulk data ("hbukittbd") which was implemented because its predecessors
->  weren't quite right.  In a year or two's time someone else will need a
->  hbukittbd and will find that the existing three aren't quite right and will
->  give us another one.  One day we need to stop doing this ;)
->
->  It could be that this person will look at Rusty's hbukittbd and find that
->  it _could_ be tweaked to do what he wants, but it's already shipping and
->  it's part of the kernel API and hence can't be made to do what he wants.
->
->  So I think it would be good to plonk the proposed interface on the table
->  and have a poke at it.  Is it compat-safe?  Is it extensible in a
->  backward-compatible fashion?  Are there future-safe changes we should make
->  to it?  Can Michael Kerrisk understand, review and document it?  etc.
+I don't think this was a good idea:
 
-Well, it helps if he's CCed....
+	commit 5b0e508415a83989fe704b4718a1a214bc333ca7
+	Author: Jan Beulich <jbeulich@novell.com>
+	Date:   Mon Mar 10 13:11:17 2008 +0000
 
-I'm happy to work *with someone* on the documentation (pointless to do
-it on my own -- how do I know what Rusty's *intended* behavior for the
-interface is), and review, and testing.
+	    x86: prevent unconditional writes to DebugCtl MSR
+
+It's already a bug if there is any unconditional use of the MSR.
+Silenting ignoring it is just wrong.
+
+There was such a bug before this fix:
+
+	commit 4ba51fd75cc3789be83f0d6f878dabbb0cb19bca
+	Author: Roland McGrath <roland@redhat.com>
+	Date:   Thu Apr 3 14:18:55 2008 -0700
+
+	    x86 ptrace: avoid unnecessary wrmsr
+
+But there should not be any more.  The use of the MSR for block-step is
+controlled by arch_has_block_step(), which uses the same condition.  Any
+use of the MSR for other purposes (DS et al) should be controlled by more
+specific CPU model checks.  
+
+If TIF_DEBUGCTLMSR is ever set on a machine without the support, that is a
+bug we should diagnose earlier.  If you want some paranoia, then keep
+update_debugctlmsr but make it do:
+
+	BUG_ON(boot_cpu_data.x86 < 6);
+
+instead.
+
+
+Thanks,
+Roland
