@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbYDRHLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYDRHU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758651AbYDRHLE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 03:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYDRHKy
+	id S1758000AbYDRHU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 03:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYDRHUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 03:10:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57256 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754205AbYDRHKx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 03:10:53 -0400
-Date: Fri, 18 Apr 2008 00:10:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] Add default CPU topology information
-Message-Id: <20080418001024.7377c52d.akpm@linux-foundation.org>
-In-Reply-To: <20080331114412.GH21637@solarflare.com>
-References: <20080331114412.GH21637@solarflare.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 03:20:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56942 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752349AbYDRHUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 03:20:11 -0400
+Date: Fri, 18 Apr 2008 09:19:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-ID: <20080418071945.GA18044@elte.hu>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080417224908.67cec814@laptopd505.fenrus.org> <20080417231038.72363123.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080417231038.72363123.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Mar 2008 12:44:13 +0100 Ben Hutchings <bhutchings@solarflare.com> wrote:
 
-> Not all architectures and configurations define CPU topology information.
-> This can result in an empty topology directory in sysfs, and requires
-> in-kernel users to protect all uses with #ifdef - see
-> <http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 17 Apr 2008 22:49:08 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 > 
-> The documentation of CPU topology specifies what the defaults should be
-> if only partial information is available from the hardware.  So we can
-> provide these defaults as a fallback.
+> > On Thu, 17 Apr 2008 16:03:31 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > I repulled all the trees an hour or two ago, installed everything on
+> > > an 8-way x86_64 box and:
+> > > 
+> > > 
+> > > stack-protector:
+> > > 
+> > > Testing -fstack-protector-all feature
+> > > No -fstack-protector-stack-frame!
+> > > -fstack-protector-all test failed
+> > 
+> > do you have a stack-protector capable GCC? I guess not.
+> > 
+> > This is a catch-22. You do not have stack-protector. Should we make that 
+> > a silent failure? or do you want to know that you don't have a security
+> > feature you thought you had.... complaining seems to be the right thing to do imo.
 > 
-> This patch:
-> 
-> - Adds default definitions of the 4 topology macros to
->   include/asm-generic/topology.h.
-> - Changes include/asm-*/topology.h to include <asm-generic/topology.h>
->   unconditionally.
-> - Changes drivers/base/topology.c to use the topology macros unconditionally
->   and to cope with definitions that aren't lvalues.
-> - Updates documentation accordingly.
+> A #warning sounds more appropriate.
 
-I get a huuuuuuuge crash early in boot on the t61p dual x86_64 laptop. 
-Before netconsole has started and it has no serial port, so all I have is a
-partially-scrolled-off jpg, sorry.
+this warning is telling the user that the security feature that got 
+enabled in the .config is completely, 100% not working due to using a
+stack-protector-incapable GCC.
 
-I'll drop the patch.
+it's analogous as if there was a bug in gcc that made SELinux totally 
+ineffective in some mitigate-exploit-damage scenarios. No harm done on a 
+perfectly bug-free system - but once a bug happens that SELinux should 
+have mitigated, the breakage becomes real. Having a prominent warning is 
+the _minimum_.
 
-http://userweb.kernel.org/~akpm/p4175278.jpg
-http://userweb.kernel.org/~akpm/config-t61p.txt
-http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+having a build failure would be nice too because this is a build 
+environment problem. (not a build warning - warnings can easily be 
+missed because on a typical kernel build there's so many false positives 
+that get emitted by various other warning mechanisms) Arjan?
 
-
-If I didn't have all that wrong crap on the stack we'd have a full
-trace here.  I have CONFIG_FRAME_POINTER=y, but that doesn't seem to
-have helped.
-
+	Ingo
