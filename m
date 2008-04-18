@@ -1,208 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYDRPcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYDRPh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYDRPcx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 11:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYDRPcq
+	id S1756122AbYDRPh2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 11:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYDRPhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 11:32:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42981 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbYDRPcp (ORCPT
+	Fri, 18 Apr 2008 11:37:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:53099 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbYDRPhU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 11:32:45 -0400
-Subject: Re: Semphore -> mutex in the device tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0804181014170.5443-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0804181014170.5443-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 17:32:42 +0200
-Message-Id: <1208532762.7115.152.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 11:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Nf3O6waJyFmvQ+rteCbtn+KeFzBKqSdF1ncYsfLTcsY8dCKOCzGDfyAnZezAWLieR6g4laOzlbXo6AOGztuQlmBJvp+OnfRcv41uV6Q4qfiR7OAwKQyqWFSHLxoIM0dHWgqSHAQI7XhxXezJrQqGwuQcRqOMfJQdgjFW5nHFOI4=
+Message-ID: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+Date: Fri, 18 Apr 2008 17:37:19 +0200
+From: Matthew <jackdachef@gmail.com>
+To: torvalds@linux-foundation.org
+Subject: Linux 2.6.25
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-18 at 10:27 -0400, Alan Stern wrote:
-> On Fri, 18 Apr 2008, Peter Zijlstra wrote:
-> 
-> > > Even so there is a potential for trouble.  I don't know of any concrete
-> > > examples like this in the kernel, but they might exist.  Suppose a
-> > > driver keeps a private mutex associated with each device it manages.  
-> > > Normally the device's lock would be acquired first and the private
-> > > mutex second.  But there could be places where the driver acquires a
-> > > child device's lock while holding the parent's mutex; this would look
-> > > to lockdep like a violation.
-> > 
-> > So lockdep cares about classes and the hierarchy of thereof; so given
-> > your example:
-> > 
-> >    parent_tree_level
-> >      child_tree_level
-> >        device_lock
-> > 
-> > Its perfectly fine to take a lock from 'parent_tree_level' and then a
-> > lock from 'device_lock', skipping the class in the middle - as long as
-> > you thereafter never acquire a lock from it.
-> > 
-> > So given a pre-determined class hierarchy, you're not required to take
-> > all locks in that hierarchy; as long as you always go down. If you ever
-> > take a lock so that moves up in the hierarchy you're in trouble.
-> 
-> We must be talking at cross purposes.  Are classes and subclasses all 
-> that lockdep looks at?
+Hi everyone, hi Linus,
 
-Yes, it is fully class based.
+congratulations on this new great kernel-release :)
 
-> Let's take a simpler example.  Suppose driver D's probe routine 
-> registers a child device.  Then we have:
-> 
-> 	Subsystem:		Register device A with driver core
-> 
-> 	Driver core:		Lock device A with NESTING_PARENT
-> 				Call D:probe()
-> 
-> 	D:probe():		Register device B with driver core
-> 				as a child of A
-> 
-> 	Driver core:		Lock device B with NESTING_PARENT
-> 				Call E:probe()
-> 
-> (where E is the appropriate driver for B).  Is this a lockdep 
-> violation?  Both A and B are locked with the same nesting level, 
-> because they are locked by the same code in the driver core, but 
-> one is the parent of the other in the device tree.
+I've another "regression" to report for 2.6.25:
 
-Do I interpert this correct when I envision a call-chain like this:
+it's concerning much higher temperatures being read out by the
+"coretemp" kernel-module in comparison to 2.6.24* series
 
-  register_devise(A, some_parent)
-    lock_device(A, NESTING_PARENT)
-    D->probe()
-      register_device(B, A)
-      lock_device(B, NESTING_PARENT)
+e.g. where temperatures were around 40-47°C they are now constantly
+jumping around 55-70°C (even in idle !)
 
-That would work iff register_device() sets a tree-level class on B that
-is one down from A.
+several other users/testers have reported this issue too (both on
+zen-sources [heavy patched] & latest gentoo-sources) [slightly
+patched]:
 
-> Or maybe I misunderstood, and you're proposing to use a node's level in
-> the tree as its lockdep nesting level.
+http://forums.gentoo.org/viewtopic-t-684812-highlight-.html
 
-Yes, associate a class with each level like this:
+if I understood git right it (also) happens in conjunction with an 3
+weeks old acpi-snapshot
+(http://repo.or.cz/w/linux-2.6/zen-sources.git?a=heads) integrated in
+zen-sources
 
-static struct lockdep_class_key device_tree_class[MAX_DEVICE_TREE_DEPTH];
+I can "reproduce" this on an Intel Core 2 Duo 6600 (Conroe) with a P5W
+DH Deluxe mainboard (by Asus) since at least 2.6.25-rc8 (or possibly
+also rc7)
 
-register_device(child, parent)
-{
-	...
-	child->depth = parent->depth + 1;
-	WARN_ON(child->depth > MAX_DEVICE_TREE_DEPTH);
-	mutex_destroy(&child->lock);
-	mutex_init(&child->lock);
-	lockdep_set_class(&child->lock, &device_tree_class[child->depth]);
-	...
-}
+the temperatures on mobile core (2) duo intel processors [e.g. an
+T7500] seem to be read out correctly - I can't tell it exactly but
+this seems to be an entirely "cosmetical" issue
+(hopefully it's not the opposite and the values are now read out
+correctly since such high temps would be very worrying ;) )
 
-Now suppose we have a tree like:
+Keep up the great work & please don't forget your growing amount of
+linux-desktop users :)
 
-0          A
-         / | \
-1       B  C  D
-            / | \
-2          E  F  F
-           |
-3          H
+Regards
 
-
-Now, you can lock the whole path to H like:
-
-  mutex_lock(&A->lock);
-  mutex_lock(&D->lock);
-  mutex_unlock(&A->lock);
-  mutex_lock(&E->lock);
-  mutex_unlock(&D->lock);
-  mutex_lock(&H->lock);
-  mutex_unlock(&E->lock);
-
-  < H locked >
-
-without a single other lockdep annotation; this will teach lockdep the
-following class order:
-
-  device_tree_class[0]
-    device_tree_class[1]
-      device_tree_class[2]
-        device_tree_class[3]
-
-So a lock sequence like:
-
-  mutex_lock(&E->lock);
-  mutex_lock(&D->lock);
-
-Which will go from 2 -> 1, will generate a complaint.
-
-So, now your sibling scenario:
-
-Lock D, E and F:
-
-  mutex_lock(&D->lock);
-  mutex_lock(&E->lock);
-  mutex_lock_nested(&F->lock, SINGLE_DEPTH_NESTING);
-
-This will teach lockdep the following class order:
-
-  device_tree_class[1]
-    device_tree_class[2]
-      device_tree_class[2].subclass[1]
-
-So, if at another time you do:
-
-  mutex_lock(&D->lock);
-  mutex_lock(&F->lock);
-  mutex_lock(&E->lock, SINGLE_DEPTH_NESTING);
-
-you're still obeying that order; of course you have to somehow guarantee
-that it will never actually deadlock - otherwise you annotate a genuine
-warning away.
-
->   In that case, consider this
-> example.  Suppose driver D associates a private mutex M with each of
-> its devices.  Suppose D is managing device A at level 4 and device B at
-> level 5.  Then we might have:
-> 
-> 	D:		Lock device B at level 5
-> 	D:		Lock B's associated M
-> 
-> (which tells lockdep that M comes after level 5), together with
-> 
-> 	D:		Lock device A at level 4
-> 	D:		Lock A's associated M
-> 	D:		Lock A's child at level 5
-                                    ^ B, right?
-> 
-> Won't this then be a lockdep violation (since M is now locked before a
-> device at level 5)?
-
-Interesting.. yes, this would make lockdep upset - basically because you
-introduce nesting of M.
-
-  device_tree_class[4]
-    M_class
-      device_tree_class[5]
-        M_class
-
-So you take M_class inside M_class.
-
-Is this a common scenario? Normally a driver would only deal with a
-single device instance at a time, so I guess that once this scenario can
-happen the driver is already aware of this, right?
-
-It would need a separate annotation; if the coupling would be static
-(ps2 keyboard/mouse comes to mind) then the driver can have different
-lockdep_class_key instances.
-
-
+Mat
