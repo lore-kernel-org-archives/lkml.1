@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYDRSBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbYDRSLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbYDRSBn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 14:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759009AbYDRSBc
+	id S1759603AbYDRSLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbYDRSLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 14:01:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:17667 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758888AbYDRSBb (ORCPT
+	Fri, 18 Apr 2008 14:11:21 -0400
+Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:29541 "HELO
+	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759456AbYDRSLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 14:01:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VPTl+FoAabMhabu/K+JjFa3GDzRw2lugdBH/CglVxfpQFDI/YYjj7od3WWBjpZcVHxGYuSr9bWqrilEFDxANWL2E1GiJ7kl2canw0boaSc1Q05pJKhebqycBudojnWM8TUYdiTfBqdj/iB5slGepv01n7+jgHgzU6VVrq8K5Ygk=
-Message-ID: <6bc632150804181101i701f220an20dddf54389be273@mail.gmail.com>
-Date: Fri, 18 Apr 2008 23:31:29 +0530
-From: "pradeep singh rautela" <rautelap@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH 5/5] tun: vringfd xmit support.
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Max Krasnyansky" <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org
-In-Reply-To: <2c0942db0804180725h88fa7d1mb8e85e5a8b0aede6@mail.gmail.com>
+	Fri, 18 Apr 2008 14:11:20 -0400
+X-YMail-OSG: ZTr3NAcVM1nbYWWSwdm83ROOTmPHO7_XCyLsD0EUItOjhyQr5JQ6qh7euS5OsnAnMkPntOolevzYXsgtpCklhZ4aYtdTcobd4ZipRUyjiDHq8Vp_Qqv1Yz63B9Y-
+X-RocketYMMF: rancidfat
+Date: Fri, 18 Apr 2008 11:11:14 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Security testing tree patch review for 2.6.26
+To: James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org
+Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1208430369-23156-1-git-send-email-jmorris@namei.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804181433.48488.rusty@rustcorp.com.au>
-	 <200804181441.10499.rusty@rustcorp.com.au>
-	 <200804181442.17251.rusty@rustcorp.com.au>
-	 <200804181443.24812.rusty@rustcorp.com.au>
-	 <6bc632150804180446u29e5dae9h986e1d255e584d21@mail.gmail.com>
-	 <2c0942db0804180725h88fa7d1mb8e85e5a8b0aede6@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <834491.21069.qm@web36602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 7:55 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
-> On Fri, Apr 18, 2008 at 4:46 AM, pradeep singh rautela
->  <rautelap@gmail.com> wrote:
->  >
->  > On Fri, Apr 18, 2008 at 10:13 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+--- James Morris <jmorris@namei.org> wrote:
+
+> 
+> Please review the following security patches for 2.6.26, which have
+> been undergoing testing in the "next" tree and affect multiple LSMs.
+
+I have done basic testing on this patchset and have not
+encountered any problems from the Smack side. I have not
+tested without Smack nor by implication with SELinux.
+
+
+> 
+> The following changes since commit 4b119e21d0c66c22e8ca03df05d9de623d0eb50f:
+>   Linus Torvalds (1):
+>         Linux 2.6.25
+> 
+> are available in the git repository at:
+> 
+>  
 >
-> >  >  +               /* How many pages will this take? */
->  >  >  +               npages = 1 + (base + len - 1)/PAGE_SIZE - base/PAGE_SIZE;
->  >
->  >  Hi Rusty,
->  >  A trivial suggestion, how about
->  >           npages = 1+(len -1)/PAGE_SIZE ?
->
->  That's not the same. In particular, his version accounts for the
->  fractional page at the beginning, while yours doesn't.
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git
+> for-linus
+> 
+> Ahmed S. Darwish (10):
+>       LSM: Introduce inode_getsecid and ipc_getsecid hooks
+>       SELinux: setup new inode/ipc getsecid hooks
+>       Audit: use new LSM hooks instead of SELinux exports
+>       Netlink: Use generic LSM hook
+>       SELinux: remove redundant exports
+>       LSM/Audit: Introduce generic Audit LSM hooks
+>       Audit: internally use the new LSM audit hooks
+>       SELinux: use new audit hooks, remove redundant exports
+>       Audit: Final renamings and cleanup
+>       Security: Introduce security= boot parameter
+> 
+> James Morris (2):
+>       Tell git about security/selinux/include/audit.h
+>       security: fix up documentation for security_module_enable
+> 
+>  Documentation/kernel-parameters.txt |    6 ++
+>  include/linux/audit.h               |   29 ++++++++
+>  include/linux/security.h            |  114 +++++++++++++++++++++++++++++-
+>  include/linux/selinux.h             |  134
+> -----------------------------------
+>  kernel/audit.c                      |   24 +++----
+>  kernel/audit.h                      |   25 -------
+>  kernel/auditfilter.c                |   99 ++++++++++----------------
+>  kernel/auditsc.c                    |   74 ++++++++++---------
+>  net/netlink/af_netlink.c            |    3 +-
+>  security/dummy.c                    |   51 +++++++++++++-
+>  security/security.c                 |   73 +++++++++++++++++++-
+>  security/selinux/exports.c          |   42 -----------
+>  security/selinux/hooks.c            |   34 ++++++++-
+>  security/selinux/include/audit.h    |   65 +++++++++++++++++
+>  security/selinux/ss/services.c      |   45 +++++++++---
+>  security/smack/smack.h              |    2 +
+>  security/smack/smack_lsm.c          |    7 ++-
+>  security/smack/smackfs.c            |   11 +++-
+>  18 files changed, 503 insertions(+), 335 deletions(-)
+>  create mode 100644 security/selinux/include/audit.h
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
 
-Oh thanks for correcting me Ray. :)
->
->  While it's tempting to use algebra to simplify things, it's not safe
->  to do so when the expression involves division over the integers. The
->  only care-free integer math in a computer is subtraction and ++.
 
-I stand corrected.
-
-Sorry for noise.
-
-Thanks,
--- 
-Pradeep Singh Rautela
-http://eagain.wordpress.com
-http://emptydomain.googlepages.com
+Casey Schaufler
+casey@schaufler-ca.com
