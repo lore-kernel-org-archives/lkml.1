@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYDRWdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYDRWfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYDRWdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 18:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYDRWcz
+	id S1753999AbYDRWfi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 18:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYDRWfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 18:32:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53524
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751144AbYDRWcz (ORCPT
+	Fri, 18 Apr 2008 18:35:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37457 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751370AbYDRWfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 18:32:55 -0400
-Date: Fri, 18 Apr 2008 15:32:56 -0700 (PDT)
-Message-Id: <20080418.153256.253949503.davem@davemloft.net>
-To: khc@pm.waw.pl
-Cc: alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m33apjp32f.fsf@maximus.localdomain>
-References: <20080412115950.1cbb9cfa@core>
-	<m33apqomgf.fsf@maximus.localdomain>
-	<m33apjp32f.fsf@maximus.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 18 Apr 2008 18:35:30 -0400
+Date: Fri, 18 Apr 2008 15:34:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Introduce down_killable()
+Message-Id: <20080418153455.4d0bee30.akpm@linux-foundation.org>
+In-Reply-To: <200804181705.m3IH56W4007130@hera.kernel.org>
+References: <200804181705.m3IH56W4007130@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 18 Apr 2008 17:58:48 +0200
+On Fri, 18 Apr 2008 17:05:06 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-> Comments?
+> --- a/kernel/semaphore.c
+> +++ b/kernel/semaphore.c
+> @@ -34,6 +34,7 @@
+>  
+>  static noinline void __down(struct semaphore *sem);
+>  static noinline int __down_interruptible(struct semaphore *sem);
+> +static noinline int __down_killable(struct semaphore *sem);
+>  static noinline void __up(struct semaphore *sem);
 
-I'll fix it properly because I know you won't do the work.
-You don't need to keep making excuses.
+What is the reason for all the noinlines in this file?
+
+Something to do with getting proper wchan output?  I guess it doesn't hurt
+from a documentation POV, but did you find that it was actually necessary?
+
+IOW: is gcc now capable of secretly inlining functions which are defined
+further ahead in the compilation unit?
+
+
+(did you actually "test" the wchan stuff, btw?)
