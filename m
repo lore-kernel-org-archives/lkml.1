@@ -1,112 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYDRDu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbYDRD6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYDRDu3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 23:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYDRDuV
+	id S1757382AbYDRD6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 23:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYDRD6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 23:50:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57283 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753067AbYDRDuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 23:50:21 -0400
-Message-ID: <48081A52.8040802@cn.fujitsu.com>
-Date: Fri, 18 Apr 2008 11:49:38 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
-Subject: Re: [PATCH] memcgroup: check and initialize page->cgroup in memmap_init_zone
-References: <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com> <20080417201432.36b1c326.akpm@linux-foundation.org> <4808177F.3090208@linux.vnet.ibm.com>
-In-Reply-To: <4808177F.3090208@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Apr 2008 23:58:11 -0400
+Received: from ozlabs.org ([203.10.76.45]:53688 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751151AbYDRD6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Apr 2008 23:58:10 -0400
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, takata@linux-m32r.org,
+       linux-m32r@ml.linux-m32r.org, Linux-Arch <linux-arch@vger.kernel.org>
+In-Reply-To: <20080413191338.9776ebd0.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	 <1208133506.6958.82.camel@pasglop>
+	 <20080413191338.9776ebd0.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 13:58:06 +1000
+Message-Id: <1208491086.6958.381.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote::
-> Andrew Morton wrote:
->> On Fri, 18 Apr 2008 10:46:30 +0800 Shi Weihua <shiwh@cn.fujitsu.com> wrote:
->>
->>> When we test memory controller in Fujitsu PrimeQuest(arch: ia64),
->>> the compiled kernel boots failed, the following message occured on
->>> the telnet terminal.
->>> -------------------------------------
->>> ..........
->>> ELILO boot: Uncompressing Linux... done
->>> Loading file initrd-2.6.25-rc9-00067-gb87e81e.img...done
->>> _ (system freezed)
->>> -------------------------------------
->>>
->>> We found commit 9442ec9df40d952b0de185ae5638a74970388e01
->>> causes this boot failure by git-bisect.
->>> And, we found the following change caused the boot failure.
->>> -------------------------------------
->>> @@ -2528,7 +2535,6 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zon
->>>                 set_page_links(page, zone, nid, pfn);
->>>                 init_page_count(page);
->>>                 reset_page_mapcount(page);
->>> -               page_assign_page_cgroup(page, NULL);
->>>                 SetPageReserved(page);
->>>
->>>                 /*
->>> -------------------------------------
->>> In this patch, the Author Hugh Dickins said 
->>> "...memmap_init_zone doesn't need it either, ...
->>> Linux assumes pointers in zeroed structures are NULL pointers."
-> 
-> 
-> 
->>> But it seems it's not always the case, so we should check and initialize
->>> page->cgroup anyways.
->>>
-> 
-> The comment from Hugh is correct, which implies that in this case page->cgroup
-> is not zeroed.
-> 
->>> Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
->>> ---
->>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->>> index 402a504..506d4cf 100644
->>> --- a/mm/page_alloc.c
->>> +++ b/mm/page_alloc.c
->>> @@ -2518,6 +2518,7 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
->>>  	struct page *page;
->>>  	unsigned long end_pfn = start_pfn + size;
->>>  	unsigned long pfn;
->>> +	void *pc;
->>>  
->>>  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
->>>  		/*
->>> @@ -2535,6 +2536,9 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
->>>  		set_page_links(page, zone, nid, pfn);
->>>  		init_page_count(page);
->>>  		reset_page_mapcount(page);
->>> +		pc = page_get_page_cgroup(page);
->>> +		if (pc) 
->>> +			page_reset_bad_cgroup(page);
->>>  		SetPageReserved(page);
->>>  
->> hm, fishy.  Perhaps the architecture isn't zeroing the memmap arrays?
->>
-> 
-> The mem_map array should be cleared. I need to see the code to check where the
-> clearing takes place.
-> 
->> Or perhaps that page was used and then later freed before we got to
->> memmap_init_zone() and was freed with a non-zero ->page_cgroup.  Which is
->> unlikely given that page.page_cgroup was only just added and is only
->> present if CONFIG_CGROUP_MEM_RES_CTLR.
-> 
-> Please share your .config? Is this a kexec/kdump reboot by any chance?
-> 
 
-.config is shared in previous mails.
-kexec/kdump has not been used.
+> > > otoh, if only one .c file will ever call this function then I think that
+> > > all problems are solved by
+> > > 
+> > > a) moving the above ifdeffery into the .c file
+> > > b) adding a comment explaining which arch file must provide the override
+> > > c) directly including that file from within the .c file.
+> > 
+> > I can definitely do that. I have no problem either way. I can add to all
+> > archs too, it's just that whatever way I choose, some people won't be
+> > happy with it :-)
+> > 
+> > Anyway, I'll move the ifdeferry to init/main.c then.
+> 
+> Thanks ;)
+> 
+> I'm still wounded by my recent encounter with set_softirq_pending()
+> and or_softirq_pending().
 
-Thanks
--Shi
+Well, looking there, I saw we already used weak symbols for that so what
+about the patch below ? If you're ok, I'll re-send with appropriate sob
+& adapted powerpc part.
+
+Cheers,
+Ben.
+
+Index: linux-work/init/main.c
+===================================================================
+--- linux-work.orig/init/main.c	2008-03-26 10:39:25.000000000 +1100
++++ linux-work/init/main.c	2008-04-18 13:10:35.000000000 +1000
+@@ -504,6 +504,10 @@ void __init __attribute__((weak)) smp_se
+ {
+ }
+ 
++void __init __attribute__((weak) thread_info_cache_init(void)
++{
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -623,6 +627,7 @@ asmlinkage void __init start_kernel(void
+ 	if (efi_enabled)
+ 		efi_enter_virtual_mode();
+ #endif
++	thread_info_cache_init();
+ 	fork_init(num_physpages);
+ 	proc_caches_init();
+ 	buffer_init();
+Index: linux-work/include/linux/sched.h
+===================================================================
+--- linux-work.orig/include/linux/sched.h	2008-04-02 09:47:56.000000000 +1100
++++ linux-work/include/linux/sched.h	2008-04-18 13:11:10.000000000 +1000
+@@ -1893,6 +1893,8 @@ static inline unsigned long *end_of_stac
+ 
+ #endif
+ 
++extern void thread_info_cache_init(void);
++
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+  */
+
 
