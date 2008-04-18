@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYDRJfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbYDRJlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbYDRJfe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 05:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYDRJfX
+	id S1756362AbYDRJlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 05:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYDRJlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 05:35:23 -0400
-Received: from www.tglx.de ([62.245.132.106]:54384 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbYDRJfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 05:35:22 -0400
-Date: Fri, 18 Apr 2008 11:35:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alex Dubov <oakad@yahoo.com>
-cc: linux-kernel@vger.kernel.org, joern@logfs.org, ben@fluff.org
-Subject: Re: Smartmedia/xd card support - request for comments
-In-Reply-To: <143829.94600.qm@web36707.mail.mud.yahoo.com>
-Message-ID: <alpine.LFD.1.10.0804181126350.3261@apollo.tec.linutronix.de>
-References: <143829.94600.qm@web36707.mail.mud.yahoo.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 18 Apr 2008 05:41:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58400 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754289AbYDRJlg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 05:41:36 -0400
+Date: Fri, 18 Apr 2008 11:42:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-pm@lists.linux-foundation.org, Greg KH <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-ID: <20080418094220.GB23572@elf.ucw.cz>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080418005034.6e4dd9e7.akpm@linux-foundation.org> <20080418005323.7c015c42.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080418005323.7c015c42.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Alex Dubov wrote:
->
-> First, with all the respect to Jorn, alauda driver can only be
-> considered "proof of concept". It does not try to abstract any
-> smartmedia functionality.
+On Fri 2008-04-18 00:53:23, Andrew Morton wrote:
+> On Fri, 18 Apr 2008 00:50:34 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Second, ssfdc is hopelessly obsolete and requires rewrite.
+> > dmesg: http://userweb.kernel.org/~akpm/x.txt
+> > config: http://userweb.kernel.org/~akpm/config-t61p.txt
+> 
+> oop, there's more:
+> 
+> 
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> firewire_core: created device fw0: GUID 00016c2000174bad, S400
+> PM: Device usb4 failed to restore: error -113
+> eth0: Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+> eth0: 10/100 speed: disabling TSO
+> PM: Device usb5 failed to restore: error -113
+> PM: Device usb7 failed to restore: error -113
+> sd 0:0:0:0: [sda] Starting disk
+> PM: Image restored successfully.
+> Restarting tasks ... done.
+> PM: Basic memory bitmaps freed
+> 
+> Those USB restore failures are new.  They're similar to the ones on the
+> doesnt-resume-properly-any-more Vaio.  They came out from the machine's
+> second (successful) resume-from-disk.
 
-Nobody claimed that it is perfect.
+Try rmmod usb / insmod usb around suspend to see if it is
+usb-specific, or if something went seriously wrong in core.
 
-> Third, there's no attempt made by mtd to support advanced
-> functionality present in many smartmedia and all memorystick
-> readers: adapter side copy and multi page programming (this mostly
-> relates to memorystick, of course). I also failed to see any support
-> for device writing policy, needed to discern, for example,
-> sequential page programmable devices vs. block programmable
-> devices. I also failed to see an unified approach to page-accessible
-> devices, meaning duplication of "bouncing" code in the backends.
-
-And instead of addressing the missing features and shortcomings you
-add a new duplicated code layer which is only useful for a restricted
-set of hardware.
-
-> Considering all this, amount of effort needed for satisfactory
-> support of smartmedia through mtd was found by me to be far greater
-> than coming with stand-alone implementation.
-
-Yeah and you made this decision on your own w/o even discussing the
-issues at hand with the mtd developers before implementing a separate
-code stack. And now we should be impressed and merge it. That's not
-the way it works.
-
-> I do agree, that eventually my work can be merged into mtd. I don't
-> see what prevents merging of my implementation as is on an interim
-> basis, considering there are no real alternatives.
-
-Merging your code as is is a bad idea as it contains userspace visible
-changes which can not be undone easily. Interim solutions burden more
-problems on us than they solve.
-
-Thanks,
-	tglx
+Or you might just bisect it ;-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
