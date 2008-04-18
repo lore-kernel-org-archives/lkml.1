@@ -1,194 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbYDRSNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbYDRSRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbYDRSNi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 14:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbYDRSNa
+	id S1759810AbYDRSRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 14:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbYDRSRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 14:13:30 -0400
-Received: from msg.vodafone.pt ([212.18.167.162]:17854 "EHLO msg.vodafone.pt"
+	Fri, 18 Apr 2008 14:17:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55251 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759405AbYDRSN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 14:13:29 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 14:13:29 EDT
-Message-ID: <4808E374.4050007@joow.be>
-Date: Fri, 18 Apr 2008 20:07:48 +0200
-From: Pieter Palmers <pieterp@joow.be>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH upate] iso transmit cycle skip patch
-References: <47E18163.1080200@joow.be> <tkrat.0d0791eae8f1fc6c@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.0d0791eae8f1fc6c@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Apr 2008 18:06:15.0327 (UTC) FILETIME=[E4996AF0:01C8A17E]
+	id S1754892AbYDRSRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 14:17:39 -0400
+From: David Teigland <teigland@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/6] dlm: recover nodes that are removed and re-added
+Date: Fri, 18 Apr 2008 13:12:46 -0500
+Message-Id: <1208542368-13417-5-git-send-email-teigland@redhat.com>
+X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've double-checked it, and it seems to be good. Hence:
+If a node is removed from a lockspace, and then added back before the
+dlm is notified of the removal, the dlm will not detect the removal
+and won't clear the old state from the node.  This is fixed by using a
+list of added nodes so the membership recovery can detect when a newly
+added node is already in the member list.
 
-Signed-off-by: Pieter Palmers <pieterp@joow.be>
+Signed-off-by: David Teigland <teigland@redhat.com>
+---
+ fs/dlm/config.c       |   48 +++++++++++++++++++++++++++++++++++++++---------
+ fs/dlm/config.h       |    3 ++-
+ fs/dlm/dlm_internal.h |    4 +++-
+ fs/dlm/member.c       |   34 +++++++++++++++++++++++++++++-----
+ fs/dlm/recoverd.c     |    1 +
+ 5 files changed, 74 insertions(+), 16 deletions(-)
 
-Greets,
-
-Pieter
-
-Stefan Richter wrote:
-> Date: Wed, 19 Mar 2008 22:10:59 +0100
-> From: Pieter Palmers <pieterp@joow.be>
-> Subject: ieee1394: rawiso: requeue packet for transmission after skipped cycle
-> 
-> As it seems, some host controllers have issues that can cause them to 
-> skip cycles now and then when using large packets. I suspect that this 
-> is due to DMA not succeeding in time. If the transmit fifo can't contain 
-> more than one packet (big packets), the DMA should provide a new packet 
-> each cycle (125us). I am under the impression that my current PCI 
-> express test system can't guarantee this.
-> 
-> In any case, the patch tries to provide a workaround as follows:
-> The DMA program descriptors are modified such that when an error occurs, 
-> the DMA engine retries the descriptor the next cycle instead of 
-> stalling. This way no data is lost. The side effect of this is that 
-> packets are sent with one cycle delay. This however might not be that 
-> much of a problem for certain protocols (e.g. AM824). If they use 
-> padding packets for e.g. rate matching they can drop one of those to 
-> resync the streams.
-> 
-> The amount of skips between two userspace wakeups is counted. This 
-> number is then propagated to userspace through the upper 16 bits of the 
-> 'dropped' parameter. This allows unmodified userspace applications due 
-> to the following:
-> 1) libraw simply passes this dropped parameter to the user application
-> 2) the meaning of the dropped parameter is: if it's nonzero, something 
-> bad has happened. The actual value of the parameter at this moment does 
-> not have a specific meaning.
-> 
-> A libraw client can then retrieve the number of skipped cycles and 
-> account for them if needed.
-> ---
-> 
-> Update by Stefan R:  Changed patch title (is it OK?) and whitespace.
-> 
-> Pieter, please reply with a Signed-off-by line if the update is OK for
-> commit.  See linux/Documentation/SubmittingPatches for implications of
-> the sign-off.
-> 
->  drivers/ieee1394/iso.h      |    2 ++
->  drivers/ieee1394/ohci1394.c |   34 ++++++++++++++++++++++++++++++++++
->  drivers/ieee1394/raw1394.c  |    7 ++++++-
->  3 files changed, 42 insertions(+), 1 deletion(-)
-> 
-> Index: linux/drivers/ieee1394/iso.h
-> ===================================================================
-> --- linux.orig/drivers/ieee1394/iso.h
-> +++ linux/drivers/ieee1394/iso.h
-> @@ -123,6 +123,8 @@ struct hpsb_iso {
->  
->  	/* how many times the buffer has overflowed or underflowed */
->  	atomic_t overflows;
-> +	/* how many cycles were skipped for a given context */
-> +	atomic_t skips;
->  
->  	/* Current number of bytes lost in discarded packets */
->  	int bytes_discarded;
-> Index: linux/drivers/ieee1394/ohci1394.c
-> ===================================================================
-> --- linux.orig/drivers/ieee1394/ohci1394.c
-> +++ linux/drivers/ieee1394/ohci1394.c
-> @@ -1723,6 +1723,8 @@ struct ohci_iso_xmit {
->  	struct dma_prog_region prog;
->  	struct ohci1394_iso_tasklet task;
->  	int task_active;
-> +	int last_cycle;
-> +	atomic_t skips;
->  
->  	u32 ContextControlSet;
->  	u32 ContextControlClear;
-> @@ -1759,6 +1761,8 @@ static int ohci_iso_xmit_init(struct hps
->  	iso->hostdata = xmit;
->  	xmit->ohci = iso->host->hostdata;
->  	xmit->task_active = 0;
-> +	xmit->last_cycle = -1;
-> +	atomic_set(&iso->skips, 0);
->  
->  	dma_prog_region_init(&xmit->prog);
->  
-> @@ -1856,6 +1860,26 @@ static void ohci_iso_xmit_task(unsigned 
->  		/* parse cycle */
->  		cycle = le32_to_cpu(cmd->output_last.status) & 0x1FFF;
->  
-> +		if (xmit->last_cycle > -1) {
-> +			int cycle_diff = cycle - xmit->last_cycle;
-> +			int skip;
-> +
-> +			/* unwrap */
-> +			if (cycle_diff < 0) {
-> +				cycle_diff += 8000;
-> +				if (cycle_diff < 0)
-> +					PRINT(KERN_ERR, "bogus cycle diff %d\n",
-> +					      cycle_diff);
-> +			}
-> +
-> +			skip = cycle_diff - 1;
-> +			if (skip > 0) {
-> +				DBGMSG("skipped %d cycles without packet loss", skip);
-> +				atomic_add(skip, &iso->skips);
-> +			}
-> +		}
-> +		xmit->last_cycle = cycle;
-> +
->  		/* tell the subsystem the packet has gone out */
->  		hpsb_iso_packet_sent(iso, cycle, event != 0x11);
->  
-> @@ -1943,6 +1967,16 @@ static int ohci_iso_xmit_queue(struct hp
->  	prev->output_last.branchAddress = cpu_to_le32(
->  		dma_prog_region_offset_to_bus(&xmit->prog, sizeof(struct iso_xmit_cmd) * next_i) | 3);
->  
-> +	/*
-> +	 * Link the skip address to this descriptor itself. This causes a
-> +	 * context to skip a cycle whenever lost cycles or FIFO overruns occur,
-> +	 * without dropping the data at that point the application should then
-> +	 * decide whether this is an error condition or not. Some protocols
-> +	 * can deal with this by dropping some rate-matching padding packets.
-> +	 */
-> +	next->output_more_immediate.branchAddress =
-> +			prev->output_last.branchAddress;
-> +
->  	/* disable interrupt, unless required by the IRQ interval */
->  	if (prev_i % iso->irq_interval) {
->  		prev->output_last.control &= cpu_to_le32(~(3 << 20)); /* no interrupt */
-> Index: linux/drivers/ieee1394/raw1394.c
-> ===================================================================
-> --- linux.orig/drivers/ieee1394/raw1394.c
-> +++ linux/drivers/ieee1394/raw1394.c
-> @@ -2356,13 +2356,16 @@ static void rawiso_activity_cb(struct hp
->  static void raw1394_iso_fill_status(struct hpsb_iso *iso,
->  				    struct raw1394_iso_status *stat)
->  {
-> +	int overflows = atomic_read(&iso->overflows);
-> +	int skips = atomic_read(&iso->skips);
-> +
->  	stat->config.data_buf_size = iso->buf_size;
->  	stat->config.buf_packets = iso->buf_packets;
->  	stat->config.channel = iso->channel;
->  	stat->config.speed = iso->speed;
->  	stat->config.irq_interval = iso->irq_interval;
->  	stat->n_packets = hpsb_iso_n_ready(iso);
-> -	stat->overflows = atomic_read(&iso->overflows);
-> +	stat->overflows = ((skips & 0xFFFF) << 16) | ((overflows & 0xFFFF));
->  	stat->xmit_cycle = iso->xmit_cycle;
->  }
->  
-> @@ -2437,6 +2440,8 @@ static int raw1394_iso_get_status(struct
->  
->  	/* reset overflow counter */
->  	atomic_set(&iso->overflows, 0);
-> +	/* reset skip counter */
-> +	atomic_set(&iso->skips, 0);
->  
->  	return 0;
->  }
-> 
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index 7ceaea3..eac23bd 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -284,6 +284,7 @@ struct node {
+ 	struct list_head list; /* space->members */
+ 	int nodeid;
+ 	int weight;
++	int new;
+ };
+ 
+ static struct configfs_group_operations clusters_ops = {
+@@ -565,6 +566,7 @@ static struct config_item *make_node(struct config_group *g, const char *name)
+ 	config_item_init_type_name(&nd->item, name, &node_type);
+ 	nd->nodeid = -1;
+ 	nd->weight = 1;  /* default weight of 1 if none is set */
++	nd->new = 1;     /* set to 0 once it's been read by dlm_nodeid_list() */
+ 
+ 	mutex_lock(&sp->members_lock);
+ 	list_add(&nd->list, &sp->members);
+@@ -805,12 +807,13 @@ static void put_comm(struct comm *cm)
+ }
+ 
+ /* caller must free mem */
+-int dlm_nodeid_list(char *lsname, int **ids_out)
++int dlm_nodeid_list(char *lsname, int **ids_out, int *ids_count_out,
++		    int **new_out, int *new_count_out)
+ {
+ 	struct space *sp;
+ 	struct node *nd;
+-	int i = 0, rv = 0;
+-	int *ids;
++	int i = 0, rv = 0, ids_count = 0, new_count = 0;
++	int *ids, *new;
+ 
+ 	sp = get_space(lsname);
+ 	if (!sp)
+@@ -818,23 +821,50 @@ int dlm_nodeid_list(char *lsname, int **ids_out)
+ 
+ 	mutex_lock(&sp->members_lock);
+ 	if (!sp->members_count) {
+-		rv = 0;
++		rv = -EINVAL;
++		printk(KERN_ERR "dlm: zero members_count\n");
+ 		goto out;
+ 	}
+ 
+-	ids = kcalloc(sp->members_count, sizeof(int), GFP_KERNEL);
++	ids_count = sp->members_count;
++
++	ids = kcalloc(ids_count, sizeof(int), GFP_KERNEL);
+ 	if (!ids) {
+ 		rv = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+-	rv = sp->members_count;
+-	list_for_each_entry(nd, &sp->members, list)
++	list_for_each_entry(nd, &sp->members, list) {
+ 		ids[i++] = nd->nodeid;
++		if (nd->new)
++			new_count++;
++	}
++
++	if (ids_count != i)
++		printk(KERN_ERR "dlm: bad nodeid count %d %d\n", ids_count, i);
++
++	if (!new_count)
++		goto out_ids;
++
++	new = kcalloc(new_count, sizeof(int), GFP_KERNEL);
++	if (!new) {
++		kfree(ids);
++		rv = -ENOMEM;
++		goto out;
++	}
+ 
+-	if (rv != i)
+-		printk("bad nodeid count %d %d\n", rv, i);
++	i = 0;
++	list_for_each_entry(nd, &sp->members, list) {
++		if (nd->new) {
++			new[i++] = nd->nodeid;
++			nd->new = 0;
++		}
++	}
++	*new_count_out = new_count;
++	*new_out = new;
+ 
++ out_ids:
++	*ids_count_out = ids_count;
+ 	*ids_out = ids;
+  out:
+ 	mutex_unlock(&sp->members_lock);
+diff --git a/fs/dlm/config.h b/fs/dlm/config.h
+index a3170fe..4f1d6fc 100644
+--- a/fs/dlm/config.h
++++ b/fs/dlm/config.h
+@@ -35,7 +35,8 @@ extern struct dlm_config_info dlm_config;
+ int dlm_config_init(void);
+ void dlm_config_exit(void);
+ int dlm_node_weight(char *lsname, int nodeid);
+-int dlm_nodeid_list(char *lsname, int **ids_out);
++int dlm_nodeid_list(char *lsname, int **ids_out, int *ids_count_out,
++		    int **new_out, int *new_count_out);
+ int dlm_nodeid_to_addr(int nodeid, struct sockaddr_storage *addr);
+ int dlm_addr_to_nodeid(struct sockaddr_storage *addr, int *nodeid);
+ int dlm_our_nodeid(void);
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index d30ea8b..c70c8e5 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -133,8 +133,10 @@ struct dlm_member {
+ 
+ struct dlm_recover {
+ 	struct list_head	list;
+-	int			*nodeids;
++	int			*nodeids;   /* nodeids of all members */
+ 	int			node_count;
++	int			*new;       /* nodeids of new members */
++	int			new_count;
+ 	uint64_t		seq;
+ };
+ 
+diff --git a/fs/dlm/member.c b/fs/dlm/member.c
+index fa17f5a..26133f0 100644
+--- a/fs/dlm/member.c
++++ b/fs/dlm/member.c
+@@ -210,6 +210,23 @@ int dlm_recover_members(struct dlm_ls *ls, struct dlm_recover *rv, int *neg_out)
+ 		}
+ 	}
+ 
++	/* Add an entry to ls_nodes_gone for members that were removed and
++	   then added again, so that previous state for these nodes will be
++	   cleared during recovery. */
++
++	for (i = 0; i < rv->new_count; i++) {
++		if (!dlm_is_member(ls, rv->new[i]))
++			continue;
++		log_debug(ls, "new nodeid %d is a re-added member", rv->new[i]);
++
++		memb = kzalloc(sizeof(struct dlm_member), GFP_KERNEL);
++		if (!memb)
++			return -ENOMEM;
++		memb->nodeid = rv->new[i];
++		list_add_tail(&memb->list, &ls->ls_nodes_gone);
++		neg++;
++	}
++
+ 	/* add new members to ls_nodes */
+ 
+ 	for (i = 0; i < rv->node_count; i++) {
+@@ -314,15 +331,16 @@ int dlm_ls_stop(struct dlm_ls *ls)
+ int dlm_ls_start(struct dlm_ls *ls)
+ {
+ 	struct dlm_recover *rv = NULL, *rv_old;
+-	int *ids = NULL;
+-	int error, count;
++	int *ids = NULL, *new = NULL;
++	int error, ids_count = 0, new_count = 0;
+ 
+ 	rv = kzalloc(sizeof(struct dlm_recover), GFP_KERNEL);
+ 	if (!rv)
+ 		return -ENOMEM;
+ 
+-	error = count = dlm_nodeid_list(ls->ls_name, &ids);
+-	if (error <= 0)
++	error = dlm_nodeid_list(ls->ls_name, &ids, &ids_count,
++				&new, &new_count);
++	if (error < 0)
+ 		goto fail;
+ 
+ 	spin_lock(&ls->ls_recover_lock);
+@@ -337,14 +355,19 @@ int dlm_ls_start(struct dlm_ls *ls)
+ 	}
+ 
+ 	rv->nodeids = ids;
+-	rv->node_count = count;
++	rv->node_count = ids_count;
++	rv->new = new;
++	rv->new_count = new_count;
+ 	rv->seq = ++ls->ls_recover_seq;
+ 	rv_old = ls->ls_recover_args;
+ 	ls->ls_recover_args = rv;
+ 	spin_unlock(&ls->ls_recover_lock);
+ 
+ 	if (rv_old) {
++		log_error(ls, "unused recovery %llx %d",
++			  (unsigned long long)rv_old->seq, rv_old->node_count);
+ 		kfree(rv_old->nodeids);
++		kfree(rv_old->new);
+ 		kfree(rv_old);
+ 	}
+ 
+@@ -354,6 +377,7 @@ int dlm_ls_start(struct dlm_ls *ls)
+  fail:
+ 	kfree(rv);
+ 	kfree(ids);
++	kfree(new);
+ 	return error;
+ }
+ 
+diff --git a/fs/dlm/recoverd.c b/fs/dlm/recoverd.c
+index 997f953..fd677c8 100644
+--- a/fs/dlm/recoverd.c
++++ b/fs/dlm/recoverd.c
+@@ -257,6 +257,7 @@ static void do_ls_recovery(struct dlm_ls *ls)
+ 	if (rv) {
+ 		ls_recover(ls, rv);
+ 		kfree(rv->nodeids);
++		kfree(rv->new);
+ 		kfree(rv);
+ 	}
+ }
+-- 
+1.5.3.3
 
