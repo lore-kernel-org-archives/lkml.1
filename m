@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbYDRUzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbYDRUz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761808AbYDRUzb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 16:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbYDRUv5
+	id S1762041AbYDRUz4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 16:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760489AbYDRUv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:51:57 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26031 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757318AbYDRUvi (ORCPT
+	Fri, 18 Apr 2008 16:51:56 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:20672 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758562AbYDRUvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:51:38 -0400
-Message-Id: <20080418205047.762350726@ldl.fc.hp.com>
+	Fri, 18 Apr 2008 16:51:44 -0400
+Message-Id: <20080418205048.830971176@ldl.fc.hp.com>
 References: <20080418204955.342963315@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:49:58 -0600
+Date: Fri, 18 Apr 2008 14:50:03 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -25,71 +25,114 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 03/53] PNP: make pnp_add_id() internal to PNP core
-Content-Disposition: inline; filename=pnp-make-pnp_add_id-internal-to-core
+Subject: [patch 08/53] PNP: change pnp_add_card_id() to allocate its own pnp_id structures
+Content-Disposition: inline; filename=pnp-move-allocation-into-pnp_add_card_id
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pnp_add_id() doesn't need to be exposed outside the PNP core, so
-move the declaration to an internal header file.
+This moves some of the pnp_id knowledge out of the backends and into
+the PNP core.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Index: work7/include/linux/pnp.h
-===================================================================
---- work7.orig/include/linux/pnp.h	2008-03-21 13:31:06.000000000 -0600
-+++ work7/include/linux/pnp.h	2008-03-21 13:31:08.000000000 -0600
-@@ -403,7 +403,6 @@
- /* protocol helpers */
- int pnp_is_active(struct pnp_dev *dev);
- int compare_pnp_id(struct pnp_id *pos, const char *id);
--int pnp_add_id(struct pnp_id *id, struct pnp_dev *dev);
- int pnp_register_driver(struct pnp_driver *drv);
- void pnp_unregister_driver(struct pnp_driver *drv);
- 
-@@ -450,7 +449,6 @@
- /* protocol helpers */
- static inline int pnp_is_active(struct pnp_dev *dev) { return 0; }
- static inline int compare_pnp_id(struct pnp_id *pos, const char *id) { return -ENODEV; }
--static inline int pnp_add_id(struct pnp_id *id, struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_register_driver(struct pnp_driver *drv) { return -ENODEV; }
- static inline void pnp_unregister_driver(struct pnp_driver *drv) { }
- 
 Index: work7/drivers/pnp/base.h
 ===================================================================
---- work7.orig/drivers/pnp/base.h	2008-03-21 13:31:06.000000000 -0600
-+++ work7/drivers/pnp/base.h	2008-03-21 13:31:39.000000000 -0600
-@@ -1,5 +1,6 @@
- extern spinlock_t pnp_lock;
- void *pnp_alloc(long size);
-+int pnp_add_id(struct pnp_id *id, struct pnp_dev *dev);
+--- work7.orig/drivers/pnp/base.h	2008-04-02 15:19:07.000000000 -0600
++++ work7/drivers/pnp/base.h	2008-04-02 15:19:10.000000000 -0600
+@@ -4,7 +4,7 @@
+ void pnp_eisa_id_to_string(u32 id, char *str);
+ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
+ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+-int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card);
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
  int pnp_interface_attach_device(struct pnp_dev *dev);
  void pnp_fixup_device(struct pnp_dev *dev);
  void pnp_free_option(struct pnp_option *option);
-Index: work7/drivers/pnp/pnpacpi/core.c
+Index: work7/drivers/pnp/card.c
 ===================================================================
---- work7.orig/drivers/pnp/pnpacpi/core.c	2008-03-21 13:31:06.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/core.c	2008-03-21 13:31:08.000000000 -0600
-@@ -25,6 +25,7 @@
- #include <acpi/acpi_bus.h>
- #include <acpi/actypes.h>
+--- work7.orig/drivers/pnp/card.c	2008-04-02 14:39:11.000000000 -0600
++++ work7/drivers/pnp/card.c	2008-04-02 15:19:10.000000000 -0600
+@@ -5,6 +5,7 @@
+  */
  
-+#include "../base.h"
- #include "pnpacpi.h"
+ #include <linux/module.h>
++#include <linux/ctype.h>
+ #include <linux/slab.h>
+ #include <linux/pnp.h>
+ #include "base.h"
+@@ -100,19 +101,33 @@
+  * @id: pointer to a pnp_id structure
+  * @card: pointer to the desired card
+  */
+-int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card)
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id)
+ {
+-	struct pnp_id *ptr;
++	struct pnp_id *dev_id, *ptr;
  
- static int num = 0;
-Index: work7/drivers/pnp/pnpbios/core.c
+-	id->next = NULL;
++	dev_id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
++	if (!dev_id)
++		return NULL;
++
++	dev_id->id[0] = id[0];
++	dev_id->id[1] = id[1];
++	dev_id->id[2] = id[2];
++	dev_id->id[3] = tolower(id[3]);
++	dev_id->id[4] = tolower(id[4]);
++	dev_id->id[5] = tolower(id[5]);
++	dev_id->id[6] = tolower(id[6]);
++	dev_id->id[7] = '\0';
++
++	dev_id->next = NULL;
+ 	ptr = card->id;
+ 	while (ptr && ptr->next)
+ 		ptr = ptr->next;
+ 	if (ptr)
+-		ptr->next = id;
++		ptr->next = dev_id;
+ 	else
+-		card->id = id;
+-	return 0;
++		card->id = dev_id;
++
++	return dev_id;
+ }
+ 
+ static void pnp_free_card_ids(struct pnp_card *card)
+Index: work7/drivers/pnp/isapnp/core.c
 ===================================================================
---- work7.orig/drivers/pnp/pnpbios/core.c	2008-03-21 13:31:06.000000000 -0600
-+++ work7/drivers/pnp/pnpbios/core.c	2008-03-21 13:31:08.000000000 -0600
-@@ -69,6 +69,7 @@
- #include <asm/system.h>
- #include <asm/byteorder.h>
+--- work7.orig/drivers/pnp/isapnp/core.c	2008-04-02 15:17:49.000000000 -0600
++++ work7/drivers/pnp/isapnp/core.c	2008-04-02 15:19:10.000000000 -0600
+@@ -822,17 +822,18 @@
+ static void isapnp_parse_card_id(struct pnp_card *card, unsigned short vendor,
+ 				 unsigned short device)
+ {
+-	struct pnp_id *id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
++	char id[8];
  
-+#include "../base.h"
- #include "pnpbios.h"
+-	if (!id)
+-		return;
+-	sprintf(id->id, "%c%c%c%x%x%x%x",
+-		'A' + ((vendor >> 2) & 0x3f) - 1,
+-		'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1,
+-		'A' + ((vendor >> 8) & 0x1f) - 1,
+-		(device >> 4) & 0x0f,
+-		device & 0x0f, (device >> 12) & 0x0f, (device >> 8) & 0x0f);
+-	pnp_add_card_id(id, card);
++	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
++	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
++	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
++	id[3] = hex_asc((device >> 4) & 0x0f);
++	id[4] = hex_asc(device & 0x0f);
++	id[5] = hex_asc((device >> 12) & 0x0f);
++	id[6] = hex_asc((device >> 8) & 0x0f);
++	id[7] = '\0';
++
++	pnp_add_card_id(card, id);
+ }
  
  /*
 
