@@ -1,63 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbYDRLNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYDRLTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbYDRLNE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 07:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYDRLMy
+	id S1753394AbYDRLTM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 07:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYDRLS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 07:12:54 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:44982 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751213AbYDRLMy (ORCPT
+	Fri, 18 Apr 2008 07:18:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43331 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751268AbYDRLSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 07:12:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=J3GVXe/IMns4kbR34ykF97rKdS3eTUPCCunwez5UDNbFbgu8bPJkO22CR619RmHlF9xQfK69N4+jkneJFjW3MjaGBFTOYEcvF6rENVGGJlaAM4i89wJ/t4q8X+WOSUgKcN838I60cBH5Q8PWtvYrp93mZzuoE315msDw3BiKkto=  ;
-X-YMail-OSG: O6AAF8YVM1k81U58nWJYlPNh3aeeou1bdHkKEg15Q6YHR4qDDQygj1hPZq7zStpROdl5Mmdc51UVVpPP4AHzDw56mTulo1sUI6ph9hfePTEHpKbL5h9EiOKzjpXpUrD13DzVzefy7IqdujktnLg.rIen
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [v2.6.26] what's brewing in x86.git for v2.6.26
-Date: Fri, 18 Apr 2008 21:12:39 +1000
-User-Agent: KMail/1.9.5
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Nick Piggin" <npiggin@suse.de>
-References: <20080416202338.GA6007@elte.hu> <20080417103800.GA27250@elte.hu> <84144f020804170342x7d692e83x2b50ebbccfc4c40b@mail.gmail.com>
-In-Reply-To: <84144f020804170342x7d692e83x2b50ebbccfc4c40b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 18 Apr 2008 07:18:54 -0400
+Date: Fri, 18 Apr 2008 04:18:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer
+ interface.
+Message-Id: <20080418041846.db15150b.akpm@linux-foundation.org>
+In-Reply-To: <200804181439.49051.rusty@rustcorp.com.au>
+References: <200804181433.48488.rusty@rustcorp.com.au>
+	<200804181435.21214.rusty@rustcorp.com.au>
+	<200804181439.49051.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804182112.40732.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 April 2008 20:42, Pekka Enberg wrote:
-> On Thu, Apr 17, 2008 at 1:38 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >  > We (still!) have not made the decision whether to proceed with slab or
-> >  > slub.  How hard would it be to port kmemcheck into slab?
-> >
-> >  i think slab is clearly out, unless some catastrophic regression is
-> >  found. But Nick's SLQB might replace SLUB ;-)
->
-> Hey, we all have our favorite replacements for kmalloc():
->
-> http://www.kernel.org/pub/linux/kernel/people/penberg/patches/binalloc/2.6.
->25-rc8/kmalloc-binning
->
-> But it seems unrealistic to expect any of them to replace SLUB or SLAB
-> in the near future.
+On Fri, 18 Apr 2008 14:39:48 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Obviously that one won't because it is totally unsuitable to replace
-SLAB. It may be a good choice to replace SLOB (if it is found to be
-technically better). Just the same as SLQB might replace SLAB if it
-is found to be technically better. That's (one main criteria for) how
-we merge/decide between things.
+> virtio introduced a ring structure ABI for guest-host communications
+> (currently used by lguest and kvm).  Using this same ABI, we can
+> create a nice fd version.
+> 
+> This is useful for efficiently passing packets to and from the tun,
+> for example.
+> 
+> ...
+>
+> +static int vring_mmap(struct file *filp, struct vm_area_struct *vma)
+> +{
+> +	unsigned long size, num_descs;
+> +	struct vring_info *vr = filp->private_data;
+> +	int err;
+> +
+> +	/* We overload mmap's offset to hold the ring number. */
+> +	num_descs = vma->vm_pgoff;
+> +
+> +	/* Must be a power of two, and limit indices to a u16. */
+> +	if (!num_descs || (num_descs & (num_descs-1)) || num_descs > 65536)
+
+We have an is_power_of_2().
+
+> +		return -EINVAL;
+> +
+> +	/* mmap size must be what we expect for such a ring. */
+> +	size = vma->vm_end - vma->vm_start;
+> +	if (size != ALIGN(vring_size(num_descs, PAGE_SIZE), PAGE_SIZE))
+> +		return -EINVAL;
+> +
+> +	/* We only let them map this in one place. */
+> +	mutex_lock(&vr->lock);
+> +	if (vr->ring.num != 0) {
+> +		err = -EBUSY;
+> +		goto unlock;
+> +	}
+> +
+> +	vring_init(&vr->ring, num_descs, (void *)vma->vm_start, PAGE_SIZE);
+> +
+> +	vr->mask = num_descs - 1;
+> +	err = 0;
+> +
+> +unlock:
+> +	mutex_unlock(&vr->lock);
+> +	return err;
+> +}
+>
+> ...
+>
+> +/**
+> + * vring_get - check out a vring file descriptor
+> + * @filp: the file structure to attach to (eg. from fget()).
+> + *
+> + * Userspace opens /dev/vring and mmaps it, then hands that fd to the
+> + * kernel subsystem it wants to communicate with.  That subsystem uses
+> + * this routine and vring_set_ops() to attach to it.
+> + *
+> + * This simply checks that it really is a vring fd (otherwise it
+> + * returns NULL), the other routine checks that it's not already
+> + * attached.
+> + */
+
+hm, I don't understand the big picture here yet.
+
+Isn't this kinda-sorta like what a relayfs file does?  The oprofile
+buffers?  etc?  Nothing in common at all, no hope?
+
+> +struct vring_info *vring_get(struct file *filp)
+> +{
+> +	/* Must be one of ours. */
+> +	if (filp->f_op != &vring_fops)
+> +		return NULL;
+> +
+> +	return filp->private_data;
+> +}
+> +EXPORT_SYMBOL_GPL(vring_get);
+> +
+> +/**
+> + * vring_set_ops - attach operations to a vring file descriptor.
+> + * @vr: the vring_info returned from vring_get.
+> + * @ops: the operations to attach.
+> + * @ops_data: the argument to the ops callbacks.
+> + *
+> + * This is called after vring_get(): the reason for the two-part
+> + * process is that the ops can be called before vring_set_ops returns
+> + * (we don't do locking), so you really need to set things up before
+> + * this call.
+> + *
+> + * This simply checks that the ring is not already attached to something,
+> + * then sets the ops.
+> + */
+> +int vring_set_ops(struct vring_info *vr,
+> +		  const struct vring_ops *ops, void *ops_data)
+> +{
+> +	int err;
+> +
+> +	mutex_lock(&vr->lock);
+> +	if (vr->ops) {
+> +		err = -EBUSY;
+> +		goto unlock;
+> +	}
+> +
+> +	/* We don't lock, so make sure we get this in the right order. */
+> +	vr->ops_data = ops_data;
+> +	wmb();
+> +	vr->ops = ops;
+> +
+> +	err = 0;
+> +unlock:
+> +	mutex_unlock(&vr->lock);
+> +	local_irq_enable();
+
+what's this doing here?
+
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(vring_set_ops);
+> +
+> +/**
+> + * vring_unset_ops - remove operations to a vring file descriptor.
+> + * @vr: the vring_info previously successfully vring_set_ops'd
+> + */
+> +void vring_unset_ops(struct vring_info *vr)
+> +{
+> +	BUG_ON(!vr->ops);
+> +	mutex_lock(&vr->lock);
+> +	vr->ops = NULL;
+> +	mutex_unlock(&vr->lock);
+> +}
+> +EXPORT_SYMBOL_GPL(vring_unset_ops);
+
+Isn't this just vring_set_ops(vr, NULL, NULL)?
+
+> +static struct miscdevice vring_dev = {
+> +	.minor = MISC_DYNAMIC_MINOR,
+> +	.name = KBUILD_MODNAME,
+> +	.fops = &vring_fops,
+> +};
+> +
+> +static int __init init(void)
+> +{
+> +	return misc_register(&vring_dev);
+> +}
+> +
+> +static void __exit fini(void)
+> +{
+> +	misc_deregister(&vring_dev);
+> +}
+> +
+> +module_init(init);
+> +module_exit(fini);
+> diff -r b2d9869d338f include/linux/vring.h
+> --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
+> +++ b/include/linux/vring.h	Fri Apr 18 13:35:16 2008 +1000
+> @@ -0,0 +1,58 @@
+> +/* Ring-buffer file descriptor implementation.
+> + *
+> + *  Copyright 2008 Rusty Russell IBM Corporation
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; if not, write to the Free Software
+> + *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+> + */
+
+ponders #include <copyright.h>
+
+> +#ifndef _LINUX_VRING_H
+> +#define _LINUX_VRING_H
+> +
+> +/**
+> + * vring_ops - operations for a vring fd.
+> + * @needs_pull: more data is pending, need to call pull.
+> + * @pull: callback when read() is called to report used buffers.
+> + * @push: callback when write() is called to notify of added buffers.
+> + *
+> + * Any of these callbacks can be NULL, if you don't need them.
+> + */
+> +struct vring_ops {
+> +	bool (*needs_pull)(void *ops_data);
+> +
+> +	/* Returns 0 or negative errno. */
+> +	int (*pull)(void *ops_data);
+> +
+> +	/* Returns 0 or negative errno. */
+> +	int (*push)(void *ops_data);
+> +};
+> +
+> +struct file;
+> +
+> +struct vring_info *vring_get(struct file *filp);
+> +int vring_set_ops(struct vring_info *,
+> +		  const struct vring_ops *ops, void *ops_data);
+
+the first arg to vring_set_ops() lost its name.
+
+> +void vring_unset_ops(struct vring_info *vr);
+> +struct iovec;
+> +
+> +/* Returns an error, or 0 (no buffers), or an id for vring_used_buffer() */
+> +int vring_get_buffer(struct vring_info *vr,
+> +		     struct iovec *in_iov,
+> +		     unsigned int *num_in, unsigned long *in_len,
+> +		     struct iovec *out_iov,
+> +		     unsigned int *num_out, unsigned long *out_len);
+> +
+> +void vring_used_buffer(struct vring_info *vr, int id, u32 len);
+> +
+> +void vring_wake(struct vring_info *vr);
+> +#endif /* _LINUX_VRING_H */
+
+
