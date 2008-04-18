@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbYDRRIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYDRRQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757688AbYDRRIJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 13:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbYDRRHx
+	id S1758181AbYDRRQX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 13:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757577AbYDRRQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 13:07:53 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46075 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756141AbYDRRHw (ORCPT
+	Fri, 18 Apr 2008 13:16:08 -0400
+Received: from rv-out-0708.google.com ([209.85.198.250]:45772 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757016AbYDRRQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 13:07:52 -0400
-Subject: Re: [PATCH 0/4] - v2 -  Object creation with a specified id
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       nick@nick-andrew.net
-In-Reply-To: <20080418054459.891481000@bull.net>
-References: <20080418054459.891481000@bull.net>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 10:07:07 -0700
-Message-Id: <1208538427.25363.40.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 13:16:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kHQz4S2X3zyoyn9qA7X7U0WQRNu0nH1T9UAVAoHdM3zOYXUWoIiISSp9BWxhoKQ1kC4qXLq3I9SlMgmO5hH8+Ai1AUDT0S9tj0k1PitF/lPK2s76+iEd4G5BY/vqWSHaZjpCsb4MP7bzoou8RKJNdjbbELBl68Ok2UADZo/ZkMg=
+Date: Fri, 18 Apr 2008 13:15:58 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: khali@linux-fr.org, andre@bitwigglers.org, linux-input@vger.kernel.org,
+       i2c@lm-sensors.org, linux-kernel@vger.kernel.org, vapier.adi@gmail.com,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: Re: [PATCH 1/1] Input/Joystick Driver: add support AD7142 joystick
+	driver (v2)
+Message-ID: <20080418131149.ZZRA012@mailhub.coreip.homeip.net>
+References: <1206643110-8789-1-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206643110-8789-1-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-18 at 07:44 +0200, Nadia.Derbey@bull.net wrote:
-> The syntax is one of:
->    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
->      next object to be created will have an id set to XX
->    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
->      next object to be created will have its ids set to XX0, ... X<n-1>
->      This is particularly useful for processes that may have several ids if
->      they belong to nested namespaces.
+Hi Bryan,
 
-I still think, in its current form, this is pretty dangerous.  
+On Thu, Mar 27, 2008 at 11:38:30AM -0700, Bryan Wu wrote:
+> +	input->keybit[BIT_WORD(BTN_BASE)] = BIT_MASK(BTN_BASE) |
+> +						BIT_MASK(BTN_BASE2) |
+> +						BIT_MASK(BTN_BASE3) |
+> +						BIT_MASK(BTN_BASE4);
+> +	input->keybit[BIT_WORD(KEY_UP)] |=  BIT_MASK(KEY_UP) |
+> +						BIT_MASK(KEY_DOWN) |
+> +						BIT_MASK(KEY_LEFT) |
+> +						BIT_MASK(KEY_RIGHT);
+> +
 
-It might be nice to have a central place to set ids, but there's no real
-safety here for when we get a mishmash of 50 of these things.  We have a
-queue and we fix the order in which things are inserted, but how do we
-control the order in which the kernel extracts them?  Can we 100%
-conform to that order in the future and be consistent?  Won't that also
-be dictated by the way userspace behaves?
+Why don't you use REL_X/REL_Y to report directional movement? Using
+buttons for that is pretty unusual.
 
-If we're going to go this route, I think we need to do a few things.
-First, these need to be more "type safe".  That means that sticking an
-ids in here that you mean to go to an IPC should never, ever, ever be
-able to get interpreted as a PID or as an inode number or anything else.
-
-	echo "IPC_SEM_ID NN" > /proc/self/task/<my_tid>/next_id
-	echo "PID MM" > /proc/self/task/<my_tid>/next_id
-
-Maybe we should include the types in there as well, but those are kinda
-implied by the kind of id you're setting.  Have you thought about 32-bit
-userspace with 64-bit kernels?  Does that cause any issues?
-
-I also feel like we should have the kernel able to enumerate which
-things in a process *are* settable.  What are the valid values for that
-first word being echoed in the file?
-
-Does anyone have a list of these ids that we're going to want to set
-like this?  Oren?  I'm a bit worried that we might want to set things
-other than ids with an interface like this and that it won't transition
-well.
-
--- Dave
-
+-- 
+Dmitry
