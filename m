@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYDRPUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYDRPWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYDRPUj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 11:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYDRPUb
+	id S1756497AbYDRPWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 11:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYDRPWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 11:20:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57408 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbYDRPUa (ORCPT
+	Fri, 18 Apr 2008 11:22:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39563 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751873AbYDRPWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 11:20:30 -0400
-Date: Fri, 18 Apr 2008 08:20:14 -0700
-From: Greg KH <greg@kroah.com>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: Problem with delayed data from pl2303 usb serial gps
-Message-ID: <20080418152014.GA5845@kroah.com>
-References: <480874E8.7040903@aitel.hist.no>
+	Fri, 18 Apr 2008 11:22:43 -0400
+Date: Fri, 18 Apr 2008 11:22:42 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       <linux-pm@lists.linux-foundation.org>, Greg KH <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-mm1: not looking good
+In-Reply-To: <20080418094220.GB23572@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0804181120270.6252-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480874E8.7040903@aitel.hist.no>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 12:16:08PM +0200, Helge Hafting wrote:
-> Problem:
-> I run car navigation software on linux, using a gps.
-> Getting data from the gps unit in a timely fashion is important, as
-> the software says thing like "turn left in 50m". That is useless however,
-> if the message arrives 10s after you passed the intersection!
+On Fri, 18 Apr 2008, Pavel Machek wrote:
 
-That sounds like a problem either in the device, or in the pl2303 chip,
-or possibly, your userspace program.
+> On Fri 2008-04-18 00:53:23, Andrew Morton wrote:
+> > On Fri, 18 Apr 2008 00:50:34 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > dmesg: http://userweb.kernel.org/~akpm/x.txt
+> > > config: http://userweb.kernel.org/~akpm/config-t61p.txt
+> > 
+> > oop, there's more:
+> > 
+> > 
+> > sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> > sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > firewire_core: created device fw0: GUID 00016c2000174bad, S400
+> > PM: Device usb4 failed to restore: error -113
+> > eth0: Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+> > eth0: 10/100 speed: disabling TSO
+> > PM: Device usb5 failed to restore: error -113
+> > PM: Device usb7 failed to restore: error -113
+> > sd 0:0:0:0: [sda] Starting disk
+> > PM: Image restored successfully.
+> > Restarting tasks ... done.
+> > PM: Basic memory bitmaps freed
+> > 
+> > Those USB restore failures are new.  They're similar to the ones on the
+> > doesnt-resume-properly-any-more Vaio.  They came out from the machine's
+> > second (successful) resume-from-disk.
+> 
+> Try rmmod usb / insmod usb around suspend to see if it is
+> usb-specific, or if something went seriously wrong in core.
+> 
+> Or you might just bisect it ;-).
 
-As a test, enable debugging in the pl2303 driver:
-	modprobe pl2303 debug=1
-or enable it after it is loaded with:
-	echo 1 > /sys/module/pl2303/parameters/debug
+There's no need to worry about them.  They merely indicate that the 
+root hubs didn't resume along with everything else, because they were 
+already suspended when the system went to sleep and so they were left 
+suspended.  The return codes in usbcore will be changed soon so that 
+this won't appear to be an error.
 
-and run your program.  Look at the timestamps in the kernel log for when
-the pl2303 driver gets your data and compare it to when your userspace
-program is getting them.
+Alan Stern
 
-Let me know if you find anything we can help out with.
-
-thanks,
-
-greg k-h
