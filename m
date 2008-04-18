@@ -1,233 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbYDRMnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYDRMoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbYDRMnn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 08:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbYDRMnd
+	id S1757554AbYDRMoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 08:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYDRMo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 08:43:33 -0400
-Received: from mail0.scram.de ([78.47.204.202]:44477 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753842AbYDRMnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 08:43:31 -0400
-X-Spam-Score: -4.202
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <48089769.4050308@scram.de>
-Date: Fri, 18 Apr 2008 14:43:21 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Fri, 18 Apr 2008 08:44:28 -0400
+Received: from emh03.mail.saunalahti.fi ([62.142.5.109]:47330 "EHLO
+	emh03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbYDRMo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 08:44:27 -0400
+Date: Fri, 18 Apr 2008 15:46:00 +0300 (MET DST)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@dhcppc2
+To: Christoph Hellwig <hch@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] OMFS filesystem version 3
+In-Reply-To: <20080413082815.GA20108@infradead.org>
+Message-ID: <Pine.LNX.4.61.0804181331260.29728@dhcppc2>
+References: <1208041121-26787-1-git-send-email-me@bobcopeland.com>
+ <20080412170304.54f139e2.akpm@linux-foundation.org> <20080413033344.GA27494@hash.localnet>
+ <20080412205544.5e12a7d4.akpm@linux-foundation.org> <20080413080130.GA9622@infradead.org>
+ <20080413012001.8d7967f4.akpm@linux-foundation.org> <20080413082815.GA20108@infradead.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>,
-       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCHv3 3/7] i2c: OF helpers for the i2c API
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements various helpers to support OF bindings for
-the i2c API.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
-Acked-by: David S. Miller <davem@davemloft.net>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/of/Kconfig     |    6 +++
- drivers/of/Makefile    |    1 +
- drivers/of/of_i2c.c    |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_i2c.h |   24 ++++++++++
- 4 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 drivers/of/of_i2c.c
- create mode 100644 include/linux/of_i2c.h
+On Sun, 13 Apr 2008, Christoph Hellwig wrote:
+> > I'm not complaining about anything.  Who has?
+> > 
+> > As the filesystem is for occasional, non-performance-sensitive use
+> > by a very small number of people, doing it via FUSE sounds like an
+> > all-round more practical approach.  This has nothing to do with quality of
+> > implementation at all.
+> 
+> It's a stupid idea.  
 
-Changes to v2:
+FUSE is more than just providing a framework for block based filesystems. 
+Sometimes FUSE is criticised for the extra useful features it provides. 
+Sometimes the criticism comes from misunderstandings.
 
-- make helpers compile as module as well, if i2c-core is compiled as module.
-- rename drivers/of/i2c.c to drivers/of/of_i2c.c to avoid module namespace conflict.
+> less efficient because of the additional context switches 
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index c03072b..210bf37 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -1,3 +1,9 @@
- config OF_DEVICE
- 	def_bool y
- 	depends on OF && (SPARC || PPC_OF)
-+
-+config OF_I2C
-+	def_tristate I2C
-+	depends on OF && I2C
-+	help
-+	  OpenFirmware I2C accessors
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index ab9be5d..121d9ed 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -1,2 +1,3 @@
- obj-y = base.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
-+obj-$(CONFIG_OF_I2C)	+= of_i2c.o
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-new file mode 100644
-index 0000000..6316891
---- /dev/null
-+++ b/drivers/of/of_i2c.c
-@@ -0,0 +1,115 @@
-+/*
-+ * OF helpers for the I2C API
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/of.h>
-+
-+struct i2c_driver_device {
-+	char    *of_device;
-+	char    *i2c_type;
-+};
-+
-+static struct i2c_driver_device i2c_devices[] = {
-+	{ "dallas,ds1374", "rtc-ds1374" },
-+};
-+
-+static int of_find_i2c_driver(struct device_node *node,
-+			      struct i2c_board_info *info)
-+{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
-+
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-+		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-+			continue;
-+		if (strlcpy(info->type, i2c_devices[i].i2c_type,
-+			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+			return -ENOMEM;
-+
-+		return 0;
-+	}
-+
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
-+
-+	/* 2. search for linux,<i2c-type> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			if (strlcpy(info->type, p,
-+				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+				return -ENOMEM;
-+			return 0;
-+		}
-+
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
-+	}
-+
-+	/* 3. take fist compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node)
-+{
-+	void *result;
-+	struct device_node *node;
-+
-+	for_each_child_of_node(adap_node, node) {
-+		struct i2c_board_info info = {};
-+		const u32 *addr;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR
-+			       "of-i2c: invalid i2c device entry\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		if (of_find_i2c_driver(node, &info) < 0) {
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+
-+		info.addr = *addr;
-+
-+		request_module(info.type);
-+
-+		result = i2c_new_device(adap, &info);
-+		if (result == NULL) {
-+			printk(KERN_ERR
-+			       "of-i2c: Failed to load driver for %s\n",
-+			       info.type);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(of_register_i2c_devices);
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-new file mode 100644
-index 0000000..2e5a967
---- /dev/null
-+++ b/include/linux/of_i2c.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Generic I2C API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __LINUX_OF_I2C_H
-+#define __LINUX_OF_I2C_H
-+
-+#include <linux/i2c.h>
-+
-+#ifdef CONFIG_OF_I2C
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node);
-+
-+#endif /* CONFIG_OF_I2C */
-+
-+#endif /* __LINUX_OF_I2C_H */
+This is about as true as claiming FUSE doesn't have any context switch 
+overhead. Sometimes it has none, sometimes small, sometimes it can be 
+significant (e.g. when not using the 50 fold context switch speed up 
+patch). The question is, how releavant it is? Just some short notes,
+
+ 1. Using the in-kernel cached data involves no context switch for FUSE.
+
+ 2. On commodity hardware Linux can do a million context switches. 
+    File system workloads barely need or can do more than a few tens 
+    of thousands file operations per second (fsops) due to storage 
+    bottlenecks. Which means maximum about only extra 5% CPU use for 
+    block based FUSE file systems. 
+
+    If they do more fsops then typically it's served from the kernel caches
+    and no user space and context switches are involved at all.
+
+ 3. ext3 with the highly optimized dir_index is far the fastest 
+    traditional block based file system in file creation. Once I wrote
+    a FUSE file system which apparently would have been faster if the 
+    VFS wouldn't do needlessly a lookup() before create(). AFAIK some 
+    network file systems have the some performance problem because of 
+    this.
+
+ 4. The dominant factors for performance is design, quality of the
+    implementation and lead time to optimize for the (latest) hardware. 
+    What's the best way to realize this depends on many factors.
+
+ 5. Some workloads can indeed trigger very high context switches. This 
+    could be improved/solved but probably it would be more beneficial to 
+    improve context switch performance in software and hardware.
+
+> and harder to use because you need additional userspace packages and need 
+> to setup fuse.
+
+The fuse install should solve all setup issues and a fuse fs can be written 
+where the traditional commands work:
+
+	mount -t fstype device mountpoint
+	umount mountpoint
+
+Ntfs-3g doesn't even need fuse user space being installed, only a 
+modprobeable fuse kernel module.
+
+	Szaka
+
 -- 
-1.5.5
-
+NTFS-3G:  http://ntfs-3g.org
