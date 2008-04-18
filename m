@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbYDRNaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYDRNbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757757AbYDRNaZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYDRNaM
+	id S1758136AbYDRNbK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYDRNa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 09:30:12 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:54507 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754408AbYDRNaK (ORCPT
+	Fri, 18 Apr 2008 09:30:56 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:37725 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754797AbYDRNaz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:30:10 -0400
-X-Greylist: delayed 1751 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Apr 2008 09:30:09 EDT
-X-AuditID: 0ac90646-aa325ba0000042c3-00-4808a260561c
-Message-ID: <4808A255.1050008@hitachi.com>
-Date: Fri, 18 Apr 2008 22:29:57 +0900
+	Fri, 18 Apr 2008 09:30:55 -0400
+X-AuditID: 0ac90647-aad9fba0000012c0-e0-48089b88e23b
+Message-ID: <48089B86.5020108@hitachi.com>
+Date: Fri, 18 Apr 2008 22:00:54 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
