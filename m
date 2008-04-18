@@ -1,185 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYDREfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYDREjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYDREfr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 00:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYDREff
+	id S1755416AbYDREjM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 00:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYDREi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 00:35:35 -0400
-Received: from ozlabs.org ([203.10.76.45]:55981 "EHLO ozlabs.org"
+	Fri, 18 Apr 2008 00:38:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:44932 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbYDREfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 00:35:34 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: netdev@vger.kernel.org
-Subject: [PATCH 1/5] virtio: put last_used and last_avail index into ring itself.
-Date: Fri, 18 Apr 2008 14:35:20 +1000
-User-Agent: KMail/1.9.9
-Cc: Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <200804181433.48488.rusty@rustcorp.com.au>
-In-Reply-To: <200804181433.48488.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804181435.21214.rusty@rustcorp.com.au>
+	id S1750999AbYDREi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 00:38:56 -0400
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Benjamin Herrenschmidt <benh@ozlabs.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+       takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080417211905.8ff769fa.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	 <1208133506.6958.82.camel@pasglop>
+	 <20080413191338.9776ebd0.akpm@linux-foundation.org>
+	 <1208491086.6958.381.camel@pasglop>
+	 <20080417211905.8ff769fa.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-FDPfa9rGsj0DdIbVrzKH"
+Date: Fri, 18 Apr 2008 14:38:55 +1000
+Message-Id: <1208493535.9319.3.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generally, the other end of the virtio ring doesn't need to see where
-you're up to in consuming the ring.  However, in order for an external
-entity to understand it, it must be exposed.  For example, if you want
-to save and restore a virtio_ring, but you're not the consumer because
-the kernel is using it directly.
 
-Fortunately, we have room to expand: the ring is always a whole number
-of pages and there's hundreds of bytes of padding after the avail ring
-and the used ring, whatever the number of descriptors (which must be a
-power of 2).
+--=-FDPfa9rGsj0DdIbVrzKH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We add a feature bit so the guest can tell the host that it's writing
-out the current value there, if it wants to use that.
+On Thu, 2008-04-17 at 21:19 -0700, Andrew Morton wrote:
+> On Fri, 18 Apr 2008 13:58:06 +1000 Benjamin Herrenschmidt <benh@ozlabs.or=
+g> wrote:
+>=20
+> >=20
+> > > > > otoh, if only one .c file will ever call this function then I thi=
+nk that
+> > > > > all problems are solved by
+> > > > >=20
+> > > > > a) moving the above ifdeffery into the .c file
+> > > > > b) adding a comment explaining which arch file must provide the o=
+verride
+> > > > > c) directly including that file from within the .c file.
+> > > >=20
+> > > > I can definitely do that. I have no problem either way. I can add t=
+o all
+> > > > archs too, it's just that whatever way I choose, some people won't =
+be
+> > > > happy with it :-)
+> > > >=20
+> > > > Anyway, I'll move the ifdeferry to init/main.c then.
+> > >=20
+> > > Thanks ;)
+> > >=20
+> > > I'm still wounded by my recent encounter with set_softirq_pending()
+> > > and or_softirq_pending().
+> >=20
+> > Well, looking there, I saw we already used weak symbols for that
+>=20
+> Yes, `weak' is a nice solution.  It does add a few bytes of text which we
+> could avoid with compile-time trickery, but only a very few.
+>=20
+> Plus this is __init anyway, although I don't know how well the combinatio=
+n
+> of `weak' and __init works.
+>=20
+> > +void __init __attribute__((weak) thread_info_cache_init(void)
+>=20
+> s/weak)/weak))/
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/virtio/virtio_ring.c  |   20 ++++++++++++--------
- include/linux/virtio_config.h |    3 +++
- include/linux/virtio_ring.h   |   12 +++++++++++-
- 3 files changed, 26 insertions(+), 9 deletions(-)
+There's also a #define of this called "__weak" if you like, less typing
+and less ugly.
 
-diff -r 1349b6a821c7 drivers/virtio/virtio_ring.c
---- a/drivers/virtio/virtio_ring.c	Thu Apr 17 05:58:09 2008 +1000
-+++ b/drivers/virtio/virtio_ring.c	Thu Apr 17 06:15:26 2008 +1000
-@@ -18,6 +18,7 @@
-  */
- #include <linux/virtio.h>
- #include <linux/virtio_ring.h>
-+#include <linux/virtio_config.h>
- #include <linux/device.h>
- 
- #ifdef DEBUG
-@@ -51,9 +52,6 @@ struct vring_virtqueue
- 	unsigned int free_head;
- 	/* Number we've added since last sync. */
- 	unsigned int num_added;
--
--	/* Last used index we've seen. */
--	u16 last_used_idx;
- 
- 	/* How to notify other side. FIXME: commonalize hcalls! */
- 	void (*notify)(struct virtqueue *vq);
-@@ -173,12 +171,13 @@ static void detach_buf(struct vring_virt
- 
- static inline bool more_used(const struct vring_virtqueue *vq)
- {
--	return vq->last_used_idx != vq->vring.used->idx;
-+	return vring_last_used(&vq->vring) != vq->vring.used->idx;
- }
- 
- static void *vring_get_buf(struct virtqueue *_vq, unsigned int *len)
- {
- 	struct vring_virtqueue *vq = to_vvq(_vq);
-+	struct vring_used_elem *u;
- 	void *ret;
- 	unsigned int i;
- 
-@@ -195,8 +194,11 @@ static void *vring_get_buf(struct virtqu
- 		return NULL;
- 	}
- 
--	i = vq->vring.used->ring[vq->last_used_idx%vq->vring.num].id;
--	*len = vq->vring.used->ring[vq->last_used_idx%vq->vring.num].len;
-+	u = &vq->vring.used->ring[vring_last_used(&vq->vring) % vq->vring.num];
-+	i = u->id;
-+	*len = u->len;
-+	/* Make sure we don't reload i after doing checks. */
-+	rmb();
- 
- 	if (unlikely(i >= vq->vring.num)) {
- 		BAD_RING(vq, "id %u out of range\n", i);
-@@ -210,7 +212,7 @@ static void *vring_get_buf(struct virtqu
- 	/* detach_buf clears data, so grab it now. */
- 	ret = vq->data[i];
- 	detach_buf(vq, i);
--	vq->last_used_idx++;
-+	vring_last_used(&vq->vring)++;
- 	END_USE(vq);
- 	return ret;
- }
-@@ -302,7 +304,6 @@ struct virtqueue *vring_new_virtqueue(un
- 	vq->vq.vq_ops = &vring_vq_ops;
- 	vq->notify = notify;
- 	vq->broken = false;
--	vq->last_used_idx = 0;
- 	vq->num_added = 0;
- #ifdef DEBUG
- 	vq->in_use = false;
-@@ -318,6 +319,9 @@ struct virtqueue *vring_new_virtqueue(un
- 	for (i = 0; i < num-1; i++)
- 		vq->vring.desc[i].next = i+1;
- 
-+	/* We now publish our last_used index in the rings. */
-+	vdev->config->feature(vdev, VIRTIO_RING_F_PUBLISH_INDICES);
-+
- 	return &vq->vq;
- }
- EXPORT_SYMBOL_GPL(vring_new_virtqueue);
-diff -r 1349b6a821c7 include/linux/virtio_config.h
---- a/include/linux/virtio_config.h	Thu Apr 17 05:58:09 2008 +1000
-+++ b/include/linux/virtio_config.h	Thu Apr 17 06:15:26 2008 +1000
-@@ -14,6 +14,9 @@
- #define VIRTIO_CONFIG_S_DRIVER_OK	4
- /* We've given up on this device. */
- #define VIRTIO_CONFIG_S_FAILED		0x80
-+
-+/* Transport virtio feature bits (currently bits 24 to 32 are reserved
-+ * for this), the rest are per-device feature bits. */
- 
- #ifdef __KERNEL__
- struct virtio_device;
-diff -r 1349b6a821c7 include/linux/virtio_ring.h
---- a/include/linux/virtio_ring.h	Thu Apr 17 05:58:09 2008 +1000
-+++ b/include/linux/virtio_ring.h	Thu Apr 17 06:15:26 2008 +1000
-@@ -23,6 +23,9 @@
-  * when you consume a buffer.  It's unreliable, so it's simply an
-  * optimization.  */
- #define VRING_AVAIL_F_NO_INTERRUPT	1
-+
-+/* We publish our last-seen used index at the end of the avail ring. */
-+#define VIRTIO_RING_F_PUBLISH_INDICES	24
- 
- /* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
- struct vring_desc
-@@ -82,6 +85,7 @@ struct vring {
-  *	__u16 avail_flags;
-  *	__u16 avail_idx;
-  *	__u16 available[num];
-+ *	__u16 last_used_idx;
-  *
-  *	// Padding to the next page boundary.
-  *	char pad[];
-@@ -90,6 +94,7 @@ struct vring {
-  *	__u16 used_flags;
-  *	__u16 used_idx;
-  *	struct vring_used_elem used[num];
-+ *	__u16 last_avail_idx;
-  * };
-  */
- static inline void vring_init(struct vring *vr, unsigned int num, void *p,
-@@ -106,8 +111,13 @@ static inline unsigned vring_size(unsign
- {
- 	return ((sizeof(struct vring_desc) * num + sizeof(__u16) * (2 + num)
- 		 + pagesize - 1) & ~(pagesize - 1))
--		+ sizeof(__u16) * 2 + sizeof(struct vring_used_elem) * num;
-+		+ sizeof(__u16) * 2 + sizeof(struct vring_used_elem) * num + 2;
- }
-+
-+/* We publish the last-seen used index at the end of the available ring, and
-+ * vice-versa.  These are at the end for backwards compatibility. */
-+#define vring_last_used(vr) ((vr)->avail->ring[(vr)->num])
-+#define vring_last_avail(vr) (*(__u16 *)&(vr)->used->ring[(vr)->num])
- 
- #ifdef __KERNEL__
- #include <linux/irqreturn.h>
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-FDPfa9rGsj0DdIbVrzKH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBICCXfdSjSd0sB4dIRAhE1AJ9ZHfHcu3unHY6kSWfP0t+aNTPkKQCeI0zj
+966HGDJEisppeO7PrUitiG8=
+=RoAh
+-----END PGP SIGNATURE-----
+
+--=-FDPfa9rGsj0DdIbVrzKH--
+
