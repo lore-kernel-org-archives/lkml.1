@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762250AbYDRU4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbYDRU5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762250AbYDRU4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 16:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbYDRUwF
+	id S1762119AbYDRU5P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 16:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760962AbYDRUwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:52:05 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26083 "EHLO
+	Fri, 18 Apr 2008 16:52:09 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26103 "EHLO
 	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759591AbYDRUvr (ORCPT
+	with ESMTP id S1759709AbYDRUvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:51:47 -0400
-Message-Id: <20080418205050.048760500@ldl.fc.hp.com>
+	Fri, 18 Apr 2008 16:51:50 -0400
+Message-Id: <20080418205050.450887652@ldl.fc.hp.com>
 References: <20080418204955.342963315@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:50:09 -0600
+Date: Fri, 18 Apr 2008 14:50:11 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -25,92 +25,176 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 14/53] PNPACPI: extend irq_flags() to set IORESOURCE_IRQ_SHAREABLE when appropriate
-Content-Disposition: inline; filename=pnpacpi-add-shareability-to-irq-flags
+Subject: [patch 16/53] PNP: remove pnp_resource_table from internal get/set interfaces
+Content-Disposition: inline; filename=pnp-remove-pnp_resource_table-args-from-get-set
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This simplifies IRQ resource parsing slightly by computing all the
-IORESOURCE_IRQ_* flags at the same time.
+When we call protocol->get() and protocol->set() methods, we currently
+supply pointers to both the pnp_dev and the pnp_resource_table even
+though the pnp_resource_table should always be the one associated with
+the pnp_dev.
 
-This also keeps track of shareability information when parsing options
-from _PRS.  Previously we ignored shareability in _PRS.
+This removes the pnp_resource_table arguments to make it clear that
+these methods only operate on the specified pnp_dev.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Index: work7/drivers/pnp/pnpacpi/rsparser.c
+---
+ include/linux/pnp.h        |    4 ++--
+ drivers/pnp/interface.c    |    2 +-
+ drivers/pnp/manager.c      |    2 +-
+ drivers/pnp/isapnp/core.c  |   11 +++++------
+ drivers/pnp/pnpacpi/core.c |    8 +++-----
+ drivers/pnp/pnpbios/core.c |   10 ++++------
+ 6 files changed, 16 insertions(+), 21 deletions(-)
+
+Index: work7/include/linux/pnp.h
 ===================================================================
---- work7.orig/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:10:22.000000000 -0600
-+++ work7/drivers/pnp/pnpacpi/rsparser.c	2008-03-21 15:10:23.000000000 -0600
-@@ -32,19 +32,26 @@
- /*
-  * Allocated Resources
-  */
--static int irq_flags(int triggering, int polarity)
-+static int irq_flags(int triggering, int polarity, int shareable)
+--- work7.orig/include/linux/pnp.h	2008-03-31 17:07:19.000000000 -0600
++++ work7/include/linux/pnp.h	2008-03-31 17:10:39.000000000 -0600
+@@ -328,8 +328,8 @@
+ 	char *name;
+ 
+ 	/* resource control functions */
+-	int (*get) (struct pnp_dev *dev, struct pnp_resource_table *res);
+-	int (*set) (struct pnp_dev *dev, struct pnp_resource_table *res);
++	int (*get) (struct pnp_dev *dev);
++	int (*set) (struct pnp_dev *dev);
+ 	int (*disable) (struct pnp_dev *dev);
+ 
+ 	/* protocol specific suspend/resume */
+Index: work7/drivers/pnp/interface.c
+===================================================================
+--- work7.orig/drivers/pnp/interface.c	2008-03-31 16:59:07.000000000 -0600
++++ work7/drivers/pnp/interface.c	2008-03-31 17:10:39.000000000 -0600
+@@ -364,7 +364,7 @@
+ 	if (!strnicmp(buf, "get", 3)) {
+ 		mutex_lock(&pnp_res_mutex);
+ 		if (pnp_can_read(dev))
+-			dev->protocol->get(dev, &dev->res);
++			dev->protocol->get(dev);
+ 		mutex_unlock(&pnp_res_mutex);
+ 		goto done;
+ 	}
+Index: work7/drivers/pnp/manager.c
+===================================================================
+--- work7.orig/drivers/pnp/manager.c	2008-03-31 16:59:07.000000000 -0600
++++ work7/drivers/pnp/manager.c	2008-03-31 17:10:39.000000000 -0600
+@@ -473,7 +473,7 @@
+ 		return -EINVAL;
+ 	}
+ 
+-	if (dev->protocol->set(dev, &dev->res) < 0) {
++	if (dev->protocol->set(dev) < 0) {
+ 		dev_err(&dev->dev, "activation failed\n");
+ 		return -EIO;
+ 	}
+Index: work7/drivers/pnp/isapnp/core.c
+===================================================================
+--- work7.orig/drivers/pnp/isapnp/core.c	2008-03-31 17:10:26.000000000 -0600
++++ work7/drivers/pnp/isapnp/core.c	2008-03-31 17:10:39.000000000 -0600
+@@ -968,21 +968,20 @@
+ 	return 0;
+ }
+ 
+-static int isapnp_get_resources(struct pnp_dev *dev,
+-				struct pnp_resource_table *res)
++static int isapnp_get_resources(struct pnp_dev *dev)
  {
-+	int flags;
-+
- 	if (triggering == ACPI_LEVEL_SENSITIVE) {
- 		if (polarity == ACPI_ACTIVE_LOW)
--			return IORESOURCE_IRQ_LOWLEVEL;
-+			flags = IORESOURCE_IRQ_LOWLEVEL;
- 		else
--			return IORESOURCE_IRQ_HIGHLEVEL;
-+			flags = IORESOURCE_IRQ_HIGHLEVEL;
- 	} else {
- 		if (polarity == ACPI_ACTIVE_LOW)
--			return IORESOURCE_IRQ_LOWEDGE;
-+			flags = IORESOURCE_IRQ_LOWEDGE;
- 		else
--			return IORESOURCE_IRQ_HIGHEDGE;
-+			flags = IORESOURCE_IRQ_HIGHEDGE;
- 	}
-+
-+	if (shareable)
-+		flags |= IORESOURCE_IRQ_SHAREABLE;
-+
-+	return flags;
+ 	int ret;
+ 
+-	pnp_init_resource_table(res);
++	pnp_init_resource_table(&dev->res);
+ 	isapnp_cfg_begin(dev->card->number, dev->number);
+-	ret = isapnp_read_resources(dev, res);
++	ret = isapnp_read_resources(dev, &dev->res);
+ 	isapnp_cfg_end();
+ 	return ret;
  }
  
- static void decode_irq_flags(int flag, int *triggering, int *polarity)
-@@ -108,16 +115,13 @@
- 	}
+-static int isapnp_set_resources(struct pnp_dev *dev,
+-				struct pnp_resource_table *res)
++static int isapnp_set_resources(struct pnp_dev *dev)
+ {
++	struct pnp_resource_table *res = &dev->res;
+ 	int tmp;
  
- 	res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
--	res->irq_resource[i].flags |= irq_flags(triggering, polarity);
-+	res->irq_resource[i].flags |= irq_flags(triggering, polarity, shareable);
- 	irq = acpi_register_gsi(gsi, triggering, polarity);
- 	if (irq < 0) {
- 		res->irq_resource[i].flags |= IORESOURCE_DISABLED;
- 		return;
- 	}
- 
--	if (shareable)
--		res->irq_resource[i].flags |= IORESOURCE_IRQ_SHAREABLE;
--
- 	res->irq_resource[i].start = irq;
- 	res->irq_resource[i].end = irq;
- 	pcibios_penalize_isa_irq(irq, 1);
-@@ -439,7 +443,7 @@
- 	for (i = 0; i < p->interrupt_count; i++)
- 		if (p->interrupts[i])
- 			__set_bit(p->interrupts[i], irq->map);
--	irq->flags = irq_flags(p->triggering, p->polarity);
-+	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
- 
- 	pnp_register_irq_resource(option, irq);
+ 	isapnp_cfg_begin(dev->card->number, dev->number);
+Index: work7/drivers/pnp/pnpacpi/core.c
+===================================================================
+--- work7.orig/drivers/pnp/pnpacpi/core.c	2008-03-31 17:10:38.000000000 -0600
++++ work7/drivers/pnp/pnpacpi/core.c	2008-03-31 17:10:39.000000000 -0600
+@@ -73,8 +73,7 @@
+ 	return 1;
  }
-@@ -459,7 +463,7 @@
- 	for (i = 0; i < p->interrupt_count; i++)
- 		if (p->interrupts[i])
- 			__set_bit(p->interrupts[i], irq->map);
--	irq->flags = irq_flags(p->triggering, p->polarity);
-+	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
  
- 	pnp_register_irq_resource(option, irq);
+-static int pnpacpi_get_resources(struct pnp_dev *dev,
+-				 struct pnp_resource_table *res)
++static int pnpacpi_get_resources(struct pnp_dev *dev)
+ {
+ 	acpi_status status;
+ 
+@@ -83,8 +82,7 @@
+ 	return ACPI_FAILURE(status) ? -ENODEV : 0;
  }
+ 
+-static int pnpacpi_set_resources(struct pnp_dev *dev,
+-				 struct pnp_resource_table *res)
++static int pnpacpi_set_resources(struct pnp_dev *dev)
+ {
+ 	acpi_handle handle = dev->data;
+ 	struct acpi_buffer buffer;
+@@ -94,7 +92,7 @@
+ 	ret = pnpacpi_build_resource_template(dev, &buffer);
+ 	if (ret)
+ 		return ret;
+-	ret = pnpacpi_encode_resources(res, &buffer);
++	ret = pnpacpi_encode_resources(&dev->res, &buffer);
+ 	if (ret) {
+ 		kfree(buffer.pointer);
+ 		return ret;
+Index: work7/drivers/pnp/pnpbios/core.c
+===================================================================
+--- work7.orig/drivers/pnp/pnpbios/core.c	2008-03-31 17:05:32.000000000 -0600
++++ work7/drivers/pnp/pnpbios/core.c	2008-03-31 17:10:39.000000000 -0600
+@@ -204,8 +204,7 @@
+ 
+ #endif				/* CONFIG_HOTPLUG */
+ 
+-static int pnpbios_get_resources(struct pnp_dev *dev,
+-				 struct pnp_resource_table *res)
++static int pnpbios_get_resources(struct pnp_dev *dev)
+ {
+ 	u8 nodenum = dev->number;
+ 	struct pnp_bios_node *node;
+@@ -220,14 +219,13 @@
+ 		kfree(node);
+ 		return -ENODEV;
+ 	}
+-	pnpbios_read_resources_from_node(res, node);
++	pnpbios_read_resources_from_node(&dev->res, node);
+ 	dev->active = pnp_is_active(dev);
+ 	kfree(node);
+ 	return 0;
+ }
+ 
+-static int pnpbios_set_resources(struct pnp_dev *dev,
+-				 struct pnp_resource_table *res)
++static int pnpbios_set_resources(struct pnp_dev *dev)
+ {
+ 	u8 nodenum = dev->number;
+ 	struct pnp_bios_node *node;
+@@ -243,7 +241,7 @@
+ 		kfree(node);
+ 		return -ENODEV;
+ 	}
+-	if (pnpbios_write_resources_to_node(res, node) < 0) {
++	if (pnpbios_write_resources_to_node(&dev->res, node) < 0) {
+ 		kfree(node);
+ 		return -1;
+ 	}
 
 -- 
