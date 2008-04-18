@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbYDRAsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYDRAsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbYDRAsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Apr 2008 20:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYDRAsF
+	id S1757095AbYDRAsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Apr 2008 20:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbYDRAsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Apr 2008 20:48:05 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:62903 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756029AbYDRAsE (ORCPT
+	Thu, 17 Apr 2008 20:48:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:39598 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756056AbYDRAsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Apr 2008 20:48:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEANuMB0hMROPA/2dsb2JhbACBYKsz
-Date: Thu, 17 Apr 2008 20:48:00 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>
-Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v2)
-Message-ID: <20080418004800.GA7758@Krystal>
-References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu> <48062343.50606@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Apr 2008 20:48:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EbvahsQ/9WRbmEYPZczfSaAT5aV8BKDCI5cydDpKiY1PhFzio8dT9duEkJV0lRnXYnVEmJQZ0qvvs/4U94yiCLD2f9269an0H44DqD+28DZ0s0i4t0hCVga2Gb5EZ7bT/TA+gP2vAfwvF+is4HI6xIouR+1L9RhCLS3bcRF9Uic=
+Message-ID: <3ae72650804171748y713c965bvbaf5de39e05ab555@mail.gmail.com>
+Date: Fri, 18 Apr 2008 02:48:19 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: 2.6.25-mm1: not looking good
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "James Morris" <jmorris@namei.org>,
+       "Stephen Smalley" <sds@tycho.nsa.gov>
+In-Reply-To: <20080417232441.GA19281@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48062343.50606@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:47:00 up 48 days, 20:57,  5 users,  load average: 0.16, 0.19,
-	0.13
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	 <20080417232441.GA19281@kroah.com>
+X-Google-Sender-Auth: 432d0f731f84edf9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Ingo Molnar wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>   
->>> thanks Mathieu, i've picked this up into x86.git for more testing.
->>>     
->>
->> ... but had to drop it due to missing PARAVIRT support which broke the 
->> build. I guess on paravirt we could just initially define 
->> INTERRUPT_RETURN_NMI_SAFE to iret, etc.?
+On Fri, Apr 18, 2008 at 1:24 AM, Greg KH <greg@kroah.com> wrote:
 >
-> I have not yet implemented Xen's support for paravirtual NMI, so there's no 
-> scope for breaking anything from my perspective.  When I get around to NMI, 
-> I'll work around whatever's there.  I don't know if lguest or VMI has any 
-> guest NMI support.
+> On Thu, Apr 17, 2008 at 04:03:31PM -0700, Andrew Morton wrote:
+>  >
+>  > I repulled all the trees an hour or two ago, installed everything on an
+>  > 8-way x86_64 box and:
+
+>  > usb/sysfs:
+>  >
+>  > ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 17 (level, low) -> IRQ 17
+>  > uhci_hcd 0000:00:1d.0: UHCI Host Controller
+>  > uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+>  > uhci_hcd 0000:00:1d.0: irq 17, io base 0x00002080
+>  > usb usb1: configuration #1 chosen from 1 choice
+>  > hub 1-0:1.0: USB hub found
+>  > hub 1-0:1.0: 2 ports detected
+>  > sysfs: duplicate filename '189:0' can not be created
 >
->    J
->
+>  Interesting, that's the new major:minor code.  I'll go poke at it...
 
-I wonder if we could simply paravirtualize the popf instruction, which
-seems to be the only one requiring to run in ring 0.
+Is this with the deprecated CONFIG_USB_DEVICE_CLASS=y? They have the
+same dev_t as usb_device and would be a reason for the duplicates.
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks,
+Kay
