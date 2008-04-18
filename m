@@ -1,324 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYDRQHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYDRQMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbYDRQHa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 12:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYDRQHX
+	id S1757424AbYDRQMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 12:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYDRQMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 12:07:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:49831 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484AbYDRQHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 12:07:22 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Removal of FUTEX_FD (and related code)
-Date: Sat, 19 Apr 2008 02:07:14 +1000
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 12:12:30 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:38035 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751873AbYDRQM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 12:12:29 -0400
+Date: Fri, 18 Apr 2008 17:11:22 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][RFC] Add default CPU topology information (try #2)
+Message-ID: <20080418161121.GO21637@solarflare.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804190207.14598.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Sesterhenn <snakebyte@gmx.de>
-Date: Fri, 25 Jan 2008 10:40:46 +0100
+Not all architectures and configurations define CPU topology information.
+This can result in an empty topology directory in sysfs, and requires
+in-kernel users to protect all uses with #ifdef - see
+<http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
 
-hi,
+The documentation of CPU topology specifies what the defaults should be
+if only partial information is available from the hardware.  So we can
+provide these defaults as a fallback.
 
-since FUTEX_FD was scheduled for removal in June 2007 lets remove it.
-Google Code search found no users for it and NGPT was abandoned in 2003
-according to IBM. futex.h is left untouched to make sure the id does
-not get reassigned. Since queue_me() has no users left it is commented
-out to avoid a warning, i didnt remove it completely since it is part
-of the internal api (matching unqueue_me())
+This patch:
 
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (removed rest)
----
- kernel/futex.c |  176 +--------------------------------------------------------
- 1 file changed, 6 insertions(+), 170 deletions(-)
+- Adds default definitions of the 4 topology macros to
+  include/asm-generic/topology_cpu.h.
+- Changes include/asm-*/topology.h to include <asm-generic/topology_cpu.h>
+  unless all 4 macros are defined.
+- Changes drivers/base/topology.c to use the topology macros unconditionally
+  and to cope with definitions that aren't lvalues.
+- Updates documentation accordingly.
 
-diff -r a1496ab2d0e2 kernel/futex.c
---- a/kernel/futex.c	Mon Apr 07 15:13:56 2008 +1000
-+++ b/kernel/futex.c	Mon Apr 07 15:27:30 2008 +1000
-@@ -104,10 +104,6 @@ struct futex_q {
- 	/* Key which the futex is hashed on: */
- 	union futex_key key;
+Unlike the previous version of this patch, it does not add inclusion of
+<asm-generic/topology.h>.
+
+Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index b61cb95..fb9bbe4 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -14,9 +14,8 @@ represent the thread siblings to cpu X in the same physical package;
+ To implement it in an architecture-neutral way, a new source file,
+ drivers/base/topology.c, is to export the 4 attributes.
  
--	/* For fd, sigio sent using these: */
--	int fd;
--	struct file *filp;
+-If one architecture wants to support this feature, it just needs to
+-implement 4 defines, typically in file include/asm-XXX/topology.h.
+-The 4 defines are:
++If one architecture wants to support this feature, it must define
++some of these macros in include/asm-XXX/topology.h:
+ #define topology_physical_package_id(cpu)
+ #define topology_core_id(cpu)
+ #define topology_thread_siblings(cpu)
+@@ -25,17 +24,11 @@ The 4 defines are:
+ The type of **_id is int.
+ The type of siblings is cpumask_t.
+ 
+-To be consistent on all architectures, the 4 attributes should have
+-default values if their values are unavailable. Below is the rule.
+-1) physical_package_id: If cpu has no physical package id, -1 is the
+-default value.
+-2) core_id: If cpu doesn't support multi-core, its core id is 0.
+-3) thread_siblings: Just include itself, if the cpu doesn't support
+-HT/multi-thread.
+-4) core_siblings: Just include itself, if the cpu doesn't support
+-multi-core and HT/Multi-thread.
 -
- 	/* Optional priority inheritance state: */
- 	struct futex_pi_state *pi_state;
- 	struct task_struct *task;
-@@ -125,9 +121,6 @@ struct futex_hash_bucket {
+-So be careful when declaring the 4 defines in include/asm-XXX/topology.h.
+-
+-If an attribute isn't defined on an architecture, it won't be exported.
+-
++Any architecture or configuration that does not define all these
++macros must include <asm-generic/topology_cpu.h> which provides
++default definitions for any of the above macros that are not
++already defined:
++1) physical_package_id: -1
++2) core_id: 0
++3) thread_siblings: just the given CPU
++4) core_siblings: just the given CPU
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index e1d3ad4..dfcb2e2 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -45,47 +45,28 @@ static ssize_t show_##name(struct sys_device *dev, char *buf)		\
+ {									\
+ 	ssize_t len = -1;						\
+ 	unsigned int cpu = dev->id;					\
+-	len = cpumask_scnprintf(buf, NR_CPUS+1, topology_##name(cpu));	\
++	cpumask_t siblings = topology_##name(cpu);			\
++	len = cpumask_scnprintf(buf, NR_CPUS+1, siblings);		\
+ 	return (len + sprintf(buf + len, "\n"));			\
+ }
+ 
+-#ifdef	topology_physical_package_id
+ define_id_show_func(physical_package_id);
+ define_one_ro(physical_package_id);
+-#define ref_physical_package_id_attr	&attr_physical_package_id.attr,
+-#else
+-#define ref_physical_package_id_attr
+-#endif
+ 
+-#ifdef topology_core_id
+ define_id_show_func(core_id);
+ define_one_ro(core_id);
+-#define ref_core_id_attr		&attr_core_id.attr,
+-#else
+-#define ref_core_id_attr
+-#endif
+ 
+-#ifdef topology_thread_siblings
+ define_siblings_show_func(thread_siblings);
+ define_one_ro(thread_siblings);
+-#define ref_thread_siblings_attr	&attr_thread_siblings.attr,
+-#else
+-#define ref_thread_siblings_attr
+-#endif
+ 
+-#ifdef topology_core_siblings
+ define_siblings_show_func(core_siblings);
+ define_one_ro(core_siblings);
+-#define ref_core_siblings_attr		&attr_core_siblings.attr,
+-#else
+-#define ref_core_siblings_attr
+-#endif
+ 
+ static struct attribute *default_attrs[] = {
+-	ref_physical_package_id_attr
+-	ref_core_id_attr
+-	ref_thread_siblings_attr
+-	ref_core_siblings_attr
++	&attr_physical_package_id.attr,
++	&attr_core_id.attr,
++	&attr_thread_siblings.attr,
++	&attr_core_siblings.attr,
+ 	NULL
  };
  
- static struct futex_hash_bucket futex_queues[1<<FUTEX_HASHBITS];
--
--/* Futex-fs vfsmount entry: */
--static struct vfsmount *futex_mnt;
+diff --git a/include/asm-alpha/topology.h b/include/asm-alpha/topology.h
+index 420ccde..57ef8b1 100644
+--- a/include/asm-alpha/topology.h
++++ b/include/asm-alpha/topology.h
+@@ -41,6 +41,8 @@ static inline cpumask_t node_to_cpumask(int node)
  
- /*
-  * Take mm->mmap_sem, when futex is shared
-@@ -610,8 +603,6 @@ static void wake_futex(struct futex_q *q
- static void wake_futex(struct futex_q *q)
- {
- 	plist_del(&q->list, &q->list.plist);
--	if (q->filp)
--		send_sigio(&q->filp->f_owner, q->fd, POLL_IN);
- 	/*
- 	 * The lock in wake_up_all() is a crucial memory barrier after the
- 	 * plist_del() and also before assigning to q->lock_ptr.
-@@ -988,13 +979,9 @@ out:
+ #define pcibus_to_cpumask(bus)	(cpu_online_map)
+ 
++#include <asm-generic/topology_cpu.h>
++
+ #else /* CONFIG_NUMA */
+ # include <asm-generic/topology.h>
+ #endif /* !CONFIG_NUMA */
+diff --git a/include/asm-generic/topology.h b/include/asm-generic/topology.h
+index 342a2a0..f784625 100644
+--- a/include/asm-generic/topology.h
++++ b/include/asm-generic/topology.h
+@@ -52,4 +52,6 @@
+ 				)
+ #endif
+ 
++#include <asm-generic/topology_cpu.h>
++
+ #endif /* _ASM_GENERIC_TOPOLOGY_H */
+diff --git a/include/asm-generic/topology_cpu.h b/include/asm-generic/topology_cpu.h
+new file mode 100644
+index 0000000..fac1258
+--- /dev/null
++++ b/include/asm-generic/topology_cpu.h
+@@ -0,0 +1,19 @@
++#ifndef _ASM_GENERIC_TOPOLOGY_CPU_H
++#define _ASM_GENERIC_TOPOLOGY_CPU_H
++
++#include <linux/cpumask.h>
++
++#ifndef topology_physical_package_id
++#define topology_physical_package_id(cpu)	((void)(cpu), -1)
++#endif
++#ifndef topology_core_id
++#define topology_core_id(cpu)			((void)(cpu), 0)
++#endif
++#ifndef topology_thread_siblings
++#define topology_thread_siblings(cpu)		cpumask_of_cpu(cpu)
++#endif
++#ifndef topology_core_siblings
++#define topology_core_siblings(cpu)		cpumask_of_cpu(cpu)
++#endif
++
++#endif /* _ASM_GENERIC_TOPOLOGY_CPU_H */
+diff --git a/include/asm-powerpc/topology.h b/include/asm-powerpc/topology.h
+index ca23b68..abcfdf4 100644
+--- a/include/asm-powerpc/topology.h
++++ b/include/asm-powerpc/topology.h
+@@ -97,8 +97,6 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
  }
  
- /* The key must be already stored in q->key. */
--static inline struct futex_hash_bucket *
--queue_lock(struct futex_q *q, int fd, struct file *filp)
-+static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
- {
- 	struct futex_hash_bucket *hb;
--
--	q->fd = fd;
--	q->filp = filp;
  
- 	init_waitqueue_head(&q->waiters);
+-#include <asm-generic/topology.h>
+-
+ #endif /* CONFIG_NUMA */
  
-@@ -1006,7 +993,7 @@ queue_lock(struct futex_q *q, int fd, st
- 	return hb;
- }
+ #ifdef CONFIG_SMP
+@@ -112,5 +110,11 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
+ #endif
+ #endif
  
--static inline void __queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
-+static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
- {
- 	int prio;
++#ifdef CONFIG_NUMA
++#include <asm-generic/topology_cpu.h>
++#else
++#include <asm-generic/topology.h>
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_TOPOLOGY_H */
+diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
+index 8af05a9..49b1a73 100644
+--- a/include/asm-x86/topology.h
++++ b/include/asm-x86/topology.h
+@@ -178,6 +178,8 @@ extern cpumask_t cpu_coregroup_map(int cpu);
+ #define topology_core_id(cpu)			(cpu_data(cpu).cpu_core_id)
+ #define topology_core_siblings(cpu)		(per_cpu(cpu_core_map, cpu))
+ #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
++#else
++#include <asm-generic/topology_cpu.h>
+ #endif
  
-@@ -1040,15 +1027,6 @@ queue_unlock(struct futex_q *q, struct f
-  * queue_me and unqueue_me must be called as a pair, each
-  * exactly once.  They are called with the hashed spinlock held.
-  */
--
--/* The key must be already stored in q->key. */
--static void queue_me(struct futex_q *q, int fd, struct file *filp)
--{
--	struct futex_hash_bucket *hb;
--
--	hb = queue_lock(q, fd, filp);
--	__queue_me(q, hb);
--}
- 
- /* Return 1 if we were still queued (ie. 0 means we were woken) */
- static int unqueue_me(struct futex_q *q)
-@@ -1194,7 +1172,7 @@ static int futex_wait(u32 __user *uaddr,
- 	if (unlikely(ret != 0))
- 		goto out_release_sem;
- 
--	hb = queue_lock(&q, -1, NULL);
-+	hb = queue_lock(&q);
- 
- 	/*
- 	 * Access the page AFTER the futex is queued.
-@@ -1238,7 +1216,7 @@ static int futex_wait(u32 __user *uaddr,
- 		goto out_unlock_release_sem;
- 
- 	/* Only actually queue if *uaddr contained val.  */
--	__queue_me(&q, hb);
-+	queue_me(&q, hb);
- 
- 	/*
- 	 * Now the futex is queued and we have checked the data, we
-@@ -1381,7 +1359,7 @@ static int futex_lock_pi(u32 __user *uad
- 		goto out_release_sem;
- 
-  retry_unlocked:
--	hb = queue_lock(&q, -1, NULL);
-+	hb = queue_lock(&q);
- 
-  retry_locked:
- 	ret = lock_taken = 0;
-@@ -1494,7 +1472,7 @@ static int futex_lock_pi(u32 __user *uad
- 	/*
- 	 * Only actually queue now that the atomic ops are done:
- 	 */
--	__queue_me(&q, hb);
-+	queue_me(&q, hb);
- 
- 	/*
- 	 * Now the futex is queued and we have checked the data, we
-@@ -1733,121 +1711,6 @@ pi_faulted:
- 		goto retry;
- 
- 	return ret;
--}
--
--static int futex_close(struct inode *inode, struct file *filp)
--{
--	struct futex_q *q = filp->private_data;
--
--	unqueue_me(q);
--	kfree(q);
--
--	return 0;
--}
--
--/* This is one-shot: once it's gone off you need a new fd */
--static unsigned int futex_poll(struct file *filp,
--			       struct poll_table_struct *wait)
--{
--	struct futex_q *q = filp->private_data;
--	int ret = 0;
--
--	poll_wait(filp, &q->waiters, wait);
--
--	/*
--	 * plist_node_empty() is safe here without any lock.
--	 * q->lock_ptr != 0 is not safe, because of ordering against wakeup.
--	 */
--	if (plist_node_empty(&q->list))
--		ret = POLLIN | POLLRDNORM;
--
--	return ret;
--}
--
--static const struct file_operations futex_fops = {
--	.release	= futex_close,
--	.poll		= futex_poll,
--};
--
--/*
-- * Signal allows caller to avoid the race which would occur if they
-- * set the sigio stuff up afterwards.
-- */
--static int futex_fd(u32 __user *uaddr, int signal)
--{
--	struct futex_q *q;
--	struct file *filp;
--	int ret, err;
--	struct rw_semaphore *fshared;
--	static unsigned long printk_interval;
--
--	if (printk_timed_ratelimit(&printk_interval, 60 * 60 * 1000)) {
--		printk(KERN_WARNING "Process `%s' used FUTEX_FD, which "
--		       "will be removed from the kernel in June 2007\n",
--		       current->comm);
--	}
--
--	ret = -EINVAL;
--	if (!valid_signal(signal))
--		goto out;
--
--	ret = get_unused_fd();
--	if (ret < 0)
--		goto out;
--	filp = get_empty_filp();
--	if (!filp) {
--		put_unused_fd(ret);
--		ret = -ENFILE;
--		goto out;
--	}
--	filp->f_op = &futex_fops;
--	filp->f_path.mnt = mntget(futex_mnt);
--	filp->f_path.dentry = dget(futex_mnt->mnt_root);
--	filp->f_mapping = filp->f_path.dentry->d_inode->i_mapping;
--
--	if (signal) {
--		err = __f_setown(filp, task_pid(current), PIDTYPE_PID, 1);
--		if (err < 0) {
--			goto error;
--		}
--		filp->f_owner.signum = signal;
--	}
--
--	q = kmalloc(sizeof(*q), GFP_KERNEL);
--	if (!q) {
--		err = -ENOMEM;
--		goto error;
--	}
--	q->pi_state = NULL;
--
--	fshared = &current->mm->mmap_sem;
--	down_read(fshared);
--	err = get_futex_key(uaddr, fshared, &q->key);
--
--	if (unlikely(err != 0)) {
--		up_read(fshared);
--		kfree(q);
--		goto error;
--	}
--
--	/*
--	 * queue_me() must be called before releasing mmap_sem, because
--	 * key->shared.inode needs to be referenced while holding it.
--	 */
--	filp->private_data = q;
--
--	queue_me(q, ret, filp);
--	up_read(fshared);
--
--	/* Now we map fd to filp, so userspace can access it */
--	fd_install(ret, filp);
--out:
--	return ret;
--error:
--	put_unused_fd(ret);
--	put_filp(filp);
--	ret = err;
--	goto out;
- }
- 
- /*
-@@ -2081,10 +1944,6 @@ long do_futex(u32 __user *uaddr, int op,
- 	case FUTEX_WAKE_BITSET:
- 		ret = futex_wake(uaddr, fshared, val, val3);
- 		break;
--	case FUTEX_FD:
--		/* non-zero val means F_SETOWN(getpid()) & F_SETSIG(val) */
--		ret = futex_fd(uaddr, val);
--		break;
- 	case FUTEX_REQUEUE:
- 		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, NULL);
- 		break;
-@@ -2145,19 +2004,6 @@ asmlinkage long sys_futex(u32 __user *ua
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
- }
- 
--static int futexfs_get_sb(struct file_system_type *fs_type,
--			  int flags, const char *dev_name, void *data,
--			  struct vfsmount *mnt)
--{
--	return get_sb_pseudo(fs_type, "futex", NULL, FUTEXFS_SUPER_MAGIC, mnt);
--}
--
--static struct file_system_type futex_fs_type = {
--	.name		= "futexfs",
--	.get_sb		= futexfs_get_sb,
--	.kill_sb	= kill_anon_super,
--};
--
- static int __init futex_init(void)
- {
- 	u32 curval;
-@@ -2182,16 +2028,6 @@ static int __init futex_init(void)
- 		spin_lock_init(&futex_queues[i].lock);
- 	}
- 
--	i = register_filesystem(&futex_fs_type);
--	if (i)
--		return i;
--
--	futex_mnt = kern_mount(&futex_fs_type);
--	if (IS_ERR(futex_mnt)) {
--		unregister_filesystem(&futex_fs_type);
--		return PTR_ERR(futex_mnt);
--	}
--
- 	return 0;
- }
- __initcall(futex_init);
+ #ifdef CONFIG_SMP
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
