@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbYDRGD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbYDRGLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbYDRGD3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 02:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYDRGDV
+	id S1757254AbYDRGLY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 02:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbYDRGLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 02:03:21 -0400
-Received: from cnc.isely.net ([64.81.146.143]:60449 "EHLO cnc.isely.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbYDRGDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 02:03:20 -0400
-Date: Fri, 18 Apr 2008 01:03:17 -0500 (CDT)
-From: Mike Isely <isely@isely.net>
-Reply-To: Mike Isely <isely@pobox.com>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Video4Linux list <video4linux-list@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Isely at pobox <isely@pobox.com>
-Subject: Re: [2.6 patch] video/pvrusb2/pvrusb2-hdw.c cleanups
-In-Reply-To: <20080414184153.GZ6695@cs181133002.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0804180100180.31065@cnc.isely.net>
-References: <20080414184153.GZ6695@cs181133002.pp.htv.fi>
+	Fri, 18 Apr 2008 02:11:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58311 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753095AbYDRGLM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 02:11:12 -0400
+Date: Thu, 17 Apr 2008 23:10:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: 2.6.25-mm1: not looking good
+Message-Id: <20080417231038.72363123.akpm@linux-foundation.org>
+In-Reply-To: <20080417224908.67cec814@laptopd505.fenrus.org>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	<20080417224908.67cec814@laptopd505.fenrus.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Apr 2008, Adrian Bunk wrote:
+On Thu, 17 Apr 2008 22:49:08 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-> This patch contains the following cleanups:
-> - make the following needlessly global function static:
->   - pvr2_hdw_set_cur_freq()
-> - #if 0 the following unused global functions:
->   - pvr2_hdw_get_state_name()
->   - pvr2_hdw_get_debug_info_unlocked()
->   - pvr2_hdw_get_debug_info_locked()
+> On Thu, 17 Apr 2008 16:03:31 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > I repulled all the trees an hour or two ago, installed everything on
+> > an 8-way x86_64 box and:
+> > 
+> > 
+> > stack-protector:
+> > 
+> > Testing -fstack-protector-all feature
+> > No -fstack-protector-stack-frame!
+> > -fstack-protector-all test failed
 > 
-> ---
+> do you have a stack-protector capable GCC? I guess not.
+> 
+> This is a catch-22. You do not have stack-protector. Should we make that 
+> a silent failure? or do you want to know that you don't have a security
+> feature you thought you had.... complaining seems to be the right thing to do imo.
 
-FYI, I've merged this change into my local repository, and expect to 
-push it back up for 2.6.26 as part of a pent-up pile of pvrusb2 changes.
-
-  -Mike
-
-
--- 
-
-Mike Isely
-isely @ pobox (dot) com
-PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
+A #warning sounds more appropriate.
