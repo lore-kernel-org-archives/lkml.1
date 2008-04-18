@@ -1,64 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYDRMmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbYDRMnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbYDRMmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 08:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYDRMlr
+	id S1757700AbYDRMnn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 08:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbYDRMnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 08:41:47 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:36165 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753553AbYDRMlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 08:41:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NZgLIaTOFVGMlKebAoFytDVgUpBKL6MHQOzp2qh+xFnpIinwSaUxyZz3X/BiaZUjgpBG8rAaSMQtFklp8kQijt4S6s3ZRML20apK1qozdtnNQvo2XsaBNBMB1EUMi23KSr85vtqHbGOVztViN/Mn4s3KekfozgwM0LVoOLWP8WA=
-Message-ID: <19f34abd0804180541l7b4d14a6tb13bdd51dd533d70@mail.gmail.com>
-Date: Fri, 18 Apr 2008 14:41:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.25-mm1: not looking good
-Cc: "Jason Wessel" <jason.wessel@windriver.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, tglx@linutronix.de,
-       penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
-       sds@tycho.nsa.gov
-In-Reply-To: <20080418123439.GA17013@elte.hu>
+	Fri, 18 Apr 2008 08:43:33 -0400
+Received: from mail0.scram.de ([78.47.204.202]:44477 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753842AbYDRMnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 08:43:31 -0400
+X-Spam-Score: -4.202
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <48089769.4050308@scram.de>
+Date: Fri, 18 Apr 2008 14:43:21 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCHv3 3/7] i2c: OF helpers for the i2c API
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	 <20080417164034.e406ef53.akpm@linux-foundation.org>
-	 <20080417171413.6f8458e4.akpm@linux-foundation.org>
-	 <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu>
-	 <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>
-	 <20080418123439.GA17013@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 2:34 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Vegard Nossum <vegard.nossum@gmail.com> wrote:
->
->  > With the patch below, it seems 100% reproducible to me (7 out of 7
->  > bootups hung).
->  >
->  > The number of loops it could do before hanging were, in order: 697,
->  > 898, 237, 55, 45, 92, 59
->
->  cool! Jason: i think that particular self-test should be repeated 1000
->  times before reporting success ;-)
+This patch implements various helpers to support OF bindings for
+the i2c API.
 
-BTW, I just tested a 32-bit config and it hung after 55 iterations as well.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/of/Kconfig     |    6 +++
+ drivers/of/Makefile    |    1 +
+ drivers/of/of_i2c.c    |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_i2c.h |   24 ++++++++++
+ 4 files changed, 146 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/of/of_i2c.c
+ create mode 100644 include/linux/of_i2c.h
 
-Vegard
+Changes to v2:
 
+- make helpers compile as module as well, if i2c-core is compiled as module.
+- rename drivers/of/i2c.c to drivers/of/of_i2c.c to avoid module namespace conflict.
 
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index c03072b..210bf37 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -1,3 +1,9 @@
+ config OF_DEVICE
+ 	def_bool y
+ 	depends on OF && (SPARC || PPC_OF)
++
++config OF_I2C
++	def_tristate I2C
++	depends on OF && I2C
++	help
++	  OpenFirmware I2C accessors
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index ab9be5d..121d9ed 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -1,2 +1,3 @@
+ obj-y = base.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
++obj-$(CONFIG_OF_I2C)	+= of_i2c.o
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+new file mode 100644
+index 0000000..6316891
+--- /dev/null
++++ b/drivers/of/of_i2c.c
+@@ -0,0 +1,115 @@
++/*
++ * OF helpers for the I2C API
++ *
++ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
++ *
++ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/i2c.h>
++#include <linux/of.h>
++
++struct i2c_driver_device {
++	char    *of_device;
++	char    *i2c_type;
++};
++
++static struct i2c_driver_device i2c_devices[] = {
++	{ "dallas,ds1374", "rtc-ds1374" },
++};
++
++static int of_find_i2c_driver(struct device_node *node,
++			      struct i2c_board_info *info)
++{
++	int i, cplen;
++	const char *compatible;
++	const char *p;
++
++	/* 1. search for exception list entry */
++	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
++		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
++			continue;
++		if (strlcpy(info->type, i2c_devices[i].i2c_type,
++			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++			return -ENOMEM;
++
++		return 0;
++	}
++
++	compatible = of_get_property(node, "compatible", &cplen);
++	if (!compatible)
++		return -ENODEV;
++
++	/* 2. search for linux,<i2c-type> entry */
++	p = compatible;
++	while (cplen > 0) {
++		if (!strncmp(p, "linux,", 6)) {
++			p += 6;
++			if (strlcpy(info->type, p,
++				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++				return -ENOMEM;
++			return 0;
++		}
++
++		i = strlen(p) + 1;
++		p += i;
++		cplen -= i;
++	}
++
++	/* 3. take fist compatible entry and strip manufacturer */
++	p = strchr(compatible, ',');
++	if (!p)
++		return -ENODEV;
++	p++;
++	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++		return -ENOMEM;
++	return 0;
++}
++
++void of_register_i2c_devices(struct i2c_adapter *adap,
++			     struct device_node *adap_node)
++{
++	void *result;
++	struct device_node *node;
++
++	for_each_child_of_node(adap_node, node) {
++		struct i2c_board_info info = {};
++		const u32 *addr;
++		int len;
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
++			printk(KERN_ERR
++			       "of-i2c: invalid i2c device entry\n");
++			continue;
++		}
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
++
++		if (of_find_i2c_driver(node, &info) < 0) {
++			irq_dispose_mapping(info.irq);
++			continue;
++		}
++
++		info.addr = *addr;
++
++		request_module(info.type);
++
++		result = i2c_new_device(adap, &info);
++		if (result == NULL) {
++			printk(KERN_ERR
++			       "of-i2c: Failed to load driver for %s\n",
++			       info.type);
++			irq_dispose_mapping(info.irq);
++			continue;
++		}
++	}
++}
++EXPORT_SYMBOL(of_register_i2c_devices);
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+new file mode 100644
+index 0000000..2e5a967
+--- /dev/null
++++ b/include/linux/of_i2c.h
+@@ -0,0 +1,24 @@
++/*
++ * Generic I2C API implementation for PowerPC.
++ *
++ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __LINUX_OF_I2C_H
++#define __LINUX_OF_I2C_H
++
++#include <linux/i2c.h>
++
++#ifdef CONFIG_OF_I2C
++
++void of_register_i2c_devices(struct i2c_adapter *adap,
++			     struct device_node *adap_node);
++
++#endif /* CONFIG_OF_I2C */
++
++#endif /* __LINUX_OF_I2C_H */
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.5
+
