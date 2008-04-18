@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYDRRg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYDRRjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbYDRRg7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 13:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758599AbYDRRgs
+	id S1758710AbYDRRjI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 13:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbYDRRiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 13:36:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39423 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758189AbYDRRgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 13:36:47 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 19 Apr 2008 02:25:56 +0900 (JST)
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: Re: [PATCH]Fix usemap for DISCONTIG/FLATMEM with not-aligned zone initilaization.
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, akpm@linux-foundation.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
-In-Reply-To: <20080418161522.GB9147@csn.ul.ie>
+	Fri, 18 Apr 2008 13:38:55 -0400
+Received: from mail.queued.net ([207.210.101.209]:1133 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754765AbYDRRiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 13:38:54 -0400
+Date: Fri, 18 Apr 2008 13:41:12 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Thiago Galesi <thiagogalesi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: Remove use of lock_kernel /
+ unlock_kernel in fbmem
+Message-ID: <20080418134112.2a9c5929@ephemeral>
+In-Reply-To: <200804162000.59587.thiagogalesi@gmail.com>
+References: <200804131150.07601.thiagogalesi@gmail.com>
+	<20080415221707.82da3d42.akpm@linux-foundation.org>
+	<200804162000.59587.thiagogalesi@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20080418161522.GB9147@csn.ul.ie>
- <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com> <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for looking into.
+On Wed, 16 Apr 2008 20:00:59 -0300
+Thiago Galesi <thiagogalesi@gmail.com> wrote:
 
->> -		if ((pfn & (pageblock_nr_pages-1)))
->> -			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
->> +		set_pageblock_migratetype(page, MIGRATE_MOVABLE);
->>  
->
->The point of the if there was so that set_pageblock_migratetype() would
->only be called once per pageblock. The impact with an unaligned zone is
->that the first block is not set and will be used for UNMOVABLE pages
->initially. However, this is not a major impact and there is no need to
->call set_pageblock_migratetype for every page.
->
-But if ((pfn & (pageblock_nr_pages -1))) is not correct.
-for calling set_pageblock_migrationtype() once in a pageblock,
-!((pfn & (pageblock_nr_pages -1))) is correct.
-
-
->
->This is a pretty large change for what seems to be a fairly basic problem -
-I think so ;(
-
->alignment issues during boot where I'm guessing we are writing past the end
->of the bitmap. Even if the virtual memmap is covering non-existant pages,
->the PFNs there for bitmaps and the like should still not be getting used
->and the map size is already rounded up to the pageblock size. It's also
->expanding the size of zone which seems overkill.
->
->I think I have a possible alternative fix below.
->
-ok.
-
->What about something like the following? Instead of expanding the size of
->structures, it sanity checks input parameters. It touches a number of places
->because of an API change but it is otherwise straight-forward.
->
->Unfortunately, I do not have an IA-64 machine that can reproduce the problem
->to see if this still fixes it or not so a test as well as a review would be
->appreciated. What should happen is the machine boots but prints a warning
->about the unexpected PFN ranges. It boot-tested fine on a number of other
->machines (x86-32 x86-64 and ppc64).
->
-ok, I'll test today if I have a chance. At least, I think I can test this
-until Monday. but I have one concern (below)
-
-
->+	/*
->+	 * Sanity check the values passed in. It is possible an architecture
->+	 * calling this function directly will use values outside of the memory
->+	 * they registered
->+	 */
->+	if (start_pfn < zone->zone_start_pfn) {
->+		WARN_ON_ONCE(1);
->+		start_pfn = zone->zone_start_pfn;
->+	}
->+
->+	if (size > zone->spanned_pages) {
->+		WARN_ON_ONCE(1);
->+		size = zone->spanned_pages;
->+	}
 > 
-My concern here is, memmap out-of-zone is not initialized and not
-marked as PG_reserved...sholdn't we initialize existing memmap even
-if they are out-ot-zone ? I think all existing mem_map for memory hole
-should be initialized properly.
+> This patch removes lock_kernel(), unlock_kernel() usage in fbmem.c and replaces it with a mutex
+> 
+> Signed-off-by: Thiago Galesi <thiagogalesi@gmail.com>
+> 
+[...]
+> @@ -1413,6 +1435,8 @@ register_framebuffer(struct fb_info *fb_
+>  
+>  	event.info = fb_info;
+>  	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+> +
+> +	mutex_init(&fb_info->hwlock);
+>  	return 0;
+>  }
+> 
 
-Thanks,
--Kame
+Just a minor nit; in general, I'd think you would want to completely
+initialize the structure (including calling mutex_init) before
+registering the structure with the rest of the system (in this case,
+with registered_fb and *_call_notifier_chain).  Initializing after
+registration is just asking for a race conditions.
 
+
+ 
+-- 
+Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
