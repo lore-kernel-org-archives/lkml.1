@@ -1,267 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbYDRVPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbYDRVPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764182AbYDRVPA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 17:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761584AbYDRUxt
+	id S1761972AbYDRVPd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 17:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761778AbYDRUyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 16:53:49 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30002 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758724AbYDRUwZ (ORCPT
+	Fri, 18 Apr 2008 16:54:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:63327 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761739AbYDRUyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 16:52:25 -0400
-Message-Id: <20080418205055.124709308@ldl.fc.hp.com>
-References: <20080418204955.342963315@ldl.fc.hp.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 18 Apr 2008 14:50:34 -0600
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Adam Belay <ambx1@neo.rr.com>
-Cc: Li Shaohua <shaohua.li@intel.com>
-Cc: Matthieu Castet <castet.matthieu@free.fr>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 39/53] PNP: make generic pnp_add_irq_resource()
-Content-Disposition: inline; filename=pnp-common-add-irq-resource
+	Fri, 18 Apr 2008 16:54:31 -0400
+Subject: Re: [RFC PATCH try2] sysfs: add /sys/dev/{char,block} to lookup
+	sysfs path by major:minor
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Greg KH <greg@kroah.com>, Mark Lord <lkml@rtr.ca>,
+       NeilBrown <neilb@suse.de>, SL Baur <steve@xemacs.org>,
+       Tejun Heo <htejun@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1208547223.5083.17.camel@dwillia2-linux.ch.intel.com>
+References: <1208547223.5083.17.camel@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 22:53:54 +0200
+Message-Id: <1208552034.8589.16.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX198hK05Bu7c0v9xXQQPsnqsXtyx6KXqK5V1kHb
+ xeKmjmPP2J9fYCcrP03jSdsBcr9OxJ1YxuwsZLm+L7vVI6dCHe
+ ZovccFsAfby5wFsnK9Ai4CBdWfeE+10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a pnp_add_irq_resource() that can be used by all the PNP
-backends.  This consolidates a little more pnp_resource_table
-knowledge into one place.
+On Fri, 2008-04-18 at 12:33 -0700, Dan Williams wrote:
+> --- a/Documentation/filesystems/sysfs.txt
+> +++ b/Documentation/filesystems/sysfs.txt
+> @@ -248,6 +248,7 @@ The top level sysfs directory looks like:
+>  block/
+>  bus/
+>  class/
+> +dev/
+>  devices/
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Lots of stuff in that file is pretty damn wrong, and at it should
+probably just be deleted. Care to put this new documentation into:
+  Documentation/ABI/
 
----
- drivers/pnp/base.h             |    3 +++
- drivers/pnp/resource.c         |   24 ++++++++++++++++++++++++
- drivers/pnp/interface.c        |   14 ++++++--------
- drivers/pnp/isapnp/core.c      |    8 +++-----
- drivers/pnp/pnpacpi/rsparser.c |   31 +++++++------------------------
- drivers/pnp/pnpbios/rsparser.c |   31 +++++++------------------------
- 6 files changed, 50 insertions(+), 61 deletions(-)
+> --- a/drivers/base/class.c
+> +++ b/drivers/base/class.c
+> @@ -134,6 +134,18 @@ static void remove_class_attrs(struct class *cls)
+>  	}
+>  }
+>  
+> +static void class_set_dev_kobj(struct class *class)
+> +{
+> +#ifdef CONFIG_BLOCK
+> +	if (class == &block_class) {
+> +		class->dev_kobj = block_kobj;
+> +		return;
+> +	}
+> +#endif
+> +
+> +	class->dev_kobj = char_kobj;
+> +}
+> +
 
-Index: work8/drivers/pnp/base.h
-===================================================================
---- work8.orig/drivers/pnp/base.h	2008-04-17 15:05:12.000000000 -0600
-+++ work8/drivers/pnp/base.h	2008-04-18 11:00:36.000000000 -0600
-@@ -35,3 +35,6 @@
- 	struct pnp_resource dma[PNP_MAX_DMA];
- 	struct pnp_resource irq[PNP_MAX_IRQ];
- };
-+
-+struct pnp_resource *pnp_add_irq_resource(struct pnp_dev *dev, int irq,
-+					  int flags);
-Index: work8/drivers/pnp/resource.c
-===================================================================
---- work8.orig/drivers/pnp/resource.c	2008-04-17 15:05:13.000000000 -0600
-+++ work8/drivers/pnp/resource.c	2008-04-18 11:00:36.000000000 -0600
-@@ -559,6 +559,30 @@
- 	return NULL;
- }
- 
-+struct pnp_resource *pnp_add_irq_resource(struct pnp_dev *dev, int irq,
-+					  int flags)
-+{
-+	struct pnp_resource *pnp_res;
-+	struct resource *res;
-+	static unsigned char warned;
-+
-+	pnp_res = pnp_new_resource(dev, IORESOURCE_IRQ);
-+	if (!pnp_res) {
-+		if (!warned) {
-+			dev_err(&dev->dev, "can't add resource for IRQ %d\n",
-+				irq);
-+			warned = 1;
-+		}
-+		return NULL;
-+	}
-+
-+	res = &pnp_res->res;
-+	res->flags = IORESOURCE_IRQ | flags;
-+	res->start = irq;
-+	res->end = irq;
-+	return pnp_res;
-+}
-+
- /* format is: pnp_reserve_irq=irq1[,irq2] .... */
- static int __init pnp_setup_reserve_irq(char *str)
- {
-Index: work8/drivers/pnp/interface.c
-===================================================================
---- work8.orig/drivers/pnp/interface.c	2008-04-17 14:56:51.000000000 -0600
-+++ work8/drivers/pnp/interface.c	2008-04-18 11:02:06.000000000 -0600
-@@ -322,9 +322,11 @@
- 			  const char *ubuf, size_t count)
- {
- 	struct pnp_dev *dev = to_pnp_dev(dmdev);
-+	struct pnp_resource *pnp_res;
- 	struct resource *res;
- 	char *buf = (void *)ubuf;
- 	int retval = 0;
-+	resource_size_t start;
- 
- 	if (dev->status & PNP_ATTACHED) {
- 		retval = -EBUSY;
-@@ -426,14 +428,10 @@
- 				buf += 3;
- 				while (isspace(*buf))
- 					++buf;
--				res = pnp_get_resource(dev, IORESOURCE_IRQ,
--						       nirq);
--				if (!res)
--					break;
--				res->start = res->end =
--				    simple_strtoul(buf, &buf, 0);
--				res->flags = IORESOURCE_IRQ;
--				nirq++;
-+				start = simple_strtoul(buf, &buf, 0);
-+				pnp_res = pnp_add_irq_resource(dev, start, 0);
-+				if (pnp_res)
-+					pnp_res->index = nirq++;
- 				continue;
- 			}
- 			if (!strnicmp(buf, "dma", 3)) {
-Index: work8/drivers/pnp/isapnp/core.c
-===================================================================
---- work8.orig/drivers/pnp/isapnp/core.c	2008-04-17 15:05:12.000000000 -0600
-+++ work8/drivers/pnp/isapnp/core.c	2008-04-18 11:00:36.000000000 -0600
-@@ -956,11 +956,9 @@
- 			     8);
- 			if (!ret)
- 				continue;
--			pnp_res = &dev->res->irq[tmp];
--			pnp_res->index = tmp;
--			res = &pnp_res->res;
--			res->start = res->end = ret;
--			res->flags = IORESOURCE_IRQ;
-+			pnp_res = pnp_add_irq_resource(dev, ret, 0);
-+			if (pnp_res)
-+				pnp_res->index = tmp;
- 		}
- 		for (tmp = 0; tmp < ISAPNP_MAX_DMA; tmp++) {
- 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
-Index: work8/drivers/pnp/pnpacpi/rsparser.c
-===================================================================
---- work8.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-17 15:04:41.000000000 -0600
-+++ work8/drivers/pnp/pnpacpi/rsparser.c	2008-04-18 11:00:36.000000000 -0600
-@@ -82,26 +82,12 @@
- 						u32 gsi, int triggering,
- 						int polarity, int shareable)
- {
--	struct resource *res;
--	int i;
--	int irq;
-+	int irq, flags;
- 	int p, t;
--	static unsigned char warned;
- 
- 	if (!valid_IRQ(gsi))
- 		return;
- 
--	for (i = 0; i < PNP_MAX_IRQ; i++) {
--		res = &dev->res->irq[i].res;
--		if (res->flags & IORESOURCE_UNSET)
--			break;
--	}
--	if (i >= PNP_MAX_IRQ && !warned) {
--		printk(KERN_WARNING "pnpacpi: exceeded the max number of IRQ "
--				"resources: %d \n", PNP_MAX_IRQ);
--		warned = 1;
--		return;
--	}
- 	/*
- 	 * in IO-APIC mode, use overrided attribute. Two reasons:
- 	 * 1. BIOS bug in DSDT
-@@ -119,17 +105,14 @@
- 		}
- 	}
- 
--	res->flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
--	res->flags |= irq_flags(triggering, polarity, shareable);
-+	flags = irq_flags(triggering, polarity, shareable);
- 	irq = acpi_register_gsi(gsi, triggering, polarity);
--	if (irq < 0) {
--		res->flags |= IORESOURCE_DISABLED;
--		return;
--	}
-+	if (irq >= 0)
-+		pcibios_penalize_isa_irq(irq, 1);
-+	else
-+		flags |= IORESOURCE_DISABLED;
- 
--	res->start = irq;
--	res->end = irq;
--	pcibios_penalize_isa_irq(irq, 1);
-+	pnp_add_irq_resource(dev, irq, flags);
- }
- 
- static int dma_flags(int type, int bus_master, int transfer)
-Index: work8/drivers/pnp/pnpbios/rsparser.c
-===================================================================
---- work8.orig/drivers/pnp/pnpbios/rsparser.c	2008-04-17 15:04:41.000000000 -0600
-+++ work8/drivers/pnp/pnpbios/rsparser.c	2008-04-18 11:00:36.000000000 -0600
-@@ -54,28 +54,6 @@
-  * Allocated Resources
-  */
- 
--static void pnpbios_parse_allocated_irqresource(struct pnp_dev *dev, int irq)
--{
--	struct resource *res;
--	int i;
--
--	for (i = 0; i < PNP_MAX_IRQ; i++) {
--		res = &dev->res->irq[i].res;
--		if (res->flags & IORESOURCE_UNSET)
--			break;
--	}
--
--	if (i < PNP_MAX_IRQ) {
--		res->flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
--		if (irq == -1) {
--			res->flags |= IORESOURCE_DISABLED;
--			return;
--		}
--		res->start = res->end = (unsigned long)irq;
--		pcibios_penalize_isa_irq(irq, 1);
--	}
--}
--
- static void pnpbios_parse_allocated_dmaresource(struct pnp_dev *dev, int dma)
- {
- 	struct resource *res;
-@@ -148,7 +126,7 @@
- 							    unsigned char *end)
- {
- 	unsigned int len, tag;
--	int io, size, mask, i;
-+	int io, size, mask, i, flags;
- 
- 	if (!p)
- 		return NULL;
-@@ -203,12 +181,17 @@
- 		case SMALL_TAG_IRQ:
- 			if (len < 2 || len > 3)
- 				goto len_err;
-+			flags = 0;
- 			io = -1;
- 			mask = p[1] + p[2] * 256;
- 			for (i = 0; i < 16; i++, mask = mask >> 1)
- 				if (mask & 0x01)
- 					io = i;
--			pnpbios_parse_allocated_irqresource(dev, io);
-+			if (io != -1)
-+				pcibios_penalize_isa_irq(io, 1);
-+			else
-+				flags = IORESOURCE_DISABLED;
-+			pnp_add_irq_resource(dev, io, flags);
- 			break;
- 
- 		case SMALL_TAG_DMA:
+If you do:
+  struct class block_class = {
+    .name = "block",
+    .dev_kobj = block_kobj,
+  }
 
--- 
+in:
+  block/genhd.c
+and put:
+  if (!class->dev_kobj)
+          class->dev_kobj = char_kobj;
+in:
+  class_register()
+we can get rid of all this logic and the BLOCK #ifdef, right?
+
+Also:
+  class_create(THIS_MODULE, "usb_device");
+in:
+  drivers/usb/core/devio.c
+should probably clear the dev_kobj after registration, and we can get
+rid of the "parent has the same dev_t" logic?
+
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -192,6 +192,7 @@ struct class {
+>  	struct class_attribute		*class_attrs;
+>  	struct class_device_attribute	*class_dev_attrs;
+>  	struct device_attribute		*dev_attrs;
+> +	struct kobject			*dev_kobj;
+>  
+>  	int (*uevent)(struct class_device *dev, struct kobj_uevent_env *env);
+>  	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
+> @@ -204,6 +205,8 @@ struct class {
+>  	int (*resume)(struct device *dev);
+>  };
+>  
+> +extern struct kobject *block_kobj;
+> +extern struct kobject *char_kobj;
+
+These global symbols should get better names, to make it obvious that
+it's "only" the /sys/dev/ stuff.
+
+
+Thanks,
+Kay
+
