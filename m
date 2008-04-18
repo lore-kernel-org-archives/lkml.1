@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbYDRRv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbYDRR4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759155AbYDRRv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 13:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbYDRRvr
+	id S1759283AbYDRR4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 13:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbYDRR4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 13:51:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:21967 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758814AbYDRRvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 13:51:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CcDbAAcq877GB2EpmKKY9flslBpe6DNBUigkiiwAj1AYnIsqV8njiEJxmfAoyxFkZFBc1/DRucotiwSEXB2Pl3rgmqJ9JqWTrq8MaYy46UJ6/mla7NOioCxXkNGD6udBZsPxfkCcilPkx0jNqWIuPKgYxd1Ar2rBwoysd9FuqCk=
-Date: Fri, 18 Apr 2008 21:51:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: kgdb build fix
-Message-ID: <20080418175104.GD7674@cvg>
-References: <1208537678.17196.40.camel@brick>
+	Fri, 18 Apr 2008 13:56:11 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:51429 "EHLO
+	outbound10-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758927AbYDRR4J convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 13:56:09 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208537678.17196.40.camel@brick>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [microblaze-uclinux] Re: Microblaze Linux release
+Date: Fri, 18 Apr 2008 10:56:00 -0700
+In-reply-to: <4804A59B.5040909@seznam.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [microblaze-uclinux] Re: Microblaze Linux release
+Thread-Index: AcifD6fcD6twljegTIK/2BNqnQNdJQCbKFow
+References: <48020A21.4000404@seznam.cz> <200804140538.30268.arnd@arndb.de> <200804140801.57464.arnd@arndb.de> <4804A59B.5040909@seznam.cz>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <microblaze-uclinux@itee.uq.edu.au>, "Arnd Bergmann" <arnd@arndb.de>
+Cc: "John Williams" <john.williams@petalogix.com>,
+       <jwboyer@linux.vnet.ibm.com>, <benh@kernel.crashing.org>,
+       "John Linn" <linnj@xilinx.com>, "git-dev" <git-dev@xilinx.com>,
+       "Grant Likely" <grant.likely@secretlab.ca>, "git" <git@xilinx.com>,
+       <linux-kernel@vger.kernel.org>, <paulus@samba.org>
+X-OriginalArrivalTime: 18 Apr 2008 17:56:01.0360 (UTC) FILETIME=[76A57D00:01C8A17D]
+Message-Id: <20080418175602.5E15E670052@mail81-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Harvey Harrison - Fri, Apr 18, 2008 at 09:54:38AM -0700]
-| TF_MASK is no longer defined, use X86_EFLAGS_TF.
-| 
-| Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-| ---
-| In current -linus tree.
-| 
-|  arch/x86/kernel/kgdb.c |    4 ++--
-|  1 files changed, 2 insertions(+), 2 deletions(-)
-| 
-| diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-| index 8c7e555..24362ec 100644
-| --- a/arch/x86/kernel/kgdb.c
-| +++ b/arch/x86/kernel/kgdb.c
-| @@ -375,12 +375,12 @@ int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
-|  		newPC = linux_regs->ip;
-|  
-|  		/* clear the trace bit */
-| -		linux_regs->flags &= ~TF_MASK;
-| +		linux_regs->flags &= ~X86_EFLAGS_TF;
-|  		atomic_set(&kgdb_cpu_doing_single_step, -1);
-|  
-|  		/* set the trace bit if we're stepping */
-|  		if (remcomInBuffer[0] == 's') {
-| -			linux_regs->flags |= TF_MASK;
-| +			linux_regs->flags |= X86_EFLAGS_TF;
-|  			kgdb_single_step = 1;
-|  			if (kgdb_contthread) {
-|  				atomic_set(&kgdb_cpu_doing_single_step,
-| -- 
-| 1.5.5.144.g3e42
-| 
-It seems to be my fault, thanks a lot Harvey!
 
-		- Cyrill -
+
+> > * the consistent.c implementation looks strange. Is any of that code
+> > even used anywhere? What is it good for, considering that you don't
+have
+> > an mmu?
+> 
+> We have prepared MMU code. I hope that this code for FDT kernel comes
+soon.
+> This code is written by John Williams. I have never changed it. I see
+that this
+> code solves problems around ucached_shadows stuff.
+>
+http://developer.petalogix.com/wiki/UserGuide/AdvancedTopics/EnablingUnc
+achedShadow
+> JW. Can you comment this?
+
+It probably makes sense to grab: arch/microblaze/mm/dma-coherent.c from
+git.xilinx.com and drop consistent.c.  I believe this is the more
+'modern' way to implement this functionality.  I think it's easiest for
+you to just grab this file.
+
+> > * Your dma_mapping.h does BUG() for almost everything. I suspect you
+could
+> > easily replace it with a trivial implementation, like the x86_32
+one.
+> 
+> OK. I'll synchronize this.
+
+This is also in git.xilinx.com.
+
+> > * You don't seem to have any code for PCI, so the pci.h and
+pci-bridge.h
+> > files don't make much sense.
+> 
+> Yes you are right. I don't have any PCI code but I think that this
+code for MB
+> exists. Steve or John: Do you have any code for PCI?
+
+I'd recommend dropping anything having to do with PCI: I don't know that
+there is much interest in it on microblaze.
+
+Other comments:
+
+memset/memmove/memcpy are broken under gcc4.  There are fixed versions
+of this at git.xilinx.com.  Again, it's probably easiest if you just
+grab the files directly.
+
+It would also be good to have irq_of_parse_and_map, which drivers will
+need.  I'll send you a patch for this one.
+
+Steve
+
+
