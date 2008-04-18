@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYDRNFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbYDRNIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYDRNFW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 09:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYDRNFG
+	id S1755762AbYDRNIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 09:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYDRNIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 09:05:06 -0400
-Received: from mail.windriver.com ([147.11.1.11]:57503 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbYDRNFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 09:05:04 -0400
-Message-ID: <48089BCA.1090704@windriver.com>
-Date: Fri, 18 Apr 2008 08:02:02 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 18 Apr 2008 09:08:05 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:4198 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYDRNIE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 09:08:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=EaYiNO9OJKLWzxJOwf0hZOuyLRhtyGjBdJ5dgRcw5Ee2mAVUGlAbB1jaIHxmphVZzkxZTqF7XDL/F7SkJtqBE8yKQ3uEMtAw4AbMq5ZZ8PioZSDtxao7lft+nFa4wZMe8DGg1r8QLCWqdMtfcYSMj450+KOSGa5i0LDt2z182Ys=
+Date: Fri, 18 Apr 2008 17:07:19 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: bfields@fieldses.org, neilb@suse.de, ibm-acpi@hmh.eng.br,
+       len.brown@intel.com, kkeil@suse.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] ThinkPad ACPI: fix possible NULL pointer
+	dereference
+Message-ID: <20080418130719.GB7674@cvg>
+References: <20080416174421.442716301@gmail.com>> <48063bc9.2533440a.1932.1fc1@mx.google.com> <20080418124111.GB4966@ucw.cz>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tglx@linutronix.de, penberg@cs.helsinki.fi, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, jmorris@namei.org,
-       sds@tycho.nsa.gov
-Subject: Re: 2.6.25-mm1: not looking good
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>	 <20080417164034.e406ef53.akpm@linux-foundation.org>	 <20080417171413.6f8458e4.akpm@linux-foundation.org>	 <48080FE7.1070400@windriver.com> <20080418073732.GA22724@elte.hu>	 <19f34abd0804180446u2d6f17damf391a8c0584358b8@mail.gmail.com>	 <20080418123439.GA17013@elte.hu> <19f34abd0804180541l7b4d14a6tb13bdd51dd533d70@mail.gmail.com>
-In-Reply-To: <19f34abd0804180541l7b4d14a6tb13bdd51dd533d70@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Apr 2008 13:01:55.0395 (UTC) FILETIME=[60D4E930:01C8A154]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080418124111.GB4966@ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Fri, Apr 18, 2008 at 2:34 PM, Ingo Molnar <mingo@elte.hu> wrote:
->   
->>  * Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>
->>  > With the patch below, it seems 100% reproducible to me (7 out of 7
->>  > bootups hung).
->>  >
->>  > The number of loops it could do before hanging were, in order: 697,
->>  > 898, 237, 55, 45, 92, 59
->>
->>  cool! Jason: i think that particular self-test should be repeated 1000
->>  times before reporting success ;-)
->>     
->
-> BTW, I just tested a 32-bit config and it hung after 55 iterations as well.
->
-> Vegard
->
->
->   
-I assume this was SMP?
+[Pavel Machek - Fri, Apr 18, 2008 at 02:41:12PM +0200]
+| Hi!
+| 
+| > Fix potential NULL pointer dereference if kstrdup failed
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > 
+| > ---
+| > 
+| > Index: linux-2.6.git/drivers/misc/thinkpad_acpi.c
+| > ===================================================================
+| > --- linux-2.6.git.orig/drivers/misc/thinkpad_acpi.c	2008-04-16 20:35:34.000000000 +0400
+| > +++ linux-2.6.git/drivers/misc/thinkpad_acpi.c	2008-04-16 20:36:38.000000000 +0400
+| > @@ -5826,7 +5826,7 @@ static void __init get_thinkpad_model_da
+| >  
+| >  	tp->model_str = kstrdup(dmi_get_system_info(DMI_PRODUCT_VERSION),
+| >  					GFP_KERNEL);
+| > -	if (strnicmp(tp->model_str, "ThinkPad", 8) != 0) {
+| > +	if (tp->model_str && strnicmp(tp->model_str, "ThinkPad", 8) != 0) {
+| >  		kfree(tp->model_str);
+| >  		tp->model_str = NULL;
+| >  	}
+| 
+| are you sure? This seems to assume machine is thinkpad if kstrdup
+| fails... which is very wrong.
+| 
 
-While I had not tried it yet, my guess would have been this did not
-happen on a UP kernel.  If it does occur on a UP kernel it means the
-problem is squarely between the task scheduling after the exception is
-handled and the kgdb state logic for re-entering the debug state after a
-single step exception occurs.
+Oh, I see what do you mean - you mean that even if machine is ThinkPad
+*but* kstrdup failed with my patch it would lead that the machine will
+*not* be recognized as ThinkPad and that is not correct, agreed. But how
+to preven from NULL dereference then? I think the current situation
+brought by my patch would not lead to really critical problems *but*
+it should be reorganized indeed! Thanks a lot, Pavel, for comments ;)
 
-It seems reasonable to go for 1000 iterations of this particular test to
-declare success as pointed out by Ingo.  Previous versions of kgdb
-handled some of the irq + single step + cpu sync slightly differently
-and it is entirely possible there is a regression there.
-
-Jason.
+		- Cyrill -
