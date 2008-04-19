@@ -1,76 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbYDSCt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbYDSC4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761459AbYDSCt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 22:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYDSCtv
+	id S1760052AbYDSC4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 22:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYDSC4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 22:49:51 -0400
-Received: from web36708.mail.mud.yahoo.com ([209.191.85.42]:22753 "HELO
-	web36708.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751368AbYDSCtu (ORCPT
+	Fri, 18 Apr 2008 22:56:23 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3841 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYDSC4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 22:49:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=zy/Qt111pOKOKG3gf+HbuWix5uBn7SUqWc11k0MNKRUEpcZfuHLNAzL7CII5hQVOCAZ/8cfQz9DujBpvqnt3rd9PUxFHEzp3MwaXH7cCsyqiWFUys5VNkdOI3R4+ZEUxVcz7Ivvs7nPMkSMd3vLka3csYfhDVWcUxEEeD9TMsKw=;
-X-YMail-OSG: kiG_5FoVM1kZP9QwLOacbtjmCfszrcF0EnkDMPR23nB4gkCy2G1NzwkVFIH6vHYkV9xpvOUSMPHWQyDjeb50U8vElr4_Rzd9NkjsqQUyAlEhdIrhA1rfmBQEqQ--
-Date: Fri, 18 Apr 2008 19:49:45 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: Smartmedia/xd card support - request for comments
-To: linux-kernel@vger.kernel.org
-Cc: tglx@linutronix.de, joern@logfs.org, ben@fluff.org
-In-Reply-To: <alpine.LFD.1.10.0804181126350.3261@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <51700.66276.qm@web36708.mail.mud.yahoo.com>
+	Fri, 18 Apr 2008 22:56:22 -0400
+Subject: Re: Alternative implementation of the generic __ffs
+From: Joe Perches <joe@perches.com>
+To: dean gaudet <dean@arctic.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
+References: <20080331171506.GA24017@mailshack.com>
+	 <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>
+	 <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>
+	 <1207507897.18129.1246358115@webmail.messagingengine.com>
+	 <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>
+	 <1207563950.7880.1246457209@webmail.messagingengine.com>
+	 <20080418201809.GA5036@mailshack.com>
+	 <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
+	 <1208563762.10414.19.camel@brick>
+	 <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
+	 <1208566724.4891.25.camel@localhost> <1208567093.10414.20.camel@brick>
+	 <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 19:55:28 -0700
+Message-Id: <1208573728.11990.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Third, there's no attempt made by mtd to support advanced
-> > functionality present in many smartmedia and all memorystick
-> > readers: adapter side copy and multi page programming (this mostly
-> > relates to memorystick, of course). I also failed to see any support
-> > for device writing policy, needed to discern, for example,
-> > sequential page programmable devices vs. block programmable
-> > devices. I also failed to see an unified approach to page-accessible
-> > devices, meaning duplication of "bouncing" code in the backends.
-> 
-> And instead of addressing the missing features and shortcomings you
-> add a new duplicated code layer which is only useful for a restricted
-> set of hardware.
-> 
-> > Considering all this, amount of effort needed for satisfactory
-> > support of smartmedia through mtd was found by me to be far greater
-> > than coming with stand-alone implementation.
-> 
-> Yeah and you made this decision on your own w/o even discussing the
-> issues at hand with the mtd developers before implementing a separate
-> code stack. And now we should be impressed and merge it. That's not
-> the way it works.
-> 
+On Fri, 2008-04-18 at 18:11 -0700, dean gaudet wrote: 
+> have you benchmarked it?
 
-I do not expect you, or anybody, to be "impressed" with anything. As I said before, from my
-analysis of mtd it will require a great deal of patching to acquire certain functionality. This
-will invariably require a large time span, as many people depend on the mtd in it present state.
+I modified Alexander's benchmark:
+http://lkml.org/lkml/2008/4/18/267
+to include 32 and 64 bit variants called smallest.
 
-If your position on the proposed interim solution is definite "no", I'll make an effort to rewrite
-the driver in the mtd-friendly way.
+On an old ARM:
 
-This brings me to the first technical question:
+$ gcc --version
+gcc (GCC) 3.4.6
 
-mtd_blkdevs breaks the block layer request into separate pages, effectively disabling lower layer
-from making decision based on a real data block size, and using dma to any useful extent. What is
-the proposed way to deal with this?
+$ cat /proc/cpuinfo 
+Processor	: Intel StrongARM-110 rev 4 (v4l)
+BogoMIPS	: 262.14
+Hardware	: Rebel-NetWinder
+Revision	: 57ff
+Serial		: 000000000000185c
 
-(By the way, first question already puts us into a "quirk" area of the statement "smartmedia are
-flash chips with quirks". Both memorystick and smartmedia are always operated in tandem with their
-controllers, as you could notice.)
+$ gcc -Os -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3180 tics,  8379 tics
+New:            4280 tics,  8890 tics
+Smallest:       4027 tics,  7835 tics
+Empty loop:     1543 tics,  2260 tics
+
+$ gcc -O2 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3161 tics,  7843 tics
+New:            4778 tics,  8783 tics
+Smallest:       4408 tics,  7149 tics
+Empty loop:     1515 tics,  2140 tics
+
+$ gcc -O3 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3078 tics,  7692 tics
+New:            4714 tics,  8671 tics
+Smallest:       4344 tics,  7117 tics
+Empty loop:     1444 tics,  2024 tics
+
+On my old laptop:
+
+$ cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Intel(R) Pentium(R) 4 Mobile CPU 1.60GHz
+stepping        : 4
+cpu MHz         : 1200.000
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm up
+bogomips        : 2400.03
+clflush size    : 64
+
+$ gcc --version
+gcc (GCC) 4.3.0
+
+$ gcc -Os -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:        901 tics,  1426 tics
+New:             862 tics,  1244 tics
+Smallest:        911 tics,  1331 tics
+Assembly:        208 tics,   402 tics
+Empty loop:      208 tics,   304 tics
+
+$ gcc -O2 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:        918 tics,  1386 tics
+New:             872 tics,  1193 tics
+Smallest:        906 tics,  1309 tics
+Assembly:        202 tics,   396 tics
+Empty loop:      207 tics,   299 tics
+
+$ gcc -O3 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:        865 tics,  1389 tics
+New:             852 tics,  1183 tics
+Smallest:        907 tics,  1296 tics
+Assembly:        200 tics,   390 tics
+Empty loop:      211 tics,   296 tics
 
 
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
