@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbYDSDqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYDSEDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932205AbYDSDqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 23:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbYDSDqF
+	id S1754469AbYDSEDN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 00:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYDSEDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 23:46:05 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:32077 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754564AbYDSDqD (ORCPT
+	Sat, 19 Apr 2008 00:03:01 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30301 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbYDSEC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 23:46:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=MhBU6YnXpkbUCxo4rayAh2bdgL+1mYeui2jy+NiWrk9bljQq2ucxlPgDbF8lmoTdD571Mxc1jtP8cHWmR/uElwD9zGhcdru0QMYGt2DQr/7zsq5Qo0poq7jpZCSmNv9urQFJf/zJuEQT0uJl3KTl8D+doLMdqKYhHYnorQKacc0=  ;
-X-YMail-OSG: UWuaBhMVM1kZ7RfUuMZqA.KN2Dc.om_ktfalP2cfUa1mwFAOG5pYxdCOGiRXa9GZjpYcUNIIo5HvUE0kB0.38rigu053cGo-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Higer latency with dynamic tick (need for an io-ondemand govenor?)
-Date: Fri, 18 Apr 2008 20:45:56 -0700
-User-Agent: KMail/1.9.6
-Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com> <1179474567.12981.53.camel@chaos> <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
-In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
+	Sat, 19 Apr 2008 00:02:59 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
+Date: Fri, 18 Apr 2008 21:57:32 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080418204955.342963315@ldl.fc.hp.com> <20080418205051.704761191@ldl.fc.hp.com> <480920BB.9010506@keyaccess.nl>
+In-Reply-To: <480920BB.9010506@keyaccess.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804182045.56893.david-b@pacbell.net>
+Message-Id: <200804182157.34313.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 April 2008, Woodruff, Richard wrote:
-> When capturing some traces with dynamic tick we were noticing the
-> interrupt latency seems to go up a good amount. If you look at the trace
-> the gpio IRQ is now offset a good amount.  Good news I guess is its
-> pretty predictable.
+On Friday 18 April 2008 4:29:15 pm Rene Herman wrote:
+> On 18-04-08 22:50, Bjorn Helgaas wrote:
+> > Move the common part of pnp_init_resource_table() and
+> > pnp_clean_resource_table() into a new pnp_init_resource().
+> > This reduces a little code duplication and will be
+> > useful later to initialize an individual resource.
+>
+> This can't be right, can it? :
+> > +void pnp_init_resource(struct resource *res)
+> > +{
+> > +	unsigned long type;
+> > +
+> > +	type = res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
+> > +			     IORESOURCE_IRQ | IORESOURCE_DMA);
+> > +
+> > +	res->name = NULL;
+> > +	res->flags = type | IORESOURCE_AUTO | IORESOURCE_UNSET;
+> > +	if (type == IORESOURCE_IRQ || type == IORESOURCE_DMA) {
+> > +		res->start = -1;
+> > +		res->end = -1;
+> > +	} else {
+> > +		res->start = 0;
+> > +		res->end = 0;
+> > +	}
+> > +}
+>
+> This depends on the type already being set in res->flags, yet:
 
-That is, about 24 usec on this CPU ... an ARM v7, which I'm guessing
-is an OMAP34xx running fairly fast (order of 4x faster than most ARMs).
+Yep, you're right.  I fixed it, but it requires changes to a couple
+other patches down the line, so I'll wait to repost the series until
+next week in case you find more problems.
 
-Similar issues were noted, also using ETM trace, on an ARM920 core [1]
-from Atmel.  There, the overhead of NO_HZ was observed to be more like
-150 usec of per-IRQ overhead, which is enough to make NO_HZ non-viable
-in some configurations.
+I think this is only a problem for bisection.  By the time you
+apply the whole series, we start with an empty resource list, and
+every time we add one, we set the type in pnp_new_resource().
 
+That makes me wonder whether pnp_init_resources() should just
+free the whole list, so we just start again with an empty list.
 
-> I was wondering what thoughts of optimizing this might be.
-
-Cutting down the math implied by jiffies updates might help.
-The 64 bit math for ktime structs isn't cheap; purely by eyeball,
-that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
-
-- Dave
-
-[1] http://marc.info/?l=linux-kernel&m=120471594714499&w=2
-
+Bjorn
