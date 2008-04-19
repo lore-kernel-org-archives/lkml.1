@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYDSF4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbYDSGA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbYDSF4x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 01:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYDSF4n
+	id S1757964AbYDSGA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 02:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYDSGAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 01:56:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:51187 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYDSF4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 01:56:43 -0400
-Date: Sat, 19 Apr 2008 07:56:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alex Dubov <oakad@yahoo.com>
-cc: linux-kernel@vger.kernel.org, joern@logfs.org, ben@fluff.org
-Subject: Re: Smartmedia/xd card support - request for comments
-In-Reply-To: <51700.66276.qm@web36708.mail.mud.yahoo.com>
-Message-ID: <alpine.LFD.1.10.0804190724220.3261@apollo.tec.linutronix.de>
-References: <51700.66276.qm@web36708.mail.mud.yahoo.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 19 Apr 2008 02:00:16 -0400
+Received: from dtp.xs4all.nl ([80.126.206.180]:17806 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751922AbYDSGAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 02:00:14 -0400
+Date: Sat, 19 Apr 2008 08:00:11 +0200
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: alan@redhat.com, R.E.Wolff@BitWizard.nl,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 05/15] drivers/char: minor irq handler cleanups
+Message-ID: <20080419060011.GA29321@bitwizard.nl>
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <e3b010fa8e3bc3a5e386759f01f69c80918923e7.1208559659.git.jgarzik@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e3b010fa8e3bc3a5e386759f01f69c80918923e7.1208559659.git.jgarzik@redhat.com>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Alex Dubov wrote:
+On Fri, Apr 18, 2008 at 07:22:51PM -0400, Jeff Garzik wrote:
+> This change's main purpose is to prepare for the patchset in
+> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
+> never-used 'irq' argument in each interrupt handler.
 
-> mtd_blkdevs breaks the block layer request into separate pages,
-> effectively disabling lower layer from making decision based on a
-> real data block size, and using dma to any useful extent. What is
-> the proposed way to deal with this?
+The changes look sane, (for the drivers that I'm involved with). 
 
-Wrong in two aspects. 
+However, you're now adding a second parameter to my interrupt
+routines: "polled" to replace the "never used" irq parameter. (which
+/was/ used to determine wether we were called polled or not... 
 
-1) it does not break the request into separate pages. It breaks it
-into mtd_blktrans_ops->blksize chunks, which is set by the blkdev
-user.
-
-2) Using DMA on raw NAND Flash is on per page basis except you have an
-"intellegent" controller chip which does the low level handling of the
-nand flash itself. Such controllers do not necessarily fit into MTD.
-
-> (By the way, first question already puts us into a "quirk" area of
-> the statement "smartmedia are flash chips with quirks". Both
-> memorystick and smartmedia are always operated in tandem with their
-> controllers, as you could notice.)
-
-I have no idea what you want to tell me. there is no quirk in a
-smartmedia card.
-
-Thanks,
-	tglx
+On the other hand, most hardware should work if you remove the if
+(!polled).
 
 
+You added a "XXX Using free_irq in the interrupt is not wise!". When I
+wrote that code, I didn't know about this. These lines triggered when
+the level-triggered PCI interrupt stuck "active" this would mean that
+NO userspace code would get executed anymore: Hard lock up. Difficult
+to debug. This happend a few times during development when the code
+behind the "if (!polled)": "tell the hardware we've seen the
+interrupt" didn't work. On the other hand, some failures in the field
+have triggered this. So I think it's wise to keep it in. Disabling the
+interrupt on the card is not an option, because that's exactly what
+this is supposed to catch: We're unable to make the card stop
+interrupting the CPU.
+
+Note that it also doesn't work (i.e. hard lock of the machine) if some
+other driver is using the same interupt.
+
+	Roger. 
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
