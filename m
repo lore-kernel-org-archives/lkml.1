@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYDSKkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYDSKmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759741AbYDSKkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 06:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYDSKj5
+	id S1759966AbYDSKmV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYDSKmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 06:39:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40990 "EHLO mx3.mail.elte.hu"
+	Sat, 19 Apr 2008 06:42:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41232 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753342AbYDSKj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 06:39:56 -0400
-Date: Sat, 19 Apr 2008 12:39:42 +0200
+	id S1753405AbYDSKmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 06:42:07 -0400
+Date: Sat, 19 Apr 2008 12:41:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: David Miller <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
 Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
 	latest -git
-Message-ID: <20080419103942.GA13599@elte.hu>
-References: <20080419100034.GA9475@elte.hu> <20080419.030337.244502148.davem@davemloft.net>
+Message-ID: <20080419104152.GB13599@elte.hu>
+References: <20080419100034.GA9475@elte.hu> <20080419.030736.168169087.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080419.030337.244502148.davem@davemloft.net>
+In-Reply-To: <20080419.030736.168169087.davem@davemloft.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,34 +42,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > From: Ingo Molnar <mingo@elte.hu>
 > Date: Sat, 19 Apr 2008 12:00:35 +0200
 > 
-> > btw., i found no thread to reply to on lkml or elsewhere - arent all 
-> > git pull requests supposed to be Cc:-ed to lkml, with shortlog 
-> > included?
+> [ netfilter-devel and netdev added to CC: ]
 > 
-> I have never once done this even going all the way back to the BK 
-> days.
+> > randconfig testing found a netfilter build failure in latest -git:
+> > 
+> >   net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
+> >   net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
+> > 
+> >   http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
+> > 
+> > disabling CONFIG_NF_CONNTRACK_SIP works it around.
+> 
+> I think this will fix it.
+> 
+> Patrick, is this how we should do it?
+> 
+> diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
+> index c1fc0f1..fd60b2b 100644
+> --- a/net/netfilter/Kconfig
+> +++ b/net/netfilter/Kconfig
+> @@ -245,7 +245,7 @@ config NF_CONNTRACK_SANE
+>  
+>  config NF_CONNTRACK_SIP
+>  	tristate "SIP protocol support"
+> -	depends on NF_CONNTRACK
+> +	depends on NF_CONNTRACK && NF_NAT
+>  	default m if NETFILTER_ADVANCED=n
+>  	help
+>  	  SIP is an application-layer control protocol that can establish,
 
-do you find this practice of private pull requests important? If not, 
-would it be difficult to Cc: lkml to routine pull requests?
+thanks David, this solves the build failure here.
 
-> I always send my pull requests directly to Linus, CC:'ing Andrew.
-
-that makes bugs harder to report and makes the flow of patches harder to 
-follow as well. Often (like in this case) i see it when a bug comes in 
-via a specific group of commits but i have no time to do a bisection. In 
-that case i'd like to report it to that pull request so i'd like to 
-reply to that pull on lkml.
-
-But in this case i first did an unsuccessful full-text search on lkml, 
-then i also opened up netdev and did a full text search there too to 
-find the originator pull request or the patches but the search turned up 
-nothing. As the number of subsystems increases, i suspect you agree with 
-me that this does not scale very well for bug reporters, correct?
-
-i'm convinced that testers and bug reporters are the scarce resource 
-these days, not patch integrators and not maintainers which was the 
-scarce resource 3-4 years ago, before Git and before BK. It is testing 
-(and review) capacity that limits the growth of Linux today, not patch 
-writing and patch integration capacity.
+Tested-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
+
