@@ -1,20 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYDSHaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759718AbYDSHwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbYDSHaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 03:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYDSH35
+	id S1759718AbYDSHwy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 03:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYDSHwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 03:29:57 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:53172 "EHLO smtp.drzeus.cx"
+	Sat, 19 Apr 2008 03:52:44 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:56039 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752874AbYDSH34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 03:29:56 -0400
-Date: Sat, 19 Apr 2008 09:28:47 +0200
+	id S1752899AbYDSHwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 03:52:44 -0400
+Date: Sat, 19 Apr 2008 09:51:36 +0200
 From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates
-Message-ID: <20080419092847.25fc2319@mjolnir.drzeus.cx>
+To: David Brownell <david-b@pacbell.net>, Andrew Victor <linux@maxim.org.za>,
+       Pavel Pisa <ppisa@pikron.com>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       Anderson Briglia <briglia.anderson@gmail.com>,
+       "Syed Mohammed, Khasim" <x0khasim@ti.com>,
+       Russell King <rmk@arm.linux.org.uk>, Alex Dubov <oakad@yahoo.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] MMC multiwrite capability removal
+Message-ID: <20080419095136.15a50cc9@mjolnir.drzeus.cx>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -23,69 +28,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Hi everyone,
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+I've been planning to remove the MMC multiwrite capability (making it
+always on), but I need some help from all you driver maintainers first.
 
-to receive the following updates:
+Ages ago, I had a chat with Axboe about the current situation and it
+turns out that the MMC layer is a bit over-cautious. There are plenty
+of other block devices that cannot report anything more than
+success/failure for the whole request. So it's silly that we're
+crippling the MMC layer when upper layers have to deal with that
+scenario anyway.
 
- drivers/mmc/core/core.c         |    6 +-
- drivers/mmc/core/core.h         |    4 +
- drivers/mmc/core/host.c         |   39 +-
- drivers/mmc/core/sdio_irq.c     |    4 +-
- drivers/mmc/core/sdio_ops.c     |    1 +
- drivers/mmc/host/omap.c         |  995 ++++++++++++++++++++++++++-------------
- drivers/mmc/host/sdhci.c        |  123 +++--
- drivers/mmc/host/sdhci.h        |    9 +-
- include/asm-arm/arch-omap/mmc.h |    2 +
- 9 files changed, 787 insertions(+), 396 deletions(-)
+What I need from you is and audit of your respective driver(s) and
+check that they do not overestimate the number of successfully written
+blocks. Please send a short reply even if your driver needs no changes.
 
-Adrian Bunk (3):
-      mmc: make __mmc_release_bus() static
-      mmc: proper prototypes for mmc_attach_*()
-      mmc: sdio_ops.c should #include "sdio_ops.h"
+Long version:
 
-Carlos Eduardo Aguiar (2):
-      MMC: OMAP: Remove some opcodes from host driver
-      MMC: OMAP: Using setup_timer instead of init_timer
+The data flow of a write is something like this:
 
-Francisco Alecrim (1):
-      MMC: OMAP: Fix the BYTEBLOCK capability removal
+1. Data starts moving from main memory to host memory (DMA or PIO)
+2. Data finishes moving from main memory to host memory
+3. A sector moves to the front of the device write queue
+4. The sector starts being sent over the wire
+5. The sector finishes being sent over the wire
+6. The card acknowledges a successful transfer
+7. The card finishes busy signalling
+8. The sector moves to the front of the card write queue
+9. The sector gets picked up by the FTL
+10. The sector is written to media
 
-Jarkko Lavinen (6):
-      MMC: OMAP: Abort stuck commands
-      MMC: OMAP: Use tasklet instead of workqueue for cover switch notification
-      MMC: OMAP: Move failing command abortion to workqueue
-      MMC: OMAP: Lazy clock shutdown
-      MMC: OMAP: Start new commands from work queue instead of irq
-      MMC: OMAP: Do not busy wait for end of command for ever
+In a perfect world we would report the number of sectors that made it
+to 10. Unfortunately we have limited insight into what the card is up
+to.
 
-Juha Yrjola (6):
-      MMC: OMAP: Introduce new multislot structure and change driver to use it
-      MMC: OMAP: Add back cover switch support
-      MMC: OMAP: New release dma and abort xfer functions
-      MMC: OMAP: Fix timeout calculation for MMC multislot support
-      MMC: OMAP: Power functions modified to MMC multislot support
-      MMC: OMAP: General cleanup for MMC multislot support
+What your host drivers should report is sectors that have passed stage
+6. If your controller doesn't give you enough information to determine
+that, then you must report 0 for all failed transfers.
 
-Kyungmin Park (1):
-      MMC: OMAP: Check the get_cover_state function pointer if not set
+I'll be having a closer look at stages 7 through 10, but that's a core
+issue that shouldn't involve your drivers.
 
-Pierre Ossman (5):
-      mmc: set controller name early
-      sdhci: remove custom controller name
-      sdhci: allow led to be controlled freely
-      sdhci: improve no card, no reset quirk
-      sdhci: don't check block count for progress
-
-Robert P. J. Day (1):
-      mmc: use shorter, equivalent set_current_state()
-
-Tony Lindgren (2):
-      MMC: OMAP: Remove extra divisor increase
-      MMC: OMAP: Remove cover switch handling to allow adding multislot support
-
-
+Rgds
 
 -- 
      -- Pierre Ossman
