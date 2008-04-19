@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761823AbYDSOXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYDSOYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761823AbYDSOXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 10:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbYDSOXh
+	id S1757076AbYDSOYG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 10:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbYDSOXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 10:23:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:65044 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755542AbYDSOXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 10:23:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jwRCyZ2pY2hx5vw4yQRdOMz0GUk0pe6Ry2qXSTM+1JAcMRRtR2PXjLPPlMzQ7G0/J3nNSwNuHqeW21mEF1r3DafeWW2Z9T82EO4UARVCYRsP8OneGc2j3ui7ieKomkl/Me5tpEQAyqYXFZ2gG0jE6eRyW10aV4uCYyCLvdXdbbE=
-Message-ID: <dd18b0c30804190723t64779e7rdbacbda2e76349@mail.gmail.com>
-Date: Sat, 19 Apr 2008 07:23:35 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: devzero@web.de
-Subject: Re: latest git freezes my system
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <245581241@web.de>
+	Sat, 19 Apr 2008 10:23:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56807 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759339AbYDSOXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 10:23:45 -0400
+Date: Sat, 19 Apr 2008 16:23:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080419142329.GA5339@elte.hu>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <245581241@web.de>
+In-Reply-To: <20080418142934.38ce6bf4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 19, 2008 at 2:18 AM,  <devzero@web.de> wrote:
-> what was the last working kernel/config for you?
->  if an earlier kernels work without problems, then it`s a regression
->  can you switch to kernel log console before the freeze and wait for it to happen?
->  any message/oops/panic there?
->  does the system respond to sysrq after the freeze ? (http://linuxgazette.net/issue81/vikas.html )
->
->  roland
->
->
->  List:       linux-kernel
->  Subject:    latest git freezes my system
->  From:       "Justin Mattock" <justinmattock () gmail ! com>
->  Date:       2008-04-19 7:23:14
->  Message-ID: dd18b0c30804190023ka240e30u27f20fcbf4295a35 () mail ! gmail ! com
->  [Download message RAW]
->
->
->
->  I updated the latest git 2.6.25-02519-g3925e6f on my macbook pro, and
->  I seem to experiencing a system freeze on a given random number, i.g.
->  The system will run for five minuetes no problem, then a system
->  freeze, or during the boot process when the systems try's to load the
->  modules I'll receive a freeze
->  or I'll get the system up then within minuetes. Is there something I
->  need to add to my .config, or is this something more complex.
->  Also I'm seeing a no module symbols loaded kernel modules not enabled,
->  in /var/log/kern.log;  could this be related.
->  any help would be appreciated..
->
->  --
->  Justin P. Mattock
->
->  __________________________________________________
->  GRATIS: Movie-FLAT. Jetzt freischalten!
->  http://freemail.web.de/club/maxdome.htm/?mc=025557
->
->
 
-Hello, Yes the last .config worked fine for me. I can go ahead and try
-what you had said, and see if I receive any info on why I there is a
-freeze.
-regards;
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> >  config 4KSTACKS
+> >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
+> > -	depends on DEBUG_KERNEL
+> >  	depends on X86_32
+> > +	default y
+> 
+> This patch will cause kernels to crash.
 
--- 
-Justin P. Mattock
+what mainline kernels crash and how will they crash? Fedora and other 
+distros have had 4K stacks enabled for years:
+
+  $ grep 4K /boot/config-2.6.24-9.fc9
+  CONFIG_4KSTACKS=y
+
+and we've conducted tens of thousands of bootup tests with all sorts of 
+drivers and kernel options enabled and have yet to see a single crash 
+due to 4K stacks. So basically the kernel default just follows the 
+common distro default now. (distros and users can still disable it)
+
+	Ingo
