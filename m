@@ -1,101 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYDSCOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbYDSCQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYDSCOF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 22:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbYDSCNv
+	id S1753688AbYDSCQQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 22:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYDSCPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 22:13:51 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:12234 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754655AbYDSCNu (ORCPT
+	Fri, 18 Apr 2008 22:15:54 -0400
+Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:57085 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758001AbYDSCPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 22:13:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mvIARf/ABWH/wB3Wti7vCU5UvPHetxBCDOlAByVuKbXmsddShb0hZD4CUXAXagf43HKgFHMsEkdVLCvxi14NNARn+eX+Tcc6J3HvzWgnPyriwgbbwlRuM9LjoStIWKKwg/o25HZ+5HHeiVM7w645jTVN7gQhxj7NCVzBuem2E9A=
-Date: Fri, 18 Apr 2008 22:13:43 -0400
-From: Joseph Fannin <jfannin@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1
-Message-ID: <20080419021343.GA3503@nineveh.local>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	Fri, 18 Apr 2008 22:15:52 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Yinghai Lu <yhlu.kernel.send@gmail.com>
+Subject: Re: [PATCH] x86_64: simplify the memtest parameter setting
+Date: Sat, 19 Apr 2008 04:15:46 +0200
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, akpm@linux-foundation.org, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+References: <200804181749.15782.yhlu.kernel@gmail.com> <200804190357.09243.elendil@planet.nl>
+In-Reply-To: <200804190357.09243.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804190415.47552.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Apr 2008 02:15:50.0051 (UTC) FILETIME=[494C9730:01C8A1C3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+On Saturday 19 April 2008, Frans Pop wrote:
+> Yinghai Lu wrote:
+> > -config MEMTEST_BOOTPARAM
+> > -	bool "Memtest boot parameter"
+> > +config MEMTEST
+> > +	bool "Memtest"
+> >  depends on X86_64
+> >  default y
 >
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
+> With this patch, this default no longer makes any sense.
+>
+> >  help
+> >  This option adds a kernel parameter 'memtest', which allows memtest
+> > -	  to be disabled at boot.  If this option is selected, memtest
+> > -	  functionality can be disabled with memtest=0 on the kernel
+> > -	  command line.  The purpose of this option is to allow a single
+> > -	  kernel image to be distributed with memtest built in, but not
+> > -	  necessarily enabled.
+> > -
+> > +	  to be set.
+> > +		memtest=0, mean disabled; -- default
+> > +		memtest=1, mean do 1 test pattern;
+> > +		...
+> > +		memtest=4, mean do 4 test patterns.
+>
+> s/mean/means/
+> s/; -- default/ (default)/
 
-I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
-least, since that's the earliest -mm I've built in a while.  I don't
-get the same in mainline.
+These are still good (IMO).
 
-No idea who to CC:  I've sat on this report long enough.
+> Maybe some explanation of what a "test pattern" is would be useful.
+>
+> >  If you are unsure how to answer this question, answer Y.
+>
+> Also makes no sense anymore.
 
-I'm going to send a few different reports in separate mails, so I'll
-put my dmesg and .config up on a server:
+Oops. Just see I was too fast. After reading it again I see that the y/n 
+value is correct after all.
 
-http://home.columbus.rr.com/jfannin3/dmesg.txt
-http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+However, it also means that the new description is probably too short.
+The phrase "allows memtest to be set" does not really mean anything to a 
+user who does not know what memtest really does. It also does not explain 
+that memtest is a boot parameter.
 
-[  451.915553] sysfs: duplicate filename 'pcspkr' can not be created
-[  451.915731] ------------[ cut here ]------------
-[  451.915851] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x85/0xe0()
-[  451.915981] Modules linked in: snd_pcsp(+) ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_mpu401_uart snd_seq_dummy snd_seq_oss snd_seq_midi psmouse snd_rawmidi serio_raw snd_seq_midi_event snd_seq button i2c_viapro snd_timer snd_seq_device pcspkr i2c_core snd snd_page_alloc via686a shpchp pci_hotplug parport_pc parport via_agp agpgart soundcore evdev sg sr_mod cdrom sd_mod 8139cp aic7xxx  scsi_transport_spi scsi_mod 8139too mii uhci_hcd usbcore raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
-[  451.918960] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-[  451.929271]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
-[  451.929500]  [<c0132400>] ? vprintk+0x2f0/0x4a0
-[  451.929723]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-[  451.929918]  [<c01c6a7a>] ? ifind+0x4a/0xa0
-[  451.930126]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-[  451.930334]  [<c015535b>] ? trace_hardirqs_on+0xb/0x10
-[  451.930534]  [<c01325d0>] ? printk+0x20/0x30
-[  451.930727]  [<c01fcc45>] sysfs_add_one+0x85/0xe0
-[  451.930900]  [<c01fd89e>] create_dir+0x4e/0xb0
-[  451.931064]  [<c01fd930>] sysfs_create_dir+0x30/0x50
-[  451.931291]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-[  451.931485]  [<c023dac6>] kobject_add_internal+0xb6/0x190
-[  451.931656]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
-[  451.931857]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
-[  451.932022]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
-[  451.932188]  [<c02a3e44>] bus_add_driver+0x94/0x250
-[  451.932364]  [<c02a5062>] driver_register+0x42/0xf0
-[  451.932533]  [<c02a6c56>] platform_driver_register+0x66/0x70
-[  451.932702]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
-[  451.932877]  [<c015e137>] sys_init_module+0x87/0x1a0
-[  451.933043]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-[  451.933246]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-[  451.933453]  [<c0104077>] sysenter_past_esp+0x78/0xc5
-[  451.933636]  =======================
-[  451.933744] ---[ end trace 4eaa2a86a8e2da22 ]---
-[  451.933905] kobject_add_internal failed for pcspkr with -EEXIST, don't try to register things with the same name in the same directory.
-[  451.934130] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-[  451.934269]  [<c023db53>] kobject_add_internal+0x143/0x190
-[  451.934439]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
-[  451.934641]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
-[  451.934805]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
-[  451.934969]  [<c02a3e44>] bus_add_driver+0x94/0x250
-[  451.979314]  [<c02a5062>] driver_register+0x42/0xf0
-[  451.979535]  [<c02a6c56>] platform_driver_register+0x66/0x70
-[  451.979709]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
-[  451.979888]  [<c015e137>] sys_init_module+0x87/0x1a0
-[  451.980060]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-[  451.980264]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-[  451.980479]  [<c0104077>] sysenter_past_esp+0x78/0xc5
-[  451.980660]  =======================
+Also, it should probably be made more explicit that no memtest is actually 
+performed unless the memtest boot parameter is passed at the boot prompt.
 
-Anyone?
+Looks like 4 is the maximum possible value. This should be mentioned 
+explicitly (here as well as in Documentation/kernel-parameters.txt).
 
---
-Joseph Fannin
-jfannin@gmail.com
+Maybe something like this:
+	This option allows a memory test to be executed when the system is
+	booted. A memory test is only actually executed if the kernel boot
+	parameter 'memtest' is passed.
+
+	The value of that parameter is the number to times the test is
+	performed:
+		memtest=0: don't perform the test (default)
+		memtest=1: perform the test once
+		...
+		memtest=4: perform the test 4 times (maximum).
+
+	If you are unsure how to answer this question, answer Y.
+
+Hmmm. The original description mentions "N patterns". If those patterns are 
+actually different, then a different description is probably needed.
+
+Sorry for the confusion.
+
+Cheers,
+FJP
