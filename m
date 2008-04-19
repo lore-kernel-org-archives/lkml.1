@@ -1,527 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbYDSVaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbYDSVbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762665AbYDSVaB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 17:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYDSV3v
+	id S1762686AbYDSVbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYDSVbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 17:29:51 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:56786 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753443AbYDSV3t (ORCPT
+	Sat, 19 Apr 2008 17:31:48 -0400
+Received: from proxy2.bredband.net ([195.54.101.72]:55937 "EHLO
+	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753193AbYDSVbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 17:29:49 -0400
+	Sat, 19 Apr 2008 17:31:47 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: At0FAK4BCkhMROPA/2dsb2JhbACBYKhk
-Date: Sat, 19 Apr 2008 17:29:37 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v7)
-Message-ID: <20080419212937.GA2831@Krystal>
-References: <20080417164116.GB23351@Krystal> <48087217.50305@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-IronPort-Anti-Spam-Result: AiI8AK4BCkhT48OPPGdsb2JhbACBYI97AQEBATCYNQ
+Message-ID: <480A64B9.2080307@coderworld.net>
+Date: Sat, 19 Apr 2008 23:31:37 +0200
+From: Richard Jonsson <richie@coderworld.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rc8] Regression: key repeats and skips in music during compilation
+References: <200804041222.35025.elendil@planet.nl> <200804071229.27113.rjw@sisk.pl> <20080407112459.GA11532@linux.vnet.ibm.com> <200804071403.59500.elendil@planet.nl> <48009D04.3000509@coderworld.net>
+In-Reply-To: <48009D04.3000509@coderworld.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48087217.50305@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:26:49 up 50 days, 17:37,  4 users,  load average: 0.62, 0.40,
-	0.31
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Mathieu Desnoyers wrote:
->> +/*
->> + * Only returns from a trap or exception to a NMI context 
->> (intra-privilege
->> + * level near return) to the same SS and CS segments. Should be used
->> + * upon trap or exception return when nested over a NMI context so no 
->> iret is
->> + * issued. It takes care of modifying the eflags, rsp and returning to 
->> the
->> + * previous function.
->> + *
->> + * The stack, at that point, looks like :
->> + *
->> + * 0(rsp)  RIP
->> + * 8(rsp)  CS
->> + * 16(rsp) EFLAGS
->> + * 24(rsp) RSP
->> + * 32(rsp) SS
->> + *
->> + * Upon execution :
->> + * Copy EIP to the top of the return stack
->> + * Update top of return stack address
->> + * Pop eflags into the eflags register
->> + * Make the return stack current
->> + * Near return (popping the return address from the return stack)
->> + */
->> +#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
->> +					mov %rsp, %rax;		\
->> +					mov 24+8(%rax), %rsp;	\
->> +					pushq 0+8(%rax);	\
->> +					pushq 16+8(%rax);	\
->> +					movq (%rax), %rax;	\
->> +					popfq;			\
->> +					ret;
->>   
->
-> I got this right first go?  I must be getting good at this...
->
+Richard Jonsson skrev:
+> Frans Pop skrev:
+>> On Monday 07 April 2008, Dhaval Giani wrote:
+>>> On Mon, Apr 07, 2008 at 12:29:26PM +0200, Rafael J. Wysocki wrote:
+>>>> On Monday, 7 of April 2008, Frans Pop wrote:
+>>>>> On Monday 07 April 2008, Rafael J. Wysocki wrote:
+>>>>>> On Sunday, 6 of April 2008, Rafael J. Wysocki wrote:
+>>>>>>> On Friday, 4 of April 2008, Frans Pop wrote:
+>>>>>>>> While compiling glibc I am getting frequent short skips in
+>>>>>>>> music play anddddddddddddddddd I have now three times seen key
+>>>>>>>> repeats (as in this sentence). When there is a skip in the
+>>>>>>>> music, there is also a delay in characters being typed
+>>>>>>>> appearing on the screen.
+>>>>>>> Can you test with CONFIG_GROUP_SCHED unset, please?
+>>>>>> I was able to reproduce this issue with -rc8 on one of my test
+>>>>>> systems,
+>>>>> In the mean time I have verified that the issue also existed in rc6,
+>>>>> so it's not a recent regression.
+>>>>>
+>>>>>> but I'm not any more with the current Linus' tree and
+>>>>>> CONFIG_GROUP_SCHED unset, FWIW.
+>>>>> Hmm. Does that mean that you _can_ reproduce it with git HEAD and
+>>>>> CONFIG_GROUP_SCHED set? That would mean it is still an issue in HEAD
+>>>>> and group scheduling is the culprit.
+>>>> Well, CONFIG_GROUP_SCHED is known to cause problems, AFAICS, and some
+>>>> fixes are scheduled for the 2.6.26 time frame.
+>>> I thought we had most of the issues ironed out.
+>>
+>> Note that I can also reproduce the issue with a kernel that does *not* 
+>> have CONFIG_GROUP_SCHED set. I still get the music skips (maybe less 
+>> frequently, but that's hard to measure), and I've have also seen key 
+>> repeats once.
+>>
+>> Anything I can do to provide additional info on this?
+>>
+>> Cheers,
+>> FJP
+>>
+>> # CONFIG_CGROUPS is not set
+>> # CONFIG_GROUP_SCHED is not set
+>> (config otherwise identical to my initial mail)
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> Hi
+> 
+> I reported about this problem a while back [1], and have been busy 
+> bisecting. I have verified the issue in v2.6.25-rc6 and I'm about 99% 
+> certain that the issue is not present in v2.6.25-rc5-300-gb663c6f.
+> 
+> I've been running this kernel for 3 days now with no problems.
+> 
+> It's a bit worrying to me that it's more frequent in builds between rc6 
+> and rc7 than vanilla rc6. Newer builds than rc7 not tested.
+> 
+> I've not noticed stuttering audio, but at one time I saw stuttering 
+> video in a way I don't normally see. May be incidence.
+> 
+> Maybe relevant config:
+> # CONFIG_CGROUPS is not set
+> CONFIG_GROUP_SCHED=y
+> CONFIG_FAIR_GROUP_SCHED=y
+> # CONFIG_RT_GROUP_SCHED is not set
+> # CONFIG_CGROUP_SCHED is not set
+> 
+> [1]: http://lkml.org/lkml/2008/3/29/96
 
-Yes, it looked good to me at least :)
+Bisecting this bug is very inefficient, but I've managed to narrow it 
+down a bit more.
 
-> Anyway, trailing ';', and perhaps use a consistent form for mov (either 
-> movq or mov in all three instances).
->
+The log so far:
+git-bisect start
+# good: [b663c6fd98c9cf586279db03cec3257c413efd00] nfsd: fix oops on 
+access from high-numbered ports
+git-bisect good b663c6fd98c9cf586279db03cec3257c413efd00
+# bad: [a978b30af3bab0dd9af9350eeda25e76123fa28e] Linux 2.6.25-rc6
+git-bisect bad a978b30af3bab0dd9af9350eeda25e76123fa28e
+# bad: [afbf331ed1252c85753ac6790356c11e171f3d0b] Merge 
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+git-bisect bad afbf331ed1252c85753ac6790356c11e171f3d0b
+# good: [bde1709aaa98f5004ab1580842c422be18eb4bc3] firewire: fw-ohci: 
+use dma_alloc_coherent for ar_buffer
+git-bisect good bde1709aaa98f5004ab1580842c422be18eb4bc3
 
-Ok, fixed. Here is the update.
+This leaves these commits according to 'git bisect visualize':
+[NET]: Fix tbench regression in 2.6.25-rc1
+sched: simplify sched_slice()
+sched: fix fair sleepers
+sched: fix overload performance: buddy wakeups
+sched: fix calc_delta_mine()
+sched: fix update_load_add()/sub()  <-- currently bisecting, seems to be 
+fine
+sched: min_vruntime fix
+sched: fix race in schedule()
+Merge branch 'for-linus' of 
+git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6
+firewire: fw-ohci: shut up false compiler warning on PPC32
+[SCTP]: Fix local_addr deletions during list traversals.
 
-The last issue standing would be the paravirt code. Any ideas about how
-it's best to do it ? It would be good to be able to get the nmi-safe
-version on bare metal, patched with a standard iret emulation in
-paravirt code.
 
-
-x86 NMI-safe INT3 and Page Fault
-
-Implements an alternative iret with popf and return so trap and exception
-handlers can return to the NMI handler without issuing iret. iret would cause
-NMIs to be reenabled prematurely. x86_32 uses popf and far return. x86_64 has to
-copy the return instruction pointer to the top of the previous stack, issue a
-popf, loads the previous esp and issue a near return (ret).
-
-It allows placing immediate values (and therefore optimized trace_marks) in NMI
-code since returning from a breakpoint would be valid. Accessing vmalloc'd
-memory, which allows executing module code or accessing vmapped or vmalloc'd
-areas from NMI context, would also be valid. This is very useful to tracers like
-LTTng.
-
-This patch makes all faults, traps and exception safe to be called from NMI
-context *except* single-stepping, which requires iret to restore the TF (trap
-flag) and jump to the return address in a single instruction. Sorry, no kprobes
-support in NMI handlers because of this limitation.  We cannot single-step an
-NMI handler, because iret must set the TF flag and return back to the
-instruction to single-step in a single instruction. This cannot be emulated with
-popf/lret, because lret would be single-stepped. It does not apply to immediate
-values because they do not use single-stepping. This code detects if the TF
-flag is set and uses the iret path for single-stepping, even if it reactivates
-NMIs prematurely.
-
-alpha and avr32 use the active count bit 31. This patch moves them to 28.
-
-TODO : test alpha and avr32 active count modification
-TODO : add paravirt support for the iret alternative. Currently, paravirt
-kernels running on bare metal still use iret in traps nested over nmi handlers.
-
-tested on x86_32 (tests implemented in a separate patch) :
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-- tested vmalloc faults in NMI handler by placing a non-optimized marker in the
-  NMI handler (so no breakpoint is executed) and connecting a probe which
-  touches every pages of a 20MB vmalloc'd buffer. It executes trough the return
-  path without problem.
-- Tested with and without preemption
-
-tested on x86_64
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-
-To test on x86_64 :
-- Test without preemption
-- Test vmalloc faults
-- Test on Intel 64 bits CPUs.
-
-Changelog since v1 :
-- x86_64 fixes.
-Changelog since v2 :
-- fix paravirt build
-Changelog since v3 :
-- Include modifications suggested by Jeremy
-Changelog since v4 :
-- including hardirq.h in entry_32/64.S is a bad idea (non ifndef'd C code),
-  define HARDNMI_MASK in the .S files directly.
-Changelog since v5 :
-- Add HARDNMI_MASK to irq_count() and make die() more verbose for NMIs.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@osdl.org
-CC: mingo@elte.hu
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
----
- arch/x86/kernel/entry_32.S      |   27 ++++++++++++++++++-
- arch/x86/kernel/entry_64.S      |   26 ++++++++++++++++++
- arch/x86/kernel/traps_32.c      |    3 ++
- arch/x86/kernel/traps_64.c      |    4 ++
- include/asm-alpha/thread_info.h |    2 -
- include/asm-avr32/thread_info.h |    2 -
- include/asm-x86/irqflags.h      |   55 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/paravirt.h      |    2 +
- include/linux/hardirq.h         |   27 +++++++++++++++++--
- 9 files changed, 142 insertions(+), 6 deletions(-)
-
-Index: linux-2.6-lttng/include/linux/hardirq.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/hardirq.h	2008-04-19 12:00:39.000000000 -0400
-+++ linux-2.6-lttng/include/linux/hardirq.h	2008-04-19 12:00:41.000000000 -0400
-@@ -22,10 +22,13 @@
-  * PREEMPT_MASK: 0x000000ff
-  * SOFTIRQ_MASK: 0x0000ff00
-  * HARDIRQ_MASK: 0x0fff0000
-+ * HARDNMI_MASK: 0x40000000
-  */
- #define PREEMPT_BITS	8
- #define SOFTIRQ_BITS	8
- 
-+#define HARDNMI_BITS	1
-+
- #ifndef HARDIRQ_BITS
- #define HARDIRQ_BITS	12
- 
-@@ -45,16 +48,19 @@
- #define PREEMPT_SHIFT	0
- #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
- #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-+#define HARDNMI_SHIFT	(30)
- 
- #define __IRQ_MASK(x)	((1UL << (x))-1)
- 
- #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
- #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
- #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
-+#define HARDNMI_MASK	(__IRQ_MASK(HARDNMI_BITS) << HARDNMI_SHIFT)
- 
- #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
- #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
- #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
-+#define HARDNMI_OFFSET	(1UL << HARDNMI_SHIFT)
- 
- #if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
- #error PREEMPT_ACTIVE is too low!
-@@ -62,7 +68,9 @@
- 
- #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
- #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
--#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
-+#define irq_count() \
-+	(preempt_count() & (HARDNMI_MASK | HARDIRQ_MASK | SOFTIRQ_MASK))
-+#define hardnmi_count()	(preempt_count() & HARDNMI_MASK)
- 
- /*
-  * Are we doing bottom half or hardware interrupt processing?
-@@ -71,6 +79,7 @@
- #define in_irq()		(hardirq_count())
- #define in_softirq()		(softirq_count())
- #define in_interrupt()		(irq_count())
-+#define in_nmi()		(hardnmi_count())
- 
- /*
-  * Are we running in atomic context?  WARNING: this macro cannot
-@@ -159,7 +168,19 @@ extern void irq_enter(void);
-  */
- extern void irq_exit(void);
- 
--#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
--#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
-+#define nmi_enter()					\
-+	do {						\
-+		lockdep_off();				\
-+		BUG_ON(hardnmi_count());		\
-+		add_preempt_count(HARDNMI_OFFSET);	\
-+		__irq_enter();				\
-+	} while (0)
-+
-+#define nmi_exit()					\
-+	do {						\
-+		__irq_exit();				\
-+		sub_preempt_count(HARDNMI_OFFSET);	\
-+		lockdep_on();				\
-+	} while (0)
- 
- #endif /* LINUX_HARDIRQ_H */
-Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2008-04-19 12:00:40.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2008-04-19 17:24:09.000000000 -0400
-@@ -75,11 +75,12 @@ DF_MASK		= 0x00000400 
- NT_MASK		= 0x00004000
- VM_MASK		= 0x00020000
- 
-+#define HARDNMI_MASK 0x40000000
-+
- #ifdef CONFIG_PREEMPT
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
- #define preempt_stop(clobbers)
--#define resume_kernel		restore_nocheck
- #endif
- 
- .macro TRACE_IRQS_IRET
-@@ -265,6 +266,8 @@ END(ret_from_exception)
- #ifdef CONFIG_PREEMPT
- ENTRY(resume_kernel)
- 	DISABLE_INTERRUPTS(CLBR_ANY)
-+	testl $HARDNMI_MASK,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
- 	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
- 	jnz restore_nocheck
- need_resched:
-@@ -276,6 +279,12 @@ need_resched:
- 	call preempt_schedule_irq
- 	jmp need_resched
- END(resume_kernel)
-+#else
-+ENTRY(resume_kernel)
-+	testl $HARDNMI_MASK,TI_preempt_count(%ebp)	# nested over NMI ?
-+	jnz return_to_nmi
-+	jmp restore_nocheck
-+END(resume_kernel)
- #endif
- 	CFI_ENDPROC
- 
-@@ -411,6 +420,22 @@ restore_nocheck_notrace:
- 	CFI_ADJUST_CFA_OFFSET -4
- irq_return:
- 	INTERRUPT_RETURN
-+return_to_nmi:
-+	testl $X86_EFLAGS_TF, PT_EFLAGS(%esp)
-+	jnz restore_nocheck		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	TRACE_IRQS_IRET
-+	RESTORE_REGS
-+	addl $4, %esp			# skip orig_eax/error_code
-+	CFI_ADJUST_CFA_OFFSET -4
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- .section .fixup,"ax"
- iret_exc:
- 	pushl $0			# no error code
-Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2008-04-19 12:00:40.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2008-04-19 17:24:10.000000000 -0400
-@@ -54,6 +54,8 @@
- 
- 	.code64
- 
-+#define HARDNMI_MASK 0x40000000
-+
- #ifndef CONFIG_PREEMPT
- #define retint_kernel retint_restore_args
- #endif	
-@@ -581,12 +583,27 @@ retint_restore_args:	/* return to kernel
- 	 * The iretq could re-enable interrupts:
- 	 */
- 	TRACE_IRQS_IRETQ
-+	testl $HARDNMI_MASK,threadinfo_preempt_count(%rcx)
-+	jnz return_to_nmi		/* Nested over NMI ? */
- restore_args:
- 	RESTORE_ARGS 0,8,0
- 
- irq_return:
- 	INTERRUPT_RETURN
- 
-+return_to_nmi:				/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	testw $X86_EFLAGS_TF,EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
-+	jnz restore_args
-+	RESTORE_ARGS 0,8,0
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- 	.section __ex_table, "a"
- 	.quad irq_return, bad_iret
- 	.previous
-@@ -802,6 +819,10 @@ END(spurious_interrupt)
- 	.macro paranoidexit trace=1
- 	/* ebx:	no swapgs flag */
- paranoid_exit\trace:
-+	GET_THREAD_INFO(%rcx)
-+	testl $HARDNMI_MASK,threadinfo_preempt_count(%rcx)
-+	jnz paranoid_return_to_nmi\trace	/* Nested over NMI ? */
-+paranoid_exit_no_nmi\trace:
- 	testl %ebx,%ebx				/* swapgs needed? */
- 	jnz paranoid_restore\trace
- 	testl $3,CS(%rsp)
-@@ -814,6 +835,11 @@ paranoid_swapgs\trace:
- paranoid_restore\trace:
- 	RESTORE_ALL 8
- 	jmp irq_return
-+paranoid_return_to_nmi\trace:
-+	testw $X86_EFLAGS_TF,EFLAGS-0(%rsp)	/* trap flag? */
-+	jnz paranoid_exit_no_nmi\trace
-+	RESTORE_ALL 8
-+	INTERRUPT_RETURN_NMI_SAFE
- paranoid_userspace\trace:
- 	GET_THREAD_INFO(%rcx)
- 	movl threadinfo_flags(%rcx),%ebx
-Index: linux-2.6-lttng/include/asm-x86/irqflags.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/irqflags.h	2008-04-19 12:00:39.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/irqflags.h	2008-04-19 17:25:24.000000000 -0400
-@@ -138,12 +138,67 @@ static inline unsigned long __raw_local_
- 
- #ifdef CONFIG_X86_64
- #define INTERRUPT_RETURN	iretq
-+
-+/*
-+ * Only returns from a trap or exception to a NMI context (intra-privilege
-+ * level near return) to the same SS and CS segments. Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued. It takes care of modifying the eflags, rsp and returning to the
-+ * previous function.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(rsp)  RIP
-+ * 8(rsp)  CS
-+ * 16(rsp) EFLAGS
-+ * 24(rsp) RSP
-+ * 32(rsp) SS
-+ *
-+ * Upon execution :
-+ * Copy EIP to the top of the return stack
-+ * Update top of return stack address
-+ * Pop eflags into the eflags register
-+ * Make the return stack current
-+ * Near return (popping the return address from the return stack)
-+ */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
-+					movq %rsp, %rax;	\
-+					movq 24+8(%rax), %rsp;	\
-+					pushq 0+8(%rax);	\
-+					pushq 16+8(%rax);	\
-+					movq (%rax), %rax;	\
-+					popfq;			\
-+					ret
-+
- #define ENABLE_INTERRUPTS_SYSCALL_RET			\
- 			movq	%gs:pda_oldrsp, %rsp;	\
- 			swapgs;				\
- 			sysretq;
- #else
- #define INTERRUPT_RETURN		iret
-+
-+/*
-+ * Protected mode only, no V8086. Implies that protected mode must
-+ * be entered before NMIs or MCEs are enabled. Only returns from a trap or
-+ * exception to a NMI context (intra-privilege level far return). Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(esp) EIP
-+ * 4(esp) CS
-+ * 8(esp) EFLAGS
-+ *
-+ * Upon execution :
-+ * Copy the stack eflags to top of stack
-+ * Pop eflags into the eflags register
-+ * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
-+ */
-+#define INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
-+					popfl;		\
-+					lret $4
-+
- #define ENABLE_INTERRUPTS_SYSCALL_RET	sti; sysexit
- #define GET_CR0_INTO_EAX		movl %cr0, %eax
- #endif
-Index: linux-2.6-lttng/include/asm-alpha/thread_info.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-alpha/thread_info.h	2008-04-19 12:00:39.000000000 -0400
-+++ linux-2.6-lttng/include/asm-alpha/thread_info.h	2008-04-19 17:24:11.000000000 -0400
-@@ -57,7 +57,7 @@ register struct thread_info *__current_t
- 
- #endif /* __ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags:
-Index: linux-2.6-lttng/include/asm-avr32/thread_info.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-avr32/thread_info.h	2008-04-19 12:00:39.000000000 -0400
-+++ linux-2.6-lttng/include/asm-avr32/thread_info.h	2008-04-19 17:24:11.000000000 -0400
-@@ -70,7 +70,7 @@ static inline struct thread_info *curren
- 
- #endif /* !__ASSEMBLY__ */
- 
--#define PREEMPT_ACTIVE		0x40000000
-+#define PREEMPT_ACTIVE		0x10000000
- 
- /*
-  * Thread information flags
-Index: linux-2.6-lttng/include/asm-x86/paravirt.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/paravirt.h	2008-04-19 12:00:39.000000000 -0400
-+++ linux-2.6-lttng/include/asm-x86/paravirt.h	2008-04-19 12:00:41.000000000 -0400
-@@ -1358,6 +1358,8 @@ static inline unsigned long __raw_local_
- 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_iret), CLBR_NONE,	\
- 		  jmp *%cs:pv_cpu_ops+PV_CPU_iret)
- 
-+#define INTERRUPT_RETURN_NMI_SAFE INTERRUPT_RETURN
-+
- #define DISABLE_INTERRUPTS(clobbers)					\
- 	PARA_SITE(PARA_PATCH(pv_irq_ops, PV_IRQ_irq_disable), clobbers, \
- 		  PV_SAVE_REGS;			\
-Index: linux-2.6-lttng/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/traps_32.c	2008-04-19 12:00:40.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/traps_32.c	2008-04-19 17:24:12.000000000 -0400
-@@ -464,6 +464,9 @@ void die(const char * str, struct pt_reg
- 	if (kexec_should_crash(current))
- 		crash_kexec(regs);
- 
-+	if (in_nmi())
-+		panic("Fatal exception in non-maskable interrupt");
-+
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 
-Index: linux-2.6-lttng/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/traps_64.c	2008-04-19 12:00:40.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/traps_64.c	2008-04-19 17:24:08.000000000 -0400
-@@ -553,6 +553,10 @@ void __kprobes oops_end(unsigned long fl
- 		oops_exit();
- 		return;
- 	}
-+	if (in_nmi())
-+		panic("Fatal exception in non-maskable interrupt");
-+	if (in_interrupt())
-+		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
- 		panic("Fatal exception");
- 	oops_exit();
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Hope this helps / Richard
