@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYDSQOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYDSQST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYDSQOq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYDSQOj
+	id S1757052AbYDSQST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYDSQSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:14:39 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:32799 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbYDSQOj (ORCPT
+	Sat, 19 Apr 2008 12:18:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:34878 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbYDSQSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:14:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=tYZw8v7mh8TpbPtaz027TbLx8py8LQoXighbpPZrFGGg/aDle4fz2Gcovs6JU
-	cCygMLhugOcYHC3FbgFRqpfTg==
-Date: Sat, 19 Apr 2008 18:14:36 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/15] ARM minor irq handler cleanups
-Message-ID: <20080419161436.GA8564@xi.wantstofly.org>
-References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <20080418232922.GA31711@xi.wantstofly.org> <48093C01.1040505@garzik.org>
-Mime-Version: 1.0
+	Sat, 19 Apr 2008 12:18:10 -0400
+Date: Sat, 19 Apr 2008 18:18:42 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: Vitaliy Ivanov <vitalivanov@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: hci_usb: remove macro code obfuscation
+Message-ID: <20080419161842.GC1577@elf.ucw.cz>
+References: <35fbaa3e0804160351g1795b47bh6dbb2c8d596d0129@mail.gmail.com> <20080416105851.GB1621@elf.ucw.cz> <48063513.7050505@qualcomm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48093C01.1040505@garzik.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <48063513.7050505@qualcomm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 08:25:37PM -0400, Jeff Garzik wrote:
+On Wed 2008-04-16 10:19:15, Max Krasnyanskiy wrote:
+> Pavel Machek wrote:
+>> On Wed 2008-04-16 13:51:37, Vitaliy Ivanov wrote:
+>>> On Wed, Apr 16, 2008 at 1:42 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>>>>  I had trouble figuring out what the code does. atomic_inc/dec
+>>>>  management is actually pretty simple, but it is needlessly obfuscated
+>>>>  with macros. Fix that.
+>>>>
+>>>>  Signed-off-by: Pavel Machek <pavel@suse.cz>
+>>>>
+>>>>  I had trouble figuring out what the code does. atomic_inc/dec
+>>>>  management is actually pretty simple, but it is needlessly obfuscated
+>>>>  with macros. Fix that.
+>>>>
+>>>>  Signed-off-by: Pavel Machek <pavel@suse.cz>
+>>>
+>>> Got it from the first time;)
+>>>
+>>> Do you think that now code looks better? As for me it's not...
+>>
+>> Yes. Hiding & operator deep inside macro is evil for one thing. Plus
+>> it is no longer clear what the code does with the macros in there.
+>
+> In general I would agree in this case it seems to actually make code 
+> clearer (I prefer original macros that is).
+> Anyway, I do not mind the change.
+>
+> btw Marcel told me that all this queuing stuff does not actually make sense 
+> anymore. USB core did not support this before and HCI driver performance 
+> sucked without it. Marcel is telling me that things have changed.
+> So. Pavel, while you're at it can you maybe whack that stuff out completely ?
+> I mean all this custom _urb stuff that I did was eventually supposed to 
+> move into usb core. Then I stopped working on Bluetooth and it never 
+> happened. It'd be nice to clean that up since it seems that most of the 
+> latest bug reports are related to this urb business.
 
-> >>This change's main purpose is to prepare for the patchset in
-> >>jgarzik/misc-2.6.git#irq-remove, that explores removal of the
-> >>never-used 'irq' argument in each interrupt handler.
-> >
-> >What do you mean?  I know at least one of two interrupt handlers
-> >in-tree that use their 'irq' arguments.
-> 
-> They can use new function get_irqfunc_irq(), similar to the existing 
-> method of getting pt_regs for the tiny number of users who need that 
-> sort of info, when pt_regs was removed.
+It seems someone already done that in (mainline) btusb.c
 
-Well, you said that the 'irq' argument was never-used, I was merely
-saying that I found that not to be the case.
-
-
-> But after having gone over, literally, every single interrupt handler in 
-> the kernel, I can safely say that 99.8% never reference that argument, 
-> and 0.1% that do already have the same information via another route.
-> 
-> That leaves only a few drivers that need it without modification, and 
-> even fewer drivers that need it after modification.
-
-Sounds good.
-
-Very-much-liked-by: Lennert Buytenhek <buytenh@wantstofly.org>
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
