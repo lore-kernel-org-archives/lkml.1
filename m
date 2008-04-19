@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYDSQlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbYDSQm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYDSQlv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYDSQln
+	id S1761788AbYDSQm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYDSQmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:41:43 -0400
-Received: from ozlabs.org ([203.10.76.45]:36802 "EHLO ozlabs.org"
+	Sat, 19 Apr 2008 12:42:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52895 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752469AbYDSQlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:41:42 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Michael Kerrisk" <mtk.manpages@gmail.com>
-Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
-Date: Sun, 20 Apr 2008 02:41:14 +1000
-User-Agent: KMail/1.9.9
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       "Max Krasnyansky" <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <200804181433.48488.rusty@rustcorp.com.au> <20080418115959.6b8fdfa7.akpm@linux-foundation.org> <517f3f820804181238s79326d10tf898691f997715e5@mail.gmail.com>
-In-Reply-To: <517f3f820804181238s79326d10tf898691f997715e5@mail.gmail.com>
+	id S1754169AbYDSQmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:42:16 -0400
+Date: Sat, 19 Apr 2008 18:42:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080419164202.GA28328@elte.hu>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804200241.14722.rusty@rustcorp.com.au>
+In-Reply-To: <1208620484.3280.23.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 April 2008 05:38:50 Michael Kerrisk wrote:
-> On 4/18/08, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > This is may be our third high-bandwidth user/kernel interface to
-> > transport bulk data ("hbukittbd") which was implemented because its
-> > predecessors weren't quite right.  In a year or two's time someone else
-> > will need a hbukittbd and will find that the existing three aren't quite
-> > right and will give us another one.  One day we need to stop doing this
-> > ;)
 
-If only there were some kind of, I don't know... summit... for kernel 
-people... 
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> >  It could be that this person will look at Rusty's hbukittbd and find
-> > that it _could_ be tweaked to do what he wants, but it's already shipping
-> > and it's part of the kernel API and hence can't be made to do what he
-> > wants.
+> >  drivers/built-in.o: In function `sas_request_addr':
+> >  : undefined reference to `release_firmware'
+> > 
+> > config can be found at:
+> > 
+> >    http://redhat.com/~mingo/misc/config-Sat_Apr_19_16_58_35_CEST_2008.bad
+> > 
+> > ... brought to you by x86.git's randconfig build and boot service ;-)
+> 
+> This one's fun.  The root cause is 
+> 
+> CONFIG_SCSI_SAS_LIBSAS=y
+> CONFIG_FW_LOADER=m
+> 
+> The problem is that libsas doesn't depend on the FW loader and doesn't 
+> want to.  It just wants to use it if it's available.  The definitions 
+> in include/linux/firmware.h have stubs to facilitate this.
+> 
+> However, CONFIG_FW_LOADER=m defeats the stubs.
+> 
+> This is a bit nasty to fix; however, I think this patch does.  I've 
+> also put a large comment in to explain what's going on.
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-Indeed.  I marked it experimental because of these questions (ie. it's not yet 
-kernel ABI).  Getting everyone's attention is hard tho, so I figured we put 
-it in as a device and moving to a syscall if and when we feel it's ready.
+thanks James - your fix works fine here.
 
-> >  So I think it would be good to plonk the proposed interface on the table
-> >  and have a poke at it.  Is it compat-safe?  Is it extensible in a
-> >  backward-compatible fashion?  Are there future-safe changes we should
-> > make to it?  Can Michael Kerrisk understand, review and document it? 
-> > etc.
->
-> Well, it helps if he's CCed....
+Tested-by: Ingo Molnar <mingo@elte.hu>
 
-It is compat safe, and we've already extended it once, so I'm reasonably happy 
-so far.  If it were a syscall I'd add a flags arg, for the device it'd be an 
-ioctl.  Starting with the virtio ABI seemed a reasonable first step, because 
-*we* can use this today even if noone else does.
-
-> I'm happy to work *with someone* on the documentation (pointless to do
-> it on my own -- how do I know what Rusty's *intended* behavior for the
-> interface is), and review, and testing.
-
-Document coming up...
-Rusty.
+	Ingo
