@@ -1,110 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYDSTld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbYDSTr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYDSTld (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 15:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYDSTlX
+	id S1757790AbYDSTr5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 15:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYDSTrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 15:41:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47338 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbYDSTlW (ORCPT
+	Sat, 19 Apr 2008 15:47:49 -0400
+Received: from cpsmtpo-eml01.kpnxchange.com ([213.75.38.150]:8775 "EHLO
+	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754769AbYDSTrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 15:41:22 -0400
-Date: Sat, 19 Apr 2008 21:42:06 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
-       lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: w35und: one more unneccessary function
-Message-ID: <20080419194206.GA17558@elf.ucw.cz>
+	Sat, 19 Apr 2008 15:47:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] scheduler changes for v2.6.26
+Date: Sat, 19 Apr 2008 21:47:42 +0200
+User-Agent: KMail/1.9.9
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080419181304.GB21353@elte.hu>
+In-reply-To: <20080419181304.GB21353@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200804192147.43719.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Apr 2008 19:47:46.0004 (UTC) FILETIME=[3D56B940:01C8A256]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove one more unnecessary function.
+Ingo Molnar wrote:
+> Ingo Molnar (12):
+>       sched: re-do "sched: fix fair sleepers"
 
----
-commit 8cf2b466620bd533acf20596be1fabfc0b46d992
-tree e0bf7b039e545bede22980048669557fc49490e4
-parent 6627ff26a459db3e792ec4dc194122c133c150a5
-author Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 21:41:31 +0200
-committer Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 21:41:31 +0200
+Has the regression [1] that was traced to this change been fixed now?
 
- .../net/wireless/winbond/winbondport/mlmetxrx.c    |   57 -----------------------
- 1 files changed, 0 insertions(+), 57 deletions(-)
+The regression was confirmed to be also present in sched-devel.git at the 
+time of -rc8, so I'd expect it still to be valid unless of course the cause 
+was found since then.
 
-diff --git a/drivers/net/wireless/winbond/winbondport/mlmetxrx.c b/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
-index dcfdfd4..f58e458 100644
---- a/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
-+++ b/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
-@@ -298,62 +298,5 @@ MLMERcvFrame(
- 	#endif
-     return;
- }
--#ifdef _IBSS_BEACON_SEQ_STICK_
--s8 SendBCNullData(PWB32_ADAPTER Adapter, u16 wIdx)
--{
--
--	PUCHAR	msg;
--	struct Data_Frame* msgHeader;
--
--	if ((msg=MLMEGetMMPDUBuffer(Adapter))==NULL)
--	{
--		Adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
--		return -1;  // fail get free msg buffer
--	}
--	//wConnectIdx = psLOCAL->wConnectedSTAindex;
--	msgHeader = (struct Data_Frame *) &msg[0];
--
--	// setup Frame-Header subfields
--	msgHeader->frame_control.mac_frame_info = MAC_SUBTYPE_DATA_NULL;
--	if (psBSS(wIdx)->bBssType == ESS_NET)
--	    msgHeader->frame_control.to_ds      = 1;
--	else
--	    msgHeader->frame_control.to_ds      = 0;
--    msgHeader->frame_control.from_ds    = 0;
--	msgHeader->frame_control.more_frag 	= 0;
--    msgHeader->frame_control.retry      = 0;
--	msgHeader->frame_control.more_data 	= 0;
--    msgHeader->frame_control.order      = 0;
--	//if (PowerMode  == PWR_SAVE)
--	//    msgHeader->frame_control.pwr_mgt    = 1;
--	//else
--    	msgHeader->frame_control.pwr_mgt    = 0;
--    msgHeader->frame_control.WEP        = 0;
--    msgHeader->duration                 = 0;    // Set by the MDS
--	
--	//memcpy(msgHeader->Addr1, psBSS(Adapter->sLocalPara.wConnectedSTAindex)->abBssID,MAC_ADDR_LENGTH);
--	memcpy( msgHeader->Addr1, "\xff\xff\xff\xff\xff\xff", MAC_ADDR_LENGTH );
--	//memset(msgHeader->Addr1, 0x55, MAC_ADDR_LENGTH);
--	memcpy( msgHeader->Addr2, Adapter->sLocalPara.ThisMacAddress, MAC_ADDR_LENGTH );
--	memcpy( msgHeader->Addr3, psBSS(wIdx)->abBssID, MAC_ADDR_LENGTH );
--	// FrameSequenceNumber is generated by HW-MAC
--
--	OS_MEMORY_CLEAR( &msgHeader->Sequence_Control, MAC_ADDR_LENGTH );
--
--    // now send this message out
--	if (1 == MLMESendFrame( Adapter,
--					(u8 *) &msg[0],
--					//sizeof(struct Data_Frame) - 6,
--					sizeof(struct Data_Frame),
--					FRAME_TYPE_802_11_DATA))
--        return 1;                           // Has sent to the Tx handler.
--	else
--	{
--		//return MLME buffer
--		MLMEfreeMMPDUBuffer(Adapter, msg);
--		return -1;
--	}
--}
--#endif
- 
- 
+Cheers,
+FJP
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=10428
