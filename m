@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYDSWvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYDSXPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762452AbYDSWvw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 18:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYDSWvn
+	id S1759022AbYDSXPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 19:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYDSXP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 18:51:43 -0400
-Received: from ns.netcenter.hu ([195.228.254.57]:50185 "EHLO netcenter.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753421AbYDSWvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 18:51:43 -0400
-X-Greylist: delayed 2158 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 18:51:42 EDT
-Message-ID: <09eb01c8a26a$dbf5eee0$0404a8c0@dcccs>
-From: "Janos Haar" <djani22@netcenter.hu>
-To: <linux-kernel@vger.kernel.org>
-Subject: Sparse file question for data recovery
-Date: Sun, 20 Apr 2008 00:15:15 +0200
+	Sat, 19 Apr 2008 19:15:28 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54550 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753514AbYDSXP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 19:15:27 -0400
+Date: Sat, 19 Apr 2008 17:14:47 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080419231446.GR20637@parisc-linux.org>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain> <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain> <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org> <1208644076.3280.54.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1914
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208644076.3280.54.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
+On Sat, Apr 19, 2008 at 05:27:56PM -0500, James Bottomley wrote:
+> > Not true. That's why we have initrd and ramdisks etc.
+> 
+> They don't currently seem to work for compiled in drivers ... we have
+> the same issue with drivers that actually need firmware (like aic94xx or
+> qla2xxx): no-one seems to have figured out how to provide it for them;
+> it seems the device is already initialised and has failed to find its
+> firmware before the initrd/initramfs is running.
 
-It is a way to use sparse files (or sg. else) to try to recover some big
-block device when it is readonly?
+WorksForMe ... or it did a few months ago.  I can re-test it with a
+modern kernel ... wonder which machine I had that needed it ...
 
-I mean the original device is marked readonly, and only the changes are
-saved for the sparse file.
-This is useful if i want to only try to repair corrupted (or miss-assembled)
-raid arrays, image from damaged hdd, etc...
-
-Like only save the "undo" information independently from the repairing
-program.
-
-I only know that with nbd-server, but i wish to use a simple local solution.
-
-Somebody have an idea? :-)
-
-Thanks,
-
-Janos Haar
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
