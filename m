@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbYDSU45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762068AbYDSVF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760793AbYDSU45 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 16:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbYDSU4t
+	id S1762068AbYDSVF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbYDSVFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 16:56:49 -0400
-Received: from rv-out-0708.google.com ([209.85.198.248]:34169 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755808AbYDSU4s (ORCPT
+	Sat, 19 Apr 2008 17:05:14 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:42712 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756107AbYDSVFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 16:56:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bSqQEqrxbIi+esDRGjXsz/8dVNzI26CREcAEe078gDQHXvrul5Zm9Fj4GSYju+l97l/K62aw2vs0A93wtB47/5uxU7l2o1ym5H5L4rehz0Nq8qIacDPLyvr7MrCXRHuvDKyO+ZEUUV0/ZO5XkHwiT06h7RPmJHeOAVCt+Et9VQs=
-Message-ID: <86802c440804191356t1519535cje0636414ec9678db@mail.gmail.com>
-Date: Sat, 19 Apr 2008 13:56:47 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mark Salyzyn" <Mark_Salyzyn@adaptec.com>
-Subject: Re: aacraid broken in git
-Cc: "James.Bottomley@hansenpartnership.com" 
-	<James.Bottomley@hansenpartnership.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <3AC1542A-0338-4796-9218-502C4AAD64D2@adaptec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 19 Apr 2008 17:05:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At0FAB/7CUhMROPA/2dsb2JhbACBYKh3
+Date: Sat, 19 Apr 2008 17:00:10 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v5)
+Message-ID: <20080419210010.GB1554@Krystal>
+References: <20080417165839.GA25198@Krystal> <20080417165944.GB25198@Krystal> <20080417201410.GB31616@Krystal> <87od889m44.fsf@basil.nowhere.org> <20080418000634.GB5062@Krystal> <480856BD.3080903@firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440804181855t615a5616g62d083695ca8ea08@mail.gmail.com>
-	 <3AC1542A-0338-4796-9218-502C4AAD64D2@adaptec.com>
+In-Reply-To: <480856BD.3080903@firstfloor.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:58:38 up 50 days, 17:09,  4 users,  load average: 0.23, 0.31,
+	0.30
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 19, 2008 at 5:33 AM, Mark Salyzyn <Mark_Salyzyn@adaptec.com> wrote:
-> Why is ACPI disabling the interrupt? Maybe do bisects on the ACPI subsystem
-> as well.
-probe fail, acpi disable irq routing for it.
+* Andi Kleen (andi@firstfloor.org) wrote:
+> Mathieu Desnoyers wrote:
+> > * Andi Kleen (andi@firstfloor.org) wrote:
+> >> Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
+> >>> It allows placing immediate values (and therefore optimized trace_marks) in NMI
+> >>> code
+> >> Only if all your trace_mark infrastructure is lock less.
+> >>
+> >> -Andi
+> >>
+> > 
+> > It uses RCU-style updates and has been designed to be lockless from the
+> > ground up.
+> 
+> Wrong. If it causes vmalloc faults it is not lockless.
+> 
+> -Andi
+> 
 
-YH
+Could you point me where vmalloc_fault accesses a data structure for
+which updates are protected by disabling interrupts ? I am curious.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
