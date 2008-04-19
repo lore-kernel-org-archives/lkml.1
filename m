@@ -1,136 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762443AbYDSVHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbYDSVSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762443AbYDSVHV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 17:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbYDSVHJ
+	id S1762027AbYDSVSa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbYDSVSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 17:07:09 -0400
-Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:40386 "EHLO
-	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756365AbYDSVHI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 17:07:08 -0400
-Date: Sun, 20 Apr 2008 00:06:57 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] Fix SMP alternatives : use mutex instead of spinlock,
- text_poke is sleepable
-Message-ID: <20080420000657.20ba6b4b@daedalus.pq.iki.fi>
-In-Reply-To: <20080419161956.GA24685@Krystal>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
-	<20080413230552.33ca587a@daedalus.pq.iki.fi>
-	<20080414065713.GB16163@elte.hu>
-	<20080419184137.79957a07@daedalus.pq.iki.fi>
-	<20080419161956.GA24685@Krystal>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	Sat, 19 Apr 2008 17:18:21 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:43389 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754863AbYDSVSU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 17:18:20 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At0FACv+CUhMROPA/2dsb2JhbACBYKht
+Date: Sat, 19 Apr 2008 17:18:17 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v3)
+Message-ID: <20080419211817.GC1554@Krystal>
+References: <20080414230344.GA16061@Krystal> <20080414230530.GB16061@Krystal> <20080416130605.GG6304@elte.hu> <20080416151054.GA32456@elte.hu> <20080416162810.GA20450@Krystal> <48063E19.9090701@goop.org> <20080417162932.GA23351@Krystal> <48077EB2.9030009@firstfloor.org> <20080418000551.GA5062@Krystal> <48085B73.3070904@firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48085B73.3070904@firstfloor.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:01:25 up 50 days, 17:12,  4 users,  load average: 0.09, 0.22,
+	0.26
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 58390e93507669d860ef2d178b60ad447d5260c4 Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sat, 19 Apr 2008 23:22:11 +0300
-Subject: [PATCH] x86: Fix SMP alternatives: use mutex instead of spinlock.
+* Andi Kleen (andi@firstfloor.org) wrote:
+> 
+> > arch/x86/oprofile/nmi_timer_int.c: profile_timer_exceptions_notify()
+> > calls
+> > drivers/oprofile/oprofile_add_sample()
+> > which calls oprofile_add_ext_sample()
+> > where
+> >        if (log_sample(cpu_buf, pc, is_kernel, event))
+> >                 oprofile_ops.backtrace(regs, backtrace_depth);
+> 
+> A red hering: The notifier setup calls vmalloc_sync_all() and oprofile
+> allocates its buffers before registering the notifier.
+> 
 
-text_poke is sleepable.
-The original fix by Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>.
+Ah, yes, you are right on this one, it was well hidden. :)
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
+> > First, log_sample writes into the vmalloc'd cpu buffer. That's for one
+> > possible page fault.
+> 
+>  
+> > Then, is a kernel backtrace happen, then I am not sure if printk_address
+> > won't try to read any of the module data, which is vmalloc'd.
+> 
+> Yes, admittedly the backtrace mode was always somewhat flakey. It probably
+> has more problems too.
+> 
+> The right fix for that is to call vmalloc_sync_all() after module load
+> when any nmi notifiers are registered.
 
-Mathieu,
+I guess it would work, but it certainly looks like a patchy workaround.
 
-thank you for the quick reply. Your patch did not apply on sched-devel/latest
-so I made the changes by hand, resulting patch here. The change was in the
-context lines, which made `patch' fail, e.g. __FUNCTION__ -> __func__.
-Now my enter_uniprocessor(), that disables all but the first cpu, works fine.
+>  
+> > 
+> > 
+> >> NMI are maybe 5-6 functions all over the kernel.
+> >>
+> >> I just don't think it makes any sense to put markers in there.
+> >> It is a really small part of the kernel the kernel that is unlikely
+> >> to be really useful for anybody. You should rather first solve the
+> >> problem of tracing the other 99.999999% of the kernel properly.
+> >>
+> > 
+> > The fact is that NMIs are very useful and powerful when it comes to try
+> > to understand where code disabling interrupts is stucked, to get
+> > performance counter reads periodically
+> 
+> First there are no truly periodic (as in time) NMIs. The NMI watchdog 
+> is not really periodic but is delayed arbitrarily all the time when the CPU 
+> is in sleep states.
+> 
 
-My next quest is, why attempting to re-enable the cpus makes the whole
-machine reboot after a short hang.
+The is no such thing as "perfect" periodicity. There is just better and
+worse periodicity. NMIs just tend to have much less jitter.
 
- arch/x86/kernel/alternative.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+> Then oprofile does this already what you describe. Why do we need
+> another questionable infrastructure to reimplement what is 
+> already there? 
+> 
 
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index 5412fd7..7ce0939 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -1,6 +1,6 @@
- #include <linux/module.h>
- #include <linux/sched.h>
--#include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/list.h>
- #include <linux/kprobes.h>
- #include <linux/mm.h>
-@@ -279,7 +279,7 @@ struct smp_alt_module {
- 	struct list_head next;
- };
- static LIST_HEAD(smp_alt_modules);
--static DEFINE_SPINLOCK(smp_alt);
-+static DEFINE_MUTEX(smp_alt);
- static int smp_mode = 1;	/* protected by smp_alt */
- 
- void alternatives_smp_module_add(struct module *mod, char *name,
-@@ -312,12 +312,12 @@ void alternatives_smp_module_add(struct module *mod, char *name,
- 		__func__, smp->locks, smp->locks_end,
- 		smp->text, smp->text_end, smp->name);
- 
--	spin_lock(&smp_alt);
-+	mutex_lock(&smp_alt);
- 	list_add_tail(&smp->next, &smp_alt_modules);
- 	if (boot_cpu_has(X86_FEATURE_UP))
- 		alternatives_smp_unlock(smp->locks, smp->locks_end,
- 					smp->text, smp->text_end);
--	spin_unlock(&smp_alt);
-+	mutex_unlock(&smp_alt);
- }
- 
- void alternatives_smp_module_del(struct module *mod)
-@@ -327,17 +327,17 @@ void alternatives_smp_module_del(struct module *mod)
- 	if (smp_alt_once || noreplace_smp)
- 		return;
- 
--	spin_lock(&smp_alt);
-+	mutex_lock(&smp_alt);
- 	list_for_each_entry(item, &smp_alt_modules, next) {
- 		if (mod != item->mod)
- 			continue;
- 		list_del(&item->next);
--		spin_unlock(&smp_alt);
-+		mutex_unlock(&smp_alt);
- 		DPRINTK("%s: %s\n", __func__, item->name);
- 		kfree(item);
- 		return;
- 	}
--	spin_unlock(&smp_alt);
-+	mutex_unlock(&smp_alt);
- }
- 
- void alternatives_smp_switch(int smp)
-@@ -359,7 +359,7 @@ void alternatives_smp_switch(int smp)
- 		return;
- 	BUG_ON(!smp && (num_online_cpus() > 1));
- 
--	spin_lock(&smp_alt);
-+	mutex_lock(&smp_alt);
- 
- 	/*
- 	 * Avoid unnecessary switches because it forces JIT based VMs to
-@@ -383,7 +383,7 @@ void alternatives_smp_switch(int smp)
- 						mod->text, mod->text_end);
- 	}
- 	smp_mode = smp;
--	spin_unlock(&smp_alt);
-+	mutex_unlock(&smp_alt);
- }
- 
- #endif
+I don't like to duplicate work. I would just like to dump performance
+counters in LTTng trace buffers at specific points. I guess building on
+top of oprofile would be a good way to do it.
+
+>  without suffering from IRQ
+> > latency
+> 
+> Just from all kind of other latency caused by non ticking performance
+> counters.
+> 
+> . Also, when trying to figure out what is actually happening in
+> > the kernel timekeeping, having a stable periodic time source can be
+> > pretty useful. 
+> 
+> Haha. You seem to be so deep into nonsense land, it is hard to comprehend.
+> 
+> > That would be one way to do it, except that it would not deal with int3.
+> > Also, it would have to be taken into account at module load time. To me,
+> > that looks like an error-prone design. If the problem is at the lower
+> > end of the architecture, in the interrupt return path, why don't we
+> > simply fix it there for good ?
+> 
+> There are all kinds of problems with NMIs, this is only one of them.
+> And NMIs are a really really obscure case
+> 
+
+Which other problems ? I am listening.
+
+> Frankly, if you spend all your time on fringe cases like this instead
+> of getting it to work on the 99.99999999999999% case it doesn't
+> surprise me that the markers don't make any progress for years now.
+> 
+
+One thing is that I really don't want to add fragility to a traced
+kernel. A tracer that would make the kernel more fragile is the last
+thing I want. Therefore, I make sure the tracer provides good reentrancy
+so it can be called from virtually any kernel context and I also make
+sure it stays in its own sandbox as much as possible, using atomic
+operations to update its data structures/buffers.
+
+>  And yes, boot code is one of the first thing embedded system
+> > developers want to instrument.
+> 
+> Crap. That code runs once. The only interest is correctness and 
+> if it's not correct you just step it through with a JTAG debugger.
+> 
+
+looking at these links tells us that some embedded developers are
+interested in speeding up Linux boot time, and that's a task a kernel
+tracer is very good at.
+
+http://www.linuxdevices.com/news/NS5907201615.html
+http://elinux.org/Boot_Time
+
+> > I wonder if they are used so rarely because the underlying kernel is
+> > buggy with respect with NMIs or because they are useless.
+> 
+> lockless programming is just really hard and not doing it is in most 
+> cases the sanest option.
+> 
+
+I think kernel tracing would be an exception; that a kernel tracer
+should be designed not to use any sort of lock, to have as little
+dependency on the rest of the kernel as possible and to update its own
+data structures atomically. That insures the tracer can be called from
+virtually anywhere without having to worry about side-effects.  Given
+that LTTng users have been happy with it for the past 2.5 years, I tend
+to think I was right.
+
+Mathieu
+
+> Anyways I give up. Do what you want.
+> 
+> -Andi
+> 
+
 -- 
-1.5.3.7
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
