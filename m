@@ -1,37 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYDSAN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYDSAUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYDSAN3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 20:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYDSANU
+	id S1754633AbYDSAUb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 20:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYDSAUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 20:13:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42531
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751999AbYDSANT (ORCPT
+	Fri, 18 Apr 2008 20:20:18 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:47620 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbYDSAUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 20:13:19 -0400
-Date: Fri, 18 Apr 2008 17:13:21 -0700 (PDT)
-Message-Id: <20080418.171321.253361556.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: kkeil@suse.de, akpm@linux-foundation.org,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [for 2.6.26] ISDN cleanups, ok for upstream?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080418225355.GA30189@havoc.gtf.org>
-References: <20080418225355.GA30189@havoc.gtf.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Apr 2008 20:20:17 -0400
+Date: Fri, 18 Apr 2008 17:20:16 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Alternative implementation of the generic __ffs
+In-Reply-To: <1208563762.10414.19.camel@brick>
+Message-ID: <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
+References: <20080331171506.GA24017@mailshack.com>  <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>  <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>  <1207507897.18129.1246358115@webmail.messagingengine.com> 
+ <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>  <1207563950.7880.1246457209@webmail.messagingengine.com>  <20080418201809.GA5036@mailshack.com>  <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org> <1208563762.10414.19.camel@brick>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Fri, 18 Apr 2008 18:53:55 -0400
+On Fri, 18 Apr 2008, Harvey Harrison wrote:
 
+> On Fri, 2008-04-18 at 16:46 -0700, dean gaudet wrote:
+> > On Fri, 18 Apr 2008, Alexander van Heukelum wrote:
+> > 
+> > > On Mon, Apr 07, 2008 at 12:25:50PM +0200, Alexander van Heukelum wrote:
+> > > > On Sun, 6 Apr 2008 13:22:58 -0700 (PDT), "dean gaudet" <dean@arctic.org> said:
+> > > > > On Sun, 6 Apr 2008, Alexander van Heukelum wrote:
+> > > > > > The current generic implementation of ffz is O(lg(n)) already
+> > > > > 
+> > > > > it's O(lg(n)) time... the operations all depend on each other.
+> > > > > 
+> > > > > the implementation i pointed to is O(lg(n)) code space... and the time 
+> > > > > depends on how parallel the machine is, they're not dependent on each 
+> > > > > other.
+> > > > 
+> > > > Indeed. The worst dependencies are in the sum of all the partial
+> > > > results in this implementation. And addition is associative, so
+> > > > partial results can be written as ((a+b)+(c+d))+(e+f). Assuming
+> > > > perfect parallel execution this would lead to O(ln(ln(n))). Good.
+> > > 
+> > > Hello all,
+> > > 
+> > > I've implemented ffs (find first set bit) like it is shown
+> > > in http://www.hackersdelight.org/ (see revisions, page 21).
+> > 
+> > sweet!  thanks for doing this.
+> > 
+> > 
+> > > static ATTR int __ffs32_new(unsigned int value)
+> > > {
+> > > 	int x0, x1, x2, x3, x4;
+> > > 
+> > > 	value &= -value;
+> > > 	x0 = (value & 0x55555555) ? 0 : 1;
+> > > 	x1 = (value & 0x33333333) ? 0 : 2;
+> > > 	x2 = (value & 0x0f0f0f0f) ? 0 : 4;
+> > > 	x3 = (value & 0x00ff00ff) ? 0 : 8;
+> > > 	x4 = (value & 0x0000ffff) ? 0 : 16;
 > 
-> OK to send this upstream to Linus?
+> How about:
+> 	u8 x;
+> 
+> 	value &= -value;
+> 	x = (value & 0x55555555) ? 0 : 1;
+> 	x |= (value & 0x33333333) ? 0 : 2;
+> 	x |= (value & 0x0f0f0f0f) ? 0 : 4;
+> 	x |= (value & 0x00ff00ff) ? 0 : 8;
+> 	x |= (value & 0x0000ffff) ? 0 : 16;
 
-No objections from me.
+any reasonable compiler should figure out the two are the same... but i 
+really prefer spelling out the lack of dependencies of the computations by 
+breaking it out per-bit.
+
+-dean
