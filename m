@@ -1,82 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762201AbYDSSau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbYDSSd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762201AbYDSSau (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 14:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbYDSSak
+	id S1762378AbYDSSd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 14:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYDSSdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 14:30:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39323 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689AbYDSSak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 14:30:40 -0400
-Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, mathieu.desnoyers@polymtl.ca
-In-Reply-To: <20080419180306.GA29968@redhat.com>
-References: <20080415115058.GA6788@in.ibm.com>
-	 <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins>
-	 <20080415155223.GA6935@in.ibm.com> <1208361092.6395.81.camel@twins>
-	 <y0m1w54cf82.fsf@ton.toronto.redhat.com> <1208501204.7115.60.camel@twins>
-	 <20080418142949.GB3922@redhat.com> <1208616747.6452.3.camel@lappy>
-	 <20080419180306.GA29968@redhat.com>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 20:29:27 +0200
-Message-Id: <1208629769.6452.23.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Apr 2008 14:33:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47126 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755397AbYDSSdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 14:33:20 -0400
+Date: Sat, 19 Apr 2008 20:33:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Shawn Bohrer <shawn.bohrer@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080419183302.GA27463@elte.hu>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080419110034.34b70bd5@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080419110034.34b70bd5@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-19 at 14:03 -0400, Frank Ch. Eigler wrote:
-> Hi -
+
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> On Sat, 19 Apr 2008 09:59:48 -0500
+> Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
 > 
-> On Sat, Apr 19, 2008 at 04:52:26PM +0200, Peter Zijlstra wrote:
-> > > It's not just that - it's a whole package including easy creation of
-> > > new markers, the code that manages their activation and deactivation,
-> > > the tool code that connects up to receive new events *and parameters*.
-> > > [...]
-> > I'm thinking the two use-cases are confused here. So we have
+> > On Sat, Apr 19, 2008 at 04:23:29PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > >  config 4KSTACKS
+> > > > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
+> > > > > -	depends on DEBUG_KERNEL
+> > > > >  	depends on X86_32
+> > > > > +	default y
+> > > > 
+> > > > This patch will cause kernels to crash.
+> > > 
+> > > what mainline kernels crash and how will they crash? Fedora and
+> > > other distros have had 4K stacks enabled for years:
 > > 
-> >  a) permanent markers
-> >  b) ad-hoc debug markers
+> > If by other distros you mean RHEL then yes.  However, openSUSE,
+> > Ubuntu, and Mandriva all still have 8K stacks.  I know of no other
+> > distributions that default to 4K.
 > 
-> OTOH I think this is a false dichotomy.  Debugging is not only done by
-> a subsystem maintainer during the merge/rc period.  When something
-> goes wrong on a deployed machine, problem diagnosis requires data,
-> which ideally should be gathered as non-intrusively as possible - that
-> means no recompiling / rebooting, and ideally very little slowdown.
+> centos, oracle and redflag tend to follow the RHEL/fedora settings.
 > 
-> I bet that many of those markers you might consider "ad-hoc" would in
-> fact have some post-release diagnostic value.  Now, maybe in the case
-> of futexes, the kernel makes no sophisticated decisions that may need
-> subsequent review.  Maybe all the internals are directly calculable
-> from the results visible at the system call level (which threads block
-> and which return).  But this is certainly not so for many other parts
-> of the kernel.
+> To be honest, at this point we're at a situation where
+> * Several very popular distributions have this enabled for 5+ years,
+>   apparently without any real issues (otherwise the enterprise releases
+>   would have turned this off)
+> * The early "hot known issues" have been resolved afaik, things like
+>   block device stacking, and symlink recursion lookups are either no longer
+>   recursive, or a lot less recursive than they used to be.
 > 
-> With markers, you don't have to make this an agonizing decision.  You
-> just insert markers, regardless of whether it's high-level, universal,
-> "permanent"; or whether it's low-level, diagnostic, temporary.  The
-> same consumer tools will work for them all.
+> There are clear benefits to 4K stacks (no need to reiterate the flamewar,
+> but worth mentioning)
+> * Less memory consumption in the lowmem zone (critical for enterprise use,
+>   also good for general performance)
+> * Kernel stacks at 8K are one of the most prominent order-1 allocations in the
+>   kernel; again with big-memory systems the fragmentation of the lowmem zone
+>   is a problem (and the distros that ship 4K stacks went there because of customer
+>   complaints)
+> 
+> On the flipside the arguments tend to be
+> 1) certain stackings of components still runs the risk of overflowing
+> 2) I want to run ndiswrapper
+> 3) general, unspecified uneasyness.
+> 
+> For 1), we need to know which they are, and then solve them, because 
+> even on x86-64 with 8k stacks they can be a problem (just because the 
+> stack frames are bigger, although not quite double, there). I've not 
+> seen any recent reports, I'll try to extend the kerneloops.org client 
+> to collect the "stack is getting low" warning to be able to see how 
+> much this really happens.
+> 
+> for 2), the real answer there is "ndiswrapper needs 12kb not 8kb"
+> 
+> for 3), this is hard to deal with but also generally unfounded... you 
+> can use this argument against any change in the kernel.
 
-This again tries into the argument about not making markers depend on
-the code structure or implementation details.
+and lets observe it that 8K stacks are of course still offered, so if 
+anyone disables 4K stacks in the .config, it will stay disabled.
 
-I'm really wanting to avoid ever having to be obstructed by a marker. So
-any marker that does not represent a solid high level event (to take
-Mathieu's example: a context switch is a context switch, and we'll
-always have one) I'm not comfortable with merging that upstream.
-
-So even though these ad-hoc markers might have some diagnostic value -
-I'll never support merging them. If a customer might have some issue I
-can hand him a custom kernel with these markers added in - I see
-absolutely no reason to burden upstream with these.
-
-So we _do_ have to make this decision; some shite should just not be
-merged but be kept separate.
-
+	Ingo
