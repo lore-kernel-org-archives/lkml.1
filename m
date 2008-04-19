@@ -1,106 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbYDSSR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762175AbYDSSVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762160AbYDSSR6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 14:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbYDSSRu
+	id S1762175AbYDSSVn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 14:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbYDSSVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 14:17:50 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4670 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755246AbYDSSRu (ORCPT
+	Sat, 19 Apr 2008 14:21:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41545 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbYDSSVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 14:17:50 -0400
-Subject: Re: Alternative implementation of the generic __ffs
-From: Joe Perches <joe@perches.com>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: dean gaudet <dean@arctic.org>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1208607019.13829.1248748343@webmail.messagingengine.com>
-References: <20080331171506.GA24017@mailshack.com>
-	 <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>
-	 <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>
-	 <1207507897.18129.1246358115@webmail.messagingengine.com>
-	 <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>
-	 <1207563950.7880.1246457209@webmail.messagingengine.com>
-	 <20080418201809.GA5036@mailshack.com>
-	 <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
-	 <1208563762.10414.19.camel@brick>
-	 <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
-	 <1208566724.4891.25.camel@localhost> <1208567093.10414.20.camel@brick>
-	 <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
-	 <1208573728.11990.14.camel@localhost>
-	 <alpine.DEB.1.10.0804182112360.6108@twinlark.arctic.org>
-	 <1208607019.13829.1248748343@webmail.messagingengine.com>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 11:17:01 -0700
-Message-Id: <1208629021.12388.25.camel@localhost>
+	Sat, 19 Apr 2008 14:21:35 -0400
+Date: Sat, 19 Apr 2008 11:21:27 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       Andres Salomon <dilinger@queued.net>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-mm1
+Message-ID: <20080419112127.1499c9be@laptopd505.fenrus.org>
+In-Reply-To: <20080418202925.b18452c5.akpm@linux-foundation.org>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+	<20080418202925.b18452c5.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-19 at 14:10 +0200, Alexander van Heukelum wrote:
-> I've added that to the benchmark, which you can now find here:
-> http://heukelum.fastmail.fm/ffs/.
+On Fri, 18 Apr 2008 20:29:25 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-retested on arm:
+> That's
+> 
+>                 WARN_ON_ONCE(is_ram);
+> 
+> the changelog for the patch which added that warning is
+> information-free 
 
-$ gcc -Os -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3170 tics,  8326 tics
-New:            4214 tics,  8793 tics
-Smallest:       4023 tics,  7733 tics
-Small const:    3442 tics,  6188 tics
-Empty loop:     1517 tics,  2243 tics
+it got added with a full changelog, then temporary removed and then added back ;(
 
-$ gcc -O2 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3172 tics,  7832 tics
-New:            4805 tics,  8790 tics
-Smallest:       4405 tics,  7154 tics
-Small const:    3442 tics,  5612 tics
-Empty loop:     1516 tics,  2145 tics
+> and there's no code comment explaining what went
+> wrong, which makes things rather harder than they ought to be.
+> 
+> Yes it's due to the new OLPC code.  olpc_init() has
+> 
+> 	romsig = ioremap(0xffffffc0, 16);
+> 
+> which we probably just shouldn't do this at all unless we're running
+> on the OLPC hardware.  But we need to do this to find out if we're
+> running on the OLPC hardware!  Perhaps the warning should just be
+> removed. --
 
-$ gcc -O3 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3080 tics,  7709 tics
-New:            4723 tics,  8656 tics
-Smallest:       4333 tics,  7121 tics
-Small const:    3379 tics,  5483 tics
-Empty loop:     1447 tics,  2016 tics
+calling ioremap() on something which COULD be ram is... REALLY nasty.
+The kernel has to mark that page uncached, for all users and mappings of that memory.
+A second hard case then is to find out when the last ioremap() user has
+released that memory (since there's several cases where different parts of the same
+4K page can be ioremapped) before it can map it cached again. The good news is that
+until this olpc patch got in, there were no users of this capability....
+Instead of outright forbidding it though we added a warn_on to find out if the
+assumption of no users was correct... 
+seems it caught some new code which is trying to do this here.
 
->  Testing the same with 
-> "return x4 + x3 + x2 + x1 + x0;" as the last line would be
-> interesting too.
-
-Adding is slower:
-
-$ gcc -Os -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3152 tics,  8310 tics
-New:            4214 tics,  8789 tics
-Smallest:       4024 tics,  7737 tics
-Small const:    3538 tics,  6295 tics
-Empty loop:     1517 tics,  2243 tics
-
-$ gcc -O2 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3184 tics,  7849 tics
-New:            4790 tics,  8814 tics
-Smallest:       4406 tics,  7161 tics
-Small const:    3538 tics,  5806 tics
-Empty loop:     1521 tics,  2153 tics
-
-$ gcc -O3 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3091 tics,  7694 tics
-New:            4718 tics,  8656 tics
-Smallest:       4333 tics,  7124 tics
-Small const:    3467 tics,  5687 tics
-Empty loop:     1445 tics,  2066 tics
+this code should probably be a lot more careful and check that
+1) there is no actual kernel memory or something else at this region
+   (what if there's some other device there? this code could blow up)
+2) the machine won't tripple fault or otherwise throw tantrums if
+   this hardcoded value is accessed (not automatic on x86!!)
+3) it only runs if there's a really high degree of confidence that this really is
+   an OLPC device.
+or maybe
+4) get this address from some other table or system provided resource
 
 
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
