@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYDSQFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYDSQG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbYDSQFP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYDSQFE
+	id S1755984AbYDSQG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYDSQGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:05:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:23542 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbYDSQFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:05:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
-        b=Zt4AwCkqBv89lH54gtnQJreoGKpm84jgSJHF7wOmwZzeRuWu1GovDf3EXe5M75Ci1KqQ+KSiS+KQFwidlFBxAepgOxWpcjVO7VCFqzlzCtfgVMw8ktmw95Z2aOnnJsSsbDOJpKGDErEFkrwBY0yvfWuN/b23iA9ZpoZURo7NZXo=
-Date: Sun, 20 Apr 2008 00:04:53 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Linux 2.6.25 - posix_types.h
-Message-ID: <Pine.LNX.4.64.0804192351220.3260@boston.corp.fedex.com>
+	Sat, 19 Apr 2008 12:06:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:47253 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752129AbYDSQGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:06:48 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
+Date: Sun, 20 Apr 2008 02:05:31 +1000
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200804181433.48488.rusty@rustcorp.com.au> <200804181439.49051.rusty@rustcorp.com.au> <20080419102214.GA21952@2ka.mipt.ru>
+In-Reply-To: <20080419102214.GA21952@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804200205.31508.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 19 April 2008 20:22:15 Evgeniy Polyakov wrote:
+> Hi.
+>
+> On Fri, Apr 18, 2008 at 02:39:48PM +1000, Rusty Russell 
+(rusty@rustcorp.com.au) wrote:
+> > +int vring_get_buffer(struct vring_info *vr,
+> > +		     struct iovec *in_iov,
+> > +		     unsigned int *num_in, unsigned long *in_len,
+> > +		     struct iovec *out_iov,
+> > +		     unsigned int *num_out, unsigned long *out_len)
+> > +{
+> > +	unsigned int i, in = 0, out = 0;
+> > +	unsigned long dummy;
+> > +	u16 avail, last_avail, head;
+> > +	struct vring_desc d;
+>
+> Should this whole function and vring_used_buffer() be protected with
+> vr->lock mutex?
 
-Linus,
+No; it's up to the caller to make sure that they are serialized.  In the case 
+of tun that happens naturally.
 
-The latest git download changes the behavior of posix_types.h such that 
-non-kernel programs are no longer able to include posix types 
-(e.g. xserver can no longer be compiled).
+There are two reasons not to grab the lock.  It turns out that if we tried to 
+lock here, we'd deadlock, since the callbacks are called under the lock.  
+Secondly, it's possible to implement an atomic vring_used_buffer variant, 
+which could fail: this would avoid using the thread most of the time.
 
-I don't know whether this is intended or a bug.
-
-Attached is a patch to allow __i386__ as was done in the past.
-
-Thanks,
-Jeff.
-
-
---- linux-2.6/include/asm-x86/posix_types.h.org	2008-04-19 16:53:03 +0800
-+++ linux-2.6/include/asm-x86/posix_types.h	2008-04-19 16:51:48 +0800
-@@ -1,5 +1,5 @@
--#ifdef __KERNEL__
--# if defined(CONFIG_X86_32) || defined(__i386__)
-+#if defined(__KERNEL__) || defined(__i386__)
-+# if defined(CONFIG_X86_32)
-  #  include "posix_types_32.h"
-  # else
-  #  include "posix_types_64.h"
-
+Hope that helps,
+Rusty.
