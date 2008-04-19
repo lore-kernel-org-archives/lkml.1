@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbYDSQm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbYDSQnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761788AbYDSQm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYDSQmR
+	id S1762210AbYDSQnN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762028AbYDSQmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:42:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52895 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbYDSQmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:42:16 -0400
-Date: Sat, 19 Apr 2008 18:42:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
-Message-ID: <20080419164202.GA28328@elte.hu>
-References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain>
+	Sat, 19 Apr 2008 12:42:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:63016 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754856AbYDSQmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:42:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=GGLMmqKNW9wmyJuIM8MHgFjey0LrpkY5DaDTwu3WWUCTFdaaXHXvT2WsRx2sQG6JTh5o0Hw4x8SqqhjA9SVSTSwjMNOeangzNavEnWn2wY/nwOrUakj7HLKOj647J9ZRTtey5e37XkW0ARneUUbHuIRGnCFn/T3chEoNMvCmOmg=
+Message-ID: <480A20F8.6020802@tuffmail.co.uk>
+Date: Sat, 19 Apr 2008 17:42:32 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208620484.3280.23.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RFC: Self-snapshotting in Linux
+References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajcri-65w-13@gated-at.bofh.it> <da08e304-eb95-4ace-a069-de1a57b86e9f@e39g2000hsf.googlegroups.com> <20080416111237.GA32432@atrey.karlin.mff.cuni.cz> <48060436.6030707@tuffmail.co.uk> <20080417093235.GB7314@elf.ucw.cz>
+In-Reply-To: <20080417093235.GB7314@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+> On Wed 2008-04-16 14:50:46, Alan Jenkins wrote:
+>   
+>> Pavel Machek wrote:
+>>     
+>>>> I guess there is the hardware / drivers issue.  I would like to claim
+>>>> I've found hibernation to be reliable but unfortunately that's not
+>>>> 100% true.
+>>>>     
+>>>>         
+>>> So debug it, it is open source after all. Or at least file a bugs.
+>>>   
+>>>       
+>> I definitely want to debug it; I love hibernating.  It's a regression and 
+>> it'll affect my distro kernel once I upgrade to Ubuntu Hardy.
+>>
+>> <http://bugzilla.kernel.org/show_bug.cgi?id=10196> "Backtraces during 
+>> hibernate / resume".
+>>
+>> I posted the backtraces but nobody could tell me what they were - they 
+>> don't actually say whether they're OOPs or BUGs etc.  They might be 
+>> softlockups - some times I got softlockup warnings, though thats not in the 
+>> log I posted.
+>>     
+>
+> Not sure what that is, I never seen that before.
+>
+> Can you try vanilla 2.6.25-rc9 or something?
+>   
+I've just retested with 2.6.25.  I reproduced the hang that happens
+after (otherwise successful) hibernation.  After a second hibernation &
+resume I reproduced the mysterious call-traces.
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+I posted this information, a full system log (including 2 hibernation
+cycles and the calltraces), and the kernel config to the bugzilla entry.
 
-> >  drivers/built-in.o: In function `sas_request_addr':
-> >  : undefined reference to `release_firmware'
-> > 
-> > config can be found at:
-> > 
-> >    http://redhat.com/~mingo/misc/config-Sat_Apr_19_16_58_35_CEST_2008.bad
-> > 
-> > ... brought to you by x86.git's randconfig build and boot service ;-)
-> 
-> This one's fun.  The root cause is 
-> 
-> CONFIG_SCSI_SAS_LIBSAS=y
-> CONFIG_FW_LOADER=m
-> 
-> The problem is that libsas doesn't depend on the FW loader and doesn't 
-> want to.  It just wants to use it if it's available.  The definitions 
-> in include/linux/firmware.h have stubs to facilitate this.
-> 
-> However, CONFIG_FW_LOADER=m defeats the stubs.
-> 
-> This is a bit nasty to fix; however, I think this patch does.  I've 
-> also put a large comment in to explain what's going on.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+This was in response to Rafael's request on the bugzilla.  So I expect
+someone will look at it anyway, but I thought I should copy you on this.
 
-thanks James - your fix works fine here.
+Thanks,
 
-Tested-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Alan
