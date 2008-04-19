@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYDSQe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbYDSQf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYDSQe1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYDSQeU
+	id S1758650AbYDSQf7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYDSQfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:34:20 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:49764 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129AbYDSQeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:34:19 -0400
-Date: Sat, 19 Apr 2008 20:33:22 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
-Message-ID: <20080419163322.GA17089@2ka.mipt.ru>
-References: <200804181433.48488.rusty@rustcorp.com.au> <200804181439.49051.rusty@rustcorp.com.au> <20080419102214.GA21952@2ka.mipt.ru> <200804200205.31508.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 19 Apr 2008 12:35:52 -0400
+Received: from lazybastard.de ([212.112.238.170]:34856 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849AbYDSQfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:35:51 -0400
+Date: Sat, 19 Apr 2008 18:35:40 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org, ben@fluff.org
+Subject: Re: Smartmedia/xd card support - request for comments
+Message-ID: <20080419163536.GA13774@logfs.org>
+References: <259878.79137.qm@web36703.mail.mud.yahoo.com> <alpine.LFD.1.10.0804190806110.3261@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200804200205.31508.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0804190806110.3261@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 02:05:31AM +1000, Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > Should this whole function and vring_used_buffer() be protected with
-> > vr->lock mutex?
+On Sat, 19 April 2008 08:37:59 +0200, Thomas Gleixner wrote:
+> On Fri, 18 Apr 2008, Alex Dubov wrote:
 > 
-> No; it's up to the caller to make sure that they are serialized.  In the case 
-> of tun that happens naturally.
-> 
-> There are two reasons not to grab the lock.  It turns out that if we tried to 
-> lock here, we'd deadlock, since the callbacks are called under the lock.  
-> Secondly, it's possible to implement an atomic vring_used_buffer variant, 
-> which could fail: this would avoid using the thread most of the time.
+> First off, can you please use a mail client which does line breaks at
+> around 78 chars ?
 
-Yep, I decided that too. But it limits its usage to tun only or any
-other system where only single thread picks up results, so no generic
-userspace ring buffers?
+It would also be nice if it wouldn't drop the name "Jörn Engel" from my
+mail (indication for spam, mail ends in a different folder), kept a
+References: or In-Reply-To: header and could deal with utf8.
+
+Jörn
 
 -- 
-	Evgeniy Polyakov
+Fancy algorithms are buggier than simple ones, and they're much harder
+to implement. Use simple algorithms as well as simple data structures.
+-- Rob Pike
