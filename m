@@ -1,121 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbYDSWkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbYDSWmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbYDSWkt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 18:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYDSWkm
+	id S1762114AbYDSWmY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 18:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYDSWmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 18:40:42 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:41871 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752628AbYDSWkl (ORCPT
+	Sat, 19 Apr 2008 18:42:16 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:52903 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753095AbYDSWmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 18:40:41 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: At0FAGMRCkhMROPA/2dsb2JhbACBYKhI
-Date: Sat, 19 Apr 2008 18:40:39 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, akpm@osdl.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v7)
-Message-ID: <20080419224039.GA4439@Krystal>
-References: <20080417164116.GB23351@Krystal> <48087217.50305@goop.org> <20080419212937.GA2831@Krystal> <480A6DD4.8050702@goop.org>
+	Sat, 19 Apr 2008 18:42:15 -0400
+Date: Sun, 20 Apr 2008 01:42:06 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] Check for breakpoint in text_poke to eliminate bug_on
+Message-ID: <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
+In-Reply-To: <20080419215826.GC2831@Krystal>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
+	<20080413230552.33ca587a@daedalus.pq.iki.fi>
+	<20080414065713.GB16163@elte.hu>
+	<20080419184137.79957a07@daedalus.pq.iki.fi>
+	<20080419161956.GA24685@Krystal>
+	<20080420000657.20ba6b4b@daedalus.pq.iki.fi>
+	<20080420005208.12ad32fd@daedalus.pq.iki.fi>
+	<20080419215826.GC2831@Krystal>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <480A6DD4.8050702@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:38:13 up 50 days, 18:49,  5 users,  load average: 0.19, 0.25,
-	0.20
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Mathieu Desnoyers wrote:
->> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
->>   
->>> Mathieu Desnoyers wrote:
->>>     
->>>> +/*
->>>> + * Only returns from a trap or exception to a NMI context 
->>>> (intra-privilege
->>>> + * level near return) to the same SS and CS segments. Should be used
->>>> + * upon trap or exception return when nested over a NMI context so no 
->>>> iret is
->>>> + * issued. It takes care of modifying the eflags, rsp and returning to 
->>>> the
->>>> + * previous function.
->>>> + *
->>>> + * The stack, at that point, looks like :
->>>> + *
->>>> + * 0(rsp)  RIP
->>>> + * 8(rsp)  CS
->>>> + * 16(rsp) EFLAGS
->>>> + * 24(rsp) RSP
->>>> + * 32(rsp) SS
->>>> + *
->>>> + * Upon execution :
->>>> + * Copy EIP to the top of the return stack
->>>> + * Update top of return stack address
->>>> + * Pop eflags into the eflags register
->>>> + * Make the return stack current
->>>> + * Near return (popping the return address from the return stack)
->>>> + */
->>>> +#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
->>>> +					mov %rsp, %rax;		\
->>>> +					mov 24+8(%rax), %rsp;	\
->>>> +					pushq 0+8(%rax);	\
->>>> +					pushq 16+8(%rax);	\
->>>> +					movq (%rax), %rax;	\
->>>> +					popfq;			\
->>>> +					ret;
->>>>         
->>> I got this right first go?  I must be getting good at this...
->>>
->>>     
->>
->> Yes, it looked good to me at least :)
->>
->>   
->>> Anyway, trailing ';', and perhaps use a consistent form for mov (either 
->>> movq or mov in all three instances).
->>>
->>>     
->>
->> Ok, fixed. Here is the update.
->>
->> The last issue standing would be the paravirt code. Any ideas about how
->> it's best to do it ? It would be good to be able to get the nmi-safe
->> version on bare metal, patched with a standard iret emulation in
->> paravirt code.
->>   
->
-> #ifdef CONFIG_PARAVIRT
-> #define NMI_RETURN   paravirt_nmi_return
->
-> /* elsewhere */
->    .nmi_return = native_iret_nmi_return;
-> #else
-> #define NMI_RETURN   NMI_SAFE_NMI_RETURN
-> #endif
->
-> ?
->
+On Sat, 19 Apr 2008 17:58:26 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Then I guess we would have to start dealing with faults caused by popf
-if it happens to be run before the code patching is done ?
+> * Pekka Paalanen (pq@iki.fi) wrote:
+> > 
+> > A simple
+> > echo 0 > /sys/devices/system/cpu/cpu1/online
+> > echo 1 > /sys/devices/system/cpu/cpu1/online
+> > 
+> > produces the following kernel log (netconsole) and then after a couple
+> > second hang the machine reboots:
+> > 
+> > [   84.678357] console [netcon0] enabled
+> > [   84.679568] netconsole: network logging started
+> > [  232.812335] CPU 1 is now offline
+> > [  232.812678] lockdep: fixing up alternatives.
+> > [  232.813051] SMP alternatives: switching to UP code
+> > [  268.447582] lockdep: fixing up alternatives.
+> > [  268.447903] SMP alternatives: switching to SMP code
+> > [  268.459462] Booting processor 1/1 ip 6000
+> > 
+> > My kernel is sched-devel/latest git tree with Desnoyers' patch, and my
+> > patches that touch only arch/x86/mm/mmio-mod.c.
+> > The machine is Thinkpad T61 with:
+> > 
+> > processor	: 0
+> > vendor_id	: GenuineIntel
+> > cpu family	: 6
+> > model		: 15
+> > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
+> > stepping	: 10
+> > cpu MHz		: 2001.000
+> > cache size	: 4096 KB
+> > physical id	: 0
+> > siblings	: 2
+> > core id		: 0
+> > cpu cores	: 2
+> > apicid		: 0
+> > initial apicid	: 0
+> > fpu		: yes
+> > fpu_exception	: yes
+> > cpuid level	: 10
+> > wp		: yes
+> > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
+> > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
+> > tm2 ssse3 cx16 xtpr lahf_lm ida
+> > bogomips	: 3997.03
+> > clflush size	: 64
+> > cache_alignment	: 64
+> > address sizes	: 36 bits physical, 48 bits virtual
+> > power management:
+> > 
+> > processor	: 1
+> > vendor_id	: GenuineIntel
+> > cpu family	: 6
+> > model		: 15
+> > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
+> > stepping	: 10
+> > cpu MHz		: 2001.000
+> > cache size	: 4096 KB
+> > physical id	: 0
+> > siblings	: 2
+> > core id		: 1
+> > cpu cores	: 2
+> > apicid		: 1
+> > initial apicid	: 1
+> > fpu		: yes
+> > fpu_exception	: yes
+> > cpuid level	: 10
+> > wp		: yes
+> > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
+> > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
+> > tm2 ssse3 cx16 xtpr lahf_lm ida
+> > bogomips	: 3991.26
+> > clflush size	: 64
+> > cache_alignment	: 64
+> > address sizes	: 36 bits physical, 48 bits virtual
+> > power management:
+> > 
+> > Any help would be appreciated.
+> > 
+> > 
+> > Thanks.
+> 
+> This patch should bring more consistency checks to text_poke, can you
+> give it a try ?
+> 
+> Hm, actually, I think it contains the fix you are looking for.
+> 
+> kernel_text_address -> core_kernel_text will probably make everything go
+> smoothly.
+> 
+> Mathieu
+> 
+> 
+> Check for breakpoint in text_poke to eliminate bug_on
+> 
+> It's ok to modify an instruction non-atomically (multiple memory accesses to a
+> large and/or non aligned instruction) *if and only if* we have inserted a
+> breakpoint at the beginning of the instruction.
+> 
+> Also change kernel_text_address (bogus) check to core_kernel_text.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+>  arch/x86/kernel/alternative.c |   49 ++++++++++++++++++++++++------------------
+>  1 file changed, 29 insertions(+), 20 deletions(-)
 
-Mathieu
+Sorry, no change.
 
->    J
+[   93.315242] netconsole: network logging started
+[   95.797496] eth0: no IPv6 routers present
+[  127.472213] CPU 1 is now offline
+[  127.472547] lockdep: fixing up alternatives.
+[  127.472923] SMP alternatives: switching to UP code
+[  134.709384] lockdep: fixing up alternatives.
+[  134.709701] SMP alternatives: switching to SMP code
+[  134.721344] Booting processor 1/1 ip 6000
+
+few seconds pause and it reboots. A working patch in six minutes would
+have been quite awesome :-)
+
+
+Thanks.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Pekka Paalanen
+http://www.iki.fi/pq/
