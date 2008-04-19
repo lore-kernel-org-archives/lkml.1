@@ -1,166 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbYDSWmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbYDSWnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762114AbYDSWmY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 18:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYDSWmQ
+	id S1762873AbYDSWnd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 18:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762740AbYDSWnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 18:42:16 -0400
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:52903 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753095AbYDSWmP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 18:42:15 -0400
-Date: Sun, 20 Apr 2008 01:42:06 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] Check for breakpoint in text_poke to eliminate bug_on
-Message-ID: <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
-In-Reply-To: <20080419215826.GC2831@Krystal>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
-	<20080413230552.33ca587a@daedalus.pq.iki.fi>
-	<20080414065713.GB16163@elte.hu>
-	<20080419184137.79957a07@daedalus.pq.iki.fi>
-	<20080419161956.GA24685@Krystal>
-	<20080420000657.20ba6b4b@daedalus.pq.iki.fi>
-	<20080420005208.12ad32fd@daedalus.pq.iki.fi>
-	<20080419215826.GC2831@Krystal>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Apr 2008 18:43:24 -0400
+Received: from mail.lang.hm ([64.81.33.126]:33726 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760253AbYDSWnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 18:43:23 -0400
+Date: Sat, 19 Apr 2008 15:49:23 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] Higer latency with dynamic tick (need for an io-ondemand
+ govenor?)
+In-Reply-To: <alpine.LFD.1.10.0804190839140.3261@apollo.tec.linutronix.de>
+Message-ID: <alpine.DEB.1.10.0804191546430.4670@asgard>
+References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com> <1179474567.12981.53.camel@chaos> <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com> <200804182045.56893.david-b@pacbell.net>
+ <alpine.LFD.1.10.0804190839140.3261@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: MULTIPART/Mixed; BOUNDARY="8323328-307532848-1208589223=:3261"
+Content-ID: <alpine.DEB.1.10.0804191546431.4670@asgard>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008 17:58:26 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> * Pekka Paalanen (pq@iki.fi) wrote:
-> > 
-> > A simple
-> > echo 0 > /sys/devices/system/cpu/cpu1/online
-> > echo 1 > /sys/devices/system/cpu/cpu1/online
-> > 
-> > produces the following kernel log (netconsole) and then after a couple
-> > second hang the machine reboots:
-> > 
-> > [   84.678357] console [netcon0] enabled
-> > [   84.679568] netconsole: network logging started
-> > [  232.812335] CPU 1 is now offline
-> > [  232.812678] lockdep: fixing up alternatives.
-> > [  232.813051] SMP alternatives: switching to UP code
-> > [  268.447582] lockdep: fixing up alternatives.
-> > [  268.447903] SMP alternatives: switching to SMP code
-> > [  268.459462] Booting processor 1/1 ip 6000
-> > 
-> > My kernel is sched-devel/latest git tree with Desnoyers' patch, and my
-> > patches that touch only arch/x86/mm/mmio-mod.c.
-> > The machine is Thinkpad T61 with:
-> > 
-> > processor	: 0
-> > vendor_id	: GenuineIntel
-> > cpu family	: 6
-> > model		: 15
-> > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-> > stepping	: 10
-> > cpu MHz		: 2001.000
-> > cache size	: 4096 KB
-> > physical id	: 0
-> > siblings	: 2
-> > core id		: 0
-> > cpu cores	: 2
-> > apicid		: 0
-> > initial apicid	: 0
-> > fpu		: yes
-> > fpu_exception	: yes
-> > cpuid level	: 10
-> > wp		: yes
-> > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-> > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
-> > tm2 ssse3 cx16 xtpr lahf_lm ida
-> > bogomips	: 3997.03
-> > clflush size	: 64
-> > cache_alignment	: 64
-> > address sizes	: 36 bits physical, 48 bits virtual
-> > power management:
-> > 
-> > processor	: 1
-> > vendor_id	: GenuineIntel
-> > cpu family	: 6
-> > model		: 15
-> > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-> > stepping	: 10
-> > cpu MHz		: 2001.000
-> > cache size	: 4096 KB
-> > physical id	: 0
-> > siblings	: 2
-> > core id		: 1
-> > cpu cores	: 2
-> > apicid		: 1
-> > initial apicid	: 1
-> > fpu		: yes
-> > fpu_exception	: yes
-> > cpuid level	: 10
-> > wp		: yes
-> > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-> > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
-> > tm2 ssse3 cx16 xtpr lahf_lm ida
-> > bogomips	: 3991.26
-> > clflush size	: 64
-> > cache_alignment	: 64
-> > address sizes	: 36 bits physical, 48 bits virtual
-> > power management:
-> > 
-> > Any help would be appreciated.
-> > 
-> > 
-> > Thanks.
-> 
-> This patch should bring more consistency checks to text_poke, can you
-> give it a try ?
-> 
-> Hm, actually, I think it contains the fix you are looking for.
-> 
-> kernel_text_address -> core_kernel_text will probably make everything go
-> smoothly.
-> 
-> Mathieu
-> 
-> 
-> Check for breakpoint in text_poke to eliminate bug_on
-> 
-> It's ok to modify an instruction non-atomically (multiple memory accesses to a
-> large and/or non aligned instruction) *if and only if* we have inserted a
-> breakpoint at the beginning of the instruction.
-> 
-> Also change kernel_text_address (bogus) check to core_kernel_text.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> ---
->  arch/x86/kernel/alternative.c |   49 ++++++++++++++++++++++++------------------
->  1 file changed, 29 insertions(+), 20 deletions(-)
+--8323328-307532848-1208589223=:3261
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.1.10.0804191546432.4670@asgard>
 
-Sorry, no change.
+On Sat, 19 Apr 2008, Thomas Gleixner wrote:
 
-[   93.315242] netconsole: network logging started
-[   95.797496] eth0: no IPv6 routers present
-[  127.472213] CPU 1 is now offline
-[  127.472547] lockdep: fixing up alternatives.
-[  127.472923] SMP alternatives: switching to UP code
-[  134.709384] lockdep: fixing up alternatives.
-[  134.709701] SMP alternatives: switching to SMP code
-[  134.721344] Booting processor 1/1 ip 6000
+> On Fri, 18 Apr 2008, David Brownell wrote:
+>> On Friday 18 April 2008, Woodruff, Richard wrote:
+>>> When capturing some traces with dynamic tick we were noticing the
+>>> interrupt latency seems to go up a good amount. If you look at the trace
+>>> the gpio IRQ is now offset a good amount.  Good news I guess is its
+>>> pretty predictable.
+>>
+>> That is, about 24 usec on this CPU ... an ARM v7, which I'm guessing
+>> is an OMAP34xx running fairly fast (order of 4x faster than most ARMs).
+>>
+>> Similar issues were noted, also using ETM trace, on an ARM920 core [1]
+>> from Atmel.  There, the overhead of NO_HZ was observed to be more like
+>> 150 usec of per-IRQ overhead, which is enough to make NO_HZ non-viable
+>> in some configurations.
+>>
+>>
+>>> I was wondering what thoughts of optimizing this might be.
+>>
+>> Cutting down the math implied by jiffies updates might help.
+>> The 64 bit math for ktime structs isn't cheap; purely by eyeball,
+>> that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
+>
+> Hmm, I have no real good idea to avoid the div64 in the case of a long
+> idle sleep. Any brilliant patches are welcome :)
 
-few seconds pause and it reboots. A working patch in six minutes would
-have been quite awesome :-)
+how long is 'long idle sleep'? and how common are such sleeps? is it 
+possibly worth the cost of a test in the hotpath to see if you need to do 
+the 64 bit math or can get away with 32 bit math (at least on some 
+platforms)
 
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+David Lang
+--8323328-307532848-1208589223=:3261--
