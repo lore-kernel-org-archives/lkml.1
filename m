@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYDSQG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYDSQMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYDSQG6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYDSQGt
+	id S1756120AbYDSQMX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYDSQMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:06:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:47253 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129AbYDSQGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:06:48 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
-Date: Sun, 20 Apr 2008 02:05:31 +1000
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <200804181433.48488.rusty@rustcorp.com.au> <200804181439.49051.rusty@rustcorp.com.au> <20080419102214.GA21952@2ka.mipt.ru>
-In-Reply-To: <20080419102214.GA21952@2ka.mipt.ru>
+	Sat, 19 Apr 2008 12:12:09 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:41190 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbYDSQMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:12:07 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Dave Olson <dave.olson@qlogic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Ralph Campbell <ralph.campbell@qlogic.com>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git
+References: <adaskxkh6s2.fsf@cisco.com> <20080419081614.GA2437@elte.hu>
+	<adaod86aq9j.fsf@cisco.com>
+	<alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Sat, 19 Apr 2008 09:12:06 -0700
+In-Reply-To: <alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com> (Dave
+	Olson's message of "Sat, 19 Apr 2008 08:20:49 -0700 (PDT)")
+Message-ID: <adafxthbz8p.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804200205.31508.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 19 Apr 2008 16:12:06.0364 (UTC) FILETIME=[1CB659C0:01C8A238]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 April 2008 20:22:15 Evgeniy Polyakov wrote:
-> Hi.
->
-> On Fri, Apr 18, 2008 at 02:39:48PM +1000, Rusty Russell 
-(rusty@rustcorp.com.au) wrote:
-> > +int vring_get_buffer(struct vring_info *vr,
-> > +		     struct iovec *in_iov,
-> > +		     unsigned int *num_in, unsigned long *in_len,
-> > +		     struct iovec *out_iov,
-> > +		     unsigned int *num_out, unsigned long *out_len)
-> > +{
-> > +	unsigned int i, in = 0, out = 0;
-> > +	unsigned long dummy;
-> > +	u16 avail, last_avail, head;
-> > +	struct vring_desc d;
->
-> Should this whole function and vring_used_buffer() be protected with
-> vr->lock mutex?
+ > |  >  drivers/built-in.o: In function `ipath_init_one':
+ > |  >  ipath_driver.c:(.devinit.text+0x1e5bc): undefined reference to `ipath_init_iba7220_funcs'
+ > 
+ > Yes, that issue should be fixed.  Our preference was to not build
+ > if it wouldn't work.  We'd have to add the conditional check at
+ > the function setup routines.
 
-No; it's up to the caller to make sure that they are serialized.  In the case 
-of tun that happens naturally.
+Not sure I really follow this response... ipath_driver.c has
 
-There are two reasons not to grab the lock.  It turns out that if we tried to 
-lock here, we'd deadlock, since the callbacks are called under the lock.  
-Secondly, it's possible to implement an atomic vring_used_buffer variant, 
-which could fail: this would avoid using the thread most of the time.
+	case PCI_DEVICE_ID_INFINIPATH_7220:
+#ifndef CONFIG_PCI_MSI
+		ipath_dbg("CONFIG_PCI_MSI is not enabled, "
+			  "using IntX for unit %u\n", dd->ipath_unit);
+#endif
+		ipath_init_iba7220_funcs(dd);
+		break;
 
-Hope that helps,
-Rusty.
+so clearly ipath_init_iba7220_funcs() was intended to be built and used
+even if CONFIG_PCI_MSI was not defined.  From the code it looks like all
+should work fine if PCI_MSI is not set, so I don't know what you mean
+about conditional checks.
+
+(BTW since I'm looking at this code, "IntX" should probably be
+capitalized as "INTx" to match what the PCI specs say)
+
+ - R.
