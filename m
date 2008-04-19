@@ -1,94 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbYDSNWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbYDSNX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761563AbYDSNWw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 09:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbYDSNWn
+	id S1759864AbYDSNX3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 09:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYDSNXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 09:22:43 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49564 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753823AbYDSNWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 09:22:41 -0400
-Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
-	kmem_cache_destroy, scsi_put_host_cmd_pool()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080419085758.GA18612@elte.hu>
-References: <20080419085758.GA18612@elte.hu>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 08:22:37 -0500
-Message-Id: <1208611357.3280.5.camel@localhost.localdomain>
+	Sat, 19 Apr 2008 09:23:21 -0400
+Received: from mail.queued.net ([207.210.101.209]:3755 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753044AbYDSNXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 09:23:20 -0400
+Date: Sat, 19 Apr 2008 09:25:44 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, jordan.crouse@amd.com
+Subject: Re: 2.6.25-mm1
+Message-ID: <20080419092544.378664a8@ephemeral>
+In-Reply-To: <20080418202925.b18452c5.akpm@linux-foundation.org>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+	<20080418202925.b18452c5.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-19 at 10:57 +0200, Ingo Molnar wrote:
-> x86.git allyesconfig bootup test produced the following warning in 
-> slub.c (and a stream of similar warnings later on):
+On Fri, 18 Apr 2008 20:29:25 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Fri, 18 Apr 2008 23:10:24 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
 > 
-> [   47.295141] ------------[ cut here ]------------
-> [   47.298969] WARNING: at mm/slub.c:2443 kmem_cache_destroy+0xf8/0x102()
-> [   47.302967] Modules linked in:
-> [   47.307205] Pid: 1, comm: swapper Not tainted 2.6.25-sched-devel.git-x86-latest.git #24
-> [   47.310970]  [<c014be1a>] warn_on_slowpath+0x46/0x56
-> [   47.317464]  [<c019685f>] ? get_pageblock_flags_group+0x56/0x74
-> [   47.322969]  [<c04f2e03>] ? list_add+0xa/0xf
-> [   47.328814]  [<c123083a>] ? _spin_unlock+0x22/0x25
-> [   47.333327]  [<c0191ce8>] ? time_hardirqs_off+0xe/0x1f
-> [   47.338972]  [<c0167ff7>] ? trace_hardirqs_off_caller+0x15/0xab
-> [   47.342970]  [<c0168098>] ? trace_hardirqs_off+0xb/0xd
-> [   47.350971]  [<c01976f7>] ? free_hot_cold_page+0x11d/0x139
-> [   47.354970]  [<c0191f58>] ? time_hardirqs_on+0xe/0x1f
-> [   47.361595]  [<c0169779>] ? trace_hardirqs_on_caller+0x16/0x13c
-> [   47.366973]  [<c01698aa>] ? trace_hardirqs_on+0xb/0xd
-> [   47.370972]  [<c01b1a62>] kmem_cache_destroy+0xf8/0x102
-> [   47.377727]  [<c09dab7f>] scsi_put_host_cmd_pool+0x42/0x58
-> [   47.382973]  [<c09db1b4>] scsi_destroy_command_freelist+0x54/0x5c
-> [   47.386972]  [<c09db2ef>] scsi_host_dev_release+0x79/0xa9
-> [   47.394973]  [<c067ee95>] device_release+0x3e/0x54
-> [   47.398974]  [<c04e0e62>] kobject_release+0x45/0x55
-> [   47.405383]  [<c04e0e1d>] ? kobject_release+0x0/0x55
-> [   47.409513]  [<c04e1968>] kref_put+0x3e/0x49
-> [   47.414975]  [<c04e0d8d>] kobject_put+0x19/0x1b
-> [   47.418975]  [<c067f44e>] put_device+0x16/0x18
-> [   47.422975]  [<c09db274>] scsi_host_put+0x12/0x14
-> [   47.426975]  [<c09db3dc>] scsi_unregister+0x1d/0x20
-> [   47.433383]  [<c1ceddcc>] aha1542_detect+0x7db/0x7f5
-> [   47.438977]  [<c01698aa>] ? trace_hardirqs_on+0xb/0xd
-> [   47.442976]  [<c1ceddf1>] ? init_this_scsi_driver+0xb/0xd0
-> [   47.450666]  [<c1cede44>] init_this_scsi_driver+0x5e/0xd0
-> [   47.454978]  [<c1c944db>] kernel_init+0x152/0x2b0
-> [   47.458978]  [<c1c94389>] ? kernel_init+0x0/0x2b0
-> [   47.465249]  [<c1c94389>] ? kernel_init+0x0/0x2b0
-> [   47.469258]  [<c01199c3>] kernel_thread_helper+0x7/0x10
-> [   47.474978]  =======================
-> [   47.478980] ---[ end trace 778e504de7e3b1e3 ]---
-> [   47.483297] ------------[ cut here ]------------
+> > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+> > >
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/
+> > 
+> > New, in 2.6.25-mm1 is a hang I'm seeing, just after the kernel prints:
+> > 
+> > "[    0.160375] NET: Registered protocol family 16"
+> > 
+> > The hang lasts about five minutes, and then boot continues.
 > 
-> config and bootlog at:
+> Please add initcall_debug to the kernel boot command line - that should
+> narrow it down.
 > 
->  http://redhat.com/~mingo/misc/config-Sat_Apr_19_10_28_28_CEST_2008.bad
->  http://redhat.com/~mingo/misc/log-Sat_Apr_19_10_28_28_CEST_2008.bad
+> >  Just
+> > after that, a backtrace is printed; I don't know if it's related.  The
+> > backtrace will follow.
+> > 
+> > This does not occur in mainline.  It seems it might be related to OLPC
+> > support -- I enabled all those options -- but that's not good
+> > behavior, and I see no warning of thus in the help.
+> > 
+> > I'm sending a number or reports against 2.6.25-mm1, so I've put my
+> > dmesg and .config on a server:
+> > 
+> > http://home.columbus.rr.com/jfannin3/dmesg.txt
+> > http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+> > 
+> > [    0.160375] NET: Registered protocol family 16
+> > [  400.782683] ------------[ cut here ]------------
+> > [  400.782832] WARNING: at arch/x86/mm/ioremap.c:158 __ioremap_caller+0x27d/0x2e0()
+> > [  400.783022] Modules linked in:
+> > [  400.783169] Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #7
+> > [  400.783300]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
+> > [  400.783480]  [<c0106c2e>] ? profile_pc+0x3e/0x50
+> > [  400.783682]  [<c01374ee>] ? irq_exit+0x4e/0xa0
+> > [  400.783879]  [<c0115aec>] ? smp_apic_timer_interrupt+0x5c/0x90
+> > [  400.784087]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > [  400.784298]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> > [  400.784506]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > [  400.784706]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> > [  400.784906]  [<c011d0e6>] ? page_is_ram+0xa6/0xd0
+> > [  400.785059]  [<c011d4ed>] __ioremap_caller+0x27d/0x2e0
+> > [  400.785221]  [<c03569d8>] ? _spin_unlock_irqrestore+0x48/0x80
+> > [  400.785421]  [<c017f4cd>] ? ftrace_record_ip+0x7d/0x250
+> > [  400.785621]  [<c0474801>] ? olpc_init+0x31/0x140
+> > [  400.785817]  [<c011d59f>] ioremap_nocache+0x1f/0x30
+> > [  400.785976]  [<c0474801>] ? olpc_init+0x31/0x140
+> > [  400.786165]  [<c0474801>] olpc_init+0x31/0x140
+> > [  400.786318]  [<c0464992>] kernel_init+0x142/0x2d0
+> > [  400.786479]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> > [  400.786680]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> > [  400.786879]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> > [  400.787069]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> > [  400.787260]  [<c0104d9b>] kernel_thread_helper+0x7/0x10
+> > [  400.787422]  =======================
+> > [  400.787727] ---[ end trace 4eaa2a86a8e2da22 ]---
 > 
-> [a few .config options were turned off: just accept all the defaults 
->  after 'make oldconfig']
+> <looks at this again>
+> 
+> That's
+> 
+>                 WARN_ON_ONCE(is_ram);
+> 
+> the changelog for the patch which added that warning is information-free
+> and there's no code comment explaining what went wrong, which makes things
+> rather harder than they ought to be.
+> 
+> Yes it's due to the new OLPC code.  olpc_init() has
+> 
+> 	romsig = ioremap(0xffffffc0, 16);
+> 
+> which we probably just shouldn't do this at all unless we're running on the
+> OLPC hardware.  But we need to do this to find out if we're running on the OLPC
+> hardware!  Perhaps the warning should just be removed.
 
-The WARN_ON is caused by kmem_cache_destroy() with apparently
-outstanding objects, isn't it?
+Hm.  We could either protect that code with an:
 
-The most significant piece of the log seems to be before with all those
-isa SCSI drivers ... I assume you don't actually have any of the
-hardware, you're just randomly inserting the modules?
+if (!is_geode())
+  return;
 
-James
+Or I could add the OpenFirmware patches which would allow us to get
+rid of this code, and instead check for the existence of OFW using
+that.
+
+The former is quick and easy; the latter is (imo) nicer, so long as
+people don't have problems w/ the OFW code.  :)
 
 
-
-
+-- 
+Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
