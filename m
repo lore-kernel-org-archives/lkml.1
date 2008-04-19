@@ -1,305 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbYDSWT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbYDSW2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759670AbYDSWT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 18:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYDSWTQ
+	id S1758374AbYDSW2U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 18:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYDSW2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 18:19:16 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:46275 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751563AbYDSWTO (ORCPT
+	Sat, 19 Apr 2008 18:28:03 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48142 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752162AbYDSW2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 18:19:14 -0400
-X-YMail-OSG: 1ovIzWUVM1koSNwOUSkW4fZGxLdIwozUinqjc6GG.90BC33SCfKbHAGh0I81Uyo7sCySTQ84S1H_eQzWtEisB5FvCfg7vZg6OdY2gw8fERUlhf0Ood_RueJRiTQ-
-X-RocketYMMF: rancidfat
-Date: Sat, 19 Apr 2008 15:19:13 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 2.6.26 #repost] Smack: Integrate with Audit
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       James Morris <jmorris@namei.org>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Steve Grubb <sgrubb@redhat.com>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-security-module@vger.kernel.org,
-       linux-audit@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080417161032.GA24882@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <858638.48039.qm@web36605.mail.mud.yahoo.com>
+	Sat, 19 Apr 2008 18:28:00 -0400
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org>
+References: <1208540517.3063.18.camel@localhost.localdomain>
+	 <20080419151934.GA17089@elte.hu>
+	 <1208620484.3280.23.camel@localhost.localdomain>
+	 <20080419170530.GD1595@cs181133002.pp.htv.fi>
+	 <1208626496.3280.40.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 19 Apr 2008 17:27:56 -0500
+Message-Id: <1208644076.3280.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
-
-> Hi James/all,
-> 
-> On Thu, Apr 17, 2008 at 11:05:57AM +0000, James Morris wrote:
+On Sat, 2008-04-19 at 13:14 -0700, Linus Torvalds wrote:
+> On Sat, 19 Apr 2008, James Bottomley wrote:
 > > 
-> > Please review the following security patches for 2.6.26, which have
-> > been undergoing testing in the "next" tree and affect multiple LSMs.
-> > 
-> > 
+> > Well, we already had this argument on linux-scsi when the interface was
+> > first proposed:  Apart from select being very nasty and should only be
+> > sparingly used
 > 
-> As a clarification, those new changes was added to the security tree 
-> to modularly integrate Smack with Audit. The final step is the
-> reposted below patch which setups the new Audit hooks for Smack.
-> 
-> The main concern against below patch was the reuse of SELinux Audit
-> fields. For such reuse, Stephen asked for an explicit ACK from the 
-> Audit devs. I've CCed Steve and Al as a kind request for the ACK.
-> 
-> Patch is re-based and re-tested over James's security/for-linus
-> branch.
-> 
-> Thanks all.
-> 
-> -->
-> 
-> Setup the new Audit hooks for Smack. SELinux Audit rule fields 
-> are recycled to avoid `auditd' userspace modifications.
-> Currently only equality testing is supported on labels acting 
-> as a subject (AUDIT_SUBJ_USER) or as an object (AUDIT_OBJ_USER).
-> 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> I'm still not understanding people who say that.
 
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+Well, I can ... even though SCSI is one of the major users of select in
+the tree.
 
-Had to test it before acking. It's running fine for me.
+The argument goes that abuse of select is very easy to do ... just over
+select on a lot of options.  The result is pieces of the kernel get
+built in and you have a devil of a time trying to work out how to get
+them to be turned off (this is annoying when you get bugs that say
+without feature X enabled, Y bug happens).
 
-> ---
-> 
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 904bdc0..70e4abc 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -26,6 +26,7 @@
->  #include <linux/pipe_fs_i.h>
->  #include <net/netlabel.h>
->  #include <net/cipso_ipv4.h>
-> +#include <linux/audit.h>
->  
->  #include "smack.h"
->  
-> @@ -752,6 +753,18 @@ static int smack_inode_listsecurity(struct inode *inode,
-> char *buffer,
->  	return -EINVAL;
->  }
->  
-> +/**
-> + * smack_inode_getsecid - Extract inode's security id
-> + * @inode: inode to extract the info from
-> + * @secid: where result will be saved
-> + */
-> +static void smack_inode_getsecid(const struct inode *inode, u32 *secid)
-> +{
-> +	struct inode_smack *isp = inode->i_security;
-> +
-> +	*secid = smack_to_secid(isp->smk_inode);
-> +}
-> +
->  /*
->   * File Hooks
->   */
-> @@ -1805,6 +1818,18 @@ static int smack_ipc_permission(struct kern_ipc_perm
-> *ipp, short flag)
->  	return smk_curacc(isp, may);
->  }
->  
-> +/**
-> + * smack_ipc_getsecid - Extract smack security id
-> + * @ipcp: the object permissions
-> + * @secid: where result will be saved
-> + */
-> +static void smack_ipc_getsecid(struct kern_ipc_perm *ipp, u32 *secid)
-> +{
-> +	char *smack = ipp->security;
-> +
-> +	*secid = smack_to_secid(smack);
-> +}
-> +
->  /* module stacking operations */
->  
->  /**
-> @@ -2382,6 +2407,124 @@ static int smack_key_permission(key_ref_t key_ref,
->  #endif /* CONFIG_KEYS */
->  
->  /*
-> + * Smack Audit hooks
-> + *
-> + * Audit requires a unique representation of each Smack specific
-> + * rule. This unique representation is used to distinguish the
-> + * object to be audited from remaining kernel objects and also
-> + * works as a glue between the audit hooks.
-> + *
-> + * Since repository entries are added but never deleted, we'll use
-> + * the smack_known label address related to the given audit rule as
-> + * the needed unique representation. This also better fits the smack
-> + * model where nearly everything is a label.
-> + */
-> +#ifdef CONFIG_AUDIT
-> +
-> +/**
-> + * smack_audit_rule_init - Initialize a smack audit rule
-> + * @field: audit rule fields given from user-space (audit.h)
-> + * @op: required testing operator (=, !=, >, <, ...)
-> + * @rulestr: smack label to be audited
-> + * @vrule: pointer to save our own audit rule representation
-> + *
-> + * Prepare to audit cases where (@field @op @rulestr) is true.
-> + * The label to be audited is created if necessay.
-> + */
-> +static int smack_audit_rule_init(u32 field, u32 op, char *rulestr, void
-> **vrule)
-> +{
-> +	char **rule = (char **)vrule;
-> +	*rule = NULL;
-> +
-> +	if (field != AUDIT_SUBJ_USER && field != AUDIT_OBJ_USER)
-> +		return -EINVAL;
-> +
-> +	if (op != AUDIT_EQUAL && op != AUDIT_NOT_EQUAL)
-> +		return -EINVAL;
-> +
-> +	*rule = smk_import(rulestr, 0);
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * smack_audit_rule_known - Distinguish Smack audit rules
-> + * @krule: rule of interest, in Audit kernel representation format
-> + *
-> + * This is used to filter Smack rules from remaining Audit ones.
-> + * If it's proved that this rule belongs to us, the
-> + * audit_rule_match hook will be called to do the final judgement.
-> + */
-> +static int smack_audit_rule_known(struct audit_krule *krule)
-> +{
-> +	struct audit_field *f;
-> +	int i;
-> +
-> +	for (i = 0; i < krule->field_count; i++) {
-> +		f = &krule->fields[i];
-> +
-> +		if (f->type == AUDIT_SUBJ_USER || f->type == AUDIT_OBJ_USER)
-> +			return 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * smack_audit_rule_match - Audit given object ?
-> + * @secid: security id for identifying the object to test
-> + * @field: audit rule flags given from user-space
-> + * @op: required testing operator
-> + * @vrule: smack internal rule presentation
-> + * @actx: audit context associated with the check
-> + *
-> + * The core Audit hook. It's used to take the decision of
-> + * whether to audit or not to audit a given object.
-> + */
-> +static int smack_audit_rule_match(u32 secid, u32 field, u32 op, void *vrule,
-> +				  struct audit_context *actx)
-> +{
-> +	char *smack;
-> +	char *rule = vrule;
-> +
-> +	if (!rule) {
-> +		audit_log(actx, GFP_KERNEL, AUDIT_SELINUX_ERR,
-> +			  "Smack: missing rule\n");
-> +		return -ENOENT;
-> +	}
-> +
-> +	if (field != AUDIT_SUBJ_USER && field != AUDIT_OBJ_USER)
-> +		return 0;
-> +
-> +	smack = smack_from_secid(secid);
-> +
-> +	/*
-> +	 * No need to do string comparisons. If a match occurs,
-> +	 * both pointers will point to the same smack_known
-> +	 * label.
-> +	 */
-> +	if (op == AUDIT_EQUAL)
-> +		return (rule == smack);
-> +	if (op == AUDIT_NOT_EQUAL)
-> +		return (rule != smack);
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * smack_audit_rule_free - free smack rule representation
-> + * @vrule: rule to be freed.
-> + *
-> + * No memory was allocated.
-> + */
-> +static void smack_audit_rule_free(void *vrule)
-> +{
-> +	/* No-op */
-> +}
-> +
-> +#endif /* CONFIG_AUDIT */
-> +
-> +/*
->   * smack_secid_to_secctx - return the smack label for a secid
->   * @secid: incoming integer
->   * @secdata: destination
-> @@ -2467,6 +2610,7 @@ struct security_operations smack_ops = {
->  	.inode_getsecurity = 		smack_inode_getsecurity,
->  	.inode_setsecurity = 		smack_inode_setsecurity,
->  	.inode_listsecurity = 		smack_inode_listsecurity,
-> +	.inode_getsecid =		smack_inode_getsecid,
->  
->  	.file_permission = 		smack_file_permission,
->  	.file_alloc_security = 		smack_file_alloc_security,
-> @@ -2497,6 +2641,7 @@ struct security_operations smack_ops = {
->  	.task_to_inode = 		smack_task_to_inode,
->  
->  	.ipc_permission = 		smack_ipc_permission,
-> +	.ipc_getsecid =			smack_ipc_getsecid,
->  
->  	.msg_msg_alloc_security = 	smack_msg_msg_alloc_security,
->  	.msg_msg_free_security = 	smack_msg_msg_free_security,
-> @@ -2541,12 +2686,22 @@ struct security_operations smack_ops = {
->  	.sk_free_security = 		smack_sk_free_security,
->  	.sock_graft = 			smack_sock_graft,
->  	.inet_conn_request = 		smack_inet_conn_request,
-> +
->   /* key management security hooks */
->  #ifdef CONFIG_KEYS
->  	.key_alloc = 			smack_key_alloc,
->  	.key_free = 			smack_key_free,
->  	.key_permission = 		smack_key_permission,
->  #endif /* CONFIG_KEYS */
-> +
-> + /* Audit hooks */
-> +#ifdef CONFIG_AUDIT
-> +	.audit_rule_init =		smack_audit_rule_init,
-> +	.audit_rule_known =		smack_audit_rule_known,
-> +	.audit_rule_match =		smack_audit_rule_match,
-> +	.audit_rule_free =		smack_audit_rule_free,
-> +#endif /* CONFIG_AUDIT */
-> +
->  	.secid_to_secctx = 		smack_secid_to_secctx,
->  	.secctx_to_secid = 		smack_secctx_to_secid,
->  	.release_secctx = 		smack_release_secctx,
-> 
-> -- 
-> 
-> "Better to light a candle, than curse the darkness"
-> 
-> Ahmed S. Darwish
-> Homepage: http://darwish.07.googlepages.com
-> Blog: http://darwish-07.blogspot.com
-> 
-> 
-> 
+Conversely depends has the opposite problem: config options disappear
+for no readily apparent reason (at least until you read the Kconfig
+file, then it becomes apparent).
+
+What I try to do in SCSI is sort our Kconfig features into primary and
+subsidiary, so primary features (like HBA drivers) are allowed to select
+subsidiary features (like transport classes).  However, for most other
+cases, we use depends instead.
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+> Yes, select has problems, in that it doesn't guarantee dependencies.
+
+Yes, over use of select trips across this fairly quickly.
+
+> But that said, select is a whole lot better than having simply *different* 
+> behaviour (or build errors) depending on totally unrelated config options.
+> 
+> So people: stop this total *idiocy* with "select is bad". It's not. The 
+> lack of select is *much* worse.
+> 
+> If you want LIBSAS to have two different modes, how about just making that 
+> explicit in the configuration, ie using something like
+> 
+> 	config LIBSAS_SET_ADDR
+> 		bool "Provide user-settable SAS address" 
+> 		depends on SCSI_SAS_LIBSAS
+> 		help
+> 		  This allows a runtime "firmware" loader that loads the 
+> 		  SAS address
+> 
+> 	config LIBSAS_SET_ADDR_FWLOAD
+> 		tristate
+> 		depends on SCSI_SAS_LIBSAS && LIBSAS_SET_ADDR
+> 		default y
+> 		select FW_LOADER
+
+Yes, that works for libsas ... but what do we do about the prototypes in
+firmware.h ... just take away the stub and force everything relying on
+it to break so we can put in a Kconfig sequence like the above?
+
+> and now you have the explicit option to turn it on or off - and FW_LOADER 
+> is loaded appropriately.
+> 
+> > Even if I changed it to select, a user could still defeat it by making
+> > CONFIG_SCSI_AIC94XX=y (because now the initialisation is before early
+> > boot userland, so the request always fails).
+> 
+> Not true. That's why we have initrd and ramdisks etc.
+
+They don't currently seem to work for compiled in drivers ... we have
+the same issue with drivers that actually need firmware (like aic94xx or
+qla2xxx): no-one seems to have figured out how to provide it for them;
+it seems the device is already initialised and has failed to find its
+firmware before the initrd/initramfs is running.
+
+> Not that any normal people will ever care about LIBSAS, but anyway.. The 
+> ones that do care about these kinds of things are probably happy to have 
+> special initrd images.
+
+Right ... that's more or less my argument about how far do we really
+need to go to make Kconfig foolproof.
+
+James
+
+
