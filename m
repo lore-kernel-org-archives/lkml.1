@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbYDSRhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761967AbYDSRit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbYDSRhN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 13:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbYDSRgs
+	id S1761967AbYDSRit (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 13:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYDSRim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 13:36:48 -0400
-Received: from mail.queued.net ([207.210.101.209]:2756 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755308AbYDSRgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 13:36:48 -0400
-Date: Sat, 19 Apr 2008 13:39:15 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, jordan.crouse@amd.com,
-       Mitch Bradley <wmb@firmworks.com>
-Subject: [PATCH 2/2] OLPC: drop pre-OpenFirmware workarounds
-Message-ID: <20080419133915.07bc0f69@ephemeral>
+	Sat, 19 Apr 2008 13:38:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47208 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755214AbYDSRil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 13:38:41 -0400
+Date: Sat, 19 Apr 2008 10:38:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: jfannin@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       jordan.crouse@amd.com
+Subject: Re: 2.6.25-mm1
+Message-Id: <20080419103833.8b609319.akpm@linux-foundation.org>
 In-Reply-To: <20080419092544.378664a8@ephemeral>
 References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
 	<20080419031024.GC3503@nineveh.local>
 	<20080418202925.b18452c5.akpm@linux-foundation.org>
 	<20080419092544.378664a8@ephemeral>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,103 +30,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Sat, 19 Apr 2008 09:25:44 -0400 Andres Salomon <dilinger@queued.net> wrote:
+> On Fri, 18 Apr 2008 20:29:25 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 18 Apr 2008 23:10:24 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
+> > 
+> > > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+> > > >
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/
+> > > 
+> > > New, in 2.6.25-mm1 is a hang I'm seeing, just after the kernel prints:
+> > > 
+> > > "[    0.160375] NET: Registered protocol family 16"
+> > > 
+> > > The hang lasts about five minutes, and then boot continues.
+> > 
+> > Please add initcall_debug to the kernel boot command line - that should
+> > narrow it down.
+> > 
+> > >  Just
+> > > after that, a backtrace is printed; I don't know if it's related.  The
+> > > backtrace will follow.
+> > > 
+> > > This does not occur in mainline.  It seems it might be related to OLPC
+> > > support -- I enabled all those options -- but that's not good
+> > > behavior, and I see no warning of thus in the help.
+> > > 
+> > > I'm sending a number or reports against 2.6.25-mm1, so I've put my
+> > > dmesg and .config on a server:
+> > > 
+> > > http://home.columbus.rr.com/jfannin3/dmesg.txt
+> > > http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+> > > 
+> > > [    0.160375] NET: Registered protocol family 16
+> > > [  400.782683] ------------[ cut here ]------------
+> > > [  400.782832] WARNING: at arch/x86/mm/ioremap.c:158 __ioremap_caller+0x27d/0x2e0()
+> > > [  400.783022] Modules linked in:
+> > > [  400.783169] Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #7
+> > > [  400.783300]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
+> > > [  400.783480]  [<c0106c2e>] ? profile_pc+0x3e/0x50
+> > > [  400.783682]  [<c01374ee>] ? irq_exit+0x4e/0xa0
+> > > [  400.783879]  [<c0115aec>] ? smp_apic_timer_interrupt+0x5c/0x90
+> > > [  400.784087]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > > [  400.784298]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> > > [  400.784506]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > > [  400.784706]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> > > [  400.784906]  [<c011d0e6>] ? page_is_ram+0xa6/0xd0
+> > > [  400.785059]  [<c011d4ed>] __ioremap_caller+0x27d/0x2e0
+> > > [  400.785221]  [<c03569d8>] ? _spin_unlock_irqrestore+0x48/0x80
+> > > [  400.785421]  [<c017f4cd>] ? ftrace_record_ip+0x7d/0x250
+> > > [  400.785621]  [<c0474801>] ? olpc_init+0x31/0x140
+> > > [  400.785817]  [<c011d59f>] ioremap_nocache+0x1f/0x30
+> > > [  400.785976]  [<c0474801>] ? olpc_init+0x31/0x140
+> > > [  400.786165]  [<c0474801>] olpc_init+0x31/0x140
+> > > [  400.786318]  [<c0464992>] kernel_init+0x142/0x2d0
+> > > [  400.786479]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> > > [  400.786680]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> > > [  400.786879]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> > > [  400.787069]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> > > [  400.787260]  [<c0104d9b>] kernel_thread_helper+0x7/0x10
+> > > [  400.787422]  =======================
+> > > [  400.787727] ---[ end trace 4eaa2a86a8e2da22 ]---
+> > 
+> > <looks at this again>
+> > 
+> > That's
+> > 
+> >                 WARN_ON_ONCE(is_ram);
+> > 
+> > the changelog for the patch which added that warning is information-free
+> > and there's no code comment explaining what went wrong, which makes things
+> > rather harder than they ought to be.
+> > 
+> > Yes it's due to the new OLPC code.  olpc_init() has
+> > 
+> > 	romsig = ioremap(0xffffffc0, 16);
+> > 
+> > which we probably just shouldn't do this at all unless we're running on the
+> > OLPC hardware.  But we need to do this to find out if we're running on the OLPC
+> > hardware!  Perhaps the warning should just be removed.
+> 
+> Hm.  We could either protect that code with an:
+> 
+> if (!is_geode())
+>   return;
+> 
+> Or I could add the OpenFirmware patches which would allow us to get
+> rid of this code, and instead check for the existence of OFW using
+> that.
+> 
+> The former is quick and easy; the latter is (imo) nicer, so long as
+> people don't have problems w/ the OFW code.  :)
+> 
 
-Prior to including OFW kernel support, we had to work around the lack of
-OFW.  Once OFW support is added, we can switch to using it.  This cleans
-up some pre-OFW model detection and OFW signature detection.
+Do both ;)
 
-Note: this should be a bit nicer to non-OLPC hardware.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- arch/x86/kernel/olpc.c |   43 +++++++++++++++++++++++++++++--------------
- 1 files changed, 29 insertions(+), 14 deletions(-)
-
-diff --git a/arch/x86/kernel/olpc.c b/arch/x86/kernel/olpc.c
-index 11670be..3a05683 100644
---- a/arch/x86/kernel/olpc.c
-+++ b/arch/x86/kernel/olpc.c
-@@ -190,11 +190,11 @@ EXPORT_SYMBOL_GPL(olpc_ec_cmd);
- static void __init platform_detect(void)
- {
- 	size_t propsize;
--	u32 rev;
-+	uint32_t rev;
- 
- 	if (ofw("getprop", 4, 1, NULL, "board-revision-int", &rev, 4,
- 			&propsize) || propsize != 4) {
--		printk(KERN_ERR "ofw: getprop call failed!\n");
-+		printk(KERN_ERR "olpc:  ofw getprop call failed!\n");
- 		rev = 0;
- 	}
- 	olpc_platform_info.boardrev = be32_to_cpu(rev);
-@@ -207,26 +207,43 @@ static void __init platform_detect(void)
- }
- #endif
- 
--static int __init olpc_init(void)
-+static int __init ofw_detect(void)
- {
--	unsigned char *romsig;
-+	size_t propsize;
-+	char romsig[20];
-+	ofw_phandle phandle;
- 
--	spin_lock_init(&ec_lock);
-+	/* Fetch /openprom/model */
-+	if (ofw("finddevice", 1, 1, "/openprom", &phandle) || phandle == ~0)
-+		return -ENODEV;
- 
--	romsig = ioremap(0xffffffc0, 16);
--	if (!romsig)
--		return 0;
-+	if (ofw("getprop", 4, 1, phandle, "model", &romsig, sizeof(romsig),
-+			&propsize) || propsize < 7)
-+		return -ENODEV;
- 
-+	/* String should look something like "CL1   Q2D08  Q2D" */
- 	if (strncmp(romsig, "CL1   Q", 7))
--		goto unmap;
-+		return -ENODEV;
- 	if (strncmp(romsig+6, romsig+13, 3)) {
--		printk(KERN_INFO "OLPC BIOS signature looks invalid.  "
-+		printk(KERN_INFO "olpc:  BIOS signature looks invalid.  "
- 				"Assuming not OLPC\n");
--		goto unmap;
-+		return -ENODEV;
- 	}
- 
--	printk(KERN_INFO "OLPC board with OpenFirmware %.16s\n", romsig);
-+	/* Looks like we have OLPC's OFW */
- 	olpc_platform_info.flags |= OLPC_F_PRESENT;
-+	printk(KERN_INFO "olpc:  board with OpenFirmware %.16s\n", romsig);
-+
-+	return 0;
-+}
-+
-+static int __init olpc_init(void)
-+{
-+	spin_lock_init(&ec_lock);
-+
-+	/* ensure OFW is available */
-+	if (ofw_detect())
-+		return 0;
- 
- 	/* get the platform revision */
- 	platform_detect();
-@@ -248,8 +265,6 @@ static int __init olpc_init(void)
- 			olpc_platform_info.boardrev >> 4,
- 			olpc_platform_info.ecver);
- 
--unmap:
--	iounmap(romsig);
- 	return 0;
- }
- 
--- 
-1.5.4.4
-
-
-
--- 
-Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
+The quick-n-easy version sounds suitable for now.
