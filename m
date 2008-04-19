@@ -1,43 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYDST0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYDSTld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbYDST0c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 15:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYDST00
+	id S1757025AbYDSTld (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 15:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYDSTlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 15:26:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37039 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755179AbYDST0Z (ORCPT
+	Sat, 19 Apr 2008 15:41:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47338 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbYDSTlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 15:26:25 -0400
-Message-ID: <480A4693.3050208@zytor.com>
-Date: Sat, 19 Apr 2008 15:22:59 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sat, 19 Apr 2008 15:41:22 -0400
+Date: Sat, 19 Apr 2008 21:42:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com, linux-wireless@vger.kernel.org
+Subject: w35und: one more unneccessary function
+Message-ID: <20080419194206.GA17558@elf.ucw.cz>
 MIME-Version: 1.0
-To: w@1wt.eu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.4.36.3
-References: <20080419145327.GA23566@hera.kernel.org>
-In-Reply-To: <20080419145327.GA23566@hera.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> Hi !
-> 
-> I've just released Linux 2.4.36.3.
-> 
-> Nothing outstanding here, I've just decided to release pending fixes.
-> Those already running 2.4.36.2 have no particular reason to upgrade,
-> unless they already experience troubles in the fixed areas.
-> 
+Remove one more unnecessary function.
 
-Any reason to have 2.4.x.y instead of just 2.4.x+y?  I find it somewhat 
-hard to believe there is substantial new development on 2.4, so it 
-really should be all "stable".
+---
+commit 8cf2b466620bd533acf20596be1fabfc0b46d992
+tree e0bf7b039e545bede22980048669557fc49490e4
+parent 6627ff26a459db3e792ec4dc194122c133c150a5
+author Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 21:41:31 +0200
+committer Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 21:41:31 +0200
 
-	-hpa
+ .../net/wireless/winbond/winbondport/mlmetxrx.c    |   57 -----------------------
+ 1 files changed, 0 insertions(+), 57 deletions(-)
+
+diff --git a/drivers/net/wireless/winbond/winbondport/mlmetxrx.c b/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
+index dcfdfd4..f58e458 100644
+--- a/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
++++ b/drivers/net/wireless/winbond/winbondport/mlmetxrx.c
+@@ -298,62 +298,5 @@ MLMERcvFrame(
+ 	#endif
+     return;
+ }
+-#ifdef _IBSS_BEACON_SEQ_STICK_
+-s8 SendBCNullData(PWB32_ADAPTER Adapter, u16 wIdx)
+-{
+-
+-	PUCHAR	msg;
+-	struct Data_Frame* msgHeader;
+-
+-	if ((msg=MLMEGetMMPDUBuffer(Adapter))==NULL)
+-	{
+-		Adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
+-		return -1;  // fail get free msg buffer
+-	}
+-	//wConnectIdx = psLOCAL->wConnectedSTAindex;
+-	msgHeader = (struct Data_Frame *) &msg[0];
+-
+-	// setup Frame-Header subfields
+-	msgHeader->frame_control.mac_frame_info = MAC_SUBTYPE_DATA_NULL;
+-	if (psBSS(wIdx)->bBssType == ESS_NET)
+-	    msgHeader->frame_control.to_ds      = 1;
+-	else
+-	    msgHeader->frame_control.to_ds      = 0;
+-    msgHeader->frame_control.from_ds    = 0;
+-	msgHeader->frame_control.more_frag 	= 0;
+-    msgHeader->frame_control.retry      = 0;
+-	msgHeader->frame_control.more_data 	= 0;
+-    msgHeader->frame_control.order      = 0;
+-	//if (PowerMode  == PWR_SAVE)
+-	//    msgHeader->frame_control.pwr_mgt    = 1;
+-	//else
+-    	msgHeader->frame_control.pwr_mgt    = 0;
+-    msgHeader->frame_control.WEP        = 0;
+-    msgHeader->duration                 = 0;    // Set by the MDS
+-	
+-	//memcpy(msgHeader->Addr1, psBSS(Adapter->sLocalPara.wConnectedSTAindex)->abBssID,MAC_ADDR_LENGTH);
+-	memcpy( msgHeader->Addr1, "\xff\xff\xff\xff\xff\xff", MAC_ADDR_LENGTH );
+-	//memset(msgHeader->Addr1, 0x55, MAC_ADDR_LENGTH);
+-	memcpy( msgHeader->Addr2, Adapter->sLocalPara.ThisMacAddress, MAC_ADDR_LENGTH );
+-	memcpy( msgHeader->Addr3, psBSS(wIdx)->abBssID, MAC_ADDR_LENGTH );
+-	// FrameSequenceNumber is generated by HW-MAC
+-
+-	OS_MEMORY_CLEAR( &msgHeader->Sequence_Control, MAC_ADDR_LENGTH );
+-
+-    // now send this message out
+-	if (1 == MLMESendFrame( Adapter,
+-					(u8 *) &msg[0],
+-					//sizeof(struct Data_Frame) - 6,
+-					sizeof(struct Data_Frame),
+-					FRAME_TYPE_802_11_DATA))
+-        return 1;                           // Has sent to the Tx handler.
+-	else
+-	{
+-		//return MLME buffer
+-		MLMEfreeMMPDUBuffer(Adapter, msg);
+-		return -1;
+-	}
+-}
+-#endif
+ 
+ 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
