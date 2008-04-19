@@ -1,60 +1,414 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYDSOYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761899AbYDSOeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYDSOYG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 10:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbYDSOXr
+	id S1761899AbYDSOeF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 10:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYDSOdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 10:23:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56807 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759339AbYDSOXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 10:23:45 -0400
-Date: Sat, 19 Apr 2008 16:23:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080419142329.GA5339@elte.hu>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org>
+	Sat, 19 Apr 2008 10:33:53 -0400
+Received: from vs147137.vserver.de ([62.75.147.137]:41813 "EHLO
+	vs147137.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756473AbYDSOdu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 10:33:50 -0400
+X-Greylist: delayed 1831 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 10:33:49 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=cryonet.de; h=message-id:date:
+	from:reply-to:mime-version:to:subject:content-type:
+	content-transfer-encoding; q=dns; s=cryonet; b=cgCCy9084axBDM8g+
+	TDhe+fvC6Di9CFnV2E5q293P0DuzLe4OPO4T8n7zJbq0P9sV0OQ6iGUafu//gO3o
+	OMU5PPOoqAl6O3Xvi5T+HFiEwFeBw4MqHJBfqHpNbVfG7G5nIH/dsofqbBx73g40
+	nUx1hGtSEdgCNZol8uvmNb5QMs=
+Message-ID: <4809FB9F.3080004@cryonet.de>
+Date: Sat, 19 Apr 2008 16:03:11 +0200
+From: Sven Andersen <s.andersen@cryonet.de>
+Reply-To: s.andersen@cryonet.de
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080418142934.38ce6bf4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: mISDN 1.1.7.2 fails with kernel 2.6.25
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This still happens with mISDN 1.1.7.2 and kernel 2.6.25 on 2nd call with asterisk. Last working kernel is 2.6.23. Any ideas?
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> >  config 4KSTACKS
-> >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > -	depends on DEBUG_KERNEL
-> >  	depends on X86_32
-> > +	default y
-> 
-> This patch will cause kernels to crash.
 
-what mainline kernels crash and how will they crash? Fedora and other 
-distros have had 4K stacks enabled for years:
-
-  $ grep 4K /boot/config-2.6.24-9.fc9
-  CONFIG_4KSTACKS=y
-
-and we've conducted tens of thousands of bootup tests with all sorts of 
-drivers and kernel options enabled and have yet to see a single crash 
-due to 4K stacks. So basically the kernel default just follows the 
-common distro default now. (distros and users can still disable it)
-
-	Ingo
+[19.04.2008 15:44:25] lanserver: kobject (ffff8100a751b5e0): tried to init an initialized object, something is seriously wrong. [kern][err]
+[19.04.2008 15:44:25] lanserver: Pid: 16053, comm: mISDNd Not tainted 2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:25] lanserver:  [kern][warning]
+[19.04.2008 15:44:25] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8030dc77>] kobject_init+0x87/0x90 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff80395eec>] class_device_initialize+0x1c/0x30 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff80396609>] class_device_register+0x9/0x20 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff88349f40>] :mISDN_core:mISDN_register_sysfs_inst+0x40/0x1e0 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff88343276>] :mISDN_core:register_layer+0x156/0x260 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff883413dd>] :mISDN_core:mISDN_ctrl+0x15d/0x7d0 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8022baa8>] hrtick_set+0x78/0x140 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8834289e>] :mISDN_core:set_stack+0xde/0x290 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff88341591>] :mISDN_core:mISDN_ctrl+0x311/0x7d0 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8834221b>] :mISDN_core:mISDN_module_unregister+0x28b/0x360 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff80245800>] autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8020c0d8>] child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff88342040>] :mISDN_core:mISDN_module_unregister+0xb0/0x360 [kern][warning]
+[19.04.2008 15:44:25] lanserver: [<ffffffff8020c0ce>] child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:25] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: kobject (ffff8100a751b3b0): tried to init an initialized object, something is seriously wrong. [kern][err]
+[19.04.2008 15:44:26] lanserver: Pid: 16053, comm: mISDNd Not tainted 2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030dc77>] kobject_init+0x87/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80395eec>] class_device_initialize+0x1c/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80396609>] class_device_register+0x9/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88349f40>] :mISDN_core:mISDN_register_sysfs_inst+0x40/0x1e0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88343276>] :mISDN_core:register_layer+0x156/0x260 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883413dd>] :mISDN_core:mISDN_ctrl+0x15d/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8022baa8>] hrtick_set+0x78/0x140 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834289e>] :mISDN_core:set_stack+0xde/0x290 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88341591>] :mISDN_core:mISDN_ctrl+0x311/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834221b>] :mISDN_core:mISDN_module_unregister+0x28b/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80245800>] autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0d8>] child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88342040>] :mISDN_core:mISDN_module_unregister+0xb0/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0ce>] child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: sysfs: duplicate filename \'inst-50010100\' can not be created [kern][warning]
+[19.04.2008 15:44:26] lanserver: ------------[ cut here ]------------ [kern][warning]
+[19.04.2008 15:44:26] lanserver: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one+0x9a/0xc0() [kern][warning]
+[19.04.2008 15:44:26] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:44:26] lanserver: Pid: 16053, comm: mISDNd Not tainted 2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80230b54>] warn_on_slowpath+0x64/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80231b8e>] printk+0x4e/0x60 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d7bd0>] sysfs_ilookup_test+0x0/0x10 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802a0458>] ifind+0x48/0xc0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d7e49>] sysfs_find_dirent+0x29/0x40 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d7efa>] sysfs_add_one+0x9a/0xc0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d84d0>] create_dir+0x60/0xc0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d8561>] sysfs_create_dir+0x31/0x50 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030de32>] kobject_get+0x12/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030df8f>] kobject_add_internal+0xdf/0x1c0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e183>] kobject_add_varg+0x73/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80231b8e>] printk+0x4e/0x60 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e584>] kobject_add+0x54/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020ca1d>] show_trace+0x4d/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030de32>] kobject_get+0x12/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80395e14>] class_get+0x14/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff803962c1>] class_device_add+0xc1/0x400 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030dc23>] kobject_init+0x33/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88349f40>] :mISDN_core:mISDN_register_sysfs_inst+0x40/0x1e0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88343276>] :mISDN_core:register_layer+0x156/0x260 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883413dd>] :mISDN_core:mISDN_ctrl+0x15d/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8022baa8>] hrtick_set+0x78/0x140 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834289e>] :mISDN_core:set_stack+0xde/0x290 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88341591>] :mISDN_core:mISDN_ctrl+0x311/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834221b>] :mISDN_core:mISDN_module_unregister+0x28b/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80245800>] autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0d8>] child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88342040>] :mISDN_core:mISDN_module_unregister+0xb0/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0ce>] child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:44:26] lanserver: kobject_add_internal failed for inst-50010100 with -EEXIST, don\'t try to register things with the same name in the same directory. [kern][err]
+[19.04.2008 15:44:26] lanserver: Pid: 16053, comm: mISDNd Not tainted 2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e023>] kobject_add_internal+0x173/0x1c0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e183>] kobject_add_varg+0x73/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80231b8e>] printk+0x4e/0x60 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e584>] kobject_add+0x54/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020ca1d>] show_trace+0x4d/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030de32>] kobject_get+0x12/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80395e14>] class_get+0x14/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff803962c1>] class_device_add+0xc1/0x400 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030dc23>] kobject_init+0x33/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88349f40>] :mISDN_core:mISDN_register_sysfs_inst+0x40/0x1e0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88343276>] :mISDN_core:register_layer+0x156/0x260 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883413dd>] :mISDN_core:mISDN_ctrl+0x15d/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8022baa8>] hrtick_set+0x78/0x140 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834289e>] :mISDN_core:set_stack+0xde/0x290 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88341591>] :mISDN_core:mISDN_ctrl+0x311/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834221b>] :mISDN_core:mISDN_module_unregister+0x28b/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80245800>] autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0d8>] child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88342040>] :mISDN_core:mISDN_module_unregister+0xb0/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0ce>] child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: register_layer: register_sysfs failed -17 st(10010100) inst(50010100) [kern][err]
+[19.04.2008 15:44:26] lanserver: general protection fault: 0000 [1] SMP  [kern][emerg]
+[19.04.2008 15:44:26] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:44:26] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:44:26] lanserver: Pid: 16053, comm: mISDNd Not tainted 2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:26] lanserver: RIP: 0010:[<ffffffff8028742f>]  [<ffffffff8028742f>] __kmalloc_track_caller+0x5f/0x110 [kern][warning]
+[19.04.2008 15:44:26] lanserver: RSP: 0018:ffff8100ba7f3a90  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:44:26] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffff8100ba7f3b98 [kern][warning]
+[19.04.2008 15:44:26] lanserver: RDX: ffffffff802d80cc RSI: 00000000000000d0 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:44:26] lanserver: RBP: 0000000000000286 R08: 00000000fffffffe R09: 000000000000000e [kern][warning]
+[19.04.2008 15:44:26] lanserver: R10: 0000000000000020 R11: 0000000000000010 R12: 00000000000000d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: R13: ffff810001006700 R14: ffffffff802d80cc R15: 00000000000041ed [kern][warning]
+[19.04.2008 15:44:26] lanserver: FS:  00007f3d53df36f0(0000) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:44:26] lanserver: CR2: 00007fffa5438e90 CR3: 00000000a0ebb000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:26] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:44:26] lanserver: Process mISDNd (pid: 16053, threadinfo ffff8100ba7f2000, task ffff8100bb7db6b0) [kern][warning]
+[19.04.2008 15:44:26] lanserver: Stack:  0000000000000000 ffff8100ba5680d0 000000000000000e 00000000000000d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: 0000000000000001 ffffffff8026aeae 0000000000000000 0000000000000000 [kern][warning]
+[19.04.2008 15:44:26] lanserver: 00000000fffffffe ffff8100ba5680d0 0000000000000000 ffffffff802d80cc [kern][warning]
+[19.04.2008 15:44:26] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8026aeae>] ? kstrdup+0x3e/0x70 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d80cc>] ? sysfs_new_dirent+0xec/0x100 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d84ae>] ? create_dir+0x3e/0xc0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80314d31>] ? kvasprintf+0x71/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff802d8561>] ? sysfs_create_dir+0x31/0x50 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030de32>] ? kobject_get+0x12/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030df8f>] ? kobject_add_internal+0xdf/0x1c0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e183>] ? kobject_add_varg+0x73/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030e584>] ? kobject_add+0x54/0x80 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030de32>] ? kobject_get+0x12/0x20 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80395e14>] ? class_get+0x14/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff803962c1>] ? class_device_add+0xc1/0x400 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8030dc23>] ? kobject_init+0x33/0x90 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88349f40>] ? :mISDN_core:mISDN_register_sysfs_inst+0x40/0x1e0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88343276>] ? :mISDN_core:register_layer+0x156/0x260 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8023aa04>] ? lock_timer_base+0x34/0x70 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883415a0>] ? :mISDN_core:mISDN_ctrl+0x320/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8023abcd>] ? __mod_timer+0xbd/0xe0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883977ae>] ? :mISDN_dsp:init_module+0x64e/0x1970 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88341ae1>] ? :mISDN_core:get_next_instance+0x91/0x1c0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff883428bb>] ? :mISDN_core:set_stack+0xfb/0x290 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88341591>] ? :mISDN_core:mISDN_ctrl+0x311/0x7d0 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8834221b>] ? :mISDN_core:mISDN_module_unregister+0x28b/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff80245800>] ? autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0d8>] ? child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff88342040>] ? :mISDN_core:mISDN_module_unregister+0xb0/0x360 [kern][warning]
+[19.04.2008 15:44:26] lanserver: [<ffffffff8020c0ce>] ? child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver:  [kern][warning]
+[19.04.2008 15:44:26] lanserver: Code: 83 ff 10 76 44 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b ac c7 d8 02 00 00 49 8b 5d 00 48 85 db 0f 84 8e 00 00 00 41 8b 45 14 <48> 8b 04 c3 49 89 45 00 55 9d 31 c0 41 c1 ec 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:44:26] lanserver: RIP  [<ffffffff8028742f>] __kmalloc_track_caller+0x5f/0x110 [kern][alert]
+[19.04.2008 15:44:26] lanserver: RSP <ffff8100ba7f3a90> [kern][warning]
+[19.04.2008 15:44:26] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:44:27] lanserver: general protection fault: 0000 [2] SMP  [kern][emerg]
+[19.04.2008 15:44:27] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:44:27] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:44:27] lanserver: Pid: 11636, comm: radvd Tainted: G      D  2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:27] lanserver: RIP: 0010:[<ffffffff802879ed>]  [<ffffffff802879ed>] __kmalloc+0x5d/0x100 [kern][warning]
+[19.04.2008 15:44:27] lanserver: RSP: 0018:ffff8100a0c77dd8  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:44:27] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffffffff802a8185 [kern][warning]
+[19.04.2008 15:44:27] lanserver: RDX: 0000000000000010 RSI: 00000000000080d0 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:44:27] lanserver: RBP: 0000000000000286 R08: 0000000000000000 R09: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:27] lanserver: R10: 0000000000000001 R11: ffffffff802cc6d0 R12: 00000000000080d0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: R13: ffff810001006700 R14: ffff8100978a00c8 R15: ffff8100be3ca100 [kern][warning]
+[19.04.2008 15:44:27] lanserver: FS:  00007fc1dafb16f0(0000) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:44:27] lanserver: CR2: 00007fffa5438e90 CR3: 00000000a776a000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:27] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:44:27] lanserver: Process radvd (pid: 11636, threadinfo ffff8100a0c76000, task ffff8100aea8f6b0) [kern][warning]
+[19.04.2008 15:44:27] lanserver: Stack:  0000000000000000 ffff8100bde6e300 ffffffff88227a40 ffff8100a0fbbcc0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: ffff8100a0fbbcc0 ffffffff802a8185 ffff8100bde6e300 ffff8100ae2416e0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: 0000000000000000 ffffffff802a81d9 00000000000001b6 ffffffff802cd0a9 [kern][warning]
+[19.04.2008 15:44:27] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff802a8185>] ? __seq_open_private+0x25/0x70 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff802a81d9>] ? seq_open_private+0x9/0x20 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff802cd0a9>] ? proc_reg_open+0x59/0x90 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff802cd050>] ? proc_reg_open+0x0/0x90 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff8028a3a1>] ? __dentry_open+0xd1/0x210 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff8028a55a>] ? do_filp_open+0x3a/0x50 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff8028a209>] ? get_unused_fd_flags+0x79/0x130 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff8028a5ca>] ? do_sys_open+0x5a/0xf0 [kern][warning]
+[19.04.2008 15:44:27] lanserver: [<ffffffff8020b2ab>] ? system_call_after_swapgs+0x7b/0x80 [kern][warning]
+[19.04.2008 15:44:27] lanserver:  [kern][warning]
+[19.04.2008 15:44:27] lanserver:  [kern][warning]
+[19.04.2008 15:44:27] lanserver: Code: 48 8b 4c 24 28 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b ac c7 d8 02 00 00 49 8b 5d 00 48 85 db 0f 84 86 00 00 00 41 8b 45 14 <48> 8b 04 c3 49 89 45 00 55 9d 31 c0 41 c1 ec 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:44:27] lanserver: RIP  [<ffffffff802879ed>] __kmalloc+0x5d/0x100 [kern][alert]
+[19.04.2008 15:44:27] lanserver: RSP <ffff8100a0c77dd8> [kern][warning]
+[19.04.2008 15:44:27] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:44:35] lanserver: FaxGetty[13271]: ANSWER: FAX CONNECTION  DEVICE \'/dev/ttyIAX0\' [daemon][info]
+[19.04.2008 15:44:37] lanserver: general protection fault: 0000 [3] SMP  [kern][emerg]
+[19.04.2008 15:44:37] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:44:37] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:44:37] lanserver: Pid: 16549, comm: nmbd Tainted: G      D  2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:37] lanserver: RIP: 0010:[<ffffffff8028742f>]  [<ffffffff8028742f>] __kmalloc_track_caller+0x5f/0x110 [kern][warning]
+[19.04.2008 15:44:37] lanserver: RSP: 0018:ffff810096635d28  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:44:37] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffffffff802edb50 [kern][warning]
+[19.04.2008 15:44:37] lanserver: RDX: ffffffff80294edd RSI: 00000000000000d0 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:44:37] lanserver: RBP: 0000000000000286 R08: 0000000000000000 R09: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:37] lanserver: R10: 0000000000000000 R11: 0000000000000217 R12: 00000000000000d0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: R13: ffff810001006700 R14: ffffffff80294edd R15: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:37] lanserver: FS:  00007fae4867c6f0(0000) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:44:37] lanserver: CR2: 00007fae4723f540 CR3: 0000000096511000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:37] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:44:37] lanserver: Process nmbd (pid: 16549, threadinfo ffff810096634000, task ffff8100966256b0) [kern][warning]
+[19.04.2008 15:44:37] lanserver: Stack:  0000000000000000 ffff8100978a0234 000000000000000f 00000000000000d0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: ffff8100ae0a1980 ffffffff8026aeae ffff8100978a0190 ffff8100ae28e190 [kern][warning]
+[19.04.2008 15:44:37] lanserver: 0000000000000000 ffff8100978a0190 ffff8100ae0a1980 ffffffff80294edd [kern][warning]
+[19.04.2008 15:44:37] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff8026aeae>] ? kstrdup+0x3e/0x70 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff80294edd>] ? vfs_rename+0xed/0x3c0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff802943de>] ? __lookup_hash+0x5e/0x150 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff80296d95>] ? sys_renameat+0x235/0x270 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff802456e0>] ? bit_waitqueue+0x10/0xc0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff802e0790>] ? ext3_delete_inode+0x0/0xf0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff802457d8>] ? wake_up_bit+0x18/0x40 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff8029e0ec>] ? dput+0x2c/0xf0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff80310ff1>] ? __up_read+0x21/0xb0 [kern][warning]
+[19.04.2008 15:44:37] lanserver: [<ffffffff8020b2ab>] ? system_call_after_swapgs+0x7b/0x80 [kern][warning]
+[19.04.2008 15:44:37] lanserver:  [kern][warning]
+[19.04.2008 15:44:37] lanserver:  [kern][warning]
+[19.04.2008 15:44:37] lanserver: Code: 83 ff 10 76 44 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b ac c7 d8 02 00 00 49 8b 5d 00 48 85 db 0f 84 8e 00 00 00 41 8b 45 14 <48> 8b 04 c3 49 89 45 00 55 9d 31 c0 41 c1 ec 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:44:37] lanserver: RIP  [<ffffffff8028742f>] __kmalloc_track_caller+0x5f/0x110 [kern][alert]
+[19.04.2008 15:44:37] lanserver: RSP <ffff810096635d28> [kern][warning]
+[19.04.2008 15:44:37] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:44:43] lanserver: general protection fault: 0000 [4] SMP  [kern][emerg]
+[19.04.2008 15:44:43] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:44:43] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:44:43] lanserver: Pid: 440, comm: kjournald Tainted: G      D  2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:44:43] lanserver: RIP: 0010:[<ffffffff80286633>]  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][warning]
+[19.04.2008 15:44:43] lanserver: RSP: 0018:ffff8100be217cc0  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:44:43] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffffffff80260f73 [kern][warning]
+[19.04.2008 15:44:43] lanserver: RDX: 0000000000000000 RSI: 0000000000011200 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:44:43] lanserver: RBP: 0000000000000286 R08: 0000000000000000 R09: ffff810096542f00 [kern][warning]
+[19.04.2008 15:44:43] lanserver: R10: 0000000000000000 R11: ffffffff8021abc0 R12: ffff810001006700 [kern][warning]
+[19.04.2008 15:44:43] lanserver: R13: 0000000000011200 R14: ffff8100be217cf0 R15: 0000000000000010 [kern][warning]
+[19.04.2008 15:44:43] lanserver: FS:  000000004176c950(0000) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:44:43] lanserver: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:44:43] lanserver: CR2: 00007fae4723f540 CR3: 00000000a0ebb000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:44:43] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:44:43] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:44:43] lanserver: Process kjournald (pid: 440, threadinfo ffff8100be216000, task ffff8100be6b96b0) [kern][warning]
+[19.04.2008 15:44:43] lanserver: Stack:  ffff8100be217ce0 0000000000000000 ffff8100bf61ec00 0000000000011210 [kern][warning]
+[19.04.2008 15:44:43] lanserver: ffff8100bf61ec30 ffffffff80260f73 ffff8100bf1426c0 ffffffff8028511c [kern][warning]
+[19.04.2008 15:44:43] lanserver: ffff8100be65a800 0000000000000287 ffff8100ba888120 ffff8100be65a800 [kern][warning]
+[19.04.2008 15:44:43] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff80260f73>] ? mempool_alloc+0x43/0x120 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8028511c>] ? __slab_free+0x20c/0x360 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802b34e2>] ? bio_alloc_bioset+0x82/0x140 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802b3600>] ? bio_alloc+0x10/0x30 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802af2ff>] ? submit_bh+0x5f/0x120 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802efe4e>] ? journal_do_submit_data+0x2e/0x40 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802f0246>] ? journal_commit_transaction+0x3c6/0xdc0 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8048e4e4>] ? thread_return+0x5f/0x4cb [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8023aa04>] ? lock_timer_base+0x34/0x70 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802f39f8>] ? kjournald+0xd8/0x220 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff80245800>] ? autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802f3920>] ? kjournald+0x0/0x220 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802453fb>] ? kthread+0x4b/0x80 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8020c0d8>] ? child_rip+0xa/0x12 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8021abc0>] ? lapic_next_event+0x0/0x10 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff802453b0>] ? kthread+0x0/0x80 [kern][warning]
+[19.04.2008 15:44:43] lanserver: [<ffffffff8020c0ce>] ? child_rip+0x0/0x12 [kern][warning]
+[19.04.2008 15:44:43] lanserver:  [kern][warning]
+[19.04.2008 15:44:43] lanserver:  [kern][warning]
+[19.04.2008 15:44:43] lanserver: Code: 64 24 18 48 8b 4c 24 28 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b a4 c7 d8 02 00 00 49 8b 1c 24 48 85 db 74 3c 41 8b 44 24 14 <48> 8b 04 c3 49 89 04 24 55 9d 31 c0 41 c1 ed 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:44:43] lanserver: RIP  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][alert]
+[19.04.2008 15:44:43] lanserver: RSP <ffff8100be217cc0> [kern][warning]
+[19.04.2008 15:44:43] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:45:21] lanserver: general protection fault: 0000 [5] SMP  [kern][emerg]
+[19.04.2008 15:45:21] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:45:21] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:45:21] lanserver: Pid: 11318, comm: slapd Tainted: G      D  2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:45:21] lanserver: RIP: 0010:[<ffffffff80286633>]  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: RSP: 0018:ffff8100a76d9c38  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:45:21] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffffffff80260f73 [kern][warning]
+[19.04.2008 15:45:21] lanserver: RDX: 0000000000000000 RSI: 0000000000011200 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:45:21] lanserver: RBP: 0000000000000292 R08: 0000000000000000 R09: ffff810096542a00 [kern][warning]
+[19.04.2008 15:45:21] lanserver: R10: ffffe20001eb0370 R11: 0000000000000000 R12: ffff810001006700 [kern][warning]
+[19.04.2008 15:45:21] lanserver: R13: 0000000000011200 R14: ffff8100a76d9c68 R15: 0000000000000010 [kern][warning]
+[19.04.2008 15:45:21] lanserver: FS:  0000000040d66950(0063) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:45:21] lanserver: CR2: 00007f1168daa300 CR3: 00000000a76d2000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:45:21] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:45:21] lanserver: Process slapd (pid: 11318, threadinfo ffff8100a76d8000, task ffff8100bb7da000) [kern][warning]
+[19.04.2008 15:45:21] lanserver: Stack:  0000000000000000 0000000000000000 ffff8100bf61ec00 0000000000011210 [kern][warning]
+[19.04.2008 15:45:21] lanserver: ffff8100bf61ec30 ffffffff80260f73 00000000000006b8 0000000000000000 [kern][warning]
+[19.04.2008 15:45:21] lanserver: ffffffff802df110 ffffe20001eb0370 ffff8100ae2073b0 ffff8100ae2073b0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff80260f73>] ? mempool_alloc+0x43/0x120 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802b34e2>] ? bio_alloc_bioset+0x82/0x140 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802b3600>] ? bio_alloc+0x10/0x30 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802af2ff>] ? submit_bh+0x5f/0x120 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802b116e>] ? __block_write_full_page+0x18e/0x2e0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802e0aeb>] ? ext3_ordered_writepage+0xbb/0x170 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802650ea>] ? __writepage+0xa/0x30 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802656b4>] ? write_cache_pages+0x234/0x370 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802650e0>] ? __writepage+0x0/0x30 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff8026ea49>] ? handle_mm_fault+0x189/0x730 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff8026584b>] ? do_writepages+0x2b/0x40 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff8025ef32>] ? __filemap_fdatawrite_range+0x52/0x60 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802ae455>] ? do_fsync+0x45/0xe0 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff802ae51e>] ? __do_fsync+0x2e/0x50 [kern][warning]
+[19.04.2008 15:45:21] lanserver: [<ffffffff8020b2ab>] ? system_call_after_swapgs+0x7b/0x80 [kern][warning]
+[19.04.2008 15:45:21] lanserver:  [kern][warning]
+[19.04.2008 15:45:21] lanserver:  [kern][warning]
+[19.04.2008 15:45:21] lanserver: Code: 64 24 18 48 8b 4c 24 28 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b a4 c7 d8 02 00 00 49 8b 1c 24 48 85 db 74 3c 41 8b 44 24 14 <48> 8b 04 c3 49 89 04 24 55 9d 31 c0 41 c1 ed 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:45:21] lanserver: RIP  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][alert]
+[19.04.2008 15:45:21] lanserver: RSP <ffff8100a76d9c38> [kern][warning]
+[19.04.2008 15:45:21] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
+[19.04.2008 15:46:01] lanserver: cron[16560]: (root) CMD (/opt/apache/dsl_test.sh) [cron][info]
+[19.04.2008 15:46:01] lanserver: general protection fault: 0000 [6] SMP  [kern][emerg]
+[19.04.2008 15:46:01] lanserver: CPU 0  [kern][warning]
+[19.04.2008 15:46:01] lanserver: Modules linked in: mISDN_isac mISDN_x25dte mISDN_dtmf mISDN_dsp hfcpci mISDN_capi l3udss1 mISDN_l2 mISDN_l1 mISDN_core ip6t_REJECT ip6t_LOG nf_conntrack_ipv6 ip6table_filter nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun sit tunnel4 sch_sfq act_police cls_u32 sch_ingress sch_htb xt_TCPMSS iptable_raw xt_comment xt_owner xt_policy xt_multiport ipt_ULOG ipt_TTL ipt_ttl ipt_REJECT ipt_REDIRECT ipt_recent ipt_NETMAP ipt_MASQUERADE ipt_LOG ipv6 ipt_ECN ipt_ecn ipt_CLUSTERIP ipt_ah ipt_addrtype nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_pptp nf_nat_proto_gre nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat_amanda xt_tcpmss xt_pkttype xt_NFQUEUE xt_NFLOG xt_MARK xt_mark xt_mac xt_limit xt_length xt_helper xt_hashlimit xt_dccp xt_conntrack xt_CONNMARK xt_connmark xt_CLASSIFY xt_tcpudp xt_state iptable_nat iptable_mangle iptable_filter ip_tables pppoe pppox
+reiserfs sha1_generic arc4 ecb crypto_blkcipher cryptomgr ppp_mppe ppp_generic slhc ip6_tables x_tables nf_conntrack_tftp nf_conntrack_sip nf_conntrack_sane nf_conntrack_proto_sctp nf_conntrack_pptp nf_conntrack_proto_gre nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp ts_kmp nf_conntrack_amanda nf_conntrack usbhid capi capifs kernelcapi ohci_hcd ftdi_sio usbserial usbcore fuse fan powernow_k8 processor dlm configfs k8temp w83627ehf hwmon_vid i2c_nforce2 [kern][warning]
+[19.04.2008 15:46:01] lanserver: Pid: 16560, comm: sh Tainted: G      D  2.6.25-gentoo-r1 #1 [kern][warning]
+[19.04.2008 15:46:01] lanserver: RIP: 0010:[<ffffffff80286633>]  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: RSP: 0018:ffff81009646f918  EFLAGS: 00010006 [kern][warning]
+[19.04.2008 15:46:01] lanserver: RAX: 0000000000000000 RBX: 3030352d74736e69 RCX: ffffffff80260f73 [kern][warning]
+[19.04.2008 15:46:01] lanserver: RDX: 0000000000000000 RSI: 0000000000011280 RDI: ffffffff80601060 [kern][warning]
+[19.04.2008 15:46:01] lanserver: RBP: 0000000000000296 R08: 0000000000000000 R09: ffff810096542800 [kern][warning]
+[19.04.2008 15:46:01] lanserver: R10: 0000000000000400 R11: 0000000000000000 R12: ffff810001006700 [kern][warning]
+[19.04.2008 15:46:01] lanserver: R13: 0000000000011280 R14: ffff81009646f948 R15: 00000000000000d0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: FS:  00007f959ae906f0(0000) GS:ffffffff805f6000(0000) knlGS:00000000f7c5d6d0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b [kern][warning]
+[19.04.2008 15:46:01] lanserver: CR2: 00007f959a5715e0 CR3: 0000000096506000 CR4: 00000000000006e0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [kern][warning]
+[19.04.2008 15:46:01] lanserver: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400 [kern][warning]
+[19.04.2008 15:46:01] lanserver: Process sh (pid: 16560, threadinfo ffff81009646e000, task ffff8100be6b96b0) [kern][warning]
+[19.04.2008 15:46:01] lanserver: Stack:  ffff810001009cc0 0000000000000000 ffff8100bf61ec00 00000000000112d0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: ffff8100bf61ec30 ffffffff80260f73 ffff81009646fa98 ffff81009646fab4 [kern][warning]
+[19.04.2008 15:46:01] lanserver: 000000029795c0c8 ffff81009646faa8 0000000100000246 ffff81000100e8c0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: Call Trace: [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80260f73>] ? mempool_alloc+0x43/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802b34e2>] ? bio_alloc_bioset+0x82/0x140 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802b3600>] ? bio_alloc+0x10/0x30 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802b6d00>] ? mpage_alloc+0x30/0xa0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802b768b>] ? do_mpage_readpage+0x2bb/0x560 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff8025e8aa>] ? add_to_page_cache+0xba/0xd0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802b7b3a>] ? mpage_readpages+0xba/0x100 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802df110>] ? ext3_get_block+0x0/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80264d6b>] ? __alloc_pages+0x5b/0x390 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80266ad3>] ? __do_page_cache_readahead+0x153/0x220 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80266e01>] ? ondemand_readahead+0x111/0x1b0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802606a1>] ? generic_file_aio_read+0x3f1/0x560 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff8028bff9>] ? do_sync_read+0xd9/0x120 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80245800>] ? autoremove_wake_function+0x0/0x30 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff802731c0>] ? vma_link+0x80/0x140 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff8028c905>] ? vfs_read+0xc5/0x160 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80290548>] ? kernel_read+0x38/0x50 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80292058>] ? do_execve+0x128/0x1e0 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff80209759>] ? sys_execve+0x49/0x80 [kern][warning]
+[19.04.2008 15:46:01] lanserver: [<ffffffff8020b67a>] ? stub_execve+0x6a/0xc0 [kern][warning]
+[19.04.2008 15:46:01] lanserver:  [kern][warning]
+[19.04.2008 15:46:01] lanserver:  [kern][warning]
+[19.04.2008 15:46:01] lanserver: Code: 64 24 18 48 8b 4c 24 28 9c 5d fa 65 8b 04 25 24 00 00 00 48 98 4c 8b a4 c7 d8 02 00 00 49 8b 1c 24 48 85 db 74 3c 41 8b 44 24 14 <48> 8b 04 c3 49 89 04 24 55 9d 31 c0 41 c1 ed 0f 48 85 db 0f 95  [kern][emerg]
+[19.04.2008 15:46:01] lanserver: RIP  [<ffffffff80286633>] kmem_cache_alloc+0x43/0xa0 [kern][alert]
+[19.04.2008 15:46:01] lanserver: RSP <ffff81009646f918> [kern][warning]
+[19.04.2008 15:46:01] lanserver: ---[ end trace 5fb25047e8e1a45e ]--- [kern][warning]
