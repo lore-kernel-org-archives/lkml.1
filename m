@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYDSM6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbYDSM71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbYDSM6R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 08:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbYDSM6F
+	id S1759244AbYDSM71 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 08:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYDSM7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 08:58:05 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54188 "EHLO
+	Sat, 19 Apr 2008 08:59:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54733 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754361AbYDSM6E (ORCPT
+	with ESMTP id S1754296AbYDSM7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 08:58:04 -0400
-Date: Sat, 19 Apr 2008 14:58:45 +0200
+	Sat, 19 Apr 2008 08:59:18 -0400
+Date: Sat, 19 Apr 2008 15:00:01 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
        lcostantino@gmail.com
-Subject: w35und: remove key management
-Message-ID: <20080419125845.GA7282@elf.ucw.cz>
+Subject: w35und: ioctls are handled by core, support is dead
+Message-ID: <20080419130001.GA7810@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,375 +25,549 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-key management isdone by softmac, so it became dead code.
-
-key management is dead code that can be removed
+wireless api is dead code that can be removed.
 
 ---
-commit 72ef967c3bdda42a1b39e533650b1588003cbb08
-tree e9308481d119bfe6a85144849e88ace82431614b
-parent ce03f9f145abf2e8be4b69f9ee56cd0e49c8770d
-author Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 14:53:31 +0200
-committer Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 14:53:31 +0200
+commit 08118c99165a5e6c0f6f9e5730175a0708b93b0d
+tree 58d2216bc9728563b9921efba0bed30f74b80212
+parent 72ef967c3bdda42a1b39e533650b1588003cbb08
+author Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 14:59:14 +0200
+committer Pavel <pavel@amd.ucw.cz> Sat, 19 Apr 2008 14:59:14 +0200
 
- drivers/net/wireless/winbond/winbondport/wbhal.c |  335 ----------------------
- 1 files changed, 0 insertions(+), 335 deletions(-)
+ .../winbond/winbondport/linux/new_wireless.c       |  242 ---------------------
+ .../winbond/winbondport/linux/new_wireless.h       |  261 -----------------------
+ drivers/net/wireless/winbond/winbondport/wblinux.c |    2 
+ 3 files changed, 0 insertions(+), 505 deletions(-)
 
-diff --git a/drivers/net/wireless/winbond/winbondport/wbhal.c b/drivers/net/wireless/winbond/winbondport/wbhal.c
-index 0177bc0..55eccde 100644
---- a/drivers/net/wireless/winbond/winbondport/wbhal.c
-+++ b/drivers/net/wireless/winbond/winbondport/wbhal.c
-@@ -8,340 +8,6 @@ void hal_start_tx0(phw_data_t pHwData)
- 		Wb35Tx_start( pHwData );
+diff --git a/drivers/net/wireless/winbond/winbondport/linux/new_wireless.c b/drivers/net/wireless/winbond/winbondport/linux/new_wireless.c
+index 026ac25..f98def1 100644
+--- a/drivers/net/wireless/winbond/winbondport/linux/new_wireless.c
++++ b/drivers/net/wireless/winbond/winbondport/linux/new_wireless.c
+@@ -65,245 +65,3 @@ void FreqToChannelNum(u8 Band, u8 *Chann
+ 		break;
+ 	}
  }
- 
--//-----------------------------------------------------------------------------------
--void hal_remove_mapping_key( phw_data_t pHwData, PUCHAR pmac_addr )
+-
+-int test_get_name(struct net_device *dev,
+-			 struct iw_request_info *info, char *name, char *extra)
 -{
--	u32	i;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_remove_mapping_key\n"));
--	#endif
--
--	for (i=MAPPING_KEY_START_INDEX; i<MAX_KEY_TABLE; i++) {
--		if( OS_MEMORY_COMPARE( pmac_addr, pHwData->Key_slot[i], MAC_ADDR_LENGTH ) )
--			break;
--	}
--	if (i != MAX_KEY_TABLE) { //Find the same index
--		// Clear the mac address
--		memset(pHwData->Key_slot[i], 0, MAC_ADDR_LENGTH);
--
--		// Writing into register to clear the valid bit
--		Wb35Reg_Write( pHwData, 0x0820, 0x0 );//Value
--		i<<=4;
--		i |= 0x4000000;
--		Wb35Reg_Write( pHwData, 0x081c, i );
--	}
+-	strcpy(name, "w35und");
+-	return 0;
 -}
 -
--void hal_remove_default_key( phw_data_t pHwData, u32 i )
+-int test_set_scan(struct net_device *dev,
+-			 struct iw_request_info *info, struct iw_point *srq, char *extra)
 -{
--	u32	ltmp;
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_remove_default_key\n"));
--	#endif
--
--	if (i < 4) {  // For default key index 0 ~ 3
--		//Writing into register to clear the valid bit
--		Wb35Reg_Write( pHwData, 0x0820, 0x0 );//Value
--		ltmp = i<<4;
--		ltmp |= 0x4000000;
--		Wb35Reg_Write( pHwData, 0x081c, ltmp );
--
--		memset(pHwData->Key_slot[i], 0, MAC_ADDR_LENGTH);
--	}
+-	BUG();
 -}
 -
--unsigned char hal_set_mapping_key( phw_data_t pHwData,  PUCHAR pmac_addr,  u8 null_key,
--				   u8 wep_on,  PUCHAR ptx_tsc,  PUCHAR prx_tsc,
--				   u8 key_type,  u8 key_len,  PUCHAR pkey_data )
+-int test_get_scan(struct net_device *dev,
+-		  struct iw_request_info *info, struct iw_point *srq, char *extra)
 -{
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
--	PKEY_TABLE	pKey;
--	PULONG		pltmp;
--	u32		ltmp;
--	u8		Key_content[sizeof(KEY_TABLE)+ 16 + 8 ]; //16 bytes for key content, 8 bytes for burst writing
--	u8		i, j;
--	PUCHAR		pValue;  //20060926 anson's endian
--
--	if( pHwData->SurpriseRemove ) return FALSE;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal mapping key set\n"));
--	for( i=0; i<key_len; i++ )
--		WBDEBUG(("%x ", pkey_data[i] ));
--	WBDEBUG(("\n"));
--	#endif
--
--	// Turn off the reply ACK ability 930409.2
--	// Due to DI-624. If user uses the WPA-PSK mode, driver doesn't
--	// have enough time to setup the pairwise key into hardware.
--	// For getting more time, disable the ACK ability to let the
--	// AP retry to send the next packet which contains the group key data.
--	pWb35Reg->M40_MacControl |= 0x4000;
--	Wb35Reg_Write( pHwData, 0x0840, pWb35Reg->M40_MacControl );
--
--	// Set key table contain
--	memset(Key_content, 0, sizeof(KEY_TABLE)+ 16 + 8); // 8 bytes for burst writing
--	pKey = (PKEY_TABLE)(Key_content + 4 ); // Space 4 byte for burst command
--
--	pValue = (u8 *)pKey;
--	*pValue = 0x01;							//bit 0
--	*pValue |= ((null_key ? 0: 1) << 1);	//bit 1, 35 hardware different with 33
--	*pValue |= (key_type << 2);				//bit 2~3
--	*pValue |= (wep_on << 4);				//bit 4
--	pValue += 2;
--	memcpy(pValue, pmac_addr, sizeof(u16));	//addr 1
--
--	memcpy( &(pKey->DW1_Address2), pmac_addr + 2, sizeof(u32) );
--
--	if (prx_tsc) {
--		pValue = (u8 *)pKey +8 ;  //20060926 anson's endian
--		memcpy( pValue, prx_tsc, 6 ); //20060926 anson's endian
--	}
--	if (ptx_tsc) {
--		pValue = (u8 *)pKey +16;   //20060926 anson's endian
--		memcpy( pValue, ptx_tsc, 6 ); //20060926 anson's endian
--	}
--
--	//fill key content [20060623]
--	memcpy( ((PUCHAR)pKey+sizeof(KEY_TABLE)), pkey_data, key_len );
--
--	j = 0xff;
--	for (i=MAPPING_KEY_START_INDEX; i<MAX_KEY_TABLE; i++) {
--		pValue = (u8 *)pKey + 2;  //20060926 anson's endian
--		if (!memcpy(pValue, pHwData->Key_slot[i], 6)) {
--			pHwData->mapping_key_replace_index = i + 1;
--			if( pHwData->mapping_key_replace_index == MAX_KEY_TABLE )
--				pHwData->mapping_key_replace_index = MAPPING_KEY_START_INDEX;
--			break;
--		}
--
--		if (!memcpy(pHwData->Key_slot[i], "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH ))
--			if (j == 0xff)
--				j = i;//Storing the index which can be used
--	}
--
--	if (i == MAX_KEY_TABLE) { //Not found the entry, get one to use
--		if( j == 0xff )//Is out of resource? If yes, get an elder one index to be replaced
--			i = pHwData->mapping_key_replace_index;
--		else
--			i = j;
--
--		pHwData->mapping_key_replace_index = i + 1;
--		if( pHwData->mapping_key_replace_index == MAX_KEY_TABLE )
--			pHwData->mapping_key_replace_index = MAPPING_KEY_START_INDEX;
--
--		//storing data
--		//--- 20060926 anson's endian
--		// *(PUSHORT)pHwData->Key_slot[i] = (u16)pKey->DW0_Address1; // @@
--		//memcpy( pHwData->Key_slot[i] + 2, &(pKey->DW1_Address2), sizeof(u32) );
--		pValue = (u8 *)pKey + 2;  //20060926 add by anson's endian
--		memcpy( pHwData->Key_slot[i], pValue, 6); //20060926 add by anson's endian
--	}
--
--	// For new hardware supported. Using Burst register write
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("35: Key set start..\n"));
--	#endif
--	pltmp = (PULONG)Key_content;
--	ltmp = i<<4;
--	ltmp |= 0x4000000;
--	pltmp[0] = ltmp; // Burst command
--	pltmp[11] = pltmp[1]; // The last, valid bit set
--	pltmp[1] = 0;// The first, clear the valid bit
--	memcpy( pHwData->Key_content[i], pltmp, sizeof(u32)*12 ); // 20060214 for recover
--        //--- 20060926 add by anson's endian
--        pltmp[0] = cpu_to_le32( ltmp );
--        for (i=0; i<=11; i++)
--		pltmp[i] = cpu_to_le32( pltmp[i] );
--
--        //--- end 20060926 add by anson's endian
--	Wb35Reg_BurstWrite( pHwData, 0x881c, pltmp, 12, IGNORE_INCREMENT );
--
--	// Turn on the reply ACK ability
--	pWb35Reg->M40_MacControl &= ~0x4000;
--	Wb35Reg_Write( pHwData, 0x0840, pWb35Reg->M40_MacControl );
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_set_mapping_key[%d]\n", i));
--	#endif
--
--	return TRUE;
--}
--//---------------------------------------------------------------------------------------------------
--unsigned char hal_set_default_key( phw_data_t pHwData,  u8 index,  u8 null_key,
--				   u8 wep_on,  PUCHAR ptx_tsc,  PUCHAR prx_tsc,
--				   u8 key_type,  u8 key_len,  PUCHAR pkey_data )
--{
--	PKEY_TABLE	pKey;
--	PULONG		pltmp;
--	u32		ltmp;
--	u8		Key_content[sizeof(KEY_TABLE)+ 16 + 8 ]; //16 bytes for key content, 8 bytes for burst writing
--	PUCHAR		pValue;  //20060926 add by anson's endian  
--	u8		i;  //20060926 add by anson's endian
--
--	if( pHwData->SurpriseRemove ) return FALSE;
--
--	#ifdef _PE_STATE_DUMP_
--	{
--		int i;
--
--		WBDEBUG(("hal default key set\n"));
--		for( i=0; i<key_len; i++ )
--			WBDEBUG(("%x ", pkey_data[i] ));
--		WBDEBUG(("\n"));
--	}
--	#endif
--
--	// Set key table contain
--	memset( Key_content, 0, sizeof(KEY_TABLE) + 16 + 8 ); // 8 bytes for burst writing
--	pKey = (PKEY_TABLE)(Key_content + 4 );
--
--	pValue = (u8 *)pKey;
--	*pValue = 0x01;							//bit 0
--	*pValue |= ((null_key ? 0: 1) << 1);	//bit 1, 35 hardware different with 33
--	*pValue |= (key_type << 2);				//bit 2~3
--	*pValue |= (wep_on << 4);				//bit 4
--
--	if (prx_tsc) {
--                pValue = (u8 *)pKey +8; //20060926 anson's endian
--	        memcpy( pValue, prx_tsc, 6 ); //20060926 anson's endian
--	}
--	if( ptx_tsc ) {
--                pValue = (u8 *)pKey+ 16; //20060926 anson's endian
--                memcpy( pValue, ptx_tsc, 6 ); //20060926 anson's endian
--	}
--
--	//fill key content [20060623]
--	memcpy(((PUCHAR)pKey+sizeof(KEY_TABLE)), pkey_data, key_len );
--
--	// 950301.3.a modify
--	pHwData->CurrentDefaultKeyIndex = index;// Backup default key 941130.2
--	pHwData->CurrentDefaultKeyLength = key_len;
--
--	// For new hardware supported. Using Burst register write
--	pltmp = (PULONG)Key_content;
--	ltmp = index<<4;
--		ltmp |= 0x4000000;
--	
--	pltmp[0] = ltmp; // Burst command
--	pltmp[11] = pltmp[1]; // The last, valid bit set
--	pltmp[1] = 0;// The first, clear the valid bit
--	memcpy( pHwData->Key_content[index], pltmp, sizeof(u32)*12 );
--        //---20060926 add by anson's endian
--        pltmp[0] = cpu_to_le32( ltmp );  
--        for( i=0; i<=11; i++)
--               pltmp[i]=cpu_to_le32( pltmp[i]);
--	//--- end 20060926 add by anson's endian
--	Wb35Reg_BurstWrite( pHwData, 0x881c, pltmp, 12, IGNORE_INCREMENT );
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_set_default_key[%d]\n", index));
--	#endif
--
--	return TRUE;
+-	BUG();
 -}
 -
--//--------------------------------------------------------------------------------
--void hal_clear_all_default_key( phw_data_t pHwData )
+-
+-int test_get_freq(struct net_device *dev,
+-			 struct iw_request_info *info, struct iw_freq *freq, char *extra)
 -{
--	u32	pltmp[GROUP_KEY_START_INDEX];
--	u8	i;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_clear_all_default_key\n"));
--	#endif
--
--	// M20 KEY data, set to 0
--	Wb35Reg_Write( pHwData, 0x0820, 0 );
--	// M1c KEY write operation
--	for( i=0; i<GROUP_KEY_START_INDEX; i++ ) {
--		pltmp[i] = i<<4;
--		pltmp[i] |= 0x4000000;
--	}
--	Wb35Reg_BurstWrite( pHwData, 0x081c, pltmp, GROUP_KEY_START_INDEX, NO_INCREMENT );
--	memset( pHwData->Key_slot[0], 0, GROUP_KEY_START_INDEX*8 ); // 20060214 for recover
+-	BUG();
 -}
 -
--//------------------------------------------------------------------------------------
--void hal_clear_all_group_key(phw_data_t pHwData)
+-int test_set_freq(struct net_device *dev,
+-			 struct iw_request_info *info, struct iw_freq *freq, char *extra)
 -{
--	u32	pltmp[MAPPING_KEY_START_INDEX-GROUP_KEY_START_INDEX];
--	u8	i;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_clear_all_group_key\n"));
--	#endif
--
--	// M20 KEY data, set to 0
--	Wb35Reg_Write( pHwData, 0x0820, 0 );
--	// M1c KEY write operation
--	for( i=GROUP_KEY_START_INDEX; i<MAPPING_KEY_START_INDEX; i++ )
--	{
--		pltmp[i-GROUP_KEY_START_INDEX] = i<<4;
--		pltmp[i-GROUP_KEY_START_INDEX] |= 0x4000000;
--	}
--	Wb35Reg_BurstWrite( pHwData, 0x081c, pltmp, MAPPING_KEY_START_INDEX-GROUP_KEY_START_INDEX, NO_INCREMENT );
--	memset( pHwData->Key_slot[GROUP_KEY_START_INDEX], 0, (MAPPING_KEY_START_INDEX-GROUP_KEY_START_INDEX)*8 );
--}
--//---------------------------------------------------------------------------------------------------
--void hal_clear_all_mapping_key( phw_data_t pHwData )
--{
--	u32	pltmp[MAX_KEY_TABLE-MAPPING_KEY_START_INDEX];
--	u8	i;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_clear_all_mapping_key\n"));
--	#endif
--
--	// M20 KEY data, set to 0
--	Wb35Reg_Write( pHwData, 0x0820, 0 );
--	// M1c KEY write operation
--	for( i=MAPPING_KEY_START_INDEX; i<MAX_KEY_TABLE; i++ )
--	{
--		pltmp[i-MAPPING_KEY_START_INDEX] = i<<4;
--		pltmp[i-MAPPING_KEY_START_INDEX] |= 0x4000000;
--	}
--	Wb35Reg_BurstWrite( pHwData, 0x081c, pltmp, MAX_KEY_TABLE-MAPPING_KEY_START_INDEX, NO_INCREMENT );
--
--	pHwData->mapping_key_replace_index = MAPPING_KEY_START_INDEX;
--	memset( pHwData->Key_slot[MAPPING_KEY_START_INDEX], 0, (MAX_KEY_TABLE-MAPPING_KEY_START_INDEX)*8 ); // Modify due to enlarge data struct 6 -> 8
--}
--//---------------------------------------------------------------------------------------------------
--void hal_clear_all_key( phw_data_t pHwData )
--{
--	u32	pltmp[MAX_KEY_TABLE];
--	u8	i;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("hal_clear_all_key\n"));
--	#endif
--
--	// M20 KEY data, set to 0
--	Wb35Reg_Write( pHwData, 0x0820, 0 );
--	// M1c KEY write operation
--	for( i=0; i<MAX_KEY_TABLE; i++ )
--	{
--		pltmp[i] = i<<4;
--		pltmp[i] |= 0x4000000;
--	}
--	Wb35Reg_BurstWrite( pHwData, 0x081c, pltmp, 16, NO_INCREMENT );
--	Wb35Reg_BurstWrite( pHwData, 0x081c, pltmp+16, MAX_KEY_TABLE-16, NO_INCREMENT );
--	memset( pHwData->Key_slot[0], 0, MAX_KEY_TABLE*8 ); // 20060214 for recover
+-   DEBUG("SET FREQ\n");
+-   return 0;
 -}
 -
- void hal_get_ethernet_address( phw_data_t pHwData, PUCHAR current_address )
+-int test_get_range(struct net_device *dev,
+-			  struct iw_request_info *info, struct iw_point *wrq, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_power(struct net_device *dev,
+-			  struct iw_request_info *info, struct iw_param *vwrq, char *extra)
+-{
+-   vwrq->disabled = 1;
+-   return 0;
+-}
+-
+-//get mode desde la estructura interna definida por el original
+-int test_get_mode(struct net_device *dev,
+-			 struct iw_request_info *info, __u32 *mode, char *extra)
+-{
+-	BUG();
+-
+-}
+-
+-int test_set_mode(struct net_device *dev,
+-			 struct iw_request_info *info, __u32 *mode, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_rate(struct net_device *dev,
+-			 struct iw_request_info *info, struct iw_param *rrq, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_rate(struct net_device *dev,
+-			 struct iw_request_info *info, struct iw_param *rrq, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_rts(struct net_device *dev, struct iw_request_info *info,
+-			struct iw_param *rts, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_rts(struct net_device *dev, struct iw_request_info *info,
+-			struct iw_param *rts, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_frag(struct net_device *dev, struct iw_request_info *info,
+-			 struct iw_param *frag, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_frag(struct net_device *dev, struct iw_request_info *info,
+-			 struct iw_param *frag, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_txpow(struct net_device *dev, struct iw_request_info *info,
+-			  struct iw_param *txpower, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_txpow(struct net_device *dev, struct iw_request_info *info,
+-			  struct iw_param *txpower, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_essid(struct net_device *dev,
+-		   struct iw_request_info *info, struct iw_point *data, char *essid)
+-{
+-	BUG();
+-}
+-
+-/* Segun el original no reporta el ssid conectado, veri los comentarios de codigo ahi */
+-int test_get_essid(struct net_device *dev,
+-			  struct iw_request_info *info, struct iw_point *data, char *essid)
+-{
+-	BUG();
+-}
+-
+-int test_get_sens(struct net_device *dev, struct iw_request_info *info,
+-			 struct iw_param *sens, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_get_nick(struct net_device *dev, struct iw_request_info *info,
+-			 struct iw_point *data, char *nick)
+-{
+-	BUG();
+-}
+-
+-int test_set_encode(struct net_device *dev,
+-			   struct iw_request_info *info, struct iw_point *erq, char *key)
+-{
+-	BUG();
+-}
+-
+-int test_set_encodeext(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra)
+-{      BUG();
+-}
+-
+-int test_get_encodeext(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra)
+-{
+-
+-   return 0;
+-}
+-
+-int test_get_wap(struct net_device *dev,
+-			struct iw_request_info *info, struct sockaddr *ap_addr, char *extra)
+-{
+-	BUG();
+-
+-}
+-int test_set_wap(struct net_device *dev,
+-			struct iw_request_info *info, struct sockaddr *ap_addr, char *extra)
+-{
+-	BUG();
+-}
+-
+-int  test_get_register(struct net_device *dev,    struct iw_request_info *info, struct iw_param *param, char *extra){ return 0; }
+-
+-int test_set_register(struct net_device *dev,    struct iw_request_info *info, struct iw_param *param, char *extra){ return 0; }       /* ZD1201GIWHOSTAUTH */
+-
+-int test_get_region(	struct net_device *dev, struct iw_request_info *info,
+-				struct iw_point *data, char *region)
+-{
+-	BUG();
+-
+-}
+-int test_set_region(	struct net_device *dev, struct iw_request_info *info,
+-				struct iw_point *data, char *region)
+-{
+-	BUG();
+-}
+-//No andan muy bien estos 2
+-int test_get_ibss_freq( struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *freq)
+-{
+-	BUG();
+-}
+-
+-int test_set_ibss_freq(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{	BUG();
+-}
+-
+-int test_get_ibss_mode(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-
+-{
+-	BUG();
+-}
+-
+-int test_set_ibss_mode(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{
+-	BUG();
+-
+-}
+-int test_scanning(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{ BUG();
+-}
+-
+-int test_get_scan_list(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-
+-{
+-	BUG();
+-}
+-
+-int test_set_pwd(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{
+-	BUG();
+-}
+-int test_set_ie(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{
+-	BUG();
+-}
+-int test_get_ver(struct net_device *dev,    struct iw_request_info *info, struct iw_point *param, char *extra)
+-{
+-	BUG();
+-}
+-int test_get_ssid_info(struct net_device *dev,    struct iw_request_info *info, struct iw_point *param, char *extra)
+-{
+-	BUG();
+-}
+-
+-int test_set_genie(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{
+-	BUG();
+-}
+-
+-//crashea aca
+-int test_set_auth(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra)
+-{
+-	BUG();
+-}
+-
+diff --git a/drivers/net/wireless/winbond/winbondport/linux/new_wireless.h b/drivers/net/wireless/winbond/winbondport/linux/new_wireless.h
+index 7ea45f5..e69de29 100644
+--- a/drivers/net/wireless/winbond/winbondport/linux/new_wireless.h
++++ b/drivers/net/wireless/winbond/winbondport/linux/new_wireless.h
+@@ -1,261 +0,0 @@
+-/* Wireless Nuevas */
+-#ifndef NEW_WIRELESS_H
+-#define NEW_WIRELESS_H
+-
+-//just in case...
+-#ifndef DEBUG_MINE_1
+-# undef DEBUG_MINE_1
+-#endif
+-
+-# ifdef DEBUG_MINE_1
+-#  define DEBUG( T , args... )  printk( KERN_DEBUG T, ##args)
+-#  define DEBUG2( T , args... )  printk( KERN_DEBUG T, ##args)
+-# else
+-#  define DEBUG( T , args... ) while(0){}
+-#  define DEBUG2( T , args... ) while(0){}
+-# endif
+-
+-# define Wb32_RegisterRead				SIOCIWFIRSTPRIV
+-# define Wb32_RegisterWrite				SIOCIWFIRSTPRIV + 1
+-# define IOCTL_PRIV_SET_REGION			SIOCIWFIRSTPRIV + 2
+-# define IOCTL_PRIV_GET_REGION			SIOCIWFIRSTPRIV + 3
+-# define IOCTL_PRIV_SET_IBSS_FREQUENCY	SIOCIWFIRSTPRIV + 4
+-# define IOCTL_PRIV_GET_IBSS_FREQUENCY	SIOCIWFIRSTPRIV + 5
+-# define IOCTL_PRIV_SET_IBSS_MODE		SIOCIWFIRSTPRIV + 6
+-# define IOCTL_PRIV_GET_IBSS_MODE		SIOCIWFIRSTPRIV + 7
+-# define IOCTL_PRIV_GET_SCAN_LIST		SIOCIWFIRSTPRIV + 8
+-# define IOCTL_PRIV_SET_SCAN_LIST		SIOCIWFIRSTPRIV + 9
+-
+-//Added by WangJS 2005.12.9
+-# define IOCTL_PRIV_SET_GENIES			SIOCIWFIRSTPRIV + 10
+-//Added by WangJS 2006.6.22
+-# define IOCTL_PRIV_GET_DRIVER_VER		SIOCIWFIRSTPRIV + 11
+-//Added by WangJS 2005.12.6
+-# define IOCTL_PRIV_SET_WPA_PASSWORD		SIOCIWFIRSTPRIV + 12
+-//Added by WangJS 2006.6.3
+-# define IOCTL_PRIV_GET_SSID_INFO		SIOCIWFIRSTPRIV + 13
+-//Added by WangJS 2006.9.7
+-//# define IOCTL_PRIV_SET_RATE				SIOCIWFIRSTPRIV + 14
+-
+-// Autor: Leandro Costantino - Pixart SRL <> : Port from original  Winbound Wireless Driver
+-// Distro: Rxart Desktop  kernel 2.6.22-pixart-panda
+-//
+-# define NICKNAME "IS89C35"
+-//RSSI -> Signal / Quality
+-# define MIN_RSSI -26
+-# define MAX_RSSI -110
+-# define AV_RSSI ( MAX_RSSI - MIN_RSSI)
+-//Estimation
+-# define GET_QUALITY_PERCENTAGE(rssi) (int)(((rssi - MIN_RSSI)*100)/AV_RSSI)
+-
+-# define KEYS_AVAILABLE 4    //should be ok?
+-# define MAX_RATES_BY_VENDOR 11
+-# define MAX_KEY_SIZE    13
+-# define MIN_KEY_SIZE    5
+-# define SSID_MAX_WPA_IE_LEN	40
+-
+-int test_get_name(struct net_device *dev, struct iw_request_info *info, char *name, char *extra);
+-int test_set_scan(struct net_device *dev, struct iw_request_info *info, struct iw_point *srq, char *extra);
+-int test_get_scan(struct net_device *dev, struct iw_request_info *info, struct iw_point *srq, char *extra);
+-int test_set_freq(struct net_device *dev, struct iw_request_info *info, struct iw_freq *freq, char *extra);
+-int test_get_freq(struct net_device *dev, struct iw_request_info *info, struct iw_freq *freq, char *extra);
+-int test_get_range(struct net_device *dev,  struct iw_request_info *info, struct iw_point *wrq, char *extra);
+-int test_get_power(struct net_device *dev,  struct iw_request_info *info, struct iw_param *vwrq, char *extra);
+-int test_get_mode(struct net_device *dev, struct iw_request_info *info, __u32 *mode, char *extra);
+-int test_set_mode(struct net_device *dev, struct iw_request_info *info, __u32 *mode, char *extra);
+-int test_get_rate(struct net_device *dev, struct iw_request_info *info, struct iw_param *rrq, char *extra);
+-int test_set_rate(struct net_device *dev, struct iw_request_info *info, struct iw_param *rrq, char *extra);
+-int test_set_rts(struct net_device *dev, struct iw_request_info *info, struct iw_param *rts, char *extra);
+-int test_get_rts(struct net_device *dev, struct iw_request_info *info, struct iw_param *rts, char *extra);
+-int test_set_frag(struct net_device *dev, struct iw_request_info *info, struct iw_param *frag, char *extra);
+-int test_get_frag(struct net_device *dev, struct iw_request_info *info, struct iw_param *frag, char *extra);
+-int test_get_sens(struct net_device *dev, struct iw_request_info *info, struct iw_param *sens, char *extra);
+-int test_set_txpow(struct net_device *dev, struct iw_request_info *info,struct iw_param *txpow, char *extra);
+-int test_get_txpow(struct net_device *dev, struct iw_request_info *info,struct iw_param *txpow, char *extra);
+-int test_set_essid(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *essid);
+-int test_get_essid(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *essid);
+-int test_get_nick(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *nick);
+-int test_get_wap(struct net_device *dev,	struct iw_request_info *info, struct sockaddr *ap_addr, char *extra);
+-int test_set_wap(struct net_device *dev,	struct iw_request_info *info, struct sockaddr *ap_addr, char *extra);
+-
+-//PRIVATES
+-int  test_get_register(struct net_device *dev,    struct iw_request_info *info, struct iw_param *param, char *extra);
+-int test_set_register(struct net_device *dev,    struct iw_request_info *info, struct iw_param *param, char *extra);
+-int test_get_region( struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *region);
+-int test_set_region( struct net_device *dev, struct iw_request_info *info,   struct iw_point *data, char *region);
+-int test_get_ibss_freq(struct net_device *dev,    struct iw_request_info *info,	struct iw_point *data, char *region);
+-int test_set_ibss_freq(struct net_device *dev,    struct iw_request_info *info,	struct iw_point *data, char *region);
+-int test_get_ibss_mode(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_set_ibss_mode(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_get_scan_list(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_scanning(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra);
+-
+-/* TKIP Support inside the card, dont need suplicant in this case */
+-int test_set_pwd(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_set_ie(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_set_genie(struct net_device *dev, struct iw_request_info *info, struct iw_point *data, char *extra);
+-int test_get_ver(struct net_device *dev, struct iw_request_info *info, struct iw_point *param, char *extra);
+-int test_get_ssid_info(struct net_device *dev, struct iw_request_info *info, struct iw_point *param, char *extra);
+-int test_set_encode(struct net_device *dev, struct iw_request_info *info, struct iw_point *erq, char *key);
+-int test_get_encode(struct net_device *dev, struct iw_request_info *info, struct iw_point *erq, char *key);
+-int test_set_encodeext(struct net_device *dev, struct iw_request_info *info, union iwreq_data *wrqu,char *extra);
+-int test_get_encodeext(struct net_device *dev, struct iw_request_info *info,union iwreq_data *wrqu,char *extra);
+-int test_set_auth(struct net_device *dev,    struct iw_request_info *info, struct iw_point *data, char *extra);
+-
+-#ifdef DEBUG_MINE_1
+-   struct iw_statistics *test_get_wireless_stats(struct net_device *ndev);
+-#endif
+-
+-static const iw_handler test_iw_handler[] =
+-{
+-   (iw_handler) NULL,//test_config_commit,	/* SIOCSIWCOMMIT */
+-     (iw_handler) test_get_name,    	/* SIOCGIWNAME */
+-     (iw_handler) NULL,			/* SIOCSIWNWID */
+-     (iw_handler) NULL,			/* SIOCGIWNWID */
+-     (iw_handler) test_set_freq,		/* SIOCSIWFREQ */
+-     (iw_handler) test_get_freq,		/* SIOCGIWFREQ */
+-     (iw_handler) test_set_mode,		/* SIOCSIWMODE */
+-     (iw_handler) test_get_mode,		/* SIOCGIWMODE */
+-     (iw_handler) NULL,                  	/* SIOCSIWSENS */
+-     (iw_handler) test_get_sens,           		/* SIOCGIWSENS */
+-     (iw_handler) NULL,			/* SIOCSIWRANGE */
+-     (iw_handler) test_get_range,           /* SIOCGIWRANGE */
+-     (iw_handler) NULL,			/* SIOCSIWPRIV */
+-     (iw_handler) NULL,			/* SIOCGIWPRIV */
+-     (iw_handler) NULL,			/* SIOCSIWSTATS */
+-     (iw_handler) NULL,			/* SIOCGIWSTATS */
+-     (iw_handler) NULL,			/* SIOCSIWSPY */
+-     (iw_handler) NULL,			/* SIOCGIWSPY */
+-     (iw_handler) NULL,			/* -- hole -- */
+-     (iw_handler) NULL,			/* -- hole -- */
+-     (iw_handler) test_set_wap,		/* SIOCSIWAP */
+-     (iw_handler) test_get_wap,		/* SIOCGIWAP */
+-     (iw_handler) NULL,			/* -- hole -- */
+-     (iw_handler) NULL,       		/* SIOCGIWAPLIST */
+-     (iw_handler) test_set_scan,		/* SIOCSIWSCAN */
+-     (iw_handler) test_get_scan,		/* SIOCGIWSCAN */
+-     (iw_handler) test_set_essid,		/* SIOCSIWESSID */
+-     (iw_handler) test_get_essid,		/* SIOCGIWESSID */
+-     (iw_handler) NULL,         		/* SIOCSIWNICKN */
+-     (iw_handler) test_get_nick, 		/* SIOCGIWNICKN */
+-     (iw_handler) NULL,			/* -- hole -- */
+-     (iw_handler) NULL,			/* -- hole -- */
+-     (iw_handler) test_set_rate,		/* SIOCSIWRATE */
+-     (iw_handler) test_get_rate,		/* SIOCGIWRATE */
+-     (iw_handler) test_set_rts,		/* SIOCSIWRTS */
+-     (iw_handler) test_get_rts,		/* SIOCGIWRTS */
+-     (iw_handler) test_set_frag,		/* SIOCSIWFRAG */
+-     (iw_handler) test_get_frag,		/* SIOCGIWFRAG */
+-
+-     (iw_handler) test_set_txpow,         		/* SIOCSIWTXPOW */
+-     (iw_handler) test_get_txpow,          		/* SIOCGIWTXPOW */
+-     (iw_handler) NULL,		/* SIOCSIWRETRY */
+-     (iw_handler) NULL,		/* SIOCGIWRETRY */
+-     (iw_handler) test_set_encode,		/* SIOCSIWENCODE */
+-     (iw_handler) NULL,		/* SIOCGIWENCODE */
+-     (iw_handler) NULL,		/* SIOCSIWPOWER */
+-     (iw_handler) test_get_power,		/* SIOCGIWPOWER */ // VER EL REGISTRO
+-     (iw_handler) NULL,                      /* -- hole -- */
+-     (iw_handler) NULL,                      /* -- hole -- */
+-     (iw_handler) test_set_genie,                      /* SIOCSIWGENIE */
+-     (iw_handler) NULL,                      /* SIOCGIWGENIE */
+-     (iw_handler) test_set_auth,             /* SIOCSIWAUTH */
+-     (iw_handler) NULL,             /* SIOCGIWAUTH */
+-     (iw_handler) test_set_encodeext,        /* SIOCSIWENCODEEXT */
+-     (iw_handler) test_get_encodeext,        /* SIOCGIWENCODEEXT */
+-     (iw_handler) NULL,                      /* SIOCSIWPMKSA */
+-};
+-
+-static const iw_handler test_private_handler[] =
+-{
+-
+-   (iw_handler) test_get_register,
+-     (iw_handler) test_set_register,
+-     (iw_handler) test_set_region,                     /* nothing to get */
+-     (iw_handler) test_get_region,
+-     (iw_handler) test_set_ibss_freq,
+-     (iw_handler) test_get_ibss_freq,
+-     (iw_handler) test_set_ibss_mode,
+-     (iw_handler) test_get_ibss_mode,
+-
+-     (iw_handler) test_get_scan_list,
+-     (iw_handler) test_scanning,
+-     (iw_handler) test_set_ie,
+-     (iw_handler) test_get_ver,
+-     (iw_handler) test_set_pwd,
+-
+-     (iw_handler) test_get_ssid_info,
+-     //     (iw_handler) test_set_rate,
+-};
+-
+-static const struct iw_priv_args test_private_args[] =
+-{
+-     { Wb32_RegisterRead, IW_PRIV_TYPE_NONE,	IW_PRIV_TYPE_CHAR | 4 , "get_register" },
+-     { Wb32_RegisterWrite, IW_PRIV_TYPE_CHAR | 4, 0, "set_register" },
+-     { IOCTL_PRIV_SET_REGION, IW_PRIV_TYPE_CHAR | 15, IW_PRIV_TYPE_NONE, "set_region" },
+-     { IOCTL_PRIV_GET_REGION, IW_PRIV_TYPE_NONE, IW_PRIV_TYPE_CHAR | 15 , "get_region" },
+-     { IOCTL_PRIV_SET_IBSS_FREQUENCY, IW_PRIV_TYPE_INT | 1, 0, "set_ibss_freq" },
+-     { IOCTL_PRIV_GET_IBSS_FREQUENCY, IW_PRIV_TYPE_NONE, IW_PRIV_TYPE_INT | 1, "get_ibss_freq" },
+-     { IOCTL_PRIV_SET_IBSS_MODE, IW_PRIV_TYPE_CHAR | 10, IW_PRIV_TYPE_NONE, "set_ibss_mode" },
+-     { IOCTL_PRIV_GET_IBSS_MODE, IW_PRIV_TYPE_NONE, IW_PRIV_TYPE_CHAR | 10, "get_ibss_mode" },
+-
+-     { IOCTL_PRIV_GET_SCAN_LIST,IW_PRIV_TYPE_NONE, IW_PRIV_TYPE_CHAR | 15, "scan_list"},
+-     { IOCTL_PRIV_SET_SCAN_LIST, IW_PRIV_TYPE_BYTE | 0, IW_PRIV_TYPE_NONE, "scanning"},
+-     { IOCTL_PRIV_SET_GENIES, IW_PRIV_TYPE_CHAR | 15, IW_PRIV_TYPE_NONE, "set_ie"}, //Added by WangJS 2005.12.9, modifed 2005.12.27
+-     { IOCTL_PRIV_GET_DRIVER_VER,IW_PRIV_TYPE_NONE,IW_PRIV_TYPE_CHAR | 15, "get_ver"}, //Added by WangJS 2006.6.22
+-     { IOCTL_PRIV_SET_WPA_PASSWORD, IW_PRIV_TYPE_CHAR | 15, IW_PRIV_TYPE_NONE, "set_pwd"}, //Added by WangJS 2005.12.8, modified 2005.12.27
+-     { IOCTL_PRIV_GET_SSID_INFO,IW_PRIV_TYPE_NONE,IW_PRIV_TYPE_CHAR | 15, "get_ssid_info"}, //Added by WangJS 2006.6.30
+-
+-};
+-
+-static const struct iw_handler_def test_iw_handlers =
+-{
+-
+-   .num_standard           = ARRAY_SIZE(test_iw_handler),
+-   .num_private            = ARRAY_SIZE(test_private_handler),
+-   .num_private_args       =ARRAY_SIZE(test_private_args),
+-   .standard               = (iw_handler *)test_iw_handler,
+-     .private                =(iw_handler *)test_private_handler,
+-     .private_args           =(struct iw_priv_args *) test_private_args,
+-     #ifdef DEBUG_MINE_1
+-     .get_wireless_stats     = test_get_wireless_stats,
+-     #else
+-     .get_wireless_stats     = NULL,
+-     #endif
+-};
+-
+-// channel number -> channel freq.
+-void ChannelNumToFreq(u8 NetworkType, u8 ChannelNumber, u32 *freq);
+-
+-// channel freq. -> channel number
+-void FreqToChannelNum(u8 Band, u8 *ChannelNumber, u32 freq);
+-
+-#ifdef DEBUG_MINE_1
+-struct iw_statistics *test_get_wireless_stats(struct net_device *dev) {
+-
+-   PADAPTER Adapter = dev->priv;
+-   struct iw_statistics *iw_stats = &Adapter->iw_stats;
+-//   unsigned int i, count;
+-  unsigned int t_rssi, t_qual;
+-
+-   memset(iw_stats, 0, sizeof(struct iw_statistics));
+-
+-   //SIMULATION for test......
+-
+-   //lock..?
+-
+-   t_rssi = t_qual = 0;
+-
+-   iw_stats->qual.updated = IW_QUAL_NOISE_INVALID;
+-
+-   iw_stats->qual.qual = 99;
+-   iw_stats->qual.level = 99;
+-   iw_stats->qual.updated |=
+-     IW_QUAL_QUAL_UPDATED|IW_QUAL_LEVEL_UPDATED;
+-
+-   return iw_stats;
+-}
+-#endif
+-
+-//EOF
+-#endif
+diff --git a/drivers/net/wireless/winbond/winbondport/wblinux.c b/drivers/net/wireless/winbond/winbondport/wblinux.c
+index a133c9b..742b2d1 100644
+--- a/drivers/net/wireless/winbond/winbondport/wblinux.c
++++ b/drivers/net/wireless/winbond/winbondport/wblinux.c
+@@ -188,8 +188,6 @@ WBLINUX_Destroy(PADAPTER Adapter)
  {
- 	if( pHwData->SurpriseRemove ) return;
-@@ -390,7 +56,6 @@ u8 hal_init_hardware(phw_data_t pHwData,
- 					pHwData->InitialResource = 4;
- 					OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
- 					OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
--					hal_clear_all_key( pHwData );//Because HW doesn't clear the WEP KEY table
+ 	PWBLINUX pWbLinux = &Adapter->WbLinux;
  
- 					//
- 					// For restrict to vendor's hardware
+-	DEBUG2("UNregistering....\n");
+-
+ 	WBLINUX_stop( Adapter );
+ 	OS_SPIN_LOCK_FREE( &pWbNdis->SpinLock );
+ 	unregister_netdev( pWbLinux->netdev );
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
