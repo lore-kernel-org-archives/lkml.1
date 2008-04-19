@@ -1,90 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932245AbYDSDKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYDSDLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932245AbYDSDKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 23:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYDSDKb
+	id S1761719AbYDSDLs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 23:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYDSDLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 23:10:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:44153 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751109AbYDSDK3 (ORCPT
+	Fri, 18 Apr 2008 23:11:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59847 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbYDSDLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 23:10:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ClmOUYQ7s/09m/sYBjkjjXLquXmrZdCDKLewWuhzfhr13DwIavhD2+zVgVBjnGhGZPMPF+loxUhQqzUW7gEf5Az95Lky45oATTQ/aDKfEYCj1I/PZytDx/KtEEiEEN77Whxzk/UUO0/dqiFChcUweJIrL3O3/cvd22kSjeDRxEc=
-Date: Fri, 18 Apr 2008 23:10:24 -0400
-From: Joseph Fannin <jfannin@gmail.com>
+	Fri, 18 Apr 2008 23:11:39 -0400
+Date: Fri, 18 Apr 2008 23:11:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1
-Message-ID: <20080419031024.GC3503@nineveh.local>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, sandmann@redhat.com, pq@iki.fi,
+       srostedt@redhat.com
+Subject: [PATCH 1/5 -v2] ftrace: simple clean ups
+In-Reply-To: <20080418131535.dbcd315d.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0804182309540.19025@gandalf.stny.rr.com>
+References: <20080418200538.788522018@goodmis.org> <20080418200849.968033091@goodmis.org>
+ <20080418131535.dbcd315d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/
 
-New, in 2.6.25-mm1 is a hang I'm seeing, just after the kernel prints:
+Andrew Morton mentioned some clean ups that should be done to ftrace.
+This patch does some of the simple clean ups.
 
-"[    0.160375] NET: Registered protocol family 16"
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace.c |   23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
-The hang lasts about five minutes, and then boot continues.  Just
-after that, a backtrace is printed; I don't know if it's related.  The
-backtrace will follow.
+Index: linux-sched-devel.git/kernel/trace/trace.c
+===================================================================
+--- linux-sched-devel.git.orig/kernel/trace/trace.c	2008-04-18 23:01:57.000000000 -0400
++++ linux-sched-devel.git/kernel/trace/trace.c	2008-04-18 23:03:52.000000000 -0400
+@@ -36,8 +36,7 @@ unsigned long __read_mostly	tracing_max_
+ unsigned long __read_mostly	tracing_thresh;
 
-This does not occur in mainline.  It seems it might be related to OLPC
-support -- I enabled all those options -- but that's not good
-behavior, and I see no warning of thus in the help.
+ /* dummy trace to disable tracing */
+-static struct tracer no_tracer __read_mostly =
+-{
++static struct tracer no_tracer __read_mostly = {
+ 	.name		= "none",
+ };
 
-I'm sending a number or reports against 2.6.25-mm1, so I've put my
-dmesg and .config on a server:
+@@ -1961,8 +1960,8 @@ tracing_iter_ctrl_write(struct file *fil
+ 	int neg = 0;
+ 	int i;
 
-http://home.columbus.rr.com/jfannin3/dmesg.txt
-http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+-	if (cnt > 63)
+-		cnt = 63;
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
 
-[    0.160375] NET: Registered protocol family 16
-[  400.782683] ------------[ cut here ]------------
-[  400.782832] WARNING: at arch/x86/mm/ioremap.c:158 __ioremap_caller+0x27d/0x2e0()
-[  400.783022] Modules linked in:
-[  400.783169] Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #7
-[  400.783300]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
-[  400.783480]  [<c0106c2e>] ? profile_pc+0x3e/0x50
-[  400.783682]  [<c01374ee>] ? irq_exit+0x4e/0xa0
-[  400.783879]  [<c0115aec>] ? smp_apic_timer_interrupt+0x5c/0x90
-[  400.784087]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-[  400.784298]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
-[  400.784506]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-[  400.784706]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
-[  400.784906]  [<c011d0e6>] ? page_is_ram+0xa6/0xd0
-[  400.785059]  [<c011d4ed>] __ioremap_caller+0x27d/0x2e0
-[  400.785221]  [<c03569d8>] ? _spin_unlock_irqrestore+0x48/0x80
-[  400.785421]  [<c017f4cd>] ? ftrace_record_ip+0x7d/0x250
-[  400.785621]  [<c0474801>] ? olpc_init+0x31/0x140
-[  400.785817]  [<c011d59f>] ioremap_nocache+0x1f/0x30
-[  400.785976]  [<c0474801>] ? olpc_init+0x31/0x140
-[  400.786165]  [<c0474801>] olpc_init+0x31/0x140
-[  400.786318]  [<c0464992>] kernel_init+0x142/0x2d0
-[  400.786479]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
-[  400.786680]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
-[  400.786879]  [<c0464850>] ? kernel_init+0x0/0x2d0
-[  400.787069]  [<c0464850>] ? kernel_init+0x0/0x2d0
-[  400.787260]  [<c0104d9b>] kernel_thread_helper+0x7/0x10
-[  400.787422]  =======================
-[  400.787727] ---[ end trace 4eaa2a86a8e2da22 ]---
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+@@ -2054,8 +2053,8 @@ tracing_ctrl_write(struct file *filp, co
+ 	long val;
+ 	char buf[64];
 
---
-Joseph Fannin
-jfannin@gmail.com
+-	if (cnt > 63)
+-		cnt = 63;
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
+
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+@@ -2154,10 +2153,8 @@ tracing_max_lat_read(struct file *filp,
+ 	char buf[64];
+ 	int r;
+
+-	r = snprintf(buf, 64, "%ld\n",
++	r = scnprintf(buf, sizeof(buf), "%ld\n",
+ 		     *ptr == (unsigned long)-1 ? -1 : nsecs_to_usecs(*ptr));
+-	if (r > 64)
+-		r = 64;
+ 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+ }
+
+@@ -2169,8 +2166,8 @@ tracing_max_lat_write(struct file *filp,
+ 	long val;
+ 	char buf[64];
+
+-	if (cnt > 63)
+-		cnt = 63;
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
+
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+@@ -2434,8 +2431,8 @@ tracing_entries_write(struct file *filp,
+ 	unsigned long val;
+ 	char buf[64];
+
+-	if (cnt > 63)
+-		cnt = 63;
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
+
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+
 
