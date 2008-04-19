@@ -1,93 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYDSV2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbYDSV3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762630AbYDSV2h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 17:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYDSV23
+	id S1762681AbYDSV3i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYDSV3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 17:28:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36836 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbYDSV22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 17:28:28 -0400
+	Sat, 19 Apr 2008 17:29:30 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:54903 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbYDSV33 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 17:29:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=immjRw2L6S8em+PLwYXcEgQO+PmKx3Pdnlhrrs/6hDOjLMIfyDXLprFH1Bz+OivsroIpJR9MI+8PfEOKM/tLPIiRyvHSOaCHo9JEeNegtVTFbVwQGqfReEAu4Zxxp3n0LTxkiY9nCjponxU+3nvzaQm1hUDKw22cKaTnVrM22og=
+Date: Sat, 19 Apr 2008 23:28:49 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/8] omfs: add inode routines
+Message-ID: <20080419212842.GA7888@joi>
+References: <1208637457-24969-4-git-send-email-me@bobcopeland.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] x86 signals: lift set_fs
-In-Reply-To: Roland McGrath's message of  Saturday, 19 April 2008 14:26:54 -0700 <20080419212654.9971827037C@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-References: <20080419212654.9971827037C@magilla.localdomain>
-X-Shopping-List: (1) Precious griddles
-   (2) Whimsical tension breath
-   (3) Wine-making checks
-   (4) Maternity reservation distenders
-   (5) Nice lips
-Message-Id: <20080419212756.ABAF227037C@magilla.localdomain>
-Date: Sat, 19 Apr 2008 14:27:56 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1208637457-24969-4-git-send-email-me@bobcopeland.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This lifts the set_fs(USER_DS) call for signal handler setup out of the
-three places copying the same code into the one place that calls them
-all.  There is no change in what it does.
+On Sat, Apr 19, 2008 at 04:37:32PM -0400, Bob Copeland wrote:
+> +static int omfs_get_imap(struct super_block *sb)
+> +{
+> +	int bitmap_size;
+> +	int array_size;
+> +	int count;
+> +	struct omfs_sb_info *sbi = OMFS_SB(sb);
+> +	struct buffer_head *bh;
+> +	unsigned long **ptr;
+> +	sector_t block;
+> +
+> +	bitmap_size = (sbi->s_num_blocks + 7) / 8;
+> +	array_size = (bitmap_size + sb->s_blocksize - 1) / sb->s_blocksize;
+these are DIV_ROUND_UP
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/ia32/ia32_signal.c |    4 ----
- arch/x86/kernel/signal_64.c |   11 +++++++----
- 2 files changed, 7 insertions(+), 8 deletions(-)
+> +
+> +	if (sbi->s_bitmap_ino == ~0ULL)
+> +		goto out;
+> +
+> +	sbi->s_imap_size = array_size;
+> +	sbi->s_imap = kzalloc(array_size * sizeof(unsigned long *), GFP_KERNEL);
+> +	if (!sbi->s_imap)
+> +		goto nomem;
+> +
+> +	block = clus_to_blk(sbi, sbi->s_bitmap_ino);
+> +	ptr = sbi->s_imap;
+> +	for (count = bitmap_size; count > 0; count -= sb->s_blocksize) {
+> +		bh = sb_bread(sb, block++);
+> +		if (!bh)
+> +			goto nomem_free;
+> +		*ptr = kmalloc(sb->s_blocksize, GFP_KERNEL);
+> +		if (!*ptr) {
+> +			brelse(bh);
+> +			goto nomem_free;
+> +		}
+> +		memcpy(*ptr, bh->b_data, sb->s_blocksize);
+> +		if (count < sb->s_blocksize)
+> +			memset((void *)*ptr + count, 0xff,
+> +				sb->s_blocksize - count);
+> +		brelse(bh);
+> +		ptr++;
+> +	}
+> +out:
+> +	return 0;
+> +
+> +nomem_free:
+> +	for (count = 0; count < array_size; count++)
+> +		kfree(sbi->s_imap[count]);
+> +
+> +	kfree(sbi->s_imap);
+> +nomem:
+> +	sbi->s_imap = NULL;
+> +	sbi->s_imap_size = 0;
+> +	return -ENOMEM;
+> +}
+> +
+> +static void set_block_shift(struct omfs_sb_info *sbi)
+> +{
+> +	unsigned int scale = sbi->s_blocksize / sbi->s_sys_blocksize;
+> +	sbi->s_block_shift = 0;
+> +	for (scale >>= 1; scale; scale >>= 1)
+> +		sbi->s_block_shift++;
+> +}
+isn't it get_bitmask_order(scale - 1)?
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 0866104..bbed3a2 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -499,8 +499,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
- 	regs->cs = __USER32_CS;
- 	regs->ss = __USER32_DS;
- 
--	set_fs(USER_DS);
--
- #if DEBUG_SIG
- 	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
- 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
-@@ -596,8 +594,6 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	regs->cs = __USER32_CS;
- 	regs->ss = __USER32_DS;
- 
--	set_fs(USER_DS);
--
- #if DEBUG_SIG
- 	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
- 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 3a76702..ccb2a45 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -285,10 +285,6 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	   even if the handler happens to be interrupting 32-bit code. */
- 	regs->cs = __USER_CS;
- 
--	/* This, by contrast, has nothing to do with segment registers -
--	   see include/asm-x86_64/uaccess.h for details. */
--	set_fs(USER_DS);
--
- 	return 0;
- 
- give_sigsegv:
-@@ -377,6 +373,13 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 
- 	if (ret == 0) {
- 		/*
-+		 * This has nothing to do with segment registers,
-+		 * despite the name.  This magic affects uaccess.h
-+		 * macros' behavior.  Reset it to the normal setting.
-+		 */
-+		set_fs(USER_DS);
-+
-+		/*
- 		 * Clear the direction flag as per the ABI for function entry.
- 		 */
- 		regs->flags &= ~X86_EFLAGS_DF;
+Marcin
