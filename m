@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbYDSNTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYDSNW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbYDSNTj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 09:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYDSNT3
+	id S1759406AbYDSNW2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 09:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYDSNWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 09:19:29 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:36450 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752347AbYDSNT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 09:19:29 -0400
-X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 09:19:28 EDT
-Date: Sat, 19 Apr 2008 14:49:23 +0200
-From: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
-Subject: [2.6.25 REGRESSION] Lenovo 3000 N100 does not wake up from ACPI S3
- state
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
-Message-id: <4809EA53.2010404@archlinux.org>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary=------------enig4BF9DE42EB039F5CF2DD6200
-X-IronPort-AV: E=Sophos;i="4.25,682,1199660400";
- d="asc'?scan'208";a="39742145"
-X-Enigmail-Version: 0.95.6
-User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
+	Sat, 19 Apr 2008 09:22:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50137 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbYDSNWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 09:22:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: 2.6.25-git1: Solid hang on HP nx6325 (64-bit)
+Date: Sat, 19 Apr 2008 15:22:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804191522.54334.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4BF9DE42EB039F5CF2DD6200
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Since 2.6.25-rc9, my Lenovo 3000 N100 (Core 2 Duo T5300), running x86_64 =
+2.6.25-git1 hung solid  on my HP nx6325 when I was trying to run KMail.
 
-does not wake up from ACPI S3 (Suspend to RAM) any more. The display=20
-remains dark.
+That happened after running it for several hours with a couple of suspend
+and hibernation cycles in between, but I hadn't been doing anything unusual
+with it.
 
-Fix: Revert=20
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dco=
-mmitdiff;h=3D783e391b7b5b273cd20856d8f6f4878da8ec31b3
-Bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=3D10482
+Well, that has never happened since 2.6.25-rc1 (at least) on this box, so it
+looks worrisome.  I guess one of the x86 changes is responsible for it.
 
+Thanks,
+Rafael
 
 
---------------enig4BF9DE42EB039F5CF2DD6200
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEAREIAAYFAkgJ6lMACgkQEda5KzHP/VAutQCfVoUvv4S2sF6+s6UcJhK2ggPh
-zg4AnjhrgZs2tUFBNDUoq1qLfxOSnsOe
-=aMFm
------END PGP SIGNATURE-----
-
---------------enig4BF9DE42EB039F5CF2DD6200--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
