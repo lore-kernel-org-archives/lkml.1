@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbYDSKH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbYDSKHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760563AbYDSKH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 06:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYDSKHM
+	id S1761543AbYDSKHt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYDSKHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 06:07:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58576 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbYDSKHL (ORCPT
+	Sat, 19 Apr 2008 06:07:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54919
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753484AbYDSKHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 06:07:11 -0400
-Date: Sat, 19 Apr 2008 19:07:02 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Matt Mackall" <mpm@selenic.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, dev-etrax@axis.com,
-       "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH][trivial][1/2] ia64: add constfy to pgd_offset()
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080419185723.A8F1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080419184918.A8EE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080419185723.A8F1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080419190442.A8F4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Sat, 19 Apr 2008 06:07:37 -0400
+Date: Sat, 19 Apr 2008 03:07:36 -0700 (PDT)
+Message-Id: <20080419.030736.168169087.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
+ latest -git
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080419100034.GA9475@elte.hu>
+References: <20080419100034.GA9475@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add constfy to pgd_offset() for avoid following warnings.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 19 Apr 2008 12:00:35 +0200
 
-  CC      mm/pagewalk.o
-mm/pagewalk.c: In function 'walk_page_range':
-mm/pagewalk.c:111: warning: passing argument 1 of 'pgd_offset' discards qualifiers from p\
-ointer target type
+[ netfilter-devel and netdev added to CC: ]
 
+> randconfig testing found a netfilter build failure in latest -git:
+> 
+>   net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
+>   net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
+> 
+>   http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
+> 
+> disabling CONFIG_NF_CONNTRACK_SIP works it around.
 
+I think this will fix it.
 
+Patrick, is this how we should do it?
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Matt Mackall <mpm@selenic.com>
-CC: "Vegard Nossum" <vegard.nossum@gmail.com>
-CC: "Luck, Tony" <tony.luck@intel.com>
-
----
- include/asm-ia64/pgtable.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/include/asm-ia64/pgtable.h
-===================================================================
---- a/include/asm-ia64/pgtable.h        2008-04-19 17:46:11.000000000 +0900
-+++ b/include/asm-ia64/pgtable.h        2008-04-19 19:20:16.000000000 +0900
-@@ -371,7 +371,7 @@ pgd_index (unsigned long address)
- /* The offset in the 1-level directory is given by the 3 region bits
-    (61..63) and the level-1 bits.  */
- static inline pgd_t*
--pgd_offset (struct mm_struct *mm, unsigned long address)
-+pgd_offset (const struct mm_struct *mm, unsigned long address)
- {
-        return mm->pgd + pgd_index(address);
- }
-
-
-
+diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
+index c1fc0f1..fd60b2b 100644
+--- a/net/netfilter/Kconfig
++++ b/net/netfilter/Kconfig
+@@ -245,7 +245,7 @@ config NF_CONNTRACK_SANE
+ 
+ config NF_CONNTRACK_SIP
+ 	tristate "SIP protocol support"
+-	depends on NF_CONNTRACK
++	depends on NF_CONNTRACK && NF_NAT
+ 	default m if NETFILTER_ADVANCED=n
+ 	help
+ 	  SIP is an application-layer control protocol that can establish,
