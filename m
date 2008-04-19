@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbYDSKBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759750AbYDSKDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbYDSKBH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 06:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYDSKAy
+	id S1759750AbYDSKDq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYDSKDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 06:00:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36947 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341AbYDSKAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 06:00:53 -0400
-Date: Sat, 19 Apr 2008 12:00:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
-	-git
-Message-ID: <20080419100034.GA9475@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0639]
+	Sat, 19 Apr 2008 06:03:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46891
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753252AbYDSKDj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 06:03:39 -0400
+Date: Sat, 19 Apr 2008 03:03:37 -0700 (PDT)
+Message-Id: <20080419.030337.244502148.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
+ latest -git
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080419100034.GA9475@elte.hu>
+References: <20080419100034.GA9475@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 19 Apr 2008 12:00:35 +0200
 
-randconfig testing found a netfilter build failure in latest -git:
+> btw., i found no thread to reply to on lkml or elsewhere - arent all git 
+> pull requests supposed to be Cc:-ed to lkml, with shortlog included?
 
-  net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
-  net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
+I have never once done this even going all the way back to the BK
+days.
 
-  http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
-
-disabling CONFIG_NF_CONNTRACK_SIP works it around.
-
-btw., i found no thread to reply to on lkml or elsewhere - arent all git 
-pull requests supposed to be Cc:-ed to lkml, with shortlog included?
-
-	Ingo
+I always send my pull requests directly to Linus, CC:'ing Andrew.
