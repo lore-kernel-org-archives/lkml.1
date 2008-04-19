@@ -1,94 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbYDSQmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761525AbYDSQqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbYDSQmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYDSQmi
+	id S1761525AbYDSQqU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbYDSQqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:42:38 -0400
-Received: from stinky.trash.net ([213.144.137.162]:55359 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754190AbYDSQmh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:42:37 -0400
-Message-ID: <480A2011.3080507@trash.net>
-Date: Sat, 19 Apr 2008 18:38:41 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sat, 19 Apr 2008 12:46:06 -0400
+Received: from ozlabs.org ([203.10.76.45]:34282 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbYDSQqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 12:46:04 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
+Date: Sun, 20 Apr 2008 02:45:59 +1000
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200804181433.48488.rusty@rustcorp.com.au> <200804200205.31508.rusty@rustcorp.com.au> <20080419163322.GA17089@2ka.mipt.ru>
+In-Reply-To: <20080419163322.GA17089@2ka.mipt.ru>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
- -git
-References: <20080419100034.GA9475@elte.hu> <20080419.030736.168169087.davem@davemloft.net>
-In-Reply-To: <20080419.030736.168169087.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------030704000000000509070200"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804200246.00282.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030704000000000509070200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Sat, 19 Apr 2008 12:00:35 +0200
+On Sunday 20 April 2008 02:33:22 Evgeniy Polyakov wrote:
+> On Sun, Apr 20, 2008 at 02:05:31AM +1000, Rusty Russell 
+(rusty@rustcorp.com.au) wrote:
+> > There are two reasons not to grab the lock.  It turns out that if we
+> > tried to lock here, we'd deadlock, since the callbacks are called under
+> > the lock. Secondly, it's possible to implement an atomic
+> > vring_used_buffer variant, which could fail: this would avoid using the
+> > thread most of the time.
 >
-> [ netfilter-devel and netdev added to CC: ]
->
->   
->> randconfig testing found a netfilter build failure in latest -git:
->>
->>   net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
->>   net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
->>
->>   http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
->>
->> disabling CONFIG_NF_CONNTRACK_SIP works it around.
->>     
->
-> I think this will fix it.
->
-> Patrick, is this how we should do it?
+> Yep, I decided that too. But it limits its usage to tun only or any
+> other system where only single thread picks up results, so no generic
+> userspace ring buffers?
 
-No, the SIP helper is also useful without NAT. This patch adds
-an ifdef around the RTP call optimization for NATed clients.
+I don't think so, it just externalizes the locking.  The mutex protects the 
+attaching and detaching of the ops structure, some other lock or code 
+protects simultenous kernel ring accesses.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-
-
-
---------------030704000000000509070200
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-diff --git a/net/netfilter/nf_conntrack_sip.c b/net/netfilter/nf_conntrack_sip.c
-index 65b3ba5..9f49000 100644
---- a/net/netfilter/nf_conntrack_sip.c
-+++ b/net/netfilter/nf_conntrack_sip.c
-@@ -781,7 +781,7 @@ static int set_expected_rtp_rtcp(struct sk_buff *skb,
- 		    nfct_help(exp->master)->helper != nfct_help(ct)->helper ||
- 		    exp->class != class)
- 			break;
--
-+#ifdef CONFIG_NF_NAT_NEEDED
- 		if (exp->tuple.src.l3num == AF_INET && !direct_rtp &&
- 		    (exp->saved_ip != exp->tuple.dst.u3.ip ||
- 		     exp->saved_proto.udp.port != exp->tuple.dst.u.udp.port) &&
-@@ -791,6 +791,7 @@ static int set_expected_rtp_rtcp(struct sk_buff *skb,
- 			tuple.dst.u.udp.port	= exp->saved_proto.udp.port;
- 			direct_rtp = 1;
- 		} else
-+#endif
- 			skip_expect = 1;
- 	} while (!skip_expect);
- 	rcu_read_unlock();
-
---------------030704000000000509070200--
+Cheers,
+Rusty.
