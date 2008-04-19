@@ -1,100 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYDSNZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDSN0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761561AbYDSNZX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 09:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYDSNZI
+	id S1760718AbYDSN0i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 09:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYDSN0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 09:25:08 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48693 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754884AbYDSNZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 09:25:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAE+PCUhMROPA/2dsb2JhbACBYKk1
-Date: Sat, 19 Apr 2008 09:25:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC patch 26/27] Immediate Values - Jump
-Message-ID: <20080419132504.GB19416@Krystal>
-References: <20080416213426.298498397@polymtl.ca> <20080416213557.859844730@polymtl.ca> <20080419203925.A900.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
+	Sat, 19 Apr 2008 09:26:30 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:28550 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754044AbYDSN03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 09:26:29 -0400
+Date: Sat, 19 Apr 2008 22:25:49 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.26-rc1
+Message-ID: <20080419132548.GA23092@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080419203925.A900.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:24:42 up 50 days,  9:35,  3 users,  load average: 0.38, 0.25,
-	0.17
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> > Index: linux-2.6-lttng/include/linux/immediate.h
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/include/linux/immediate.h	2008-04-16 14:04:47.000000000 -0400
-> > +++ linux-2.6-lttng/include/linux/immediate.h	2008-04-16 14:04:48.000000000 -0400
-> > @@ -33,8 +33,7 @@
-> >   * Internal update functions.
-> >   */
-> >  extern void core_imv_update(void);
-> > -extern void imv_update_range(const struct __imv *begin,
-> > -	const struct __imv *end);
-> > +extern void imv_update_range(struct __imv *begin, struct __imv *end);
-> >  extern void imv_unref_core_init(void);
-> >  extern void imv_unref(struct __imv *begin, struct __imv *end, void *start,
-> >  		unsigned long size);
-> > @@ -54,6 +53,14 @@ extern void imv_unref(struct __imv *begi
-> >  #define imv_read(name)			_imv_read(name)
-> >  
-> >  /**
-> > + * imv_cond - read immediate variable use as condition for if()
-> > + * @name: immediate value name
-> > + *
-> > + * Reads the value of @name.
-> > + */
-> > +#define imv_cond			_imv_read(name)
-> > +
-> > +/**
-> 
-> err, missing name argument.
-> 
+Please pull from:
 
-Thanks, I merged it into my patchset.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-Mathieu
+Which contains:
 
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> ---
->  include/linux/immediate.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/include/linux/immediate.h
-> ===================================================================
-> --- a/include/linux/immediate.h 2008-04-19 20:57:19.000000000 +0900
-> +++ b/include/linux/immediate.h 2008-04-19 21:09:01.000000000 +0900
-> @@ -62,7 +62,7 @@ struct __imv {
->   *
->   * Reads the value of @name.
->   */
-> -#define imv_cond                       _imv_read(name)
-> +#define imv_cond(name)                 _imv_read(name)
-> 
->  /**
->   * imv_set - set immediate variable (with locking)
-> 
-> 
-> 
+Angelo Castello (1):
+      rtc: rtc-sh: Add support for periodic IRQs.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Magnus Damm (13):
+      sh: SuperH KEYSC platform driver
+      sh: SuperH KEYSC keypad data for MigoR
+      sh: SuperH KEYSC keypad data for Solution Engine 7722
+      Fix sh_keysc double free
+      sh: Add MigoR header file
+      sh: Use physical addresses for sh7722 USBF resources
+      sh: Use phyical addresses for MigoR smc91x resources
+      sh: MigoR NOR flash support using physmap-flash
+      sh: MigoR NAND flash support using gen_flash
+      sh: Add I2C platform data to sh7722
+      sh: Add I2C support to MigoR
+      sh: Add rs5c732b RTC support to MigoR
+      sh: Add migor_ts support to MigoR
+
+Masayuki Hosokawa (1):
+      sh: Hook up remaining IRQ sources for R7780MP FPGA.
+
+Paul Mundt (11):
+      sh: Create an sh debugfs root.
+      sh: Initial support for the MX-G CPU.
+      sh: Hook up the rest of the SH7770 serial ports.
+      sh: Allow optimized clear/copy page routines to be used on SH-2.
+      sh: Fix up __access_ok() check for nommu.
+      sh: r7780rp: Hook up the I2C and SMBus platform devices.
+      sh: Fix up mach-types formatting from merge damage.
+      sh: Fix up SH7763 build.
+      sh: Add support for SH7723 CPU subtype.
+      sh: Fix up SH-4A part probe.
+      sh: Fix up L2 cache probe.
+
+Yoshihiro Shimoda (1):
+      sh: Add support for Solution Engine SH7721 board
+
+ arch/sh/Kconfig                              |   30 +-
+ arch/sh/Kconfig.debug                        |   13 +-
+ arch/sh/Makefile                             |    1 +
+ arch/sh/boards/renesas/migor/setup.c         |  197 +++++-
+ arch/sh/boards/renesas/r7780rp/irq-r7780mp.c |   39 +-
+ arch/sh/boards/renesas/r7780rp/setup.c       |   42 +-
+ arch/sh/boards/se/7721/Makefile              |    1 +
+ arch/sh/boards/se/7721/irq.c                 |   45 ++
+ arch/sh/boards/se/7721/setup.c               |   99 +++
+ arch/sh/boards/se/7722/setup.c               |   41 +
+ arch/sh/configs/se7721_defconfig             | 1085 ++++++++++++++++++++++++++
+ arch/sh/kernel/cf-enabler.c                  |   15 +-
+ arch/sh/kernel/cpu/sh2a/Makefile             |    7 +-
+ arch/sh/kernel/cpu/sh2a/probe.c              |    3 +
+ arch/sh/kernel/cpu/sh2a/setup-mxg.c          |  168 ++++
+ arch/sh/kernel/cpu/sh4/probe.c               |   33 +-
+ arch/sh/kernel/cpu/sh4a/Makefile             |    2 +
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c       |   28 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c       |  300 +++++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7763.c       |   10 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7770.c       |   37 +-
+ arch/sh/kernel/setup.c                       |   15 +
+ arch/sh/lib/clear_page.S                     |    6 +-
+ arch/sh/lib/copy_page.S                      |    6 +-
+ arch/sh/mm/cache-debugfs.c                   |    4 +-
+ arch/sh/mm/pmb.c                             |    2 +-
+ arch/sh/tools/mach-types                     |    5 +-
+ drivers/input/keyboard/Kconfig               |    9 +
+ drivers/input/keyboard/Makefile              |    1 +
+ drivers/input/keyboard/sh_keysc.c            |  280 +++++++
+ drivers/rtc/rtc-sh.c                         |  296 +++++---
+ drivers/serial/sh-sci.c                      |    7 +-
+ drivers/serial/sh-sci.h                      |   60 ++-
+ include/asm-sh/bugs.h                        |    2 +-
+ include/asm-sh/cpu-sh4/freq.h                |    6 +-
+ include/asm-sh/cpu-sh4/rtc.h                 |    5 +
+ include/asm-sh/migor.h                       |   58 ++
+ include/asm-sh/processor.h                   |    5 +-
+ include/asm-sh/r7780rp.h                     |   22 +-
+ include/asm-sh/se7721.h                      |   70 ++
+ include/asm-sh/se7722.h                      |    2 +
+ include/asm-sh/sh_keysc.h                    |   13 +
+ include/asm-sh/system.h                      |    2 +
+ include/asm-sh/uaccess_32.h                  |    5 +-
+ 44 files changed, 2858 insertions(+), 219 deletions(-)
+ create mode 100644 arch/sh/boards/se/7721/Makefile
+ create mode 100644 arch/sh/boards/se/7721/irq.c
+ create mode 100644 arch/sh/boards/se/7721/setup.c
+ create mode 100644 arch/sh/configs/se7721_defconfig
+ create mode 100644 arch/sh/kernel/cpu/sh2a/setup-mxg.c
+ create mode 100644 arch/sh/kernel/cpu/sh4a/setup-sh7723.c
+ create mode 100644 drivers/input/keyboard/sh_keysc.c
+ create mode 100644 include/asm-sh/migor.h
+ create mode 100644 include/asm-sh/se7721.h
+ create mode 100644 include/asm-sh/sh_keysc.h
