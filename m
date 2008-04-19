@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbYDSJzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbYDSKBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbYDSJzx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 05:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYDSJzq
+	id S1757847AbYDSKBH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYDSKAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 05:55:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44443 "EHLO mx1.redhat.com"
+	Sat, 19 Apr 2008 06:00:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36947 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbYDSJzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 05:55:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FDPIC: Check that the size returned by kernel_read() is what
-	we asked for
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: chris.rohlf@gmail.com, dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Sat, 19 Apr 2008 10:54:10 +0100
-Message-ID: <20080419095410.14947.72015.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	id S1753341AbYDSKAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 06:00:53 -0400
+Date: Sat, 19 Apr 2008 12:00:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
+	-git
+Message-ID: <20080419100034.GA9475@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0639]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
 
-Check that the size of the read returned by kernel_read() is what we asked for.
-If it isn't, then reject the binary as being a badly formatted.
+randconfig testing found a netfilter build failure in latest -git:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+  net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
+  net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
 
- fs/binfmt_elf_fdpic.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
+  http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
 
+disabling CONFIG_NF_CONNTRACK_SIP works it around.
 
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 32649f2..ddd35d8 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -136,8 +136,8 @@ static int elf_fdpic_fetch_phdrs(struct elf_fdpic_params *params,
- 
- 	retval = kernel_read(file, params->hdr.e_phoff,
- 			     (char *) params->phdrs, size);
--	if (retval < 0)
--		return retval;
-+	if (unlikely(retval != size))
-+		return retval < 0 ? retval : -ENOEXEC;
- 
- 	/* determine stack size for this binary */
- 	phdr = params->phdrs;
-@@ -218,8 +218,11 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 					     phdr->p_offset,
- 					     interpreter_name,
- 					     phdr->p_filesz);
--			if (retval < 0)
-+			if (unlikely(retval != phdr->p_filesz)) {
-+				if (retval >= 0)
-+					retval = -ENOEXEC;
- 				goto error;
-+			}
- 
- 			retval = -ENOENT;
- 			if (interpreter_name[phdr->p_filesz - 1] != '\0')
-@@ -245,8 +248,11 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 
- 			retval = kernel_read(interpreter, 0, bprm->buf,
- 					     BINPRM_BUF_SIZE);
--			if (retval < 0)
-+			if (unlikely(retval != BINPRM_BUF_SIZE)) {
-+				if (retval >= 0)
-+					retval = -ENOEXEC;
- 				goto error;
-+			}
- 
- 			interp_params.hdr = *((struct elfhdr *) bprm->buf);
- 			break;
+btw., i found no thread to reply to on lkml or elsewhere - arent all git 
+pull requests supposed to be Cc:-ed to lkml, with shortlog included?
 
+	Ingo
