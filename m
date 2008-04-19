@@ -1,139 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYDSGeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbYDSGiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYDSGeE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 02:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYDSGdx
+	id S1758363AbYDSGiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 02:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYDSGiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 02:33:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:51091 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYDSGdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 02:33:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:content-transfer-encoding:date:message-id:mime-version:x-mailer;
-        b=fzLQPr4Md1aKYkYMsAkYS0nATal5+Qj6VfOmXa8mlsycazuVDJPcjl59MoQyXkcMcB4dmLR1AutqKZ4MUs96f+L+w4TIQGp3v6Xrp9D8zV/89+LirFMlY/mr4xFlF2lz0tzvmBJOHfrS0SN9hXyyH5xPjzfzrpQVNgjiI4kIL7M=
-Subject: Re: 2.6.25-mm1
-From: Joseph Fannin <jfannin@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <20080418212934.bbe84ee2.akpm@linux-foundation.org>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	 <20080419021343.GA3503@nineveh.local>
-	 <20080418200237.b5a9e805.akpm@linux-foundation.org>
-	 <20080419041429.GA8508@anvil.corenet.prv>
-	 <20080418212934.bbe84ee2.akpm@linux-foundation.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sat, 19 Apr 2008 02:33:39 -0400
-Message-Id: <1208586819.32485.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Sat, 19 Apr 2008 02:38:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:44626 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752057AbYDSGiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 02:38:08 -0400
+Date: Sat, 19 Apr 2008 08:37:59 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alex Dubov <oakad@yahoo.com>
+cc: joern@logfs.org, linux-kernel@vger.kernel.org, ben@fluff.org
+Subject: Re: Smartmedia/xd card support - request for comments
+In-Reply-To: <259878.79137.qm@web36703.mail.mud.yahoo.com>
+Message-ID: <alpine.LFD.1.10.0804190806110.3261@apollo.tec.linutronix.de>
+References: <259878.79137.qm@web36703.mail.mud.yahoo.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-18 at 21:29 -0700, Andrew Morton wrote:
-> On Sat, 19 Apr 2008 00:14:29 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On Fri, Apr 18, 2008 at 08:02:37PM -0700, Andrew Morton wrote:
-> > > On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
-> > > 
-> > > > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
-> > > > >
-> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
-> > > > 
-> > > > I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
-> > > > least, since that's the earliest -mm I've built in a while.  I don't
-> > > > get the same in mainline.
-> > > > 
-> > > > No idea who to CC:
-> > > 
-> > > I have a few ideas.
-> > > 
-> > > >  I've sat on this report long enough.
-> > > 
-> > > Thanks for the report.
-> > > 
-> > > > I'm going to send a few different reports in separate mails, so I'll
-> > > > put my dmesg and .config up on a server:
-> > > > 
-> > > > http://home.columbus.rr.com/jfannin3/dmesg.txt
-> > > > http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
-> > > > 
-> > > > [  451.915553] sysfs: duplicate filename 'pcspkr' can not be created
-> > > > [  451.915731] ------------[ cut here ]------------
-> > > > [  451.915851] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x85/0xe0()
-> > > > [  451.915981] Modules linked in: snd_pcsp(+) ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_mpu401_uart snd_seq_dummy snd_seq_oss snd_seq_midi psmouse snd_rawmidi serio_raw snd_seq_midi_event snd_seq button i2c_viapro snd_timer snd_seq_device pcspkr i2c_core snd snd_page_alloc via686a shpchp pci_hotplug parport_pc parport via_agp agpgart soundcore evdev sg sr_mod cdrom sd_mod 8139cp aic7xxx  scsi_transport_spi scsi_mod 8139too mii uhci_hcd usbcore raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
-> > > > [  451.918960] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-> > > > [  451.929271]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
-> > > > [  451.929500]  [<c0132400>] ? vprintk+0x2f0/0x4a0
-> > > > [  451.929723]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-> > > > [  451.929918]  [<c01c6a7a>] ? ifind+0x4a/0xa0
-> > > > [  451.930126]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-> > > > [  451.930334]  [<c015535b>] ? trace_hardirqs_on+0xb/0x10
-> > > > [  451.930534]  [<c01325d0>] ? printk+0x20/0x30
-> > > > [  451.930727]  [<c01fcc45>] sysfs_add_one+0x85/0xe0
-> > > > [  451.930900]  [<c01fd89e>] create_dir+0x4e/0xb0
-> > > > [  451.931064]  [<c01fd930>] sysfs_create_dir+0x30/0x50
-> > > > [  451.931291]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-> > > > [  451.931485]  [<c023dac6>] kobject_add_internal+0xb6/0x190
-> > > > [  451.931656]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
-> > > > [  451.931857]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
-> > > > [  451.932022]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
-> > > > [  451.932188]  [<c02a3e44>] bus_add_driver+0x94/0x250
-> > > > [  451.932364]  [<c02a5062>] driver_register+0x42/0xf0
-> > > > [  451.932533]  [<c02a6c56>] platform_driver_register+0x66/0x70
-> > > > [  451.932702]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
-> > > > [  451.932877]  [<c015e137>] sys_init_module+0x87/0x1a0
-> > > > [  451.933043]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-> > > > [  451.933246]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-> > > > [  451.933453]  [<c0104077>] sysenter_past_esp+0x78/0xc5
-> > > 
-> > > Yes, there have been lots of these lately.  I expect some of them _will_ go
-> > > into mainline and they'll then slowly get weeded out.
-> > > 
-> > 
-> > It looks like it is coming from snd_pcsp module from alsa tree.
-> 
-> Ah, OK.  More cc's.
-> 
-> > 
-> > Cool things there:
-> > 
-> > +#ifdef CONFIG_DEBUG_PAGEALLOC
-> > +	/* Well, CONFIG_DEBUG_PAGEALLOC makes the sound horrible. Lets
-> > alert */
-> > +	printk(KERN_WARNING
-> > +	       "PCSP: Warning, CONFIG_DEBUG_PAGEALLOC is enabled!\n"
-> > +	       "You have to disable it if you want to use the PC-Speaker
-> > "
-> > +	       "driver.\n"
-> > +	       "Unless it is disabled, enjoy the horrible, distorted "
-> > +	       "and crackling noise.\n");
-> > +#endif
-> 
-> heh.
-> 
-> CONFIG_DEBUG_PAGEALLOC is a very heavy consumer of CPU cycles.  I'm not
-> surprised that it would whack what I presume to be a very latency-sensitive
-> driver.
+On Fri, 18 Apr 2008, Alex Dubov wrote:
 
-Um...
+First off, can you please use a mail client which does line breaks at
+around 78 chars ?
+ 
+> As you understand, both smartmedia media and hosts follow certain
+> spec (publicly available here:
+> http://www.ssfdc.or.jp/spec/index_e.htm, basic registration
+> required). xd card spec is almost identical, adding some cosmetic
+> features and restrictions (such as prohibition of single page
+> programming). This means, that smartmedia access protocol can be
+> abstracted out in the reader-independent way. You can seen in the
+> xd_card_blk.c that it can operate both completely dumb controllers,
+> while taking protocol shortcuts (using host->caps) to accommodate
+> smarter readers (the only feature currently not there is
+> adapter-side page copy - it can be easily added under FBD_COPY
+> clause in xd_card_trans_req). The backend itself (jmb38x_xd.c)
+> should not concern itself with details of smartmedia spec, as it
+> will directly lead to code duplication among backends.
 
-[jhf@Susa ~]$ uname -a
-Linux Susa 2.6.25-mm1 #7 SMP PREEMPT Fri Apr 18 17:05:14 EDT 2008 i686
-GNU/Linux
-[jhf@Susa ~]$ zgrep PAGEALLOC /proc/config.gz
-# CONFIG_DEBUG_PAGEALLOC is not set
-[jhf@Susa ~]$
+That's all fine. Nobody asked for the backend to know about smartmedia
+on FLASH format details. The MTD NAND FLASH layer does not care about
+on FLASH data format at all. It provides merily access on the hardware
+level.
 
-I thought that might have snuck in as =y, but it didn't.
+I agree that your approach of making the SM/XD layer capable of
+handling clever and dumb hardware adapters is a good one.
 
---
-Joseph Fannin
-jfannin@gmail.com
+The point where I stringly disagree is that your implementation is
+forcing people with dumb hardware (see drivers/mtd/nand/*) to
+reimplement the (maybe already) existing drivers in order to make use
+of the ssfdc format, which will not work with the following real world
+example:
 
+------------------
+| NAND controller |----------| On board NAND
+| with HW ECC     |
+|                 |----------| SmartMedia Card
+------------------
+
+Having a separate driver infrastructure for clever controllers, which
+provide only semi raw access to the FLASH chip is fine simply because
+such controllers do not fit into the MTD layer.
+
+> I meant here the ability of user to look and modify CIS page, as
+> well as look at the current block translation table.
+
+Well, you probably do this with an iotctl anyway. So what's preventing
+you to modify the mtd block layer to handle client private ioctls.
+
+Also there is no real requirement to use the mtd block layer at all
+for that. Putting your layer on top of the raw MTD device is fine IMO.
+
+> > Correct.  Erase() is the only callback-based function and every single
+> > driver implements it synchronous anyway.  Improving this situation is
+> > needed for mtd's own sake anyway.  Either that or replacing mtd with
+> > something else, likely the block device code.
+>
+> Revamping the underlying architecture of mtd will break a lot of
+> stuff in the process, doesn't it?
+
+That's the best excuse I ever heard for not improving code which has
+shortcomings.
+
+Thanks,
+	tglx
