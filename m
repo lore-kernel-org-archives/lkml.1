@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbYDSLlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbYDSLqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761562AbYDSLlY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 07:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYDSLlO
+	id S1761619AbYDSLqR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 07:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYDSLqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 07:41:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59691 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754051AbYDSLlO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 07:41:14 -0400
-Date: Sat, 19 Apr 2008 20:41:17 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC patch 26/27] Immediate Values - Jump
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080416213557.859844730@polymtl.ca>
-References: <20080416213426.298498397@polymtl.ca> <20080416213557.859844730@polymtl.ca>
-Message-Id: <20080419203925.A900.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 19 Apr 2008 07:46:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:33079 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754117AbYDSLqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 07:46:04 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Message-ID: <18441.56170.464016.686497@cargo.ozlabs.ibm.com>
+Date: Sat, 19 Apr 2008 21:45:46 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: David Miller <davem@davemloft.net>, jochen@scram.de, sfr@canb.auug.org.au,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       scottwood@freescale.com, i2c@lm-sensors.org
+Subject: Re: [PATCH] [POWERPC] i2c: fix build breakage introduced by OF 
+ helpers
+In-Reply-To: <20080419110934.672648e6@hyperion.delvare>
+References: <18441.28496.84724.411784@cargo.ozlabs.ibm.com>
+	<20080418.210933.01471700.davem@davemloft.net>
+	<18441.33181.511355.338428@cargo.ozlabs.ibm.com>
+	<20080418.231128.97404791.davem@davemloft.net>
+	<20080419110934.672648e6@hyperion.delvare>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: linux-2.6-lttng/include/linux/immediate.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/linux/immediate.h	2008-04-16 14:04:47.000000000 -0400
-> +++ linux-2.6-lttng/include/linux/immediate.h	2008-04-16 14:04:48.000000000 -0400
-> @@ -33,8 +33,7 @@
->   * Internal update functions.
->   */
->  extern void core_imv_update(void);
-> -extern void imv_update_range(const struct __imv *begin,
-> -	const struct __imv *end);
-> +extern void imv_update_range(struct __imv *begin, struct __imv *end);
->  extern void imv_unref_core_init(void);
->  extern void imv_unref(struct __imv *begin, struct __imv *end, void *start,
->  		unsigned long size);
-> @@ -54,6 +53,14 @@ extern void imv_unref(struct __imv *begi
->  #define imv_read(name)			_imv_read(name)
->  
->  /**
-> + * imv_cond - read immediate variable use as condition for if()
-> + * @name: immediate value name
-> + *
-> + * Reads the value of @name.
-> + */
-> +#define imv_cond			_imv_read(name)
-> +
-> +/**
+Jean Delvare writes:
 
-err, missing name argument.
+> Guys, you're doing things the wrong way around. Breaking things to fix
+> them later is not OK, it's a pain for testers and also when bisecting
+> the kernel. Everything should still work after merging the powerpc
+> tree. Dave, if you need to loosen the dependency, you should do it
+> yourself _after_ having changed whatever needs to be in the sparc32 and
+> sparc64 trees so that loosening the dependency doesn't break anything.
+> As far as I can see it's only a matter of changing one line in a
+> Kconfig file, that's not exactly difficult to do it in the right order.
 
+You're right.  I'll put in a dependency on PPC_OF for now and Dave can
+take it out once sparc32/64 have irq_of_parse_and_map etc.
 
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
----
- include/linux/immediate.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/include/linux/immediate.h
-===================================================================
---- a/include/linux/immediate.h 2008-04-19 20:57:19.000000000 +0900
-+++ b/include/linux/immediate.h 2008-04-19 21:09:01.000000000 +0900
-@@ -62,7 +62,7 @@ struct __imv {
-  *
-  * Reads the value of @name.
-  */
--#define imv_cond                       _imv_read(name)
-+#define imv_cond(name)                 _imv_read(name)
-
- /**
-  * imv_set - set immediate variable (with locking)
-
-
-
+Paul.
