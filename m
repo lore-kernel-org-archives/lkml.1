@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYDSAUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbYDSAVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYDSAUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 20:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYDSAUS
+	id S1755586AbYDSAVs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 20:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYDSAVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 20:20:18 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:47620 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbYDSAUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 20:20:17 -0400
-Date: Fri, 18 Apr 2008 17:20:16 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Alternative implementation of the generic __ffs
-In-Reply-To: <1208563762.10414.19.camel@brick>
-Message-ID: <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
-References: <20080331171506.GA24017@mailshack.com>  <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>  <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>  <1207507897.18129.1246358115@webmail.messagingengine.com> 
- <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>  <1207563950.7880.1246457209@webmail.messagingengine.com>  <20080418201809.GA5036@mailshack.com>  <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org> <1208563762.10414.19.camel@brick>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 18 Apr 2008 20:21:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51626 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbYDSAVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Apr 2008 20:21:41 -0400
+Message-ID: <48093AF3.2080807@garzik.org>
+Date: Fri, 18 Apr 2008 20:21:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel@wantstofly.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] ARM minor irq handler cleanups
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <20080418164411.b1e1628d.akpm@linux-foundation.org>
+In-Reply-To: <20080418164411.b1e1628d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Harvey Harrison wrote:
-
-> On Fri, 2008-04-18 at 16:46 -0700, dean gaudet wrote:
-> > On Fri, 18 Apr 2008, Alexander van Heukelum wrote:
-> > 
-> > > On Mon, Apr 07, 2008 at 12:25:50PM +0200, Alexander van Heukelum wrote:
-> > > > On Sun, 6 Apr 2008 13:22:58 -0700 (PDT), "dean gaudet" <dean@arctic.org> said:
-> > > > > On Sun, 6 Apr 2008, Alexander van Heukelum wrote:
-> > > > > > The current generic implementation of ffz is O(lg(n)) already
-> > > > > 
-> > > > > it's O(lg(n)) time... the operations all depend on each other.
-> > > > > 
-> > > > > the implementation i pointed to is O(lg(n)) code space... and the time 
-> > > > > depends on how parallel the machine is, they're not dependent on each 
-> > > > > other.
-> > > > 
-> > > > Indeed. The worst dependencies are in the sum of all the partial
-> > > > results in this implementation. And addition is associative, so
-> > > > partial results can be written as ((a+b)+(c+d))+(e+f). Assuming
-> > > > perfect parallel execution this would lead to O(ln(ln(n))). Good.
-> > > 
-> > > Hello all,
-> > > 
-> > > I've implemented ffs (find first set bit) like it is shown
-> > > in http://www.hackersdelight.org/ (see revisions, page 21).
-> > 
-> > sweet!  thanks for doing this.
-> > 
-> > 
-> > > static ATTR int __ffs32_new(unsigned int value)
-> > > {
-> > > 	int x0, x1, x2, x3, x4;
-> > > 
-> > > 	value &= -value;
-> > > 	x0 = (value & 0x55555555) ? 0 : 1;
-> > > 	x1 = (value & 0x33333333) ? 0 : 2;
-> > > 	x2 = (value & 0x0f0f0f0f) ? 0 : 4;
-> > > 	x3 = (value & 0x00ff00ff) ? 0 : 8;
-> > > 	x4 = (value & 0x0000ffff) ? 0 : 16;
+Andrew Morton wrote:
+> On Fri, 18 Apr 2008 19:22:45 -0400 (EDT)
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> How about:
-> 	u8 x;
+>> Avoid confusion by /not/ passing an unused pointer to
+>> arm_rtc_interrupt()
+>>
+>> This change's main purpose is to prepare for the patchset in
+>> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
+>> never-used 'irq' argument in each interrupt handler.
 > 
-> 	value &= -value;
-> 	x = (value & 0x55555555) ? 0 : 1;
-> 	x |= (value & 0x33333333) ? 0 : 2;
-> 	x |= (value & 0x0f0f0f0f) ? 0 : 4;
-> 	x |= (value & 0x00ff00ff) ? 0 : 8;
-> 	x |= (value & 0x0000ffff) ? 0 : 16;
+> #irq-remove doesn't seem to be included in the #ALL branch which
+> I'm grabbing?
 
-any reasonable compiler should figure out the two are the same... but i 
-really prefer spelling out the lack of dependencies of the computations by 
-breaking it out per-bit.
+I certainly welcome the exposure.......  but it would be a huge pain for 
+you IMO because of the constant breakage.
 
--dean
+	Jeff
+
+
