@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbYDSO77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbYDSPCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762104AbYDSO77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 10:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYDSO7w
+	id S1761971AbYDSPCT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 11:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYDSPCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 10:59:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:64945 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756197AbYDSO7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 10:59:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mWpA0KoJCKEIncufulLqc4ScZIuvfi7LcO9z3Lha7rm6YIliB3x71BbN3hR4gs5AoLnZNsyDB54Y0DRi11L94bd/0+AvnafxkcnYYteI9g/mihZyJ7Z7/T2nB1OHFIBIl15bPnCHPzD9Ps0ODpnktHnp9GBGpyDlxQbp6c6FrVQ=
-Date: Sat, 19 Apr 2008 09:59:48 -0500
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080419145948.GA4528@lintop>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080419142329.GA5339@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 19 Apr 2008 11:02:07 -0400
+Received: from vena.lwn.net ([206.168.112.25]:33323 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbYDSPCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 11:02:06 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface. 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Fri, 18 Apr 2008 11:59:59 PDT."
+             <20080418115959.6b8fdfa7.akpm@linux-foundation.org> 
+Date: Sat, 19 Apr 2008 09:02:04 -0600
+Message-ID: <8793.1208617324@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 19, 2008 at 04:23:29PM +0200, Ingo Molnar wrote:
+> So I think it would be good to plonk the proposed interface on the table
+> and have a poke at it.  Is it compat-safe?  Is it extensible in a
+> backward-compatible fashion?  Are there future-safe changes we should make
+> to it?  Can Michael Kerrisk understand, review and document it?  etc.
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > >  config 4KSTACKS
-> > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > > -	depends on DEBUG_KERNEL
-> > >  	depends on X86_32
-> > > +	default y
-> > 
-> > This patch will cause kernels to crash.
-> 
-> what mainline kernels crash and how will they crash? Fedora and other 
-> distros have had 4K stacks enabled for years:
+> You know what I'm saying ;)  What is the proposed interface?
 
-If by other distros you mean RHEL then yes.  However, openSUSE,
-Ubuntu, and Mandriva all still have 8K stacks.  I know of no other
-distributions that default to 4K.
+So, I'm not Michael, but I *did* make an attempt to document this
+interface - user and kernel sides - so that it could be more easily
+understood:
 
---
-Shawn
+	http://lwn.net/Articles/276856/
+
+That was the previous posting, but a quick look suggests it hasn't
+changed *that* much in this round.
+
+jon
