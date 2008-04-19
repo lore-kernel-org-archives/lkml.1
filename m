@@ -1,100 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbYDSV3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbYDSVaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762681AbYDSV3i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 17:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYDSV3a
+	id S1762665AbYDSVaB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYDSV3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 17:29:30 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:54903 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYDSV33 (ORCPT
+	Sat, 19 Apr 2008 17:29:51 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:56786 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753443AbYDSV3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 17:29:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=immjRw2L6S8em+PLwYXcEgQO+PmKx3Pdnlhrrs/6hDOjLMIfyDXLprFH1Bz+OivsroIpJR9MI+8PfEOKM/tLPIiRyvHSOaCHo9JEeNegtVTFbVwQGqfReEAu4Zxxp3n0LTxkiY9nCjponxU+3nvzaQm1hUDKw22cKaTnVrM22og=
-Date: Sat, 19 Apr 2008 23:28:49 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       miklos@szeredi.hu, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 3/8] omfs: add inode routines
-Message-ID: <20080419212842.GA7888@joi>
-References: <1208637457-24969-4-git-send-email-me@bobcopeland.com>
-MIME-Version: 1.0
+	Sat, 19 Apr 2008 17:29:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At0FAK4BCkhMROPA/2dsb2JhbACBYKhk
+Date: Sat, 19 Apr 2008 17:29:37 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, akpm@osdl.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v7)
+Message-ID: <20080419212937.GA2831@Krystal>
+References: <20080417164116.GB23351@Krystal> <48087217.50305@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208637457-24969-4-git-send-email-me@bobcopeland.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <48087217.50305@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:26:49 up 50 days, 17:37,  4 users,  load average: 0.62, 0.40,
+	0.31
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 19, 2008 at 04:37:32PM -0400, Bob Copeland wrote:
-> +static int omfs_get_imap(struct super_block *sb)
-> +{
-> +	int bitmap_size;
-> +	int array_size;
-> +	int count;
-> +	struct omfs_sb_info *sbi = OMFS_SB(sb);
-> +	struct buffer_head *bh;
-> +	unsigned long **ptr;
-> +	sector_t block;
-> +
-> +	bitmap_size = (sbi->s_num_blocks + 7) / 8;
-> +	array_size = (bitmap_size + sb->s_blocksize - 1) / sb->s_blocksize;
-these are DIV_ROUND_UP
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+>> +/*
+>> + * Only returns from a trap or exception to a NMI context 
+>> (intra-privilege
+>> + * level near return) to the same SS and CS segments. Should be used
+>> + * upon trap or exception return when nested over a NMI context so no 
+>> iret is
+>> + * issued. It takes care of modifying the eflags, rsp and returning to 
+>> the
+>> + * previous function.
+>> + *
+>> + * The stack, at that point, looks like :
+>> + *
+>> + * 0(rsp)  RIP
+>> + * 8(rsp)  CS
+>> + * 16(rsp) EFLAGS
+>> + * 24(rsp) RSP
+>> + * 32(rsp) SS
+>> + *
+>> + * Upon execution :
+>> + * Copy EIP to the top of the return stack
+>> + * Update top of return stack address
+>> + * Pop eflags into the eflags register
+>> + * Make the return stack current
+>> + * Near return (popping the return address from the return stack)
+>> + */
+>> +#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
+>> +					mov %rsp, %rax;		\
+>> +					mov 24+8(%rax), %rsp;	\
+>> +					pushq 0+8(%rax);	\
+>> +					pushq 16+8(%rax);	\
+>> +					movq (%rax), %rax;	\
+>> +					popfq;			\
+>> +					ret;
+>>   
+>
+> I got this right first go?  I must be getting good at this...
+>
 
-> +
-> +	if (sbi->s_bitmap_ino == ~0ULL)
-> +		goto out;
-> +
-> +	sbi->s_imap_size = array_size;
-> +	sbi->s_imap = kzalloc(array_size * sizeof(unsigned long *), GFP_KERNEL);
-> +	if (!sbi->s_imap)
-> +		goto nomem;
-> +
-> +	block = clus_to_blk(sbi, sbi->s_bitmap_ino);
-> +	ptr = sbi->s_imap;
-> +	for (count = bitmap_size; count > 0; count -= sb->s_blocksize) {
-> +		bh = sb_bread(sb, block++);
-> +		if (!bh)
-> +			goto nomem_free;
-> +		*ptr = kmalloc(sb->s_blocksize, GFP_KERNEL);
-> +		if (!*ptr) {
-> +			brelse(bh);
-> +			goto nomem_free;
-> +		}
-> +		memcpy(*ptr, bh->b_data, sb->s_blocksize);
-> +		if (count < sb->s_blocksize)
-> +			memset((void *)*ptr + count, 0xff,
-> +				sb->s_blocksize - count);
-> +		brelse(bh);
-> +		ptr++;
-> +	}
-> +out:
-> +	return 0;
-> +
-> +nomem_free:
-> +	for (count = 0; count < array_size; count++)
-> +		kfree(sbi->s_imap[count]);
-> +
-> +	kfree(sbi->s_imap);
-> +nomem:
-> +	sbi->s_imap = NULL;
-> +	sbi->s_imap_size = 0;
-> +	return -ENOMEM;
-> +}
-> +
-> +static void set_block_shift(struct omfs_sb_info *sbi)
-> +{
-> +	unsigned int scale = sbi->s_blocksize / sbi->s_sys_blocksize;
-> +	sbi->s_block_shift = 0;
-> +	for (scale >>= 1; scale; scale >>= 1)
-> +		sbi->s_block_shift++;
-> +}
-isn't it get_bitmask_order(scale - 1)?
+Yes, it looked good to me at least :)
 
-Marcin
+> Anyway, trailing ';', and perhaps use a consistent form for mov (either 
+> movq or mov in all three instances).
+>
+
+Ok, fixed. Here is the update.
+
+The last issue standing would be the paravirt code. Any ideas about how
+it's best to do it ? It would be good to be able to get the nmi-safe
+version on bare metal, patched with a standard iret emulation in
+paravirt code.
+
+
+x86 NMI-safe INT3 and Page Fault
+
+Implements an alternative iret with popf and return so trap and exception
+handlers can return to the NMI handler without issuing iret. iret would cause
+NMIs to be reenabled prematurely. x86_32 uses popf and far return. x86_64 has to
+copy the return instruction pointer to the top of the previous stack, issue a
+popf, loads the previous esp and issue a near return (ret).
+
+It allows placing immediate values (and therefore optimized trace_marks) in NMI
+code since returning from a breakpoint would be valid. Accessing vmalloc'd
+memory, which allows executing module code or accessing vmapped or vmalloc'd
+areas from NMI context, would also be valid. This is very useful to tracers like
+LTTng.
+
+This patch makes all faults, traps and exception safe to be called from NMI
+context *except* single-stepping, which requires iret to restore the TF (trap
+flag) and jump to the return address in a single instruction. Sorry, no kprobes
+support in NMI handlers because of this limitation.  We cannot single-step an
+NMI handler, because iret must set the TF flag and return back to the
+instruction to single-step in a single instruction. This cannot be emulated with
+popf/lret, because lret would be single-stepped. It does not apply to immediate
+values because they do not use single-stepping. This code detects if the TF
+flag is set and uses the iret path for single-stepping, even if it reactivates
+NMIs prematurely.
+
+alpha and avr32 use the active count bit 31. This patch moves them to 28.
+
+TODO : test alpha and avr32 active count modification
+TODO : add paravirt support for the iret alternative. Currently, paravirt
+kernels running on bare metal still use iret in traps nested over nmi handlers.
+
+tested on x86_32 (tests implemented in a separate patch) :
+- instrumented the return path to export the EIP, CS and EFLAGS values when
+  taken so we know the return path code has been executed.
+- trace_mark, using immediate values, with 10ms delay with the breakpoint
+  activated. Runs well through the return path.
+- tested vmalloc faults in NMI handler by placing a non-optimized marker in the
+  NMI handler (so no breakpoint is executed) and connecting a probe which
+  touches every pages of a 20MB vmalloc'd buffer. It executes trough the return
+  path without problem.
+- Tested with and without preemption
+
+tested on x86_64
+- instrumented the return path to export the EIP, CS and EFLAGS values when
+  taken so we know the return path code has been executed.
+- trace_mark, using immediate values, with 10ms delay with the breakpoint
+  activated. Runs well through the return path.
+
+To test on x86_64 :
+- Test without preemption
+- Test vmalloc faults
+- Test on Intel 64 bits CPUs.
+
+Changelog since v1 :
+- x86_64 fixes.
+Changelog since v2 :
+- fix paravirt build
+Changelog since v3 :
+- Include modifications suggested by Jeremy
+Changelog since v4 :
+- including hardirq.h in entry_32/64.S is a bad idea (non ifndef'd C code),
+  define HARDNMI_MASK in the .S files directly.
+Changelog since v5 :
+- Add HARDNMI_MASK to irq_count() and make die() more verbose for NMIs.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@osdl.org
+CC: mingo@elte.hu
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+---
+ arch/x86/kernel/entry_32.S      |   27 ++++++++++++++++++-
+ arch/x86/kernel/entry_64.S      |   26 ++++++++++++++++++
+ arch/x86/kernel/traps_32.c      |    3 ++
+ arch/x86/kernel/traps_64.c      |    4 ++
+ include/asm-alpha/thread_info.h |    2 -
+ include/asm-avr32/thread_info.h |    2 -
+ include/asm-x86/irqflags.h      |   55 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/paravirt.h      |    2 +
+ include/linux/hardirq.h         |   27 +++++++++++++++++--
+ 9 files changed, 142 insertions(+), 6 deletions(-)
+
+Index: linux-2.6-lttng/include/linux/hardirq.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/hardirq.h	2008-04-19 12:00:39.000000000 -0400
++++ linux-2.6-lttng/include/linux/hardirq.h	2008-04-19 12:00:41.000000000 -0400
+@@ -22,10 +22,13 @@
+  * PREEMPT_MASK: 0x000000ff
+  * SOFTIRQ_MASK: 0x0000ff00
+  * HARDIRQ_MASK: 0x0fff0000
++ * HARDNMI_MASK: 0x40000000
+  */
+ #define PREEMPT_BITS	8
+ #define SOFTIRQ_BITS	8
+ 
++#define HARDNMI_BITS	1
++
+ #ifndef HARDIRQ_BITS
+ #define HARDIRQ_BITS	12
+ 
+@@ -45,16 +48,19 @@
+ #define PREEMPT_SHIFT	0
+ #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
+ #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
++#define HARDNMI_SHIFT	(30)
+ 
+ #define __IRQ_MASK(x)	((1UL << (x))-1)
+ 
+ #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
+ #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
+ #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
++#define HARDNMI_MASK	(__IRQ_MASK(HARDNMI_BITS) << HARDNMI_SHIFT)
+ 
+ #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
+ #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
+ #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
++#define HARDNMI_OFFSET	(1UL << HARDNMI_SHIFT)
+ 
+ #if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
+ #error PREEMPT_ACTIVE is too low!
+@@ -62,7 +68,9 @@
+ 
+ #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+ #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+-#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
++#define irq_count() \
++	(preempt_count() & (HARDNMI_MASK | HARDIRQ_MASK | SOFTIRQ_MASK))
++#define hardnmi_count()	(preempt_count() & HARDNMI_MASK)
+ 
+ /*
+  * Are we doing bottom half or hardware interrupt processing?
+@@ -71,6 +79,7 @@
+ #define in_irq()		(hardirq_count())
+ #define in_softirq()		(softirq_count())
+ #define in_interrupt()		(irq_count())
++#define in_nmi()		(hardnmi_count())
+ 
+ /*
+  * Are we running in atomic context?  WARNING: this macro cannot
+@@ -159,7 +168,19 @@ extern void irq_enter(void);
+  */
+ extern void irq_exit(void);
+ 
+-#define nmi_enter()		do { lockdep_off(); __irq_enter(); } while (0)
+-#define nmi_exit()		do { __irq_exit(); lockdep_on(); } while (0)
++#define nmi_enter()					\
++	do {						\
++		lockdep_off();				\
++		BUG_ON(hardnmi_count());		\
++		add_preempt_count(HARDNMI_OFFSET);	\
++		__irq_enter();				\
++	} while (0)
++
++#define nmi_exit()					\
++	do {						\
++		__irq_exit();				\
++		sub_preempt_count(HARDNMI_OFFSET);	\
++		lockdep_on();				\
++	} while (0)
+ 
+ #endif /* LINUX_HARDIRQ_H */
+Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2008-04-19 12:00:40.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2008-04-19 17:24:09.000000000 -0400
+@@ -75,11 +75,12 @@ DF_MASK		= 0x00000400 
+ NT_MASK		= 0x00004000
+ VM_MASK		= 0x00020000
+ 
++#define HARDNMI_MASK 0x40000000
++
+ #ifdef CONFIG_PREEMPT
+ #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
+ #else
+ #define preempt_stop(clobbers)
+-#define resume_kernel		restore_nocheck
+ #endif
+ 
+ .macro TRACE_IRQS_IRET
+@@ -265,6 +266,8 @@ END(ret_from_exception)
+ #ifdef CONFIG_PREEMPT
+ ENTRY(resume_kernel)
+ 	DISABLE_INTERRUPTS(CLBR_ANY)
++	testl $HARDNMI_MASK,TI_preempt_count(%ebp)	# nested over NMI ?
++	jnz return_to_nmi
+ 	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
+ 	jnz restore_nocheck
+ need_resched:
+@@ -276,6 +279,12 @@ need_resched:
+ 	call preempt_schedule_irq
+ 	jmp need_resched
+ END(resume_kernel)
++#else
++ENTRY(resume_kernel)
++	testl $HARDNMI_MASK,TI_preempt_count(%ebp)	# nested over NMI ?
++	jnz return_to_nmi
++	jmp restore_nocheck
++END(resume_kernel)
+ #endif
+ 	CFI_ENDPROC
+ 
+@@ -411,6 +420,22 @@ restore_nocheck_notrace:
+ 	CFI_ADJUST_CFA_OFFSET -4
+ irq_return:
+ 	INTERRUPT_RETURN
++return_to_nmi:
++	testl $X86_EFLAGS_TF, PT_EFLAGS(%esp)
++	jnz restore_nocheck		/*
++					 * If single-stepping an NMI handler,
++					 * use the normal iret path instead of
++					 * the popf/lret because lret would be
++					 * single-stepped. It should not
++					 * happen : it will reactivate NMIs
++					 * prematurely.
++					 */
++	TRACE_IRQS_IRET
++	RESTORE_REGS
++	addl $4, %esp			# skip orig_eax/error_code
++	CFI_ADJUST_CFA_OFFSET -4
++	INTERRUPT_RETURN_NMI_SAFE
++
+ .section .fixup,"ax"
+ iret_exc:
+ 	pushl $0			# no error code
+Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2008-04-19 12:00:40.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2008-04-19 17:24:10.000000000 -0400
+@@ -54,6 +54,8 @@
+ 
+ 	.code64
+ 
++#define HARDNMI_MASK 0x40000000
++
+ #ifndef CONFIG_PREEMPT
+ #define retint_kernel retint_restore_args
+ #endif	
+@@ -581,12 +583,27 @@ retint_restore_args:	/* return to kernel
+ 	 * The iretq could re-enable interrupts:
+ 	 */
+ 	TRACE_IRQS_IRETQ
++	testl $HARDNMI_MASK,threadinfo_preempt_count(%rcx)
++	jnz return_to_nmi		/* Nested over NMI ? */
+ restore_args:
+ 	RESTORE_ARGS 0,8,0
+ 
+ irq_return:
+ 	INTERRUPT_RETURN
+ 
++return_to_nmi:				/*
++					 * If single-stepping an NMI handler,
++					 * use the normal iret path instead of
++					 * the popf/lret because lret would be
++					 * single-stepped. It should not
++					 * happen : it will reactivate NMIs
++					 * prematurely.
++					 */
++	testw $X86_EFLAGS_TF,EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
++	jnz restore_args
++	RESTORE_ARGS 0,8,0
++	INTERRUPT_RETURN_NMI_SAFE
++
+ 	.section __ex_table, "a"
+ 	.quad irq_return, bad_iret
+ 	.previous
+@@ -802,6 +819,10 @@ END(spurious_interrupt)
+ 	.macro paranoidexit trace=1
+ 	/* ebx:	no swapgs flag */
+ paranoid_exit\trace:
++	GET_THREAD_INFO(%rcx)
++	testl $HARDNMI_MASK,threadinfo_preempt_count(%rcx)
++	jnz paranoid_return_to_nmi\trace	/* Nested over NMI ? */
++paranoid_exit_no_nmi\trace:
+ 	testl %ebx,%ebx				/* swapgs needed? */
+ 	jnz paranoid_restore\trace
+ 	testl $3,CS(%rsp)
+@@ -814,6 +835,11 @@ paranoid_swapgs\trace:
+ paranoid_restore\trace:
+ 	RESTORE_ALL 8
+ 	jmp irq_return
++paranoid_return_to_nmi\trace:
++	testw $X86_EFLAGS_TF,EFLAGS-0(%rsp)	/* trap flag? */
++	jnz paranoid_exit_no_nmi\trace
++	RESTORE_ALL 8
++	INTERRUPT_RETURN_NMI_SAFE
+ paranoid_userspace\trace:
+ 	GET_THREAD_INFO(%rcx)
+ 	movl threadinfo_flags(%rcx),%ebx
+Index: linux-2.6-lttng/include/asm-x86/irqflags.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/irqflags.h	2008-04-19 12:00:39.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/irqflags.h	2008-04-19 17:25:24.000000000 -0400
+@@ -138,12 +138,67 @@ static inline unsigned long __raw_local_
+ 
+ #ifdef CONFIG_X86_64
+ #define INTERRUPT_RETURN	iretq
++
++/*
++ * Only returns from a trap or exception to a NMI context (intra-privilege
++ * level near return) to the same SS and CS segments. Should be used
++ * upon trap or exception return when nested over a NMI context so no iret is
++ * issued. It takes care of modifying the eflags, rsp and returning to the
++ * previous function.
++ *
++ * The stack, at that point, looks like :
++ *
++ * 0(rsp)  RIP
++ * 8(rsp)  CS
++ * 16(rsp) EFLAGS
++ * 24(rsp) RSP
++ * 32(rsp) SS
++ *
++ * Upon execution :
++ * Copy EIP to the top of the return stack
++ * Update top of return stack address
++ * Pop eflags into the eflags register
++ * Make the return stack current
++ * Near return (popping the return address from the return stack)
++ */
++#define INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
++					movq %rsp, %rax;	\
++					movq 24+8(%rax), %rsp;	\
++					pushq 0+8(%rax);	\
++					pushq 16+8(%rax);	\
++					movq (%rax), %rax;	\
++					popfq;			\
++					ret
++
+ #define ENABLE_INTERRUPTS_SYSCALL_RET			\
+ 			movq	%gs:pda_oldrsp, %rsp;	\
+ 			swapgs;				\
+ 			sysretq;
+ #else
+ #define INTERRUPT_RETURN		iret
++
++/*
++ * Protected mode only, no V8086. Implies that protected mode must
++ * be entered before NMIs or MCEs are enabled. Only returns from a trap or
++ * exception to a NMI context (intra-privilege level far return). Should be used
++ * upon trap or exception return when nested over a NMI context so no iret is
++ * issued.
++ *
++ * The stack, at that point, looks like :
++ *
++ * 0(esp) EIP
++ * 4(esp) CS
++ * 8(esp) EFLAGS
++ *
++ * Upon execution :
++ * Copy the stack eflags to top of stack
++ * Pop eflags into the eflags register
++ * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
++ */
++#define INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
++					popfl;		\
++					lret $4
++
+ #define ENABLE_INTERRUPTS_SYSCALL_RET	sti; sysexit
+ #define GET_CR0_INTO_EAX		movl %cr0, %eax
+ #endif
+Index: linux-2.6-lttng/include/asm-alpha/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-alpha/thread_info.h	2008-04-19 12:00:39.000000000 -0400
++++ linux-2.6-lttng/include/asm-alpha/thread_info.h	2008-04-19 17:24:11.000000000 -0400
+@@ -57,7 +57,7 @@ register struct thread_info *__current_t
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+-#define PREEMPT_ACTIVE		0x40000000
++#define PREEMPT_ACTIVE		0x10000000
+ 
+ /*
+  * Thread information flags:
+Index: linux-2.6-lttng/include/asm-avr32/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-avr32/thread_info.h	2008-04-19 12:00:39.000000000 -0400
++++ linux-2.6-lttng/include/asm-avr32/thread_info.h	2008-04-19 17:24:11.000000000 -0400
+@@ -70,7 +70,7 @@ static inline struct thread_info *curren
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+-#define PREEMPT_ACTIVE		0x40000000
++#define PREEMPT_ACTIVE		0x10000000
+ 
+ /*
+  * Thread information flags
+Index: linux-2.6-lttng/include/asm-x86/paravirt.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/paravirt.h	2008-04-19 12:00:39.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/paravirt.h	2008-04-19 12:00:41.000000000 -0400
+@@ -1358,6 +1358,8 @@ static inline unsigned long __raw_local_
+ 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_iret), CLBR_NONE,	\
+ 		  jmp *%cs:pv_cpu_ops+PV_CPU_iret)
+ 
++#define INTERRUPT_RETURN_NMI_SAFE INTERRUPT_RETURN
++
+ #define DISABLE_INTERRUPTS(clobbers)					\
+ 	PARA_SITE(PARA_PATCH(pv_irq_ops, PV_IRQ_irq_disable), clobbers, \
+ 		  PV_SAVE_REGS;			\
+Index: linux-2.6-lttng/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/traps_32.c	2008-04-19 12:00:40.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/traps_32.c	2008-04-19 17:24:12.000000000 -0400
+@@ -464,6 +464,9 @@ void die(const char * str, struct pt_reg
+ 	if (kexec_should_crash(current))
+ 		crash_kexec(regs);
+ 
++	if (in_nmi())
++		panic("Fatal exception in non-maskable interrupt");
++
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+ 
+Index: linux-2.6-lttng/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/traps_64.c	2008-04-19 12:00:40.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/traps_64.c	2008-04-19 17:24:08.000000000 -0400
+@@ -553,6 +553,10 @@ void __kprobes oops_end(unsigned long fl
+ 		oops_exit();
+ 		return;
+ 	}
++	if (in_nmi())
++		panic("Fatal exception in non-maskable interrupt");
++	if (in_interrupt())
++		panic("Fatal exception in interrupt");
+ 	if (panic_on_oops)
+ 		panic("Fatal exception");
+ 	oops_exit();
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
