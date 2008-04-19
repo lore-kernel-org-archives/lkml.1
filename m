@@ -1,43 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYDSQ62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbYDSRGC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbYDSQ62 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYDSQ6S
+	id S1757406AbYDSRGC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 13:06:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYDSRFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:58:18 -0400
-Received: from h155.mvista.com ([63.81.120.155]:22904 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751150AbYDSQ6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:58:18 -0400
-Message-ID: <480A2481.40507@ru.mvista.com>
-Date: Sat, 19 Apr 2008 20:57:37 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 19 Apr 2008 13:05:51 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:34179 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754069AbYDSRFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 13:05:50 -0400
+Date: Sat, 19 Apr 2008 20:05:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080419170530.GD1595@cs181133002.pp.htv.fi>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] siimage: remove proc_reports_siimage()
-References: <200804092052.41806.bzolnier@gmail.com>
-In-Reply-To: <200804092052.41806.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1208620484.3280.23.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Sat, Apr 19, 2008 at 10:54:44AM -0500, James Bottomley wrote:
+> 
+> On Sat, 2008-04-19 at 17:19 +0200, Ingo Molnar wrote:
+> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > 
+> > >       libsas: Provide a transport-level facility to request SAS addrs
+> > 
+> > this (or a nearby) commit caused a build regression:
+> > 
+> >  drivers/built-in.o: In function `sas_request_addr':
+> >  : undefined reference to `request_firmware'
+> >  drivers/built-in.o: In function `sas_request_addr':
+> >  : undefined reference to `release_firmware'
+> > 
+> > config can be found at:
+> > 
+> >    http://redhat.com/~mingo/misc/config-Sat_Apr_19_16_58_35_CEST_2008.bad
+> > 
+> > ... brought to you by x86.git's randconfig build and boot service ;-)
+> 
+> This one's fun.  The root cause is 
+> 
+> CONFIG_SCSI_SAS_LIBSAS=y
+> CONFIG_FW_LOADER=m
+> 
+> The problem is that libsas doesn't depend on the FW loader and doesn't
+> want to.  It just wants to use it if it's available.  The definitions in
+> include/linux/firmware.h have stubs to facilitate this.
+> 
+> However, CONFIG_FW_LOADER=m defeats the stubs.
+> 
+> This is a bit nasty to fix; however, I think this patch does.  I've also
+> put a large comment in to explain what's going on.
+>...
 
-> * proc_reports_siimage() is now only called by init_chipset_siimage()
->   so inline it there.
+Your patch fixes the build error, but I'm not sure whether it's the
+correct fix:
 
-> * Use array instead of switch statement for reporting clock modes.
+CONFIG_SCSI_SAS_LIBSAS=y, CONFIG_FW_LOADER=m, CONFIG_SCSI_AIC94XX=m
+will now pass all randconfig tests, but the effects of the
+"select FW_LOADER" in the SCSI_AIC94XX driver would be lost in this 
+configuration, and we might get bug reports like "driver works built-in 
+but fails with 'No SAS Address provided for %s\n' when built modular."
 
-> There should be no functional changes caused by this patch.
+IMHO SCSI_SAS_LIBSAS should simply select FW_LOADER.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cu
+Adrian
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+-- 
 
-MBR, Sergei
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
