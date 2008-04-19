@@ -1,103 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbYDSSd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbYDSSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762378AbYDSSd2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 14:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYDSSdV
+	id S1762050AbYDSSlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbYDSSlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 14:33:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47126 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755397AbYDSSdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 14:33:20 -0400
-Date: Sat, 19 Apr 2008 20:33:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Shawn Bohrer <shawn.bohrer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080419183302.GA27463@elte.hu>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080419110034.34b70bd5@laptopd505.fenrus.org>
+	Sat, 19 Apr 2008 14:41:08 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53579 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755922AbYDSSlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 14:41:07 -0400
+Date: Sat, 19 Apr 2008 12:40:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
+Cc: David Howells <dhowells@redhat.com>
+Subject: Pull request for semaphore include changes
+Message-ID: <20080419184029.GO20637@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080419110034.34b70bd5@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+Hi Linus,
 
-> On Sat, 19 Apr 2008 09:59:48 -0500
-> Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
-> 
-> > On Sat, Apr 19, 2008 at 04:23:29PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > >  config 4KSTACKS
-> > > > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > > > > -	depends on DEBUG_KERNEL
-> > > > >  	depends on X86_32
-> > > > > +	default y
-> > > > 
-> > > > This patch will cause kernels to crash.
-> > > 
-> > > what mainline kernels crash and how will they crash? Fedora and
-> > > other distros have had 4K stacks enabled for years:
-> > 
-> > If by other distros you mean RHEL then yes.  However, openSUSE,
-> > Ubuntu, and Mandriva all still have 8K stacks.  I know of no other
-> > distributions that default to 4K.
-> 
-> centos, oracle and redflag tend to follow the RHEL/fedora settings.
-> 
-> To be honest, at this point we're at a situation where
-> * Several very popular distributions have this enabled for 5+ years,
->   apparently without any real issues (otherwise the enterprise releases
->   would have turned this off)
-> * The early "hot known issues" have been resolved afaik, things like
->   block device stacking, and symlink recursion lookups are either no longer
->   recursive, or a lot less recursive than they used to be.
-> 
-> There are clear benefits to 4K stacks (no need to reiterate the flamewar,
-> but worth mentioning)
-> * Less memory consumption in the lowmem zone (critical for enterprise use,
->   also good for general performance)
-> * Kernel stacks at 8K are one of the most prominent order-1 allocations in the
->   kernel; again with big-memory systems the fragmentation of the lowmem zone
->   is a problem (and the distros that ship 4K stacks went there because of customer
->   complaints)
-> 
-> On the flipside the arguments tend to be
-> 1) certain stackings of components still runs the risk of overflowing
-> 2) I want to run ndiswrapper
-> 3) general, unspecified uneasyness.
-> 
-> For 1), we need to know which they are, and then solve them, because 
-> even on x86-64 with 8k stacks they can be a problem (just because the 
-> stack frames are bigger, although not quite double, there). I've not 
-> seen any recent reports, I'll try to extend the kerneloops.org client 
-> to collect the "stack is getting low" warning to be able to see how 
-> much this really happens.
-> 
-> for 2), the real answer there is "ndiswrapper needs 12kb not 8kb"
-> 
-> for 3), this is hard to deal with but also generally unfounded... you 
-> can use this argument against any change in the kernel.
+Thanks for pulling the generic semaphores.  This follow-on series
+removes all in-tree references to asm/semaphore.h.  Many of the existing
+references are in files which do not use semaphores, so they are simply
+deleted.  The remainder are converted to use linux/semaphore.h.
 
-and lets observe it that 8K stacks are of course still offered, so if 
-anyone disables 4K stacks in the .config, it will stay disabled.
+As you can imagine, this has the potential to conflict with just about
+any patch.  I've fixed it up for the latest git tree, but obviously
+it's likely to cause conflicts whenever it goes in.  It was a pain to
+keep up with breakage-of-the day when it was in linux-next, so I dropped
+all of these temporarily from the earlier semaphore tree.  If it causes
+problems when you try to pull it, just kick it back to me and I'll redo
+it on top of your tree.  Or just tell me that you'll pull it right at
+the end of the merge window if you like.
 
-	Ingo
+The following changes since commit 3925e6fc1f774048404fdd910b0345b06c699eb4:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jmorris/security-testing-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc semaphore
+
+Matthew Wilcox (10):
+      arch: Remove unnecessary inclusions of asm/semaphore.h
+      net: Remove unnecessary inclusions of asm/semaphore.h
+      drivers: Remove unnecessary inclusions of asm/semaphore.h
+      fs: Remove unnecessary inclusions of asm/semaphore.h
+      include: Remove unnecessary inclusions of asm/semaphore.h
+      kernel: Remove unnecessary inclusions of asm/semaphore.h
+      lib: Remove unnecessary inclusions of asm/semaphore.h
+      security: Remove unnecessary inclusions of asm/semaphore.h
+      Convert asm/semaphore.h users to linux/semaphore.h
+      Deprecate the asm/semaphore.h files in feature-removal-schedule.
+
+ Documentation/DocBook/kernel-locking.tmpl     |    6 +++---
+ Documentation/feature-removal-schedule.txt    |    8 ++++++++
+ arch/arm/common/rtctime.c                     |    1 -
+ arch/arm/mach-aaec2000/clock.c                |    2 --
+ arch/arm/mach-at91/clock.c                    |    1 -
+ arch/arm/mach-integrator/clock.c              |    1 -
+ arch/arm/mach-pnx4008/clock.c                 |    1 -
+ arch/arm/mach-pnx4008/gpio.c                  |    1 -
+ arch/arm/mach-realview/clock.c                |    1 -
+ arch/arm/mach-versatile/clock.c               |    1 -
+ arch/arm/plat-omap/clock.c                    |    1 -
+ arch/ia64/kernel/salinfo.c                    |    2 +-
+ arch/ia64/sn/kernel/sn2/sn_hwperf.c           |    1 -
+ arch/m68k/atari/stram.c                       |    1 -
+ arch/m68k/sun3/intersil.c                     |    1 -
+ arch/mips/sgi-ip27/ip27-console.c             |    1 -
+ arch/parisc/kernel/sys_parisc32.c             |    1 -
+ arch/powerpc/kernel/rtas.c                    |    1 -
+ arch/powerpc/kernel/sys_ppc32.c               |    1 -
+ arch/powerpc/kernel/syscalls.c                |    1 -
+ arch/powerpc/platforms/cell/spufs/file.c      |    1 -
+ arch/powerpc/platforms/cell/spufs/inode.c     |    1 -
+ arch/powerpc/platforms/powermac/pfunc_core.c  |    1 -
+ arch/ppc/syslib/ocp.c                         |    1 -
+ arch/s390/kernel/compat_linux.c               |    1 -
+ arch/s390/kernel/debug.c                      |    1 -
+ arch/sparc64/kernel/sys_sparc32.c             |    1 -
+ arch/v850/kernel/syscalls.c                   |    1 -
+ arch/x86/ia32/sys_ia32.c                      |    1 -
+ arch/x86/kernel/cpu/common.c                  |    1 -
+ arch/x86/kernel/cpu/proc.c                    |    1 -
+ drivers/ata/libata-core.c                     |    1 -
+ drivers/base/core.c                           |    2 +-
+ drivers/block/cryptoloop.c                    |    1 -
+ drivers/char/generic_serial.c                 |    1 -
+ drivers/char/rio/rioboot.c                    |    1 -
+ drivers/char/rio/riocmd.c                     |    1 -
+ drivers/char/rio/rioctrl.c                    |    1 -
+ drivers/char/rio/rioinit.c                    |    1 -
+ drivers/char/rio/riointr.c                    |    1 -
+ drivers/char/rio/rioparam.c                   |    1 -
+ drivers/char/rio/rioroute.c                   |    1 -
+ drivers/char/rio/riotable.c                   |    1 -
+ drivers/char/rio/riotty.c                     |    1 -
+ drivers/char/snsc.h                           |    2 +-
+ drivers/firewire/fw-device.c                  |    3 ++-
+ drivers/firewire/fw-transaction.c             |    1 -
+ drivers/firmware/dcdbas.c                     |    1 -
+ drivers/i2c/i2c-core.c                        |    2 +-
+ drivers/ieee1394/nodemgr.c                    |    2 +-
+ drivers/infiniband/core/user_mad.c            |    2 +-
+ drivers/infiniband/hw/amso1100/c2.h           |    1 -
+ drivers/infiniband/hw/mthca/mthca_dev.h       |    3 +--
+ drivers/infiniband/hw/nes/nes.h               |    1 -
+ drivers/input/serio/hp_sdc_mlc.c              |    2 +-
+ drivers/lguest/lg.h                           |    1 -
+ drivers/macintosh/adb.c                       |    2 +-
+ drivers/macintosh/windfarm_smu_sat.c          |    2 +-
+ drivers/media/radio/radio-aimslab.c           |    1 -
+ drivers/media/video/ir-kbd-i2c.c              |    1 -
+ drivers/media/video/ov511.c                   |    1 -
+ drivers/media/video/pvrusb2/pvrusb2-context.c |    1 -
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c     |    1 -
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c   |    1 -
+ drivers/mfd/ucb1x00-ts.c                      |    1 -
+ drivers/net/3c527.c                           |    2 +-
+ drivers/net/cxgb3/adapter.h                   |    1 -
+ drivers/net/cxgb3/t3cdev.h                    |    1 -
+ drivers/net/hamradio/6pack.c                  |    2 +-
+ drivers/net/ibmveth.c                         |    1 -
+ drivers/net/netxen/netxen_nic_hdr.h           |    1 -
+ drivers/net/usb/kaweth.c                      |    1 -
+ drivers/s390/cio/ccwgroup.c                   |    1 -
+ drivers/s390/cio/qdio.c                       |    2 +-
+ drivers/scsi/aacraid/aachba.c                 |    1 -
+ drivers/scsi/aacraid/commctrl.c               |    2 +-
+ drivers/scsi/aacraid/comminit.c               |    1 -
+ drivers/scsi/aacraid/commsup.c                |    2 +-
+ drivers/scsi/aacraid/dpcsup.c                 |    2 +-
+ drivers/scsi/aacraid/linit.c                  |    1 -
+ drivers/scsi/aacraid/rx.c                     |    1 -
+ drivers/scsi/aacraid/sa.c                     |    1 -
+ drivers/scsi/dpt/dpti_i2o.h                   |    1 -
+ drivers/scsi/megaraid/mega_common.h           |    1 -
+ drivers/scsi/megaraid/megaraid_ioctl.h        |    2 +-
+ drivers/scsi/qla2xxx/qla_def.h                |    2 +-
+ drivers/serial/mcfserial.c                    |    1 -
+ drivers/usb/atm/usbatm.h                      |    1 -
+ drivers/usb/core/hub.c                        |    1 -
+ drivers/usb/misc/appledisplay.c               |    1 -
+ drivers/usb/serial/io_ti.c                    |    1 -
+ drivers/usb/serial/ti_usb_3410_5052.c         |    1 -
+ drivers/watchdog/sc1200wdt.c                  |    2 +-
+ fs/9p/fid.c                                   |    1 -
+ fs/cramfs/inode.c                             |    1 -
+ fs/dlm/dlm_internal.h                         |    1 -
+ fs/jffs2/jffs2_fs_i.h                         |    2 +-
+ fs/jffs2/jffs2_fs_sb.h                        |    2 +-
+ fs/locks.c                                    |    1 -
+ fs/reiserfs/journal.c                         |    2 +-
+ fs/reiserfs/xattr.c                           |    1 -
+ fs/xfs/linux-2.6/sema.h                       |    2 +-
+ include/asm-blackfin/dma.h                    |    1 -
+ include/asm-ia64/sn/nodepda.h                 |    1 -
+ include/asm-ppc/ocp.h                         |    1 -
+ include/linux/cpu.h                           |    1 -
+ include/linux/device.h                        |    2 +-
+ include/linux/fs.h                            |    2 +-
+ include/linux/hil_mlc.h                       |    2 +-
+ include/linux/i2o.h                           |    2 +-
+ include/linux/ide.h                           |    1 -
+ include/linux/if_pppox.h                      |    1 -
+ include/linux/jbd.h                           |    2 --
+ include/linux/jbd2.h                          |    2 --
+ include/linux/kernelcapi.h                    |    1 -
+ include/linux/memory.h                        |    3 +--
+ include/linux/parport.h                       |    2 +-
+ include/linux/raid/md.h                       |    1 -
+ include/linux/sched.h                         |    1 -
+ include/linux/syscalls.h                      |    1 -
+ include/scsi/libsas.h                         |    1 -
+ kernel/kexec.c                                |    1 -
+ kernel/kthread.c                              |    1 -
+ kernel/module.c                               |    3 +--
+ kernel/posix-timers.c                         |    1 -
+ kernel/profile.c                              |    1 -
+ kernel/stop_machine.c                         |    1 -
+ lib/kernel_lock.c                             |    2 +-
+ lib/reed_solomon/reed_solomon.c               |    1 -
+ net/core/flow.c                               |    1 -
+ net/dccp/proto.c                              |    1 -
+ net/ipv4/ipcomp.c                             |    1 -
+ net/ipv6/ipcomp6.c                            |    1 -
+ security/selinux/selinuxfs.c                  |    1 -
+ security/selinux/ss/conditional.c             |    1 -
+ security/selinux/xfrm.c                       |    1 -
+ 136 files changed, 44 insertions(+), 143 deletions(-)
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
