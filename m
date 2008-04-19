@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbYDSPGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762227AbYDSPG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762037AbYDSPGN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 11:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbYDSPFz
+	id S1762227AbYDSPG1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 11:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762100AbYDSPGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 11:05:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53028 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754530AbYDSPFy (ORCPT
+	Sat, 19 Apr 2008 11:06:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:10163 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761967AbYDSPGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 11:05:54 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
-To: Kok@vger.kernel.org, Auke <auke-jan.h.kok@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
-       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Reply-To: 7eggert@gmx.de
-Date: Sat, 19 Apr 2008 17:05:06 +0200
-References: <aiXVe-Yn-7@gated-at.bofh.it> <ajGfA-7rt-9@gated-at.bofh.it> <ajGfA-7rt-11@gated-at.bofh.it> <ajGfA-7rt-13@gated-at.bofh.it> <ajGfA-7rt-15@gated-at.bofh.it> <ajGfA-7rt-7@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JnEcl-0000xc-D9@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18IFJ4+IEEN0BqV6peICT7LAAdB4ex+fDvOV7V
- OO2/zDIRHnfErsGxtH94XUyuaPdRxpTbZLWanUNtkAo7Erz+mb
- HX8srK1/04olNzuwp9yEw==
+	Sat, 19 Apr 2008 11:06:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=user-agent:date:from:to:cc:subject:message-id;
+        b=HI+y4/Bm9YzFq1+lDoguWtlVr9b+5IM/CHRyJhWPNOCjVOsR3VgillX/m9WgM5CyYButy/d5V4k/jpLXjZboeaVmaPDezvyvCGULsq9+KKTvAZPaBzPXvq3R3EaWLQ8L3jQ6UmdckDf5k79D6GWLXdKwMYbcYFOOePREeZoocP8=
+User-Agent: quilt/0.46-1
+Date: Sat, 19 Apr 2008 23:55:10 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 00/10] x86: cleanup patches
+Message-ID: <480a0a62.1abd600a.2e2c.0d80@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+This is the collection of clean up patch for x86.
+These patches can be applied to the latest x86.git.
 
-> [X86] IRQBALANCE: Mark as BROKEN and disable by default
-> 
-> The IRQBALANCE option causes interrupts to bounce all around on SMP systems
-> quickly burying the CPU in migration cost and cache misses. Mainly affected
-> are network interrupts and this results in one CPU pegged in softirqd
-> completely.
-
-If this is the problem, maybe it would help to only balance the IRQs each
-e.g. ten seconds? Unfortunately I have no SMP system to try it out.
-
-
+1-3: cleanup mpparse.c
+4: cleanup alloc_bootmem() usage
+5: cleanup clocksource_hz2mult() usage
+6: cleanup div_sc() usage
+7: use cpumask functions
+8-10: propagate the use of get_bios_ebda()
