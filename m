@@ -1,78 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbYDSUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYDSU0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbYDSUPv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 16:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYDSUPk
+	id S1758796AbYDSU0p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 16:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbYDSU0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 16:15:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45175 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755205AbYDSUPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 16:15:39 -0400
-Date: Sat, 19 Apr 2008 13:14:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
-In-Reply-To: <1208626496.3280.40.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org>
-References: <1208540517.3063.18.camel@localhost.localdomain>  <20080419151934.GA17089@elte.hu>  <1208620484.3280.23.camel@localhost.localdomain>  <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 19 Apr 2008 16:26:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33924 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755775AbYDSU0f convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 16:26:35 -0400
+Message-Id: <1208636794.26656.1248793071@webmail.messagingengine.com>
+X-Sasl-Enc: SG5FVDbTivN0t+99x0Z276kaaKOsfvcvI3WauPntuSNx 1208636794
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Joe Perches" <joe@perches.com>
+Cc: "dean gaudet" <dean@arctic.org>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080331171506.GA24017@mailshack.com> <20080401084710.GB4787@elte.hu>
+   <20080401094618.GA24862@mailshack.com>
+   <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>
+   <1207507897.18129.1246358115@webmail.messagingengine.com>
+   <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>
+   <1207563950.7880.1246457209@webmail.messagingengine.com>
+   <20080418201809.GA5036@mailshack.com>
+   <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
+   <1208563762.10414.19.camel@brick>
+   <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
+   <1208566724.4891.25.camel@localhost>
+   <1208567093.10414.20.camel@brick>
+   <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
+   <1208573728.11990.14.camel@localhost>
+   <alpine.DEB.1.10.0804182112360.6108@twinlark.arctic.org>
+   <1208607019.13829.1248748343@webmail.messagingengine.com>
+   <1208629021.12388.25.camel@localhost>
+Subject: Re: Alternative implementation of the generic __ffs
+In-Reply-To: <1208629021.12388.25.camel@localhost>
+Date: Sat, 19 Apr 2008 22:26:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 19 Apr 2008 11:17:01 -0700, "Joe Perches" <joe@perches.com>
+said:
+> On Sat, 2008-04-19 at 14:10 +0200, Alexander van Heukelum wrote:
+> > I've added that to the benchmark, which you can now find here:
+> > http://heukelum.fastmail.fm/ffs/.
 
+Thanks! Added the version you sent to the program and added the results
+of the ARM processor to the page.
 
-On Sat, 19 Apr 2008, James Bottomley wrote:
+More ideas welcome ;).
+
+> retested on arm:
 > 
-> Well, we already had this argument on linux-scsi when the interface was
-> first proposed:  Apart from select being very nasty and should only be
-> sparingly used
+> $ gcc -Os -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3170 tics,  8326 tics
+> New:            4214 tics,  8793 tics
+> Smallest:       4023 tics,  7733 tics
+> Small const:    3442 tics,  6188 tics
+> Empty loop:     1517 tics,  2243 tics
+> 
+> $ gcc -O2 -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3172 tics,  7832 tics
+> New:            4805 tics,  8790 tics
+> Smallest:       4405 tics,  7154 tics
+> Small const:    3442 tics,  5612 tics
+> Empty loop:     1516 tics,  2145 tics
+> 
+> $ gcc -O3 -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3080 tics,  7709 tics
+> New:            4723 tics,  8656 tics
+> Smallest:       4333 tics,  7121 tics
+> Small const:    3379 tics,  5483 tics
+> Empty loop:     1447 tics,  2016 tics
+> 
+> >  Testing the same with 
+> > "return x4 + x3 + x2 + x1 + x0;" as the last line would be
+> > interesting too.
+> 
+> Adding is slower:
+> 
+> $ gcc -Os -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3152 tics,  8310 tics
+> New:            4214 tics,  8789 tics
+> Smallest:       4024 tics,  7737 tics
+> Small const:    3538 tics,  6295 tics
+> Empty loop:     1517 tics,  2243 tics
+> 
+> $ gcc -O2 -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3184 tics,  7849 tics
+> New:            4790 tics,  8814 tics
+> Smallest:       4406 tics,  7161 tics
+> Small const:    3538 tics,  5806 tics
+> Empty loop:     1521 tics,  2153 tics
+> 
+> $ gcc -O3 -fomit-frame-pointer ffs.c
+> $ ./a.out
+> Original:       3091 tics,  7694 tics
+> New:            4718 tics,  8656 tics
+> Smallest:       4333 tics,  7124 tics
+> Small const:    3467 tics,  5687 tics
+> Empty loop:     1445 tics,  2066 tics
+> 
+> 
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-I'm still not understanding people who say that.
+-- 
+http://www.fastmail.fm - And now for something completely different…
 
-Yes, select has problems, in that it doesn't guarantee dependencies.
-
-But that said, select is a whole lot better than having simply *different* 
-behaviour (or build errors) depending on totally unrelated config options.
-
-So people: stop this total *idiocy* with "select is bad". It's not. The 
-lack of select is *much* worse.
-
-If you want LIBSAS to have two different modes, how about just making that 
-explicit in the configuration, ie using something like
-
-	config LIBSAS_SET_ADDR
-		bool "Provide user-settable SAS address" 
-		depends on SCSI_SAS_LIBSAS
-		help
-		  This allows a runtime "firmware" loader that loads the 
-		  SAS address
-
-	config LIBSAS_SET_ADDR_FWLOAD
-		tristate
-		depends on SCSI_SAS_LIBSAS && LIBSAS_SET_ADDR
-		default y
-		select FW_LOADER
-
-and now you have the explicit option to turn it on or off - and FW_LOADER 
-is loaded appropriately.
-
-> Even if I changed it to select, a user could still defeat it by making
-> CONFIG_SCSI_AIC94XX=y (because now the initialisation is before early
-> boot userland, so the request always fails).
-
-Not true. That's why we have initrd and ramdisks etc.
-
-Not that any normal people will ever care about LIBSAS, but anyway.. The 
-ones that do care about these kinds of things are probably happy to have 
-special initrd images.
-
-		Linus
