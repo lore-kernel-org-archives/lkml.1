@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbYDSQnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbYDSQmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762210AbYDSQnN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762028AbYDSQmn
+	id S1762063AbYDSQmu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYDSQmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:42:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:63016 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754856AbYDSQmj (ORCPT
+	Sat, 19 Apr 2008 12:42:38 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55359 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190AbYDSQmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:42:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
-        b=GGLMmqKNW9wmyJuIM8MHgFjey0LrpkY5DaDTwu3WWUCTFdaaXHXvT2WsRx2sQG6JTh5o0Hw4x8SqqhjA9SVSTSwjMNOeangzNavEnWn2wY/nwOrUakj7HLKOj647J9ZRTtey5e37XkW0ARneUUbHuIRGnCFn/T3chEoNMvCmOmg=
-Message-ID: <480A20F8.6020802@tuffmail.co.uk>
-Date: Sat, 19 Apr 2008 17:42:32 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 19 Apr 2008 12:42:37 -0400
+Message-ID: <480A2011.3080507@trash.net>
+Date: Sat, 19 Apr 2008 18:38:41 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RFC: Self-snapshotting in Linux
-References: <ajbvb-3Ur-21@gated-at.bofh.it> <ajcri-65w-13@gated-at.bofh.it> <da08e304-eb95-4ace-a069-de1a57b86e9f@e39g2000hsf.googlegroups.com> <20080416111237.GA32432@atrey.karlin.mff.cuni.cz> <48060436.6030707@tuffmail.co.uk> <20080417093235.GB7314@elf.ucw.cz>
-In-Reply-To: <20080417093235.GB7314@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
+ -git
+References: <20080419100034.GA9475@elte.hu> <20080419.030736.168169087.davem@davemloft.net>
+In-Reply-To: <20080419.030736.168169087.davem@davemloft.net>
+Content-Type: multipart/mixed;
+ boundary="------------030704000000000509070200"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Wed 2008-04-16 14:50:46, Alan Jenkins wrote:
+This is a multi-part message in MIME format.
+--------------030704000000000509070200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Sat, 19 Apr 2008 12:00:35 +0200
+>
+> [ netfilter-devel and netdev added to CC: ]
+>
 >   
->> Pavel Machek wrote:
->>     
->>>> I guess there is the hardware / drivers issue.  I would like to claim
->>>> I've found hibernation to be reliable but unfortunately that's not
->>>> 100% true.
->>>>     
->>>>         
->>> So debug it, it is open source after all. Or at least file a bugs.
->>>   
->>>       
->> I definitely want to debug it; I love hibernating.  It's a regression and 
->> it'll affect my distro kernel once I upgrade to Ubuntu Hardy.
+>> randconfig testing found a netfilter build failure in latest -git:
 >>
->> <http://bugzilla.kernel.org/show_bug.cgi?id=10196> "Backtraces during 
->> hibernate / resume".
+>>   net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
+>>   net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
 >>
->> I posted the backtraces but nobody could tell me what they were - they 
->> don't actually say whether they're OOPs or BUGs etc.  They might be 
->> softlockups - some times I got softlockup warnings, though thats not in the 
->> log I posted.
+>>   http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
+>>
+>> disabling CONFIG_NF_CONNTRACK_SIP works it around.
 >>     
 >
-> Not sure what that is, I never seen that before.
+> I think this will fix it.
 >
-> Can you try vanilla 2.6.25-rc9 or something?
->   
-I've just retested with 2.6.25.  I reproduced the hang that happens
-after (otherwise successful) hibernation.  After a second hibernation &
-resume I reproduced the mysterious call-traces.
+> Patrick, is this how we should do it?
 
-I posted this information, a full system log (including 2 hibernation
-cycles and the calltraces), and the kernel config to the bugzilla entry.
+No, the SIP helper is also useful without NAT. This patch adds
+an ifdef around the RTP call optimization for NATed clients.
 
-This was in response to Rafael's request on the bugzilla.  So I expect
-someone will look at it anyway, but I thought I should copy you on this.
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 
-Thanks,
 
-Alan
+
+--------------030704000000000509070200
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/net/netfilter/nf_conntrack_sip.c b/net/netfilter/nf_conntrack_sip.c
+index 65b3ba5..9f49000 100644
+--- a/net/netfilter/nf_conntrack_sip.c
++++ b/net/netfilter/nf_conntrack_sip.c
+@@ -781,7 +781,7 @@ static int set_expected_rtp_rtcp(struct sk_buff *skb,
+ 		    nfct_help(exp->master)->helper != nfct_help(ct)->helper ||
+ 		    exp->class != class)
+ 			break;
+-
++#ifdef CONFIG_NF_NAT_NEEDED
+ 		if (exp->tuple.src.l3num == AF_INET && !direct_rtp &&
+ 		    (exp->saved_ip != exp->tuple.dst.u3.ip ||
+ 		     exp->saved_proto.udp.port != exp->tuple.dst.u.udp.port) &&
+@@ -791,6 +791,7 @@ static int set_expected_rtp_rtcp(struct sk_buff *skb,
+ 			tuple.dst.u.udp.port	= exp->saved_proto.udp.port;
+ 			direct_rtp = 1;
+ 		} else
++#endif
+ 			skip_expect = 1;
+ 	} while (!skip_expect);
+ 	rcu_read_unlock();
+
+--------------030704000000000509070200--
