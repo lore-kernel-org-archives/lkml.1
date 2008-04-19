@@ -1,179 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbYDSLFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbYDSLJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759950AbYDSLFk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 07:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYDSLFa
+	id S1761365AbYDSLJv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 07:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYDSLJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 07:05:30 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59278 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753770AbYDSLFa (ORCPT
+	Sat, 19 Apr 2008 07:09:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53263
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753817AbYDSLJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 07:05:30 -0400
-Date: Sat, 19 Apr 2008 20:04:50 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC patch 16/27] Immediate Values Support init
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-In-Reply-To: <20080416213553.343331418@polymtl.ca>
-References: <20080416213426.298498397@polymtl.ca> <20080416213553.343331418@polymtl.ca>
-Message-Id: <20080419192334.A8FD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Sat, 19 Apr 2008 07:09:44 -0400
+Date: Sat, 19 Apr 2008 04:09:45 -0700 (PDT)
+Message-Id: <20080419.040945.13369499.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
+ latest -git
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080419103942.GA13599@elte.hu>
+References: <20080419100034.GA9475@elte.hu>
+	<20080419.030337.244502148.davem@davemloft.net>
+	<20080419103942.GA13599@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  #else
->  
-> @@ -73,7 +76,9 @@ extern void imv_update_range(const struc
->  
->  static inline void core_imv_update(void) { }
->  static inline void module_imv_update(void) { }
-> -
-> +static inline void imv_unref_core_init(void) { }
-> +static inline void imv_unref_init(struct __imv *begin, struct __imv *end,
-> +		void *init, unsigned long init_size) { }
->  #endif
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 19 Apr 2008 12:39:42 +0200
 
-err.
-When turn off CONFIG_IMMEDIATE, "struct __imv" is not defined.
-is cause following warnings.
+I knew you were going to make a stink about this, and frankly Ingo I'm
+starting to get extremely irritated about your persistant nagging
+about how people should do this or that wrt. kernel development.
 
-include/linux/immediate.h:81: warning: 'struct __imv' declared inside parameter list
-include/linux/immediate.h:81: warning: its scope is only this definition or declaration, \
-which is probably not what you want
+I seem to see a lot of it because 1) I don't think pushing everything
+to lkml is the answer to everything and 2) I think the trees like -mm
+and linux-next take care of the scalability issues of watching the
+state of trees that will be merged to Linus in the future.
 
+You haven't cared about how I push my trees to Linus for years, why is
+it a problem all of a sudden?
 
-and
+Different people operate differently, and might have alternate
+approaches to insuring quality and smooth merging of the changes they
+manage.  The only thing that really matters is that the people who
+push directly to Linus are trusted by him, and they won't disappear
+right after he pulls their changes in.
 
-> +extern void imv_unref(struct __imv *begin, struct __imv *end, void *start,
-> +		unsigned long size);
->  
->  #else
->
-> (snip)  
-> +static inline void imv_unref_init(struct __imv *begin, struct __imv *end,
-> +		void *init, unsigned long init_size) { }
->  #endif
+You got a bug fix in 5 minutes after sending your email to the lists,
+and since you sent it to lkml anybody can find it, so I don't see what
+the big deal is.
 
-if CONFIG_IMMEDIATE is on, imv_unref() is declared.
-but if CONFIG_IMMEDIATE is off, imv_unref_init() is declared instead imv_unref()
-it cause following error.
+> do you find this practice of private pull requests important? If not, 
+> would it be difficult to Cc: lkml to routine pull requests?
 
+Ingo, I don't tell you how to effectively do your job with x86
+development.  So why don't we leave it at that, ok?
 
-  CC      kernel/module.o
-kernel/module.c: In function 'sys_init_module':
-kernel/module.c:2211: error: implicit declaration of function 'imv_unref'
-kernel/module.c:2211: error: 'struct module' has no member named 'immediate'
-kernel/module.c:2211: error: 'struct module' has no member named 'immediate'
-kernel/module.c:2211: error: 'struct module' has no member named 'num_immediate'
-make[1]: *** [kernel/module.o] Error 1
+> > I always send my pull requests directly to Linus, CC:'ing Andrew.
+> 
+> that makes bugs harder to report and makes the flow of patches harder to 
+> follow as well. Often (like in this case) i see it when a bug comes in 
+> via a specific group of commits but i have no time to do a bisection. In 
+> that case i'd like to report it to that pull request so i'd like to 
+> reply to that pull on lkml.
 
+Ingo, get off your high holy horse already.  It is your opinion that
+bugs are harder to report.  You got a bug fix in 5 minutes by sending
+it the people in the group of singoffs and CC:'ing lkml.  What the
+heck more do you want? :-/
 
-and, 
+The way you see as the ideal isn't something you can just start
+demanding of other people because it doesn't work optimally for you.
 
-in kernel/module.c#sys_init_module(),
-immediate member of struct module is used though CONFIG_IMMEDIATE is off.
+All of this networking stuff has been in linux-next and -mm for
+several months.  And frankly it doesn't help anyone to spam ~5000 lkml
+subscribers with a 128K sized merge request, which is how big this one
+was.  In fact, as list owner for all of the vger lists, I'd probably
+be processing a bunch of bounces as a result of such a posting.
 
->        imv_unref(mod->immediate, mod->immediate + mod->num_immediate,
->                mod->module_init, mod->init_size);
+If you want to start running your randconfig machinery on the
+linux-next tree and -mm, that would be a great contribution for
+keeping build regressions down to a healthy minimum before the merge
+window opens up.
 
-it cause following error.
+> As the number of subsystems increases, i suspect you agree with 
+> me that this does not scale very well for bug reporters, correct?
 
-  CC      kernel/module.o
-kernel/module.c: In function 'sys_init_module':
-kernel/module.c:2211: error: 'struct module' has no member named 'immediate'
-kernel/module.c:2211: error: 'struct module' has no member named 'immediate'
-kernel/module.c:2211: error: 'struct module' has no member named 'num_immediate'
-make[1]: *** [kernel/module.o] Error 1
+That's why we have -mm and linux-next, to make it scale.
 
+I'm not hiding anything, or operating in secrecy in an attempt to
+thwart the productivity of other kernel developers.  My trees sync
+daily into Andrew and Stephen Rothwell's trees, and every networking
+patch goes through netdev.  Bugs aren't hard to report, send them
+to the patch author and signoff emails, CC:'ing lkml and any other
+list as you deem appropriate.
 
-bellow patch fixed these.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
----
- include/linux/immediate.h |    8 ++++++--
- include/linux/module.h    |   21 +++++++++++++++++++++
- kernel/module.c           |    3 ++-
- 3 files changed, 29 insertions(+), 3 deletions(-)
-
-Index: b/include/linux/immediate.h
-===================================================================
---- a/include/linux/immediate.h	2008-04-19 19:53:03.000000000 +0900
-+++ b/include/linux/immediate.h	2008-04-19 20:04:58.000000000 +0900
-@@ -56,6 +56,10 @@ extern void imv_unref(struct __imv *begi
-  * Generic immediate values: a simple, standard, memory load.
-  */
- 
-+/* empty declaration for avoid warning */
-+struct __imv {
-+};
-+
- /**
-  * imv_read - read immediate variable
-  * @name: immediate value name
-@@ -77,8 +81,8 @@ extern void imv_unref(struct __imv *begi
- static inline void core_imv_update(void) { }
- static inline void module_imv_update(void) { }
- static inline void imv_unref_core_init(void) { }
--static inline void imv_unref_init(struct __imv *begin, struct __imv *end,
--		void *init, unsigned long init_size) { }
-+static inline void imv_unref(struct __imv *begin, struct __imv *end,
-+			     void *start, unsigned long size) { }
- #endif
- 
- #define DECLARE_IMV(type, name) extern __typeof__(type) name##__imv
-Index: b/include/linux/module.h
-===================================================================
---- a/include/linux/module.h	2008-04-19 19:53:03.000000000 +0900
-+++ b/include/linux/module.h	2008-04-19 20:22:14.000000000 +0900
-@@ -634,4 +634,25 @@ static inline void module_remove_modinfo
- 
- #define __MODULE_STRING(x) __stringify(x)
- 
-+#ifdef CONFIG_IMMEDIATE
-+static inline struct __imv* mod_immediate_address(struct module* mod)
-+{
-+	return mod->immediate;
-+}
-+static inline unsigned int  mod_num_immediate(struct module* mod)
-+{
-+	return mod->num_immediate;
-+}
-+#else
-+static inline struct __imv* mod_immediate_address(struct module* mod)
-+{
-+	return NULL;
-+}
-+static inline unsigned int  mod_num_immediate(struct module* mod)
-+{
-+	return 0;
-+}
-+#endif
-+
-+
- #endif /* _LINUX_MODULE_H */
-Index: b/kernel/module.c
-===================================================================
---- a/kernel/module.c	2008-04-19 19:53:03.000000000 +0900
-+++ b/kernel/module.c	2008-04-19 20:23:51.000000000 +0900
-@@ -2208,7 +2208,8 @@ sys_init_module(void __user *umod,
- 	/* Drop initial reference. */
- 	module_put(mod);
- 	unwind_remove_table(mod->unwind_info, 1);
--	imv_unref(mod->immediate, mod->immediate + mod->num_immediate,
-+	imv_unref(mod_immediate_address(mod),
-+		  mod_immediate_address(mod) + mod_num_immediate(mod),
- 		mod->module_init, mod->init_size);
- 	module_free(mod, mod->module_init);
- 	mod->module_init = NULL;
-
-
-
+Ingo, I can't have a healthy relationship with you a fellow kernel
+developer if every interaction we have with eachother these days is
+about how you want me to change how I do my work.
