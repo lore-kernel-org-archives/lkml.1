@@ -1,163 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762460AbYDSV1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYDSV2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762460AbYDSV1M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 17:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYDSV06
+	id S1762630AbYDSV2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 17:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYDSV23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 17:26:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35120 "EHLO mx1.redhat.com"
+	Sat, 19 Apr 2008 17:28:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36836 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYDSV05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 17:26:57 -0400
+	id S1752115AbYDSV22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 17:28:28 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] x86 signals: lift set_fs
+In-Reply-To: Roland McGrath's message of  Saturday, 19 April 2008 14:26:54 -0700 <20080419212654.9971827037C@magilla.localdomain>
 X-Fcc: ~/Mail/linus
-Subject: [PATCH 1/2] x86 signals: lift flags diddling code
-X-Shopping-List: (1) Pompous porno ammunition
-   (2) Dramatic scorpions
-   (3) Portentous consolation
-   (4) Precarious revulsion pistons
-Message-Id: <20080419212654.9971827037C@magilla.localdomain>
-Date: Sat, 19 Apr 2008 14:26:54 -0700 (PDT)
+References: <20080419212654.9971827037C@magilla.localdomain>
+X-Shopping-List: (1) Precious griddles
+   (2) Whimsical tension breath
+   (3) Wine-making checks
+   (4) Maternity reservation distenders
+   (5) Nice lips
+Message-Id: <20080419212756.ABAF227037C@magilla.localdomain>
+Date: Sat, 19 Apr 2008 14:27:56 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This lifts the code diddling the TF and DF bits for signal handler setup
-out of the several places copying the same code into the one place that
-calls them all.  There is no change in what it does.
-
-I also separated the recently-added DF bit clearing from the TF diddling.
-The compiler turns them back into one instruction anyway.  The tossing
-in of DF to the same line of code with no new comments was a bit more
-arcane than seems wise.
+This lifts the set_fs(USER_DS) call for signal handler setup out of the
+three places copying the same code into the one place that calls them
+all.  There is no change in what it does.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/ia32/ia32_signal.c |    6 ------
- arch/x86/kernel/signal_32.c |   35 +++++++++++++++--------------------
- arch/x86/kernel/signal_64.c |   19 +++++++++++++++----
- 3 files changed, 30 insertions(+), 30 deletions(-)
+ arch/x86/ia32/ia32_signal.c |    4 ----
+ arch/x86/kernel/signal_64.c |   11 +++++++----
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
 diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 05e155d..0866104 100644
+index 0866104..bbed3a2 100644
 --- a/arch/x86/ia32/ia32_signal.c
 +++ b/arch/x86/ia32/ia32_signal.c
-@@ -500,9 +500,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+@@ -499,8 +499,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	regs->cs = __USER32_CS;
  	regs->ss = __USER32_DS;
  
- 	set_fs(USER_DS);
--	regs->flags &= ~(X86_EFLAGS_TF | X86_EFLAGS_DF);
--	if (test_thread_flag(TIF_SINGLESTEP))
--		ptrace_notify(SIGTRAP);
- 
+-	set_fs(USER_DS);
+-
  #if DEBUG_SIG
  	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
-@@ -600,9 +597,6 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
+@@ -596,8 +594,6 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER32_CS;
  	regs->ss = __USER32_DS;
  
- 	set_fs(USER_DS);
--	regs->flags &= ~(X86_EFLAGS_TF | X86_EFLAGS_DF);
--	if (test_thread_flag(TIF_SINGLESTEP))
--		ptrace_notify(SIGTRAP);
- 
+-	set_fs(USER_DS);
+-
  #if DEBUG_SIG
  	printk(KERN_DEBUG "SIG deliver (%s:%d): sp=%p pc=%lx ra=%u\n",
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index f1b1179..8e05e7f 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -413,16 +413,6 @@ setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	regs->ss = __USER_DS;
- 	regs->cs = __USER_CS;
- 
--	/*
--	 * Clear TF when entering the signal handler, but
--	 * notify any tracer that was single-stepping it.
--	 * The tracer may want to single-step inside the
--	 * handler too.
--	 */
--	regs->flags &= ~(X86_EFLAGS_TF | X86_EFLAGS_DF);
--	if (test_thread_flag(TIF_SINGLESTEP))
--		ptrace_notify(SIGTRAP);
--
- 	return 0;
- 
- give_sigsegv:
-@@ -501,16 +491,6 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	regs->ss = __USER_DS;
- 	regs->cs = __USER_CS;
- 
--	/*
--	 * Clear TF when entering the signal handler, but
--	 * notify any tracer that was single-stepping it.
--	 * The tracer may want to single-step inside the
--	 * handler too.
--	 */
--	regs->flags &= ~(X86_EFLAGS_TF | X86_EFLAGS_DF);
--	if (test_thread_flag(TIF_SINGLESTEP))
--		ptrace_notify(SIGTRAP);
--
- 	return 0;
- 
- give_sigsegv:
-@@ -566,6 +546,21 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	if (ret)
- 		return ret;
- 
-+	/*
-+	 * Clear the direction flag as per the ABI for function entry.
-+	 */
-+	regs->flags &= ~X86_EFLAGS_DF;
-+
-+	/*
-+	 * Clear TF when entering the signal handler, but
-+	 * notify any tracer that was single-stepping it.
-+	 * The tracer may want to single-step inside the
-+	 * handler too.
-+	 */
-+	regs->flags &= ~X86_EFLAGS_TF;
-+	if (test_thread_flag(TIF_SINGLESTEP))
-+		ptrace_notify(SIGTRAP);
-+
- 	spin_lock_irq(&current->sighand->siglock);
- 	sigorsets(&current->blocked, &current->blocked, &ka->sa.sa_mask);
- 	if (!(ka->sa.sa_flags & SA_NODEFER))
+ 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
 diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 827179c..3a76702 100644
+index 3a76702..ccb2a45 100644
 --- a/arch/x86/kernel/signal_64.c
 +++ b/arch/x86/kernel/signal_64.c
-@@ -289,10 +289,6 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	   see include/asm-x86_64/uaccess.h for details. */
- 	set_fs(USER_DS);
+@@ -285,10 +285,6 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	   even if the handler happens to be interrupting 32-bit code. */
+ 	regs->cs = __USER_CS;
  
--	regs->flags &= ~(X86_EFLAGS_TF | X86_EFLAGS_DF);
--	if (test_thread_flag(TIF_SINGLESTEP))
--		ptrace_notify(SIGTRAP);
+-	/* This, by contrast, has nothing to do with segment registers -
+-	   see include/asm-x86_64/uaccess.h for details. */
+-	set_fs(USER_DS);
 -
  	return 0;
  
  give_sigsegv:
-@@ -380,6 +376,21 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	ret = setup_rt_frame(sig, ka, info, oldset, regs);
+@@ -377,6 +373,13 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
  
  	if (ret == 0) {
-+		/*
-+		 * Clear the direction flag as per the ABI for function entry.
+ 		/*
++		 * This has nothing to do with segment registers,
++		 * despite the name.  This magic affects uaccess.h
++		 * macros' behavior.  Reset it to the normal setting.
 +		 */
-+		regs->flags &= ~X86_EFLAGS_DF;
++		set_fs(USER_DS);
 +
 +		/*
-+		 * Clear TF when entering the signal handler, but
-+		 * notify any tracer that was single-stepping it.
-+		 * The tracer may want to single-step inside the
-+		 * handler too.
-+		 */
-+		regs->flags &= ~X86_EFLAGS_TF;
-+		if (test_thread_flag(TIF_SINGLESTEP))
-+			ptrace_notify(SIGTRAP);
-+
- 		spin_lock_irq(&current->sighand->siglock);
- 		sigorsets(&current->blocked,&current->blocked,&ka->sa.sa_mask);
- 		if (!(ka->sa.sa_flags & SA_NODEFER))
+ 		 * Clear the direction flag as per the ABI for function entry.
+ 		 */
+ 		regs->flags &= ~X86_EFLAGS_DF;
