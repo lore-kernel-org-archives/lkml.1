@@ -1,208 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbYDSDSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761564AbYDSD3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762052AbYDSDSL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 23:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761765AbYDSDRm
+	id S1761564AbYDSD3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 23:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYDSD3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 23:17:42 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48989 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758220AbYDSDRl (ORCPT
+	Fri, 18 Apr 2008 23:29:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51440 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753995AbYDSD3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 23:17:41 -0400
-Date: Fri, 18 Apr 2008 23:17:19 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, sandmann@redhat.com, pq@iki.fi,
-       srostedt@redhat.com
-Subject: [PATCH 4/5 -v2] ftrace: limit trace entries
-In-Reply-To: <20080418131935.67daf8f0.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0804182312500.19025@gandalf.stny.rr.com>
-References: <20080418200538.788522018@goodmis.org> <20080418200850.443055618@goodmis.org>
- <20080418131935.67daf8f0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Apr 2008 23:29:44 -0400
+Date: Fri, 18 Apr 2008 20:29:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joseph Fannin <jfannin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@queued.net>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-mm1
+Message-Id: <20080418202925.b18452c5.akpm@linux-foundation.org>
+In-Reply-To: <20080419031024.GC3503@nineveh.local>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Apr 2008 23:10:24 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
 
-Currently there is no protection from the root user to use up all of
-memory for trace buffers. If the root user allocates too many entries,
-the OOM killer might start killing off all tasks.
+> On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/
+> 
+> New, in 2.6.25-mm1 is a hang I'm seeing, just after the kernel prints:
+> 
+> "[    0.160375] NET: Registered protocol family 16"
+> 
+> The hang lasts about five minutes, and then boot continues.
 
-This patch adds an algorithm to check the following condition:
+Please add initcall_debug to the kernel boot command line - that should
+narrow it down.
 
- pages_requested > (freeable_memory + current_trace_buffer_pages) / 4
+>  Just
+> after that, a backtrace is printed; I don't know if it's related.  The
+> backtrace will follow.
+> 
+> This does not occur in mainline.  It seems it might be related to OLPC
+> support -- I enabled all those options -- but that's not good
+> behavior, and I see no warning of thus in the help.
+> 
+> I'm sending a number or reports against 2.6.25-mm1, so I've put my
+> dmesg and .config on a server:
+> 
+> http://home.columbus.rr.com/jfannin3/dmesg.txt
+> http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+> 
+> [    0.160375] NET: Registered protocol family 16
+> [  400.782683] ------------[ cut here ]------------
+> [  400.782832] WARNING: at arch/x86/mm/ioremap.c:158 __ioremap_caller+0x27d/0x2e0()
+> [  400.783022] Modules linked in:
+> [  400.783169] Pid: 1, comm: swapper Not tainted 2.6.25-mm1 #7
+> [  400.783300]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
+> [  400.783480]  [<c0106c2e>] ? profile_pc+0x3e/0x50
+> [  400.783682]  [<c01374ee>] ? irq_exit+0x4e/0xa0
+> [  400.783879]  [<c0115aec>] ? smp_apic_timer_interrupt+0x5c/0x90
+> [  400.784087]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> [  400.784298]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> [  400.784506]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> [  400.784706]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> [  400.784906]  [<c011d0e6>] ? page_is_ram+0xa6/0xd0
+> [  400.785059]  [<c011d4ed>] __ioremap_caller+0x27d/0x2e0
+> [  400.785221]  [<c03569d8>] ? _spin_unlock_irqrestore+0x48/0x80
+> [  400.785421]  [<c017f4cd>] ? ftrace_record_ip+0x7d/0x250
+> [  400.785621]  [<c0474801>] ? olpc_init+0x31/0x140
+> [  400.785817]  [<c011d59f>] ioremap_nocache+0x1f/0x30
+> [  400.785976]  [<c0474801>] ? olpc_init+0x31/0x140
+> [  400.786165]  [<c0474801>] olpc_init+0x31/0x140
+> [  400.786318]  [<c0464992>] kernel_init+0x142/0x2d0
+> [  400.786479]  [<c01552cd>] ? trace_hardirqs_on_caller+0xcd/0x150
+> [  400.786680]  [<c010416c>] ? restore_nocheck_notrace+0x0/0xe
+> [  400.786879]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> [  400.787069]  [<c0464850>] ? kernel_init+0x0/0x2d0
+> [  400.787260]  [<c0104d9b>] kernel_thread_helper+0x7/0x10
+> [  400.787422]  =======================
+> [  400.787727] ---[ end trace 4eaa2a86a8e2da22 ]---
 
-If the above is met then the allocation fails. The above prevents more
-than 1/4th of freeable memory from being used by trace buffers.
+<looks at this again>
 
-To determine the freeable_memory, I made determine_dirtyable_memory in
-mm/page-writeback.c global.
+That's
 
-Special thanks goes to Peter Zijlstra for suggesting the above calculation.
+                WARN_ON_ONCE(is_ram);
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/writeback.h |    2 ++
- kernel/trace/trace.c      |   38 ++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c       |   10 +++++++---
- 3 files changed, 47 insertions(+), 3 deletions(-)
+the changelog for the patch which added that warning is information-free
+and there's no code comment explaining what went wrong, which makes things
+rather harder than they ought to be.
 
-Index: linux-sched-devel.git/include/linux/writeback.h
-===================================================================
---- linux-sched-devel.git.orig/include/linux/writeback.h	2008-04-18 23:01:57.000000000 -0400
-+++ linux-sched-devel.git/include/linux/writeback.h	2008-04-18 23:06:43.000000000 -0400
-@@ -105,6 +105,8 @@ extern int vm_highmem_is_dirtyable;
- extern int block_dump;
- extern int laptop_mode;
+Yes it's due to the new OLPC code.  olpc_init() has
 
-+extern unsigned long determine_dirtyable_memory(void);
-+
- extern int dirty_ratio_handler(struct ctl_table *table, int write,
- 		struct file *filp, void __user *buffer, size_t *lenp,
- 		loff_t *ppos);
-Index: linux-sched-devel.git/kernel/trace/trace.c
-===================================================================
---- linux-sched-devel.git.orig/kernel/trace/trace.c	2008-04-18 23:06:40.000000000 -0400
-+++ linux-sched-devel.git/kernel/trace/trace.c	2008-04-18 23:06:43.000000000 -0400
-@@ -27,6 +27,7 @@
- #include <linux/poll.h>
- #include <linux/gfp.h>
- #include <linux/fs.h>
-+#include <linux/writeback.h>
+	romsig = ioremap(0xffffffc0, 16);
 
- #include <linux/stacktrace.h>
-
-@@ -51,6 +52,8 @@ static int trace_free_page(void);
-
- static int tracing_disabled = 1;
-
-+static unsigned long tracing_pages_allocated;
-+
- long
- ns2usecs(cycle_t nsec)
- {
-@@ -2477,12 +2480,41 @@ tracing_entries_write(struct file *filp,
- 	}
-
- 	if (val > global_trace.entries) {
-+		long pages_requested;
-+		unsigned long freeable_pages;
-+
-+		/* make sure we have enough memory before mapping */
-+		pages_requested =
-+			(val + (ENTRIES_PER_PAGE-1)) / ENTRIES_PER_PAGE;
-+
-+		/* account for each buffer (and max_tr) */
-+		pages_requested *= tracing_nr_buffers * 2;
-+
-+		/* Check for overflow */
-+		if (pages_requested < 0) {
-+			cnt = -ENOMEM;
-+			goto out;
-+		}
-+
-+		freeable_pages = determine_dirtyable_memory();
-+
-+		/* we only allow to request 1/4 of useable memory */
-+		if (pages_requested >
-+		    ((freeable_pages + tracing_pages_allocated) / 4)) {
-+			cnt = -ENOMEM;
-+			goto out;
-+		}
-+
- 		while (global_trace.entries < val) {
- 			if (trace_alloc_page()) {
- 				cnt = -ENOMEM;
- 				goto out;
- 			}
-+			/* double check that we don't go over the known pages */
-+			if (tracing_pages_allocated > pages_requested)
-+				break;
- 		}
-+
- 	} else {
- 		/* include the number of entries in val (inc of page entries) */
- 		while (global_trace.entries > val + (ENTRIES_PER_PAGE - 1))
-@@ -2665,6 +2697,7 @@ static int trace_alloc_page(void)
- 	struct page *page, *tmp;
- 	LIST_HEAD(pages);
- 	void *array;
-+	unsigned pages_allocated = 0;
- 	int i;
-
- 	/* first allocate a page for each CPU */
-@@ -2676,6 +2709,7 @@ static int trace_alloc_page(void)
- 			goto free_pages;
- 		}
-
-+		pages_allocated++;
- 		page = virt_to_page(array);
- 		list_add(&page->lru, &pages);
-
-@@ -2687,6 +2721,7 @@ static int trace_alloc_page(void)
- 			       "for trace buffer!\n");
- 			goto free_pages;
- 		}
-+		pages_allocated++;
- 		page = virt_to_page(array);
- 		list_add(&page->lru, &pages);
- #endif
-@@ -2708,6 +2743,7 @@ static int trace_alloc_page(void)
- 		SetPageLRU(page);
- #endif
- 	}
-+	tracing_pages_allocated += pages_allocated;
- 	global_trace.entries += ENTRIES_PER_PAGE;
-
- 	return 0;
-@@ -2742,6 +2778,7 @@ static int trace_free_page(void)
- 		page = list_entry(p, struct page, lru);
- 		ClearPageLRU(page);
- 		list_del(&page->lru);
-+		tracing_pages_allocated--;
- 		__free_page(page);
-
- 		tracing_reset(data);
-@@ -2759,6 +2796,7 @@ static int trace_free_page(void)
- 		page = list_entry(p, struct page, lru);
- 		ClearPageLRU(page);
- 		list_del(&page->lru);
-+		tracing_pages_allocated--;
- 		__free_page(page);
-
- 		tracing_reset(data);
-Index: linux-sched-devel.git/mm/page-writeback.c
-===================================================================
---- linux-sched-devel.git.orig/mm/page-writeback.c	2008-04-18 23:01:57.000000000 -0400
-+++ linux-sched-devel.git/mm/page-writeback.c	2008-04-18 23:07:52.000000000 -0400
-@@ -126,8 +126,6 @@ static void background_writeout(unsigned
- static struct prop_descriptor vm_completions;
- static struct prop_descriptor vm_dirties;
-
--static unsigned long determine_dirtyable_memory(void);
--
- /*
-  * couple the period to the dirty_ratio:
-  *
-@@ -286,7 +284,13 @@ static unsigned long highmem_dirtyable_m
- #endif
- }
-
--static unsigned long determine_dirtyable_memory(void)
-+/**
-+ * determine_dirtyable_memory - amount of memory that may be used
-+ *
-+ * Returns the numebr of pages that can currently be freed and used
-+ * by the kernel for direct mappings.
-+ */
-+unsigned long determine_dirtyable_memory(void)
- {
- 	unsigned long x;
-
-
-
+which we probably just shouldn't do this at all unless we're running on the
+OLPC hardware.  But we need to do this to find out if we're running on the OLPC
+hardware!  Perhaps the warning should just be removed.
