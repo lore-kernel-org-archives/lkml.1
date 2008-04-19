@@ -1,59 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbYDSKWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbYDSKX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761638AbYDSKWf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 06:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYDSKW0
+	id S1761667AbYDSKX3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYDSKXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 06:22:26 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:62522 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555AbYDSKWZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 06:22:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ki4YY/jfcGfjoKL0R8z6aSJsS8BS8r0cE+aWoqReKWnpf9TJzULFrHW1HO5lK58lS37xE/thI24q07ee82J6BOpPC9tqo2JiffXP1/eT1iX1gkxl4zFSiTcMpUpLkuVa0foV1lgt7ui1JzXBClqMRye8nhMSu2nQHvLiVvGsqcA=
-Message-ID: <e85b9d30804190322o703d3b20se22eb6b5e82bae39@mail.gmail.com>
-Date: Sat, 19 Apr 2008 12:22:14 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Subject: Re: Linux 2.6.25
-Cc: torvalds@linux-foundation.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rudolf Marek" <r.marek@assembler.cz>,
-       "Gene Heskett" <gene.heskett@gmail.com>, "Len Brown" <lenb@kernel.org>
-In-Reply-To: <e85b9d30804190318u74e14f0ct6ab53cb86f6ce15f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 19 Apr 2008 06:23:19 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35614 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbYDSKXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 06:23:18 -0400
+Date: Sat, 19 Apr 2008 14:22:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: netdev@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer interface.
+Message-ID: <20080419102214.GA21952@2ka.mipt.ru>
+References: <200804181433.48488.rusty@rustcorp.com.au> <200804181435.21214.rusty@rustcorp.com.au> <200804181439.49051.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
-	 <20080418193802.GK7674@cvg> <20080418200338.GL7674@cvg>
-	 <48096179.4060803@keyaccess.nl> <480964F7.3040701@keyaccess.nl>
-	 <20080419061701.GA7688@cvg>
-	 <e85b9d30804190318u74e14f0ct6ab53cb86f6ce15f@mail.gmail.com>
+In-Reply-To: <200804181439.49051.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->The coretemp kernel module reports 25°C on my PC when idle, and 34°C
->after having performed some computations (lmbench2). This looks
->normal. This test has been performed with a vanilla 2.6.25 kernel and
->a Core 2 Duo E6750 CPU (Asus motherboard). The 2.6.22 and 2.6.24
->kernels report an incorrect temperature on the same system however
->(10°C). So there is either an issue with the patches that have been
->applied to your kernel or the behavior of the coretemp module for the
->6600 and E6750 CPU's is different. Can you repeat the test with a
->vanilla 2.6.25 kernel ?
+Hi.
 
->(Added Rudolf Marek in CC, the coretemp author.)
+On Fri, Apr 18, 2008 at 02:39:48PM +1000, Rusty Russell (rusty@rustcorp.com.au) wrote:
 
->Bart.
+> +int vring_get_buffer(struct vring_info *vr,
+> +		     struct iovec *in_iov,
+> +		     unsigned int *num_in, unsigned long *in_len,
+> +		     struct iovec *out_iov,
+> +		     unsigned int *num_out, unsigned long *out_len)
+> +{
+> +	unsigned int i, in = 0, out = 0;
+> +	unsigned long dummy;
+> +	u16 avail, last_avail, head;
+> +	struct vring_desc d;
 
-sure, I'll test-drive the vanilla-kernel, too
+Should this whole function and vring_used_buffer() be protected with
+vr->lock mutex?
 
-thanks
+> +	if (unlikely(get_user(avail, &vr->ring.avail->idx)))
+> +		return -EFAULT;
+> +	if (unlikely(get_user(last_avail, &vring_last_avail(&vr->ring))))
+> +		return -EFAULT;
+> +
+> +	if (last_avail == avail)
+> +		return 0;
+> +
+> +	if (!in_len)
+> +		in_len = &dummy;
+> +	if (!out_len)
+> +		out_len = &dummy;
+> +
+> +	*in_len = *out_len = 0;
+> +
+> +	if (unlikely(get_user(head, &vr->ring.avail->ring[last_avail
+> +							  & vr->mask])))
+> +		return -EFAULT;
+> +
+> +	i = head;
+> +	do {
+> +		if (unlikely(i >= vr->ring.num)) {
+> +			pr_debug("vring: bad index: %u\n", i);
+> +			return -EINVAL;
+> +		}
+> +
+> +		if (copy_from_user(&d, &vr->ring.desc[i], sizeof(d)) != 0)
+> +			return -EFAULT;
+> +
+> +		if (d.flags & VRING_DESC_F_WRITE) {
+> +			/* Check for length and iovec overflows */
+> +			if (!num_in) {
+> +				pr_debug("vring: writable desc %u in ring %p\n",
+> +					 i, vr->ring.desc);
+> +				return -EINVAL;
+> +			}
+> +			if (in == *num_in || *in_len + d.len < *in_len)
+> +				return -E2BIG;
+> +			in_iov[in].iov_len = d.len;
+> +			*in_len += d.len;
+> +			in_iov[in].iov_base = (void __user *)(long)d.addr;
+> +			in++;
+> +		} else {
+> +			if (!num_out) {
+> +				pr_debug("vring: readable desc %u in ring %p\n",
+> +					 i, vr->ring.desc);
+> +				return -EINVAL;
+> +			}
+> +			if (out == *num_out || *out_len + d.len < *out_len)
+> +				return -E2BIG;
+> +			out_iov[out].iov_len = d.len;
+> +			*out_len += d.len;
+> +			out_iov[out].iov_base = (void __user *)(long)d.addr;
+> +			out++;
+> +		}
+> +
+> +		i = d.next;
+> +	} while (d.flags & VRING_DESC_F_NEXT);
+> +
+> +	if (num_in)
+> +		*num_in = in;
+> +	if (num_out)
+> +		*num_out = out;
+> +
+> +	last_avail++;
+> +	put_user(last_avail, &vring_last_avail(&vr->ring));
+> +
+> +	/* 0 is a valid head, so add one. */
+> +	return head + 1;
+> +}
+> +EXPORT_SYMBOL_GPL(vring_get_buffer);
+> +
+> +/**
+> + * vring_used_buffer - return a used buffer to the vring
+> + * @vr: the vring
+> + * @id: the id returned from vring_get_buffer
+> + * @len: the total bytes *written* to the buffer
+> + */
+> +void vring_used_buffer(struct vring_info *vr, int id, u32 len)
+> +{
+> +	struct vring_used_elem used;
+> +	u16 used_idx;
+> +
+> +	BUG_ON(id <= 0 || id > vr->ring.num);
+> +
+> +	used.id = id - 1;
+> +	used.len = len;
+> +	if (get_user(used_idx, &vr->ring.used->idx) != 0)
+> +		return;
+> +
+> +	if (copy_to_user(&vr->ring.used->ring[used_idx & vr->mask], &used,
+> +			 sizeof(used)))
+> +		return;
+> +
+> +	wmb();
+> +	used_idx++;
+> +	put_user(used_idx, &vr->ring.used->idx);
+> +}
+> +EXPORT_SYMBOL_GPL(vring_used_buffer);
 
-Mat
+-- 
+	Evgeniy Polyakov
