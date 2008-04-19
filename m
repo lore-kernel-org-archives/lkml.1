@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYDSRt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbYDSRvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbYDSRt3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 13:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYDSRtV
+	id S1762049AbYDSRvw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 13:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYDSRvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 13:49:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41603 "EHLO
+	Sat, 19 Apr 2008 13:51:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53065 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753736AbYDSRtV (ORCPT
+	by vger.kernel.org with ESMTP id S1752212AbYDSRvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 13:49:21 -0400
-Date: Sat, 19 Apr 2008 10:49:11 -0700
+	Sat, 19 Apr 2008 13:51:41 -0400
+Date: Sat, 19 Apr 2008 10:51:48 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, tglx@linutronix.de
-Subject: Re: x86: 4kstacks default
-Message-Id: <20080419104911.07d299ef.akpm@linux-foundation.org>
-In-Reply-To: <20080419142329.GA5339@elte.hu>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	<20080418142934.38ce6bf4.akpm@linux-foundation.org>
-	<20080419142329.GA5339@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: netdev@vger.kernel.org, maxk@qualcomm.com,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] tun: vringfd xmit support.
+Message-Id: <20080419105148.1bed4fee.akpm@linux-foundation.org>
+In-Reply-To: <200804200041.43969.rusty@rustcorp.com.au>
+References: <200804181433.48488.rusty@rustcorp.com.au>
+	<200804190115.15983.rusty@rustcorp.com.au>
+	<20080418120634.986e30f1.akpm@linux-foundation.org>
+	<200804200041.43969.rusty@rustcorp.com.au>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,42 +30,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 19 Apr 2008 16:23:29 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> On Sun, 20 Apr 2008 00:41:43 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Saturday 19 April 2008 05:06:34 Andrew Morton wrote:
+> > On Sat, 19 Apr 2008 01:15:15 +1000 Rusty Russell <rusty@rustcorp.com.au> 
+> wrote:
+> > > > What is the maximum numbet of pages which an unpriviliged user can
+> > > > concurrently pin with this code?
+> > >
+> > > Since only root can open the tun device, it's currently OK.  The old code
+> > > kmalloced and copied: is there some mm-fu reason why pinning userspace
+> > > memory is worse?
+> >
+> > We generally try to avoid it - it allows users to dos the box.
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> My question is: is pinning a page worse than allocating a (kernel) page in 
+> some way?
 > 
-> > >  config 4KSTACKS
-> > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > > -	depends on DEBUG_KERNEL
-> > >  	depends on X86_32
-> > > +	default y
-> > 
-> > This patch will cause kernels to crash.
-> 
-> what mainline kernels crash and how will they crash?
 
-There has been a dribble of reports - I don't have the links handy, nor did
-I search for them.
+I guess pinning is not as bad as straight-out allocating.
 
-> Fedora and other 
-> distros have had 4K stacks enabled for years:
-> 
->   $ grep 4K /boot/config-2.6.24-9.fc9
->   CONFIG_4KSTACKS=y
-> 
-> and we've conducted tens of thousands of bootup tests with all sorts of 
-> drivers and kernel options enabled and have yet to see a single crash 
-> due to 4K stacks.
+Pinning is limited to the size of the program's VM.  Pinning
+it at least pining something which is accounted and is exposed
+to admin tools.
 
-I doubt if you're testing things like nfsd-on-xfs-on-md-on-porky-scsi-driver.
-
-Enable CONFIG_DEBUG_STACK_USAGE.  Monitor the results.  It's so scary that
-I wonder if the feature is busted.
-
-> So basically the kernel default just follows the 
-> common distro default now. (distros and users can still disable it)
-
-Apparently not.  I wouldn't enable it if I had a distro.
-
-Anyway.  We should be having this sort of discussion _before_ a patch
-gets merged, no?
+But they're both pretty similar in effect and risk.
