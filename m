@@ -1,118 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYDSEa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYDSElA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbYDSEa3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 00:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYDSEaR
+	id S1756842AbYDSElA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 00:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYDSEku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 00:30:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59492 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751251AbYDSEaQ (ORCPT
+	Sat, 19 Apr 2008 00:40:50 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:40406 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbYDSEks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 00:30:16 -0400
-Date: Fri, 18 Apr 2008 21:29:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: 2.6.25-mm1
-Message-Id: <20080418212934.bbe84ee2.akpm@linux-foundation.org>
-In-Reply-To: <20080419041429.GA8508@anvil.corenet.prv>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<20080419021343.GA3503@nineveh.local>
-	<20080418200237.b5a9e805.akpm@linux-foundation.org>
-	<20080419041429.GA8508@anvil.corenet.prv>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 Apr 2008 00:40:48 -0400
+Message-ID: <48097886.9000907@keyaccess.nl>
+Date: Sat, 19 Apr 2008 06:43:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
+References: <20080418204955.342963315@ldl.fc.hp.com> <20080418205051.704761191@ldl.fc.hp.com> <480920BB.9010506@keyaccess.nl> <200804182157.34313.bjorn.helgaas@hp.com>
+In-Reply-To: <200804182157.34313.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.6 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008 00:14:29 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On 19-04-08 05:57, Bjorn Helgaas wrote:
 
-> On Fri, Apr 18, 2008 at 08:02:37PM -0700, Andrew Morton wrote:
-> > On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
-> > 
-> > > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
-> > > >
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
-> > > 
-> > > I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
-> > > least, since that's the earliest -mm I've built in a while.  I don't
-> > > get the same in mainline.
-> > > 
-> > > No idea who to CC:
-> > 
-> > I have a few ideas.
-> > 
-> > >  I've sat on this report long enough.
-> > 
-> > Thanks for the report.
-> > 
-> > > I'm going to send a few different reports in separate mails, so I'll
-> > > put my dmesg and .config up on a server:
-> > > 
-> > > http://home.columbus.rr.com/jfannin3/dmesg.txt
-> > > http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
-> > > 
-> > > [  451.915553] sysfs: duplicate filename 'pcspkr' can not be created
-> > > [  451.915731] ------------[ cut here ]------------
-> > > [  451.915851] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x85/0xe0()
-> > > [  451.915981] Modules linked in: snd_pcsp(+) ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_mpu401_uart snd_seq_dummy snd_seq_oss snd_seq_midi psmouse snd_rawmidi serio_raw snd_seq_midi_event snd_seq button i2c_viapro snd_timer snd_seq_device pcspkr i2c_core snd snd_page_alloc via686a shpchp pci_hotplug parport_pc parport via_agp agpgart soundcore evdev sg sr_mod cdrom sd_mod 8139cp aic7xxx  scsi_transport_spi scsi_mod 8139too mii uhci_hcd usbcore raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
-> > > [  451.918960] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
-> > > [  451.929271]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
-> > > [  451.929500]  [<c0132400>] ? vprintk+0x2f0/0x4a0
-> > > [  451.929723]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-> > > [  451.929918]  [<c01c6a7a>] ? ifind+0x4a/0xa0
-> > > [  451.930126]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-> > > [  451.930334]  [<c015535b>] ? trace_hardirqs_on+0xb/0x10
-> > > [  451.930534]  [<c01325d0>] ? printk+0x20/0x30
-> > > [  451.930727]  [<c01fcc45>] sysfs_add_one+0x85/0xe0
-> > > [  451.930900]  [<c01fd89e>] create_dir+0x4e/0xb0
-> > > [  451.931064]  [<c01fd930>] sysfs_create_dir+0x30/0x50
-> > > [  451.931291]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
-> > > [  451.931485]  [<c023dac6>] kobject_add_internal+0xb6/0x190
-> > > [  451.931656]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
-> > > [  451.931857]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
-> > > [  451.932022]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
-> > > [  451.932188]  [<c02a3e44>] bus_add_driver+0x94/0x250
-> > > [  451.932364]  [<c02a5062>] driver_register+0x42/0xf0
-> > > [  451.932533]  [<c02a6c56>] platform_driver_register+0x66/0x70
-> > > [  451.932702]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
-> > > [  451.932877]  [<c015e137>] sys_init_module+0x87/0x1a0
-> > > [  451.933043]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
-> > > [  451.933246]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
-> > > [  451.933453]  [<c0104077>] sysenter_past_esp+0x78/0xc5
-> > 
-> > Yes, there have been lots of these lately.  I expect some of them _will_ go
-> > into mainline and they'll then slowly get weeded out.
-> > 
+> Yep, you're right.  I fixed it, but it requires changes to a couple
+> other patches down the line, so I'll wait to repost the series until
+> next week in case you find more problems.
 > 
-> It looks like it is coming from snd_pcsp module from alsa tree.
-
-Ah, OK.  More cc's.
-
+> I think this is only a problem for bisection.  By the time you
+> apply the whole series, we start with an empty resource list, and
+> every time we add one, we set the type in pnp_new_resource().
 > 
-> Cool things there:
-> 
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
-> +	/* Well, CONFIG_DEBUG_PAGEALLOC makes the sound horrible. Lets
-> alert */
-> +	printk(KERN_WARNING
-> +	       "PCSP: Warning, CONFIG_DEBUG_PAGEALLOC is enabled!\n"
-> +	       "You have to disable it if you want to use the PC-Speaker
-> "
-> +	       "driver.\n"
-> +	       "Unless it is disabled, enjoy the horrible, distorted "
-> +	       "and crackling noise.\n");
-> +#endif
+> That makes me wonder whether pnp_init_resources() should just
+> free the whole list, so we just start again with an empty list.
 
-heh.
+Probably. Just a quick heads up; if you don't beat me to it I'll look at it 
+in more detail over the weekend but with the current series ISAPnP is quite 
+decidedly broken. Forget the OOPS for now which seems just a symptom of the 
+same thing as the "too many" warnings". Result of "modprobe snd-cs4236".
 
-CONFIG_DEBUG_PAGEALLOC is a very heavy consumer of CPU cycles.  I'm not
-surprised that it would whack what I presume to be a very latency-sensitive
-driver.
+I believe it's pnp_assign_resources() which has all the pnp_assign_foo() 
+helpers fail due to there not being any yet. I guess pnp_assign_mem() and 
+friends should allocate upon not finding one available and not fail?
+
+Don't get why isapnp_get_resources() didn't allocate though. As said, unless 
+you beat me to it I'll look into it more tomorrow or sunday.
+
+===
+pnp: the driver 'cs4236_isapnp' has been registered
+cs4236_isapnp 01:01.00: driver attached
+cs4236_isapnp 01:01.02: driver attached
+cs4236_isapnp 01:01.03: driver attached
+cs4236_isapnp 01:01.00: too many I/O port resources
+cs4236_isapnp 01:01.00: too many I/O port resources
+cs4236_isapnp 01:01.00: too many I/O port resources
+cs4236_isapnp 01:01.00: too many IRQ resources
+cs4236_isapnp 01:01.00: too many DMA resources
+cs4236_isapnp 01:01.00: too many DMA resources
+cs4236_isapnp 01:01.00: activated
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<f0c604da>] :snd_cs4236:snd_cs423x_pnpc_detect+0x104/0x390
+*pde = 00000000
+Oops: 0000 [#1] PREEMPT
+Modules linked in: snd_cs4236(+) snd_opl3_lib snd_hwdep snd_cs4236_lib 
+snd_mpu401_uart snd_rawmidi snd_seq_device snd_cs4231_lib snd_pcm snd_timer 
+snd soundcore snd_page_alloc nfsd lockd nfs_acl sunrpc exportfs
+
+Pid: 1198, comm: modprobe Not tainted (2.6.25 #2)
+EIP: 0060:[<f0c604da>] EFLAGS: 00010202 CPU: 0
+EIP is at snd_cs423x_pnpc_detect+0x104/0x390 [snd_cs4236]
+EAX: 00000000 EBX: ef868c00 ECX: ef868d6c EDX: 00000000
+ESI: 00000000 EDI: f0c63004 EBP: ef84d600 ESP: eed4ce88
+  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process modprobe (pid: 1198, ti=eed4c000 task=eecf0aa0 task.ti=eed4c000)
+Stack: ef312d40 ef84d7b8 ef843200 ef312d40 f0c63004 00000003 c10d981b f0c62720
+        ef868a00 f0c62720 ef84391c f0cab090 f0c633c0 c10d9df7 00000001 0000002b
+        f0c4802f f0c633c0 c102eb21 00018f20 c1050987 000226c4 00000000 00000690
+Call Trace:
+  [<c10d981b>] card_probe+0xba/0x107
+  [<c10d9df7>] pnp_register_card_driver+0xa2/0xb2
+  [<f0c4802f>] alsa_card_cs423x_init+0x2f/0x4f [snd_cs4236]
+  [<c102eb21>] sys_init_module+0x149a/0x1604
+  [<c1050987>] do_sync_read+0xbe/0xfd
+  [<c1017be8>] __request_region+0x0/0x85
+  [<c10513bd>] sys_read+0x3c/0x63
+  [<c1003a62>] syscall_call+0x7/0xb
+  =======================
+Code: 89 d8 e8 93 ad 47 d0 85 c0 79 0a 68 5a 0a c6 f0 e9 30 01 00 00 31 c9 
+ba 00 01 00 00 89 d8 e8 fc 9d 47 d0 83 3c b5 40 26 c6 f0 00 <8b> 00 89 04 b5 
+a0 26 c6 f0 7e 1a b9 01 00 00 00 ba 00 01 00 00
+EIP: [<f0c604da>] snd_cs423x_pnpc_detect+0x104/0x390 [snd_cs4236] SS:ESP 
+0068:eed4ce88
+---[ end trace 6704e77dc1a89be6 ]---
+===
+
+Rene
 
