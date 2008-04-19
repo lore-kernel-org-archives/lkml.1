@@ -1,403 +1,524 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbYDSNsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbYDSNua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbYDSNsV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 09:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYDSNsL
+	id S1761721AbYDSNua (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 09:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYDSNuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 09:48:11 -0400
-Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:58647 "EHLO
-	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755125AbYDSNsI convert rfc822-to-8bit (ORCPT
+	Sat, 19 Apr 2008 09:50:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:65097 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755387AbYDSNuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 09:48:08 -0400
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: "Peer Chen" <pchen@nvidia.com>
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-Date: Sat, 19 Apr 2008 15:48:03 +0200
-User-Agent: KMail/1.9.9
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       "Kuan Luo" <kluo@nvidia.com>
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804151820.03530.volker.armin.hemmann@tu-clausthal.de> <15F501D1A78BD343BE8F4D8DB854566B271FF262@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B271FF262@hkemmail01.nvidia.com>
+	Sat, 19 Apr 2008 09:50:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=s1JscCe0hbzsuADjqqvcmfOp5aglzMQ3j4D6EgfiCyEajIpDMS+LRZnNsWiW4d7khMC6Lr93Rwl4V/eqhepsVsgOi520R4WMuvMMR62vfBA8vPtD3CI4rwLBNskUJV+kz4xBFmE6FyNKHiL7C0fvgSoZZdbNAfdmIi9T5orCsVs=
+Date: Sat, 19 Apr 2008 18:45:35 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jay Cliburn <jacliburn@bellsouth.net>, Jeff Garzik <jeff@garzik.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080419144535.GA4814@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080413204422.GA5136@martell.zuzino.mipt.ru> <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com> <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com> <20080414183221.GA5234@martell.zuzino.mipt.ru> <20080414195613.GA4772@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com> <20080419111719.GA6724@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804191548.04013.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <20080419111719.GA6724@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H,
+On Sat, Apr 19, 2008 at 03:17:19PM +0400, Alexey Dobriyan wrote:
+> > > Bytes b4 0xffff81017ff9d2c0:  62 ea ff ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a
+> > >   Object 0xffff81017ff9d2d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+> > >   Object 0xffff81017ff9d2e0:  6b 6b 00 18 f3 a2 9f 90 00 1b 38 af 22 49 08 00
+> > >   Object 0xffff81017ff9d2f0:  45 10 00 4c ff 59 40 00 40 11 86 ac c0 a8 00 2a
+> > >   Object 0xffff81017ff9d300:  50 fa a2 be 91 43 00 7b 00 38 54 d4 23 00 00 00
+> > >   Object 0xffff81017ff9d310:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> > >   Object 0xffff81017ff9d320:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> > >   Object 0xffff81017ff9d330:  00 00 00 00 4c ff 10 44 74 7f 6f 9d e4 c8 a2 4f
+> > >   Object 0xffff81017ff9d340:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> > >  Redzone 0xffff81017ff9dad0:  bb bb bb bb bb bb bb bb
+> > >  Padding 0xffff81017ff9db10:  5a 5a 5a 5a 5a 5a 5a 5a
+> > > 
+> > > FIX kmalloc-2048: Restoring 0xffff81017ff9d2e2-0xffff81017ff9d8d9=0x6b
 
-with 2.6.25+reiser4:
+OK, nailed it.
 
-[    0.367181] ------------[ cut here ]------------
-[    0.367181] WARNING: at drivers/ata/ahci.c:645 ahci_init_one+0x190/0xa3a()
-[    0.367181] Modules linked in:
-[    0.367181] Pid: 1, comm: swapper Not tainted 2.6.25 #1
-[    0.367181]
-[    0.367181] Call Trace:
-[    0.367181]  [<ffffffff8022c451>] warn_on_slowpath+0x51/0x63
-[    0.367181]  [<ffffffff80220061>] __ioremap+0x148/0x197
-[    0.367185]  [<ffffffff803cf680>] pci_conf1_read+0xb2/0xbd
-[    0.367225]  [<ffffffff8032aa0e>] pcim_iomap_release+0x0/0x2c
-[    0.367264]  [<ffffffff8032aa0e>] pcim_iomap_release+0x0/0x2c
-[    0.367304]  [<ffffffff803845e9>] devres_find+0x4b/0x65
-[    0.367343]  [<ffffffff803ab959>] ahci_init_one+0x190/0xa3a
-[    0.367382]  [<ffffffff802af71f>] sysfs_addrm_finish+0x1d/0x209
-[    0.367422]  [<ffffffff80283f34>] ifind+0x34/0x8d
-[    0.367461]  [<ffffffff802af436>] sysfs_find_dirent+0x1b/0x2f
-[    0.367501]  [<ffffffff80322e1d>] ida_get_new_above+0xf0/0x180
-[    0.367540]  [<ffffffff802af71f>] sysfs_addrm_finish+0x1d/0x209
-[    0.367580]  [<ffffffff802b0260>] sysfs_create_link+0xb6/0x102
-[    0.367620]  [<ffffffff80335b44>] pci_device_probe+0x4c/0x72
-[    0.367659]  [<ffffffff80382088>] driver_probe_device+0xb5/0x132
-[    0.367698]  [<ffffffff8038221b>] __driver_attach+0x6f/0xaf
-[    0.367737]  [<ffffffff803821ac>] __driver_attach+0x0/0xaf
-[    0.367776]  [<ffffffff803821ac>] __driver_attach+0x0/0xaf
-[    0.367816]  [<ffffffff8038144a>] bus_for_each_dev+0x44/0x6f
-[    0.367856]  [<ffffffff802a9a3b>] proc_match+0x23/0x2d
-[    0.367895]  [<ffffffff80381cb6>] bus_add_driver+0xae/0x1f4
-[    0.367933]  [<ffffffff8038244a>] driver_register+0x59/0xce
-[    0.367973]  [<ffffffff80335d85>] __pci_register_driver+0x4a/0x7d
-[    0.368019]  [<ffffffff805346b8>] kernel_init+0x14f/0x2b9
-[    0.368059]  [<ffffffff8020bd58>] child_rip+0xa/0x12
-[    0.368097]  [<ffffffff80534569>] kernel_init+0x0/0x2b9
-[    0.368136]  [<ffffffff8020bd4e>] child_rip+0x0/0x12
-[    0.368173]
-[    0.368210] ---[ end trace 9a12831ed6194f10 ]---
-[    1.373847] ahci 0000:00:0a.0: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf 
-imp
-l SATA mode
-[    1.373847] ahci 0000:00:0a.0: flags: 64bit sntf led clo pmp pio
-[    1.373847] PCI: Setting latency timer of device 0000:00:0a.0 to 64
-[    1.373849] scsi0 : ahci
-[    1.373859] scsi1 : ahci
-[    1.373868] scsi2 : ahci
-[    1.373877] scsi3 : ahci
-[    1.373884] ata1: SATA max UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc100 
-irq
- 23
-[    1.373884] ata2: SATA max UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc180 
-irq
- 23
-[    1.373884] ata3: SATA max UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc200 
-irq
- 23
-[    1.373884] ata4: SATA max UDMA/133 abar m8192@0xf9dfc000 port 0xf9dfc280 
-irq
- 23
-[    1.806725] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[    1.807223] ata1.00: ATA-7: WDC WD1600JS-00MHB1, 10.02E01, max UDMA/133
-[    1.807223] ata1.00: 312581808 sectors, multi 16: LBA48
-[    1.807780] ata1.00: configured for UDMA/133
-[    2.439665] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[    2.460164] ata2.00: ATA-8: SAMSUNG HD501LJ, CR100-12, max UDMA7
-[    2.460164] ata2.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-[    2.462073] ata2.00: configured for UDMA/133
-[    2.779316] ata3: SATA link down (SStatus 0 SControl 300)
-[    3.099182] ata4: SATA link down (SStatus 0 SControl 300)
-[    3.300538] scsi 0:0:0:0: Direct-Access     ATA      WDC WD1600JS-00M 10.0 
-PQ
-: 0 ANSI: 5
-[    3.300551] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 
-MB)
-[    3.300551] sd 0:0:0:0: [sda] Write Protect is off
-[    3.300551] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[    3.300551] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, 
-does
-n't support DPO or FUA
-[    3.300551] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 
-MB)
-[    3.300551] sd 0:0:0:0: [sda] Write Protect is off
-[    3.300551] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[    3.300551] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, 
-does
-n't support DPO or FUA
-[    3.300551]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
-[    3.142035] sd 0:0:0:0: [sda] Attached SCSI disk
-[    3.142045] sd 0:0:0:0: Attached scsi generic sg0 type 0
-[    3.142050] scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD501LJ  CR10 
-PQ
-: 0 ANSI: 5
-[    3.142057] sd 1:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 
-MB)
-[    3.142057] sd 1:0:0:0: [sdb] Write Protect is off
-[    3.142057] sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-[    3.142057] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, 
-does
-n't support DPO or FUA
-[    3.142057] sd 1:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 
-MB)
-[    3.142057] sd 1:0:0:0: [sdb] Write Protect is off
-[    3.142057] sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-[    3.142057] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, 
-does
-n't support DPO or FUA
-[    3.142057]  sdb: sdb1 sdb2
-[    3.153169] sd 1:0:0:0: [sdb] Attached SCSI disk
-[    3.153179] sd 1:0:0:0: Attached scsi generic sg1 type 0
+It's commit 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 aka "atl1: disable broken 64-bit DMA".
 
-and from mmapper:
-0x2f00: 0xf9dfc004
-0x2f01: 0x00f9dfc0
-0x2f02: 0x0000f9df
-0x2f03: 0x000000f9
-0x2f04: 0x00000000
-0x2f05: 0xfc000000
-0x2f06: 0xfffc0000
-0x2f07: 0xfffffc00
-0x2f08: 0xfffffffc
-0x2f09: 0xffffffff
-0x2f0a: 0x00ffffff
-0x2f0b: 0x0900ffff
-0x2f0c: 0x000900ff
-0x2f0d: 0x24000900
-0x2f0e: 0x50240009
-0x2f0f: 0x00502400
-0x2f10: 0xfe005024
-0x2f11: 0xfdfe0050
-0x2f12: 0x00fdfe00
-0x2f13: 0x0000fdfe
-0x2f14: 0x000000fd
-0x2f15: 0xfc000000
-0x2f16: 0xfffc0000
-0x2f17: 0xfffffc00
-0x2f18: 0xfffffffc
-0x2f19: 0xffffffff
-0x2f1a: 0x00ffffff
-0x2f1b: 0x0c00ffff
-0x2f1c: 0x000c00ff
-0x2f1d: 0x00000c00
-0x2f1e: 0x0000000c
-0x2f1f: 0x00000000
-0x2f20: 0x00000000
-0x2f21: 0x00000000
-0x2f22: 0x00000000
-0x2f23: 0x00000000
-0x2f24: 0x00000000
-0x2f25: 0x00000000
-0x2f26: 0x00000000
-0x2f27: 0x00000000
-0x2f28: 0x00000000
-0x2f29: 0x00000000
-0x2f2a: 0x00000000
-0x2f2b: 0x00000000
-0x2f2c: 0x00000000
-0x2f2d: 0x00000000
-0x2f2e: 0x00000000
-0x2f2f: 0x00000000
-0x2f30: 0x00000000
-0x2f31: 0x00000000
-0x2f32: 0x00000000
-0x2f33: 0x00000000
-0x2f34: 0x00000000
-0x2f35: 0x00000000
-0x2f36: 0x00000000
-0x2f37: 0x00000000
-0x2f38: 0x00000000
-0x2f39: 0x00000000
-0x2f3a: 0x00000000
-0x2f3b: 0x00000000
-0x2f3c: 0x00000000
-0x2f3d: 0x00000000
-0x2f3e: 0x00000000
-0x2f3f: 0x00000000
-0x2f40: 0x00000000
-0x2f41: 0x00000000
-0x2f42: 0x00000000
-0x2f43: 0x00000000
-0x2f44: 0x00000000
-0x2f45: 0x00000000
-0x2f46: 0x00000000
-0x2f47: 0x00000000
-0x2f48: 0x00000000
-0x2f49: 0x00000000
-0x2f4a: 0x00000000
-0x2f4b: 0x00000000
-0x2f4c: 0x00000000
-0x2f4d: 0x00000000
-0x2f4e: 0x00000000
-0x2f4f: 0x00000000
-0x2f50: 0x00000000
-0x2f51: 0x00000000
-0x2f52: 0x00000000
-0x2f53: 0x00000000
-0x2f54: 0x00000000
-0x2f55: 0x00000000
-0x2f56: 0x00000000
-0x2f57: 0x00000000
-0x2f58: 0x00000000
-0x2f59: 0x00000000
-0x2f5a: 0x00000000
-0x2f5b: 0x00000000
-0x2f5c: 0x00000000
-0x2f5d: 0x00000000
-0x2f5e: 0x00000000
-0x2f5f: 0x00000000
-0x2f60: 0x00000000
-0x2f61: 0x00000000
-0x2f62: 0x00000000
-0x2f63: 0x00000000
-0x2f64: 0x00000000
-0x2f65: 0x00000000
-0x2f66: 0x00000000
-0x2f67: 0x00000000
-0x2f68: 0x00000000
-0x2f69: 0x00000000
-0x2f6a: 0x00000000
-0x2f6b: 0x00000000
-0x2f6c: 0x00000000
-0x2f6d: 0x00000000
-0x2f6e: 0x00000000
-0x2f6f: 0x00000000
-0x2f70: 0x00000000
-0x2f71: 0x00000000
-0x2f72: 0x00000000
-0x2f73: 0x00000000
-0x2f74: 0x00000000
-0x2f75: 0x00000000
-0x2f76: 0x00000000
-0x2f77: 0x00000000
-0x2f78: 0x00000000
-0x2f79: 0x00000000
-0x2f7a: 0x00000000
-0x2f7b: 0x00000000
-0x2f7c: 0x00000000
-0x2f7d: 0x41000000
-0x2f7e: 0x40410000
-0x2f7f: 0x10404100
-0x2f80: 0xc6104041
-0x2f81: 0x02c61040
-0x2f82: 0x0002c610
-0x2f83: 0x000002c6
-0x2f84: 0x80000002
-0x2f85: 0x35800000
-0x2f86: 0x48358000
-0x2f87: 0xf6483580
-0x2f88: 0x38f64835
-0x2f89: 0x3138f648
-0x2f8a: 0xd03138f6
-0x2f8b: 0xf6d03138
-0x2f8c: 0x88f6d031
-0x2f8d: 0x0488f6d0
-0x2f8e: 0xec0488f6
-0x2f8f: 0xb6ec0488
-0x2f90: 0x56b6ec04
-0x2f91: 0x6b56b6ec
-0x2f92: 0x736b56b6
-0x2f93: 0xd6736b56
-0x2f94: 0xc1d6736b
-0x2f95: 0x87c1d673
-0x2f96: 0xf187c1d6
-0x2f97: 0x2bf187c1
-0x2f98: 0xfc2bf187
-0x2f99: 0xa7fc2bf1
-0x2f9a: 0x67a7fc2b
-0x2f9b: 0x6f67a7fc
-0x2f9c: 0x5f6f67a7
-0x2f9d: 0xd25f6f67
-0x2f9e: 0xa8d25f6f
-0x2f9f: 0x07a8d25f
-0x2fa0: 0x8007a8d2
-0x2fa1: 0xfc8007a8
-0x2fa2: 0xf2fc8007
-0x2fa3: 0x62f2fc80
-0x2fa4: 0x1062f2fc
-0x2fa5: 0xfe1062f2
-0x2fa6: 0x7bfe1062
-0x2fa7: 0x807bfe10
-0x2fa8: 0xed807bfe
-0x2fa9: 0xfded807b
-0x2faa: 0x97fded80
-0x2fab: 0x9697fded
-0x2fac: 0x9e9697fd
-0x2fad: 0x499e9697
-0x2fae: 0xbd499e96
-0x2faf: 0xa2bd499e
-0x2fb0: 0x9aa2bd49
-0x2fb1: 0x589aa2bd
-0x2fb2: 0x20589aa2
-0x2fb3: 0x3720589a
-0x2fb4: 0x1b372058
-0x2fb5: 0xa41b3720
-0x2fb6: 0x08a41b37
-0x2fb7: 0x7e08a41b
-0x2fb8: 0x457e08a4
-0x2fb9: 0x7e457e08
-0x2fba: 0x2e7e457e
-0x2fbb: 0x502e7e45
-0x2fbc: 0x5e502e7e
-0x2fbd: 0x855e502e
-0x2fbe: 0x99855e50
-0x2fbf: 0x1b99855e
-0x2fc0: 0x921b9985
-0x2fc1: 0x22921b99
-0x2fc2: 0x5a22921b
-0x2fc3: 0x005a2292
-0x2fc4: 0x3e005a22
-0x2fc5: 0x5b3e005a
-0x2fc6: 0x045b3e00
-0x2fc7: 0xe4045b3e
-0x2fc8: 0xf2e4045b
-0x2fc9: 0xe4f2e404
-0x2fca: 0x3be4f2e4
-0x2fcb: 0xb33be4f2
-0x2fcc: 0xbbb33be4
-0x2fcd: 0x97bbb33b
-0x2fce: 0x4997bbb3
-0x2fcf: 0x714997bb
-0x2fd0: 0x8e714997
-0x2fd1: 0x0e8e7149
-0x2fd2: 0x3a0e8e71
-0x2fd3: 0xcf3a0e8e
-0x2fd4: 0x5fcf3a0e
-0x2fd5: 0xb75fcf3a
-0x2fd6: 0xdbb75fcf
-0x2fd7: 0x5ddbb75f
-0x2fd8: 0x205ddbb7
-0x2fd9: 0x19205ddb
-0x2fda: 0x0219205d
-0x2fdb: 0x10021920
-0x2fdc: 0x79100219
-0x2fdd: 0x26791002
-0x2fde: 0x00267910
-0x2fdf: 0xfb002679
-0x2fe0: 0x00fb0026
-0x2fe1: 0xbb00fb00
-0x2fe2: 0xf8bb00fb
-0x2fe3: 0x7bf8bb00
-0x2fe4: 0xb47bf8bb
-0x2fe5: 0x0ab47bf8
-0x2fe6: 0x7e0ab47b
-0x2fe7: 0xff7e0ab4
-0x2fe8: 0xf7ff7e0a
-0x2fe9: 0x51f7ff7e
-0x2fea: 0x4f51f7ff
-0x2feb: 0x104f51f7
-0x2fec: 0xe7104f51
-0x2fed: 0xdae7104f
-0x2fee: 0x3adae710
-0x2fef: 0xbb3adae7
-0x2ff0: 0xc7bb3ada
-0x2ff1: 0xfdc7bb3a
-0x2ff2: 0xfffdc7bb
-0x2ff3: 0xd8fffdc7
-0x2ff4: 0xc3d8fffd
-0x2ff5: 0x90c3d8ff
-0x2ff6: 0x0890c3d8
-0x2ff7: 0x9f0890c3
-0x2ff8: 0x7a9f0890
-0x2ff9: 0x007a9f08
-0x2ffa: 0xfd007a9f
-0x2ffb: 0xaffd007a
-0x2ffc: 0xb0affd00
-0x2ffd: 0xffb0affd
-0x2ffe: 0xffffb0af
-0x2fff: 0xffffffb0
+With this commit in tree, I can reproduce either
+a) kmalloc-2048 corruption after initscripts shutdown eth0
+	http://marc.info/?l=linux-kernel&m=120820360221261&w=2
 
-Glück Auf
-Volker
+b) or oopses at filp_close() first reported long ago
+	(sorry, can't find that email)
+
+c) or hard hang after initscripts shutdown eth0 with even SysRq not working.
+	http://marc.info/?l=linux-kernel&m=120795046008115&w=2
+
+I have two boxes one with atl1, 4G RAM with 2G remapped after 4G boundary, another
+with r8169 connected with just ethernet cable. NICs agree on 1Gbps speed.
+
+So, it's enough to scp 200 MB git archive and immediately start
+rebooting sequence for horrors described above to appear. It's not 100%
+reproducible but more like 90%.
+
+I tested 10 times kernel one commit before and it doesn't have these
+issues and reboots reliably.
+
+CONFIG_IOMMU is in use, dmesg, lspci, /proc/mtrr below:
+
+03:00.0 Ethernet controller [0200]: Attansic Technology Corp. L1 Gigabit Ethernet Adapter [1969:1048] (rev b0)
+	Subsystem: ASUSTeK Computer Inc. Unknown device [1043:8226]
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 319
+	Region 0: Memory at fe9c0000 (64-bit, non-prefetchable) [size=256K]
+	Expansion ROM at fe9a0000 [disabled] [size=128K]
+	Capabilities: [40] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [48] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+		Address: 00000000fee0300c  Data: 4161
+	Capabilities: [58] Express (v1) Endpoint, MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
+			ExtTag- AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+			RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr+ UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 unlimited, L1 unlimited
+			ClockPM- Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+	Capabilities: [6c] Vital Product Data <?>
+	Kernel driver in use: atl1
+00: 69 19 48 10 06 04 10 00 b0 00 00 02 08 00 00 00
+10: 04 00 9c fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 26 82
+30: 00 00 9a fe 40 00 00 00 00 00 00 00 0a 01 00 00
+40: 01 48 02 c0 00 00 00 00 05 58 81 00 0c 30 e0 fe
+50: 00 00 00 00 61 41 00 00 10 6c 01 00 80 7f 00 00
+60: 00 20 1b 00 11 f4 03 00 40 00 11 10 03 00 28 81
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 69 19 48 10 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+
+reg00: base=0x80000000 (2048MB), size=2048MB: uncachable, count=1
+reg01: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+reg02: base=0x100000000 (4096MB), size=2048MB: write-back, count=1
+
+
+Linux version 2.6.23-rc6 (ad@martell) (gcc version 4.1.2 (Gentoo 4.1.2 p1.0.2)) #14 SMP PREEMPT Sat Apr 19 17:46:31 MSD 2008
+Command line: root=/dev/sda2 netconsole=@192.168.0.1/eth0,9353@192.168.0.42/00:1b:38:af:22:49 ignore_loglevel
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000007ff90000 (usable)
+ BIOS-e820: 000000007ff90000 - 000000007ff9e000 (ACPI data)
+ BIOS-e820: 000000007ff9e000 - 000000007ffe0000 (ACPI NVS)
+ BIOS-e820: 000000007ffe0000 - 0000000080000000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 0000000180000000 (usable)
+Entering add_active_range(0, 0, 159) 0 entries of 256 used
+Entering add_active_range(0, 256, 524176) 1 entries of 256 used
+Entering add_active_range(0, 1048576, 1572864) 2 entries of 256 used
+end_pfn_map = 1572864
+DMI 2.4 present.
+ACPI: RSDP 000FA980, 0024 (r2 ACPIAM)
+ACPI: XSDT 7FF90100, 0054 (r1 KOZIRO FRONTIER  2000707 MSFT       97)
+ACPI: FACP 7FF90290, 00F4 (r3 MSTEST OEMFACP   2000707 MSFT       97)
+ACPI: DSDT 7FF905C0, 8FA9 (r1  A0637 A0637000        0 INTL 20060113)
+ACPI: FACS 7FF9E000, 0040
+ACPI: APIC 7FF90390, 006C (r1 MSTEST OEMAPIC   2000707 MSFT       97)
+ACPI: MCFG 7FF90400, 003C (r1 MSTEST OEMMCFG   2000707 MSFT       97)
+ACPI: SLIC 7FF90440, 0176 (r1 KOZIRO FRONTIER  2000707 MSFT       97)
+ACPI: OEMB 7FF9E040, 007B (r1 MSTEST AMI_OEM   2000707 MSFT       97)
+ACPI: HPET 7FF99570, 0038 (r1 MSTEST OEMHPET   2000707 MSFT       97)
+Entering add_active_range(0, 0, 159) 0 entries of 256 used
+Entering add_active_range(0, 256, 524176) 1 entries of 256 used
+Entering add_active_range(0, 1048576, 1572864) 2 entries of 256 used
+Zone PFN ranges:
+  DMA             0 ->     4096
+  DMA32        4096 ->  1048576
+  Normal    1048576 ->  1572864
+Movable zone start PFN for each node
+early_node_map[3] active PFN ranges
+    0:        0 ->      159
+    0:      256 ->   524176
+    0:  1048576 ->  1572864
+On node 0 totalpages: 1048367
+  DMA zone: 56 pages used for memmap
+  DMA zone: 2000 pages reserved
+  DMA zone: 1943 pages, LIFO batch:0
+  DMA32 zone: 14280 pages used for memmap
+  DMA32 zone: 505800 pages, LIFO batch:31
+  Normal zone: 7168 pages used for memmap
+  Normal zone: 517120 pages, LIFO batch:31
+  Movable zone: 0 pages used for memmap
+ACPI: Local APIC address 0xfee00000
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+Processor #0 (Bootup-CPU)
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+Processor #1
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
+ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
+ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+IOAPIC[0]: apic_id 2, address 0xfec00000, GSI 0-23
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+ACPI: IRQ0 used by override.
+ACPI: IRQ2 used by override.
+ACPI: IRQ9 used by override.
+Setting APIC routing to flat
+ACPI: HPET id: 0x8086a202 base: 0xfed00000
+Using ACPI (MADT) for SMP configuration information
+Allocating PCI resources starting at 88000000 (gap: 80000000:7ee00000)
+PERCPU: Allocating 29912 bytes of per cpu data
+Built 1 zonelists in Zone order.  Total pages: 1024863
+Kernel command line: root=/dev/sda2 netconsole=@192.168.0.1/eth0,9353@192.168.0.42/00:1b:38:af:22:49 ignore_loglevel
+netconsole: local port 6665
+netconsole: local IP 192.168.0.1
+netconsole: interface eth0
+netconsole: remote port 9353
+netconsole: remote IP 192.168.0.42
+netconsole: remote ethernet address 00:1b:38:af:22:49
+debug: ignoring loglevel setting.
+Initializing CPU#0
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+Extended CMOS year: 2000
+time.c: Detected 2135.040 MHz processor.
+Console: colour VGA+ 80x25
+console [tty0] enabled
+Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+... MAX_LOCKDEP_SUBCLASSES:    8
+... MAX_LOCK_DEPTH:          30
+... MAX_LOCKDEP_KEYS:        2048
+... CLASSHASH_SIZE:           1024
+... MAX_LOCKDEP_ENTRIES:     8192
+... MAX_LOCKDEP_CHAINS:      16384
+... CHAINHASH_SIZE:          8192
+ memory used by lock dependency info: 1648 kB
+ per task-struct memory footprint: 1680 bytes
+Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Checking aperture...
+PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+Placing software IO TLB between 0x161b000 - 0x561b000
+Memory: 4026652k/6291456k available (2330k kernel code, 166608k reserved, 1300k data, 200k init)
+SLUB: Genslabs=22, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+Calibrating delay using timer specific routine.. 4273.23 BogoMIPS (lpj=2136619)
+Mount-cache hash table entries: 256
+CPU: L1 I cache: 32K, L1 D cache: 32K
+CPU: L2 cache: 2048K
+using mwait in idle threads.
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 0
+CPU0: Thermal monitoring enabled (TM2)
+Freeing SMP alternatives: 19k freed
+ACPI: Core revision 20070126
+Using local APIC timer interrupts.
+result 16679993
+Detected 16.679 MHz APIC timer.
+lockdep: not fixing up alternatives.
+Booting processor 1/2 APIC 0x1
+Initializing CPU#1
+Calibrating delay using timer specific routine.. 4270.09 BogoMIPS (lpj=2135045)
+CPU: L1 I cache: 32K, L1 D cache: 32K
+CPU: L2 cache: 2048K
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 1
+CPU1: Thermal monitoring enabled (TM2)
+Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz stepping 02
+checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+Brought up 2 CPUs
+NET: Registered protocol family 16
+No dock devices found.
+ACPI: bus type pci registered
+PCI: Using configuration type 1
+ACPI: EC: Look up EC in DSDT
+ACPI: Interpreter enabled
+ACPI: Using IOAPIC for interrupt routing
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+PCI quirk: region 0800-087f claimed by ICH6 ACPI/GPIO/TCO
+PCI quirk: region 0480-04bf claimed by ICH6 GPIO
+PCI: Transparent bridge - 0000:00:1e.0
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P2._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P1._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P4._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P7._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P8._PRT]
+ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 *11 12 14 15)
+ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 *5 6 7 10 11 12 14 15)
+ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 10 11 12 14 *15)
+ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 *10 11 12 14 15)
+ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 11 12 14 15) *0, disabled.
+ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 10 11 12 14 15) *0, disabled.
+ACPI: PCI Interrupt Link [LNKG] (IRQs *3 4 5 6 7 10 11 12 14 15)
+ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11 12 *14 15)
+ACPI Warning (tbutils-0217): Incorrect checksum in table [OEMB] -  08, should be 03 [20070126]
+Linux Plug and Play Support v0.97 (c) Adam Belay
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 15 devices
+ACPI: ACPI bus type pnp unregistered
+SCSI subsystem initialized
+libata version 2.21 loaded.
+PCI: Using ACPI for IRQ routing
+PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
+PCI-GART: No AMD northbridge found.
+Time: tsc clocksource has been installed.
+pnp: 00:01: iomem range 0xfed14000-0xfed19fff has been reserved
+pnp: 00:07: ioport range 0x290-0x297 has been reserved
+pnp: 00:08: iomem range 0xffafe000-0xffb0cbff could not be reserved
+pnp: 00:08: iomem range 0xffb00000-0xffbfffff could not be reserved
+pnp: 00:08: iomem range 0xfed1c000-0xfed1ffff has been reserved
+pnp: 00:08: iomem range 0xfed20000-0xfed8ffff has been reserved
+pnp: 00:0b: iomem range 0xfec00000-0xfec00fff has been reserved
+pnp: 00:0b: iomem range 0xfee00000-0xfee00fff could not be reserved
+pnp: 00:0d: iomem range 0xe0000000-0xefffffff has been reserved
+pnp: 00:0e: iomem range 0x0-0x9ffff could not be reserved
+pnp: 00:0e: iomem range 0xc0000-0xcffff has been reserved
+pnp: 00:0e: iomem range 0xe0000-0xfffff could not be reserved
+pnp: 00:0e: iomem range 0x100000-0x7fffffff could not be reserved
+PCI: Bridge: 0000:00:01.0
+  IO window: 9000-9fff
+  MEM window: f8700000-fe7fffff
+  PREFETCH window: bfe00000-dfdfffff
+PCI: Bridge: 0000:00:1c.0
+  IO window: disabled.
+  MEM window: disabled.
+  PREFETCH window: dfe00000-dfefffff
+PCI: Bridge: 0000:00:1c.3
+  IO window: disabled.
+  MEM window: fe900000-fe9fffff
+  PREFETCH window: disabled.
+PCI: Bridge: 0000:00:1c.4
+  IO window: a000-afff
+  MEM window: fe800000-fe8fffff
+  PREFETCH window: disabled.
+PCI: Bridge: 0000:00:1e.0
+  IO window: b000-bfff
+  MEM window: fea00000-feafffff
+  PREFETCH window: 88000000-880fffff
+ACPI: PCI Interrupt 0000:00:01.0[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:01.0 to 64
+ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:1c.0 to 64
+ACPI: PCI Interrupt 0000:00:1c.3[D] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:00:1c.3 to 64
+ACPI: PCI Interrupt 0000:00:1c.4[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:1c.4 to 64
+PCI: Setting latency timer of device 0000:00:1e.0 to 64
+NET: Registered protocol family 2
+IP route cache hash table entries: 131072 (order: 8, 1048576 bytes)
+TCP established hash table entries: 65536 (order: 10, 4194304 bytes)
+TCP bind hash table entries: 65536 (order: 9, 3670016 bytes)
+TCP: Hash tables configured (established 65536 bind 65536)
+TCP reno registered
+io scheduler noop registered
+io scheduler cfq registered (default)
+Boot video device is 0000:01:00.0
+Real Time Clock Driver v1.12ac
+Linux agpgart interface v0.102
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+atl1 0000:03:00.0: version 2.0.7
+8139too Fast Ethernet driver 0.9.28
+ACPI: PCI Interrupt 0000:05:02.0[A] -> GSI 23 (level, low) -> IRQ 23
+eth1: RealTek RTL8139 at 0xb800, 00:80:48:2e:06:2e, IRQ 23
+eth1:  Identified 8139 chip type 'RTL-8100B/8139D'
+netconsole: device eth0 not up yet, forcing it
+atl1 0000:03:00.0: eth0 link is up 1000 Mbps full duplex
+console [netcon0] enabled
+netconsole: network logging started
+ahci 0000:02:00.0: version 2.3
+ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+ahci 0000:02:00.0: AHCI 0001.0000 32 slots 2 ports 3 Gbps 0x3 impl SATA mode
+ahci 0000:02:00.0: flags: 64bit ncq pm led clo pmp pio slum part 
+PCI: Setting latency timer of device 0000:02:00.0 to 64
+scsi0 : ahci
+scsi1 : ahci
+ata1: SATA max UDMA/133 cmd 0xffffc20000024100 ctl 0x0000000000000000 bmdma 0x0000000000000000 irq 16
+ata2: SATA max UDMA/133 cmd 0xffffc20000024180 ctl 0x0000000000000000 bmdma 0x0000000000000000 irq 16
+ata1: SATA link down (SStatus 0 SControl 300)
+ata2: SATA link down (SStatus 0 SControl 300)
+ata_piix 0000:00:1f.2: version 2.12
+ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
+ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:00:1f.2 to 64
+scsi2 : ata_piix
+scsi3 : ata_piix
+ata3: SATA max UDMA/133 cmd 0x000000000001ec00 ctl 0x000000000001e882 bmdma 0x000000000001e400 irq 19
+ata4: SATA max UDMA/133 cmd 0x000000000001e800 ctl 0x000000000001e482 bmdma 0x000000000001e408 irq 19
+ata3.00: ATA-8: ST3750330AS, SD15, max UDMA/133
+ata3.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata3.01: ATA-7: ST3160811AS, 3.AAE, max UDMA/133
+ata3.01: 312581808 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata3.00: configured for UDMA/133
+ata3.01: configured for UDMA/133
+ata4.00: ATA-7: ST3250620AS, 3.AAE, max UDMA/133
+ata4.00: 488397168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata4.00: configured for UDMA/133
+scsi 2:0:0:0: Direct-Access     ATA      ST3750330AS      SD15 PQ: 0 ANSI: 5
+sd 2:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1 sda2
+sd 2:0:0:0: [sda] Attached SCSI disk
+scsi 2:0:1:0: Direct-Access     ATA      ST3160811AS      3.AA PQ: 0 ANSI: 5
+sd 2:0:1:0: [sdb] 312581808 512-byte hardware sectors (160042 MB)
+sd 2:0:1:0: [sdb] Write Protect is off
+sd 2:0:1:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:1:0: [sdb] 312581808 512-byte hardware sectors (160042 MB)
+sd 2:0:1:0: [sdb] Write Protect is off
+sd 2:0:1:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdb: unknown partition table
+sd 2:0:1:0: [sdb] Attached SCSI disk
+scsi 3:0:0:0: Direct-Access     ATA      ST3250620AS      3.AA PQ: 0 ANSI: 5
+sd 3:0:0:0: [sdc] 488397168 512-byte hardware sectors (250059 MB)
+sd 3:0:0:0: [sdc] Write Protect is off
+sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 3:0:0:0: [sdc] 488397168 512-byte hardware sectors (250059 MB)
+sd 3:0:0:0: [sdc] Write Protect is off
+sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdc: sdc1
+sd 3:0:0:0: [sdc] Attached SCSI disk
+ata_piix 0000:00:1f.5: MAP [ P0 P2 P1 P3 ]
+ACPI: PCI Interrupt 0000:00:1f.5[B] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:00:1f.5 to 64
+scsi4 : ata_piix
+scsi5 : ata_piix
+ata5: SATA max UDMA/133 cmd 0x000000000001d400 ctl 0x000000000001d082 bmdma 0x000000000001c880 irq 19
+ata6: SATA max UDMA/133 cmd 0x000000000001d000 ctl 0x000000000001cc02 bmdma 0x000000000001c888 irq 19
+ACPI: PCI Interrupt 0000:02:00.1[B] -> GSI 17 (level, low) -> IRQ 17
+PCI: Setting latency timer of device 0000:02:00.1 to 64
+scsi6 : pata_jmicron
+scsi7 : pata_jmicron
+ata7: PATA max UDMA/100 cmd 0x000000000001ac00 ctl 0x000000000001a882 bmdma 0x000000000001a400 irq 17
+ata8: PATA max UDMA/100 cmd 0x000000000001a800 ctl 0x000000000001a482 bmdma 0x000000000001a408 irq 17
+ata7.01: ATAPI: Optiarc DVD RW AD-7173A, 1-01, max UDMA/66
+ata7.01: configured for UDMA/66
+scsi 6:0:1:0: CD-ROM            Optiarc  DVD RW AD-7173A  1-01 PQ: 0 ANSI: 5
+PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
+PNP: PS/2 appears to have AUX port disabled, if this is incorrect please boot with i8042.nopnp
+serio: i8042 KBD port at 0x60,0x64 irq 1
+mice: PS/2 mouse device common for all mice
+Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 2007 UTC).
+ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 22 (level, low) -> IRQ 22
+PCI: Setting latency timer of device 0000:00:1b.0 to 64
+input: AT Translated Set 2 keyboard as /class/input/input0
+ALSA device list:
+  #0: HDA Intel at 0xfebf8000 irq 22
+TCP cubic registered
+NET: Registered protocol family 1
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem) readonly.
+Freeing unused kernel memory: 200k freed
+Write protecting the kernel read-only data: 3216k
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+ACPI: PCI Interrupt 0000:00:1a.7[C] -> GSI 18 (level, low) -> IRQ 18
+PCI: Setting latency timer of device 0000:00:1a.7 to 64
+ehci_hcd 0000:00:1a.7: EHCI Host Controller
+ehci_hcd 0000:00:1a.7: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:00:1a.7: debug port 1
+PCI: cache line size of 32 is not supported by device 0000:00:1a.7
+ehci_hcd 0000:00:1a.7: irq 18, io mem 0xfebffc00
+USB Universal Host Controller Interface driver v3.0
+ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 4 ports detected
+sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 6:0:1:0: Attached scsi CD-ROM sr0
+ACPI: PCI Interrupt 0000:00:1d.7[A] -> GSI 23 (level, low) -> IRQ 23
+PCI: Setting latency timer of device 0000:00:1d.7 to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 2
+ehci_hcd 0000:00:1d.7: debug port 1
+PCI: cache line size of 32 is not supported by device 0000:00:1d.7
+ehci_hcd 0000:00:1d.7: irq 23, io mem 0xfebff800
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 6 ports detected
+ACPI: PCI Interrupt 0000:00:1a.0[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:1a.0 to 64
+uhci_hcd 0000:00:1a.0: UHCI Host Controller
+uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus number 3
+uhci_hcd 0000:00:1a.0: irq 16, io base 0x0000dc00
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+ACPI: PCI Interrupt 0000:00:1a.1[B] -> GSI 17 (level, low) -> IRQ 17
+PCI: Setting latency timer of device 0000:00:1a.1 to 64
+uhci_hcd 0000:00:1a.1: UHCI Host Controller
+uhci_hcd 0000:00:1a.1: new USB bus registered, assigned bus number 4
+uhci_hcd 0000:00:1a.1: irq 17, io base 0x0000e000
+usb usb4: configuration #1 chosen from 1 choice
+hub 4-0:1.0: USB hub found
+hub 4-0:1.0: 2 ports detected
+ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 23 (level, low) -> IRQ 23
+PCI: Setting latency timer of device 0000:00:1d.0 to 64
+uhci_hcd 0000:00:1d.0: UHCI Host Controller
+uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 5
+uhci_hcd 0000:00:1d.0: irq 23, io base 0x0000d480
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 2 ports detected
+ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:00:1d.1 to 64
+uhci_hcd 0000:00:1d.1: UHCI Host Controller
+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 6
+uhci_hcd 0000:00:1d.1: irq 19, io base 0x0000d800
+usb usb6: configuration #1 chosen from 1 choice
+hub 6-0:1.0: USB hub found
+hub 6-0:1.0: 2 ports detected
+ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 18
+PCI: Setting latency timer of device 0000:00:1d.2 to 64
+uhci_hcd 0000:00:1d.2: UHCI Host Controller
+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 7
+uhci_hcd 0000:00:1d.2: irq 18, io base 0x0000d880
+usb usb7: configuration #1 chosen from 1 choice
+hub 7-0:1.0: USB hub found
+hub 7-0:1.0: 2 ports detected
+EXT3 FS on sda2, internal journal
+usbcore: registered new interface driver usblp
+Adding 9775512k swap on /dev/sda1.  Priority:-1 extents:1 across:9775512k
+ip_tables: (C) 2000-2006 Netfilter Core Team
+Netfilter messages via NETLINK v0.30.
+nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+eth1: link up, 100Mbps, full-duplex, lpa 0x45E1
+
