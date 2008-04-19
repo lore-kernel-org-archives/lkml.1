@@ -1,55 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYDSPVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYDSPmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762220AbYDSPVK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 11:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbYDSPU5
+	id S1759416AbYDSPmD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 11:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYDSPlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 11:20:57 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:56744 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756151AbYDSPU4 (ORCPT
+	Sat, 19 Apr 2008 11:41:53 -0400
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:38025 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751150AbYDSPlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 11:20:56 -0400
-Date: Sat, 19 Apr 2008 08:20:49 -0700 (PDT)
-From: Dave Olson <dave.olson@qlogic.com>
-To: Roland Dreier <rdreier@cisco.com>
-cc: Ingo Molnar <mingo@elte.hu>, Ralph Campbell <ralph.campbell@qlogic.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git
-In-Reply-To: <adaod86aq9j.fsf@cisco.com>
-Message-ID: <alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com>
-References: <adaskxkh6s2.fsf@cisco.com> <20080419081614.GA2437@elte.hu> <adaod86aq9j.fsf@cisco.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 19 Apr 2008 15:20:56.0217 (UTC) FILETIME=[F6C31890:01C8A230]
+	Sat, 19 Apr 2008 11:41:52 -0400
+Date: Sat, 19 Apr 2008 18:41:37 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       mathieu.desnoyers@polymtl.ca
+Subject: [BUG] kmalloc_node(GFP_KERNEL) while smp_alt spinlocked
+Message-ID: <20080419184137.79957a07@daedalus.pq.iki.fi>
+In-Reply-To: <20080414065713.GB16163@elte.hu>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
+ <20080413230552.33ca587a@daedalus.pq.iki.fi>
+ <20080414065713.GB16163@elte.hu>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008, Roland Dreier wrote:
-|  >  drivers/built-in.o: In function `ipath_init_one':
-|  >  ipath_driver.c:(.devinit.text+0x1e5bc): undefined reference to `ipath_init_iba7220_funcs'
+On Mon, 14 Apr 2008 08:57:13 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Yes, that issue should be fixed.  Our preference was to not build
-if it wouldn't work.  We'd have to add the conditional check at
-the function setup routines.
+> Pekka Paalanen wrote:
+> > When I tested this patch on Intel Core 2 Duo, enter_uniprocessor() 
+> > triggered the following kernel bug:
+> > 
+> > Linux version 2.6.25-rc8-sched-devel.git-x86-latest.git (paalanen@ct200006)
+> > (gcc version 4.1.2 (Gentoo 4.1.2 p1.0.1)) #2 SMP PREEMPT Sun Apr 13
+> > 22:09:03 EEST 2008
+> > ...
+> > in mmio_trace_init
+> > mmiotrace: Disabling non-boot CPUs...
+> > CPU 1 is now offline
+> > lockdep: fixing up alternatives.
+> > SMP alternatives: switching to UP code
+> > BUG: sleeping function called from invalid context at mm/slab.c:3053
+> > in_atomic():1, irqs_disabled():0
+> > 5 locks held by bash/4423:
+> >  #0:  (trace_types_lock){--..}, at: [<ffffffff8026442f>] tracing_set_trace_write+0x93/0x11a
+> >  #1:  (mmiotrace_mutex){--..}, at: [<ffffffff802251e0>] enable_mmiotrace+0x17/0x142
+> >  #2:  (cpu_add_remove_lock){--..}, at: [<ffffffff802580e5>] cpu_maps_update_begin+0x12/0x14
+> >  #3:  (&cpu_hotplug.lock){--..}, at: [<ffffffff8025814f>] cpu_hotplug_begin+0x39/0x9f
+> >  #4:  (smp_alt){--..}, at: [<ffffffff80211bd9>] alternatives_smp_switch+0x66/0x1ab
+> > Pid: 4423, comm: bash Not tainted 2.6.25-rc8-sched-devel.git-x86-latest.git #2
+> > 
+> > Call Trace:
+> >  [<ffffffff802520c0>] ? __debug_show_held_locks+0x22/0x24
+> >  [<ffffffff8022d292>] __might_sleep+0xd9/0xdb
+> >  [<ffffffff80287326>] cache_alloc_debugcheck_before+0x23/0x32
+> >  [<ffffffff80287a32>] __kmalloc+0x34/0xa5
+> >  [<ffffffff80209393>] ? clear_ti_thread_flag+0x10/0x17
+> >  [<ffffffff8027d7f6>] kmalloc_node+0x9/0xb
+> >  [<ffffffff8027d8e0>] __get_vm_area_node+0xa2/0x1cb
+> >  [<ffffffff80209393>] ? clear_ti_thread_flag+0x10/0x17
+> >  [<ffffffff8027da41>] __get_vm_area+0x13/0x15
+> >  [<ffffffff8027da60>] get_vm_area+0x1d/0x1f
+> >  [<ffffffff8027e14c>] vmap+0x2a/0x5c
+> >  [<ffffffff8021191b>] text_poke+0xaa/0x136
+> >  [<ffffffff804cba2b>] ? _etext+0x0/0x5
+> >  [<ffffffff802119f6>] alternatives_smp_unlock+0x4f/0x63
+> >  [<ffffffff80211ce1>] alternatives_smp_switch+0x16e/0x1ab
+> >  [<ffffffff8021b163>] __cpu_die+0x53/0x7d
+> >  [<ffffffff802583e2>] _cpu_down+0x195/0x26c
+> >  [<ffffffff802585ca>] cpu_down+0x26/0x36
+> >  [<ffffffff80225270>] enable_mmiotrace+0xa7/0x142
+> >  [<ffffffff80266b8d>] mmio_trace_init+0x3c/0x40
+> >  [<ffffffff8026448e>] tracing_set_trace_write+0xf2/0x11a
+> >  [<ffffffff80327fac>] ? security_file_permission+0x11/0x13
+> >  [<ffffffff8028b047>] vfs_write+0xa7/0xe1
+> >  [<ffffffff8028b13b>] sys_write+0x47/0x6d
+> >  [<ffffffff8020b4db>] system_call_after_swapgs+0x7b/0x80
+> > 
+> > mmiotrace: CPU1 is down.
+> > mmiotrace: enabled.
+> > 
+> > Is this my fault, or is there a bug somewhere else? The kernel tree is 
+> > sched-devel/latest git from 12th April, IIRC.
+> 
+> there's no known bug of sched-devel/latest of this kind (or any known 
+> bug for that matter).
+> 
+> i suspect the bug is that you bring the CPU down from an atomic 
+> (spinlocked or irq disabled) context.
+
+I have been eyeballing the code in current sched-devel/latest and there's
+something I think I found.
+
+This is the beginning of my enter_uniprocessor() which is called from
+enable_mmiotrace() seen in the backtrace.
+
+static void enter_uniprocessor(void)
+{
+	int cpu;
+	int err;
+
+	get_online_cpus();
+	downed_cpus = cpu_online_map;
+	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
+	if (num_online_cpus() > 1)
+		pr_notice(NAME "Disabling non-boot CPUs...\n");
+	put_online_cpus();
+
+	for_each_cpu_mask(cpu, downed_cpus) {
+		err = cpu_down(cpu);
+
+The function get_online_cpus() calls might_sleep(), so at that
+point everything is fine.
+
+Following the backtrace, we come to alternatives_smp_switch(),
+which does
+	spin_lock(&smp_alt);
+and then continues eventually into this function:
+
+void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+{
+        unsigned long flags;
+        char *vaddr;
+        int nr_pages = 2;
+
+        BUG_ON(len > sizeof(long));
+        BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
+                - ((long)addr & ~(sizeof(long) - 1)));
+        if (kernel_text_address((unsigned long)addr)) {
+                struct page *pages[2] = { virt_to_page(addr),
+                        virt_to_page(addr + PAGE_SIZE) };
+                if (!pages[1])
+                        nr_pages = 1;
+                vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+
+After which we find ourselves in
+
+struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
+                                unsigned long start, unsigned long end)
+{
+	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL);
+
+and in __get_vm_area_node() there is
+area = kmalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
+
+where gfp_mask is now GFP_KERNEL. As far as I can tell, using SLAB,
+kmalloc_node() here is actually kmalloc(). Anyway, looks like we end up
+in __kmalloc with such flags that it may sleep.
+
+I have followed the code so that the path up to kmalloc_node() is
+possible, unless there are some "should never happen" conditions
+along the way, which I just cannot know of.
+
+Is this the bug?
 
 
-| I also removed the dependency on HT_IRQ || PCI_MSI in the Kconfig, since
-| the iba7220 support should work without it.  I know we discussed this
-| before, but looking closer at the code, the dependency seems pointless
-| to me, since it's still possible to build a driver that doesn't work if
-| a particular system needs, say HT_IRQ, and the user selects PCI_MSI.
-| And since iba7220 doesn't need either, we might as well let people build
-| that.
-| 
-| If this is OK with everyone, I will merge this with a proper changelog.
+Thanks.
 
-At this point, I guess I'd agree.  We've added checks for "no interrupt"
-after the driver is loaded, so I guess that covers the issue well
-enough.
-
-Dave Olson
-dave.olson@qlogic.com
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
