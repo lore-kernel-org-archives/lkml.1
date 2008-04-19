@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYDSPt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbYDSPzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbYDSPt1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 11:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYDSPtS
+	id S1756201AbYDSPzF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 11:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYDSPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 11:49:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:13543 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbYDSPtR (ORCPT
+	Sat, 19 Apr 2008 11:54:51 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54187 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751518AbYDSPyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 11:49:17 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=UrQg9/61Oheowj7ZCyOtLML+emTVEOI8k8wKngYQqU06reEKEiOAAWMb1H6qlP99o
-	m1bI22/0kHO1AAYsimT6w==
-Message-ID: <6599ad830804190849u31f13191m4dcca4e471493c2b@mail.gmail.com>
-Date: Sat, 19 Apr 2008 08:49:02 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC][-mm] Memory controller hierarchy support (v1)
-Cc: "Pavel Emelianov" <xemul@openvz.org>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       containers@lists.osdl.org,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080419053551.10501.44302.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 19 Apr 2008 11:54:50 -0400
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <20080419151934.GA17089@elte.hu>
+References: <1208540517.3063.18.camel@localhost.localdomain>
+	 <20080419151934.GA17089@elte.hu>
+Content-Type: text/plain
+Date: Sat, 19 Apr 2008 10:54:44 -0500
+Message-Id: <1208620484.3280.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080419053551.10501.44302.sendpatchset@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 10:35 PM, Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
->
->  1. We need to hold cgroup_mutex while walking through the children
->    in reclaim. We need to figure out the best way to do so. Should
->    cgroups provide a helper function/macro for it?
 
-There's already a function, cgroup_lock(). But it would be nice to
-avoid such a heavy locking here, particularly since memory allocations
-can occur with cgroup_mutex held, which could lead to a nasty deadlock
-if the allocation triggered reclaim.
+On Sat, 2008-04-19 at 17:19 +0200, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> >       libsas: Provide a transport-level facility to request SAS addrs
+> 
+> this (or a nearby) commit caused a build regression:
+> 
+>  drivers/built-in.o: In function `sas_request_addr':
+>  : undefined reference to `request_firmware'
+>  drivers/built-in.o: In function `sas_request_addr':
+>  : undefined reference to `release_firmware'
+> 
+> config can be found at:
+> 
+>    http://redhat.com/~mingo/misc/config-Sat_Apr_19_16_58_35_CEST_2008.bad
+> 
+> ... brought to you by x86.git's randconfig build and boot service ;-)
 
-One of the things that I've been considering was to put the
-parent/child/sibling hierarchy explicitly in cgroup_subsys_state. This
-would give subsystems their own copy to refer to, and could use their
-own internal locking to synchronize with callbacks from cgroups that
-might change the hierarchy. Cpusets could make use of this too, since
-it has to traverse hierarchies sometimes.
+This one's fun.  The root cause is 
 
->  2. Do not allow children to have a limit greater than their parents.
->  3. Allow the user to select if hierarchial support is required
+CONFIG_SCSI_SAS_LIBSAS=y
+CONFIG_FW_LOADER=m
 
-My thoughts on this would be:
+The problem is that libsas doesn't depend on the FW loader and doesn't
+want to.  It just wants to use it if it's available.  The definitions in
+include/linux/firmware.h have stubs to facilitate this.
 
-1) Never attach a first-level child's counter to its parent. As
-Yamamoto points out, otherwise we end up with extra global operations
-whenever any cgroup allocates or frees memory. Limiting the total
-system memory used by all user processes doesn't seem to be something
-that people are going to generally want to do, and if they really do
-want to they can just create a non-root child and move the whole
-system into that.
+However, CONFIG_FW_LOADER=m defeats the stubs.
 
-The one big advantage that you currently get from having all
-first-level children be attached to the root is that the reclaim logic
-automatically scans other groups when it reaches the top-level - but I
-think that can be provided as a special-case in the reclaim traversal,
-avoiding the overhead of hitting the root cgroup that we have in this
-patch.
+This is a bit nasty to fix; however, I think this patch does.  I've also
+put a large comment in to explain what's going on.
 
-2) Always attach other children's counters to their parents - if the
-user didn't want a hierarchy, they could create a flat grouping rather
-than nested groupings.
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-Paul
+---
+
+diff --git a/include/linux/firmware.h b/include/linux/firmware.h
+index 4d10c73..01e39a1 100644
+--- a/include/linux/firmware.h
++++ b/include/linux/firmware.h
+@@ -13,7 +13,16 @@ struct firmware {
+ 
+ struct device;
+ 
+-#if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
++
++/*
++ * This is very subtle.  If the Firmware loader is built in then the
++ * request/release calls can be accessed by anything.  If it's built
++ * as a module then only other modules can access it.  The check on
++ * MODULE specifically fixes the case where the firmware loader is
++ * built as a module, but a built in kernel component tries to use the
++ * request/release functions.
++ */
++#if defined(CONFIG_FW_LOADER) || (defined(CONFIG_FW_LOADER_MODULE) && defined(MODULE))
+ int request_firmware(const struct firmware **fw, const char *name,
+ 		     struct device *device);
+ int request_firmware_nowait(
+
+
