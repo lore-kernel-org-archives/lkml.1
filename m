@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbYDST5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYDST6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbYDST5p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 15:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYDST5g
+	id S1758606AbYDST6o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 15:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYDST6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 15:57:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37470 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbYDST5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 15:57:35 -0400
-Subject: Re: [git pull] scheduler changes for v2.6.26
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Guillaume Chazarain <guichaz@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080419184936.GA1865@elte.hu>
-References: <20080419181304.GB21353@elte.hu>
-	 <3d8471ca0804191147q3af7f01ei86b23b75bd0eb559@mail.gmail.com>
-	 <20080419184936.GA1865@elte.hu>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 20:54:19 +0200
-Message-Id: <1208631259.6452.26.camel@lappy>
+	Sat, 19 Apr 2008 15:58:36 -0400
+Received: from 1wt.eu ([62.212.114.60]:3202 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754066AbYDST6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 15:58:36 -0400
+Date: Sat, 19 Apr 2008 21:44:38 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.36.3
+Message-ID: <20080419194438.GA16133@1wt.eu>
+References: <20080419145327.GA23566@hera.kernel.org> <480A4693.3050208@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480A4693.3050208@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-04-19 at 20:49 +0200, Ingo Molnar wrote:
-> * Guillaume Chazarain <guichaz@gmail.com> wrote:
-> 
-> > On 4/19/08, Ingo Molnar <mingo@elte.hu> wrote:
-> > >  Guillaume Chazarain (1):
-> > >       sched: fix rq->clock overflows detection with CONFIG_NO_HZ
-> > 
-> > This one should have been dropped (per 
-> > http://lkml.org/lkml/2008/1/25/413) I don't like rq->clock relying on 
-> > jiffies, and you already fixed the original manifestation of the 
-> > problem in:
-> 
-> no, it was still needed on a testbox of Peter on nohz.
+Hi Peter,
 
-Yeah, I got a rq->clock rate of about 500ms every second. With this
-patch I got the full 1000.
+On Sat, Apr 19, 2008 at 03:22:59PM -0400, H. Peter Anvin wrote:
+> Any reason to have 2.4.x.y instead of just 2.4.x+y?  I find it somewhat 
+> hard to believe there is substantial new development on 2.4, so it 
+> really should be all "stable".
+
+Since 2.4.33 there have been a few minor add-ons and backports (support
+for gcc4, e1000 update, and mmap_min_addr come to mind). It's important
+for me to indicate when users can blindly upgrade (eg: security fix or
+real bug) and when they should at least perform a quick revalidation.
+
+This has worked well for quite some time now. Since the changes were
+really minor here, I did not want to open 2.4.37 with just that. Maybe
+there will be no 2.4.37, maybe I'll open it if I gather several significant
+driver/arch updates or build fixes (eg: gcc is not supported beyond 4.1
+right now).
+
+Regards,
+Willy
 
