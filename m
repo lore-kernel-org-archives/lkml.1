@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbYDSKWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbYDSKWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759973AbYDSKWF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 06:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYDSKVz
+	id S1761638AbYDSKWf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 06:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYDSKW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 06:21:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:30295 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753393AbYDSKVx (ORCPT
+	Sat, 19 Apr 2008 06:22:26 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:62522 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbYDSKWZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 06:21:53 -0400
+	Sat, 19 Apr 2008 06:22:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=FWWw5i3Z7O8p6itVhUeTBjuPMjAd0Hhi6XpArkTvFx7IB8/7AlDuAfryR9fVodOZqamQqP72bqBB/nO31bvZXH8sUsq3pM+hie46myyniYbqByuz5AOtMv6E0+6t78hnKFuffCDbDDRhP8tn2zNUj7eL8L0ttEy2GqcxR9jm3bk=
-Date: Sat, 19 Apr 2008 15:17:19 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.25-rc8-mm2: FIX kmalloc-2048 (was Re: 2.6.25-rc8-mm2: IP:
-	[<ffffffff802868f9>] __kmalloc+0x69/0x110)
-Message-ID: <20080419111719.GA6724@martell.zuzino.mipt.ru>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080413204422.GA5136@martell.zuzino.mipt.ru> <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com> <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com> <20080414183221.GA5234@martell.zuzino.mipt.ru> <20080414195613.GA4772@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ki4YY/jfcGfjoKL0R8z6aSJsS8BS8r0cE+aWoqReKWnpf9TJzULFrHW1HO5lK58lS37xE/thI24q07ee82J6BOpPC9tqo2JiffXP1/eT1iX1gkxl4zFSiTcMpUpLkuVa0foV1lgt7ui1JzXBClqMRye8nhMSu2nQHvLiVvGsqcA=
+Message-ID: <e85b9d30804190322o703d3b20se22eb6b5e82bae39@mail.gmail.com>
+Date: Sat, 19 Apr 2008 12:22:14 +0200
+From: Matthew <jackdachef@gmail.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Subject: Re: Linux 2.6.25
+Cc: torvalds@linux-foundation.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rudolf Marek" <r.marek@assembler.cz>,
+       "Gene Heskett" <gene.heskett@gmail.com>, "Len Brown" <lenb@kernel.org>
+In-Reply-To: <e85b9d30804190318u74e14f0ct6ab53cb86f6ce15f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+	 <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
+	 <20080418193802.GK7674@cvg> <20080418200338.GL7674@cvg>
+	 <48096179.4060803@keyaccess.nl> <480964F7.3040701@keyaccess.nl>
+	 <20080419061701.GA7688@cvg>
+	 <e85b9d30804190318u74e14f0ct6ab53cb86f6ce15f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 14, 2008 at 01:05:09PM -0700, Christoph Lameter wrote:
-> On Mon, 14 Apr 2008, Alexey Dobriyan wrote:
-> 
-> > I can reproduce semi-reliably (by kernel standards) corruption in
-> > kmalloc-2048. No idea if this can explain all "struct file" related
-> > oopses I saw, or SLUB free pointer corruption Pekka and Christoph are
-> > looking into.
-> 
-> The slub free pointer corruption is usually a result of the overwrites.
-> 
-> > Bytes b4 0xffff81017ff9d2c0:  62 ea ff ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a
-> >   Object 0xffff81017ff9d2d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-> >   Object 0xffff81017ff9d2e0:  6b 6b 00 18 f3 a2 9f 90 00 1b 38 af 22 49 08 00
-> >   Object 0xffff81017ff9d2f0:  45 10 00 4c ff 59 40 00 40 11 86 ac c0 a8 00 2a
-> >   Object 0xffff81017ff9d300:  50 fa a2 be 91 43 00 7b 00 38 54 d4 23 00 00 00
-> >   Object 0xffff81017ff9d310:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >   Object 0xffff81017ff9d320:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >   Object 0xffff81017ff9d330:  00 00 00 00 4c ff 10 44 74 7f 6f 9d e4 c8 a2 4f
-> >   Object 0xffff81017ff9d340:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >  Redzone 0xffff81017ff9dad0:  bb bb bb bb bb bb bb bb
-> >  Padding 0xffff81017ff9db10:  5a 5a 5a 5a 5a 5a 5a 5a
-> > 
-> > FIX kmalloc-2048: Restoring 0xffff81017ff9d2e2-0xffff81017ff9d8d9=0x6b
-> 
-> Looks like skb corruption. Would be helpful to have the complete output 
-> though. Does the data in the restored range trigger any memories?
+>The coretemp kernel module reports 25°C on my PC when idle, and 34°C
+>after having performed some computations (lmbench2). This looks
+>normal. This test has been performed with a vanilla 2.6.25 kernel and
+>a Core 2 Duo E6750 CPU (Asus motherboard). The 2.6.22 and 2.6.24
+>kernels report an incorrect temperature on the same system however
+>(10°C). So there is either an issue with the patches that have been
+>applied to your kernel or the behavior of the coretemp module for the
+>6600 and E6750 CPU's is different. Can you repeat the test with a
+>vanilla 2.6.25 kernel ?
 
-No.
+>(Added Rudolf Marek in CC, the coretemp author.)
 
-I'm currently tracing this bug and 2.6.24 also has it. :-(
+>Bart.
 
+sure, I'll test-drive the vanilla-kernel, too
+
+thanks
+
+Mat
