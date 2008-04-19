@@ -1,202 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYDSMOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYDSM3C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYDSMOT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 08:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbYDSMOG
+	id S1759259AbYDSM3C (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 08:29:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYDSM2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 08:14:06 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49241 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754528AbYDSMOD (ORCPT
+	Sat, 19 Apr 2008 08:28:52 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:46359 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722AbYDSM2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 08:14:03 -0400
-Date: Sat, 19 Apr 2008 17:43:53 +0530
+	Sat, 19 Apr 2008 08:28:51 -0400
+Date: Sat, 19 Apr 2008 17:58:40 +0530
 From: "K. Prasad" <prasad@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       Christoph Hellwig <hch@infradead.org>
+To: a.p.zijlstra@chello.nl
+Cc: fche@redhat.com, prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, mathieu.desnoyers@polymtl.ca
 Subject: Re: [RFC PATCH 1/2] Marker probes in futex.c
-Message-ID: <20080419121353.GA6688@in.ibm.com>
+Message-ID: <20080419122840.GA6864@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
-References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415123233.GA19797@Krystal> <1208264190.6395.21.camel@twins> <20080415132512.GA22351@Krystal> <1208361084.6395.80.camel@twins> <20080417191910.GI28235@redhat.com> <20080417201644.GC31616@Krystal>
+References: <20080415115058.GA6788@in.ibm.com> <20080415115314.GA6975@in.ibm.com> <1208260942.6395.6.camel@twins> <20080415155223.GA6935@in.ibm.com> <1208361092.6395.81.camel@twins> <y0m1w54cf82.fsf@ton.toronto.redhat.com> <1208501204.7115.60.camel@twins> <20080418142949.GB3922@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080417201644.GC31616@Krystal>
+In-Reply-To: <20080418142949.GB3922@redhat.com>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 04:16:44PM -0400, Mathieu Desnoyers wrote:
-> * Frank Ch. Eigler (fche@redhat.com) wrote:
-> [..]
-> > > >﻿+       trace_mark(futex_wake_called, "uaddr:%p fshared:%p nr_wake:%d "
-> > > > +                       "bitset:%d",
-> > > > +                       uaddr, fshared, nr_wake, bitset);
-> > > 
-> > > > +       INIT_FUTEX_DEBUG_PROBE(futex_wake_called,
-> > > > +                       "uaddr:%p fshared:%p nr_wake:%d bitset:%d"),
-> > > 
-> > > Why the need to duplicate it; that's utter madness.
-> > 
-> > This second instance is optional and is used as a consistency check
-> > for the event consumer to hook up exactly to the intended producer.
-> > The string could be empty.
-> > 
+On Fri, Apr 18, 2008 at 10:29:52AM -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> empty -> NULL , yes :)
-Atleast until 2.6.25-rc8-mm2, I would expect the marker registration to
-fail if the format strings don't match.
-I find an early return in set_marker() in marker.c if the format
-strings don't match.
+> On Fri, Apr 18, 2008 at 08:46:44AM +0200, Peter Zijlstra wrote:
+> > [...]
+> > > > except worse by encoding local variable names and exposing kernel
+> > > > pointers.
+> > > 
+> > > The pointers are probably excessive, the and the names don't really
+> > > matter.
+> >
+> > Then what do we do when someone comes along and changes one of those
+> > names; do we go around changing the markers and then requiring all
+> > tools to change as well? (And no this isn't far fetched; I'm
+> > thinking of changing fshared in the near future).
+> 
+> At least two answers apply.  The markers being put in should be chosen
+> with the concurrence of the subsystem maintainer, who should help
+> identify those key quantities that are likely to be both long-lived
+> and good diagnostic value.  So that's the discussion we're having
+> right now: which values should be passed.  If they're long-lived, then
+> they can be given a long-lived name - and it doesn't have to be a
+> low-level C variable name.  (There's no reason why we can't also have
+> a slew of short-lived pure-debugging sorts of markers compiled in.  A
+> marker naming convention like "__futex..." can be adopted for such
+> purposes - where nothing is promised for version n+1, just hoping to
+> help diagnose problems in this version.)
+> 
+> The other answer is that we should ensure that tools do not assume
+> that the set of markers is fixed.  Let's never set such an
+> expectation.  (In systemtap, we have several abstraction and
+> version-adaptation facilities that aim to hide such changes.)
+> The kernel guy can choose at least two methods to help tools
+> without contraining himself too much.  He can change
+> 
+>         trace_mark(futex_foo, "p1 %d p2 %d", p1, p2);
+> 
+> to a pair:
+> 
+>         trace_mark(futex_foo, "p1 %d p2 %d", 0, p2); // backward compat.
+>         trace_mark(futex_foo2, "p2 %d p3 %d", p2, p3); // new marker
+> 
+> or even just drop the backward compatibility one altogether.
+> 
+> It will need judicious choices by the kernel and willingness by the
+> tools to keep up.  Those that don't will simply notice fewer events
+> coming in, but nothing important *breaking*.
+> 
+> The current crop of tools (lttng, systemtap) are both from friendly
+> groups who recognize that they have more of an expendable diagnostic
+> rather than operational role, and thus are willing to carry that
+> burden.  By the time new tools will show up, we will have more
+> experience with the degree and type of marker changes over time, and
+> they won't be in a position to place new constraints on the
+> establishment.
+> 
+> 
+> > Sounds like people will complain and generate back pressure against
+> > such changes - something we should avoid. As soon as these markers
+> > place a significant burden on code maintenance I'm against it.
+> 
+> Indeed.  This is why it's important for the subsystem maintainer to
+> wisely influence the markers as they go in.
+> 
+> 
+> > > That, plus the new hand-written function (trace_futex_wait) would
+> > > still need to manage the packaging of the arguments for consumption by
+> > > separately compiled pieces.  It is desirable not to require such
+> > > hand-written functions to *also* be declared in headers for these
+> > > event consumers to compile against.
+> 
+> > *blink* so all this is so you don't have to put a declarion in a
+> > header file? How about we put these premanent markers in a header -
+> > Mathieu says there are <200. Surely that's not too much trouble.
+> > [...]
+> 
+> It's not just that - it's a whole package including easy creation of
+> new markers, the code that manages their activation and deactivation,
+> the tool code that connects up to receive new events *and parameters*.
+> The current approach does not require tight compilation-level
+> coupling.  Indeed, for a new marker, the current approach requires
+> *no* code changes to anywhere other than the one-line inserted marker,
+> for tools like systemtap to connect and use them.  Cool eh?
+> 
+> 
+> - FChE
 
-Mathieu,
-	Can you let me know if you would find the patch below - which
-eliminates the need to pass format string to marker_probe_register()
-function, acceptable?
-I have done some elementary tests with the patch, but I know it would
-fail if there are duplicate markers with different format strings.
-However I presume that duplicate markers are meant to appear primarily
-when markers are present in inlined functions (in which case their
-format strings would be the same).
+Hi Peter,
+	Adding to what Frank and others have said before, it would be
+nice to have you point out which markers or parameters exported by
+them are superfluous and I'm willing to have them removed from my patch.
+
+I've just sent out another patch over marker infrastructure to Mathieu
+which will eliminate the need to re-send the format string during
+initialisation and if accepted, the patch should take care of any
+concerns about duplication of code.
+
+Indeed any markers in futex.c that you think would be absolutely
+unnecessary can be removed on a case-by-case basis, but do let us know
+them.
 
 Thanks,
 K.Prasad
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- include/linux/marker.h          |    4 ++--
- kernel/marker.c                 |   40 +++++++++++++++++-----------------------
- samples/markers/probe-example.c |    3 ---
- 3 files changed, 19 insertions(+), 28 deletions(-)
-
-Index: linux-register_marker_patch/kernel/marker.c
-===================================================================
---- linux-register_marker_patch.orig/kernel/marker.c
-+++ linux-register_marker_patch/kernel/marker.c
-@@ -364,7 +364,7 @@ static struct marker_entry *get_marker(c
-  * Add the marker to the marker hash table. Must be called with markers_mutex
-  * held.
-  */
--static struct marker_entry *add_marker(const char *name, const char *format)
-+static struct marker_entry *add_marker(const char *name)
- {
- 	struct hlist_head *head;
- 	struct hlist_node *node;
-@@ -372,9 +372,15 @@ static struct marker_entry *add_marker(c
- 	size_t name_len = strlen(name) + 1;
- 	size_t format_len = 0;
- 	u32 hash = jhash(name, name_len-1, 0);
-+	struct marker *iter;
-+
-+	/* Search for the marker with 'name' in __markers section */
-+	for (iter = __start___markers;
-+		((iter < __stop___markers) && (strcmp(name, iter->name)));
-+			iter++);
- 
--	if (format)
--		format_len = strlen(format) + 1;
-+	if (iter->format)
-+		format_len = strlen(iter->format) + 1;
- 	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
- 	hlist_for_each_entry(e, node, head, hlist) {
- 		if (!strcmp(name, e->name)) {
-@@ -392,9 +398,9 @@ static struct marker_entry *add_marker(c
- 	if (!e)
- 		return ERR_PTR(-ENOMEM);
- 	memcpy(&e->name[0], name, name_len);
--	if (format) {
-+	if (iter->format) {
- 		e->format = &e->name[name_len];
--		memcpy(e->format, format, format_len);
-+		memcpy(e->format, iter->format, format_len);
- 		if (strcmp(e->format, MARK_NOARGS) == 0)
- 			e->call = marker_probe_cb_noarg;
- 		else
-@@ -494,21 +500,9 @@ static int set_marker(struct marker_entr
- 	int ret;
- 	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
- 
--	if ((*entry)->format) {
--		if (strcmp((*entry)->format, elem->format) != 0) {
--			printk(KERN_NOTICE
--				"Format mismatch for probe %s "
--				"(%s), marker (%s)\n",
--				(*entry)->name,
--				(*entry)->format,
--				elem->format);
--			return -EPERM;
--		}
--	} else {
--		ret = marker_set_format(entry, elem->format);
--		if (ret)
--			return ret;
--	}
-+	ret = marker_set_format(entry, elem->format);
-+	if (ret)
-+		return ret;
- 
- 	/*
- 	 * probe_cb setup (statically known) is done here. It is
-@@ -638,8 +632,8 @@ static void marker_update_probes(void)
-  * Returns 0 if ok, error value on error.
-  * The probe address must at least be aligned on the architecture pointer size.
-  */
--int marker_probe_register(const char *name, const char *format,
--			marker_probe_func *probe, void *probe_private)
-+int marker_probe_register(const char *name, marker_probe_func *probe,
-+							void *probe_private)
- {
- 	struct marker_entry *entry;
- 	int ret = 0;
-@@ -648,7 +642,7 @@ int marker_probe_register(const char *na
- 	mutex_lock(&markers_mutex);
- 	entry = get_marker(name);
- 	if (!entry) {
--		entry = add_marker(name, format);
-+		entry = add_marker(name);
- 		if (IS_ERR(entry)) {
- 			ret = PTR_ERR(entry);
- 			goto end;
-Index: linux-register_marker_patch/include/linux/marker.h
-===================================================================
---- linux-register_marker_patch.orig/include/linux/marker.h
-+++ linux-register_marker_patch/include/linux/marker.h
-@@ -119,8 +119,8 @@ extern void marker_probe_cb_noarg(const 
-  * Connect a probe to a marker.
-  * private data pointer must be a valid allocated memory address, or NULL.
-  */
--extern int marker_probe_register(const char *name, const char *format,
--				marker_probe_func *probe, void *probe_private);
-+extern int marker_probe_register(const char *name, marker_probe_func *probe,
-+				void *probe_private);
- 
- /*
-  * Returns the private data given to marker_probe_register.
-Index: linux-register_marker_patch/samples/markers/probe-example.c
-===================================================================
---- linux-register_marker_patch.orig/samples/markers/probe-example.c
-+++ linux-register_marker_patch/samples/markers/probe-example.c
-@@ -49,10 +49,8 @@ void probe_subsystem_eventb(void *probe_
- static struct probe_data probe_array[] =
- {
- 	{	.name = "subsystem_event",
--		.format = "integer %d string %s",
- 		.probe_func = probe_subsystem_event },
- 	{	.name = "subsystem_eventb",
--		.format = MARK_NOARGS,
- 		.probe_func = probe_subsystem_eventb },
- };
- 
-@@ -63,7 +61,6 @@ static int __init probe_init(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
- 		result = marker_probe_register(probe_array[i].name,
--				probe_array[i].format,
- 				probe_array[i].probe_func, &probe_array[i]);
- 		if (result)
- 			printk(KERN_INFO "Unable to register probe %s\n",
