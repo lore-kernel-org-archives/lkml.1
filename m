@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYDSEN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYDSEOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbYDSEN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 00:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYDSENu
+	id S1757968AbYDSEOo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 00:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYDSEOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 00:13:50 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:33453 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbYDSENt (ORCPT
+	Sat, 19 Apr 2008 00:14:36 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:49108 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751334AbYDSEOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 00:13:49 -0400
-Date: Fri, 18 Apr 2008 21:13:47 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Joe Perches <joe@perches.com>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Alternative implementation of the generic __ffs
-In-Reply-To: <1208573728.11990.14.camel@localhost>
-Message-ID: <alpine.DEB.1.10.0804182112360.6108@twinlark.arctic.org>
-References: <20080331171506.GA24017@mailshack.com>  <20080401084710.GB4787@elte.hu> <20080401094618.GA24862@mailshack.com>  <alpine.DEB.1.10.0804060958580.7751@twinlark.arctic.org>  <1207507897.18129.1246358115@webmail.messagingengine.com> 
- <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>  <1207563950.7880.1246457209@webmail.messagingengine.com>  <20080418201809.GA5036@mailshack.com>  <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>  <1208563762.10414.19.camel@brick> 
- <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>  <1208566724.4891.25.camel@localhost> <1208567093.10414.20.camel@brick>  <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org> <1208573728.11990.14.camel@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 19 Apr 2008 00:14:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=sp5+KbLt4UCoP7F1ad4HKCgIdeiMiRsU0anSM2g195PuWjja3UuJP/p97r1EW3bsEKfx/G+qiIUQGJyQ7RyOPH/+AfefQFiVveoTxN+wqZfrc0Eaa3jedEKixh/joyaz/DEBefkLW9HR5MFHe1q+/bJjs+QA2nwrDyjhp/okwlc=
+Date: Sat, 19 Apr 2008 00:14:29 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: 2.6.25-mm1
+Message-ID: <20080419041429.GA8508@anvil.corenet.prv>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <20080419021343.GA3503@nineveh.local> <20080418200237.b5a9e805.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080418200237.b5a9e805.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Apr 2008, Joe Perches wrote:
+On Fri, Apr 18, 2008 at 08:02:37PM -0700, Andrew Morton wrote:
+> On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
+> 
+> > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+> > >
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
+> > 
+> > I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
+> > least, since that's the earliest -mm I've built in a while.  I don't
+> > get the same in mainline.
+> > 
+> > No idea who to CC:
+> 
+> I have a few ideas.
+> 
+> >  I've sat on this report long enough.
+> 
+> Thanks for the report.
+> 
+> > I'm going to send a few different reports in separate mails, so I'll
+> > put my dmesg and .config up on a server:
+> > 
+> > http://home.columbus.rr.com/jfannin3/dmesg.txt
+> > http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+> > 
+> > [  451.915553] sysfs: duplicate filename 'pcspkr' can not be created
+> > [  451.915731] ------------[ cut here ]------------
+> > [  451.915851] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x85/0xe0()
+> > [  451.915981] Modules linked in: snd_pcsp(+) ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_mpu401_uart snd_seq_dummy snd_seq_oss snd_seq_midi psmouse snd_rawmidi serio_raw snd_seq_midi_event snd_seq button i2c_viapro snd_timer snd_seq_device pcspkr i2c_core snd snd_page_alloc via686a shpchp pci_hotplug parport_pc parport via_agp agpgart soundcore evdev sg sr_mod cdrom sd_mod 8139cp aic7xxx  scsi_transport_spi scsi_mod 8139too mii uhci_hcd usbcore raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
+> > [  451.918960] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
+> > [  451.929271]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
+> > [  451.929500]  [<c0132400>] ? vprintk+0x2f0/0x4a0
+> > [  451.929723]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
+> > [  451.929918]  [<c01c6a7a>] ? ifind+0x4a/0xa0
+> > [  451.930126]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
+> > [  451.930334]  [<c015535b>] ? trace_hardirqs_on+0xb/0x10
+> > [  451.930534]  [<c01325d0>] ? printk+0x20/0x30
+> > [  451.930727]  [<c01fcc45>] sysfs_add_one+0x85/0xe0
+> > [  451.930900]  [<c01fd89e>] create_dir+0x4e/0xb0
+> > [  451.931064]  [<c01fd930>] sysfs_create_dir+0x30/0x50
+> > [  451.931291]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
+> > [  451.931485]  [<c023dac6>] kobject_add_internal+0xb6/0x190
+> > [  451.931656]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
+> > [  451.931857]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
+> > [  451.932022]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
+> > [  451.932188]  [<c02a3e44>] bus_add_driver+0x94/0x250
+> > [  451.932364]  [<c02a5062>] driver_register+0x42/0xf0
+> > [  451.932533]  [<c02a6c56>] platform_driver_register+0x66/0x70
+> > [  451.932702]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
+> > [  451.932877]  [<c015e137>] sys_init_module+0x87/0x1a0
+> > [  451.933043]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
+> > [  451.933246]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > [  451.933453]  [<c0104077>] sysenter_past_esp+0x78/0xc5
+> 
+> Yes, there have been lots of these lately.  I expect some of them _will_ go
+> into mainline and they'll then slowly get weeded out.
+> 
 
-> On Fri, 2008-04-18 at 18:11 -0700, dean gaudet wrote: 
-> > have you benchmarked it?
-> 
-> I modified Alexander's benchmark:
-> http://lkml.org/lkml/2008/4/18/267
-> to include 32 and 64 bit variants called smallest.
-> 
-> On an old ARM:
-
-i'm guessing the 32-bit constants suck :(
-
-the code could be modified to use 16-bit constants only -- it would add 
-some dependent operations though (to move the hot bit into the low 
-16-bits).
-
--dean
+It looks like it is coming from snd_pcsp module from alsa tree.
 
 
-> 
-> $ gcc --version gcc (GCC) 3.4.6
-> 
-> $ cat /proc/cpuinfo 
-> Processor	: Intel StrongARM-110 rev 4 (v4l)
-> BogoMIPS	: 262.14
-> Hardware	: Rebel-NetWinder
-> Revision	: 57ff
-> Serial		: 000000000000185c
-> 
-> $ gcc -Os -fomit-frame-pointer ffs.c
-> $ ./a.out
-> Original:       3180 tics,  8379 tics
-> New:            4280 tics,  8890 tics
-> Smallest:       4027 tics,  7835 tics
-> Empty loop:     1543 tics,  2260 tics
-> 
-> $ gcc -O2 -fomit-frame-pointer ffs.c
-> $ ./a.out
-> Original:       3161 tics,  7843 tics
-> New:            4778 tics,  8783 tics
-> Smallest:       4408 tics,  7149 tics
-> Empty loop:     1515 tics,  2140 tics
-> 
-> $ gcc -O3 -fomit-frame-pointer ffs.c
-> $ ./a.out
-> Original:       3078 tics,  7692 tics
-> New:            4714 tics,  8671 tics
-> Smallest:       4344 tics,  7117 tics
-> Empty loop:     1444 tics,  2024 tics
+Cool things there:
+
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	/* Well, CONFIG_DEBUG_PAGEALLOC makes the sound horrible. Lets
+alert */
++	printk(KERN_WARNING
++	       "PCSP: Warning, CONFIG_DEBUG_PAGEALLOC is enabled!\n"
++	       "You have to disable it if you want to use the PC-Speaker
+"
++	       "driver.\n"
++	       "Unless it is disabled, enjoy the horrible, distorted "
++	       "and crackling noise.\n");
++#endif
+
+-- 
+Dmitry
