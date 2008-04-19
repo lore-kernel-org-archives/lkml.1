@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYDSQMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYDSQOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbYDSQMX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 12:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYDSQMJ
+	id S1756897AbYDSQOq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 12:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYDSQOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 12:12:09 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:41190 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbYDSQMH (ORCPT
+	Sat, 19 Apr 2008 12:14:39 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:32799 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753327AbYDSQOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 12:12:07 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Dave Olson <dave.olson@qlogic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Ralph Campbell <ralph.campbell@qlogic.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git
-References: <adaskxkh6s2.fsf@cisco.com> <20080419081614.GA2437@elte.hu>
-	<adaod86aq9j.fsf@cisco.com>
-	<alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Sat, 19 Apr 2008 09:12:06 -0700
-In-Reply-To: <alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com> (Dave
-	Olson's message of "Sat, 19 Apr 2008 08:20:49 -0700 (PDT)")
-Message-ID: <adafxthbz8p.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 19 Apr 2008 12:14:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=tYZw8v7mh8TpbPtaz027TbLx8py8LQoXighbpPZrFGGg/aDle4fz2Gcovs6JU
+	cCygMLhugOcYHC3FbgFRqpfTg==
+Date: Sat, 19 Apr 2008 18:14:36 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/15] ARM minor irq handler cleanups
+Message-ID: <20080419161436.GA8564@xi.wantstofly.org>
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <20080418232922.GA31711@xi.wantstofly.org> <48093C01.1040505@garzik.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Apr 2008 16:12:06.0364 (UTC) FILETIME=[1CB659C0:01C8A238]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <48093C01.1040505@garzik.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > |  >  drivers/built-in.o: In function `ipath_init_one':
- > |  >  ipath_driver.c:(.devinit.text+0x1e5bc): undefined reference to `ipath_init_iba7220_funcs'
- > 
- > Yes, that issue should be fixed.  Our preference was to not build
- > if it wouldn't work.  We'd have to add the conditional check at
- > the function setup routines.
+On Fri, Apr 18, 2008 at 08:25:37PM -0400, Jeff Garzik wrote:
 
-Not sure I really follow this response... ipath_driver.c has
+> >>This change's main purpose is to prepare for the patchset in
+> >>jgarzik/misc-2.6.git#irq-remove, that explores removal of the
+> >>never-used 'irq' argument in each interrupt handler.
+> >
+> >What do you mean?  I know at least one of two interrupt handlers
+> >in-tree that use their 'irq' arguments.
+> 
+> They can use new function get_irqfunc_irq(), similar to the existing 
+> method of getting pt_regs for the tiny number of users who need that 
+> sort of info, when pt_regs was removed.
 
-	case PCI_DEVICE_ID_INFINIPATH_7220:
-#ifndef CONFIG_PCI_MSI
-		ipath_dbg("CONFIG_PCI_MSI is not enabled, "
-			  "using IntX for unit %u\n", dd->ipath_unit);
-#endif
-		ipath_init_iba7220_funcs(dd);
-		break;
+Well, you said that the 'irq' argument was never-used, I was merely
+saying that I found that not to be the case.
 
-so clearly ipath_init_iba7220_funcs() was intended to be built and used
-even if CONFIG_PCI_MSI was not defined.  From the code it looks like all
-should work fine if PCI_MSI is not set, so I don't know what you mean
-about conditional checks.
 
-(BTW since I'm looking at this code, "IntX" should probably be
-capitalized as "INTx" to match what the PCI specs say)
+> But after having gone over, literally, every single interrupt handler in 
+> the kernel, I can safely say that 99.8% never reference that argument, 
+> and 0.1% that do already have the same information via another route.
+> 
+> That leaves only a few drivers that need it without modification, and 
+> even fewer drivers that need it after modification.
 
- - R.
+Sounds good.
+
+Very-much-liked-by: Lennert Buytenhek <buytenh@wantstofly.org>
