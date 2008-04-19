@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbYDSDC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbYDSDC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbYDSDC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Apr 2008 23:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYDSDCV
+	id S1761617AbYDSDC7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Apr 2008 23:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYDSDCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Apr 2008 23:02:21 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:43425 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbYDSDCU (ORCPT
+	Fri, 18 Apr 2008 23:02:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32910 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753680AbYDSDCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Apr 2008 23:02:20 -0400
-Message-ID: <48096179.4060803@keyaccess.nl>
-Date: Sat, 19 Apr 2008 05:05:29 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew <jackdachef@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.25
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com> <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org> <20080418193802.GK7674@cvg> <20080418200338.GL7674@cvg>
-In-Reply-To: <20080418200338.GL7674@cvg>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 18 Apr 2008 23:02:49 -0400
+Date: Fri, 18 Apr 2008 20:02:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joseph Fannin <jfannin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: 2.6.25-mm1
+Message-Id: <20080418200237.b5a9e805.akpm@linux-foundation.org>
+In-Reply-To: <20080419021343.GA3503@nineveh.local>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419021343.GA3503@nineveh.local>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-04-08 22:03, Cyrill Gorcunov wrote:
+On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
 
-> | it seems drivers/acpi/thermal.c has a small nit
-> | 
-> | 881:	/* sys I/F for generic thermal sysfs support */
-> | 882:	#define KELVIN_TO_MILLICELSIUS(t) (t * 100 - 273200)
-> | 
-> | but it should multiply by 1000 meguess
-> | 
+> On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
 > 
-> oh, i'm wrong, sorry
+> I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
+> least, since that's the earliest -mm I've built in a while.  I don't
+> get the same in mainline.
+> 
+> No idea who to CC:
 
-? How are you wrong ?
+I have a few ideas.
 
-Rene.
+>  I've sat on this report long enough.
+
+Thanks for the report.
+
+> I'm going to send a few different reports in separate mails, so I'll
+> put my dmesg and .config up on a server:
+> 
+> http://home.columbus.rr.com/jfannin3/dmesg.txt
+> http://home.columbus.rr.com/jfannin3/config-2.6.25-mm1.txt
+> 
+> [  451.915553] sysfs: duplicate filename 'pcspkr' can not be created
+> [  451.915731] ------------[ cut here ]------------
+> [  451.915851] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x85/0xe0()
+> [  451.915981] Modules linked in: snd_pcsp(+) ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_mpu401_uart snd_seq_dummy snd_seq_oss snd_seq_midi psmouse snd_rawmidi serio_raw snd_seq_midi_event snd_seq button i2c_viapro snd_timer snd_seq_device pcspkr i2c_core snd snd_page_alloc via686a shpchp pci_hotplug parport_pc parport via_agp agpgart soundcore evdev sg sr_mod cdrom sd_mod 8139cp aic7xxx  scsi_transport_spi scsi_mod 8139too mii uhci_hcd usbcore raid10 raid456 async_xor async_memcpy async_tx xor raid1 raid0 multipath linear md_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
+> [  451.918960] Pid: 2740, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
+> [  451.929271]  [<c0130fa9>] warn_on_slowpath+0x59/0x80
+> [  451.929500]  [<c0132400>] ? vprintk+0x2f0/0x4a0
+> [  451.929723]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
+> [  451.929918]  [<c01c6a7a>] ? ifind+0x4a/0xa0
+> [  451.930126]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
+> [  451.930334]  [<c015535b>] ? trace_hardirqs_on+0xb/0x10
+> [  451.930534]  [<c01325d0>] ? printk+0x20/0x30
+> [  451.930727]  [<c01fcc45>] sysfs_add_one+0x85/0xe0
+> [  451.930900]  [<c01fd89e>] create_dir+0x4e/0xb0
+> [  451.931064]  [<c01fd930>] sysfs_create_dir+0x30/0x50
+> [  451.931291]  [<c0356adc>] ? _spin_unlock+0x2c/0x50
+> [  451.931485]  [<c023dac6>] kobject_add_internal+0xb6/0x190
+> [  451.931656]  [<c023dc22>] ? kobject_set_name_vargs+0x32/0x40
+> [  451.931857]  [<c023dc8a>] kobject_add_varg+0x5a/0x60
+> [  451.932022]  [<c023e12f>] kobject_init_and_add+0x2f/0x40
+> [  451.932188]  [<c02a3e44>] bus_add_driver+0x94/0x250
+> [  451.932364]  [<c02a5062>] driver_register+0x42/0xf0
+> [  451.932533]  [<c02a6c56>] platform_driver_register+0x66/0x70
+> [  451.932702]  [<cc04b02a>] pcsp_init+0x2a/0x2c [snd_pcsp]
+> [  451.932877]  [<c015e137>] sys_init_module+0x87/0x1a0
+> [  451.933043]  [<c0155216>] ? trace_hardirqs_on_caller+0x16/0x150
+> [  451.933246]  [<c024314c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> [  451.933453]  [<c0104077>] sysenter_past_esp+0x78/0xc5
+
+Yes, there have been lots of these lately.  I expect some of them _will_ go
+into mainline and they'll then slowly get weeded out.
+
