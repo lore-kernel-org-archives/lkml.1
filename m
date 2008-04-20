@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbYDTKpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbYDTKoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762977AbYDTKpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYDTKkd
+	id S1762772AbYDTKoe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbYDTKkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:40:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56302 "EHLO
+	Sun, 20 Apr 2008 06:40:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56289 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbYDTKka (ORCPT
+	with ESMTP id S1758635AbYDTKkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:40:30 -0400
+	Sun, 20 Apr 2008 06:40:22 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben@fluff.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/36] sysdev: detect multiple driver registrations
-Date: Sun, 20 Apr 2008 03:45:47 -0700
-Message-Id: <1208688366-9252-17-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 14/36] PNP: add all PNP card device id's as individual aliases
+Date: Sun, 20 Apr 2008 03:45:44 -0700
+Message-Id: <1208688366-9252-14-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080420104516.GA9225@suse.de>
 References: <20080420104516.GA9225@suse.de>
@@ -26,51 +24,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ben Dooks <ben@fluff.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-I've just found how easy it is to accidentally register a sysdev_driver for
-two different classes.  When this happens, bad things happen as the
-sysdev_driver structure keeps has the list entry for the driver
-registration.
+The current PNP combined card + devices module aliase can
+never ever match anything, because these values are not available
+all at the same time to request a module.
 
-The following patch makes a WARN_ON() if this happens, although I think
-BUG_ON or returning -EAGAIN could also be valid responses to this.
+Instead of adding the combined alias, we add the device id's
+all as individual aliases. Device id's are exported by the PNP
+bus and can now properly used to request the loading of a
+matching module.
 
-Signed-off-by: Ben Dooks <ben@fluff.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+The module snd-sbawe currently exports aliases, which can never
+match anything:
+  alias: pnp:cCTLXXXXdCTL0045dCTL0022*
+  alias: pnp:cCTLXXXXdCTL0044dCTL0023*
+  alias: pnp:cCTLXXXXdCTL0042dCTL0022*
+  alias: pnp:cCTLXXXXdCTL0041dCTL0021*
+  alias: pnp:cCTLXXXXdCTL0031dCTL0021*
+  alias: pnp:cCTL00eddCTL0041dCTL0070*
+  alias: pnp:cCTL00e9dCTL0045dCTL0022*
+  alias: pnp:cCTL00e4dCTL0045dCTL0022*
+  alias: pnp:cCTL00c7dCTL0045dCTL0022*
+  alias: pnp:cCTL00c5dCTL0045dCTL0022*
+  alias: pnp:cCTL00c3dCTL0045dCTL0022*
+  alias: pnp:cCTL00c1dCTL0042dCTL0022*
+  alias: pnp:cCTL00b2dCTL0044dCTL0023*
+  alias: pnp:cCTL009edCTL0044dCTL0023*
+  alias: pnp:cCTL009ddCTL0042dCTL0022*
+  alias: pnp:cCTL009fdCTL0041dCTL0021*
+  alias: pnp:cCTL009cdCTL0041dCTL0021*
+  alias: pnp:cCTL009adCTL0041dCTL0021*
+  alias: pnp:cCTL0054dCTL0031dCTL0021*
+  alias: pnp:cCTL0048dCTL0031dCTL0021*
+  alias: pnp:cCTL0047dCTL0031dCTL0021*
+  alias: pnp:cCTL0046dCTL0031dCTL0021*
+  alias: pnp:cCTL0045dCTL0031dCTL0021*
+  alias: pnp:cCTL0044dCTL0031dCTL0021*
+  alias: pnp:cCTL0043dCTL0031dCTL0021*
+  alias: pnp:cCTL0042dCTL0031dCTL0021*
+  alias: pnp:cCTL0039dCTL0031dCTL0021*
+  alias: pnp:cCTL0035dCTL0031dCTL0021*
+
+With this patch it exports only the device id's, as properly
+matchable aliases:
+  alias: pnp:dCTL0070*
+  alias: pnp:dCTL0045*
+  alias: pnp:dCTL0023*
+  alias: pnp:dCTL0044*
+  alias: pnp:dCTL0022*
+  alias: pnp:dCTL0042*
+  alias: pnp:dCTL0041*
+  alias: pnp:dCTL0021*
+  alias: pnp:dCTL0031*
+
+Now, the exported value of the PNP bus can be used to autoload
+a matching module:
+  $ modprobe --first-time -n -v pnp:dCTL0045
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/core/snd-rawmidi.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/drivers/mpu401/snd-mpu401-uart.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/core/snd-hwdep.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb-common.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb16-csp.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb16-dsp.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/drivers/opl3/snd-opl3-lib.ko
+  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sbawe.ko
+
+  $ grep CTL0045 /sys/bus/pnp/devices/*/id
+  /sys/bus/pnp/devices/01:01.00/id:CTL0045
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/sys.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ scripts/mod/file2alias.c |   57 +++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 44 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 8e13fd9..1a06c23 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -167,6 +167,22 @@ int sysdev_driver_register(struct sysdev_class *cls, struct sysdev_driver *drv)
- {
- 	int err = 0;
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 348d868..769b69d 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -328,19 +328,52 @@ static int do_pnp_entry(const char *filename,
+ 	return 1;
+ }
  
-+	if (!cls) {
-+		printk(KERN_WARNING "sysdev: invalid class passed to "
-+			"sysdev_driver_register!\n");
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
+-/* looks like: "pnp:cCdD..." */
+-static int do_pnp_card_entry(const char *filename,
+-			struct pnp_card_device_id *id, char *alias)
++/* looks like: "pnp:dD" for every device of the card */
++static void do_pnp_card_entries(void *symval, unsigned long size,
++				struct module *mod)
+ {
+-	int i;
++	const unsigned long id_size = sizeof(struct pnp_card_device_id);
++	const unsigned int count = (size / id_size)-1;
++	const struct pnp_card_device_id *cards = symval;
++	unsigned int i;
+ 
+-	sprintf(alias, "pnp:c%s", id->id);
+-	for (i = 0; i < PNP_MAX_DEVICES; i++) {
+-		if (! *id->devs[i].id)
+-			break;
+-		sprintf(alias + strlen(alias), "d%s", id->devs[i].id);
++	device_id_check(mod->name, "pnp", size, id_size, symval);
 +
-+	/* Check whether this driver has already been added to a class. */
-+	if ((drv->entry.next != drv->entry.prev) ||
-+	    (drv->entry.next != NULL)) {
-+		printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
-+			" been registered to a class, something is wrong, but "
-+			"will forge on!\n", cls->name, drv);
-+		WARN_ON(1);
-+	}
++	for (i = 0; i < count; i++) {
++		unsigned int j;
++		const struct pnp_card_device_id *card = &cards[i];
 +
- 	mutex_lock(&sysdev_drivers_lock);
- 	if (cls && kset_get(&cls->kset)) {
- 		list_add_tail(&drv->entry, &cls->drivers);
++		for (j = 0; j < PNP_MAX_DEVICES; j++) {
++			const char *id = (char *)card->devs[j].id;
++			int i2, j2;
++			int dup = 0;
++
++			if (!id[0])
++				break;
++
++			/* find duplicate, already added value */
++			for (i2 = 0; i2 < i && !dup; i2++) {
++				const struct pnp_card_device_id *card2 = &cards[i2];
++
++				for (j2 = 0; j2 < PNP_MAX_DEVICES; j2++) {
++					const char *id2 = (char *)card2->devs[j2].id;
++
++					if (!id2[0])
++						break;
++
++					if (!strcmp(id, id2)) {
++						dup = 1;
++						break;
++					}
++				}
++			}
++
++			/* add an individual alias for every device entry */
++			if (!dup)
++				buf_printf(&mod->dev_table_buf,
++					   "MODULE_ALIAS(\"pnp:d%s*\");\n", id);
++		}
+ 	}
+-	return 1;
+ }
+ 
+ /* Looks like: pcmcia:mNcNfNfnNpfnNvaNvbNvcNvdN. */
+@@ -634,9 +667,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 			 sizeof(struct pnp_device_id), "pnp",
+ 			 do_pnp_entry, mod);
+ 	else if (sym_is(symname, "__mod_pnp_card_device_table"))
+-		do_table(symval, sym->st_size,
+-			 sizeof(struct pnp_card_device_id), "pnp_card",
+-			 do_pnp_card_entry, mod);
++		do_pnp_card_entries(symval, sym->st_size, mod);
+ 	else if (sym_is(symname, "__mod_pcmcia_device_table"))
+ 		do_table(symval, sym->st_size,
+ 			 sizeof(struct pcmcia_device_id), "pcmcia",
 -- 
 1.5.4.5
 
