@@ -1,36 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYDTJeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYDTJlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYDTJeW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 05:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYDTJeM
+	id S1756209AbYDTJlz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 05:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbYDTJlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 05:34:12 -0400
-Received: from port-212-202-105-50.static.qsc.de ([212.202.105.50]:57497 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753111AbYDTJeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 05:34:12 -0400
-X-Greylist: delayed 3523 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 05:34:11 EDT
-Date: Sun, 20 Apr 2008 09:06:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080420090623.7b173ef1@the-village.bc.nu>
-In-Reply-To: <20080420080901.GF1595@cs181133002.pp.htv.fi>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	<20080418142934.38ce6bf4.akpm@linux-foundation.org>
-	<20080419142329.GA5339@elte.hu>
-	<20080419145948.GA4528@lintop>
-	<20080420080901.GF1595@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 20 Apr 2008 05:41:46 -0400
+Received: from rocks.dynaweb.hu ([195.70.37.87]:49313 "EHLO rocks.dynaweb.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753288AbYDTJlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 05:41:45 -0400
+X-Greylist: delayed 513 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 05:41:45 EDT
+Date: Sun, 20 Apr 2008 11:33:09 +0200
+From: Rumi Szabolcs <rumi_ml@rtfm.hu>
+To: linux-kernel@vger.kernel.org
+Subject: dying hdd causing MCE and panic (libata)
+Message-Id: <20080420113309.2343eb63.rumi_ml@rtfm.hu>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.8; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -38,10 +23,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The stack problems in the kernel tend to not be in arch code, and if 
-> we don't get i386 to always run with 4k stacks there's no chance that 
-> it will ever work reliably on other architectures.
+Hello all!
 
-Not really the case - embedded tends not to use deep stacks of drivers.
+A SATA drive in one of my servers has made some final steps towards
+the grave and it has put out some obvious signs of this onto the
+console (ATA transactions failing) but then it has also thrown an
+MCE (CPU context corrupt) and then the kernel has panicked.
+This server is rock stable otherwise and used to make uptimes
+measured in months between planned restarts.
 
-Alan
+The machine has been removed from power completely and restarted
+multiple times but during the boot process it always crashed with
+an MCE or a panic or both.
+
+Sorry but I cannot provide exact debug information right now because
+I wasn't physically there at the time and I'm still 250kms away from
+that server. In fact I've remotely guided two people without a clue
+through the phone and they have read things from the console for me,
+restarted the machine, etc.
+
+So in the end I told them to open up the server and pull the SATA
+cable from that particular drive. Suddenly all the MCEs and panics
+had gone away and the machine is running fine since then.
+
+Hardware:
+
+- Nforce4 based motherboard (chipset integrated SATA ports)
+- Athlon64 single core CPU
+- Diamondmax 9 SATA hard drive
+
+Kernel:
+
+2.6.23-gentoo-r3 (no preempt, no smp)
+
+My questions:
+
+- Is it normal that a simple hard disk failure (that is not even
+the system disk) causes MCEs and kernel panics?
+
+- Is this a problem that is induced completely on the hardware
+level (eg. the southbridge going crazy and making the whole
+hardware platform unstable) or a problem that could be fixed
+or handled properly on the software (kernel) level?
+
+Thanks!
+
+Best regards,
+Sab
