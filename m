@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYDTDFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbYDTDHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762898AbYDTDFA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 23:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDTDEu
+	id S1762862AbYDTDHi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 23:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYDTDHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 23:04:50 -0400
-Received: from fmailhost04.isp.att.net ([207.115.11.54]:48400 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751377AbYDTDEu (ORCPT
+	Sat, 19 Apr 2008 23:07:31 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1125 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYDTDHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 23:04:50 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 23:04:50 EDT
-X-Originating-IP: [74.251.45.21]
-Date: Sat, 19 Apr 2008 21:54:44 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
-       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       torvalds@osdl.org
-Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
-Message-ID: <20080419215444.2d4623f5@osprey.hogchain.net>
-In-Reply-To: <20080419144535.GA4814@martell.zuzino.mipt.ru>
-References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
-	<20080413204422.GA5136@martell.zuzino.mipt.ru>
-	<84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
-	<Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com>
-	<20080414183221.GA5234@martell.zuzino.mipt.ru>
-	<20080414195613.GA4772@martell.zuzino.mipt.ru>
-	<Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
-	<20080419111719.GA6724@martell.zuzino.mipt.ru>
-	<20080419144535.GA4814@martell.zuzino.mipt.ru>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Sat, 19 Apr 2008 23:07:31 -0400
+Subject: Re: Alternative implementation of the generic __ffs
+From: Joe Perches <joe@perches.com>
+To: Matti Aarnio <matti.aarnio@zmailer.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080419222911.GJ3700@mea-ext.zmailer.org>
+References: <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>
+	 <1207563950.7880.1246457209@webmail.messagingengine.com>
+	 <20080418201809.GA5036@mailshack.com>
+	 <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
+	 <1208563762.10414.19.camel@brick>
+	 <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
+	 <1208566724.4891.25.camel@localhost> <1208567093.10414.20.camel@brick>
+	 <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
+	 <1208573728.11990.14.camel@localhost>
+	 <20080419222911.GJ3700@mea-ext.zmailer.org>
+Content-Type: text/plain
+Date: Sat, 19 Apr 2008 20:06:57 -0700
+Message-Id: <1208660817.12388.40.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008 18:45:35 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Sun, 2008-04-20 at 01:29 +0300, Matti Aarnio wrote:
+> I am curious, why not take the code already in glibc ffs() for ARM ?
+> That is, if the ffs() is all that important detail in kernel ?
 
-> OK, nailed it.
-> 
-> It's commit 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 aka "atl1:
-> disable broken 64-bit DMA".
-> 
-> With this commit in tree, I can reproduce either
-> a) kmalloc-2048 corruption after initscripts shutdown eth0
-> 	http://marc.info/?l=linux-kernel&m=120820360221261&w=2
-> 
-> b) or oopses at filp_close() first reported long ago
-> 	(sorry, can't find that email)
-> 
-> c) or hard hang after initscripts shutdown eth0 with even SysRq not
-> working. http://marc.info/?l=linux-kernel&m=120795046008115&w=2
-> 
-> I have two boxes one with atl1, 4G RAM with 2G remapped after 4G
-> boundary, another with r8169 connected with just ethernet cable. NICs
-> agree on 1Gbps speed.
-> 
-> So, it's enough to scp 200 MB git archive and immediately start
-> rebooting sequence for horrors described above to appear. It's not
-> 100% reproducible but more like 90%.
+Here's test results with the glibc ffs implementation.
+(small const is still using slower add rather than or)
 
-Do I understand correctly that these failures occur only while the
-network interface is going down?
+$ gcc -Os -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3155 tics,  8331 tics
+New:            4211 tics,  8793 tics
+Smallest:       4019 tics,  7754 tics
+Small const:    3552 tics,  6308 tics
+glibc:          2816 tics,  6911 tics
+Empty loop:     1516 tics,  2244 tics
 
-Jay
+$ gcc -O2 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3155 tics,  7828 tics
+New:            4792 tics,  8825 tics
+Smallest:       4401 tics,  7155 tics
+Small const:    3539 tics,  5805 tics
+glibc:          2720 tics,  7061 tics
+Empty loop:     1516 tics,  2148 tics
+
+$ gcc -O3 -fomit-frame-pointer ffs.c
+$ ./a.out
+Original:       3080 tics,  7706 tics
+New:            4721 tics,  8663 tics
+Smallest:       4334 tics,  7116 tics
+Small const:    3466 tics,  5672 tics
+glibc:          2649 tics,  6939 tics
+Empty loop:     1444 tics,  2012 tics
+
+
