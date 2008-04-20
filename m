@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYDTQED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYDTQKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbYDTQED (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 12:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbYDTQDw
+	id S1755391AbYDTQKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 12:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYDTQKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 12:03:52 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:39372 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758254AbYDTQDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 12:03:51 -0400
-Date: Sun, 20 Apr 2008 19:03:27 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080420160327.GE1899@cs181133002.pp.htv.fi>
-References: <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <20080420120250.4f496861@the-village.bc.nu> <20080420115455.GJ1595@cs181133002.pp.htv.fi> <20080420123731.7282bb16@the-village.bc.nu> <20080420121803.GK1595@cs181133002.pp.htv.fi> <480B4DB4.8070107@sandeen.net> <20080420084127.2fc324ec@laptopd505.fenrus.org>
+	Sun, 20 Apr 2008 12:10:11 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:4583 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbYDTQKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 12:10:10 -0400
+Message-ID: <480B6AD8.9090404@linuxtv.org>
+Date: Sun, 20 Apr 2008 12:10:00 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080420084127.2fc324ec@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       ivtv-devel@ivtvdriver.org, Frank Bennett <biercenator@gmail.com>
+Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
+References: <20080420122736.20d60eff@the-village.bc.nu> <200804201806.33464.hverkuil@xs4all.nl>
+In-Reply-To: <200804201806.33464.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 08:41:27AM -0700, Arjan van de Ven wrote:
->...
-> yes. Adrian is waay off in the weeds on this one. Nobody but him is suggesting to remove
-> 8Kb stacks. I think everyone else agrees that having both options is valuable; and there
-> are better ways to find+fix stack bloat than removing this config option.
+Hans Verkuil wrote:
+> On Sunday 20 April 2008 13:27:36 Alan Cox wrote:
+>   
+>> Frank Bennett reported that ivtv was causing skype to crash. With
+>> help from one of their developers he showed it was a kernel problem.
+>> VIDIOCGCAP copies a name into a fixed length buffer - ivtv uses names
+>> that are too long and does not truncate them so corrupts a few bytes
+>> of the app data area.
+>>
+>> Possibly the names also want trimming but for now this should fix the
+>> corruption case.
+>>     
+>
+> Ouch, nasty one.
+>
+> Mauro, can you apply this patch to the v4l-dvb master?
+>
+> Mike, this one should obviously go into a 2.6.25 dot-release, and I 
+> think also to a 2.6.24 dot-release.
+>
+> Frank, thank you for reporting this!
+>
+> 	Hans
+>
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+>   
 
-I'm not arguing for removing the option immediately, but long-term we 
-shouldn't need it.
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 
-This comes from my experience of removing obsolete drivers for hardware 
-for which also a more recent driver exists:
-As long as there is some workaround (e.g. using an older driver or
-8k stacks) the workaround will be used instead of the getting proper 
-bug reports and fixes.
 
-As far as I know all problems that are known with 4k stacks are some 
-nested things with XFS in the trace.
+Mauro,
 
-If this class of issues would get fixed one day, why would it be 
-valuable to also offer 8k stacks long-term? Especially weigthed
-against the fact that with only 4k stacks we will have more people
-running into stack problems in -rc kernels if any new ones pop up,
-resulting in getting more such problems fixed during -rc.
+I'll get this into -stable for 2.6.24.y and 2.6.25.y as soon as it's in Linus' tree.  Please send this with your first round of patches for 2.6.26
 
-cu
-Adrian
+Regards,
 
--- 
+Mike
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
+
+
+
+
+
+>   
+>> Signed-off-by: Alan Cox <alan@redhat.com>
+>>
+>> ---
+>> linux.vanilla-2.6.25-rc8-mm2/drivers/media/video/ivtv/ivtv-ioctl.c	20
+>> 08-04-13 15:36:53.000000000 +0100 +++
+>> linux-2.6.25-rc8-mm2/drivers/media/video/ivtv/ivtv-ioctl.c	2008-04-20
+>> 12:15:33.000000000 +0100 @@ -742,7 +742,8 @@
+>>
+>>  		memset(vcap, 0, sizeof(*vcap));
+>>  		strcpy(vcap->driver, IVTV_DRIVER_NAME);     /* driver name */
+>> -		strcpy(vcap->card, itv->card_name); 	    /* card type */
+>> +		strncpy(vcap->card, itv->card_name,
+>> +				sizeof(vcap->card)-1); 	    /* card type */
+>>  		strcpy(vcap->bus_info, pci_name(itv->dev)); /* bus info... */
+>>  		vcap->version = IVTV_DRIVER_VERSION; 	    /* version */
+>>  		vcap->capabilities = itv->v4l2_cap; 	    /* capabilities */
+>>
+>> --
+>> 		"Hello, welcome to Jon Masters' house of pain"
+>> 				- Jon after a particularly good night
+>>
+>> --
+>> video4linux-list mailing list
+>> Unsubscribe
+>> mailto:video4linux-list-request@redhat.com?subject=unsubscribe
+>> https://www.redhat.com/mailman/listinfo/video4linux-list
+>>     
+>
+>
+>   
 
