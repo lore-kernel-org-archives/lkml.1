@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYDTWnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbYDTWp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbYDTWnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 18:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYDTWnL
+	id S1754887AbYDTWp5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 18:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYDTWpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 18:43:11 -0400
-Received: from smtpgpe.resot.net ([217.175.160.71]:55440 "EHLO smtpgpe.ool.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbYDTWnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 18:43:09 -0400
-X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 18:43:08 EDT
-From: "werner" <werner@copaya.yi.org>
-Subject: EDD problem -- regression -- crash on booting by probing EDD
-To: linux-kernel@vger.kernel.org
-X-Originating-IP: 217.175.173.64
-X-Mailer: Usermin 1.340
-Message-Id: <1208730812.6879@copaya.yi.org>
-Date: Sun, 20 Apr 2008 19:33:32 -0300 (GFT)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="bound1208730812"
+	Sun, 20 Apr 2008 18:45:49 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34658 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbYDTWps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 18:45:48 -0400
+Date: Sun, 20 Apr 2008 23:40:08 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, kernel@wantstofly.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] ARM minor irq handler cleanups
+Message-ID: <20080420224008.GB8733@flint.arm.linux.org.uk>
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <20080418164411.b1e1628d.akpm@linux-foundation.org> <48093AF3.2080807@garzik.org> <20080418181741.d6f365c5.akpm@linux-foundation.org> <480BC0FC.8020908@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480BC0FC.8020908@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Sun, Apr 20, 2008 at 06:17:32PM -0400, Jeff Garzik wrote:
+> Andrew Morton wrote:
+> >If we had a migration plan (ie: request_irq_new(), above) then this of
+> >course wouldn't be a problem.
+> 
+> A fair comment...
 
---bound1208730812
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Then we'll be stuck with request_irq_new() for the next 10 years or so.
 
-There is a regression in 2.6.25.   Booting stops with: Probing EDD (edd=off to disable) message.
+FWIW (and appologies for hijacking the topic), Jeffs discussion about
+changing the ARM integrator RTC driver has triggered a number of cleanups
+in the ARM tree:
 
-It dont work the kernel boot parameter edd=off .  With pci=off the computer continues to boot, but later it dont find hard disks etc.
+- converting the ARM integrator PL030 RTC driver to a RTC class driver
 
-Thats happening on 2.6.25   definitive, but was verified to go back until 2.6.24-rc6-git8, but it wasnt yet at 2.6.24-rc6-git2 which worked correctly.
+  ... which triggered:
 
+- removal of the ARM dyntick code and the unused generic changes
+  (including the s390 and sh bits which look like they've never been
+   functional.)
 
-Werner Landgraf
+  ... which triggered:
 
-SYS Linux
+- attempting to fix a circular include dependency involving linux/irq.h
+  and asm-arm/mach/irq.h
 
-http://linux.softpedia.com/get/System/Operating-Systems/Linux-Distributions/SYS-34168.shtml
+  ... which then triggered:
 
---bound1208730812--
+- allowing PXA platform class to build for more than one PXA platform
+  at a time, so I don't have to run 20 (!) separate kernel builds to
+  check them all for breakage caused by the elimination of the
+  circular dependency.
 
+  ... which also allowed me to find several PXA platform build bugs.
+
+Thanks Jeff. ;)
+
+I'm not intending pushing this stuff into mainline for a bit, although
+it will appear in my public tree for others to start looking at and for
+them to be aware of.
+
+That does mean that, unfortunately, akpm's going to see those changes
+and it might cause Andrew some headaches - sorry about that.  You may
+wish to avoid pulling the ARM 'devel' branch until the dust settles.
+
+(Obviously the appropriate fixes will be head towards Linus at the
+appropriate time.)
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
