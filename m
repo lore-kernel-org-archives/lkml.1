@@ -1,57 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbYDTCgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbYDTCys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762797AbYDTCgZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 22:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYDTCgS
+	id S1762679AbYDTCys (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 22:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYDTCyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 22:36:18 -0400
-Received: from sandeen.net ([209.173.210.139]:13152 "EHLO sandeen.net"
+	Sat, 19 Apr 2008 22:54:38 -0400
+Received: from smtp01.mtu.ru ([62.5.255.48]:51485 "EHLO smtp01.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbYDTCgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 22:36:17 -0400
-Message-ID: <480AAC20.4050604@sandeen.net>
-Date: Sat, 19 Apr 2008 21:36:16 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-References: <200804181737.m3IHbabI010051@hera.kernel.org>	<20080418142934.38ce6bf4.akpm@linux-foundation.org>	<20080419142329.GA5339@elte.hu>	<20080419145948.GA4528@lintop> <20080419110034.34b70bd5@laptopd505.fenrus.org>
-In-Reply-To: <20080419110034.34b70bd5@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751364AbYDTCyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 22:54:37 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] x86: random clean-ups
+Date: Sun, 20 Apr 2008 06:54:30 +0400
+Message-Id: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-Mailer: git-send-email 1.5.3.6
+X-DCC-STREAM-Metrics: smtp01.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
+Hi Ingo, Peter, Thomas,
 
-> On the flipside the arguments tend to be
-> 1) certain stackings of components still runs the risk of overflowing
-> 2) I want to run ndiswrapper
-> 3) general, unspecified uneasyness.
-> 
-> For 1), we need to know which they are, and then solve them, because even on x86-64 with 8k stacks
-> they can be a problem (just because the stack frames are bigger, although not quite double, there).
+The following patches contain a few clean-ups, mostly
+stemming from analyzis of sparse messages.
 
-Except, apparently, not, at least in my experience.
+The patches are against current x86.git.
 
-Ask the xfs guys if they see stack overflows on x86_64, or on x86.
-
-I've personally never seen common stack problems with xfs on x86_64, but
-it's very common on x86.  I don't have a great answer for why, but
-that's my anecdotal evidence.
-
-> I've not seen any recent reports, I'll try to extend the kerneloops.org client to collect the
-> "stack is getting low" warning to be able to see how much this really happens.
-
-That sounds like a very good thing to collect, and maybe if I re-send a
-"clearly state stack overflows at oops time" patch you can easily keep tabs.
+Please consider.
 
 Thanks,
-
--Eric
+Dmitri Vorobiev
