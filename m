@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbYDTKlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbYDTKlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbYDTKlM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYDTKj7
+	id S1759251AbYDTKlh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbYDTKkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:39:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56252 "EHLO
+	Sun, 20 Apr 2008 06:40:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56255 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755562AbYDTKj6 (ORCPT
+	with ESMTP id S1757087AbYDTKkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:39:58 -0400
+	Sun, 20 Apr 2008 06:40:00 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: =?utf-8?q?Hans-J=C3=BCrgen=20Koch?= <hjk@linutronix.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 04/36] UIO: arch/arm/Kconfig: Make UIO available on ARM architecture
-Date: Sun, 20 Apr 2008 03:45:34 -0700
-Message-Id: <1208688366-9252-4-git-send-email-gregkh@suse.de>
+Subject: [PATCH 05/36] UIO: Remove needless PCI_DEVICE_ID definition from uio_cif.c
+Date: Sun, 20 Apr 2008 03:45:35 -0700
+Message-Id: <1208688366-9252-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080420104516.GA9225@suse.de>
 References: <20080420104516.GA9225@suse.de>
@@ -30,27 +31,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hans-Jürgen Koch <hjk@linutronix.de>
 
-Source drivers/uio/Kconfig to make UIO available in menuconfig if ARCH=arm.
+Meanwhile, PCI_DEVICE_ID_PLX_9030 is defined in pci_ids.h, no need to
+define it again in the driver.
 
-Signed-off-by: Hans J Koch <hjk@linutronix.de>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+CC: Benedikt Spranger <b.spranger@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/arm/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/uio/uio_cif.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 4039a13..1165a8f 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1174,6 +1174,8 @@ source "drivers/dma/Kconfig"
+diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
+index 4a5a97e..5737606 100644
+--- a/drivers/uio/uio_cif.c
++++ b/drivers/uio/uio_cif.c
+@@ -15,10 +15,6 @@
  
- source "drivers/dca/Kconfig"
+ #include <asm/io.h>
  
-+source "drivers/uio/Kconfig"
-+
- endmenu
- 
- source "fs/Kconfig"
+-#ifndef PCI_DEVICE_ID_PLX_9030
+-#define PCI_DEVICE_ID_PLX_9030	0x9030
+-#endif
+-
+ #define PLX9030_INTCSR		0x4C
+ #define INTSCR_INT1_ENABLE	0x01
+ #define INTSCR_INT1_STATUS	0x04
 -- 
 1.5.4.5
 
