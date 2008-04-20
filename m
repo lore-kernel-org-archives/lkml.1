@@ -1,99 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbYDSX7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbYDTAF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758639AbYDSX7M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 19:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYDSX65
+	id S1759684AbYDTAF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 20:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYDTAFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 19:58:57 -0400
-Received: from smtp01.mtu.ru ([62.5.255.48]:62369 "EHLO smtp01.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753300AbYDSX64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 19:58:56 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-Subject: [PATCH 1/1] Five functions in mm/page_alloc.c can become static
-Date: Sun, 20 Apr 2008 03:58:51 +0400
-Message-Id: <1208649531-335-1-git-send-email-dmitri.vorobiev@gmail.com>
-X-Mailer: git-send-email 1.5.3.6
-X-DCC-STREAM-Metrics: smtp01.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
+	Sat, 19 Apr 2008 20:05:14 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:43368 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753161AbYDTAFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 20:05:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At0FAOslCkhMROPA/2dsb2JhbACBYKhC
+Date: Sat, 19 Apr 2008 20:05:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] Check for breakpoint in text_poke to eliminate bug_on
+Message-ID: <20080420000509.GA7496@Krystal>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu> <20080419184137.79957a07@daedalus.pq.iki.fi> <20080419161956.GA24685@Krystal> <20080420000657.20ba6b4b@daedalus.pq.iki.fi> <20080420005208.12ad32fd@daedalus.pq.iki.fi> <20080419215826.GC2831@Krystal> <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:04:19 up 50 days, 20:15,  5 users,  load average: 0.17, 0.15,
+	0.14
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that the following functions in mm/page_alloc.c
-were needlessly defined global:
+* Pekka Paalanen (pq@iki.fi) wrote:
+> On Sat, 19 Apr 2008 17:58:26 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > * Pekka Paalanen (pq@iki.fi) wrote:
+> > > 
+> > > A simple
+> > > echo 0 > /sys/devices/system/cpu/cpu1/online
+> > > echo 1 > /sys/devices/system/cpu/cpu1/online
+> > > 
+> > > produces the following kernel log (netconsole) and then after a couple
+> > > second hang the machine reboots:
+> > > 
+> > > [   84.678357] console [netcon0] enabled
+> > > [   84.679568] netconsole: network logging started
+> > > [  232.812335] CPU 1 is now offline
+> > > [  232.812678] lockdep: fixing up alternatives.
+> > > [  232.813051] SMP alternatives: switching to UP code
+> > > [  268.447582] lockdep: fixing up alternatives.
+> > > [  268.447903] SMP alternatives: switching to SMP code
+> > > [  268.459462] Booting processor 1/1 ip 6000
+> > > 
+> > > My kernel is sched-devel/latest git tree with Desnoyers' patch, and my
+> > > patches that touch only arch/x86/mm/mmio-mod.c.
+> > > The machine is Thinkpad T61 with:
+> > > 
+> > > processor	: 0
+> > > vendor_id	: GenuineIntel
+> > > cpu family	: 6
+> > > model		: 15
+> > > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
+> > > stepping	: 10
+> > > cpu MHz		: 2001.000
+> > > cache size	: 4096 KB
+> > > physical id	: 0
+> > > siblings	: 2
+> > > core id		: 0
+> > > cpu cores	: 2
+> > > apicid		: 0
+> > > initial apicid	: 0
+> > > fpu		: yes
+> > > fpu_exception	: yes
+> > > cpuid level	: 10
+> > > wp		: yes
+> > > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> > > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
+> > > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
+> > > tm2 ssse3 cx16 xtpr lahf_lm ida
+> > > bogomips	: 3997.03
+> > > clflush size	: 64
+> > > cache_alignment	: 64
+> > > address sizes	: 36 bits physical, 48 bits virtual
+> > > power management:
+> > > 
+> > > processor	: 1
+> > > vendor_id	: GenuineIntel
+> > > cpu family	: 6
+> > > model		: 15
+> > > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
+> > > stepping	: 10
+> > > cpu MHz		: 2001.000
+> > > cache size	: 4096 KB
+> > > physical id	: 0
+> > > siblings	: 2
+> > > core id		: 1
+> > > cpu cores	: 2
+> > > apicid		: 1
+> > > initial apicid	: 1
+> > > fpu		: yes
+> > > fpu_exception	: yes
+> > > cpuid level	: 10
+> > > wp		: yes
+> > > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> > > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
+> > > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
+> > > tm2 ssse3 cx16 xtpr lahf_lm ida
+> > > bogomips	: 3991.26
+> > > clflush size	: 64
+> > > cache_alignment	: 64
+> > > address sizes	: 36 bits physical, 48 bits virtual
+> > > power management:
+> > > 
+> > > Any help would be appreciated.
+> > > 
+> > > 
+> > > Thanks.
+> > 
+> > This patch should bring more consistency checks to text_poke, can you
+> > give it a try ?
+> > 
+> > Hm, actually, I think it contains the fix you are looking for.
+> > 
+> > kernel_text_address -> core_kernel_text will probably make everything go
+> > smoothly.
+> > 
+> > Mathieu
+> > 
+> > 
+> > Check for breakpoint in text_poke to eliminate bug_on
+> > 
+> > It's ok to modify an instruction non-atomically (multiple memory accesses to a
+> > large and/or non aligned instruction) *if and only if* we have inserted a
+> > breakpoint at the beginning of the instruction.
+> > 
+> > Also change kernel_text_address (bogus) check to core_kernel_text.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > ---
+> >  arch/x86/kernel/alternative.c |   49 ++++++++++++++++++++++++------------------
+> >  1 file changed, 29 insertions(+), 20 deletions(-)
+> 
+> Sorry, no change.
+> 
+> [   93.315242] netconsole: network logging started
+> [   95.797496] eth0: no IPv6 routers present
+> [  127.472213] CPU 1 is now offline
+> [  127.472547] lockdep: fixing up alternatives.
+> [  127.472923] SMP alternatives: switching to UP code
+> [  134.709384] lockdep: fixing up alternatives.
+> [  134.709701] SMP alternatives: switching to SMP code
+> [  134.721344] Booting processor 1/1 ip 6000
+> 
+> few seconds pause and it reboots. A working patch in six minutes would
+> have been quite awesome :-)
+> 
 
-find_usable_zone_for_movable()
-adjust_zone_range_for_zone_movable()
-__absent_pages_in_range()
-find_min_pfn_for_node()
-find_zone_movable_pfns_for_nodes()
+Hrm, I'll have to do some more tests.
 
-These functions can become static, and the purpose of this
-patch is to add the necessary keyword to the function
-definitions.
+Can you mail you .config please ?
 
-This patch survived testing on x86_32, x86_64, and MIPS.
-Build tests included allnoconfig, allyesconfig (minus kgdb),
-and a few instances of randconfig. Runtime testing was
-successfully performed by booting x86_32 and x86_64 boxes
-as well as a MIPS-based board up to the shell prompt.
+Mathieu
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
----
- mm/page_alloc.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> Thanks.
+> 
+> -- 
+> Pekka Paalanen
+> http://www.iki.fi/pq/
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 402a504..92ed55d 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3033,7 +3033,7 @@ void __meminit get_pfn_range_for_nid(unsigned int nid,
-  * assumption is made that zones within a node are ordered in monotonic
-  * increasing memory addresses so that the "highest" populated zone is used
-  */
--void __init find_usable_zone_for_movable(void)
-+static void __init find_usable_zone_for_movable(void)
- {
- 	int zone_index;
- 	for (zone_index = MAX_NR_ZONES - 1; zone_index >= 0; zone_index--) {
-@@ -3059,7 +3059,7 @@ void __init find_usable_zone_for_movable(void)
-  * highest usable zone for ZONE_MOVABLE. This preserves the assumption that
-  * zones within a node are in order of monotonic increases memory addresses
-  */
--void __meminit adjust_zone_range_for_zone_movable(int nid,
-+static void __meminit adjust_zone_range_for_zone_movable(int nid,
- 					unsigned long zone_type,
- 					unsigned long node_start_pfn,
- 					unsigned long node_end_pfn,
-@@ -3120,7 +3120,7 @@ static unsigned long __meminit zone_spanned_pages_in_node(int nid,
-  * Return the number of holes in a range on a node. If nid is MAX_NUMNODES,
-  * then all holes in the requested range will be accounted for.
-  */
--unsigned long __meminit __absent_pages_in_range(int nid,
-+static unsigned long __meminit __absent_pages_in_range(int nid,
- 				unsigned long range_start_pfn,
- 				unsigned long range_end_pfn)
- {
-@@ -3604,7 +3604,7 @@ static void __init sort_node_map(void)
- }
- 
- /* Find the lowest pfn for a node */
--unsigned long __init find_min_pfn_for_node(unsigned long nid)
-+static unsigned long __init find_min_pfn_for_node(unsigned long nid)
- {
- 	int i;
- 	unsigned long min_pfn = ULONG_MAX;
-@@ -3676,7 +3676,7 @@ static unsigned long __init early_calculate_totalpages(void)
-  * memory. When they don't, some nodes will have more kernelcore than
-  * others
-  */
--void __init find_zone_movable_pfns_for_nodes(unsigned long *movable_pfn)
-+static void __init find_zone_movable_pfns_for_nodes(unsigned long *movable_pfn)
- {
- 	int i, nid;
- 	unsigned long usable_startpfn;
 -- 
-1.5.3
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
