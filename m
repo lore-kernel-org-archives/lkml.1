@@ -1,128 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbYDTR0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYDTRag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759049AbYDTR0Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYDTR0R
+	id S1758577AbYDTRag (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYDTRa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:26:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37162 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbYDTR0Q (ORCPT
+	Sun, 20 Apr 2008 13:30:28 -0400
+Received: from ns01.unsolicited.net ([69.10.132.115]:60353 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbYDTRa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:26:16 -0400
-Message-ID: <480B7CB2.3080002@firstfloor.org>
-Date: Sun, 20 Apr 2008 19:26:10 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sun, 20 Apr 2008 13:30:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
+	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
+	b=foO6AODwvtj8dKcZxFK9Rs5iRTfCRxA27kALYRT8Y+kKY+ozASnpdKieFfAVwu/XN3g7hgeIL6ofGgg9g7XgZ91WJ+A0UdxMNk5oXd70a/FEj0d4GQIf/4VjiXrqcPZY0uq5zDopgl2C3OX0FcOGRrvke7DFbTRniuSFMD7zp1Q=;
+Message-ID: <480B7D72.7020503@unsolicited.net>
+Date: Sun, 20 Apr 2008 18:29:22 +0100
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <200804201144.33308.dhazelton@enter.net>
-In-Reply-To: <200804201144.33308.dhazelton@enter.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: casey@schaufler-ca.com
+CC: Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com>
+In-Reply-To: <46016.36939.qm@web36608.mail.mud.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton wrote:
+Casey Schaufler wrote:
+> Do you have a libcap that reflects the change from 32 capabilities
+> to 64? You'll be looking for libcap.so.2.06 or thereabouts.
+>   
+Adding libcap-2.08 and recompiling ntpd has fixed the issue, and I'm now 
+running normally, thanks!
 
-> Andi, you're the only one I've seen seriously pounding the "50k threads" 
-> thing. I don't think anyone is really fooled by the straw-man, so I'd
-> suggest you drop it.
+Was this userspace visible change planned in advance for 2.6.25 ? ... as 
+I guess a few other people with venerable old userspace components may 
+come across this issue.
 
-Ok, perhaps we can settle this properly. Like historicans. We study the
-original sources.
-
-The primary resource is the original commit adding the 4k stack code.
-You cannot find this in latest git because it predates 2.6.12, but it is
-available in one of the historic trees imported from BitKeeper like
-git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
-
-Here's the log:
->>
-commit 95f238eac82907c4ccbc301cd5788e67db0715ce
-Author: Andrew Morton <akpm@osdl.org>
-Date:   Sun Apr 11 23:18:43 2004 -0700
-
-    [PATCH] ia32: 4Kb stacks (and irqstacks) patch
-
-    From: Arjan van de Ven <arjanv@redhat.com>
-
-    Below is a patch to enable 4Kb stacks for x86. The goal of this is to
-
-    1) Reduce footprint per thread so that systems can run many more threads
-       (for the java people)
-
-    2) Reduce the pressure on the VM for order > 0 allocations. We see
-real life
-       workloads (granted with 2.4 but the fundamental fragmentation
-issue isn't
-       solved in 2.6 and isn't solvable in theory) where this can be a
-problem.
-       In addition order > 0 allocations can make the VM "stutter" and
-give more
-       latency due to having to do much much more work trying to defragment
-
-...
-<<
-
-This gives us two reasons as you can see, one of them many threads
-and another mostly only relevant to 2.4
-
-Now I was also assuming that nobody took (1) really serious and
-attacked (2) in earlier thread; in particular in
-
-http://article.gmane.org/gmane.linux.kernel/665584
-
->>
-Actually the real reason the 4K stacks were introduced IIRC was that
-the VM is not very good at allocation of order > 0 pages and that only
-using order 0 and not order 1 in normal operation prevented some stalls.
-
-This rationale also goes back to 2.4 (especially some of the early 2.4
-VMs were not very good) and the 2.6 VM is generally better and on
-x86-64 I don't see much evidence that these stalls are a big problem
-(but then x86-64 also has more lowmem).
-<<
-
-This was corrected by Ingo who was one of the primary authors of the patch:
-
-http://thread.gmane.org/gmane.linux.kernel/665420:
-
->>
-no, the primary motivation Arjan and me started working on 4K stacks and
-implemented it was what Denys mentioned: i had a testcase that ran
-50,000 threads before it ran out of memory - i wanted it to run 100,000
-threads. The improved order-0 behavior was just icing on the cake.
-
-	Ingo
-<<
-
-and then from Arjan:
-
-http://thread.gmane.org/gmane.linux.kernel/665420
-
->>
-> no, the primary motivation Arjan and me started working on 4K stacks
-> and implemented it was what Denys mentioned: i had a testcase that
-
-well that and the fact that RH had customers who had major issues at
-fewer threads
-with 8Kb versus fragmentation.
-<<
-
-So both the primary authors of the patch state that 50k threads
-was the main reason. I didn't believe it at first either, but after
-these forceful corrections I do now.
-
-You're totally wrong when you call it a straw man.
-
--Andi
-
+Cheers
+David
