@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbYDTAQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYDTA1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbYDTAQi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 20:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYDTAQ2
+	id S1760110AbYDTA1y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 20:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYDTA1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 20:16:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38152
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754011AbYDTAQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 20:16:27 -0400
-Date: Sat, 19 Apr 2008 17:16:28 -0700 (PDT)
-Message-Id: <20080419.171628.191209639.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: mtk.manpages@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       maxk@qualcomm.com, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] /dev/vring: simple userspace-kernel ringbuffer
- interface.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200804200241.14722.rusty@rustcorp.com.au>
-References: <20080418115959.6b8fdfa7.akpm@linux-foundation.org>
-	<517f3f820804181238s79326d10tf898691f997715e5@mail.gmail.com>
-	<200804200241.14722.rusty@rustcorp.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Apr 2008 20:27:45 -0400
+Received: from ozlabs.org ([203.10.76.45]:34474 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbYDTA1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 20:27:44 -0400
+To: David Airlie <airlied@linux.ie>
+CC: <linux-kernel@vger.kernel.org>, <stevewin@us.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sun, 20 Apr 2008 10:26:25 +1000
+Subject: [PATCH 1/2] drm: Fix mismerge of non-coherent DMA patch
+Message-Id: <20080420002743.7071CDE36D@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sun, 20 Apr 2008 02:41:14 +1000
+The patch for supporting non coherent PCI DMA in the DRM was mismerged
+causing the page protection to be updated for the wrong type of
+mapping.
 
-> If only there were some kind of, I don't know... summit... for kernel 
-> people... 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I'm starting to disbelieve the myth that because we can discuss
-technical issues on mailing lists, we should talk primarily about
-process issues during the kernel summit.
+David, if ok, please fwd to stable too.
 
-There is a distinct advantage to discussing and hashing things out in
-person.  You can't say "screw you, your idea sucks" when you're face
-to face with the other person, whereas online it's way too easy.
+ drivers/char/drm/drm_vm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-work.orig/drivers/char/drm/drm_vm.c	2008-04-19 16:49:48.000000000 +1000
++++ linux-work/drivers/char/drm/drm_vm.c	2008-04-19 16:49:55.000000000 +1000
+@@ -640,12 +640,12 @@ static int drm_mmap_locked(struct file *
+ 		/* Don't let this area swap.  Change when
+ 		   DRM_KERNEL advisory is supported. */
+ 		vma->vm_flags |= VM_RESERVED;
+-		vma->vm_page_prot = drm_dma_prot(map->type, vma);
+ 		break;
+ 	case _DRM_SCATTER_GATHER:
+ 		vma->vm_ops = &drm_vm_sg_ops;
+ 		vma->vm_private_data = (void *)map;
+ 		vma->vm_flags |= VM_RESERVED;
++		vma->vm_page_prot = drm_dma_prot(map->type, vma);
+ 		break;
+ 	default:
+ 		return -EINVAL;	/* This should never happen. */
