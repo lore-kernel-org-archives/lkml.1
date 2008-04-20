@@ -1,106 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYDTQKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYDTQPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYDTQKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 12:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYDTQKL
+	id S1756051AbYDTQPg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 12:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYDTQP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 12:10:11 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:4583 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYDTQKK (ORCPT
+	Sun, 20 Apr 2008 12:15:28 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:33436 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751689AbYDTQP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 12:10:10 -0400
-Message-ID: <480B6AD8.9090404@linuxtv.org>
-Date: Sun, 20 Apr 2008 12:10:00 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 20 Apr 2008 12:15:27 -0400
+Message-ID: <480B6C16.40806@gmail.com>
+Date: Sun, 20 Apr 2008 19:15:18 +0300
+From: Anssi Hannula <anssi.hannula@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080305)
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       ivtv-devel@ivtvdriver.org, Frank Bennett <biercenator@gmail.com>
-Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
-References: <20080420122736.20d60eff@the-village.bc.nu> <200804201806.33464.hverkuil@xs4all.nl>
-In-Reply-To: <200804201806.33464.hverkuil@xs4all.nl>
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, marcel@holtmann.org,
+       mit-devel@lists.printk.net, linux-kernel@vger.kernel.org
+Subject: Re: HID bus
+References: <Pine.LNX.4.64.0804181333180.12972@jikos.suse.cz> <1208644696-29129-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1208644696-29129-1-git-send-email-jirislaby@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans Verkuil wrote:
-> On Sunday 20 April 2008 13:27:36 Alan Cox wrote:
->   
->> Frank Bennett reported that ivtv was causing skype to crash. With
->> help from one of their developers he showed it was a kernel problem.
->> VIDIOCGCAP copies a name into a fixed length buffer - ivtv uses names
->> that are too long and does not truncate them so corrupts a few bytes
->> of the app data area.
->>
->> Possibly the names also want trimming but for now this should fix the
->> corruption case.
->>     
->
-> Ouch, nasty one.
->
-> Mauro, can you apply this patch to the v4l-dvb master?
->
-> Mike, this one should obviously go into a 2.6.25 dot-release, and I 
-> think also to a 2.6.24 dot-release.
->
-> Frank, thank you for reporting this!
->
-> 	Hans
->
-> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
->   
+Jiri Slaby wrote:
+> Hmm, I must admit, I didn't know how exactly autoloading works. On suse,
+> at least, module aliases are used. So autoloading works for me after this
+> patch and slight modifications of the previous patches. The pro of this
+> is that it's in-kernel modification of modpost phase.
 
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Indeed in current systems udev uses module aliases for autoloading.
 
+> --
+> 
+> Generate aliases for usb hid device modules to support autoloading.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+[...]
+> +/* Looks like: usb */
 
-Mauro,
+Looks like: "usb:vNpNd*dc*dsc*dp*ic3isc*ip*"
 
-I'll get this into -stable for 2.6.24.y and 2.6.25.y as soon as it's in Linus' tree.  Please send this with your first round of patches for 2.6.26
+> +static int do_hid_usb_entry(const char *filename,
+> +			     struct hid_device_id *id, char *alias)
+> +{
+> +	__u16 v = TO_NATIVE((__u16)id->vendor);
+> +	__u16 p = TO_NATIVE((__u16)id->product);
+> +
+> +	strcpy(alias, "usb:");
+> +	ADD(alias, "v", id->vendor != HID_ANY_ID, v);
+> +	ADD(alias, "p", id->product != HID_ANY_ID, p);
+> +
+> +	sprintf(alias + strlen(alias), "d*dc*dsc*dp*ic%02Xisc*ip*",
+> +			USB_INTERFACE_CLASS_HID);
+> +
+> +	return 1;
+> +}
 
-Regards,
+Oh, so we create a normal usb modalias entry anyway, not a custom
+'usbhid:' one.
 
-Mike
+Why not just do something like
 
+#define HID_DEVICE(vend, dev) \
+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE | \
+		       USB_DEVICE_ID_MATCH_INT_CLASS, \
+	.idVendor = (vend), \
+	.idProduct = (prod), \
+	.bInterfaceClass = USB_INTERFACE_CLASS_HID
+(see linux/usb.h)
 
+and use USB hotplugging?
 
+Or do we plan to match against something else as well, such as hid
+reports or something?
 
-
-
-
->   
->> Signed-off-by: Alan Cox <alan@redhat.com>
->>
->> ---
->> linux.vanilla-2.6.25-rc8-mm2/drivers/media/video/ivtv/ivtv-ioctl.c	20
->> 08-04-13 15:36:53.000000000 +0100 +++
->> linux-2.6.25-rc8-mm2/drivers/media/video/ivtv/ivtv-ioctl.c	2008-04-20
->> 12:15:33.000000000 +0100 @@ -742,7 +742,8 @@
->>
->>  		memset(vcap, 0, sizeof(*vcap));
->>  		strcpy(vcap->driver, IVTV_DRIVER_NAME);     /* driver name */
->> -		strcpy(vcap->card, itv->card_name); 	    /* card type */
->> +		strncpy(vcap->card, itv->card_name,
->> +				sizeof(vcap->card)-1); 	    /* card type */
->>  		strcpy(vcap->bus_info, pci_name(itv->dev)); /* bus info... */
->>  		vcap->version = IVTV_DRIVER_VERSION; 	    /* version */
->>  		vcap->capabilities = itv->v4l2_cap; 	    /* capabilities */
->>
->> --
->> 		"Hello, welcome to Jon Masters' house of pain"
->> 				- Jon after a particularly good night
->>
->> --
->> video4linux-list mailing list
->> Unsubscribe
->> mailto:video4linux-list-request@redhat.com?subject=unsubscribe
->> https://www.redhat.com/mailman/listinfo/video4linux-list
->>     
->
->
->   
-
+-- 
+Anssi Hannula
