@@ -1,135 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbYDTMjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbYDTMlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbYDTMjA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 08:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbYDTMiw
+	id S1761290AbYDTMlU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 08:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbYDTMlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 08:38:52 -0400
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:60312 "EHLO
-	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755045AbYDTMiv (ORCPT
+	Sun, 20 Apr 2008 08:41:11 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:43676 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbYDTMlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 08:38:51 -0400
-Message-ID: <480B3958.9010708@blueyonder.co.uk>
-Date: Sun, 20 Apr 2008 13:38:48 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 3.0a1pre (X11/2007120104)
+	Sun, 20 Apr 2008 08:41:08 -0400
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>, <linux-pm@lists.linux-foundation.org>,
+       lenb@kernel.org
+Subject: Re: Higer latency with dynamic tick (need for an io-ondemand govenor?)
+From: Andi Kleen <andi@firstfloor.org>
+References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
+	<1179396659.3764.40.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com>
+	<1179434296.12981.14.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D913027429010259ED@dlee13.ent.ti.com>
+	<1179474567.12981.53.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
+Date: Sun, 20 Apr 2008 14:41:05 +0200
+In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com> (Richard Woodruff's message of "Fri, 18 Apr 2008 10:43:32 -0500")
+Message-ID: <87ej90aece.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-git1/2 not seeing /dev/sda1 (XFS root) or /dev/sda2	(swap)
- partitions on a SATA drive
-References: <480A9C1E.8050505@blueyonder.co.uk> <20080420112549.GB4902@martell.zuzino.mipt.ru>
-In-Reply-To: <20080420112549.GB4902@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Apr 2008 12:34:17.0456 (UTC) FILETIME=[D972FF00:01C8A2E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Sun, Apr 20, 2008 at 02:27:58AM +0100, Sid Boyce wrote:
->> 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3.
->> With xfs it can't find these and drops into a shell.
->> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap
->>       swap       defaults              0 0
->> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /
->>    xfs        defaults              1 1
->>
->> From my .config
->> CONFIG_XFS_FS=m
->> CONFIG_XFS_QUOTA=y
->> CONFIG_XFS_POSIX_ACL=y
->> CONFIG_XFS_RT=y
->>
->> The other boxes are configure pretty much the same, but I can diff the
->> .config's if required.
->> # l /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
->> -rw-r--r-- 1 root root 272240 2008-04-19 21:54
->> /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
->>
->> 00:0c.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
->> 00:0d.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->> 00:0d.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->> 00:0d.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->> 03:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA
->> Raid II Controller (rev 01)
->>
->> From working 2.6.25
->> # lsmod|grep sata
->> sata_nv                36872  2
->> sata_sil24             26692  0
->> libata                173664  3 pata_amd,sata_nv,sata_sil24
-> 
-> Double check that you've enabled CONFIG_ATA_SFF and then check you
-> previous CONFIG_SATA_* options.
-> 
-On Sun, Apr 20, 2008 at 02:27:58AM +0100, Sid Boyce wrote:
- > 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3.
- > With xfs it can't find these and drops into a shell.
- > /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap
- > swap defaults 0 0
- > /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /
- > xfs defaults 1 1
- >
- > From my .config
- > CONFIG_XFS_FS=m
- > CONFIG_XFS_QUOTA=y
- > CONFIG_XFS_POSIX_ACL=y
- > CONFIG_XFS_RT=y
- >
- > The other boxes are configure pretty much the same, but I can diff the
- > .config's if required.
- > # l /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
- > -rw-r--r-- 1 root root 272240 2008-04-19 21:54
- > /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
- >
- > 00:0c.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
- > 00:0d.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
- > 00:0d.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
- > 00:0d.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
- > 03:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA
- > Raid II Controller (rev 01)
- >
- > From working 2.6.25
- > # lsmod|grep sata
- > sata_nv 36872 2
- > sata_sil24 26692 0
- > libata 173664 3 pata_amd,sata_nv,sata_sil24
+"Woodruff, Richard" <r-woodruff2@ti.com> writes:
 
-I started off using the 2.6.25 .config below, 2.6.25-git "make 
-oldconfig", changed a few options like SATA_SFF and SATA_PMP.
+> When capturing some traces with dynamic tick we were noticing the
+> interrupt latency seems to go up a good amount. If you look at the trace
+> the gpio IRQ is now offset a good amount.  Good news I guess is its
+> pretty predictable.
+>
+> * If we couple this with progressively higher latency C-States we see
+> that IO speed can fall by a good amount, especially for PIO mixes.  Now
+> if QOS is maintained you may or may-not care.
+>
+> I was wondering what thoughts of optimizing this might be.
+>
+> One thought was if an io-ondemand of some sort was used.  It could track
+> interrupt statistics and be feed back into cpu-idle.  When there is a
+> high interrupt load period it could shrink the acceptable latency and
+> thus help choose a good a C-State which favors throughput.  Some moving
+> average window could be used to track it.
+>
+> Perhaps a new interrupt attribute could be attached at irq request time
+> to allow the tracking of bandwidth important devices.
+>
+> The attached is captured on a .22 kernel.  The same should be available
+> in a bit on a .24 kernel.
 
-barrabas:/usr/src/linux-2.6.25 # grep SFF .config
-CONFIG_BLK_DEV_IDEDMA_SFF=y
-barrabas:/usr/src/linux-2.6.25 # grep SATA .config
-# CONFIG_BLK_DEV_IDE_SATA is not set
-CONFIG_SATA_AHCI=m
-CONFIG_SATA_SVW=m
-CONFIG_SATA_MV=m
-CONFIG_SATA_NV=m
-CONFIG_SATA_QSTOR=m
-CONFIG_SATA_PROMISE=m
-CONFIG_SATA_SX4=m
-CONFIG_SATA_SIL=m
-CONFIG_SATA_SIL24=m
-CONFIG_SATA_SIS=m
-CONFIG_SATA_ULI=m
-CONFIG_SATA_VIA=m
-CONFIG_SATA_VITESSE=m
-CONFIG_SATA_INIC162X=m
+Are you talking about x86? 
 
+On older x86 this effect should have been handled by the C state
+algorithm taking the bus master activity register into account (which
+should also trigger for interrupts)
 
- > Double check that you've enabled CONFIG_ATA_SFF and then check you
-previous CONFIG_SATA_* options.
+But I think the register has been nop'ed on newer platforms 
+so indeed we'll need some way to handle this.
 
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+-Andi
