@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYDTRLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYDTRPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbYDTRLQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYDTRK6
+	id S1757920AbYDTRPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYDTRPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:10:58 -0400
-Received: from ZSM1387.piap.pl ([195.187.100.11]:54391 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754164AbYDTRK5 convert rfc822-to-8bit (ORCPT
+	Sun, 20 Apr 2008 13:15:12 -0400
+Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:38690
+	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753160AbYDTRPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:10:57 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [PATCH] WAN: Fix confusing insmod error code for C101 too.
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 20 Apr 2008 19:10:56 +0200
-Message-ID: <m3myno5u5b.fsf@maximus.localdomain>
+	Sun, 20 Apr 2008 13:15:11 -0400
+X-Greylist: delayed 331 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 13:15:11 EDT
+X-Authority-Analysis: v=1.0 c=1 a=Q8Gs9bZg81cupfBjvhMA:9
+ a=0Hgyp1d33VZ9vveNF3AA:7 a=uVxzsZc6kX8zZpzCKzFreaTV0zUA:4 a=LY0hPdMaydYA:10
+Date: Sun, 20 Apr 2008 09:59:39 -0700
+From: Chris Wedgwood <cw@f00f.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Eric Sandeen <sandeen@sandeen.net>, Oliver Pinter <oliver.pntr@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
+       xfs@oss.sgi.com
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080420165939.GB7963@puku.stupidest.org>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <6101e8c40804190735g17f1e0bj25c2bc0e2a6eac26@mail.gmail.com> <20080419151911.GB1595@cs181133002.pp.htv.fi> <480AA2B9.10305@sandeen.net> <20080420074228.GE1595@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080420074228.GE1595@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WAN: Fix confusing insmod error code for C101 too.
+On Sun, Apr 20, 2008 at 10:42:28AM +0300, Adrian Bunk wrote:
 
-Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
+> We are going from 6k to 4k.
 
-diff --git a/drivers/net/wan/c101.c b/drivers/net/wan/c101.c
-index c4c8eab..c2cc42f 100644
---- a/drivers/net/wan/c101.c
-+++ b/drivers/net/wan/c101.c
-@@ -402,7 +402,7 @@ static int __init c101_init(void)
- #ifdef MODULE
- 		printk(KERN_INFO "c101: no card initialized\n");
- #endif
--		return -ENOSYS;	/* no parameters specified, abort */
-+		return -EINVAL;	/* no parameters specified, abort */
- 	}
- 
- 	printk(KERN_INFO "%s\n", version);
-@@ -420,11 +420,11 @@ static int __init c101_init(void)
- 			c101_run(irq, ram);
- 
- 		if (*hw == '\x0')
--			return first_card ? 0 : -ENOSYS;
-+			return first_card ? 0 : -EINVAL;
- 	}while(*hw++ == ':');
- 
- 	printk(KERN_ERR "c101: invalid hardware parameters\n");
--	return first_card ? 0 : -ENOSYS;
-+	return first_card ? 0 : -EINVAL;
- }
- 
- 
+6k?
+
+> Why should users have to poke with such deeply internal things?
+> That doesn't sound right.
+
+they shouldn't, so a 4k default is a problem for them
+
+> Excessive stack usage in the kernel is considered to be a bug.
+
+define excessive
+
+> We should identify and fix all remaining problems (if any).
+
+let's see your patches then
