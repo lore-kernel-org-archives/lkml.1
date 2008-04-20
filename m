@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbYDTAyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbYDTBIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbYDTAyU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 20:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYDTAyG
+	id S1760231AbYDTBIm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 21:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYDTBIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 20:54:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60985
+	Sat, 19 Apr 2008 21:08:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44381
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753966AbYDTAyE (ORCPT
+	by vger.kernel.org with ESMTP id S1753019AbYDTBIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 20:54:04 -0400
-Date: Sat, 19 Apr 2008 17:54:05 -0700 (PDT)
-Message-Id: <20080419.175405.91059921.davem@davemloft.net>
-To: kaber@trash.net
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
- latest -git
+	Sat, 19 Apr 2008 21:08:30 -0400
+Date: Sat, 19 Apr 2008 18:08:31 -0700 (PDT)
+Message-Id: <20080419.180831.72013410.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linville@tuxdriver.com, tomas.winkler@intel.com,
+       linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [built bug] drivers/net/wireless/iwlwifi/iwl-debugfs.c
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <480A2011.3080507@trash.net>
-References: <20080419100034.GA9475@elte.hu>
-	<20080419.030736.168169087.davem@davemloft.net>
-	<480A2011.3080507@trash.net>
+In-Reply-To: <20080419135602.GA2499@elte.hu>
+References: <20080419135602.GA2499@elte.hu>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,33 +29,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
-Date: Sat, 19 Apr 2008 18:38:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 19 Apr 2008 15:56:02 +0200
 
-> David Miller wrote:
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Sat, 19 Apr 2008 12:00:35 +0200
-> >
-> > [ netfilter-devel and netdev added to CC: ]
-> >
-> >   
-> >> randconfig testing found a netfilter build failure in latest -git:
-> >>
-> >>   net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
-> >>   net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
-> >>
-> >>   http://redhat.com/~mingo/misc/config-Sat_Apr_19_11_37_02_CEST_2008.bad
-> >>
-> >> disabling CONFIG_NF_CONNTRACK_SIP works it around.
-> >>     
-> >
-> > I think this will fix it.
-> >
-> > Patrick, is this how we should do it?
-> 
-> No, the SIP helper is also useful without NAT. This patch adds
-> an ifdef around the RTP call optimization for NATed clients.
-> 
-> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> drivers/net/wireless/iwlwifi/iwl-debugfs.c: In function 'iwl_dbgfs_stations_read':
+> drivers/net/wireless/iwlwifi/iwl-debugfs.c:256: error: 'struct iwl4965_tid_data' has no member named 'agg'
 
-Fair enough, applied, thanks Patrick.
+This should fix it, thanks for the report.
+
+Longer term, I seriously question the sanity of including iwl4964
+specific dumping into a debug module that is linked into both
+iwlwifi drivers :-/
+
+iwlwifi: Fix unconditional access to station->tidp[].agg.
+
+Reportred by Ingo Molnar:
+
+drivers/net/wireless/iwlwifi/iwl-debugfs.c: In function 'iwl_dbgfs_stations_read':
+drivers/net/wireless/iwlwifi/iwl-debugfs.c:256: error: 'struct iwl4965_tid_data' has no member named 'agg'
+
+Needs CONFIG_IWL4965_HT protection.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
+index 0f16f26..9a30e1d 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
++++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
+@@ -239,28 +239,34 @@ static ssize_t iwl_dbgfs_stations_read(struct file *file, char __user *user_buf,
+ 					"ps_status: %u\n", station->ps_status);
+ 			pos += scnprintf(buf + pos, bufsz - pos, "tid data:\n");
+ 			pos += scnprintf(buf + pos, bufsz - pos,
+-					"seq_num\t\ttxq_id\t");
++					"seq_num\t\ttxq_id");
++#ifdef CONFIG_IWL4965_HT
+ 			pos += scnprintf(buf + pos, bufsz - pos,
+-					"frame_count\twait_for_ba\t");
++					"\tframe_count\twait_for_ba\t");
+ 			pos += scnprintf(buf + pos, bufsz - pos,
+ 					"start_idx\tbitmap0\t");
+ 			pos += scnprintf(buf + pos, bufsz - pos,
+-					"bitmap1\trate_n_flags\n");
++					"bitmap1\trate_n_flags");
++#endif
++			pos += scnprintf(buf + pos, bufsz - pos, "\n");
+ 
+ 			for (j = 0; j < MAX_TID_COUNT; j++) {
+ 				pos += scnprintf(buf + pos, bufsz - pos,
+-						"[%d]:\t\t%u\t", j,
++						"[%d]:\t\t%u", j,
+ 						station->tid[j].seq_number);
++#ifdef CONFIG_IWL4965_HT
+ 				pos += scnprintf(buf + pos, bufsz - pos,
+-						"%u\t\t%u\t\t%u\t\t",
++						"\t%u\t\t%u\t\t%u\t\t",
+ 						station->tid[j].agg.txq_id,
+ 						station->tid[j].agg.frame_count,
+ 						station->tid[j].agg.wait_for_ba);
+ 				pos += scnprintf(buf + pos, bufsz - pos,
+-						"%u\t%llu\t%u\n",
++						"%u\t%llu\t%u",
+ 						station->tid[j].agg.start_idx,
+ 						(unsigned long long)station->tid[j].agg.bitmap,
+ 						station->tid[j].agg.rate_n_flags);
++#endif
++				pos += scnprintf(buf + pos, bufsz - pos, "\n");
+ 			}
+ 			pos += scnprintf(buf + pos, bufsz - pos, "\n");
+ 		}
