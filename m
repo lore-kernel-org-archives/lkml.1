@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYDTKIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYDTKPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbYDTKIs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYDTKIj
+	id S1756853AbYDTKPh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYDTKP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:08:39 -0400
-Received: from port-212-202-105-50.static.qsc.de ([212.202.105.50]:53122 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751822AbYDTKIj (ORCPT
+	Sun, 20 Apr 2008 06:15:28 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:34575 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218AbYDTKP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:08:39 -0400
-Date: Sun, 20 Apr 2008 10:41:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] w6692: replace deprecated pci_find_device
-Message-ID: <20080420104102.78b4d50b@the-village.bc.nu>
-In-Reply-To: <480B151A.2040601@xs4all.nl>
-References: <480B151A.2040601@xs4all.nl>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 20 Apr 2008 06:15:27 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: mips BCM47XX compile error
+Date: Sun, 20 Apr 2008 12:14:46 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Aurelien Jarno <aurelien@aurel32.net>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+References: <20080420100347.GH1595@cs181133002.pp.htv.fi>
+In-Reply-To: <20080420100347.GH1595@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804201214.46936.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Apr 2008 12:04:10 +0200
-Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
+> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
+> (ssb: Add Gigabit Ethernet driver) causes the following
+> build error with bcm47xx_defconfig:
+> 
+> <--  snip  -->
+> 
+> ...
+>   LD      .tmp_vmlinux1
+> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
+> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
+> arch/mips/pci/built-in.o: In function `pcibios_init':
+> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
+> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
+> make[1]: *** [.tmp_vmlinux1] Error 1
 
-> Hello,
-> 
-> Found this is still necessary for 2.6.25 for the w6692 hisax isdn cards.
-> Maybe someone has already prepared a patch?
-> If not you could use this one.
-> 
-> 
-> 1. replace deprecated pci_find_device
-> 
-> Signed-off-by: Udo van den Heuvel <udovdh@xs4all.nl>
+Some parts of the new 47xx arch code are not ported, yet.
+Somebody should port all the new code from openwrt SVN over to mainline.
+I don't really have time for that, at the moment, though.
 
-NAK. You can't simply replace it - you need to make correct use of
-pci_dev_put as well.
-
-Alan
+-- 
+Greetings Michael.
