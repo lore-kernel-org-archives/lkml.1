@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763065AbYDTC4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYDTDFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763065AbYDTC4c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 22:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762861AbYDTCzE
+	id S1762898AbYDTDFA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 23:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDTDEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 22:55:04 -0400
-Received: from smtp01.mtu.ru ([62.5.255.48]:62291 "EHLO smtp01.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbYDTCyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 22:54:38 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] x86: conditionally compile sysfs stuff in intel_cacheinfo.c
-Date: Sun, 20 Apr 2008 06:54:34 +0400
-Message-Id: <1208660074-7324-5-git-send-email-dmitri.vorobiev@gmail.com>
-X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>
-References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>
-X-DCC-STREAM-Metrics: smtp01.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
+	Sat, 19 Apr 2008 23:04:50 -0400
+Received: from fmailhost04.isp.att.net ([207.115.11.54]:48400 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751377AbYDTDEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 23:04:50 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 23:04:50 EDT
+X-Originating-IP: [74.251.45.21]
+Date: Sat, 19 Apr 2008 21:54:44 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080419215444.2d4623f5@osprey.hogchain.net>
+In-Reply-To: <20080419144535.GA4814@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org>
+	<20080413204422.GA5136@martell.zuzino.mipt.ru>
+	<84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com>
+	<Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com>
+	<20080414183221.GA5234@martell.zuzino.mipt.ru>
+	<20080414195613.GA4772@martell.zuzino.mipt.ru>
+	<Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
+	<20080419111719.GA6724@martell.zuzino.mipt.ru>
+	<20080419144535.GA4814@martell.zuzino.mipt.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Four functions defined in arch/x86/kernel/cpu/intel_cacheinfo.c:
+On Sat, 19 Apr 2008 18:45:35 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-cache_shared_cpu_map_setup()
-cache_remove_shared_cpu_map()
-free_cache_attributes()
-detect_cache_attributes()
+> OK, nailed it.
+> 
+> It's commit 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 aka "atl1:
+> disable broken 64-bit DMA".
+> 
+> With this commit in tree, I can reproduce either
+> a) kmalloc-2048 corruption after initscripts shutdown eth0
+> 	http://marc.info/?l=linux-kernel&m=120820360221261&w=2
+> 
+> b) or oopses at filp_close() first reported long ago
+> 	(sorry, can't find that email)
+> 
+> c) or hard hang after initscripts shutdown eth0 with even SysRq not
+> working. http://marc.info/?l=linux-kernel&m=120795046008115&w=2
+> 
+> I have two boxes one with atl1, 4G RAM with 2G remapped after 4G
+> boundary, another with r8169 connected with just ethernet cable. NICs
+> agree on 1Gbps speed.
+> 
+> So, it's enough to scp 200 MB git archive and immediately start
+> rebooting sequence for horrors described above to appear. It's not
+> 100% reproducible but more like 90%.
 
-are needed only in the code that is conditionally compiled when
-CONFIG_SYSFS is defined. The same is true about the cpuid4_info[]
-array. This patch places the definitions of these functions and
-the array inside the corresponding ifdef.
+Do I understand correctly that these failures occur only while the
+network interface is going down?
 
-This patch was build-tested both with sysfs turned off and on.
-The kernel was built successfully in both cases. Runtime tests
-were performed using x86 and x86_64 machines, which booted to
-the shell prompt successfully.
-
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 1b88986..d743dfe 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -450,6 +450,8 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- 	return l2;
- }
- 
-+#ifdef CONFIG_SYSFS
-+
- /* pointer to _cpuid4_info array (for each cache leaf) */
- static struct _cpuid4_info *cpuid4_info[NR_CPUS];
- #define CPUID4_INFO_IDX(x,y)    (&((cpuid4_info[x])[y]))
-@@ -553,8 +555,6 @@ out:
- 	return retval;
- }
- 
--#ifdef CONFIG_SYSFS
--
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
- 
--- 
-1.5.3
-
+Jay
