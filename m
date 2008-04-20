@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYDTXSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYDTXTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYDTXSj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbYDTXSa
+	id S1754566AbYDTXTq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 19:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYDTXTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:18:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:39858 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbYDTXS3 (ORCPT
+	Sun, 20 Apr 2008 19:19:37 -0400
+Received: from hall2.aurel32.net ([91.121.138.14]:40215 "EHLO
+	hall2.aurel32.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbYDTXTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:18:29 -0400
-Date: Mon, 21 Apr 2008 01:18:18 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linux-parisc@vger.kernel.org
-Subject: [REGRESSION] 2.6.25 on parisc - CPU 1 is stuck 
-Message-ID: <20080420231818.GA2162@ska.dandreoli.com>
-Mail-Followup-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-parisc@vger.kernel.org
+	Sun, 20 Apr 2008 19:19:36 -0400
+X-Greylist: delayed 1781 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 19:19:36 EDT
+Date: Mon, 21 Apr 2008 00:49:42 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Adrian Bunk <bunk@kernel.org>, "John W. Linville" <linville@tuxdriver.com>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mips BCM47XX compile error
+Message-ID: <20080420224942.GA21009@volta.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	linux-kernel@vger.kernel.org
+References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <200804201214.46936.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200804201214.46936.mb@bu3sch.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Michael Buesch a écrit :
+> On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
+>> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
+>> (ssb: Add Gigabit Ethernet driver) causes the following
+>> build error with bcm47xx_defconfig:
+>>
+>> <--  snip  -->
+>>
+>> ...
+>>   LD      .tmp_vmlinux1
+>> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+>> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
+>> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+>> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
+>> arch/mips/pci/built-in.o: In function `pcibios_init':
+>> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
+>> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
+>> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> Some parts of the new 47xx arch code are not ported, yet.
 
-  as soon as I booted my dual PA8600 with 2.6.25 I got 1 CPU less. The
-only other kernel I successfully used on that box is Debian's 2.6.22-3.
+It would have been nice at least to warn before breaking a platform.
 
-Debian never built 2.6.23 for parisc, 2.6.24 was still hanging last
-time I checked it, 2.6.25 did not even build until recent -rc. So I am
-not in the best position to bisect.
+> Somebody should port all the new code from openwrt SVN over to mainline.
+> I don't really have time for that, at the moment, though.
 
-Here is the relevant dmesg.
+I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
+can't find a possible fix among them. Do you have a better pointer?
 
-Cheers,
-Domenico
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
 
-Linux version 2.6.25-02519-g3925e6f (cavok@ska) (gcc version 4.1.3 20080308 (prerelease) (Debian 4.1.2-21)) #4 SMP Sun Apr 20 04:53:48
-FP[0] enabled: Rev 1 Model 16
-The 64-bit Kernel has started...
-console [ttyB0] enabled
-Initialized PDC Console for debugging.
-Determining PDC firmware type: System Map.
-model 00005d10 00000491 00000000 00000002 77b406fc 100000f0 00000008 000000b2 000000b2
-vers  00000300
-CPUID vers 17 rev 10 (0x0000022a)
-capabilities 0x3
-model 9000/785/J5600
-Total Memory: 3840 MB
-LCD display at fffffff0f05d0008,fffffff0f05d0000 registered
-SMP: bootstrap CPU ID is 0
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 969600
-Kernel command line: root=/dev/sdb5 panic=60 HOME=/ console=ttyS0 TERM=vt102 palo_kernel=2/vmlinux
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-Console: colour dummy device 160x64
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Memory: 3858944k/3932160k available (2916k kernel code, 72892k reserved, 1283k data, 240k init)
-virtual kernel memory layout:
-    vmalloc : 0x0000000000008000 - 0x000000003f000000   (1007 MB)
-    memory  : 0x0000000040000000 - 0x0000000130000000   (3840 MB)
-      .init : 0x00000000405b0000 - 0x00000000405ec000   ( 240 kB)
-      .data : 0x00000000403d9160 - 0x000000004051a000   (1283 kB)
-      .text : 0x0000000040100000 - 0x00000000403d9160   (2916 kB)
-SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
-Security Framework initialized
-Capability LSM initialized
-Mount-cache hash table entries: 256
-Brought up 1 CPUs
-net_namespace: 1168 bytes
-NET: Registered protocol family 16
-EISA bus registered
-Searching for devices...
-Found devices:
-1. Astro BC Runway Port at 0xfffffffffed00000 [10] { 12, 0x0, 0x582, 0x0000b }
-2. Elroy PCI Bridge at 0xfffffffffed30000 [10/0] { 13, 0x0, 0x782, 0x0000a }
-3. Elroy PCI Bridge at 0xfffffffffed32000 [10/1] { 13, 0x0, 0x782, 0x0000a }
-4. Elroy PCI Bridge at 0xfffffffffed34000 [10/2] { 13, 0x0, 0x782, 0x0000a }
-5. Elroy PCI Bridge at 0xfffffffffed38000 [10/4] { 13, 0x0, 0x782, 0x0000a }
-6. Elroy PCI Bridge at 0xfffffffffed3c000 [10/6] { 13, 0x0, 0x782, 0x0000a }
-7. Forte W+ 2w at 0xfffffffffffa0000 [32] { 0, 0x0, 0x5d1, 0x00004 }
-8. Forte W+ 2w at 0xfffffffffffa2000 [34] { 0, 0x0, 0x5d1, 0x00004 }
-9. Memory at 0xfffffffffed10200 [49] { 1, 0x0, 0x09e, 0x00009 }
-Enabling regular chassis codes support v0.05
-Releasing cpu 1 now, hpa=fffffffffffa2000
-SMP: CPU:1 is stuck.
-CPU(s): 2 x PA8600 (PCX-W+) at 552.000000 MHz
-Setting cache flush threshold to f84c0 (1 CPUs online)
-SBA found Astro 2.1 at 0xfffffffffed00000
-Elroy version TR2.1 (0x2) found at 0xfffffffffed30000
-PCI: Enabled native mode for NS87415 (pif=0x8f)
-Elroy version TR2.1 (0x2) found at 0xfffffffffed32000
-Elroy version TR2.1 (0x2) found at 0xfffffffffed34000
-Elroy version TR2.1 (0x2) found at 0xfffffffffed38000
-Elroy version TR2.1 (0x2) found at 0xfffffffffed3c000
-iosapic: hpa not registered for 0000:04:07.0
-powersw: Soft power switch at 0xfffffff0f0400804 enabled.
-...
-
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
