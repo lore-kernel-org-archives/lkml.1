@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbYDTKpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbYDTKpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762691AbYDTKpM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758936AbYDTKk3
+	id S1762977AbYDTKpi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYDTKkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:40:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56299 "EHLO
+	Sun, 20 Apr 2008 06:40:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56302 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYDTKk1 (ORCPT
+	with ESMTP id S1752148AbYDTKka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:40:27 -0400
+	Sun, 20 Apr 2008 06:40:30 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Ben Dooks <ben@fluff.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 16/36] driver core: cpu: fix section mismatch in cpu.c:store_online
-Date: Sun, 20 Apr 2008 03:45:46 -0700
-Message-Id: <1208688366-9252-16-git-send-email-gregkh@suse.de>
+Subject: [PATCH 17/36] sysdev: detect multiple driver registrations
+Date: Sun, 20 Apr 2008 03:45:47 -0700
+Message-Id: <1208688366-9252-17-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080420104516.GA9225@suse.de>
 References: <20080420104516.GA9225@suse.de>
@@ -25,46 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Ben Dooks <ben@fluff.org>
 
-Fix following warning:
-WARNING: vmlinux.o(.text+0x64609c): Section mismatch in reference from the function store_online() to the function .cpuinit.text:cpu_up()
+I've just found how easy it is to accidentally register a sysdev_driver for
+two different classes.  When this happens, bad things happen as the
+sysdev_driver structure keeps has the list entry for the driver
+registration.
 
-store_online() is defined inside a HOTPLUG_CPU block so references are OK.
-Ignore references by annotating store_online() with __ref.
+The following patch makes a WARN_ON() if this happens, although I think
+BUG_ON or returning -EAGAIN could also be valid responses to this.
 
-Note: This is needed because cpu_up() most likely should not have been
-__cpuinit but all the hotplug cpu code misuses the __cpuinit annotation.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Ben Dooks <ben@fluff.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/cpu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/base/sys.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 499b003..3e417a9 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -28,7 +28,7 @@ static ssize_t show_online(struct sys_device *dev, char *buf)
- 	return sprintf(buf, "%u\n", !!cpu_online(cpu->sysdev.id));
- }
- 
--static ssize_t store_online(struct sys_device *dev, const char *buf,
-+static ssize_t __ref store_online(struct sys_device *dev, const char *buf,
- 			    size_t count)
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 8e13fd9..1a06c23 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -167,6 +167,22 @@ int sysdev_driver_register(struct sysdev_class *cls, struct sysdev_driver *drv)
  {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-@@ -55,7 +55,7 @@ static ssize_t store_online(struct sys_device *dev, const char *buf,
- }
- static SYSDEV_ATTR(online, 0644, show_online, store_online);
+ 	int err = 0;
  
--static void __devinit register_cpu_control(struct cpu *cpu)
-+static void __cpuinit register_cpu_control(struct cpu *cpu)
- {
- 	sysdev_create_file(&cpu->sysdev, &attr_online);
- }
++	if (!cls) {
++		printk(KERN_WARNING "sysdev: invalid class passed to "
++			"sysdev_driver_register!\n");
++		WARN_ON(1);
++		return -EINVAL;
++	}
++
++	/* Check whether this driver has already been added to a class. */
++	if ((drv->entry.next != drv->entry.prev) ||
++	    (drv->entry.next != NULL)) {
++		printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
++			" been registered to a class, something is wrong, but "
++			"will forge on!\n", cls->name, drv);
++		WARN_ON(1);
++	}
++
+ 	mutex_lock(&sysdev_drivers_lock);
+ 	if (cls && kset_get(&cls->kset)) {
+ 		list_add_tail(&drv->entry, &cls->drivers);
 -- 
 1.5.4.5
 
