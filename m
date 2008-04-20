@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759111AbYDTSTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYDTSVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759111AbYDTSTv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 14:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYDTSTk
+	id S1757912AbYDTSVu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 14:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbYDTSVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 14:19:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44444 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbYDTSTi (ORCPT
+	Sun, 20 Apr 2008 14:21:43 -0400
+Received: from rv-out-0708.google.com ([209.85.198.243]:2742 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753370AbYDTSVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 14:19:38 -0400
-Message-ID: <480B8932.1090308@firstfloor.org>
-Date: Sun, 20 Apr 2008 20:19:30 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sun, 20 Apr 2008 14:21:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=j3/83snm9b3mDnxYqwS61SZACIjB4hHiOgNiAW5HVMcBI5viLxkHN/0gVh6vs1s556vZPDxhrJyEdC3CTOjHDg0AyDu7uavSkgIQ87kVdnjbG/0Hrw3UT/hDF8QI1f/GRS9gThwbS4a2n4K9h8gOEJCmWjaU8Nm/bxfgidjfTSs=
+Message-ID: <ba7d8f720804201121h6c024dcrabd301c8b4be7a4@mail.gmail.com>
+Date: Sun, 20 Apr 2008 14:21:39 -0400
+From: "Dan Upton" <upton.dan.linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: migration thread and active_load_balance
 MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-CC: Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-References: <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B44C4.4060104@rtr.ca> <20080420133857.GB26536@1wt.eu> <480B50F1.8040309@firstfloor.org> <20080420164133.GB20694@logfs.org> <480B7B1E.7010707@firstfloor.org> <20080420174249.GC20694@logfs.org>
-In-Reply-To: <20080420174249.GC20694@logfs.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel wrote:
-> On Sun, 20 April 2008 19:19:26 +0200, Andi Kleen wrote:
->> But these are SoC systems. Do they really run x86?
->> (note we're talking about an x86 default option here)
->>
->> Also I suspect in a true 16MB system you have to strip down
->> everything kernel side so much that you're pretty much outside
->> the "validated by testers" realm that Adrian cares about.
-> 
-> Maybe.  I merely showed that embedded people (not me) have good reasons
-> to care about small stacks. 
+Back again with more questions about the scheduler, as I've spent two
+or three days trying to debug on my own and I'm just not getting
+anywhere.
 
-Sure but I don't think they're x86 embedded people. Right now there
-are very little x86 SOCs if any (iirc there is only some obscure rise
-core) and future SOCs will likely have more RAM.
+Basically, I'm trying to add a new active balancing mechanism.  I made
+out a diagram of how migration_thread  calls active_load_balance and
+so on, and I use a flag (set by writing to a file in sysfs) to
+determine whether to use the standard iterator for the CFS runqueue or
+a different iterator I wrote.  The new iterator seems to work fine, as
+I've been using it (again, with a flag) to replace the regular
+iterator when it's called from schedule by idle_balance.  I basically
+tried adding an extra conditional in migration_thread that sets up
+some state and then calls active_load_balance, but I was getting
+deadlocks.  I'm not really sure why, since all I've really changed is
+add a few variables to struct rq and struct cfs_rq.
 
-Anyways I don't have a problem to give these people any special options
-they need to do whatever they want.  I just object to changing the
-default options on important architectures to force people in completely
-different setups to do part of their testing.
+I tried only doing my state setup and restore in that conditional,
+without actually calling active_load_balance, which has given me an
+even more frustrating result--the kernel does not deadlock, but it
+does seem to crash in such a manner as to require a hard reset of the
+machine.  (For instance, at one point I got an "invalid page state in
+process 'init'" message from the kernel; if I try to reboot from Gnome
+though it hangs.)  I don't understand this at all, since as far as I
+can tell I'm using thread-local variables and really all I'm doing
+right now is assignments to them.  Unless, of course the struct rq
+(from rq = cpu_rq(cpu);) could be being manipulated elsewhere, leading
+to some sort of race condition...
 
+Anyway, like I said, I've spent several days trying to understand this
+error by putting in printk()s galore and doing traces through the
+source code to figure out the call chain, but I'm really stuck here.
+Can anybody shed some light, or point me to some more thorough
+documentation on the scheduler and active load balancing?
 
- Whether they care enough to actually spend
-> work on it - doubtful.
-> 
->>> When dealing in those dimensions, savings of 100k are substantial.  In
->>> some causes they may be the difference between 16MiB or 32MiB, which
->>> translates to manufacturing costs.  In others it simply means that the
->>> system can cache 
->> If you need the stack you don't have any less cache foot print.
->> If you don't need it you don't have any either.
-> 
-> This part I don't understand.
-
-I was just objecting to your claim that small stack implies smaller
-cache foot print. Smaller stacks rarely give you smaller cache foot
-print in my kernel coding experience:
-
-First some stack is always safety and in practice unused. It won't
-be in cache.
-
-Then typically standard kernel stack pigs are just too large
-buffers on the stack which are not fully used. These also
-don't have much cache foot print.
-
-Or if you have a complicated call stack the typical fix
-is to move parts of it into another thread. But that doesn't
-give you less cache footprint because the cache foot print
-is just in someone else's stack. In fact you'll likely
-have slightly more cache foot print from that due to the
-context of the other thread.
-
-In theory if you e.g. convert a recursive algorithm
-to iterative you might save some cache foot print, but I don't
-think that really happens in kernel code.
-
--Andi
+Thanks,
+-dan
