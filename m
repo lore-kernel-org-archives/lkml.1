@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbYDTMlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbYDTMsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761290AbYDTMlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 08:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbYDTMlL
+	id S1758359AbYDTMsh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 08:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYDTMs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 08:41:11 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:43676 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754533AbYDTMlI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 08:41:08 -0400
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>, <linux-pm@lists.linux-foundation.org>,
-       lenb@kernel.org
-Subject: Re: Higer latency with dynamic tick (need for an io-ondemand govenor?)
-From: Andi Kleen <andi@firstfloor.org>
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
-	<1179396659.3764.40.camel@chaos>
-	<3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com>
-	<1179434296.12981.14.camel@chaos>
-	<3B6D69C3A9EBCA4BA5DA60D913027429010259ED@dlee13.ent.ti.com>
-	<1179474567.12981.53.camel@chaos>
-	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
-Date: Sun, 20 Apr 2008 14:41:05 +0200
-In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com> (Richard Woodruff's message of "Fri, 18 Apr 2008 10:43:32 -0500")
-Message-ID: <87ej90aece.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 20 Apr 2008 08:48:27 -0400
+Received: from 1wt.eu ([62.212.114.60]:3215 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106AbYDTMs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 08:48:27 -0400
+Date: Sun, 20 Apr 2008 14:47:17 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080420124717.GH8474@1wt.eu>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Apr 2008 12:34:17.0456 (UTC) FILETIME=[D972FF00:01C8A2E2]
+Content-Disposition: inline
+In-Reply-To: <87y778aezh.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Woodruff, Richard" <r-woodruff2@ti.com> writes:
+On Sun, Apr 20, 2008 at 02:27:14PM +0200, Andi Kleen wrote:
+> Adrian Bunk <bunk@kernel.org> writes:
+> >
+> > 6k is known to work, and there aren't many problems known with 4k.
+> >
+> > And from a QA point of view the only way of getting 4k thoroughly tested 
+> 
+> But you have to first ask why do you want 4k tested? Does it serve
+> any useful purpose in itself? I don't think so. Or you're saying
+> it's important to support 50k kernel threads on 32bit kernels?
 
-> When capturing some traces with dynamic tick we were noticing the
-> interrupt latency seems to go up a good amount. If you look at the trace
-> the gpio IRQ is now offset a good amount.  Good news I guess is its
-> pretty predictable.
->
-> * If we couple this with progressively higher latency C-States we see
-> that IO speed can fall by a good amount, especially for PIO mixes.  Now
-> if QOS is maintained you may or may-not care.
->
-> I was wondering what thoughts of optimizing this might be.
->
-> One thought was if an io-ondemand of some sort was used.  It could track
-> interrupt statistics and be feed back into cpu-idle.  When there is a
-> high interrupt load period it could shrink the acceptable latency and
-> thus help choose a good a C-State which favors throughput.  Some moving
-> average window could be used to track it.
->
-> Perhaps a new interrupt attribute could be attached at irq request time
-> to allow the tracking of bandwidth important devices.
->
-> The attached is captured on a .22 kernel.  The same should be available
-> in a bit on a .24 kernel.
+Clearly if I have the choice between a kernel which can run 50k threads
+and a kernel which does not crash under me during an I/O error, I choose
+the later! I don't even imagine what purpose 50k kernel threads may serve.
+I certainly can understand that reducing memory footprint is useful, but
+if we want wider testing of 4k stacks, considering they may fail in error
+path in complex I/O environment, it's not likely during -rc kernels that
+we'll detect problems, and if we push them down the throat of users in a
+stable release, of course they will thank us very much for crashing their
+NFS servers in production during peak hours.
 
-Are you talking about x86? 
+I have nothing against changing the default setting to 4k provided that
+it is easy to get back to the save setting (ie changing a config option,
+or better, a cmdline parameter). I just don't agree with the idea of
+forcing users to swim in the sh*t, it only brings bad reputation to
+Linux.
 
-On older x86 this effect should have been handled by the C state
-algorithm taking the bus master activity register into account (which
-should also trigger for interrupts)
+What would really help would be to have 8k stacks with the lower page
+causing a fault and print a stack trace upon first access. That way,
+the safe setting would still report us useful information without
+putting users into trouble.
 
-But I think the register has been nop'ed on newer platforms 
-so indeed we'll need some way to handle this.
+Willy
 
--Andi
