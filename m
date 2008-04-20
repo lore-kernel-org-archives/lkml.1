@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbYDTTux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbYDTT47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758968AbYDTTux (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 15:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbYDTTum
+	id S1758440AbYDTT47 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 15:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbYDTT4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 15:50:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43628 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755602AbYDTTum (ORCPT
+	Sun, 20 Apr 2008 15:56:48 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43999 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755496AbYDTT4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 15:50:42 -0400
-Message-ID: <480B9DB4.8030702@zytor.com>
-Date: Sun, 20 Apr 2008 15:47:00 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 20 Apr 2008 15:56:47 -0400
+Date: Sun, 20 Apr 2008 13:56:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080420195630.GS20637@parisc-linux.org>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain> <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain> <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org> <20080419204511.GP20637@parisc-linux.org> <480B4E97.9030805@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-CC: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86: remove unused code and data in nexgen.c
-References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>	<1208660074-7324-3-git-send-email-dmitri.vorobiev@gmail.com>	<480AC505.1030301@zytor.com> <877ies9x6b.fsf@basil.nowhere.org> <480B9856.3040902@gmail.com> <480B9ADD.9060105@zytor.com> <480B9D67.7060606@gmail.com>
-In-Reply-To: <480B9D67.7060606@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480B4E97.9030805@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Vorobiev wrote:
+On Sun, Apr 20, 2008 at 04:09:27PM +0200, Stefan Richter wrote:
+> Matthew Wilcox wrote:
+> >--- a/Documentation/kbuild/kconfig-language.txt
+> >+++ b/Documentation/kbuild/kconfig-language.txt
+> >   Note:
+> >-	select is evil.... select will by brute force set a symbol
+> >-	equal to 'y' without visiting the dependencies. So abusing
+> >-	select you are able to select a symbol FOO even if FOO depends
+> >+	select should be used with care.  It can set a symbol
+> >+	without visiting the dependencies.  By abusing select you are
+> >+	able to select a symbol FOO even if FOO depends
+> > 	on BAR that is not set. In general use select only for
+> > 	non-visible symbols (no prompts anywhere) and for symbols with
+> > 	no dependencies. That will limit the usefulness but on the
 > 
-> OK, then please drop this patch from the series (the other changes are OK,
-> I presume), and I'll try to take care of NexGen removal with a separate patch.
+> "It can set a symbol without visiting the dependencies." = imprecise
 > 
+> "select will by brute force set a symbol [...] without visiting the 
+> dependencies." = clear.  So why not leave this portion of the text as it is.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+"brute force" is pejorative, not clear.  I'm not really interested in
+bikeshedding this issue.
 
-... on the rest.
+> Maybe change
+> 	"equal to 'y'"
+> to
+> 	"equal to 'y' or 'm'"
+> or to
+> 	""
+> to make it entirely correct.
+> -- 
+> Stefan Richter
+> -=====-==--- -=-- =-=--
+> http://arcgraph.de/sr/
 
-	-hpa
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
