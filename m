@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbYDTV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYDTV5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbYDTV4A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 17:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYDTVzw
+	id S1755236AbYDTV5d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 17:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbYDTV5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 17:55:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59125 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbYDTVzv (ORCPT
+	Sun, 20 Apr 2008 17:57:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51800 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbYDTV5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 17:55:51 -0400
-Message-ID: <480BBBE1.2090406@firstfloor.org>
-Date: Sun, 20 Apr 2008 23:55:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>, joern@logfs.org, w@1wt.eu,
-       lkml@rtr.ca, bunk@kernel.org, alan@lxorguk.ukuu.org.uk,
-       shawn.bohrer@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: x86: 4kstacks default
-References: <20080420085104.GG1595@cs181133002.pp.htv.fi>	<20080420103611.2c0d3519@the-village.bc.nu>	<20080420104444.GI1595@cs181133002.pp.htv.fi>	<87y778aezh.fsf@basil.nowhere.org>	<20080420124717.GH8474@1wt.eu>	<480B44C4.4060104@rtr.ca>	<20080420133857.GB26536@1wt.eu>	<480B50F1.8040309@firstfloor.org>	<20080420164133.GB20694@logfs.org>	<480B7B1E.7010707@firstfloor.org>	<20080420174249.GC20694@logfs.org>	<480B8932.1090308@firstfloor.org>	<20080420115053.7151ef8d@laptopd505.fenrus.org> <20080420145020.217ecdd4.akpm@linux-foundation.org>
-In-Reply-To: <20080420145020.217ecdd4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 20 Apr 2008 17:57:24 -0400
+Date: Sun, 20 Apr 2008 14:57:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: tglx@linutronix.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT pull] (hr)timer updates feed from Andrew
+Message-Id: <20080420145723.28838934.akpm@linux-foundation.org>
+In-Reply-To: <200804201922.46749.zippel@linux-m68k.org>
+References: <alpine.LFD.1.10.0804192247580.3261@apollo.tec.linutronix.de>
+	<200804201922.46749.zippel@linux-m68k.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> On Sun, 20 Apr 2008 11:50:53 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
->> On Sun, 20 Apr 2008 20:19:30 +0200
->> Andi Kleen <andi@firstfloor.org> wrote:
->>
->>> In theory if you e.g. convert a recursive algorithm
->>> to iterative you might save some cache foot print, but I don't
->>> think that really happens in kernel code.
->>>
->> this is what Al did for the symlink recursion thing, and Jens did for the block layer...
->> so yes this conversion does happen for real.
+> On Sun, 20 Apr 2008 19:22:43 +0200 Roman Zippel <zippel@linux-m68k.org> wrote:
+> Hi,
 > 
-> md got mostly-fixed too, via Neil's patch which sat in -mm for nearly two
-> years.
+> On Saturday 19. April 2008, Thomas Gleixner wrote:
+> 
+> > John Stultz (1):
+> >       time: close small window for vsyscall time inconsistencies
+> 
+> Out of curiosity: why did you merge this patch despite my objections?
+> Why couldn't you wait a little while longer? You knew I was waiting for more 
+> information to analyze this properly...
+> (Especially as it turns out that this patch doesn't really close the window, 
+> it only makes it smaller.)
+> 
 
-Congratulations, you found three examples in 8.4MLOC.
+I have a note here that it's on hold, but I think I added that note after
+sending the patch to Thomas on the 18th.  If there was earlier controversy
+about it then I guess I forgot to make the note at the time.
 
-Ok ok I should have said it only happens very rarely (I still stand by
-that :)
+It happens sometimes.  But I must say that it happens most frequently with
+time-management things when you are the reviewer, because the review
+discussion seems to happen a loooong time after I merge the patch and
+proceeds at only a few emails per week.
 
-Anyways it is moot because it was a miscommunication between me and Joerg.
+Not that I'm saying "Roman, please review stuff faster".  You review well,
+and in detail and it's welcome.  But that is the cause and effect.
 
--Andi
 
+There are two contentious time patches:
 
+provide-u64-version-of-jiffies_to_usecs-in-kernel-tsacctc.patch
+time-close-small-window-for-vsyscall-time-inconsistencies.patch
+
+Possily I got the discussions confused and assumed they all
+concerned provide-u64-version-of-jiffies_to_usecs-in-kernel-tsacctc.patch
