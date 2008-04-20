@@ -1,93 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYDTXRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYDTXSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYDTXRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYDTXRp
+	id S1755367AbYDTXSj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 19:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbYDTXSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:17:45 -0400
-Received: from [88.44.63.5] ([88.44.63.5]:53679 "EHLO smtp-out03.alice-dsl.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbYDTXRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:17:44 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-From: Andi Kleen <andi@firstfloor.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	<20080420104444.GI1595@cs181133002.pp.htv.fi>
-	<87y778aezh.fsf@basil.nowhere.org>
-	<200804201144.33308.dhazelton@enter.net>
-	<480B7CB2.3080002@firstfloor.org>
-	<20080420114845.77bf3fed@laptopd505.fenrus.org>
-	<480BA12A.4000307@firstfloor.org>
-	<20080420153318.553e5d2d@laptopd505.fenrus.org>
-Date: Mon, 21 Apr 2008 01:16:22 +0200
-In-Reply-To: <20080420153318.553e5d2d@laptopd505.fenrus.org> (Arjan van de Ven's message of "Sun, 20 Apr 2008 15:33:18 -0700")
-Message-ID: <87prsk86d5.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sun, 20 Apr 2008 19:18:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:39858 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbYDTXS3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 19:18:29 -0400
+Date: Mon, 21 Apr 2008 01:18:18 +0200
+From: Domenico Andreoli <cavokz@gmail.com>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-parisc@vger.kernel.org
+Subject: [REGRESSION] 2.6.25 on parisc - CPU 1 is stuck 
+Message-ID: <20080420231818.GA2162@ska.dandreoli.com>
+Mail-Followup-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-parisc@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Apr 2008 23:09:33.0835 (UTC) FILETIME=[9894DDB0:01C8A33B]
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
->
-> it is you who keeps putting up the 50k argument.
+Hi,
 
-See the links I posted and quote in an earlier message up the thread if you
-don't remember what you wrote yourself.
+  as soon as I booted my dual PA8600 with 2.6.25 I got 1 CPU less. The
+only other kernel I successfully used on that box is Debian's 2.6.22-3.
 
-I originally only hold up the fragmentation argument (or rather only
-argued against it), until I was corrected by both Ingo and you in the
-earlier thread and you both insisted that 50k threads were the real
-reason'd'etre for 4k stacks.  
+Debian never built 2.6.23 for parisc, 2.6.24 was still hanging last
+time I checked it, 2.6.25 did not even build until recent -rc. So I am
+not in the best position to bisect.
 
-You're saying that was wrong and the fragmentation issue was really the 
-real reason for 4k stacks? If both you and Ingo can agree on that
-I would be happy to forget the 50k threads :)
+Here is the relevant dmesg.
 
-> What I'm talking about is in the 10k to 20k range; and that is actual workloads
-> by real customers.
+Cheers,
+Domenico
 
-On a 32bit kernel? 
+Linux version 2.6.25-02519-g3925e6f (cavok@ska) (gcc version 4.1.3 20080308 (prerelease) (Debian 4.1.2-21)) #4 SMP Sun Apr 20 04:53:48
+FP[0] enabled: Rev 1 Model 16
+The 64-bit Kernel has started...
+console [ttyB0] enabled
+Initialized PDC Console for debugging.
+Determining PDC firmware type: System Map.
+model 00005d10 00000491 00000000 00000002 77b406fc 100000f0 00000008 000000b2 000000b2
+vers  00000300
+CPUID vers 17 rev 10 (0x0000022a)
+capabilities 0x3
+model 9000/785/J5600
+Total Memory: 3840 MB
+LCD display at fffffff0f05d0008,fffffff0f05d0000 registered
+SMP: bootstrap CPU ID is 0
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 969600
+Kernel command line: root=/dev/sdb5 panic=60 HOME=/ console=ttyS0 TERM=vt102 palo_kernel=2/vmlinux
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+Console: colour dummy device 160x64
+Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Memory: 3858944k/3932160k available (2916k kernel code, 72892k reserved, 1283k data, 240k init)
+virtual kernel memory layout:
+    vmalloc : 0x0000000000008000 - 0x000000003f000000   (1007 MB)
+    memory  : 0x0000000040000000 - 0x0000000130000000   (3840 MB)
+      .init : 0x00000000405b0000 - 0x00000000405ec000   ( 240 kB)
+      .data : 0x00000000403d9160 - 0x000000004051a000   (1283 kB)
+      .text : 0x0000000040100000 - 0x00000000403d9160   (2916 kB)
+SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+Security Framework initialized
+Capability LSM initialized
+Mount-cache hash table entries: 256
+Brought up 1 CPUs
+net_namespace: 1168 bytes
+NET: Registered protocol family 16
+EISA bus registered
+Searching for devices...
+Found devices:
+1. Astro BC Runway Port at 0xfffffffffed00000 [10] { 12, 0x0, 0x582, 0x0000b }
+2. Elroy PCI Bridge at 0xfffffffffed30000 [10/0] { 13, 0x0, 0x782, 0x0000a }
+3. Elroy PCI Bridge at 0xfffffffffed32000 [10/1] { 13, 0x0, 0x782, 0x0000a }
+4. Elroy PCI Bridge at 0xfffffffffed34000 [10/2] { 13, 0x0, 0x782, 0x0000a }
+5. Elroy PCI Bridge at 0xfffffffffed38000 [10/4] { 13, 0x0, 0x782, 0x0000a }
+6. Elroy PCI Bridge at 0xfffffffffed3c000 [10/6] { 13, 0x0, 0x782, 0x0000a }
+7. Forte W+ 2w at 0xfffffffffffa0000 [32] { 0, 0x0, 0x5d1, 0x00004 }
+8. Forte W+ 2w at 0xfffffffffffa2000 [34] { 0, 0x0, 0x5d1, 0x00004 }
+9. Memory at 0xfffffffffed10200 [49] { 1, 0x0, 0x09e, 0x00009 }
+Enabling regular chassis codes support v0.05
+Releasing cpu 1 now, hpa=fffffffffffa2000
+SMP: CPU:1 is stuck.
+CPU(s): 2 x PA8600 (PCX-W+) at 552.000000 MHz
+Setting cache flush threshold to f84c0 (1 CPUs online)
+SBA found Astro 2.1 at 0xfffffffffed00000
+Elroy version TR2.1 (0x2) found at 0xfffffffffed30000
+PCI: Enabled native mode for NS87415 (pif=0x8f)
+Elroy version TR2.1 (0x2) found at 0xfffffffffed32000
+Elroy version TR2.1 (0x2) found at 0xfffffffffed34000
+Elroy version TR2.1 (0x2) found at 0xfffffffffed38000
+Elroy version TR2.1 (0x2) found at 0xfffffffffed3c000
+iosapic: hpa not registered for 0000:04:07.0
+powersw: Soft power switch at 0xfffffff0f0400804 enabled.
+...
 
-My estimate is that you need around 32k for a functional blocked thread
-in a network server (8k + 2*4k for poll with large fd table and wait queues + 
-some pinned dentries and inodes + misc other stuff). With 20k you're 625MB into
-your lowmem which leaves about 200MB left on a 3:1 system with 16GB 
-(and ~128MB mem_map).  That might work for some time, but I expect it will fall
-over at some point because there is just too much pinned lowmem
-and not enough left for other stuff (like networking buffers etc.) 
-
-10k sounds more doable. But again do 4k more or less make 
-a big difference with the other thread overhead? I don't think so.
-
-And trading reliability (and functionality -- you basically have to
-cut off XFS)just for 4k/thread doesn't seem like good bargain to
-me. Especially with kernel code getting more complicated all the time.
-
->> I don't see any evidence that there are serious order 1 fragmentation 
->> issues on 2.6. 
->
-> I assume you're not asking me to give you customer confidential data from a previous job in public ;)
-
-Well if it is that serious a problem surely it will have hit some public
-bugzillas or mailing lists?  Arguing with something secret is also not 
-very useful.
-
-Also I find it always important to reevaluate assumptions when new 
-facts come up. In this case we should reevaluate a decision that made
-sense[1] in 2.4 with the new facts of 2.6 (e.g. new VM with much better
-reclaim)
-
-[1] refering to the fragmentation argument, not the 50k threads which
-were always unrealistic.
-
--Andi
+-----[ Domenico Andreoli, aka cavok
+ --[ http://www.dandreoli.com/gpgkey.asc
+   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
