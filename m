@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYDTKmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbYDTKmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbYDTKmf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbYDTKkM
+	id S1761905AbYDTKmu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYDTKkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:40:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56266 "EHLO
+	Sun, 20 Apr 2008 06:40:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56270 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758190AbYDTKkJ (ORCPT
+	with ESMTP id S1752359AbYDTKkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:40:09 -0400
+	Sun, 20 Apr 2008 06:40:10 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Daniel Walker <dwalker@mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 08/36] driver core: memory: semaphore to mutex
-Date: Sun, 20 Apr 2008 03:45:38 -0700
-Message-Id: <1208688366-9252-8-git-send-email-gregkh@suse.de>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 09/36] driver core: register_memory/unregister_memory clean ups and bugfix
+Date: Sun, 20 Apr 2008 03:45:39 -0700
+Message-Id: <1208688366-9252-9-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080420104516.GA9225@suse.de>
 References: <20080420104516.GA9225@suse.de>
@@ -26,92 +24,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Walker <dwalker@mvista.com>
+From: Badari Pulavarty <pbadari@us.ibm.com>
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+register_memory()/unregister_memory() never gets called with
+"root". unregister_memory() is accessing kobject_name of
+the object just freed up. Since no one uses the code,
+lets take the code out. And also, make register_memory() static.
+
+Another bug fix - before calling unregister_memory()
+remove_memory_block() gets a ref on kobject. unregister_memory()
+need to drop that ref before calling sysdev_unregister().
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/memory.c  |    7 ++++---
- include/linux/memory.h |    5 ++---
- mm/memory_hotplug.c    |    2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/base/memory.c |   22 +++++++---------------
+ 1 files changed, 7 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 7ae413f..1f3801a 100644
+index 1f3801a..7891f7c 100644
 --- a/drivers/base/memory.c
 +++ b/drivers/base/memory.c
-@@ -20,6 +20,7 @@
- #include <linux/kobject.h>
- #include <linux/memory_hotplug.h>
- #include <linux/mm.h>
-+#include <linux/mutex.h>
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
- 
-@@ -205,7 +206,7 @@ static int memory_block_change_state(struct memory_block *mem,
- 		unsigned long to_state, unsigned long from_state_req)
+@@ -62,8 +62,8 @@ void unregister_memory_notifier(struct notifier_block *nb)
+ /*
+  * register_memory - Setup a sysfs device for a memory block
+  */
+-int register_memory(struct memory_block *memory, struct mem_section *section,
+-		struct node *root)
++static
++int register_memory(struct memory_block *memory, struct mem_section *section)
  {
- 	int ret = 0;
--	down(&mem->state_sem);
-+	mutex_lock(&mem->state_mutex);
+ 	int error;
  
- 	if (mem->state != from_state_req) {
- 		ret = -EINVAL;
-@@ -217,7 +218,7 @@ static int memory_block_change_state(struct memory_block *mem,
- 		mem->state = to_state;
+@@ -71,26 +71,18 @@ int register_memory(struct memory_block *memory, struct mem_section *section,
+ 	memory->sysdev.id = __section_nr(section);
  
- out:
--	up(&mem->state_sem);
-+	mutex_unlock(&mem->state_mutex);
- 	return ret;
+ 	error = sysdev_register(&memory->sysdev);
+-
+-	if (root && !error)
+-		error = sysfs_create_link(&root->sysdev.kobj,
+-					  &memory->sysdev.kobj,
+-					  kobject_name(&memory->sysdev.kobj));
+-
+ 	return error;
  }
  
-@@ -341,7 +342,7 @@ static int add_memory_block(unsigned long node_id, struct mem_section *section,
+ static void
+-unregister_memory(struct memory_block *memory, struct mem_section *section,
+-		struct node *root)
++unregister_memory(struct memory_block *memory, struct mem_section *section)
+ {
+ 	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
+ 	BUG_ON(memory->sysdev.id != __section_nr(section));
  
- 	mem->phys_index = __section_nr(section);
- 	mem->state = state;
--	init_MUTEX(&mem->state_sem);
-+	mutex_init(&mem->state_mutex);
++	/* drop the ref. we got in remove_memory_block() */
++	kobject_put(&memory->sysdev.kobj);
+ 	sysdev_unregister(&memory->sysdev);
+-	if (root)
+-		sysfs_remove_link(&root->sysdev.kobj,
+-				  kobject_name(&memory->sysdev.kobj));
+ }
+ 
+ /*
+@@ -345,7 +337,7 @@ static int add_memory_block(unsigned long node_id, struct mem_section *section,
+ 	mutex_init(&mem->state_mutex);
  	mem->phys_device = phys_device;
  
- 	ret = register_memory(mem, section, NULL);
-diff --git a/include/linux/memory.h b/include/linux/memory.h
-index 33f0ff0..f80e0e3 100644
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -18,8 +18,7 @@
- #include <linux/sysdev.h>
- #include <linux/node.h>
- #include <linux/compiler.h>
--
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
+-	ret = register_memory(mem, section, NULL);
++	ret = register_memory(mem, section);
+ 	if (!ret)
+ 		ret = mem_create_simple_file(mem, phys_index);
+ 	if (!ret)
+@@ -396,7 +388,7 @@ int remove_memory_block(unsigned long node_id, struct mem_section *section,
+ 	mem_remove_simple_file(mem, phys_index);
+ 	mem_remove_simple_file(mem, state);
+ 	mem_remove_simple_file(mem, phys_device);
+-	unregister_memory(mem, section, NULL);
++	unregister_memory(mem, section);
  
- struct memory_block {
- 	unsigned long phys_index;
-@@ -30,7 +29,7 @@ struct memory_block {
- 	 * created long after the critical areas during
- 	 * initialization.
- 	 */
--	struct semaphore state_sem;
-+	struct mutex state_mutex;
- 	int phys_device;		/* to which fru does this belong? */
- 	void *hw;			/* optional pointer to fw/hw data */
- 	int (*phys_callback)(struct memory_block *);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 7469c50..0fb3302 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -208,7 +208,7 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
- 	/*
- 	 * This doesn't need a lock to do pfn_to_page().
- 	 * The section can't be removed here because of the
--	 * memory_block->state_sem.
-+	 * memory_block->state_mutex.
- 	 */
- 	zone = page_zone(pfn_to_page(pfn));
- 	pgdat_resize_lock(zone->zone_pgdat, &flags);
+ 	return 0;
+ }
 -- 
 1.5.4.5
 
