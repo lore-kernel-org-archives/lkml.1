@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYDTRxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbYDTR5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbYDTRxl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYDTRxb
+	id S1758616AbYDTR5o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYDTR5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:53:31 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:58320 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbYDTRxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:53:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sgD9CSA4GlRlH9+NyxcCNdwOaNHy0sPe1Yq5pxIM0X/c5e4RgVGF1vcuQStVOPuOBP+mkFLppJEh5sKtSPCBh06a9LjP8yiJLq+Hp+6cJxHHANfSCdayTeuro7mqZoaQNIQJ07WrfFV1n70dBrPKnOtp/QNkfvFl427PTywOUl4=
-Date: Sun, 20 Apr 2008 22:48:48 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Denis V. Lunev" <den@openvz.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       bfields@fieldses.org, ebiederm@xmission.com, neilb@suse.de
-Subject: Re: + nfsd-use-proc_create-to-setup-de-proc_fops.patch added to
-	-mm tree
-Message-ID: <20080420184848.GA31337@martell.zuzino.mipt.ru>
-References: <200804152355.m3FNtv3O022485@imap1.linux-foundation.org> <20080420143759.GB32520@martell.zuzino.mipt.ru> <1208708509.14894.3.camel@iris.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208708509.14894.3.camel@iris.sw.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 20 Apr 2008 13:57:36 -0400
+Received: from mail.queued.net ([207.210.101.209]:3091 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754909AbYDTR5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 13:57:35 -0400
+Date: Sun, 20 Apr 2008 13:59:48 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       jordan.crouse@amd.com, Mitch Bradley <wmb@firmworks.com>
+Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
+Message-ID: <20080420135948.61bdb4c9@ephemeral>
+In-Reply-To: <480B321B.5020802@zytor.com>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+	<20080418202925.b18452c5.akpm@linux-foundation.org>
+	<20080419092544.378664a8@ephemeral>
+	<20080419133909.5aa6b63e@ephemeral>
+	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
+	<480B321B.5020802@zytor.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 08:21:49PM +0400, Denis V. Lunev wrote:
+On Sun, 20 Apr 2008 08:07:55 -0400
+"H. Peter Anvin" <hpa@zytor.com> wrote:
+
+> Yinghai Lu wrote:
+> > On Sat, Apr 19, 2008 at 10:39 AM, Andres Salomon <dilinger@queued.net> wrote:
+> >>  This adds 32-bit support for calling into OFW from the kernel.  It's useful
+> >>  for querying the firmware for misc hardware information, fetching the device
+> >>  tree, etc.
+> >>
+> >>  There's potentially no reason why other platforms couldn't use this, but
+> >>  currently OLPC is the main user of it.
+> >>
+> >>  This work was originally done by Mitch Bradley.
+> >>
 > 
-> On Sun, 2008-04-20 at 18:37 +0400, Alexey Dobriyan wrote:
-> > On Tue, Apr 15, 2008 at 04:55:57PM -0700, akpm@linux-foundation.org wrote:
-> > > --- a/fs/nfsd/nfsctl.c~nfsd-use-proc_create-to-setup-de-proc_fops
-> > > +++ a/fs/nfsd/nfsctl.c
-> > 
-> > > @@ -736,10 +737,9 @@ static int create_proc_exports_entry(voi
-> > >  	entry = proc_mkdir("fs/nfs", NULL);
-> > >  	if (!entry)
-> > >  		return -ENOMEM;
-> > > -	entry = create_proc_entry("fs/nfs/exports", 0, NULL);
-> > > +	entry = proc_create("exports", 0, entry, &exports_operations);
-> > 			    ^^^^^^^^^
->                                            ^^^^^^^
-> > >  	if (!entry)
-> > >  		return -ENOMEM;
-> > > -	entry->proc_fops =  &exports_operations;
-> > 
-> > "fs/nfs/exports" is used in full in this file. And line will fit into
-> > 80 columns.
-> > 
-> This is a pde for fs/nfs.
+> Hm.  This interface seems more than a bit ad hoc.  In particular, I 
+> *really* don't like the swapper_pg_dir hack.
+> 
+> "There must be a better way."
+> 
+> 	-hpa
 
-Yes, why change it?
+I'm certainly open to suggestions..  Otherwise, I'll poke around and
+see if I can come up w/ something.
 
-> So, this will be slightly less operations in my case.
 
-It's done once per module loading, so nobody cares.
 
+-- 
+Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
