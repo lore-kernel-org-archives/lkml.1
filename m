@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYDTKPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYDTKTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYDTKPh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYDTKP2
+	id S1757358AbYDTKTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYDTKTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:15:28 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:34575 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbYDTKP1 (ORCPT
+	Sun, 20 Apr 2008 06:19:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:14166 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbYDTKTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:15:27 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: mips BCM47XX compile error
-Date: Sun, 20 Apr 2008 12:14:46 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Aurelien Jarno <aurelien@aurel32.net>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-References: <20080420100347.GH1595@cs181133002.pp.htv.fi>
-In-Reply-To: <20080420100347.GH1595@cs181133002.pp.htv.fi>
+	Sun, 20 Apr 2008 06:19:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=EnHn509EhKR10ivrkeKvdCasvOzF4Wb3UdwevKfWlmvbATKcv9jaDr4wBhWmcYZ034uwBfWQSnPmFCiI85yol2qeREBFbclxveYIX6J88kp32KAvdDYE2m4RwUDpZ0U0H+7StZP05CNIAoF8scC/sXOCv8nVJJ/c7DC/xD8dfQM=
+Date: Sun, 20 Apr 2008 15:14:53 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080420111453.GA4902@martell.zuzino.mipt.ru>
+References: <20080410203354.f0a6f464.akpm@linux-foundation.org> <20080413204422.GA5136@martell.zuzino.mipt.ru> <84144f020804140901p1c076fd2q73e3effe7cd96da3@mail.gmail.com> <Pine.LNX.4.64.0804141050550.6296@schroedinger.engr.sgi.com> <20080414183221.GA5234@martell.zuzino.mipt.ru> <20080414195613.GA4772@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com> <20080419111719.GA6724@martell.zuzino.mipt.ru> <20080419144535.GA4814@martell.zuzino.mipt.ru> <20080419215444.2d4623f5@osprey.hogchain.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804201214.46936.mb@bu3sch.de>
+In-Reply-To: <20080419215444.2d4623f5@osprey.hogchain.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
-> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
-> (ssb: Add Gigabit Ethernet driver) causes the following
-> build error with bcm47xx_defconfig:
+On Sat, Apr 19, 2008 at 09:54:44PM -0500, Jay Cliburn wrote:
+> On Sat, 19 Apr 2008 18:45:35 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> <--  snip  -->
+> > OK, nailed it.
+> > 
+> > It's commit 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 aka "atl1:
+> > disable broken 64-bit DMA".
+> > 
+> > With this commit in tree, I can reproduce either
+> > a) kmalloc-2048 corruption after initscripts shutdown eth0
+> > 	http://marc.info/?l=linux-kernel&m=120820360221261&w=2
+> > 
+> > b) or oopses at filp_close() first reported long ago
+> > 	(sorry, can't find that email)
+> > 
+> > c) or hard hang after initscripts shutdown eth0 with even SysRq not
+> > working. http://marc.info/?l=linux-kernel&m=120795046008115&w=2
+> > 
+> > I have two boxes one with atl1, 4G RAM with 2G remapped after 4G
+> > boundary, another with r8169 connected with just ethernet cable. NICs
+> > agree on 1Gbps speed.
+> > 
+> > So, it's enough to scp 200 MB git archive and immediately start
+> > rebooting sequence for horrors described above to appear. It's not
+> > 100% reproducible but more like 90%.
 > 
-> ...
->   LD      .tmp_vmlinux1
-> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
-> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
-> arch/mips/pci/built-in.o: In function `pcibios_init':
-> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
-> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+> Do I understand correctly that these failures occur only while the
+> network interface is going down?
 
-Some parts of the new 47xx arch code are not ported, yet.
-Somebody should port all the new code from openwrt SVN over to mainline.
-I don't really have time for that, at the moment, though.
+Yep. During up or running there were no problems with this card.
 
--- 
-Greetings Michael.
