@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYDTJrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYDTJ7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756617AbYDTJrR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 05:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYDTJrF
+	id S1755747AbYDTJ7H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 05:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYDTJ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 05:47:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47617
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753218AbYDTJrC (ORCPT
+	Sun, 20 Apr 2008 05:58:56 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:18055 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753288AbYDTJ6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 05:47:02 -0400
-Date: Sun, 20 Apr 2008 02:47:04 -0700 (PDT)
-Message-Id: <20080420.024704.02026708.davem@davemloft.net>
-To: ivdoorn@gmail.com
-Cc: mingo@elte.hu, linville@tuxdriver.com, tomas.winkler@intel.com,
-       linux-kernel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl
-Subject: Re: [build bug] drivers/built-in.o: In function
- `rt2x00leds_resume': : undefined reference to `led_classdev_resume'
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200804201131.01504.IvDoorn@gmail.com>
-References: <20080420081302.GA11954@elte.hu>
-	<20080420.020557.231970202.davem@davemloft.net>
-	<200804201131.01504.IvDoorn@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Apr 2008 05:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bdi26/R3saZ68bp/4+ShXKh7OqPybsvTVfVeSSznL5uVeNIOs6Gpk3UII6uIU/+OsdyVjr4DiTsBAHOV1M32K6on3LZSQxZJgPJZW/pc5MRHpsxQV0i4S3w47b92xcManyl2awwDb6QruOjgF7o/yWAmUKRpePYgMymdXv/PC6g=
+Date: Sun, 20 Apr 2008 11:57:22 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/8] omfs: add inode routines
+Message-ID: <20080420095718.GA6079@joi>
+References: <1208637457-24969-4-git-send-email-me@bobcopeland.com> <20080419212842.GA7888@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080419212842.GA7888@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ivo van Doorn <ivdoorn@gmail.com>
-Date: Sun, 20 Apr 2008 11:31:00 +0200
+On Sat, Apr 19, 2008 at 11:28:42PM +0200, Marcin Slusarz wrote:
+> > +static void set_block_shift(struct omfs_sb_info *sbi)
+> > +{
+> > +	unsigned int scale = sbi->s_blocksize / sbi->s_sys_blocksize;
+> > +	sbi->s_block_shift = 0;
+> > +	for (scale >>= 1; scale; scale >>= 1)
+> > +		sbi->s_block_shift++;
+> > +}
+> isn't it get_bitmask_order(scale - 1)?
 
-> Not sure about it, but doesn't LEDS_CLASS depend on NEW_LEDS ?
-> Which would make selecting LEDS_CLASS broken when NEW_LEDS isn't enabled?
+I mean get_bitmask_order(scale >> 1) ;)
 
-True, what an awful dependency chain.
+Marcin
 
-NEW_LEDS requires HAS_IOMEM.  This is to handle platforms like
-S390 and UM.
-
-But I think this protection is overboard.  Specific drivers
-might need IOMEM functionality, but the basic infrastructure
-does not.
-
-All of the core infrastrucure and generic LEDS facilities, including
-NEW_LEDS, LEDS_CLASS, and LEDS_TRIGGERS, don't need the IOMEM
-protection.
-
-And neither do the LED device drivers, they already each have a
-depenency for a specific platform.
-
-You could even imagine a hypervisor based LED driver that a platform
-like S390, which does not enable HAS_IOMEM, might want to support
-under this infrastructure.
-
-I think NEW_LEDS can be completely eliminated.
