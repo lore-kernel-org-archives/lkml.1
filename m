@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYDUAFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYDUAIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYDUAFx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 20:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYDUAFm
+	id S1756937AbYDUAIK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYDUAH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 20:05:42 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:25886 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753183AbYDUAFm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 20:05:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: ISDN testing (was: [git patches] ISDN cleanups (modularization prep))
-Date: Mon, 21 Apr 2008 02:05:38 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de
-References: <20080420223959.GA17998@havoc.gtf.org>
-In-reply-To: <20080420223959.GA17998@havoc.gtf.org>
+	Sun, 20 Apr 2008 20:07:57 -0400
+Received: from flatoutfitness.com ([66.178.130.209]:54930 "EHLO www.seiner.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752712AbYDUAH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 20:07:56 -0400
+X-Greylist: delayed 2119 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 20:07:56 EDT
+Message-ID: <480BD294.9040504@seiner.com>
+Date: Sun, 20 Apr 2008 16:32:36 -0700
+From: Yan Seiner <yan@seiner.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: uinput question
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804210205.38891.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Apr 2008 00:05:39.0837 (UTC) FILETIME=[6EE002D0:01C8A343]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Dropping private CCs.)
+I'm trying to set up a system with multiple IR remotes acting as 
+keyboards for specific X sessions.
 
-Jeff Garzik wrote:
-> - "isn't ISDN dead?"  Apparently, no it's not :)
-> 
-> - "don't waste your time, drop these drivers and get mISDN into the
->   kernel instead" -- based on discussion it does sound like mISDN should
->   get into the kernel.  Until these drivers are dropped, however, my
->   patches remain appropriate.
-> 
-> And in case people are curious, #isdn-pci isn't ready for upstream yet
-> for two main reasons: (1) two drivers remain unconverted, and (2) none
-> of the changes have been tested, even once.
+lirc <http://www.lirc.org> is a way to send infrared remote keystrokes 
+to applications.  Some time ago I wrote a small patch to kbdd 
+<http://handhelds.org/moin/moin.cgi/kbdd> that lets me inject button 
+pushes on an IR remote into the /dev/input/uinput system as keyboard 
+events.
 
-I have three different ISDN cards. However, since I've had ADSL since about 
-3 years (on top of ISDN), I don't actually use it anymore.
+Now I'd like to send those keyboard events to only one X session, not 
+all of them.
 
-I could be persuaded to do some testing though, or to donate some or all of 
-my cards for that purpose.
+In the kbdd code, there is the following snippet when the 
+/dev/input/uinput device is opened:
 
-For testing I'd at least need somewhere to connect to, preferably in NL.
-I have no idea if I could still connect to my previous provider using ISDN. 
-The account was transferred to a different provider about 2 years ago, but 
-the mail accounts with the old provider are still active.
+        memset(&dev, 0, sizeof(dev));
+        strncpy(dev.name, "SerKBD", UINPUT_MAX_NAME_SIZE);
+        dev.idbus = BUS_RS232;
+        dev.idvendor = 0x00;
+        dev.idproduct = 0x00;
+        dev.idversion = 0x00;
 
-The cards I have are:
-- Teles 16.3 ISA -- worked way back when with Debian Woody
-- ITK ix1-micro 2.1 ISA
-- Eicon Diva 2.01 PCI
+So this would indicate to me that I can emulate different devices by 
+changing the names, IDs, and events.  Then I want to select only those 
+events that pertain to my app... 
 
-I also have a test box I can put them in :-)
+So...
+-   Create a 'virtual' eventNN device based on the data fed to kbdd
+-   Send various keyboard events to the kernel via the uinput device 
+from several physical devices
+-   Select only those events destined for my virtual device
+-   Have those events pop out of my eventNN device so I can handle them 
+back in userspace
 
-Looks like I can still at least successfully load the hisax driver with 
-2.6.18 for the Teles card. For the last two I'm not sure if I ever had them 
-working with Linux (or even if I tried).
+How do I do that?  Where can I find some information on how to handle 
+uinput devices?
 
-Cheers,
-FJP
+Thanks,
+
+--Yan
+
+
+-- 
+  o__
+  ,>/'_          o__
+  (_)\(_)        ,>/'_        o__
+Yan Seiner      (_)\(_)       ,>/'_     o__
+Certified Personal Trainer   (_)\(_)    ,>/'_        o__
+Licensed Professional Engineer         (_)\(_)       ,>/'_
+Who says engineers have to be pencil necked geeks?  (_)\(_)
+
+Help out my kids' school: http://www.seiner.com/blog/Travels/
+
