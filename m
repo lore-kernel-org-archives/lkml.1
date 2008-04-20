@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYDTHfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYDTHnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbYDTHfa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 03:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYDTHfR
+	id S1754000AbYDTHnD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 03:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYDTHmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 03:35:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48603 "EHLO mx3.mail.elte.hu"
+	Sun, 20 Apr 2008 03:42:52 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48595 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464AbYDTHfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 03:35:15 -0400
-Date: Sun, 20 Apr 2008 09:34:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-kernel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       Mohamed Abbas <mabbas@linux.intel.com>, Ian Schram <ischram@telenet.be>,
-       Tomas Winkler <tomas.winkler@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [build bug] iwl-3945-led.c:(.text+0x119e36): undefined reference
-	to `__led_classdev_unregister'
-Message-ID: <20080420073441.GA31745@elte.hu>
-References: <20080419135602.GA2499@elte.hu>
+	id S1751508AbYDTHmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 03:42:51 -0400
+Date: Sun, 20 Apr 2008 10:42:28 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
+       xfs@oss.sgi.com
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080420074228.GE1595@cs181133002.pp.htv.fi>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <6101e8c40804190735g17f1e0bj25c2bc0e2a6eac26@mail.gmail.com> <20080419151911.GB1595@cs181133002.pp.htv.fi> <480AA2B9.10305@sandeen.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080419135602.GA2499@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <480AA2B9.10305@sandeen.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 19, 2008 at 08:56:09PM -0500, Eric Sandeen wrote:
+> Adrian Bunk wrote:
+> > On Sat, Apr 19, 2008 at 04:35:31PM +0200, Oliver Pinter wrote:
+> >> ...
+> >> with the older kernel is typical: xfs+nfs+4k stack(+lvm)
+> > 
+> > Does anyone still experience problems with 2.6.25?
+> 
+> There are always problems.  You can always come up with something that
+> will crash in 4k, IMHO.
 
-> here's another networking (iwlwifi) related build failure with latest 
-> -git:
+We are going from 6k to 4k.
 
-a third -git build failure triggered in last night's x86.git build/boot 
-testing:
+Your "You can always come up with something that will crash in" point 
+would be invariant to this change (although it might be harder to 
+trigger in real life).
 
- drivers/built-in.o: In function `iwl3945_led_unregister_led':
-  iwl-3945-led.c:(.text+0x119e36): undefined reference to `__led_classdev_unregister'
- drivers/built-in.o: In function `iwl3945_led_register_led':
-  iwl-3945-led.c:(.text+0x119ecd): undefined reference to `led_classdev_register'
+> Rather than foisting this upon everyone, I'd rather see work put into
+> making stack size a boot parameter or something, so that people can
+> choose what's appropriate for their workload (or their IO stack, if you
+> prefer).
 
-config:
+Why should users have to poke with such deeply internal things?
+That doesn't sound right.
 
- http://redhat.com/~mingo/misc/config-Sat_Apr_19_22_08_04_CEST_2008.bad
+Excessive stack usage in the kernel is considered to be a bug.
 
-probably due to commit ab53d8af6 "iwlwifi: Add led support".
+We should identify and fix all remaining problems (if any).
 
-	Ingo
+> -Eric
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
