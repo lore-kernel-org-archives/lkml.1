@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbYDTRTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbYDTRXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758586AbYDTRTr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYDTRTj
+	id S1758430AbYDTRXQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbYDTRXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:19:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37275 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbYDTRTj (ORCPT
+	Sun, 20 Apr 2008 13:23:04 -0400
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:3622 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752787AbYDTRXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:19:39 -0400
-Message-ID: <480B7B1E.7010707@firstfloor.org>
-Date: Sun, 20 Apr 2008 19:19:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sun, 20 Apr 2008 13:23:03 -0400
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT pull] (hr)timer updates feed from Andrew
+Date: Sun, 20 Apr 2008 19:22:43 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.1.10.0804192247580.3261@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0804192247580.3261@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-CC: Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-References: <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B44C4.4060104@rtr.ca> <20080420133857.GB26536@1wt.eu> <480B50F1.8040309@firstfloor.org> <20080420164133.GB20694@logfs.org>
-In-Reply-To: <20080420164133.GB20694@logfs.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804201922.46749.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel wrote:
-> On Sun, 20 April 2008 16:19:29 +0200, Andi Kleen wrote:
->> Only if you believe that 4K stack pages are a worthy goal.
->> As far as I can figure out they are not. They might have been
->> a worthy goal on crappy 2.4 VMs, but these times are long gone.
->>
->> The "saving memory on embedded" argument also does not 
->> quite convince me, it is unclear if that is really
->> a significant amount of memory on these systems and if that 
->> couldn't be addressed better (e.g. in running generally
->> less kernel threads).  I don't have numbers on this,
->> but then the people who made this argument didn't have any
->> either :) 
-> 
-> It is not uncommon for embedded systems to be designed around 16MiB.
+Hi,
 
-But these are SoC systems. Do they really run x86?
-(note we're talking about an x86 default option here)
+On Saturday 19. April 2008, Thomas Gleixner wrote:
 
-Also I suspect in a true 16MB system you have to strip down
-everything kernel side so much that you're pretty much outside
-the "validated by testers" realm that Adrian cares about.
+> John Stultz (1):
+>       time: close small window for vsyscall time inconsistencies
 
-> When dealing in those dimensions, savings of 100k are substantial.  In
-> some causes they may be the difference between 16MiB or 32MiB, which
-> translates to manufacturing costs.  In others it simply means that the
-> system can cache 
+Out of curiosity: why did you merge this patch despite my objections?
+Why couldn't you wait a little while longer? You knew I was waiting for more 
+information to analyze this properly...
+(Especially as it turns out that this patch doesn't really close the window, 
+it only makes it smaller.)
 
-If you need the stack you don't have any less cache foot print.
-If you don't need it you don't have any either.
-
--Andi
+bye, Roman
