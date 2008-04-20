@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYDTXwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYDTX4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbYDTXwl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYDTXwd
+	id S1755894AbYDTX4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 19:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYDTX4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:52:33 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:12435
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYDTXwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:52:32 -0400
-Message-ID: <480BD665.20804@qumranet.com>
-Date: Mon, 21 Apr 2008 02:48:53 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 20 Apr 2008 19:56:10 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60796 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752313AbYDTX4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 19:56:09 -0400
+Date: Mon, 21 Apr 2008 02:55:43 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: David Miller <davem@davemloft.net>, aacraid@adaptec.com,
+       James.Bottomley@HansenPartnership.com, wli@holomorphy.com,
+       sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] sparc: export kmap_atomic_to_page
+Message-ID: <20080420235543.GB26897@cs181133002.pp.htv.fi>
+References: <20080414141956.GN6695@cs181133002.pp.htv.fi> <20080415.003910.50277238.davem@davemloft.net> <20080420201443.GB14788@cs181133002.pp.htv.fi> <20080420.132829.220464348.davem@davemloft.net> <20080420234011.GT20637@parisc-linux.org>
 MIME-Version: 1.0
-To: Bernd Eckenfels <ecki@lina.inka.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: x86: 4kstacks default
-References: <E1Jnhr0-00076D-00@calista.eckenfels.net>
-In-Reply-To: <E1Jnhr0-00076D-00@calista.eckenfels.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Mon, 21 Apr 2008 02:48:53 +0300 (IDT)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080420234011.GT20637@parisc-linux.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Eckenfels wrote:
-> A question along this line. Why is the Userspace Thread bound to a
-> Kernel-Space Stack at all? I could imagine a solution like Stack Pools
-> assigned only of a Thread enters kernel space, or something like this?
->
->   
+On Sun, Apr 20, 2008 at 05:40:11PM -0600, Matthew Wilcox wrote:
+> On Sun, Apr 20, 2008 at 01:28:29PM -0700, David Miller wrote:
+> > From: Adrian Bunk <bunk@kernel.org>
+> > Date: Sun, 20 Apr 2008 23:14:43 +0300
+> > 
+> > > On Tue, Apr 15, 2008 at 12:39:10AM -0700, David Miller wrote:
+> > > > From: Adrian Bunk <bunk@kernel.org>
+> > > >...
+> > > > > <--  snip  -->
+> > > > > 
+> > > > >   MODPOST 1741 modules
+> > > > > ERROR: "kmap_atomic_to_page" [drivers/scsi/aacraid/aacraid.ko] undefined!
+> > > > > ...
+> > > > > make[2]: *** [__modpost] Error 1
+> > > > > 
+> > > > > <--  snip  -->
+> > > > > 
+> > > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > > 
+> > > > Applied, thanks Adrian.
+> > > 
+> > > Please drop - aacraid no longer uses it in 2.6.26.
+> > 
+> > Ok, will do.
+> 
+> Looks like the only remaining user is in mm/shmem.c.  I guess it can be
+> unexported now?
 
-The vast majority of threads are sleeping (with a stack footprint in the 
-kernel).  If you have an N-way system, at most N threads can be in 
-userspace at any given moment.
+I'm already doing this (but the test compiles are still running).
 
-You could multiplex several userspace threads on one kernel thread (the 
-M:N model), but it gets fairly complex.
+cu
+Adrian
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
