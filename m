@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYDTOFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbYDTOJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYDTOFx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 10:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYDTOFm
+	id S1756931AbYDTOJr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 10:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYDTOJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 10:05:42 -0400
-Received: from sandeen.net ([209.173.210.139]:16016 "EHLO sandeen.net"
+	Sun, 20 Apr 2008 10:09:39 -0400
+Received: from sandeen.net ([209.173.210.139]:16053 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYDTOFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 10:05:41 -0400
-Message-ID: <480B4DB4.8070107@sandeen.net>
-Date: Sun, 20 Apr 2008 09:05:40 -0500
+	id S1752651AbYDTOJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 10:09:39 -0400
+Message-ID: <480B4EA1.5070305@sandeen.net>
+Date: Sun, 20 Apr 2008 09:09:37 -0500
 From: Eric Sandeen <sandeen@sandeen.net>
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Shawn Bohrer <shawn.bohrer@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+To: Mark Lord <lkml@rtr.ca>
+CC: Willy Tarreau <w@1wt.eu>, Andi Kleen <andi@firstfloor.org>,
+       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: x86: 4kstacks default
-References: <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <20080420120250.4f496861@the-village.bc.nu> <20080420115455.GJ1595@cs181133002.pp.htv.fi> <20080420123731.7282bb16@the-village.bc.nu> <20080420121803.GK1595@cs181133002.pp.htv.fi>
-In-Reply-To: <20080420121803.GK1595@cs181133002.pp.htv.fi>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B44C4.4060104@rtr.ca>
+In-Reply-To: <480B44C4.4060104@rtr.ca>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-
-> But the more users will get 4k stacks the more testing we have, and the 
-> better both existing and new bugs get shaken out.
+Mark Lord wrote:
+> Willy Tarreau wrote:
+>> What would really help would be to have 8k stacks with the lower page
+>> causing a fault and print a stack trace upon first access. That way,
+>> the safe setting would still report us useful information without
+>> putting users into trouble.
+> ..
 > 
-> And if there were only 4k stacks in the vanilla kernel, and therefore 
-> all people on i386 testing -rc kernels would get it, that would give a 
-> better chance of finding stack regressions before they get into a 
-> stable kernel.
+> That's the best suggestion from this thread, by far!
+> Can you produce a patch for 2.6.26 for this?
+> Or perhaps someone else here, with the right code familiarity, could?
+> 
+> Some sort of CONFIG option would likely be wanted to
+> either enable/disable this feature, of course.
 
-Heck, maybe you should make it 2k by default in all -rc kernels; that
-way when people run -final with the 4k it'll be 100% bulletproof, right?
- 'cause all those piggy drivers that blow a 2k stack will finally have
-to get fixed?  Or leave it at 2k and find a way to share pages for
-stacks, think how much memory you could save and how many java threads
-you could run!
+Changing the default warning threshold is easy, it's just a #define.
+Although setting it too low would spam syslogs on some setups.
 
-4K just happens to be the page size; other than that it's really just
-some random/magic number picked, and now dictated that if you (and
-everyting around you) doesn't fit, you're broken.
-
-That bugs me.
+When I was trying to cram stuff into 4k in the past, I had a patch which
+added a sysctl to dynamically change the warning threshold, and
+optionally BUG() when I hit it for crash analysis.  It was good for
+debugging, at least.  If something along those lines is desired, I could
+resurrect it.
 
 -Eric
-
-(yes, I know there are advantages to only allocating a single page for a
-new thread, but from an "all callchains after that must fit in that
-space" perspective, it's just a randomly picked number)
