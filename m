@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYDTXk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYDTXmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbYDTXk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYDTXkO
+	id S1755330AbYDTXmR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 19:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYDTXmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:40:14 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52623 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751481AbYDTXkN (ORCPT
+	Sun, 20 Apr 2008 19:42:06 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47328 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbYDTXmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:40:13 -0400
-Date: Sun, 20 Apr 2008 17:40:11 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Miller <davem@davemloft.net>
-Cc: bunk@kernel.org, aacraid@adaptec.com,
-       James.Bottomley@HansenPartnership.com, wli@holomorphy.com,
-       sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org,
+	Sun, 20 Apr 2008 19:42:05 -0400
+Date: Mon, 21 Apr 2008 00:51:30 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Shi Weihua <shiwh@cn.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] sparc: export kmap_atomic_to_page
-Message-ID: <20080420234011.GT20637@parisc-linux.org>
-References: <20080414141956.GN6695@cs181133002.pp.htv.fi> <20080415.003910.50277238.davem@davemloft.net> <20080420201443.GB14788@cs181133002.pp.htv.fi> <20080420.132829.220464348.davem@davemloft.net>
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+In-Reply-To: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0804210004470.1630@blonde.site>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080420.132829.220464348.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 01:28:29PM -0700, David Miller wrote:
-> From: Adrian Bunk <bunk@kernel.org>
-> Date: Sun, 20 Apr 2008 23:14:43 +0300
+On Sun, 20 Apr 2008, Andrew Morton wrote:
 > 
-> > On Tue, Apr 15, 2008 at 12:39:10AM -0700, David Miller wrote:
-> > > From: Adrian Bunk <bunk@kernel.org>
-> > >...
-> > > > <--  snip  -->
-> > > > 
-> > > >   MODPOST 1741 modules
-> > > > ERROR: "kmap_atomic_to_page" [drivers/scsi/aacraid/aacraid.ko] undefined!
-> > > > ...
-> > > > make[2]: *** [__modpost] Error 1
-> > > > 
-> > > > <--  snip  -->
-> > > > 
-> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > 
-> > > Applied, thanks Adrian.
-> > 
-> > Please drop - aacraid no longer uses it in 2.6.26.
-> 
-> Ok, will do.
+> These can be found at
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1
 
-Looks like the only remaining user is in mm/shmem.c.  I guess it can be
-unexported now?
+A couple of comments on memcgroup patches in your
+high-priority initial section (I've not studied further yet)
+> Merge, and backport to 2.6.25.x
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+>  disable-the-memory-controller-by-default-v3.patch
+>  disable-the-memory-controller-by-default-v3-fix.patch
+
+If those are to go in, then the sooner the better, yes.
+
+But though I argued for cgroup_disable=memory (or some such),
+I think myself that taking it even further now (requiring an
+additional cgroup_enable=memory at boottime to get the memcg
+stuff you chose with CGROUP_MEM_RES_CTLR=y at build time) is
+confusing overkill, just messing around.
+
+Others think differently.  A compromise would be to improve the
+helptext for CGROUP_MEM_RES_CTLR (some of it is presently nonsense,
+isn't it?  Certainly there's a significant overhead, but it's the
+32-bit struct page not the 64-bit which then suffers from crossing
+cacheline boundaries).  Not much point in mentioning
+cgroup_disable=memory if those patches go in, but needs to say
+cgroup_enable=memory bootoption also needed.
+
+>  memcgroup-check-and-initialize-page-cgroup-in-memmap_init_zone.patch
+
+No, it was a good find from Shi, but you were right to think the patch
+fishy, and Kame put in lots of work (thank you!) to identify the actual
+culprit: he and Mel are discussing what the actual fix should be; and
+we might want to choose a different fix for stable than for 2.6.26.
+
+I think you should drop that memmap_init_zone patch: the cgroup
+pointer is not the only field we assume is zeroed, both flags and
+mapping can cause trouble if they were not originally zeroed.
+Re-zero the whole struct page?  No, far better to fix the
+root of the corruption, that Kame and Mel are working on.
+
+Hugh
