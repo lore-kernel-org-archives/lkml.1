@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYDTKan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbYDTKdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbYDTKan (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYDTKae
+	id S1757630AbYDTKdu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYDTKdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:30:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:29993 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbYDTKac (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:30:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=EuLZdvDGQJq3Q2VWhChfdk1uerI5qAUpdEEIJmquNansI0v4ORdM99KRdoBpzAQnhEFN4Lth4nvSJ1oa51dpIuIrITa/bqJldDNLU9eWZdYUKCOGTmf30XGFPBkGAGStKqurln7vctNj438QERgYkQ6vGrsEmuPgTDX6X1/pQ8I=
-Date: Sun, 20 Apr 2008 15:25:49 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Sid Boyce <g3vbv@blueyonder.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-git1/2 not seeing /dev/sda1 (XFS root) or /dev/sda2
-	(swap) partitions on a SATA drive
-Message-ID: <20080420112549.GB4902@martell.zuzino.mipt.ru>
-References: <480A9C1E.8050505@blueyonder.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480A9C1E.8050505@blueyonder.co.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 20 Apr 2008 06:33:43 -0400
+Received: from smtp01.mtu.ru ([62.5.255.48]:62727 "EHLO smtp01.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752688AbYDTKdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 06:33:42 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2 v2] x86: remove unused function, register the cpu vendor in nexgen.c
+Date: Sun, 20 Apr 2008 14:33:40 +0400
+Message-Id: <1208687620-25597-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <480AC505.1030301@zytor.com>
+References: <480AC505.1030301@zytor.com>
+X-DCC-STREAM-Metrics: smtp01.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 02:27:58AM +0100, Sid Boyce wrote:
-> 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3. 
-> With xfs it can't find these and drops into a shell.
-> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap        
->       swap       defaults              0 0
-> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /           
->    xfs        defaults              1 1
->
-> From my .config
-> CONFIG_XFS_FS=m
-> CONFIG_XFS_QUOTA=y
-> CONFIG_XFS_POSIX_ACL=y
-> CONFIG_XFS_RT=y
->
-> The other boxes are configure pretty much the same, but I can diff the 
-> .config's if required.
-> # l /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
-> -rw-r--r-- 1 root root 272240 2008-04-19 21:54 
-> /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
->
-> 00:0c.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
-> 00:0d.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
-> 00:0d.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
-> 00:0d.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
-> 03:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA 
-> Raid II Controller (rev 01)
->
-> From working 2.6.25
-> # lsmod|grep sata
-> sata_nv                36872  2
-> sata_sil24             26692  0
-> libata                173664  3 pata_amd,sata_nv,sata_sil24
+Nobody calls the function nexgen_init_cpu(), which is defined
+in arch/x86/kernel/cpu/nexgen.c. Therefore this routine can
+be removed, and this patch does so.
 
-Double check that you've enabled CONFIG_ATA_SFF and then check you
-previous CONFIG_SATA_* options.
+Additionally, this patch adds the missing registration of the
+NexGen CPUs by the cpu_vendor_dev_register() macro.
+
+This patch was build-tested using the defconfig for i386. It
+also survived a few randconfig instances. Runtime tests were
+performed by booting an i386 box up to the shell prompt.
+
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+---
+Peter,
+
+Thanks for your review. Hopefully this version is OK.
+
+ arch/x86/kernel/cpu/nexgen.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/nexgen.c b/arch/x86/kernel/cpu/nexgen.c
+index 5d5e1c1..3117e96 100644
+--- a/arch/x86/kernel/cpu/nexgen.c
++++ b/arch/x86/kernel/cpu/nexgen.c
+@@ -52,8 +52,4 @@ static struct cpu_dev nexgen_cpu_dev __cpuinitdata = {
+ 	.c_identify	= nexgen_identify,
+ };
+ 
+-int __init nexgen_init_cpu(void)
+-{
+-	cpu_devs[X86_VENDOR_NEXGEN] = &nexgen_cpu_dev;
+-	return 0;
+-}
++cpu_vendor_dev_register(X86_VENDOR_NEXGEN, &nexgen_cpu_dev);
+-- 
+1.5.3
 
