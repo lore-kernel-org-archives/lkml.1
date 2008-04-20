@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYDTKaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYDTKan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbYDTKaF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYDTK3y
+	id S1758570AbYDTKan (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYDTKae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:29:54 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:1149 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753690AbYDTK3x (ORCPT
+	Sun, 20 Apr 2008 06:30:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:29993 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbYDTKac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:29:53 -0400
+	Sun, 20 Apr 2008 06:30:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ApzHjGJOD8vJz4x3eP5GaNOIpdVDeswbrzrTgG6SEWlkcO5Mevsqo0u8psTjW+ovr71INTPlp1kMYnln4L/f1UQW9FwpToNBTde7qNPk3964UdGr/4dGqt9IA6k/fPxOL3jUSvppjR+T3kGzeDvMQY0WoI+rJweBNgEHiW3ISbM=
-Message-ID: <19f34abd0804200329j3308b081vc0732c3ec5c0b721@mail.gmail.com>
-Date: Sun, 20 Apr 2008 12:29:52 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: v2.6.25: WARNING: at kernel/lockdep.c:2437 __lock_acquire+0xc69/0xfa0()
-Cc: "Tejun Heo" <htejun@gmail.com>, "Jeff Garzik" <jgarzik@pobox.com>,
-       "Ingo Molnar" <mingo@elte.hu>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=EuLZdvDGQJq3Q2VWhChfdk1uerI5qAUpdEEIJmquNansI0v4ORdM99KRdoBpzAQnhEFN4Lth4nvSJ1oa51dpIuIrITa/bqJldDNLU9eWZdYUKCOGTmf30XGFPBkGAGStKqurln7vctNj438QERgYkQ6vGrsEmuPgTDX6X1/pQ8I=
+Date: Sun, 20 Apr 2008 15:25:49 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Sid Boyce <g3vbv@blueyonder.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-git1/2 not seeing /dev/sda1 (XFS root) or /dev/sda2
+	(swap) partitions on a SATA drive
+Message-ID: <20080420112549.GB4902@martell.zuzino.mipt.ru>
+References: <480A9C1E.8050505@blueyonder.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <480A9C1E.8050505@blueyonder.co.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Apr 20, 2008 at 02:27:58AM +0100, Sid Boyce wrote:
+> 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3. 
+> With xfs it can't find these and drops into a shell.
+> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap        
+>       swap       defaults              0 0
+> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /           
+>    xfs        defaults              1 1
+>
+> From my .config
+> CONFIG_XFS_FS=m
+> CONFIG_XFS_QUOTA=y
+> CONFIG_XFS_POSIX_ACL=y
+> CONFIG_XFS_RT=y
+>
+> The other boxes are configure pretty much the same, but I can diff the 
+> .config's if required.
+> # l /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
+> -rw-r--r-- 1 root root 272240 2008-04-19 21:54 
+> /lib/modules/2.6.25-git2-smp/kernel/drivers/ata/sata_sil.ko
+>
+> 00:0c.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
+> 00:0d.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+> 00:0d.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+> 00:0d.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+> 03:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA 
+> Raid II Controller (rev 01)
+>
+> From working 2.6.25
+> # lsmod|grep sata
+> sata_nv                36872  2
+> sata_sil24             26692  0
+> libata                173664  3 pata_amd,sata_nv,sata_sil24
 
-This appears in clean v2.6.25:
+Double check that you've enabled CONFIG_ATA_SFF and then check you
+previous CONFIG_SATA_* options.
 
-------------[ cut here ]------------
-WARNING: at kernel/lockdep.c:2437 __lock_acquire+0xc69/0xfa0()
-Pid: 1002, comm: scsi_eh_4 Not tainted 2.6.25 #379
- [<c011bb5c>] warn_on_slowpath+0x3c/0x50
- [<c013b0f9>] ? __lock_acquire+0x219/0xfa0
- [<c013b0f9>] ? __lock_acquire+0x219/0xfa0
- [<c012c2c8>] ? __kernel_text_address+0x8/0x20
- [<c0104fce>] ? dump_trace+0xce/0x120
- [<c010a56c>] ? save_stack_trace+0x1c/0x40
- [<c0138659>] ? save_trace+0x39/0xa0
- [<c013a3d1>] ? mark_lock+0x61/0x540
- [<c013bb49>] __lock_acquire+0xc69/0xfa0
- [<c012b46a>] ? __cancel_work_timer+0x5a/0x140
- [<c01082ac>] ? native_sched_clock+0x5c/0xb0
- [<c013beee>] lock_acquire+0x6e/0x90
- [<c02a8e23>] ? ata_scsi_error+0x33/0x6a0
- [<c02e4946>] _spin_lock_irqsave+0x26/0x60
- [<c02a8e23>] ? ata_scsi_error+0x33/0x6a0
- [<c02a4ee0>] ? ata_bmdma_error_handler+0x0/0x50
- [<c02a8e23>] ata_scsi_error+0x33/0x6a0
- [<c02e249a>] ? schedule+0x27a/0x410
- [<c0256dd1>] ? __scsi_iterate_devices+0x51/0x70
- [<c025c681>] ? scsi_run_host_queues+0x21/0x30
- [<c025ae5e>] scsi_error_handler+0x9e/0x4e0
- [<c02e249a>] ? schedule+0x27a/0x410
- [<c025adc0>] ? scsi_error_handler+0x0/0x4e0
- [<c012dd86>] kthread+0x36/0x60
- [<c012dd50>] ? kthread+0x0/0x60
- [<c0104c27>] kernel_thread_helper+0x7/0x10
- =======================
----[ end trace 5e5d737e76fd4940 ]---
-
-Full log and config:
-
-http://folk.uio.no/vegardno/linux/log-20080420.txt
-http://folk.uio.no/vegardno/linux/config-20080420.txt
-
-(The bootup is from qemu for the ease of harvesting the log -- but it
-happens on real hardware too!)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
