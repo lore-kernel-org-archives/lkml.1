@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYDTRPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbYDTRPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757920AbYDTRPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYDTRPM
+	id S1759076AbYDTRPk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbYDTRPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:15:12 -0400
-Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:38690
-	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753160AbYDTRPL (ORCPT
+	Sun, 20 Apr 2008 13:15:22 -0400
+Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:33887 "HELO
+	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755531AbYDTRPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:15:11 -0400
-X-Greylist: delayed 331 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 13:15:11 EDT
-X-Authority-Analysis: v=1.0 c=1 a=Q8Gs9bZg81cupfBjvhMA:9
- a=0Hgyp1d33VZ9vveNF3AA:7 a=uVxzsZc6kX8zZpzCKzFreaTV0zUA:4 a=LY0hPdMaydYA:10
-Date: Sun, 20 Apr 2008 09:59:39 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Oliver Pinter <oliver.pntr@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
-       xfs@oss.sgi.com
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080420165939.GB7963@puku.stupidest.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <6101e8c40804190735g17f1e0bj25c2bc0e2a6eac26@mail.gmail.com> <20080419151911.GB1595@cs181133002.pp.htv.fi> <480AA2B9.10305@sandeen.net> <20080420074228.GE1595@cs181133002.pp.htv.fi>
+	Sun, 20 Apr 2008 13:15:21 -0400
+X-YMail-OSG: j3Ekz24VM1k8agA8owcQkqswI38IIWONnwZeH1T3RoA5DW9cdPd2TXrVgfz_Cv6bww--
+X-RocketYMMF: rancidfat
+Date: Sun, 20 Apr 2008 10:15:15 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+To: David <david@unsolicited.net>, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <480B4E87.4020709@unsolicited.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080420074228.GE1595@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <46016.36939.qm@web36608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 10:42:28AM +0300, Adrian Bunk wrote:
 
-> We are going from 6k to 4k.
+--- David <david@unsolicited.net> wrote:
 
-6k?
+> Mike Galbraith wrote:
+> > On Sat, 2008-04-19 at 19:43 +0100, David wrote:
+> >   
+> >> I'm wondering if anyone might be able to help with a capability problem 
+> >> I've noticed with .25 My ntp daemon will no longer run as any non-root 
+> >> user, and after some investigation it seems that calls to prctl() are 
+> >> failing.
 
-> Why should users have to poke with such deeply internal things?
-> That doesn't sound right.
+Do you have a libcap that reflects the change from 32 capabilities
+to 64? You'll be looking for libcap.so.2.06 or thereabouts.
 
-they shouldn't, so a 4k default is a problem for them
 
-> Excessive stack usage in the kernel is considered to be a bug.
 
-define excessive
 
-> We should identify and fix all remaining problems (if any).
-
-let's see your patches then
+Casey Schaufler
+casey@schaufler-ca.com
