@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbYDTN5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYDTOF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbYDTN5v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 09:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYDTN5m
+	id S1756545AbYDTOF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 10:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYDTOFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 09:57:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:54858 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752039AbYDTN5l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 09:57:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WvXkvYmEV4njZVhOzh8Qh56ulnmlR/skFEhKG9H52BG7D9xKXTd3ut2hmF3YGyH5gcga/CVQxJ8BL06sS7fUHnkTcVThm8dBZXw2rLCDEw2tStu3NJQNFmEHwccjHO4e8Q3O9nrpd/fETUWM6LA1J2LBHDKO4wR5070ugleuOhk=
-Date: Sun, 20 Apr 2008 18:53:00 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, den@openvz.org, dhowells@redhat.com,
-       ebiederm@xmission.com
-Subject: Re: + afs-use-non-racy-method-for-proc-entries-creation.patch
-	added to -mm tree
-Message-ID: <20080420145300.GC32520@martell.zuzino.mipt.ru>
-References: <200804152356.m3FNu2aB022497@imap1.linux-foundation.org>
+	Sun, 20 Apr 2008 10:05:19 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36443 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbYDTOFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 10:05:18 -0400
+Date: Sun, 20 Apr 2008 17:04:54 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080420140454.GC1899@cs181133002.pp.htv.fi>
+References: <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B3FCF.1090207@firstfloor.org> <20080420133007.GB1899@cs181133002.pp.htv.fi> <20080420133441.GA26536@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200804152356.m3FNu2aB022497@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080420133441.GA26536@1wt.eu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 15, 2008 at 04:56:01PM -0700, akpm@linux-foundation.org wrote:
-> --- a/fs/afs/proc.c~afs-use-non-racy-method-for-proc-entries-creation
-> +++ a/fs/afs/proc.c
-> @@ -395,26 +396,20 @@ int afs_proc_cell_setup(struct afs_cell 
->  	if (!cell->proc_dir)
->  		goto error_dir;
->  
-> -	p = create_proc_entry("servers", 0, cell->proc_dir);
-> +	p = proc_create_data("servers", 0, cell->proc_dir,
-> +			     &afs_proc_cell_servers_fops, cell);
->  	if (!p)
->  		goto error_servers;
-> -	p->proc_fops = &afs_proc_cell_servers_fops;
-> -	p->owner = THIS_MODULE;
-> -	p->data = cell;
->  
-> -	p = create_proc_entry("vlservers", 0, cell->proc_dir);
-> +	p = proc_create_data("vlservers", 0, cell->proc_dir,
-> +			     &afs_proc_cell_vlservers_fops, cell);
->  	if (!p)
->  		goto error_vlservers;
-> -	p->proc_fops = &afs_proc_cell_vlservers_fops;
-> -	p->owner = THIS_MODULE;
-> -	p->data = cell;
->  
-> -	p = create_proc_entry("volumes", 0, cell->proc_dir);
-> +	p = proc_create_data("volumes", 0, cell->proc_dir,
-> +			     &afs_proc_cell_volumes_fops, cell);
->  	if (!p)
->  		goto error_volumes;
-> -	p->proc_fops = &afs_proc_cell_volumes_fops;
-> -	p->owner = THIS_MODULE;
-> -	p->data = cell;
+On Sun, Apr 20, 2008 at 03:34:41PM +0200, Willy Tarreau wrote:
+> On Sun, Apr 20, 2008 at 04:30:07PM +0300, Adrian Bunk wrote:
+> > Such a "crazy setting" shouldn't be offered to users at all.
+> > 
+> > We should either aim at 4k stacks unconditionally for all 32bit 
+> > architectures with 4k page size or don't allow any architecture
+> > to offer 4k stacks.
+> 
+> I agree you make a valid point here. Then wouldn't it be easier to
+> simply remove 4k and agree it was a wet dream ?
 
-Checks for NULL "cell" are still in place, however.
-In afs_proc_cell_servers_open(), afs_proc_cell_vlservers_open(), and
-afs_proc_cell_volumes_fops().
+If the sh maintainer and the m68knommu maintainer (and perhaps 
+MontaVista) agree that it was a wet dream.
+
+> Willy
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
