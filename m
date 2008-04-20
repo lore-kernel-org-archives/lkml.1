@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYDTIcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbYDTIcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYDTIcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 04:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYDTIbX
+	id S1757682AbYDTIcl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 04:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYDTIbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 04:31:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:51200 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbYDTIbW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 04:31:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=XFkeTHp02ONOCur1y6MNFr2XaeEBYp5p1ZQNH6uv00d00wmsI+q6Zc14C4AMPnbQflimh4d91F0Y4LtjoQC14xrwMPmJKUXEPKpAZHsyrSc+oDqCm4gE1VEK2Oxn1aI9LfcbljbWxzHFb6MhNCdBTzAfLY2Is4HjnzuJsrLuk6g=
-Date: Sun, 20 Apr 2008 12:31:10 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>
-Subject: [PATCH 5/5] Clocklib: Use correct clock for IrDA on pxa
-Message-ID: <20080420083110.GA353@doriath.ww600.siemens.net>
-References: <20080420082925.GA32739@doriath.ww600.siemens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080420082925.GA32739@doriath.ww600.siemens.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 20 Apr 2008 04:31:31 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:36731 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756012AbYDTIb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 04:31:29 -0400
+Date: Sun, 20 Apr 2008 10:30:19 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Alex Dubov <oakad@yahoo.com>
+Cc: David Brownell <david-b@pacbell.net>, Andrew Victor <linux@maxim.org.za>,
+       Pavel Pisa <ppisa@pikron.com>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       Anderson Briglia <briglia.anderson@gmail.com>,
+       "Syed Mohammed, Khasim" <x0khasim@ti.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] MMC multiwrite capability removal
+Message-ID: <20080420103019.7c31cb9f@mjolnir.drzeus.cx>
+In-Reply-To: <896748.37554.qm@web36708.mail.mud.yahoo.com>
+References: <20080419095136.15a50cc9@mjolnir.drzeus.cx>
+	<896748.37554.qm@web36708.mail.mud.yahoo.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
----
- drivers/net/irda/pxaficp_ir.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sat, 19 Apr 2008 19:34:12 -0700 (PDT)
+Alex Dubov <oakad@yahoo.com> wrote:
 
-diff --git a/drivers/net/irda/pxaficp_ir.c b/drivers/net/irda/pxaficp_ir.c
-index 8db71ab..1aae2d6 100644
---- a/drivers/net/irda/pxaficp_ir.c
-+++ b/drivers/net/irda/pxaficp_ir.c
-@@ -815,7 +815,7 @@ static int pxa_irda_probe(struct platform_device *pdev)
- 	si->dev = &pdev->dev;
- 	si->pdata = pdev->dev.platform_data;
- 
--	si->sir_clk = clk_get(&pdev->dev, "UARTCLK");
-+	si->sir_clk = clk_get(&pdev->dev, "STUARTCLK");
- 	si->fir_clk = clk_get(&pdev->dev, "FICPCLK");
- 	if (IS_ERR(si->sir_clk) || IS_ERR(si->fir_clk)) {
- 		err = PTR_ERR(IS_ERR(si->sir_clk) ? si->sir_clk : si->fir_clk);
+> 
+> tifm_sd relies on controller to report the number of successfully transferred
+> blocks. Of course, I cannot be sure to what extent the controller is
+> trustworthy. It worked fine until now, though.
+> 
+
+Sounds like a perfect example of when we have to report 0 upon
+failures. I suspect most controllers will be like this as all the specs
+I've glanced at lack the detail needed to implement a proper sector
+count.
+
+The problems caused by reporting incorrect values here are extremely
+rare and difficult to provoke, so normal testing is not likely to
+uncover it.
+
+Rgds
 -- 
-1.5.4.4
+     -- Pierre Ossman
 
-
--- 
-With best wishes
-Dmitry
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
