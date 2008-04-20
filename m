@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbYDTKoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762089AbYDTKov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbYDTKoP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYDTKkW
+	id S1762089AbYDTKov (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758832AbYDTKk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:40:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56284 "EHLO
+	Sun, 20 Apr 2008 06:40:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56294 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752366AbYDTKkU (ORCPT
+	with ESMTP id S1758821AbYDTKkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:40:20 -0400
+	Sun, 20 Apr 2008 06:40:25 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH 13/36] firmware: clean up samples for coding style issues
-Date: Sun, 20 Apr 2008 03:45:43 -0700
-Message-Id: <1208688366-9252-13-git-send-email-gregkh@suse.de>
+Cc: Pavel Machek <pavel@ucw.cz>, Pavel Machek <pavel@suse.cz>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 15/36] power_state: remove it from driver core
+Date: Sun, 20 Apr 2008 03:45:45 -0700
+Message-Id: <1208688366-9252-15-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080420104516.GA9225@suse.de>
 References: <20080420104516.GA9225@suse.de>
@@ -26,235 +25,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes up a number of coding style issues in the firmware sample files.
+From: Pavel Machek <pavel@ucw.cz>
 
-Yeah, it still doesn't build properly yet, that's next...
+power_state is scheduled for removal, and it is used only for debug
+prints by driver core. Remove it.
 
-
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- samples/firmware_class/firmware_sample_driver.c    |   45 +++++++++++---------
- .../firmware_sample_firmware_class.c               |   33 +++++++--------
- 2 files changed, 40 insertions(+), 38 deletions(-)
+ drivers/base/power/main.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-diff --git a/samples/firmware_class/firmware_sample_driver.c b/samples/firmware_class/firmware_sample_driver.c
-index ff0f2f2..165cff9 100644
---- a/samples/firmware_class/firmware_sample_driver.c
-+++ b/samples/firmware_class/firmware_sample_driver.c
-@@ -12,8 +12,7 @@
- #include <linux/init.h>
- #include <linux/device.h>
- #include <linux/string.h>
--
--#include "linux/firmware.h"
-+#include <linux/firmware.h>
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index d887d5c..26de2c0 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -377,11 +377,6 @@ static int suspend_device(struct device *dev, pm_message_t state)
  
- static struct device ghost_device = {
- 	.bus_id    = "ghost0",
-@@ -31,11 +30,14 @@ static void sample_firmware_load(char *firmware, int size)
- static void sample_probe_default(void)
- {
- 	/* uses the default method to get the firmware */
--        const struct firmware *fw_entry;
--	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
-+	const struct firmware *fw_entry;
-+	int retval;
-+
-+	printk(KERN_INFO "firmware_sample_driver: "
-+		"a ghost device got inserted :)\n");
+ 	down(&dev->sem);
  
--        if(request_firmware(&fw_entry, "sample_driver_fw", &ghost_device)!=0)
--	{
-+	retval = request_firmware(&fw_entry, "sample_driver_fw", &ghost_device);
-+	if (retval) {
- 		printk(KERN_ERR
- 		       "firmware_sample_driver: Firmware not available\n");
- 		return;
-@@ -47,17 +49,20 @@ static void sample_probe_default(void)
- 
- 	/* finish setting up the device */
- }
-+
- static void sample_probe_specific(void)
- {
-+	int retval;
- 	/* Uses some specific hotplug support to get the firmware from
- 	 * userspace  directly into the hardware, or via some sysfs file */
- 
- 	/* NOTE: This currently doesn't work */
- 
--	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
-+	printk(KERN_INFO "firmware_sample_driver: "
-+		"a ghost device got inserted :)\n");
- 
--        if(request_firmware(NULL, "sample_driver_fw", &ghost_device)!=0)
--	{
-+	retval = request_firmware(NULL, "sample_driver_fw", &ghost_device);
-+	if (retval) {
- 		printk(KERN_ERR
- 		       "firmware_sample_driver: Firmware load failed\n");
- 		return;
-@@ -70,7 +75,7 @@ static void sample_probe_specific(void)
- }
- static void sample_probe_async_cont(const struct firmware *fw, void *context)
- {
--	if(!fw){
-+	if (!fw) {
- 		printk(KERN_ERR
- 		       "firmware_sample_driver: firmware load failed\n");
- 		return;
-@@ -80,19 +85,18 @@ static void sample_probe_async_cont(const struct firmware *fw, void *context)
- 	       (char *)context);
- 	sample_firmware_load(fw->data, fw->size);
- }
-+
- static void sample_probe_async(void)
- {
- 	/* Let's say that I can't sleep */
- 	int error;
--	error = request_firmware_nowait (THIS_MODULE, FW_ACTION_NOHOTPLUG,
--					 "sample_driver_fw", &ghost_device,
--					 "my device pointer",
--					 sample_probe_async_cont);
--	if(error){
--		printk(KERN_ERR
--		       "firmware_sample_driver:"
-+	error = request_firmware_nowait(THIS_MODULE, FW_ACTION_NOHOTPLUG,
-+					"sample_driver_fw", &ghost_device,
-+					"my device pointer",
-+					sample_probe_async_cont);
-+	if (error)
-+		printk(KERN_ERR "firmware_sample_driver:"
- 		       " request_firmware_nowait failed\n");
+-	if (dev->power.power_state.event) {
+-		dev_dbg(dev, "PM: suspend %d-->%d\n",
+-			dev->power.power_state.event, state.event);
 -	}
- }
- 
- static int sample_init(void)
-@@ -105,11 +109,12 @@ static int sample_init(void)
- 	sample_probe_async();
- 	return 0;
- }
-+
- static void __exit sample_exit(void)
- {
- }
- 
--module_init (sample_init);
--module_exit (sample_exit);
-+module_init(sample_init);
-+module_exit(sample_exit);
- 
- MODULE_LICENSE("GPL");
-diff --git a/samples/firmware_class/firmware_sample_firmware_class.c b/samples/firmware_class/firmware_sample_firmware_class.c
-index 2799c47..9392116 100644
---- a/samples/firmware_class/firmware_sample_firmware_class.c
-+++ b/samples/firmware_class/firmware_sample_firmware_class.c
-@@ -25,30 +25,27 @@ MODULE_LICENSE("GPL");
- 
- static inline struct class_device *to_class_dev(struct kobject *obj)
- {
--	return container_of(obj,struct class_device,kobj);
-+	return container_of(obj, struct class_device, kobj);
- }
-+
- static inline
- struct class_device_attribute *to_class_dev_attr(struct attribute *_attr)
- {
--	return container_of(_attr,struct class_device_attribute,attr);
-+	return container_of(_attr, struct class_device_attribute, attr);
- }
- 
--int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
--int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
 -
- struct firmware_priv {
- 	char fw_id[FIRMWARE_NAME_MAX];
- 	s32 loading:2;
- 	u32 abort:1;
- };
- 
--extern struct class firmware_class;
--
- static ssize_t firmware_loading_show(struct class_device *class_dev, char *buf)
- {
- 	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
- 	return sprintf(buf, "%d\n", fw_priv->loading);
- }
-+
- static ssize_t firmware_loading_store(struct class_device *class_dev,
- 				      const char *buf, size_t count)
- {
-@@ -57,7 +54,7 @@ static ssize_t firmware_loading_store(struct class_device *class_dev,
- 
- 	fw_priv->loading = simple_strtol(buf, NULL, 10);
- 
--	switch(fw_priv->loading){
-+	switch (fw_priv->loading) {
- 	case -1:
- 		/* abort load an panic */
- 		break;
-@@ -65,7 +62,7 @@ static ssize_t firmware_loading_store(struct class_device *class_dev,
- 		/* setup load */
- 		break;
- 	case 0:
--		if(prev_loading==1){
-+		if (prev_loading == 1) {
- 			/* finish load and get the device back to working
- 			 * state */
- 		}
-@@ -130,24 +127,24 @@ static int fw_setup_class_device(struct class_device *class_dev,
- 	class_dev->class = &firmware_class,
- 	class_set_devdata(class_dev, fw_priv);
- 	retval = class_device_register(class_dev);
--	if (retval){
-+	if (retval) {
- 		printk(KERN_ERR "%s: class_device_register failed\n",
--		       __FUNCTION__);
-+		       __func__);
- 		goto error_free_fw_priv;
- 	}
- 
- 	retval = sysfs_create_bin_file(&class_dev->kobj, &firmware_attr_data);
--	if (retval){
-+	if (retval) {
- 		printk(KERN_ERR "%s: sysfs_create_bin_file failed\n",
--		       __FUNCTION__);
-+		       __func__);
- 		goto error_unreg_class_dev;
- 	}
- 
- 	retval = class_device_create_file(class_dev,
- 					  &class_device_attr_loading);
--	if (retval){
-+	if (retval) {
- 		printk(KERN_ERR "%s: class_device_create_file failed\n",
--		       __FUNCTION__);
-+		       __func__);
- 		goto error_remove_data;
- 	}
- 
-@@ -183,16 +180,16 @@ static int __init firmware_sample_init(void)
- 
- 	device_initialize(&my_device);
- 	class_dev = kmalloc(sizeof(struct class_device), GFP_KERNEL);
--	if(!class_dev)
-+	if (!class_dev)
- 		return -ENOMEM;
- 
- 	error = fw_setup_class_device(class_dev, "my_firmware_image",
- 				      &my_device);
--	if(error){
-+	if (error) {
- 		kfree(class_dev);
- 		return error;
- 	}
--        return 0;
-+	return 0;
- 
- }
- static void __exit firmware_sample_exit(void)
+ 	if (dev->class && dev->class->suspend) {
+ 		suspend_device_dbg(dev, state, "class ");
+ 		error = dev->class->suspend(dev, state);
 -- 
 1.5.4.5
 
