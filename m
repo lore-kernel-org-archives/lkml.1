@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYDTXTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYDTXk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYDTXTq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYDTXTh
+	id S1754677AbYDTXk2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 19:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYDTXkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:19:37 -0400
-Received: from hall2.aurel32.net ([91.121.138.14]:40215 "EHLO
-	hall2.aurel32.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbYDTXTg (ORCPT
+	Sun, 20 Apr 2008 19:40:14 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52623 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbYDTXkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:19:36 -0400
-X-Greylist: delayed 1781 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 19:19:36 EDT
-Date: Mon, 21 Apr 2008 00:49:42 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Adrian Bunk <bunk@kernel.org>, "John W. Linville" <linville@tuxdriver.com>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	Sun, 20 Apr 2008 19:40:13 -0400
+Date: Sun, 20 Apr 2008 17:40:11 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: David Miller <davem@davemloft.net>
+Cc: bunk@kernel.org, aacraid@adaptec.com,
+       James.Bottomley@HansenPartnership.com, wli@holomorphy.com,
+       sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: mips BCM47XX compile error
-Message-ID: <20080420224942.GA21009@volta.aurel32.net>
-Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
-	Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-	linux-kernel@vger.kernel.org
-References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <200804201214.46936.mb@bu3sch.de>
+Subject: Re: [2.6 patch] sparc: export kmap_atomic_to_page
+Message-ID: <20080420234011.GT20637@parisc-linux.org>
+References: <20080414141956.GN6695@cs181133002.pp.htv.fi> <20080415.003910.50277238.davem@davemloft.net> <20080420201443.GB14788@cs181133002.pp.htv.fi> <20080420.132829.220464348.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200804201214.46936.mb@bu3sch.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+In-Reply-To: <20080420.132829.220464348.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch a écrit :
-> On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
->> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
->> (ssb: Add Gigabit Ethernet driver) causes the following
->> build error with bcm47xx_defconfig:
->>
->> <--  snip  -->
->>
->> ...
->>   LD      .tmp_vmlinux1
->> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
->> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
->> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
->> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
->> arch/mips/pci/built-in.o: In function `pcibios_init':
->> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
->> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
->> make[1]: *** [.tmp_vmlinux1] Error 1
+On Sun, Apr 20, 2008 at 01:28:29PM -0700, David Miller wrote:
+> From: Adrian Bunk <bunk@kernel.org>
+> Date: Sun, 20 Apr 2008 23:14:43 +0300
 > 
-> Some parts of the new 47xx arch code are not ported, yet.
+> > On Tue, Apr 15, 2008 at 12:39:10AM -0700, David Miller wrote:
+> > > From: Adrian Bunk <bunk@kernel.org>
+> > >...
+> > > > <--  snip  -->
+> > > > 
+> > > >   MODPOST 1741 modules
+> > > > ERROR: "kmap_atomic_to_page" [drivers/scsi/aacraid/aacraid.ko] undefined!
+> > > > ...
+> > > > make[2]: *** [__modpost] Error 1
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > 
+> > > Applied, thanks Adrian.
+> > 
+> > Please drop - aacraid no longer uses it in 2.6.26.
+> 
+> Ok, will do.
 
-It would have been nice at least to warn before breaking a platform.
-
-> Somebody should port all the new code from openwrt SVN over to mainline.
-> I don't really have time for that, at the moment, though.
-
-I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
-can't find a possible fix among them. Do you have a better pointer?
+Looks like the only remaining user is in mm/shmem.c.  I guess it can be
+unexported now?
 
 -- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
