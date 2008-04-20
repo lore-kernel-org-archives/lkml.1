@@ -1,65 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYDTTYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbYDTTZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbYDTTYW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 15:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYDTTYO
+	id S1760090AbYDTTZi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 15:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbYDTTZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 15:24:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:33014 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbYDTTYN (ORCPT
+	Sun, 20 Apr 2008 15:25:29 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54794 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756056AbYDTTZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 15:24:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=h/wqi1U1+vzLzWJ1gvMup9wXcbhaXZMbmOFf0MRp6N3fRKK502UEt+ElbuPFNf9SLcb32SNQ02rFJDm1urErcPS5zi2Ql+koZapMcnvXxcQOwrvYSmnnEnmFL79xpiQaIdrJcnvzXlJVCFAbmylQF4PDnrkQ5EXXsVrri3DRsEI=
-Message-ID: <480B9856.3040902@gmail.com>
-Date: Sun, 20 Apr 2008 23:24:06 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86: remove unused code and data in nexgen.c
-References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>	<1208660074-7324-3-git-send-email-dmitri.vorobiev@gmail.com>	<480AC505.1030301@zytor.com> <877ies9x6b.fsf@basil.nowhere.org>
-In-Reply-To: <877ies9x6b.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 20 Apr 2008 15:25:28 -0400
+To: bfields@fieldses.org
+CC: miklos@szeredi.hu, trond.myklebust@fys.uio.no, eshel@almaden.ibm.com,
+       neilb@suse.de, akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20080420184515.GA27536@fieldses.org> (bfields@fieldses.org)
+Subject: Re: nfs: lock stuck after interrupt
+References: <E1JmY9Y-0004e4-7R@pomaz-ex.szeredi.hu> <20080420184515.GA27536@fieldses.org>
+Message-Id: <E1Jnf9i-0001Lo-Tk@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 20 Apr 2008 21:24:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen пишет:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
+> > lockd: vfs_lock_file returned 1
 > 
->> Dmitri Vorobiev wrote:
->>> Nobody calls the function nexgen_init_cpu(), therefore it
->>> can be removed. The variable nexgen_cpu_dev is used only by
->>> this function, so this patch removes useless data as well.
->>> This patch was build-tested using defconfigs for i386 and x86_64.
->>> It also survived a few randconfig instances for i386. Runtime
->>> tests were performed by booting 32-bit and 64-bit x86 boxen up to
->>> the shell prompt.
->> NAK.  This is broken.
->>
->> The reason nexgen_cpu_dev is unreferenced is because the file is
->> missing a cpu_vendor_dev_register(), which should be added.
-> 
-> If we did that long without it wouldn't it be better to just remove it?
-> 
-> Also NexGen was never shipped anyways, but bought by AMD and became
-> the K6. So I assume whatever this file is supposed to do is done
-> by amd.c anyways.
-> 
+> Why is vfs_lock_file returning 1?  It should be 0 or -ERRNO.
 
-IOW, you claim that now it's safe enough to throw away the NexGen
-altogether?
+Er sorry, that was the "return special value for async lock requests"
+patch, which I was testing at the time.
 
-Dmitri
+It doesn't make a difference, but here's the log for nfs-2.6.git.  It
+also contains a '/etc/init.d/nfs-kernel-server stop' at the end, which
+eventually removes the stuck lock.
 
-> -Andi
-> 
+Miklos
+
+
+[  180.770000] lockd: request from 192.168.1.3, port=928
+[  180.770000] lockd: LOCK          called
+[  180.770000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  180.770000] lockd: get host uml2
+[  180.770000] lockd: nsm_monitor(uml2)
+[  180.770000] lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  180.770000] lockd: creating file for (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  180.770000] lockd: found file 0ad722c0 (count 0)
+[  180.770000] lockd: nlmsvc_lock(ubda/96317, ty=1, pi=1, 0-99, bl=1)
+[  180.770000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  180.770000] lockd: get host uml2
+[  180.770000] lockd: nlmsvc_lookup_block f=0ad722c0 pd=1 0-99 ty=1
+[  180.770000] lockd: get host uml2
+[  180.770000] lockd: created block 0ae26200...
+[  180.770000] lockd: vfs_lock_file returned -11
+[  180.770000] lockd: nlmsvc_insert_block(0ae26200, -1)
+[  180.770000] lockd: release host uml2
+[  180.770000] lockd: nlmsvc_lock returned 50331648
+[  180.770000] lockd: LOCK         status 3
+[  180.770000] lockd: release host uml2
+[  180.770000] lockd: nlm_release_file(0ad722c0, ct = 2)
+[  181.490000] lockd: request from 192.168.1.3, port=928
+[  181.490000] lockd: CANCEL        called
+[  181.490000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  181.490000] lockd: get host uml2
+[  181.490000] lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  181.490000] lockd: found file 0ad722c0 (count 1)
+[  181.490000] lockd: nlmsvc_cancel(ubda/96317, pi=1, 0-99)
+[  181.490000] lockd: nlmsvc_lookup_block f=0ad722c0 pd=1 0-99 ty=1
+[  181.490000] lockd: check f=0ad722c0 pd=1 0-99 ty=1 cookie=36120000
+[  181.490000] lockd: unlinking block 0ae26200...
+[  181.490000] lockd: freeing block 0ae26200...
+[  181.490000] lockd: release host uml2
+[  181.490000] lockd: nlm_release_file(0ad722c0, ct = 2)
+[  181.490000] lockd: CANCEL        status 0
+[  181.490000] lockd: release host uml2
+[  181.490000] lockd: nlm_release_file(0ad722c0, ct = 1)
+[  181.490000] lockd: closing file ubda/96317
+[  181.490000] lockd: request from 192.168.1.3, port=928
+[  181.490000] lockd: LOCK          called
+[  181.490000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  181.490000] lockd: get host uml2
+[  181.490000] lockd: nsm_monitor(uml2)
+[  181.490000] lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  181.490000] lockd: creating file for (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  181.490000] lockd: found file 0ad722c0 (count 0)
+[  181.490000] lockd: nlmsvc_lock(ubda/96317, ty=1, pi=2, 0-99, bl=1)
+[  181.490000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  181.490000] lockd: get host uml2
+[  181.490000] lockd: nlmsvc_lookup_block f=0ad722c0 pd=2 0-99 ty=1
+[  181.490000] lockd: get host uml2
+[  181.490000] lockd: created block 0ae26200...
+[  181.490000] lockd: vfs_lock_file returned -11
+[  181.490000] lockd: nlmsvc_insert_block(0ae26200, -1)
+[  181.490000] lockd: release host uml2
+[  181.490000] lockd: nlmsvc_lock returned 50331648
+[  181.490000] lockd: LOCK         status 3
+[  181.490000] lockd: release host uml2
+[  181.490000] lockd: nlm_release_file(0ad722c0, ct = 2)
+[  183.390000] lockd: VFS unblock notification for block 0ad6c0c4
+[  183.390000] lockd: nlmsvc_insert_block(0ae26200, 0)
+[  183.390000] nlmsvc_retry_blocked(0ae26200, when=-11661)
+[  183.390000] lockd: grant blocked lock 0ae26200
+[  183.390000] lockd: unlinking block 0ae26200...
+[  183.390000] lockd: GRANTing blocked lock.
+[  183.390000] lockd: nlmsvc_insert_block(0ae26200, -1)
+[  183.390000] lockd: call procedure 10 on uml2 (async)
+[  183.390000] lockd: nlm_bind_host(192.168.1.2->192.168.1.3)
+[  183.390000] lockd: GRANT_MSG RPC callback
+[  183.390000] lockd: nlmsvc_insert_block(0ae26200, 6000)
+[  183.390000] lockd: request from 192.168.1.3, port=758
+[  183.390000] lockd: GRANTED_RES   called
+[  183.390000] grant_reply: looking for cookie 1237, s=0 
+[  183.390000] nlmsvc_find_block(37120000): block=0ae26200
+[  183.390000] lockd: unlinking block 0ae26200...
+[  183.390000] lockd: freeing block 0ae26200...
+[  183.390000] lockd: release host uml2
+[  183.390000] lockd: nlm_release_file(0ad722c0, ct = 1)
+[  185.100000] lockd: request from 192.168.1.3, port=928
+[  185.100000] lockd: UNLOCK        called
+[  185.100000] lockd: nlm_lookup_host(192.168.1.2->192.168.1.3, p=6, v=4, my role=server, name=uml2)
+[  185.100000] lockd: get host uml2
+[  185.100000] lockd: nlm_lookup_file (02000001 00006200 00000002 0001783d 93dc4121 00017801 d06c5915 00000000)
+[  185.100000] lockd: found file 0ad722c0 (count 0)
+[  185.100000] lockd: nlmsvc_unlock(ubda/96317, pi=3, 0-9223372036854775807)
+[  185.100000] lockd: nlmsvc_cancel(ubda/96317, pi=3, 0-9223372036854775807)
+[  185.100000] lockd: nlmsvc_lookup_block f=0ad722c0 pd=3 0-9223372036854775807 ty=2
+[  185.100000] lockd: UNLOCK        status 0
+[  185.100000] lockd: release host uml2
+[  185.100000] lockd: nlm_release_file(0ad722c0, ct = 1)
+[  192.280000] lockd: shutting down host module
+[  192.280000] lockd: nuking all hosts...
+[  192.280000] lockd: host garbage collection
+[  192.280000] lockd: nlmsvc_mark_resources
+[  192.280000] lockd: delete host uml2
+[  192.280000] nfsd: last server has exited
+[  192.280000] nfsd: unexporting all filesystems
+
+
 
