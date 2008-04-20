@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbYDTDHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYDTDWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbYDTDHi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 23:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYDTDHb
+	id S1754529AbYDTDWq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 23:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbYDTDWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 23:07:31 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1125 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbYDTDHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 23:07:31 -0400
-Subject: Re: Alternative implementation of the generic __ffs
-From: Joe Perches <joe@perches.com>
-To: Matti Aarnio <matti.aarnio@zmailer.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080419222911.GJ3700@mea-ext.zmailer.org>
-References: <alpine.DEB.1.10.0804061320470.7751@twinlark.arctic.org>
-	 <1207563950.7880.1246457209@webmail.messagingengine.com>
-	 <20080418201809.GA5036@mailshack.com>
-	 <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
-	 <1208563762.10414.19.camel@brick>
-	 <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
-	 <1208566724.4891.25.camel@localhost> <1208567093.10414.20.camel@brick>
-	 <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
-	 <1208573728.11990.14.camel@localhost>
-	 <20080419222911.GJ3700@mea-ext.zmailer.org>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 20:06:57 -0700
-Message-Id: <1208660817.12388.40.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Apr 2008 23:22:37 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:42209 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750761AbYDTDWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 23:22:36 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] linux/atm_tcp.h: cleanup for userspace
+Date: Sat, 19 Apr 2008 23:22:34 -0400
+Message-Id: <1208661754-3197-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-20 at 01:29 +0300, Matti Aarnio wrote:
-> I am curious, why not take the code already in glibc ffs() for ARM ?
-> That is, if the ffs() is all that important detail in kernel ?
+The atm_tcp.h uses types from linux/atm.h, but does not include it.  It
+should also use the standard __u## types from linux/types.h rather than the
+uint##_t types since the former can be found with the kernel already.
 
-Here's test results with the glibc ffs implementation.
-(small const is still using slower add rather than or)
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/linux/atm_tcp.h |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-$ gcc -Os -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3155 tics,  8331 tics
-New:            4211 tics,  8793 tics
-Smallest:       4019 tics,  7754 tics
-Small const:    3552 tics,  6308 tics
-glibc:          2816 tics,  6911 tics
-Empty loop:     1516 tics,  2244 tics
-
-$ gcc -O2 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3155 tics,  7828 tics
-New:            4792 tics,  8825 tics
-Smallest:       4401 tics,  7155 tics
-Small const:    3539 tics,  5805 tics
-glibc:          2720 tics,  7061 tics
-Empty loop:     1516 tics,  2148 tics
-
-$ gcc -O3 -fomit-frame-pointer ffs.c
-$ ./a.out
-Original:       3080 tics,  7706 tics
-New:            4721 tics,  8663 tics
-Smallest:       4334 tics,  7116 tics
-Small const:    3466 tics,  5672 tics
-glibc:          2649 tics,  6939 tics
-Empty loop:     1444 tics,  2012 tics
-
+diff --git a/include/linux/atm_tcp.h b/include/linux/atm_tcp.h
+index 18787f9..f05014e 100644
+--- a/include/linux/atm_tcp.h
++++ b/include/linux/atm_tcp.h
+@@ -8,10 +8,8 @@
+ #define LINUX_ATM_TCP_H
+ 
+ #include <linux/atmapi.h>
+-
+-#ifdef __KERNEL__
+ #include <linux/types.h>
+-#endif
++#include <linux/atm.h>
+ #include <linux/atmioc.h>
+ 
+ 
+@@ -20,9 +18,9 @@
+  */
+ 
+ struct atmtcp_hdr {
+-	uint16_t	vpi;
+-	uint16_t	vci;
+-	uint32_t	length;		/* ... of data part */
++	__u16	vpi;
++	__u16	vci;
++	__u32	length;		/* ... of data part */
+ };
+ 
+ /*
+-- 
+1.5.5
 
