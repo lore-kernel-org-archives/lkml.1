@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbYDTE0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbYDTEix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbYDTE0Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 00:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbYDTE0G
+	id S1753150AbYDTEix (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 00:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYDTEim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 00:26:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33164 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbYDTE0G (ORCPT
+	Sun, 20 Apr 2008 00:38:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39257
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750856AbYDTEil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 00:26:06 -0400
-Message-ID: <480AC505.1030301@zytor.com>
-Date: Sun, 20 Apr 2008 00:22:29 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86: remove unused code and data in nexgen.c
-References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com> <1208660074-7324-3-git-send-email-dmitri.vorobiev@gmail.com>
-In-Reply-To: <1208660074-7324-3-git-send-email-dmitri.vorobiev@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 20 Apr 2008 00:38:41 -0400
+Date: Sat, 19 Apr 2008 21:38:42 -0700 (PDT)
+Message-Id: <20080419.213842.12435812.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Vorobiev wrote:
-> Nobody calls the function nexgen_init_cpu(), therefore it
-> can be removed. The variable nexgen_cpu_dev is used only by
-> this function, so this patch removes useless data as well.
-> 
-> This patch was build-tested using defconfigs for i386 and x86_64.
-> It also survived a few randconfig instances for i386. Runtime
-> tests were performed by booting 32-bit and 64-bit x86 boxen up to
-> the shell prompt.
 
-NAK.  This is broken.
+This fixes various small bits of build fallout, integrates some ATM
+and hci_usb bluetooth cleanup/fixup patches that came in via Andrew, a
+ROSE locking bug fix, and a tg3 driver DMA data corruption fix.
 
-The reason nexgen_cpu_dev is unreferenced is because the file is missing 
-a cpu_vendor_dev_register(), which should be added.
+Please pull, thanks a lot!
 
-	-hpa
+The following changes since commit 3925e6fc1f774048404fdd910b0345b06c699eb4:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jmorris/security-testing-2.6
 
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Bernard Pidoux (1):
+      rose: Socket lock was not released before returning to user space
+
+David S. Miller (1):
+      iwlwifi: Fix unconditional access to station->tidp[].agg.
+
+Julia Lawall (2):
+      drivers/atm: use time_before, time_before_eq, etc
+      drivers/net/appletalk: use time_before, time_before_eq, etc
+
+Mark Asselstine (1):
+      atm nicstar: Removal of debug code containing deprecated calls to cli()/sti()
+
+Matt Carlson (1):
+      tg3: 5701 DMA corruption fix
+
+Patrick McHardy (2):
+      netfilter: Fix SCTP nat build.
+      netfilter: Fix SIP conntrack build with NAT disabled.
+
+Pavel Machek (2):
+      hci_usb: do not initialize static variables to 0
+      hci_usb: remove code obfuscation
+
+ drivers/atm/iphase.c                       |    7 +-
+ drivers/atm/nicstar.c                      |  117 +++++-----------------------
+ drivers/atm/nicstar.h                      |   12 ---
+ drivers/bluetooth/hci_usb.c                |   24 +++---
+ drivers/bluetooth/hci_usb.h                |    5 -
+ drivers/net/appletalk/cops.c               |    3 +-
+ drivers/net/tg3.c                          |   52 +++++++++++-
+ drivers/net/tg3.h                          |    1 +
+ drivers/net/wireless/iwlwifi/iwl-debugfs.c |   18 +++--
+ net/ipv4/netfilter/Kconfig                 |    1 +
+ net/netfilter/nf_conntrack_sip.c           |    3 +-
+ net/rose/af_rose.c                         |    6 +-
+ 12 files changed, 105 insertions(+), 144 deletions(-)
