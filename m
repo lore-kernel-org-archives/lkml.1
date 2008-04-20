@@ -1,89 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYDTUns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYDTUsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYDTUns (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 16:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYDTUnk
+	id S1754450AbYDTUsJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 16:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYDTUr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 16:43:40 -0400
-Received: from smtp.enter.net ([216.193.128.24]:2393 "EHLO smtp.enter.net"
+	Sun, 20 Apr 2008 16:47:59 -0400
+Received: from smtp04.mtu.ru ([62.5.255.51]:58269 "EHLO smtp04.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbYDTUnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 16:43:39 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: x86: 4kstacks default
-Date: Sun, 20 Apr 2008 16:43:34 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080420114845.77bf3fed@laptopd505.fenrus.org> <480BA12A.4000307@firstfloor.org>
-In-Reply-To: <480BA12A.4000307@firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804201643.35830.dhazelton@enter.net>
+	id S1750995AbYDTUr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 16:47:58 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: remove NexGen support
+Date: Mon, 21 Apr 2008 00:47:55 +0400
+Message-Id: <1208724475-15360-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-Mailer: git-send-email 1.5.3.6
+X-DCC-STREAM-Metrics: smtp04.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 April 2008 16:01:46 Andi Kleen wrote:
-> > These are real customer workloads; java based "many things going on" at a
-> > time showed several thousands of threads fin the system (a dozen or two
-> > per request, multiplied by the number of outstanding connections) for
-> > *real customers*.
->
-> Several thousands or 50k? Several thousands sounds large, but not entirely
-> unreasonable, but it is far from 50k.
->
+It is claimed that NexGen CPUs were never shipped:
 
-At 12 threads per request it'd only take about 4200 outstanding requests. That 
-is high, but I can see it happening. At 24 threads per request the number of 
-outstanding requests it takes to reach that is cut in half, to about 2100. 
-That number is more realistic. Since all outstanding requests aren't going to 
-be at the extremes, let us assume that it's a mid-point between the two for 
-the number of outstanding requests - say somewhere around 3150 outstanding 
-requests.
+http://lkml.org/lkml/2008/4/20/179
 
-While that is a rather high number, if a company - a decently sized one - is 
-using a piece of Java code internally for some reason they could easily have 
-that level of requests coming in from the users. For a website with a decent 
-load that routes a common request to the machine running the code it'd be 
-even easier to hit that limit. So yes, 50K threads *IS* actually pretty easy 
-to reach and could be a common workload.
+Also, the kernel support for these chips has been broken for
+a long time, the code intended to support NexGen thereby being
+essentially dead.
 
-> > That you don't take that serious, fair, you can take serious whatever you
-> > want.
->
-> No I don't take 50k threads on 32bit serious. And I hope you do not
-> either.
+As an outcome of the discussion that can be found using the URL
+above, this patch removes the NexGen support altogether.
 
-Just makes you sound foolish. Run the numbers yourself and you'll see that it 
-is easy for a machine running highly threaded code to easily hit 50K threads.
+The changes in this patch survived a defconfig build for i386, a
+couple of successful randconfig builds, as well as a runtime test,
+which consisted in booting a 32-bit x86 box up to the shell prompt.
 
-<snip>
-> > Yes 2.4 sucked a lot more than 2.6 does. But even 2.6 will (and does)
-> > have fragmentation issues. We don't have effective physical address based
-> > reclaim yet for higher order allocs.
->
-> I don't see any evidence that there are serious order 1 fragmentation
-> issues on 2.6. If you have any please post it.
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+---
+ arch/x86/Kconfig.cpu         |    4 +-
+ arch/x86/kernel/cpu/Makefile |    1 -
+ arch/x86/kernel/cpu/nexgen.c |   59 ------------------------------------------
+ arch/x86/mm/init_32.c        |    6 ++--
+ include/asm-x86/processor.h  |    1 -
+ 5 files changed, 5 insertions(+), 66 deletions(-)
+ delete mode 100644 arch/x86/kernel/cpu/nexgen.c
 
-Due to me screwing up the configuration of Apache (2) and MySQL I have seen a 
-machine I own hit problems with memory fragmentation - and it's running a 2.6 
-series kernel (a distro 2.6.17)
-
-Because I was able to see that it was a problem I caused I didn't even *THINK* 
-about posting information about it to LKML. I didn't keep the logs of that 
-around - it happened more than three months ago and I clean the logs out 
-every three months or so.
-
-DRH
-
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index ee7ab45..f6c8b38 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -21,8 +21,8 @@ config M386
+ 
+ 	  Here are the settings recommended for greatest speed:
+ 	  - "386" for the AMD/Cyrix/Intel 386DX/DXL/SL/SLC/SX, Cyrix/TI
+-	  486DLC/DLC2, UMC 486SX-S and NexGen Nx586.  Only "386" kernels
+-	  will run on a 386 class machine.
++	  486DLC/DLC2, and UMC 486SX-S.  Only "386" kernels will run on a 386
++	  class machine.
+ 	  - "486" for the AMD/Cyrix/IBM/Intel 486DX/DX2/DX4 or
+ 	  SL/SLC/SLC2/SLC3/SX/SX2 and UMC U5D or U5S.
+ 	  - "586" for generic Pentium CPUs lacking the TSC
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index ee7c452..a0c6f81 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -11,7 +11,6 @@ obj-$(CONFIG_X86_32)	+= cyrix.o
+ obj-$(CONFIG_X86_32)	+= centaur.o
+ obj-$(CONFIG_X86_32)	+= transmeta.o
+ obj-$(CONFIG_X86_32)	+= intel.o
+-obj-$(CONFIG_X86_32)	+= nexgen.o
+ obj-$(CONFIG_X86_32)	+= umc.o
+ 
+ obj-$(CONFIG_X86_MCE)	+= mcheck/
+diff --git a/arch/x86/kernel/cpu/nexgen.c b/arch/x86/kernel/cpu/nexgen.c
+deleted file mode 100644
+index 5d5e1c1..0000000
+--- a/arch/x86/kernel/cpu/nexgen.c
++++ /dev/null
+@@ -1,59 +0,0 @@
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/string.h>
+-#include <asm/processor.h>
+-
+-#include "cpu.h"
+-
+-/*
+- *	Detect a NexGen CPU running without BIOS hypercode new enough
+- *	to have CPUID. (Thanks to Herbert Oppmann)
+- */
+-
+-static int __cpuinit deep_magic_nexgen_probe(void)
+-{
+-	int ret;
+-
+-	__asm__ __volatile__ (
+-		"	movw	$0x5555, %%ax\n"
+-		"	xorw	%%dx,%%dx\n"
+-		"	movw	$2, %%cx\n"
+-		"	divw	%%cx\n"
+-		"	movl	$0, %%eax\n"
+-		"	jnz	1f\n"
+-		"	movl	$1, %%eax\n"
+-		"1:\n"
+-		: "=a" (ret) : : "cx", "dx");
+-	return  ret;
+-}
+-
+-static void __cpuinit init_nexgen(struct cpuinfo_x86 *c)
+-{
+-	c->x86_cache_size = 256; /* A few had 1 MB... */
+-}
+-
+-static void __cpuinit nexgen_identify(struct cpuinfo_x86 *c)
+-{
+-	/* Detect NexGen with old hypercode */
+-	if (deep_magic_nexgen_probe())
+-		strcpy(c->x86_vendor_id, "NexGenDriven");
+-}
+-
+-static struct cpu_dev nexgen_cpu_dev __cpuinitdata = {
+-	.c_vendor	= "Nexgen",
+-	.c_ident	= { "NexGenDriven" },
+-	.c_models = {
+-			{ .vendor = X86_VENDOR_NEXGEN,
+-			  .family = 5,
+-			  .model_names = { [1] = "Nx586" }
+-			},
+-	},
+-	.c_init		= init_nexgen,
+-	.c_identify	= nexgen_identify,
+-};
+-
+-int __init nexgen_init_cpu(void)
+-{
+-	cpu_devs[X86_VENDOR_NEXGEN] = &nexgen_cpu_dev;
+-	return 0;
+-}
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index baf7c4f..4a47618 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -566,9 +566,9 @@ void __init paging_init(void)
+ 
+ /*
+  * Test if the WP bit works in supervisor mode. It isn't supported on 386's
+- * and also on some strange 486's (NexGen etc.). All 586+'s are OK. This
+- * used to involve black magic jumps to work around some nasty CPU bugs,
+- * but fortunately the switch to using exceptions got rid of all that.
++ * and also on some strange 486's. All 586+'s are OK. This used to involve
++ * black magic jumps to work around some nasty CPU bugs, but fortunately the
++ * switch to using exceptions got rid of all that.
+  */
+ static void __init test_wp_bit(void)
+ {
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 0b0a859..cf71977 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -119,7 +119,6 @@ struct cpuinfo_x86 {
+ #define X86_VENDOR_CYRIX	1
+ #define X86_VENDOR_AMD		2
+ #define X86_VENDOR_UMC		3
+-#define X86_VENDOR_NEXGEN	4
+ #define X86_VENDOR_CENTAUR	5
+ #define X86_VENDOR_TRANSMETA	7
+ #define X86_VENDOR_NSC		8
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+1.5.3
+
