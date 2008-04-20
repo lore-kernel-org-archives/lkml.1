@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYDTJFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYDTJG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbYDTJFz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 05:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYDTJFp
+	id S1756937AbYDTJG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 05:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYDTJGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 05:05:45 -0400
-Received: from dns.hk.18mail.cn ([210.245.210.181]:55314 "EHLO
-	hkm1.server.hk.18mail.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYDTJFp (ORCPT
+	Sun, 20 Apr 2008 05:06:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47663
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755261AbYDTJF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 05:05:45 -0400
-X-Greylist: delayed 3991 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 05:05:45 EDT
-From: Zhang Wei <zw@zh-kernel.org>
-To: dan.j.williams@intel.com
-Cc: leoli@freescale.com, linux-kernel@vger.kernel.org,
-       Zhang Wei <zw@zh-kernel.org>
-Subject: fsldma:[PATCH] update the fsldma driver MAINTAINERS info.
-Date: Sun, 20 Apr 2008 15:59:05 +0800
-Message-Id: <1208678345-6722-1-git-send-email-zw@zh-kernel.org>
-X-Mailer: git-send-email 1.5.3.8
+	Sun, 20 Apr 2008 05:05:56 -0400
+Date: Sun, 20 Apr 2008 02:05:57 -0700 (PDT)
+Message-Id: <20080420.020557.231970202.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linville@tuxdriver.com, tomas.winkler@intel.com,
+       linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl,
+       ivdoorn@gmail.com
+Subject: Re: [build bug] drivers/built-in.o: In function
+ `rt2x00leds_resume': : undefined reference to `led_classdev_resume'
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080420081302.GA11954@elte.hu>
+References: <20080420081302.GA11954@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Li Yang as the new maintainer for fsldma driver and update
-my email address. 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 20 Apr 2008 10:13:02 +0200
 
-Signed-off-by: Zhang Wei <zw@zh-kernel.org>
----
- MAINTAINERS |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+>   drivers/built-in.o: In function `rt2x00leds_resume':
+>   : undefined reference to `led_classdev_resume'
+>   drivers/built-in.o: In function `rt2x00leds_resume':
+>   : undefined reference to `led_classdev_resume'
+>   [...]
+> 
+> config:
+> 
+>   http://redhat.com/~mingo/misc/config-Sun_Apr_20_09_43_01_CEST_2008.bad
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e467758..812f0bf 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1611,8 +1611,10 @@ W:	http://linux-fbdev.sourceforge.net/
- S:	Maintained
+Thanks for your report.
+
+This is a similar case to the iwlwifi build failure you reported
+earlier today (where the leds infrastructure knob is modular but the
+driver using the interfaces is built-in).  Therefore, it likely should
+use select too.
+
+This should fix it:
+
+rt2x00: Select LEDS_CLASS instead of using 'depends'.
+
+Based upon a build failure reported by Ingo Molnar.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/wireless/rt2x00/Kconfig b/drivers/net/wireless/rt2x00/Kconfig
+index a1e3938..ab1029e 100644
+--- a/drivers/net/wireless/rt2x00/Kconfig
++++ b/drivers/net/wireless/rt2x00/Kconfig
+@@ -60,7 +60,8 @@ config RT2400PCI_RFKILL
  
- FREESCALE DMA DRIVER
--P;	Zhang Wei
--M:	wei.zhang@freescale.com
-+P:	Li Yang
-+M:	leoli@freescale.com
-+P:	Zhang Wei
-+M:	zw@zh-kernel.org
- L:	linuxppc-embedded@ozlabs.org
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
--- 
-1.5.3.8
-
+ config RT2400PCI_LEDS
+ 	bool "RT2400 leds support"
+-	depends on RT2400PCI && LEDS_CLASS
++	depends on RT2400PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -86,7 +87,8 @@ config RT2500PCI_RFKILL
+ 
+ config RT2500PCI_LEDS
+ 	bool "RT2500 leds support"
+-	depends on RT2500PCI && LEDS_CLASS
++	depends on RT2500PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -114,7 +116,8 @@ config RT61PCI_RFKILL
+ 
+ config RT61PCI_LEDS
+ 	bool "RT61 leds support"
+-	depends on RT61PCI && LEDS_CLASS
++	depends on RT61PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -130,7 +133,8 @@ config RT2500USB
+ 
+ config RT2500USB_LEDS
+ 	bool "RT2500 leds support"
+-	depends on RT2500USB && LEDS_CLASS
++	depends on RT2500USB
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -148,7 +152,8 @@ config RT73USB
+ 
+ config RT73USB_LEDS
+ 	bool "RT73 leds support"
+-	depends on RT73USB && LEDS_CLASS
++	depends on RT73USB
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
