@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759882AbYDTL5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbYDTMDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759882AbYDTL5e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 07:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbYDTL50
+	id S1759003AbYDTMDH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 08:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYDTMC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 07:57:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:28213 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbYDTL50 (ORCPT
+	Sun, 20 Apr 2008 08:02:56 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:64342 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107AbYDTMCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 07:57:26 -0400
+	Sun, 20 Apr 2008 08:02:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=g+1zy3JzXsJnpwgDJgCIoUhTP5yZ2OQbqwfSKt9J2H5HFb2zBFH0RjIVLpf6rmpjA43DfFd2Hkagito6ufSV+P8nukSAeGvBn979/z8DywaHop9IppvMUl8zmeoaz1omnW/vpVyGLRLMYy/5ahdVH2JGQHTbR34ja3XBELRqrs8=
-Message-ID: <480B2F9A.3020104@gmail.com>
-Date: Sun, 20 Apr 2008 13:57:14 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LMewsoILA+j4Z4YcgIKrxXxzv63DSDDd8hvMcCDUL9b5ynY0QTyRiXb/mcKjh2vuO7bj6/54yHNHjF6bt3H5hkHr70NkhGCNhpGchn+xQ3fANeCcyHqChZHopUa8CYQvDvWc2+i/tGdAms5NdN56nrgKCXCPrfkJRBTIq1mNR2M=
+Message-ID: <e85b9d30804200502p25842ec2i712da9e388c08e87@mail.gmail.com>
+Date: Sun, 20 Apr 2008 14:02:50 +0200
+From: Matthew <jackdachef@gmail.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Subject: Re: Linux 2.6.25
+Cc: torvalds@linux-foundation.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rudolf Marek" <r.marek@assembler.cz>,
+       "Gene Heskett" <gene.heskett@gmail.com>, "Len Brown" <lenb@kernel.org>
+In-Reply-To: <e85b9d30804190322o703d3b20se22eb6b5e82bae39@mail.gmail.com>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       marcel@holtmann.org, mit-devel@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: HID bus
-References: <Pine.LNX.4.64.0804181333180.12972@jikos.suse.cz> <1208644696-29129-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1208644696-29129-1-git-send-email-jirislaby@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=KOI8-R
+Content-Disposition: inline
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+	 <alpine.LFD.1.00.0804180843150.2879@woody.linux-foundation.org>
+	 <20080418193802.GK7674@cvg> <20080418200338.GL7674@cvg>
+	 <48096179.4060803@keyaccess.nl> <480964F7.3040701@keyaccess.nl>
+	 <20080419061701.GA7688@cvg>
+	 <e85b9d30804190318u74e14f0ct6ab53cb86f6ce15f@mail.gmail.com>
+	 <e85b9d30804190322o703d3b20se22eb6b5e82bae39@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3KC3cEB000889
 
-On 04/20/2008 12:38 AM, Jiri Slaby wrote:
-> Now, I wonder for exactly what purpose are module.*map files in
-> /lib/modules/`uname -r`/ dir, i.e. what would break, if the devices won't
-> be listed there on systems with unpatched module-init-tools.
+>  sure, I'll test-drive the vanilla-kernel, too>>  thanks
+ok, tested the vanilla-kernel this morning and it shows the exact hightemperatures (with CONFIG_THERMAL=y)
+I've got a question:
+when trying to disable thermal it just sits there & won't change:<*> Hardware Monitoring support  --->  -*- Generic Thermal sysfs driver  --->
+it seemingly depends on other things:Selected by: ACPI_THERMAL && !X86_VOYAGER && ACPI && ACPI_PROCESSOR
+is it safe to disable acpi_processor and acpi or CONFIG_THERMAL ingeneral ? or will it burn down my box ? ;)
+I'm asking this because it says/writes:CONFIG_ACPI_THERMAL:                                                    Å  Å                                                                         Å  Å This driver adds support for ACPI thermal zones.  Most mobile and       Å  Å some desktop systems support ACPI thermal zones.  It is HIGHLY          Å  Å recommended that this option be enabled, as your processor(s)           Å  Å may be damaged without it.
 
-Well, used by /sbin/hotplug. I.e. on systems which uses that hotplugging system 
-and not new enough udev. It means older RHEL, SLE* et al., and older 
-distributions too...
-
-So I suppose we still need the option to let users compile all the chosen 
-drivers into hid.
+thanks
+MatˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
