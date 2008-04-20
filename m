@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYDTOK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbYDTOKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbYDTOK3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 10:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYDTOKD
+	id S1761473AbYDTOKr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 10:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759811AbYDTOKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 10:10:03 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:33510 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759255AbYDTOKA (ORCPT
+	Sun, 20 Apr 2008 10:10:08 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44625 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546AbYDTOKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 10:10:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-	b=PvxLnl+6hVBRNMjO3KhhYN7D4RsPgwKDOzeJkMbb43FdxYtExpGy42jJkgb7pS8wsH72NaOTwDH+0cbJ2pSirT79pQRydQNI1/efI0Qy0KGwzieBoElRBs4PD1syhMacub5uZTed0z3osofsTvj0ISc+vG2zYvOZwcF/vcHwdnQ=;
-Message-ID: <480B4E87.4020709@unsolicited.net>
-Date: Sun, 20 Apr 2008 15:09:11 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 20 Apr 2008 10:10:06 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <480B4E97.9030805@s5r6.in-berlin.de>
+Date: Sun, 20 Apr 2008 16:09:27 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25 Kernel - Problems with capabilities
-References: <480A3D62.9000401@unsolicited.net> <1208676743.4763.10.camel@marge.simson.net>
-In-Reply-To: <1208676743.4763.10.camel@marge.simson.net>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain> <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain> <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org> <20080419204511.GP20637@parisc-linux.org>
+In-Reply-To: <20080419204511.GP20637@parisc-linux.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -30,71 +33,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Sat, 2008-04-19 at 19:43 +0100, David wrote:
->   
->> I'm wondering if anyone might be able to help with a capability problem 
->> I've noticed with .25 My ntp daemon will no longer run as any non-root 
->> user, and after some investigation it seems that calls to prctl() are 
->> failing.
->>
->> CONFIG_SECURITY_CAPABILITIES=y , so this should work?
->>
->> System is 32 bit x86 based on a venerable SuSE 9.1 distro.
->>
->> Full .config is attached.
->>
->> Thanks
->> David
->>
->>
->>     
->
-> FWIW, ntpd runs just fine here as user ntp on both my P4 and Q6600 boxen
-> with opensuse 10.3.
->
-> marge:..tmp/linux-2.6.25 # grep SECUR .config
-> CONFIG_EXT2_FS_SECURITY=y
-> CONFIG_EXT3_FS_SECURITY=y
-> CONFIG_EXT4DEV_FS_SECURITY=y
-> CONFIG_SECURITY=y
-> CONFIG_SECURITY_NETWORK=y
-> CONFIG_SECURITY_NETWORK_XFRM=y
-> CONFIG_SECURITY_CAPABILITIES=y
-> CONFIG_SECURITY_FILE_CAPABILITIES=y
-> CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR=0
-> # CONFIG_SECURITY_SELINUX is not set
-> marge:..tmp/linux-2.6.25 # grep SECUR /xx
-> CONFIG_EXT2_FS_SECURITY=y
-> CONFIG_EXT3_FS_SECURITY=y
-> CONFIG_REISERFS_FS_SECURITY=y
-> # CONFIG_XFS_SECURITY is not set
-> CONFIG_SECURITY=y
-> CONFIG_SECURITY_NETWORK=y
-> # CONFIG_SECURITY_NETWORK_XFRM is not set
-> CONFIG_SECURITY_CAPABILITIES=y
-> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
-> # CONFIG_SECURITY_ROOTPLUG is not set
-> CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR=0
->
-> I notice I have CONFIG_SECURITY_FILE_CAPABILITIES set, and you don't.  I
-> have not even the foggiest clue whether that has anything to do with the
-> price of tea in china though :)
->   
-I've just set
+Matthew Wilcox wrote:
+> --- a/Documentation/kbuild/kconfig-language.txt
+> +++ b/Documentation/kbuild/kconfig-language.txt
+> @@ -104,9 +104,9 @@ applicable everywhere (see syntax).
+>    Reverse dependencies can only be used with boolean or tristate
+>    symbols.
+>    Note:
+> -	select is evil.... select will by brute force set a symbol
+> -	equal to 'y' without visiting the dependencies. So abusing
+> -	select you are able to select a symbol FOO even if FOO depends
+> +	select should be used with care.  It can set a symbol
+> +	without visiting the dependencies.  By abusing select you are
+> +	able to select a symbol FOO even if FOO depends
+>  	on BAR that is not set. In general use select only for
+>  	non-visible symbols (no prompts anywhere) and for symbols with
+>  	no dependencies. That will limit the usefulness but on the
 
-CONFIG_SECURITY_FILE_CAPABILITIES=y
-CONFIG_SECURITY_NETWORK_XFRM=y
+"It can set a symbol without visiting the dependencies." = imprecise
 
-to no avail.. I still get
+"select will by brute force set a symbol [...] without visiting the 
+dependencies." = clear.  So why not leave this portion of the text as it is.
 
-
-20 Apr 15:04:20 ntpd[15694]: cap_set_proc() failed to drop root 
-privileges: Invalid argument
-
-after rebuild & reboot. No massive deal, I'll just run ntpd as root for 
-now, but there's definitely something funny going on.
-
-Cheers
-David
-
+Maybe change
+	"equal to 'y'"
+to
+	"equal to 'y' or 'm'"
+or to
+	""
+to make it entirely correct.
+-- 
+Stefan Richter
+-=====-==--- -=-- =-=--
+http://arcgraph.de/sr/
