@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYDTHrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYDTHwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbYDTHrj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 03:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYDTHrc
+	id S1754517AbYDTHwA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 03:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYDTHvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 03:47:32 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:40061 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbYDTHrb (ORCPT
+	Sun, 20 Apr 2008 03:51:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48991
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751508AbYDTHvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 03:47:31 -0400
-Message-ID: <480AF43D.1090405@linux.vnet.ibm.com>
-Date: Sun, 20 Apr 2008 13:13:57 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Paul Menage <menage@google.com>, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       containers@lists.osdl.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][-mm] Memory controller hierarchy support (v1)
-References: <20080419053551.10501.44302.sendpatchset@localhost.localdomain> <4809CDB7.3000105@openvz.org>
-In-Reply-To: <4809CDB7.3000105@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 20 Apr 2008 03:51:48 -0400
+Date: Sun, 20 Apr 2008 00:51:49 -0700 (PDT)
+Message-Id: <20080420.005149.189096986.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linville@tuxdriver.com, tomas.winkler@intel.com,
+       linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl
+Subject: Re: [build bug] iwl-3945-led.c:(.text+0x119e36): undefined
+ reference to `__led_classdev_unregister'
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080420073441.GA31745@elte.hu>
+References: <20080419135602.GA2499@elte.hu>
+	<20080420073441.GA31745@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> 
-> Are you going to split this patch? As is it looks rather huge :)
-> 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 20 Apr 2008 09:34:41 +0200
 
-Sure
+>  drivers/built-in.o: In function `iwl3945_led_unregister_led':
+>   iwl-3945-led.c:(.text+0x119e36): undefined reference to `__led_classdev_unregister'
+>  drivers/built-in.o: In function `iwl3945_led_register_led':
+>   iwl-3945-led.c:(.text+0x119ecd): undefined reference to `led_classdev_register'
 
->> TODO's/Open Questions
->>
->> 1. We need to hold cgroup_mutex while walking through the children
->>    in reclaim. We need to figure out the best way to do so. Should
->>    cgroups provide a helper function/macro for it?
->> 2. Do not allow children to have a limit greater than their parents.
->> 3. Allow the user to select if hierarchial support is required
->> 4. Fine tune reclaim from children logic
->>
-> 
-> I though about it recently. Can we have a cgroup file, which will
-> control whether to attach a res_counter to the parent? This will
-> address the YEMEMOTO's question about the performance.
-> 
+Thanks for the report.
 
-It's one of the TODOS
+This is the classic "API_OPTION=m && API_USER=y" problem.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+In this case the best fix is probably to use select in the
+iwlwifi Kconfig files.  The following patch should cure it.
+
+iwlwifi: Use 'select' for MAC80211_LEDS and LEDS_CLASS instead of 'depends'
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/wireless/iwlwifi/Kconfig b/drivers/net/wireless/iwlwifi/Kconfig
+index f844b73..c4e631d 100644
+--- a/drivers/net/wireless/iwlwifi/Kconfig
++++ b/drivers/net/wireless/iwlwifi/Kconfig
+@@ -49,7 +49,9 @@ config IWL4965_HT
+ 
+ config IWL4965_LEDS
+ 	bool "Enable LEDS features in iwl4965 driver"
+-	depends on IWL4965 && MAC80211_LEDS && LEDS_CLASS
++	depends on IWL4965
++	select MAC80211_LEDS
++	select LEDS_CLASS
+ 	select IWLWIFI_LEDS
+ 	---help---
+ 	  This option enables LEDS for the iwlwifi drivers
+@@ -134,7 +136,9 @@ config IWL3945_SPECTRUM_MEASUREMENT
+ 
+ config IWL3945_LEDS
+ 	bool "Enable LEDS features in iwl3945 driver"
+-	depends on IWL3945 && MAC80211_LEDS && LEDS_CLASS
++	depends on IWL3945
++	select MAC80211_LEDS
++	select LEDS_CLASS
+ 	---help---
+ 	  This option enables LEDS for the iwl3945 driver.
+ 
