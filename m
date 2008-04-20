@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762996AbYDTCzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbYDTCz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762996AbYDTCzl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 22:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYDTCyj
+	id S1763107AbYDTCz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 22:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYDTCyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 22:54:39 -0400
-Received: from smtp01.mtu.ru ([62.5.255.48]:53355 "EHLO smtp01.mtu.ru"
+	Sat, 19 Apr 2008 22:54:40 -0400
+Received: from smtp01.mtu.ru ([62.5.255.48]:55923 "EHLO smtp01.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbYDTCyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 22:54:37 -0400
+	id S1751434AbYDTCyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Apr 2008 22:54:38 -0400
 From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] x86: remove unused function amd_init_cpu()
-Date: Sun, 20 Apr 2008 06:54:31 +0400
-Message-Id: <1208660074-7324-2-git-send-email-dmitri.vorobiev@gmail.com>
+Subject: [PATCH 3/4] x86_64: the standard_io_resources[] array can become static
+Date: Sun, 20 Apr 2008 06:54:33 +0400
+Message-Id: <1208660074-7324-4-git-send-email-dmitri.vorobiev@gmail.com>
 X-Mailer: git-send-email 1.5.3.6
 In-Reply-To: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>
 References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com>
@@ -23,33 +23,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are no users for the function amd_init_cpu() defined in
-arch/x86/kernel/cpu/amd.c. This patch removes this routine.
+In arch/x86/kernel/setup_64.c, the standard_io_resources array
+is needlessly defined as global. This patch makes this variable
+static.
 
-This patch was build-tested using defconfigs for i386 and x86_64,
-and a few randconfig instances. Runtime tests were performed by
-booting 32- and 64-bit x86 boxen up to the shell prompt.
+This patch was successfully build-tested using the defconfig
+for x86_64. Runtime test was performed by booting a 64-bit x86
+box up to the shell prompt.
 
 Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 ---
- arch/x86/kernel/cpu/amd.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ arch/x86/kernel/setup_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 0173065..2458668 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -343,10 +343,4 @@ static struct cpu_dev amd_cpu_dev __cpuinitdata = {
- 	.c_size_cache	= amd_size_cache,
- };
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index cd245ef..0332ae2 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -117,7 +117,7 @@ extern int root_mountflags;
  
--int __init amd_init_cpu(void)
--{
--	cpu_devs[X86_VENDOR_AMD] = &amd_cpu_dev;
--	return 0;
--}
--
- cpu_vendor_dev_register(X86_VENDOR_AMD, &amd_cpu_dev);
+ char __initdata command_line[COMMAND_LINE_SIZE];
+ 
+-struct resource standard_io_resources[] = {
++static struct resource standard_io_resources[] = {
+ 	{ .name = "dma1", .start = 0x00, .end = 0x1f,
+ 		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
+ 	{ .name = "pic1", .start = 0x20, .end = 0x21,
 -- 
 1.5.3
 
