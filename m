@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYDTKBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYDTKCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbYDTKBs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 06:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYDTKBh
+	id S1757564AbYDTKCB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 06:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbYDTKBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 06:01:37 -0400
-Received: from port-212-202-105-50.static.qsc.de ([212.202.105.50]:41176 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751721AbYDTKBh (ORCPT
+	Sun, 20 Apr 2008 06:01:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34486
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754540AbYDTKBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 06:01:37 -0400
-Date: Sun, 20 Apr 2008 10:33:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rumi Szabolcs <rumi_ml@rtfm.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: dying hdd causing MCE and panic (libata)
-Message-ID: <20080420103358.028c94e2@the-village.bc.nu>
-In-Reply-To: <20080420113309.2343eb63.rumi_ml@rtfm.hu>
-References: <20080420113309.2343eb63.rumi_ml@rtfm.hu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 20 Apr 2008 06:01:40 -0400
+Date: Sun, 20 Apr 2008 03:01:41 -0700 (PDT)
+Message-Id: <20080420.030141.07052649.davem@davemloft.net>
+To: ivdoorn@gmail.com
+Cc: mingo@elte.hu, linville@tuxdriver.com, tomas.winkler@intel.com,
+       linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl
+Subject: Re: [build bug] drivers/built-in.o: In function
+ `rt2x00leds_resume': : undefined reference to `led_classdev_resume'
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080420.024704.02026708.davem@davemloft.net>
+References: <20080420.020557.231970202.davem@davemloft.net>
+	<200804201131.01504.IvDoorn@gmail.com>
+	<20080420.024704.02026708.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - Is it normal that a simple hard disk failure (that is not even
-> the system disk) causes MCEs and kernel panics?
+From: David Miller <davem@davemloft.net>
+Date: Sun, 20 Apr 2008 02:47:04 -0700 (PDT)
 
-No but with old style (pre AHCI) IDE it can because the system may MCE if
-the CPU<->Disk hangs. If a drive is causing PSU problems it could also
-occur I guess - ditto heat. You'd need to decode the MCE
+> I think NEW_LEDS can be completely eliminated.
 
-> - Is this a problem that is induced completely on the hardware
-> level (eg. the southbridge going crazy and making the whole
-> hardware platform unstable) or a problem that could be fixed
-> or handled properly on the software (kernel) level?
+Actually, more accurately, I propose removing the HAS_IOMEM
+restriction.
 
-An MCE the hardware can recover from is reported and we continue. CPU
-Context Corrupt means the processor internally set a "cannot carry on"
-indicator.
+This allows LEDS infrastructure to be select'd by drivers safely.
 
-Alan
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 859814f..91d36d0 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -1,6 +1,5 @@
+ menuconfig NEW_LEDS
+ 	bool "LED Support"
+-	depends on HAS_IOMEM
+ 	help
+ 	  Say Y to enable Linux LED support.  This allows control of supported
+ 	  LEDs from both userspace and optionally, by kernel events (triggers).
