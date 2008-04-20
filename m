@@ -1,180 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbYDTAF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYDTANF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759684AbYDTAF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Apr 2008 20:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYDTAFO
+	id S1760086AbYDTANF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Apr 2008 20:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYDTAMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Apr 2008 20:05:14 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:43368 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753161AbYDTAFN (ORCPT
+	Sat, 19 Apr 2008 20:12:55 -0400
+Received: from cpc4-cbly1-0-0-cust583.glfd.cable.ntl.com ([86.16.162.72]:54790
+	"EHLO crisp.demon.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753403AbYDTAMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Apr 2008 20:05:13 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: At0FAOslCkhMROPA/2dsb2JhbACBYKhC
-Date: Sat, 19 Apr 2008 20:05:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] Check for breakpoint in text_poke to eliminate bug_on
-Message-ID: <20080420000509.GA7496@Krystal>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu> <20080419184137.79957a07@daedalus.pq.iki.fi> <20080419161956.GA24685@Krystal> <20080420000657.20ba6b4b@daedalus.pq.iki.fi> <20080420005208.12ad32fd@daedalus.pq.iki.fi> <20080419215826.GC2831@Krystal> <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:04:19 up 50 days, 20:15,  5 users,  load average: 0.17, 0.15,
-	0.14
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 19 Apr 2008 20:12:54 -0400
+X-Greylist: delayed 3362 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Apr 2008 20:12:54 EDT
+From: paul <fox@crisp.demon.co.uk>
+Message-Id: <200804192316.m3JNGoTZ019800@crisp.demon.co.uk>
+Reply-To: fox@crisp.demon.co.uk
+To: linux-kernel@vger.kernel.org
+Subject: dtrace for linux
+X-CRiSP-MessageID: 20080420-001
+X-Mailer: Created by CRiSP-Mail v3.2 (CRiSP v9.3.3b)
+Date: Sun, 20 Apr 2008 00:13:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pekka Paalanen (pq@iki.fi) wrote:
-> On Sat, 19 Apr 2008 17:58:26 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > * Pekka Paalanen (pq@iki.fi) wrote:
-> > > 
-> > > A simple
-> > > echo 0 > /sys/devices/system/cpu/cpu1/online
-> > > echo 1 > /sys/devices/system/cpu/cpu1/online
-> > > 
-> > > produces the following kernel log (netconsole) and then after a couple
-> > > second hang the machine reboots:
-> > > 
-> > > [   84.678357] console [netcon0] enabled
-> > > [   84.679568] netconsole: network logging started
-> > > [  232.812335] CPU 1 is now offline
-> > > [  232.812678] lockdep: fixing up alternatives.
-> > > [  232.813051] SMP alternatives: switching to UP code
-> > > [  268.447582] lockdep: fixing up alternatives.
-> > > [  268.447903] SMP alternatives: switching to SMP code
-> > > [  268.459462] Booting processor 1/1 ip 6000
-> > > 
-> > > My kernel is sched-devel/latest git tree with Desnoyers' patch, and my
-> > > patches that touch only arch/x86/mm/mmio-mod.c.
-> > > The machine is Thinkpad T61 with:
-> > > 
-> > > processor	: 0
-> > > vendor_id	: GenuineIntel
-> > > cpu family	: 6
-> > > model		: 15
-> > > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-> > > stepping	: 10
-> > > cpu MHz		: 2001.000
-> > > cache size	: 4096 KB
-> > > physical id	: 0
-> > > siblings	: 2
-> > > core id		: 0
-> > > cpu cores	: 2
-> > > apicid		: 0
-> > > initial apicid	: 0
-> > > fpu		: yes
-> > > fpu_exception	: yes
-> > > cpuid level	: 10
-> > > wp		: yes
-> > > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-> > > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
-> > > tm2 ssse3 cx16 xtpr lahf_lm ida
-> > > bogomips	: 3997.03
-> > > clflush size	: 64
-> > > cache_alignment	: 64
-> > > address sizes	: 36 bits physical, 48 bits virtual
-> > > power management:
-> > > 
-> > > processor	: 1
-> > > vendor_id	: GenuineIntel
-> > > cpu family	: 6
-> > > model		: 15
-> > > model name	: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-> > > stepping	: 10
-> > > cpu MHz		: 2001.000
-> > > cache size	: 4096 KB
-> > > physical id	: 0
-> > > siblings	: 2
-> > > core id		: 1
-> > > cpu cores	: 2
-> > > apicid		: 1
-> > > initial apicid	: 1
-> > > fpu		: yes
-> > > fpu_exception	: yes
-> > > cpuid level	: 10
-> > > wp		: yes
-> > > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-> > > lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est
-> > > tm2 ssse3 cx16 xtpr lahf_lm ida
-> > > bogomips	: 3991.26
-> > > clflush size	: 64
-> > > cache_alignment	: 64
-> > > address sizes	: 36 bits physical, 48 bits virtual
-> > > power management:
-> > > 
-> > > Any help would be appreciated.
-> > > 
-> > > 
-> > > Thanks.
-> > 
-> > This patch should bring more consistency checks to text_poke, can you
-> > give it a try ?
-> > 
-> > Hm, actually, I think it contains the fix you are looking for.
-> > 
-> > kernel_text_address -> core_kernel_text will probably make everything go
-> > smoothly.
-> > 
-> > Mathieu
-> > 
-> > 
-> > Check for breakpoint in text_poke to eliminate bug_on
-> > 
-> > It's ok to modify an instruction non-atomically (multiple memory accesses to a
-> > large and/or non aligned instruction) *if and only if* we have inserted a
-> > breakpoint at the beginning of the instruction.
-> > 
-> > Also change kernel_text_address (bogus) check to core_kernel_text.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > ---
-> >  arch/x86/kernel/alternative.c |   49 ++++++++++++++++++++++++------------------
-> >  1 file changed, 29 insertions(+), 20 deletions(-)
-> 
-> Sorry, no change.
-> 
-> [   93.315242] netconsole: network logging started
-> [   95.797496] eth0: no IPv6 routers present
-> [  127.472213] CPU 1 is now offline
-> [  127.472547] lockdep: fixing up alternatives.
-> [  127.472923] SMP alternatives: switching to UP code
-> [  134.709384] lockdep: fixing up alternatives.
-> [  134.709701] SMP alternatives: switching to SMP code
-> [  134.721344] Booting processor 1/1 ip 6000
-> 
-> few seconds pause and it reboots. A working patch in six minutes would
-> have been quite awesome :-)
-> 
 
-Hrm, I'll have to do some more tests.
+I would like to announce that I am working on dtrace for Linux.
+I have the userland dtrace binary compiled, along with the first
+pre-pre-alpha dtracedrv.ko module loaded into my kernel.
 
-Can you mail you .config please ?
+Its early days as I work thru the issues but am into stage 3.
 
-Mathieu
+Stage 1 was to compile userland dtrace and stage 2 was to compile
+the kernel driver. I have lots of stubs and likely bad #defines.
 
-> 
-> Thanks.
-> 
-> -- 
-> Pekka Paalanen
-> http://www.iki.fi/pq/
+I am trying to improve my makefiles and header dependencies so I
+can validate some aspects of kernel portability.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+If anyone wants to grab a copy (purely for reference - dont try and
+run anything), you can visit 
+
+http://www.crisp.demon.co.uk/tools
+
+and pick up a daily snapshot.
+
+If anyone wants to contribute, feel free - especially if you
+feel the approach is wrong etc.
+
+I wont talk about licensing - except to say it will be covered
+by the CDDL and not GPL, since its Sun's work and I am simply
+deriving, and I am not modifying the kernel (yet).
+
