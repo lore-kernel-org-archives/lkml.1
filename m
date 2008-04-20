@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYDTRoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYDTRxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYDTRoe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 13:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYDTRoZ
+	id S1757984AbYDTRxl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 13:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYDTRxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 13:44:25 -0400
-Received: from lazybastard.de ([212.112.238.170]:50986 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754152AbYDTRoY (ORCPT
+	Sun, 20 Apr 2008 13:53:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:58320 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbYDTRxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 13:44:24 -0400
-Date: Sun, 20 Apr 2008 19:43:11 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080420174249.GC20694@logfs.org>
-References: <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B44C4.4060104@rtr.ca> <20080420133857.GB26536@1wt.eu> <480B50F1.8040309@firstfloor.org> <20080420164133.GB20694@logfs.org> <480B7B1E.7010707@firstfloor.org>
+	Sun, 20 Apr 2008 13:53:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=sgD9CSA4GlRlH9+NyxcCNdwOaNHy0sPe1Yq5pxIM0X/c5e4RgVGF1vcuQStVOPuOBP+mkFLppJEh5sKtSPCBh06a9LjP8yiJLq+Hp+6cJxHHANfSCdayTeuro7mqZoaQNIQJ07WrfFV1n70dBrPKnOtp/QNkfvFl427PTywOUl4=
+Date: Sun, 20 Apr 2008 22:48:48 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Denis V. Lunev" <den@openvz.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bfields@fieldses.org, ebiederm@xmission.com, neilb@suse.de
+Subject: Re: + nfsd-use-proc_create-to-setup-de-proc_fops.patch added to
+	-mm tree
+Message-ID: <20080420184848.GA31337@martell.zuzino.mipt.ru>
+References: <200804152355.m3FNtv3O022485@imap1.linux-foundation.org> <20080420143759.GB32520@martell.zuzino.mipt.ru> <1208708509.14894.3.camel@iris.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <480B7B1E.7010707@firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1208708509.14894.3.camel@iris.sw.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 April 2008 19:19:26 +0200, Andi Kleen wrote:
+On Sun, Apr 20, 2008 at 08:21:49PM +0400, Denis V. Lunev wrote:
 > 
-> But these are SoC systems. Do they really run x86?
-> (note we're talking about an x86 default option here)
-> 
-> Also I suspect in a true 16MB system you have to strip down
-> everything kernel side so much that you're pretty much outside
-> the "validated by testers" realm that Adrian cares about.
+> On Sun, 2008-04-20 at 18:37 +0400, Alexey Dobriyan wrote:
+> > On Tue, Apr 15, 2008 at 04:55:57PM -0700, akpm@linux-foundation.org wrote:
+> > > --- a/fs/nfsd/nfsctl.c~nfsd-use-proc_create-to-setup-de-proc_fops
+> > > +++ a/fs/nfsd/nfsctl.c
+> > 
+> > > @@ -736,10 +737,9 @@ static int create_proc_exports_entry(voi
+> > >  	entry = proc_mkdir("fs/nfs", NULL);
+> > >  	if (!entry)
+> > >  		return -ENOMEM;
+> > > -	entry = create_proc_entry("fs/nfs/exports", 0, NULL);
+> > > +	entry = proc_create("exports", 0, entry, &exports_operations);
+> > 			    ^^^^^^^^^
+>                                            ^^^^^^^
+> > >  	if (!entry)
+> > >  		return -ENOMEM;
+> > > -	entry->proc_fops =  &exports_operations;
+> > 
+> > "fs/nfs/exports" is used in full in this file. And line will fit into
+> > 80 columns.
+> > 
+> This is a pde for fs/nfs.
 
-Maybe.  I merely showed that embedded people (not me) have good reasons
-to care about small stacks.  Whether they care enough to actually spend
-work on it - doubtful.
+Yes, why change it?
 
-> > When dealing in those dimensions, savings of 100k are substantial.  In
-> > some causes they may be the difference between 16MiB or 32MiB, which
-> > translates to manufacturing costs.  In others it simply means that the
-> > system can cache 
-> 
-> If you need the stack you don't have any less cache foot print.
-> If you don't need it you don't have any either.
+> So, this will be slightly less operations in my case.
 
-This part I don't understand.
+It's done once per module loading, so nobody cares.
 
-Jörn
-
--- 
-You ain't got no problem, Jules. I'm on the motherfucker. Go back in
-there, chill them niggers out and wait for the Wolf, who should be
-coming directly.
--- Marsellus Wallace
