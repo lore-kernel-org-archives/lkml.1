@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbYDUI7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbYDUJEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbYDUI7Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 04:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbYDUI7H
+	id S1757963AbYDUJEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 05:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbYDUJEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 04:59:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41192
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754539AbYDUI7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 04:59:06 -0400
-Date: Mon, 21 Apr 2008 01:59:06 -0700 (PDT)
-Message-Id: <20080421.015906.239470094.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: mingo@elte.hu, linville@tuxdriver.com, tomas.winkler@intel.com,
-       linux-kernel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl
-Subject: Re: [build bug] nf_nat_proto_sctp.c:(.text+0x6d173): undefined
- reference to `crc32c_le'
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080421084402.GF26897@cs181133002.pp.htv.fi>
-References: <20080421062244.GA862@elte.hu>
-	<20080420.235354.104901823.davem@davemloft.net>
-	<20080421084402.GF26897@cs181133002.pp.htv.fi>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 05:04:00 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41953 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754475AbYDUJD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 05:03:59 -0400
+Date: Mon, 21 Apr 2008 12:03:31 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: jgarzik@pobox.com
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make sata_set_spd_needed() static
+Message-ID: <20080421090331.GJ26897@cs181133002.pp.htv.fi>
+References: <20080421085117.GC26897@cs181133002.pp.htv.fi> <20080421085732.GR12215@devserv.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080421085732.GR12215@devserv.devel.redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Mon, 21 Apr 2008 11:44:02 +0300
-
-> On Sun, Apr 20, 2008 at 11:53:54PM -0700, David Miller wrote:
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Mon, 21 Apr 2008 08:22:44 +0200
+On Mon, Apr 21, 2008 at 04:57:32AM -0400, Jeff Garzik wrote:
+> On Mon, Apr 21, 2008 at 11:51:17AM +0300, Adrian Bunk wrote:
+> > sata_set_spd_needed() can now become static.
 > > 
-> > >   net/built-in.o: In function `sctp_manip_pkt':
-> > >   nf_nat_proto_sctp.c:(.text+0x6d173): undefined reference to `crc32c_le'
-> > >   nf_nat_proto_sctp.c:(.text+0x6d180): undefined reference to `crc32c_le'
-> > >   nf_nat_proto_sctp.c:(.text+0x6d196): undefined reference to `crc32c_le'
-> > >   nf_nat_proto_sctp.c:(.text+0x6d1c6): undefined reference to `crc32c_le'
-> > > 
-> > >   http://redhat.com/~mingo/misc/config-Mon_Apr_21_01_52_14_CEST_2008.bad
-> > 
-> > Thanks for your report Ingo.
-> > 
-> > Patrick, I'm not so sure how to fix this, or even what's wrong.
-> > 
-> > NF_NAT_PROTO_SCTP does a proper select on LIBCRC32C, but somehow
-> > NF_NAT_PROTO_SCTP=y and LIBCRC32C=m.
-> >...
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> You added the select on Saturday after Pete Clements reported the same 
-> issue.
-> 
-> The select is not yet in Linus' tree.
+> For future reference...  please don't email jgarzik@redhat.com unless
+> its an NDA issue or similar.  That email is only for signed-off-by
+> lines, never for actual email (you never see me post to a list
+> @redhat.com, nor will you see me in git as /author/ @redhat.com)
+>...
 
-Thanks for catching that Adrian.
+In this case I pasted it from a signed-off-by line...
+
+I will try to remember this special case of your email address in the 
+future (but please don't be offended if I might send accidentally to 
+the @redhat.com address again).
+
+> 	Jeff
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
