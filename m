@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbYDUTv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbYDUTwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760280AbYDUTv7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYDUTvv
+	id S1762143AbYDUTwX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbYDUTwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:51:51 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:42548 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754505AbYDUTvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:51:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=g9bHY9ITD/lreeA+CLDdhW3Q0FvItYeHbgYkUBwWH97XSW/3Zvf73ZCVWe31Zy8TXxE616jkOOJDq7iyTcY9yY7agJXAR3X2GXTaQCqwWkslxQlBUghZf1YLt325tBLkxNGg5Z/EgS/GBncZlYK0A+nf4bkGLG/t2HP1rBXoaAs=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: x86: 4kstacks default
-Date: Mon, 21 Apr 2008 21:51:02 +0200
-User-Agent: KMail/1.8.2
-Cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804210945.24479.vda.linux@googlemail.com> <480C96BC.4020400@sandeen.net>
-In-Reply-To: <480C96BC.4020400@sandeen.net>
+	Mon, 21 Apr 2008 15:52:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43035 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755037AbYDUTwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:52:06 -0400
+Date: Mon, 21 Apr 2008 21:51:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Voyager phys_cpu_present_map compile error
+Message-ID: <20080421195148.GG8770@elte.hu>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <1208793533.3640.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804212151.02241.vda.linux@googlemail.com>
+In-Reply-To: <1208793533.3640.24.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 April 2008 15:29, Eric Sandeen wrote:
-> > Some number has to be picked. Why fitting in 4k is "bad" and fitting
-> > in 8k is "not bad"?
+
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> > thanks, the three patches below should fix it.
+> > 
+> > i ended up excluding Voyager configs from our test space some time 
+> > ago (and VISWS as well - there's one more visws fix in x86.git), 
+> > that's how this broke. These subarchitectures seem not to be used at 
+> > all and the code wont boot on normal PCs. We could mark it BROKEN 
+> > but the fix seems simple in any case.
 > 
-> 
-> Because well-written code in several subsystems, used in combination in
-> common configurations, does not always fit, that is why.
-> 
-> Show me the "bug" in an nfs+xfs+md+scsi writeback stack oops
+> The voyager pieces of this code look fine to me.  I can't test at the 
+> moment because we're having the carpets cleaned and I can't get down 
+> into the cellar where the systems are, but I'll do so shortly.
 
-Why nfs+xfs+md+ide works? Does scsi intrinsically require more stack
-than ide?
+ok, that's good enough - that's why i excluded it from the auto-qa 
+test-space as well. Adrian, could you please remove it from your config 
+testset as well? If a user enables that config option it wont boot 
+anyway so it's not a problem in practice.
 
-Why xfs code is said to be 5 timed bigged than e.g. reiserfs?
-Does it have to be that big? Does it really have to eat lots of stack?
-
-> and I'm 
-> sure it'll get "fixed."  But if it's simply complex code that happens to
-> need >4k, I will continue to argue that the limited stack size selection
-> is the problem, not the code running in it.
-
-8k stack is limited too. Other Operating System, no doubt in the name
-of better stability, has even larger stack (16k or more).
-
-For what its worth, I do realize that there is a point of diminishing
-returns and increased pain when one tries to reduce stack usage.
-I feel that 4k for 32-bit x86 is not too painful. IMO, of course.
-
-> If someone has a workload and configuration which happens to fit in 4k
-> then turn it on, test the heck out of it, and have fun.  I've not seen
-> what I consider to be a convincing argument for making it the default
-> for everyone.
-
-Conversely:
-
-"If someone is strongly concerned about possibility of stack overflow,
-then turn on 8k option, and enjoy the benefits of wide testing which
-is provided by millions of people who run 4k stacks. If _that_ works
-ok in practice, 8k _ought_ to be 100.00% safe versus stack overflow".
-
-These threads about 4k stack seem to degenerate in ping-ponging
-of these arguments again and again.
---
-vda
+	Ingo
