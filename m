@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbYDURmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbYDURnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbYDURmw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYDURmo
+	id S1759733AbYDURnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbYDURnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:42:44 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:48553 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753830AbYDURmn (ORCPT
+	Mon, 21 Apr 2008 13:43:15 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58570 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbYDURnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:42:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAFAD9vDEhMROPA/2dsb2JhbACBUalE
-Date: Mon, 21 Apr 2008 13:42:39 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>, mingo@elte.hu, akpm@osdl.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v5)
-Message-ID: <20080421174239.GA14718@Krystal>
-References: <20080417165839.GA25198@Krystal> <20080417165944.GB25198@Krystal> <20080417201410.GB31616@Krystal> <20080421140054.GB4685@ucw.cz> <480CA337.3090709@zytor.com> <20080421150825.GA4070@Krystal> <480CADD3.3010209@zytor.com> <20080421154756.GA2424@Krystal> <20080421172327.GA32278@elf.ucw.cz> <480CCEB0.8040401@zytor.com>
-Mime-Version: 1.0
+	Mon, 21 Apr 2008 13:43:14 -0400
+Date: Mon, 21 Apr 2008 10:43:11 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Message-ID: <20080421174311.GE9153@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com> <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org> <20080421170526.GC9153@linux.vnet.ibm.com> <alpine.LFD.1.10.0804211023090.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <480CCEB0.8040401@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:40:31 up 52 days, 13:51,  4 users,  load average: 0.34, 0.48,
-	0.52
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <alpine.LFD.1.10.0804211023090.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Pavel Machek wrote:
->>> There is also the page fault case. I think putting this test in
->>> ret_from_exception would be both safe (it is executed for any
->>> exception return) and fast (exceptions are rare).
->> Eh? I thought that page fault is one of the hottest paths in kernel
->> (along with syscall and packet receive/send)...
->> 								Pavel
->
+On Mon, Apr 21, 2008 at 10:30:19AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 21 Apr 2008, Paul E. McKenney wrote:
+> > 
+> > I did take a quick look for improperly freeing dentries -- unhashed
+> > dentries are freed directly, so if there is a code path that somehow
+> > unhashes dentries and then d_free()s them without a grace period, we
+> > have a problem.
+> 
+> No, not even then.
+> 
+> We *always* unhash the dentries before freeing them, but we very 
+> consciously use "hlist_del_rcu()" on them, not "hlist_del_init()".
+> 
+> That, in turn, will mean that the "pprev" pointer will still be set, so 
+> the "hlist_unhashed()" thing will *not* trigger.
+> 
+> IOW, when we do that direct-free with:
+> 
+> 	if (hlist_unhashed(&dentry->d_hash))
+> 		__d_free(dentry);
+> 
+> the "hlist_unhashed()" will literally guarantee that i has *never* been on 
+> a hash-list at all!
 
-On x86_64, we can pinpoint only the page faults returning to the kernel,
-which are rare and only caused by vmalloc accesses. Ideally we could do
-the same on x86_32.
+Got it, hlist_del_rcu() sets ->pprev to LIST_POISON2, which is non-NULL,
+so the dentry still gets to wait for a grace period.  Color me blind!!!
 
-> Yeah, and the concept of handling page faults inside an NMI handler is pure 
-> fantasy.
->
-> 	-hpa
->
+> (If you want to test whether it is currently unhashed or not, you actually 
+> have to use "d_unhashed()" on the dentry under the dentry lock, which 
+> tests the DCACHE_UNHASHED bit).
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+And as it looks like you guessed, I was misreading the hlist_unhashed()
+above as d_unhashed().  :-/
+
+							Thanx, Paul
+
+> Of course, there could be some bug in there, but the thing is, none of 
+> this has even changed in a long time, certainly not since 2.6.25. Which is 
+> why I think the dcache code is all fine, and the bug comes from somewhere 
+> else corrupting the data structures.
+> 
+> 		Linus
