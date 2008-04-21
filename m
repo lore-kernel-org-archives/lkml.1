@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYDUUjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYDUUkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbYDUUjq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 16:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYDUUjg
+	id S1753075AbYDUUkJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 16:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYDUUjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 16:39:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:45561 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbYDUUjf (ORCPT
+	Mon, 21 Apr 2008 16:39:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49729
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752750AbYDUUji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 16:39:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wERmlDJrnR7BwH5PTZfXf/ayPCL5Ty338LtRYQyu6gBs79UCjwzWp8ZmnethFKt0RmTHMVj76b/Zwc7oUn1yU6Jvvoh2PSUTO/90ctDAwz2r30c18bGq2Ccu5a7mPmaH3xgbPHKDtHhP8tPesPbSFN8k4xWVJI//bnoFL2ga3GI=
-Message-ID: <b647ffbd0804211339h6220489dt94f4c982204d7a3d@mail.gmail.com>
-Date: Mon, 21 Apr 2008 22:39:34 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Dan Upton" <upton.dan.linux@gmail.com>
-Subject: Re: migration thread and active_load_balance
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ba7d8f720804211238q114c2ffal902e8b5e3dccd881@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Apr 2008 16:39:38 -0400
+Date: Mon, 21 Apr 2008 13:39:40 -0700 (PDT)
+Message-Id: <20080421.133940.52972455.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, paulmck@us.ibm.com, jirislaby@gmail.com
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0804210934190.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
+	<200804211812.16994.rjw@sisk.pl>
+	<alpine.LFD.1.10.0804210934190.2779@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ba7d8f720804201121h6c024dcrabd301c8b4be7a4@mail.gmail.com>
-	 <b647ffbd0804201426r3bb55daw2899f6045b78fa51@mail.gmail.com>
-	 <ba7d8f720804201744m10cfa1b7n1a37b9d7c52b3622@mail.gmail.com>
-	 <b647ffbd0804210403g1fe02f2pb653eafd704ad624@mail.gmail.com>
-	 <ba7d8f720804211238q114c2ffal902e8b5e3dccd881@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/04/2008, Dan Upton <upton.dan.linux@gmail.com> wrote:
-> On Mon, Apr 21, 2008 at 7:03 AM, Dmitry Adamushko
->
-> <dmitry.adamushko@gmail.com> wrote:
->
-> > On 21/04/2008, Dan Upton <upton.dan.linux@gmail.com> wrote:
->  >  > [ ... ]
->  >
->  > >
->  >  >  kernel BUG at kernel/sched.c:2103
->  >
->  >  and what's this line in your patched sched.c?
->  >
->  >  is it -- BUG_ON(!irqs_disabled());  ?
->  >
->  >  anything in your unposted code (e.g. find_coolest_cpu()) that might
->  >  re-enable the interrupts before __migration_task() is called?
->  >
->  >  If you post your modifications as a patch
->  >  (Documentation/applying-patches.txt) that contains _all_ relevant
->  >  modifications, it'd be easier to guess what's wrong.
->
->
-> Yes, that's the line.  I don't recall ever reenabling interrupts,
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 21 Apr 2008 09:54:07 -0700 (PDT)
 
-migration_thread() -> find_coolest_cpu() -> get_temperature() ->
-rdmsr_on_cpu() -> [ if your configuration is SMP ] ->
-smp_call_function_single() ->
+> What I find interesting is that at least for me, I have the SLAB bucket 
+> size for nf_conntrack_expect being 208 bytes. And the *biggest* merge by 
+> far after 2.6.25 so far has been networking (and conntrack in particular)
+> 
+> Is that a smoking gun? Not necessarily. But it *is* intriguing. But there 
+> are other possible clashes (the 192-byte bucket has several different 
+> suspects, and not all of them are in networking).1
 
-(arch/x86/kernel/smpcommon.c)
-...
-        if (cpu == me) {
-                local_irq_disable();
-                func(info);
-                local_irq_enable();   <----------- REENABLES the interrupts
-                put_cpu();
-                return 0;
-        }
-...
+I think you might be onto something here.
 
-as a result, __migrate_task() -> double_rq_lock() -> BUG_ON(!irqs_disabled())
-gives you an "oops".
+The "mask" member of struct nf_conntrack_expect could be reasonably
+all 1's like the value reported in the crash that begins this
+thread.
+
+Do we know the offset within the object at which this all 1's
+value is found?
+
+My rough calculations show that on 32-bit that expect->mask member is
+at offset 56 and on 64-bit it should be at offset 72.  Does that
+match up to the offset of the filp or whatever bit being corrupted?
+
+I'll scan through the netfilter changesets in post 2.6.25 to see if
+anything stands out.
 
 
->
->  -dan
->
-
--- 
-Best regards,
-Dmitry Adamushko
