@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbYDUVgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbYDUVhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbYDUVgn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbYDUVcv
+	id S1753313AbYDUVhF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbYDUVcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:32:51 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49766 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 17:32:54 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60462 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755450AbYDUVcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:32:50 -0400
-Date: Tue, 22 Apr 2008 00:32:19 +0300
+	id S1757571AbYDUVcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:32:54 -0400
+Date: Tue, 22 Apr 2008 00:32:23 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make struct mempolicy.c:default_policy static
-Message-ID: <20080421213219.GQ2633@cs181133002.pp.htv.fi>
+Cc: Christoph Lameter <clameter@sgi.com>
+Subject: [2.6 patch] mm/migrate.c should #include <linux/syscalls.h>
+Message-ID: <20080421213223.GR2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,9 +23,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global struct default_policy static.
+Every file should include the headers containing the externs for its 
+global functions (in this case for sys_move_pages()).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
 ---
 
@@ -33,29 +36,16 @@ This patch has been sent on:
 - 31 Mar 2008
 - 22 Feb 2008
 
-4a69fc08292ebe8b7d202436a71926950a980c21 diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-index 59c4865..fd20b03 100644
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -149,7 +149,6 @@ extern void mpol_rebind_task(struct task_struct *tsk,
- extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
- extern void mpol_fix_fork_child_flag(struct task_struct *p);
+5624ee2189a0b767e8e474cdd53d8a536dd8f262 diff --git a/mm/migrate.c b/mm/migrate.c
+index a73504f..36e1820 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -30,6 +30,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/security.h>
+ #include <linux/memcontrol.h>
++#include <linux/syscalls.h>
  
--extern struct mempolicy default_policy;
- extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
- 		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol);
- extern unsigned slab_node(struct mempolicy *policy);
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 6c7ba1a..f3118a8 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -105,7 +105,7 @@ static struct kmem_cache *sn_cache;
-    policied. */
- enum zone_type policy_zone = 0;
+ #include "internal.h"
  
--struct mempolicy default_policy = {
-+static struct mempolicy default_policy = {
- 	.refcnt = ATOMIC_INIT(1), /* never free it */
- 	.policy = MPOL_DEFAULT,
- };
 
