@@ -1,113 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYDUP3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbYDUPaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYDUP3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbYDUP30
+	id S1759570AbYDUPaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbYDUPan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:29:26 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51762 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbYDUP3Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:29:25 -0400
-To: me@bobcopeland.com
-CC: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       miklos@szeredi.hu, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       me@bobcopeland.com
-In-reply-to: <1208637457-24969-6-git-send-email-me@bobcopeland.com> (message
-	from Bob Copeland on Sat, 19 Apr 2008 16:37:34 -0400)
-Subject: Re: [PATCH 5/8] omfs: add file routines
-References: <1208637457-24969-6-git-send-email-me@bobcopeland.com>
-Message-Id: <E1JnxxA-0002z2-NY@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 21 Apr 2008 17:29:12 +0200
+	Mon, 21 Apr 2008 11:30:43 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55839 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753383AbYDUPam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 11:30:42 -0400
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <20080412115950.1cbb9cfa@core>
+	<m33apqomgf.fsf@maximus.localdomain>
+	<m33apjp32f.fsf@maximus.localdomain>
+	<20080418.153256.253949503.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 21 Apr 2008 17:30:39 +0200
+In-Reply-To: <20080418.153256.253949503.davem@davemloft.net> (David Miller's message of "Fri\, 18 Apr 2008 15\:32\:56 -0700 \(PDT\)")
+Message-ID: <m3ve2b9qe8.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static int omfs_get_block(struct inode *inode, sector_t block,
-> +			  struct buffer_head *bh_result, int create)
-> +{
-> +	struct buffer_head *bh;
-> +	sector_t next, offset;
-> +	int ret = 0;
-> +	u64 new_block;
-> +	int extent_count;
-> +	struct omfs_extent *oe;
-> +	struct omfs_extent_entry *entry;
-> +	struct omfs_sb_info *sbi = OMFS_SB(inode->i_sb);
-> +	int max_blocks = bh_result->b_size >> inode->i_blkbits;
-> +	int remain;
-> +
-> +	bh = sb_bread(inode->i_sb, clus_to_blk(sbi, inode->i_ino));
-> +	if (!bh)
-> +		goto err;
-> +
-> +	oe = (struct omfs_extent *)(&bh->b_data[OMFS_EXTENT_START]);
-> +	next = inode->i_ino;
-> +
-> +	for (;;) {
-> +
-> +		if (omfs_is_bad(sbi, (struct omfs_header *) bh->b_data, next)) {
-> +			brelse(bh);
-> +			goto err;
+David Miller <davem@davemloft.net> writes:
 
-Please:
-		ret = -EIO;
-		if (omfs_is_bad(sbi, (struct omfs_header *) bh->b_data, next))
-			goto out_brelse;
+> I'll fix it properly because I know you won't do the work.
+
+Great to read that.
+
+Just few friendly after all notes so that you don't waste your time
+learning that yourself:
+- my patch didn't give us a third PPP implementation, we already have
+  three: generic PPP, syncppp and PPP for ISDN :-)
+- of those, both generic PPP and (I think) ISDN PPP are in a good
+  shape
+- generic PPP is specialized for dial-up async devices and has the
+  required features (in kernel and in userspace pppd) - auth,
+  multi-line, compression etc. It's a "lets give /dev/ttyS* a network
+  device" implementation.
+- ISDN PPP does for ISDN cards basically the same as generic PPP does
+  for terminals. They are completely different from syncppp as the
+  needs are completely different. Fixed-line PPP must be small and
+  fast, and self-contained.
 
 
-> +		}
-> +		extent_count = be32_to_cpu(oe->e_extent_count);
-> +		next = be64_to_cpu(oe->e_next);
-> +		entry = &oe->e_entry;
-> +
-> +		offset = find_block(inode, entry, block, extent_count, &remain);
-> +		if (offset > 0) {
-> +			brelse(bh);
-> +
-> +			map_bh(bh_result, inode->i_sb, offset);
-> +			if (remain > max_blocks)
-> +				remain = max_blocks;
-> +			bh_result->b_size = (remain << inode->i_blkbits);
-> +			return 0;
+Now syncppp.c and sync serial (HDLC) cards. We basically have three
+categories of hardware:
+- mostly old ISA cards (cosa, cyclom-2x, z85230, s502/s508, personally
+  I have c101 and n2 for tests, and PCI wanxl400). I think Alan
+  maintains Zilog drivers, other "old" drivers are not maintained at
+  all. They use syncppp.c directly (except c101, n2 and wanxl using
+  generic HDLC).
+  The list was longer but few drivers have been removed recently.
 
-This instead?
+- cards with in-kernel obsolete drivers and users encouraged to use
+  manufacturers' driver - lmc.
 
-		if (offset > 0) {
-			ret = 0;
-			map_bh(bh_result, inode->i_sb, offset);
-			if (remain > max_blocks)
-				remain = max_blocks;
-			bh_result->b_size = (remain << inode->i_blkbits);
-			goto out_brelse;
-		}
+- a bit more modern PCI cards such as pc300, pci200syn, synclinks,
+  dscc4, farsync, some off-tree ones. They use generic HDLC.
 
-Miklos
+- I have offered to port any remaining old driver to generic HDLC if
+  I'm sent a hardware sample. Synclink, dscc4 and farsync have been
+  ported by other people.
 
-> +		}
-> +		if (next == ~0)
-> +			break;
-> +
-> +		brelse(bh);
-> +		bh = sb_bread(inode->i_sb, clus_to_blk(sbi, next));
-> +		if (!bh)
-> +			goto err;
-> +		oe = (struct omfs_extent *) (&bh->b_data[OMFS_EXTENT_CONT]);
-> +	}
-> +	if (create) {
-> +		ret = omfs_grow_extent(inode, oe, &new_block);
-> +		if (ret == 0) {
-> +			mark_buffer_dirty(bh);
-> +			mark_inode_dirty(inode);
-> +			map_bh(bh_result, inode->i_sb,
-> +					clus_to_blk(sbi, new_block));
-> +		}
-> +	}
-> +	brelse(bh);
-> +	return ret;
-> +err:
-> +	return -EIO;
-> +}
+I would be surprised to find that the "old" drivers are still
+functional. Nevertheless syncppp.c is functional (though marginally)
+and I think there are no bugs related to dev->priv and netdev_priv()
+for those drivers.
+
+The real problem with old drivers is the lack of hardware. Personally
+I suspect they may have 0 users worldwide.
+
+
+Syncppp.c is the problem for newer cards:
+- the support has been broken recently due to netdev_priv() changes
+  (could be band-aided).
+- it's missing IPv6 and adding it is not trivial
+- it's not RFC/STD-compliant at all, i.e. breaks many "MUST" rules and
+  doesn't work with some other compliant implementations, and fixing
+  that would be a real PITA,
+- the code is really hard to parse/understand/maintain, it looks a bit
+  like it was written in some other language and then "compiled" into
+  C machine code :-)
+- the lack of hardware makes doing significant changes to the drivers
+  and syncppp almost impossible, without breaking them (if they aren't
+  already broken).
+
+
+That's why I came to an idea that leaving syncppp and the old drivers
+in their current bit-rotting state which nobody can really fix, and
+using another (fourth, and third when syncppp eventually dies) PPP
+implementation is the only way out of this situation.
+
+HTH.
+-- 
+Krzysztof Halasa
