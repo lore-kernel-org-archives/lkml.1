@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbYDUPtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYDUPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761534AbYDUPtA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYDUPsw
+	id S1761575AbYDUPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYDUPvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:48:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:35607 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754849AbYDUPsw (ORCPT
+	Mon, 21 Apr 2008 11:51:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:25861 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754119AbYDUPvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:48:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=bqlMvv6Sv1KnExOYQeCZZ7NegC6WmX2db4WVPLhOFvJeMZO0BsE+aATpI1IuAjyjQ
-	tHGQgHiAaN+7mLdW+EC6w==
-Message-ID: <6599ad830804210848v754a3aaex6b963dc2e12327fd@mail.gmail.com>
-Date: Mon, 21 Apr 2008 08:48:30 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
-Cc: balbir@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, hugh@veritas.com,
-       xemul@openvz.org, shiwh@cn.fujitsu.com, mel@csn.ul.ie,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1208770925.7115.167.camel@twins>
+	Mon, 21 Apr 2008 11:51:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lx4F+vFyFJ0q/BNytA8SMlwHz/VWPIm5RWWscuovqcZ83DrxYg233ChE01f7mEtoM3WnwomuBuxZ83vmJgnb/xlNY6R1Po0ZbyETJLFAp62OcRFiyL+9Amz7mvDkAGDzQ6j1h2E6oPpFNXvBPz+N45NbxXvlScZpoL5wsRnvbd8=
+Message-ID: <e2e108260804210851j5cd86901r37f65190fac8a024@mail.gmail.com>
+Date: Mon, 21 Apr 2008 17:51:01 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Frantisek Rysanek" <Frantisek.Rysanek@post.cz>
+Subject: Re: What pokes the ISA IO port of 0x211 ?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <480C92C9.18283.A24BB91B@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0804210004470.1630@blonde.site>
-	 <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080420232427.1b399104.akpm@linux-foundation.org>
-	 <480C347C.6060702@linux.vnet.ibm.com>
-	 <20080421064725.GA32214@balbir.in.ibm.com>
-	 <1208770925.7115.167.camel@twins>
+References: <480C92C9.18283.A24BB91B@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 2:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->  > This would enable the memory controller by default, it can be disabled
->  > using cgroup_disable=memory at boot time.
+On Mon, Apr 21, 2008 at 1:12 PM, Frantisek Rysanek
+<Frantisek.Rysanek@post.cz> wrote:
+>  I'm dealing with an embedded PC motherboard that contains some custom
+>  circuitry (GPIO), accessible via an ISA IO range between 0x200 and
+>  0x218.
 >
->  how about working on a runtime switch that only enables the whole
->  memcgroup machinery when an actual cgroup gets created - and disable it
->  again once the last cgroup goes.
+>  There's an interesting issue with this in recent Linux (tried
+>  2.6.22.6 and 2.6.24.2): something probes IO port 0x211 on boot, which
+>  happens to be an add-on buzzer control port - effectively the kernel
+>  boot launches an accoustic alarm :-)
 >
+>  Any ideas what this could be?
 
-Or more specifically, enable memory tracking when the mem controller
-gets bound to a cgroup hierarchy, and disable it when the controller
-is unbound.
+Did you already have a look at /proc/ioports ? This file should
+contain every range of ISA bus address in use by any kernel component.
 
-Paul
+Bart.
