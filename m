@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbYDUTFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbYDUTGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760215AbYDUTFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYDUTFe
+	id S1755781AbYDUTGA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbYDUTFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:05:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43102 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753795AbYDUTFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:05:33 -0400
-Date: Mon, 21 Apr 2008 21:05:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: don't ever allocate PTEs from lowmem
-Message-ID: <20080421190519.GA3104@elte.hu>
-References: <20080421185703.GA5022@damson.getinternet.no>
+	Mon, 21 Apr 2008 15:05:43 -0400
+Received: from smtp122.sbc.mail.re3.yahoo.com ([66.196.96.95]:43803 "HELO
+	smtp122.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760159AbYDUTFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:05:42 -0400
+X-YMail-OSG: orZOMn0VM1lGRx5fmNj8iD0H7JyL1y2pANx8z5SEW3b4dK7ZS61xS7BidYXlVD8fUFVF1XtVf2vT_CYhQSli9Njyi.EZF6VU1M9ajA--
+X-Yahoo-Newman-Property: ymail-3
+Date: Mon, 21 Apr 2008 14:01:43 -0500
+From: serge@hallyn.com
+To: David <david@unsolicited.net>
+Cc: serge@hallyn.com, casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morgan <morgan@kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+Message-ID: <20080421190143.GA23365@vino.hallyn.com>
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com> <20080421080101.htzh4s03snescog4@unsolicited.net> <20080421183451.GA22071@vino.hallyn.com> <480CE167.8090907@unsolicited.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080421185703.GA5022@damson.getinternet.no>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0048]
+In-Reply-To: <480CE167.8090907@unsolicited.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting David (david@unsolicited.net):
+> serge@hallyn.com wrote:
+>>>
+>>> /lib/libcap.so.1 -> libcap.so.1.92
+>>>
+>>> I guess that's 1.92 (should be the version shipped with SuSE 9.1).
+>>>     
+>>
+>> Ok, thanks, then it's definately not what I was thinking.
+>>
+>> (Will wait to check out your strace)
+>>   
+> strace attached.
+>
+> Cheers
+> David
+>
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+...
+> capget(0x20071026, 0, {, , })           = -1 EINVAL (Invalid argument)
 
-> Hi,
-> 
-> This is needed for the kernel to boot properly without OOMing if PSE 
-> is not present or disabled for some reason. It is the fix that you 
-> proposed for the kmemcheck OOM-on-boot case. It would also be possible 
-> to check the PSE feature before deciding where to allocate from, but I 
-> don't think it really matters.
-> 
-> Looks ok?
+This is odd.  libcap-1.x should be passing in 0x19980330.
 
-yes, looks good - thanks, applied.
+Next, given the -EINVAL return value ntpd should be seeing a NULL result
+from cap_get_proc() and exiting right there.
 
-> (And yes, this DOES fix the OOM for me. :-D)
+What version of ntpd is this?  (I must be looking at a wrong value, but
+even so the fact that cap_get_proc()->capget() is using 0x20071026 for
+version doesn't make sense)
 
-great :)
+> capset(0, 0, {CAP_NET_BIND_SERVICE|CAP_SYS_TIME, CAP_NET_BIND_SERVICE|CAP_SYS_TIME, CAP_NET_BIND_SERVICE|CAP_SYS_TIME}) = -1 EINVAL (Invalid argument)
+> time(NULL)                              = 1208803493
+> write(5, "21 Apr 19:44:53 ntpd[6118]: cap_"..., 92) = 92
+> munmap(0x40022000, 4096)                = 0
+> exit_group(-1)                          = ?
+> Process 6118 detached
 
-	Ingo
+
+thanks,
+-serge
