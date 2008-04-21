@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759734AbYDUPmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYDUPmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759734AbYDUPmP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYDUPl7
+	id S1760168AbYDUPmx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYDUPmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:41:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:42427 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbYDUPl6 (ORCPT
+	Mon, 21 Apr 2008 11:42:44 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37340 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755409AbYDUPmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:41:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wzpgD77XIGRUffF57cxJhXREBu0pXVeBL58y4qfKXLtTbPiQvnJWp/KOAoWQnOyI8kDFzNm0LKt/QaUrkjGaUx25FnloiMo8QavAubsHlZSjHgsxOWMtXK1giWcQHWSqoL7whKS5BVSU0KcTndyNkboO5CUSfs0rMEcFmYlthEE=
-Message-ID: <cfd18e0f0804210841v600c9e7w5081146a68590630@mail.gmail.com>
-Date: Mon, 21 Apr 2008 17:41:57 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Ulrich Drepper" <drepper@redhat.com>
-Subject: Re: [PATCH] utimensat() non-conformances and fixes
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-In-Reply-To: <480C323B.3060608@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Apr 2008 11:42:43 -0400
+Subject: Re: Voyager phys_cpu_present_map compile error
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <480C8FD6.3030700@zytor.com>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
+	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
+	 <20080421120054.GA6788@elte.hu>  <480C8FD6.3030700@zytor.com>
+Content-Type: text/plain
+Date: Mon, 21 Apr 2008 10:42:38 -0500
+Message-Id: <1208792559.3640.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47FA9DA1.8040508@gmail.com> <480C323B.3060608@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 8:20 AM, Ulrich Drepper <drepper@redhat.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Michael Kerrisk wrote:
-> > 1. The draft POSIX.1-200x specification for utimensat() says that if a
-> > times[n].tv_nsec field is UTIME_OMIT or UTIME_NOW, then the value in the
-> > corresponding tv_sec field is ignored.  However the current Linux
-> > implementation requires the tv_sec value to be zero (or the EINVAL error
-> > results).  This requirement should be removed.
->
-> OK, for now.  I think the implemented behavior is better, though.
+On Mon, 2008-04-21 at 09:00 -0400, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+> > * Adrian Bunk <bunk@kernel.org> wrote:
+> > 
+> >> I shouldn't send bug reports at 3 in the morning...
+> >>
+> >> Attached is the .config for both Voyager build errors I reported.
+> > 
+> > thanks, the three patches below should fix it.
+> > 
+> > i ended up excluding Voyager configs from our test space some time ago 
+> > (and VISWS as well - there's one more visws fix in x86.git), that's how 
+> > this broke. These subarchitectures seem not to be used at all and the 
+> > code wont boot on normal PCs. We could mark it BROKEN but the fix seems 
+> > simple in any case.
 
-My only real objection to the implemented behavior is that it doesn't
-follow the spec.  It doesn't seem unreasonable to change the spec
-here.  Or is it already too late for that?  (I suppose it may well
-be.)
+I did actually try to avoid these problems by booting the -mc tree on
+voyager, but I note that none of these issues showed up in that tree the
+last time I did this (admittedly about 3 weeks ago because of various
+conferences etc).
+ 
+> I talked to jejb about this, and pretty much the consensus was that if 
+> it breaks, mark it BROKEN, and let him come back and catch up.  Under 
+> those conditions, I'm willing to keep it in the tree.
 
-> > However, the current implementation does not generate
-> > EPERM if one tv_nsec field is UTIME_NOW while the other is UTIME_OMIT -- it
-> > should give this error for that case.
->
-> This is probably a necessary change.  Non-synchronized changes might be
-> a security problem.
+I didn't say mark it as BROKEN ... I did say I'd catch up.  However,
+it's usually best to begin trying to fix voyager around the -rc1 phase
+since that's when the tree becomes stable again.
 
-Yes.
+> VISWS is another matter.  It's entirely possible I have the only 
+> remaining VISWS in my garage; we have at least not been able to locate 
+> another.  Not that we have tried all that hard.
+> 
+> If there are no VISWS' left, we should just unload the code.
 
-> > However, in
-> > the same circumstances, when utimensat() is given a 'times' array in which
-> > both tv_nsec fields are UTIME_NOW, which provides equivalent functionality
-> > to specifying 'times' as NULL, the call succeeds.  I think that it should fail
-> > with the error EACCES in this case.
->
-> I guess so.
+I certainly don't have one.  I just designed the subarchitectures to be
+able to support it because it was a bit far away from x86 references,
+and Andrey Panin was interested in supporting it at the time ... if he's
+no longer doing that, then it can be removed.
 
-Ok.
+James
 
-> > (times == NULL && times[0].tv_nsec == UTIME_NOW && times[1].tv_nsec ==
-> > UTIME_NOW)
-> >
-> > case should be treated like the traditional utimes() case where 'times'
-> > is NULL.  That is, the call should succeed for a file marked append-only
-> > and should give the error EACCES if the file is marked as immutable.
->
-> Is this something I changed?  I doubt I added this.
 
-Well, I just went away and tested yet again, and utime[s]() with a
-NULL second argument gives the behavior I describe (and always did) --
-and utimensat() should behave the same way for the
-(times == NULL && times[0].tv_nsec == UTIME_NOW && times[1].tv_nsec ==
-UTIME_NOW)
-case, but does not.
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug? Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
