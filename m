@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYDUVbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYDUVcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYDUVbs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYDUVbf
+	id S1754193AbYDUVcZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYDUVcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:31:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55359 "EHLO mx1.redhat.com"
+	Mon, 21 Apr 2008 17:32:07 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:49720 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754909AbYDUVbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:31:34 -0400
-Message-ID: <480D077C.3090509@redhat.com>
-Date: Mon, 21 Apr 2008 17:30:36 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1753201AbYDUVcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:32:06 -0400
+Date: Tue, 22 Apr 2008 00:31:33 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] x86: make impress_friends() static
+Message-ID: <20080421213133.GE2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: Rick Jones <rick.jones2@hp.com>, Kok@vger.kernel.org,
-       Auke <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anton Titov <a.titov@host.bg>, "H. Willstrand" <h.willstrand@gmail.com>,
-       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
-References: <aiXVe-Yn-7@gated-at.bofh.it> <ajGfA-7rt-9@gated-at.bofh.it> <ajGfA-7rt-11@gated-at.bofh.it> <ajGfA-7rt-13@gated-at.bofh.it> <ajGfA-7rt-15@gated-at.bofh.it> <ajGfA-7rt-7@gated-at.bofh.it> <E1JnEcl-0000xc-D9@be1.7eggert.dyndns.org> <480CC3D8.3040700@hp.com> <alpine.LSU.0.999.0804212141050.4235@be1.lrz> <480CF2C0.9050208@hp.com> <alpine.LSU.0.999.0804212306330.15107@be1.lrz>
-In-Reply-To: <alpine.LSU.0.999.0804212306330.15107@be1.lrz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
-> On Mon, 21 Apr 2008, Rick Jones wrote:
->> Bodo Eggert wrote:
->>> On Mon, 21 Apr 2008, Rick Jones wrote:
-> 
->>>> Be it kernel or user space, for consistent benchmark results it needs to
->>>> be
->>>> able to be turned-off without turning the code.  That leaves me in
->>>> agreement
->>>> with Stephen that if it must exist, the user space one would be
->>>> preferable.
->>>> It can be easily terminated with extreme prejudice.
->>>
->>> I agree that having a full-featured userspace balancer daemon with lots of
->>> intelligence will be theoretically better, but if you can have a simple
->>> daemon doing OK on many machines for less than the userspace daemon's
->>> kernel stack, why not?
->> Perhaps my judgement is too colored by benchmark(et)ing, and desires to have
->> repeatable results on things like neperf, but I very much like to know where
->> my interrupts are going and don't like them moving around. That is why I am
->> not particularly fond of either flavor of irq balancing.
->>
->> That being the case, whatever is out there aught to be able to be disabled on
->> a running system without having to roll bits or reboot.
-> 
-> Adding a "module" parameter to disable it should be cheap, isn't it?
+This patch makes the needlessly global impress_friends() static.
 
-Except the irq balancing is system-wide.  Adding per-device exemptions to an 
-obsolete feature seems like the wrong way to go.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--- Chris
+---
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -579,7 +579,7 @@ void __init smp_alloc_memory(void)
+ }
+ #endif
+ 
+-void impress_friends(void)
++static void impress_friends(void)
+ {
+ 	int cpu;
+ 	unsigned long bogosum = 0;
