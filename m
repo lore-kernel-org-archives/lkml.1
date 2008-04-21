@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYDUVeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757626AbYDUVex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbYDUVeg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbYDUVcc
+	id S1757626AbYDUVex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYDUVcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:32:32 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49748 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 17:32:36 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60445 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754005AbYDUVcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:32:31 -0400
-Date: Tue, 22 Apr 2008 00:32:00 +0300
+	id S1755269AbYDUVcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:32:35 -0400
+Date: Tue, 22 Apr 2008 00:32:04 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] parport/share.c: proper externs
-Message-ID: <20080421213200.GK2633@cs181133002.pp.htv.fi>
+To: ysato@users.sourceforge.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove include/asm-h8300/keyboard.h
+Message-ID: <20080421213204.GL2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,8 +23,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds proper externs for parport_default_timeslice and 
-parport_default_spintime in include/linux/parport.h
+This patch removes the unused include/asm-h8300/keyboard.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -31,36 +31,39 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 This patch has been sent on:
 - 14 Apr 2008
+- 31 Mar 2008
 
- drivers/parport/procfs.c |    3 ---
- include/linux/parport.h  |    3 +++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/asm-h8300/keyboard.h |   24 ------------------------
+ 1 file changed, 24 deletions(-)
 
-4b9040d06db3fe544aa9971ba18184e2fb9b52ce diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
-index d950fc3..554e11f 100644
---- a/drivers/parport/procfs.c
-+++ b/drivers/parport/procfs.c
-@@ -429,9 +429,6 @@ struct parport_default_sysctl_table
- 	ctl_table dev_dir[2];
- };
- 
--extern unsigned long parport_default_timeslice;
--extern int parport_default_spintime;
+372be646df287c70971a0a5a8a1e2ee5dbc5a47f diff --git a/include/asm-h8300/keyboard.h b/include/asm-h8300/keyboard.h
+deleted file mode 100644
+index 90efbd6..0000000
+--- a/include/asm-h8300/keyboard.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-/*
+- *  linux/include/asm-h8300/keyboard.h
+- *  Created 04 Dec 2001 by Khaled Hassounah <khassounah@mediumware.net>
+- *  This file contains the Dragonball architecture specific keyboard definitions
+- */
 -
- static struct parport_default_sysctl_table
- parport_default_sysctl_table = {
- 	.sysctl_header	= NULL,
-diff --git a/include/linux/parport.h b/include/linux/parport.h
-index d1ad546..2794fcc 100644
---- a/include/linux/parport.h
-+++ b/include/linux/parport.h
-@@ -560,5 +560,8 @@ extern int parport_device_proc_unregister(struct pardevice *device);
- 
- #endif /*  !CONFIG_PARPORT_NOT_PC  */
- 
-+extern unsigned long parport_default_timeslice;
-+extern int parport_default_spintime;
-+
- #endif /* __KERNEL__ */
- #endif /* _PARPORT_H_ */
+-#ifndef _H8300_KEYBOARD_H
+-#define _H8300_KEYBOARD_H
+-
+-
+-/* dummy i.e. no real keyboard */
+-#define kbd_setkeycode(x...)	(-ENOSYS)
+-#define kbd_getkeycode(x...)	(-ENOSYS)
+-#define kbd_translate(x...)	(0)
+-#define kbd_unexpected_up(x...)	(1)
+-#define kbd_leds(x...)		do {;} while (0)
+-#define kbd_init_hw(x...)	do {;} while (0)
+-#define kbd_enable_irq(x...)	do {;} while (0)
+-#define kbd_disable_irq(x...)	do {;} while (0)
+-
+-#endif  /* _H8300_KEYBOARD_H */
+-
+-
+-
 
