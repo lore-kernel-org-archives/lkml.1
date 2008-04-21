@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbYDUQPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbYDUQST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbYDUQPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbYDUQPj
+	id S1761450AbYDUQST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbYDUQSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:15:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:40073 "EHLO ozlabs.org"
+	Mon, 21 Apr 2008 12:18:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48164 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754662AbYDUQPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:15:38 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [DOC PATCH] Remove mention of semaphores from kernel-locking
-Date: Tue, 22 Apr 2008 02:15:30 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>
-References: <20080421145230.GX20637@parisc-linux.org>
-In-Reply-To: <20080421145230.GX20637@parisc-linux.org>
+	id S1754826AbYDUQSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 12:18:08 -0400
+Date: Mon, 21 Apr 2008 18:17:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: suresh.b.siddha@intel.com, rostedt@goodmis.org, chinang.ma@intel.com,
+       arjan@linux.intel.com, willy@linux.intel.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH v2] sched: push rt tasks only if newly activated tasks
+	have been added
+Message-ID: <20080421161744.GB10121@elte.hu>
+References: <20080421153438.9212.79406.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804220215.30855.rusty@rustcorp.com.au>
+In-Reply-To: <20080421153438.9212.79406.stgit@novell1.haskins.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0641]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 00:52:30 Matthew Wilcox wrote:
-> Since the consensus seems to be to eliminate semaphores where possible,
-> we shouldn't be educating people about how to use them as locks.
 
-Agreed.
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
-> Use 
-> mutexes instead.  Semaphores should be described in a separate document
-> if we end up keeping them.
->
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
->
-> (I'll put this patch in the semaphore git tree tomorrow unless I hear
-> complaints.)
->
-> diff --git a/Documentation/DocBook/kernel-locking.tmpl
-> b/Documentation/DocBook/kernel-locking.tmpl index 435413c..e1f4655 100644
-> --- a/Documentation/DocBook/kernel-locking.tmpl
-> +++ b/Documentation/DocBook/kernel-locking.tmpl
-> @@ -222,7 +222,7 @@
->     <title>Three Main Types of Kernel Locks: Spinlocks, Mutexes and
-> Semaphores</title>
->
->     <para>
-> -     There are three main types of kernel locks.  The fundamental type
-> +     There are two main types of kernel locks.  The fundamental type
->       is the spinlock
->       (<filename class="headerfile">include/asm/spinlock.h</filename>),
->       which is a very simple single-holder lock: if you can't get the
+> Hi Ingo, et. al.,
+>  Steven asked me to comment more thoroughly for posterity, so here is v2.
 
-Fix title, too?
+thanks Gregory, applied.
 
-Thanks for the other fixes too; this document needs some love,
-
-Acked,
-Rusty.
+	Ingo
