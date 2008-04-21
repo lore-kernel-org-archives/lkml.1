@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbYDUQ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbYDUQbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbYDUQ3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYDUQ3F
+	id S932283AbYDUQbm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYDUQbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:29:05 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:60749 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754535AbYDUQ3C (ORCPT
+	Mon, 21 Apr 2008 12:31:33 -0400
+Received: from cpsmtpo-eml02.kpnxchange.com ([213.75.38.151]:42875 "EHLO
+	cpsmtpo-eml02.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754431AbYDUQbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:29:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RxglCXfHGtDuL8zllgzyEzEnXmJRjYF0i2vHH6GkuwRMG4ybkqHImYd0a/+mOkPkPfrzcjflz/Ycq7wPDFryXKvpkAITyHUN5Mi3fCfrexe8kZ+mbuYPvTcAzOyQMwFk/fxo41wcMMYefmmCBKvHOsblAKdTm0MBVdjoHerSXW8=
-Message-ID: <e85b9d30804210928n6bb08f3bqa4e30741798009fa@mail.gmail.com>
-Date: Mon, 21 Apr 2008 18:28:58 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "=?ISO-8859-1?Q?Thomas_B=E4chler?=" <thomas@archlinux.org>
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>,
-       torvalds@linux-foundation.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rudolf Marek" <r.marek@assembler.cz>,
-       "Gene Heskett" <gene.heskett@gmail.com>, "Len Brown" <lenb@kernel.org>
-In-Reply-To: <480CBC92.4070502@archlinux.org>
+	Mon, 21 Apr 2008 12:31:32 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] scheduler changes for v2.6.26
+Date: Mon, 21 Apr 2008 18:31:28 +0200
+User-Agent: KMail/1.9.9
+References: <20080419181304.GB21353@elte.hu> <200804192147.43719.elendil@planet.nl> <20080421123903.GE9554@elte.hu>
+In-Reply-To: <20080421123903.GE9554@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Richard Jonsson <richie@coderworld.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <200804182151.49021.lenb@kernel.org> <480CBC92.4070502@archlinux.org>
+Message-Id: <200804211831.29976.elendil@planet.nl>
+X-OriginalArrivalTime: 21 Apr 2008 16:31:30.0370 (UTC) FILETIME=[27571220:01C8A3CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3LGTLEB002531
 
-On Mon, Apr 21, 2008 at 6:10 PM, Thomas BÃ¤chler <thomas@archlinux.org> wrote:> Len Brown schrieb:>>> > Hello Mat,> > I'm not familiar with "coretemp", can you point me to the exact version> > of the application you are running so I can see how it is getting at> > the underlying information?> >>>  I think there is some confusion here: "coretemp" is a kernel module, and> all applications reading it will probably use the lm_sensors libraries. (I> don't think the hwmon module are related to ACPI)>>  $ modinfo coretemp>  filename:       /lib/modules/2.6.25-ARCH/kernel/drivers/hwmon/coretemp.ko>  license:        GPL>  description:    Intel Core temperature monitor>  author:         Rudolf Marek <r.marek@assembler.cz>>  depends:>  vermagic:       2.6.25-ARCH SMP preempt mod_unload>>  That said, I have two Core 2 CPUs (one mobile, one desktop) and the values> coretemp reports have not changed compared to earlier kernel versions> (around 60Â°C when idle on the mobile, much less on the desktop).>>>  > Also, do you see any change with and without kernel built with> CONFIG_THERMAL=y?>>  The values I see from ACPI thermal are also the same as before (this is> funny: they are always about 15Â°C cooler than the coretemp values).>>  So I don't see a regression here, maybe the reporter should try a vanilla> kernel.>>
-thermal isn't working on this board (if you mean /proc/acpi/thermal_zone ...)
-I also tried a vanilla kernel & it showed the same higher temperature ;(
-here the last mail (on lkml it was corrupted) - I don't know if youwere able to read it
->  sure, I'll test-drive the vanilla-kernel, too>>  thanks
-ok, tested the vanilla-kernel this morning and it shows the exact hightemperatures (with CONFIG_THERMAL=y)
-I've got a question:
-when trying to disable thermal it just sits there & won't change:<*> Hardware Monitoring support  ---> -*- Generic Thermal sysfs driver  --->
-it seemingly depends on other things:Selected by: ACPI_THERMAL && !X86_VOYAGER && ACPI && ACPI_PROCESSOR
-is it safe to disable acpi_processor and acpi or CONFIG_THERMAL ingeneral ? or will it burn down my box ? ;)
-I'm asking this because it says/writes:CONFIG_ACPI_THERMAL:                                                    â”‚ â”‚                                                                         â”‚ â”‚ This driver adds support for ACPI thermal zones.  Most mobile and       â”‚ â”‚ some desktop systems support ACPI thermal zones.  It is HIGHLY          â”‚ â”‚ recommended that this option be enabled, as your processor(s)           â”‚ â”‚ may be damaged without it.
+On Monday 21 April 2008, you wrote:
+> * Frans Pop <elendil@planet.nl> wrote:
+> > Ingo Molnar wrote:
+> > > Ingo Molnar (12):
+> > >       sched: re-do "sched: fix fair sleepers"
+> >
+> > Has the regression [1] that was traced to this change been fixed now?
+> >
+> > The regression was confirmed to be also present in sched-devel.git at
+> > the time of -rc8, so I'd expect it still to be valid unless of course
+> > the cause was found since then.
+>
+> Peter reported a similar interactivity problem to be gone, so lets
+> re-try this again - the change makes sense and if you see problems it's
+> hiding something we really want to fix.
 
-thanks
-Matÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+IIRC he mentioned seeing something himself during 2.6.25, but we'd already 
+established that was unrelated to what I was seeing as his workaround 
+(booting with nohz) did not work for me.
+
+I can again reproduce the issue with sched-devel/latest :-(
+latencytop regularly reports 500-700 msec latencies for amarokapp again 
+while compiling glibc.
+
+I expect that means it's also back in mainline?
+What would be preferred for bugzilla: reopening the existing report (#10428) 
+or opening a new one?
+
+> It would be nice if you could 
+> try sched-devel/latest because it has an improved ftrace "sched_switch"
+> tracer where you can generate much longer traces of this incident. Try
+> the new /debug/trace_entries runtime tunable.
+
+I'll try to get the trace and will reply on the private thread we had.
+I may need additional instructions though.
+
+Cheers,
+FJP
