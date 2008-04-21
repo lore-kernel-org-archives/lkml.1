@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYDUAnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYDUAoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYDUAnB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 20:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYDUAmt
+	id S1757920AbYDUAoe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYDUAo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 20:42:49 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:35876 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbYDUAms (ORCPT
+	Sun, 20 Apr 2008 20:44:26 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:43737 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbYDUAo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 20:42:48 -0400
-Date: Sun, 20 Apr 2008 20:41:48 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       miklos@szeredi.hu, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 3/8] omfs: add inode routines
-Message-ID: <20080421004148.GA7454@hash.localnet>
-References: <1208637457-24969-4-git-send-email-me@bobcopeland.com> <20080419212842.GA7888@joi> <20080420095718.GA6079@joi>
+	Sun, 20 Apr 2008 20:44:26 -0400
+Message-ID: <480BE354.408@kernel.org>
+Date: Sun, 20 Apr 2008 17:44:04 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080420095718.GA6079@joi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: serge@hallyn.com, David <david@unsolicited.net>
+CC: casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com>
+In-Reply-To: <20080421000055.GA17510@vino.hallyn.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 11:57:22AM +0200, Marcin Slusarz wrote:
-> > > +static void set_block_shift(struct omfs_sb_info *sbi)
-> > > +{
-> > > +	unsigned int scale = sbi->s_blocksize / sbi->s_sys_blocksize;
-[...]
-> > isn't it get_bitmask_order(scale - 1)?
-> 
-> I mean get_bitmask_order(scale >> 1) ;)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Thank you for your comments.  Hmm, yeah I think so.  It could also
-lose the divide:
+serge@hallyn.com wrote:
+| Quoting David (david@unsolicited.net):
+|> Casey Schaufler wrote:
+|>> Do you have a libcap that reflects the change from 32 capabilities
+|>> to 64? You'll be looking for libcap.so.2.06 or thereabouts.
+|>>
+|> Adding libcap-2.08 and recompiling ntpd has fixed the issue, and I'm now
+|> running normally, thanks!
+|
+| I don't understand why, though.  Looking at the ntpd code (ntp-4.2.4p4)
+| it just does a cap_set_proc(cap_from_text("X=epi"));  It should simply
+| be sending in the _LINUX_CAPABILITY_VERSION which shipped with libcap,
+| which should have been _V1, and the kernel should honor that so long as
+| you didn't try to send in caps > 31, which ntpd wasn't.
+|
+|> Was this userspace visible change planned in advance for 2.6.25 ? ...
+as I
+|> guess a few other people with venerable old userspace components may
+come
+|> across this issue.
+|>
+|> Cheers
+|> David
+|
+| It's been in the works a long time and we thought we'd done pretty
+| well with backward compatibility.  I really don't see why you had
+| that failure!
 
-  scale = get_bitmask_order(sbi->s_blocksize) -
-          get_bitmask_order(sbi->s_sys_blocksize);
+I'm confused (and somewhat concerned) about this too. 32-bit capability
+apps should act fine. The only thing you might notice is a strange
+comment about it in /var/log/messages.
 
-(or ffs/fls for that matter.)
+David, can you run strace on the failing program (configuration)?
 
--- 
-Bob Copeland %% www.bobcopeland.com 
+[I'll see if I can read the complete thread on one of the archives and
+see if anything else sticks out.]
 
+Thanks
+
+Andrew
+
+|
+| Do you know which version of libcap you had before?
+|
+| thanks,
+| -serge
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFIC+NP+bHCR3gb8jsRAjunAKDXe/fDfwIJWi6wgtpdxZefbRq5SACffb1+
+pQNi1C/8PPGWYpUXFxizUuI=
+=LHl0
+-----END PGP SIGNATURE-----
