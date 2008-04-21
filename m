@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbYEaVvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbYEWRxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755718AbYEaVvd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 17:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbYEaVvZ
+	id S1753570AbYEWRxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 13:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYEWRxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 17:51:25 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:42981 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812AbYEaVvZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 17:51:25 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Date: Sat, 31 May 2008 23:25:30 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <200805312030.57213.oliver@neukum.org> <dd18b0c30805311253q687bdc50j41f6c4fd93c5695c@mail.gmail.com>
-In-Reply-To: <dd18b0c30805311253q687bdc50j41f6c4fd93c5695c@mail.gmail.com>
+	Fri, 23 May 2008 13:53:36 -0400
+Received: from smtpgpe.resot.net ([217.175.160.71]:54223 "EHLO smtpgpe.ool.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757527AbYEWRxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 13:53:33 -0400
+From: "werner" <werner@copaya.yi.org>
+Subject: EDD problem -- regression -- crash on booting by probing EDD
+To: linux-kernel@vger.kernel.org
+X-Originating-IP: 217.175.174.222
+X-Mailer: Usermin 1.340
+Message-Id: <1208793757.26711@copaya.yi.org>
+Date: Mon, 21 Apr 2008 13:02:38 -0300 (GFT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805312325.31753.oliver@neukum.org>
+Content-Type: multipart/mixed; boundary="bound1208793758"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 31. Mai 2008 21:53:16 schrieb Justin Mattock:
-> On Sat, May 31, 2008 at 6:30 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > Am Samstag, 31. Mai 2008 19:48:06 schrieb Rafael J. Wysocki:
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.25.  Please verify if it still should be listed.
-> >
-> > AFAIK it is current and should be listed.
-> >
-> >        Regards
-> >                Oliver
-> >
-> >
-> 
-> I agree, right now I upgraded to the latest git on thursday, and
-> performed a suspend to see if it would appear, but nothing.
-> I did notice the same error while doing a reboot, and noticed
-> appletouch was motionless until I removed and inserted the module back
-> in.
-> regards;
-> 
+This is a multi-part message in MIME format.
 
-Can you please add your device to the quirk lis in drivers/usb/core/quirks.c
-with USB_QUIRK_RESET_RESUME and retest?
+--bound1208793758
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-	Regards
-		Oliver
+The problem below , I continued to check, and it seems really be a kernel bug (inclusively that the option edd=off don't work)
+
+Because of this, I had to release an update of my SYS distro DVD, with i=installation using the normal 2.6.25 kernel, and a=alternatively 2.4.24-rc6-git2 what dont have that problem.  ftp://ftp5.gwdg.de/pub/linux/install/sys/  
+
+The problem happened with an ACER Aspire 7004WSMi laptop.   
+
+Werner Landgraf
+
+
+=====================================================================================
+There is a regression in 2.6.25.   Booting stops with: Probing EDD (edd=off to disable) message.
+
+It dont work the kernel boot parameter edd=off .  With pci=off the computer continues to boot, but later it dont find hard disks etc.
+
+Thats happening on 2.6.25   definitive, but was verified to go back until 2.6.24-rc6-git8, but it wasnt yet at 2.6.24-rc6-git2 which worked correctly.
+
+
+Werner Landgraf
+
+SYS Linux
+
+http://linux.softpedia.com/get/System/Operating-Systems/Linux-Distributions/SYS-34168.shtml
+
+--bound1208793758--
 
