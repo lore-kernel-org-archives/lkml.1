@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761420AbYDUTkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbYDUTkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761420AbYDUTkQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYDUTkB
+	id S1758806AbYDUTkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbYDUTkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:40:01 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54491 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752458AbYDUTj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:39:59 -0400
-Date: Mon, 21 Apr 2008 22:39:27 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: chris@zankel.net, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] xtensa: don't offer ATA
-Message-ID: <20080421193927.GA2633@cs181133002.pp.htv.fi>
-References: <20080414195521.GB26885@cs181133002.pp.htv.fi> <4807A771.2020405@pobox.com>
+	Mon, 21 Apr 2008 15:40:36 -0400
+Received: from outbound-mail-138.bluehost.com ([67.222.39.28]:35467 "HELO
+	outbound-mail-138.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756725AbYDUTkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:40:35 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: PCI MSI breaks when booting with nosmp
+Date: Mon, 21 Apr 2008 12:35:23 -0700
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>, Jean Delvare <jdelvare@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
+References: <200804172140.02311.jdelvare@suse.de> <87d4oj6o9a.fsf@basil.nowhere.org> <200804211207.00961.jbarnes@virtuousgeek.org>
+In-Reply-To: <200804211207.00961.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4807A771.2020405@pobox.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200804211235.25174.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 03:39:29PM -0400, Jeff Garzik wrote:
-> Adrian Bunk wrote:
->> Trying to build libata for xtensa fails with the following error:
->>
->> <--  snip  -->
->>
->> ...
->>   CC [M]  drivers/ata/libata-core.o
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_devchk':
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1034: error: implicit declaration of function 'iowrite8'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:1043: error: implicit declaration of function 'ioread8'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_data_xfer':
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5027: error: implicit declaration of function 'ioread16_rep'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5029: error: implicit declaration of function 'iowrite16_rep'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5037: error: implicit declaration of function 'ioread16'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:5041: error: implicit declaration of function 'iowrite16'
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c: In function 'ata_wait_register':
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ata/libata-core.c:7700: error: implicit declaration of function 'ioread32'
->> make[3]: *** [drivers/ata/libata-core.o] Error 1
->>
->> <--  snip  -->
->>
->> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->>
->> ---
->> aa579e7ab065e41a9d1e27e1f4b7af6b0508018c diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
->> index 25aba69..f34e9d1 100644
->> --- a/drivers/ata/Kconfig
->> +++ b/drivers/ata/Kconfig
->> @@ -6,7 +6,7 @@ menuconfig ATA
->>  	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
->>  	depends on HAS_IOMEM
->>  	depends on BLOCK
->> -	depends on !(M32R || M68K) || BROKEN
->> +	depends on !(M32R || M68K || XTENSA) || BROKEN
->>  	depends on !SUN4 || BROKEN
->>  	select SCSI
+On Monday, April 21, 2008 12:06 pm Jesse Barnes wrote:
+> On Monday, April 21, 2008 11:45 am Andi Kleen wrote:
+> > Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+> > > Ok, I see this too on my desktop machine.  It looks like we're not
+> > > getting interrupts setup correctly in the nosmp case.  Still digging
+> > > through to see why though...
+> >
+> > NoSMP disables the io-apic and a lot of modern systems don't work without
+> > APIC.
+> >
+> > If you just want to run with a single cpu for testing etc. always use
+> > maxcpus=1 (not 0, that will disable the APIC too)
 >
-> XTENSA offers HAS_IOMEM but not iomem functions?  That seems like the  
-> problem to me.
+> Right...  but it looks like the MSI code is buggy when noapic is specified
+> via nosmp or maxcpus=0.  We should either fix it to work with noapic or
+> disable it like we do the ioapic when nosmp or maxcpus=0:
 
-Chris, can you comment on this?
+Or if you want something that compiles & works (at least on my machine) here 
+it is.  But the fact that noapic alone doesn't cause the bug means there's 
+probably something depending on !setup_max_cpus that needs fixing instead.
 
-> Overall, we should not be adding specific arches to an exclusion list,  
-> we should defining HAS_IOFOO or MISSING_IOFOO or another symbol in the  
-> appropriate arch.
->
-> 	Jeff
+Jesse
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index eabeb1f..9170589 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -39,14 +39,6 @@ extern struct rw_semaphore pci_bus_sem;
+ 
+ extern unsigned int pci_pm_d3_delay;
+ 
+-#ifdef CONFIG_PCI_MSI
+-void pci_no_msi(void);
+-extern void pci_msi_init_pci_dev(struct pci_dev *dev);
+-#else
+-static inline void pci_no_msi(void) { }
+-static inline void pci_msi_init_pci_dev(struct pci_dev *dev) { }
+-#endif
+-
+ #ifdef CONFIG_PCIEAER
+ void pci_no_aer(void);
+ #else
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index ea760e5..0ed53d6 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -590,6 +590,13 @@ int pci_try_set_mwi(struct pci_dev *dev);
+ void pci_clear_mwi(struct pci_dev *dev);
+ void pci_intx(struct pci_dev *dev, int enable);
+ void pci_msi_off(struct pci_dev *dev);
++#ifdef CONFIG_PCI_MSI
++void pci_no_msi(void);
++extern void pci_msi_init_pci_dev(struct pci_dev *dev);
++#else
++static inline void pci_no_msi(void) { }
++static inline void pci_msi_init_pci_dev(struct pci_dev *dev) { }
++#endif
+ int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
+ int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask);
+ int pci_set_dma_max_seg_size(struct pci_dev *dev, unsigned int size);
+diff --git a/init/main.c b/init/main.c
+index 99ce949..a9436b7 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -58,6 +58,7 @@
+ #include <linux/kthread.h>
+ #include <linux/sched.h>
+ #include <linux/signal.h>
++#include <linux/pci.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -148,6 +149,7 @@ static int __init nosmp(char *str)
+ {
+ 	setup_max_cpus = 0;
+ 	disable_ioapic_setup();
++	pci_no_msi();
+ 	return 0;
+ }
+ 
+@@ -156,9 +158,10 @@ early_param("nosmp", nosmp);
+ static int __init maxcpus(char *str)
+ {
+ 	get_option(&str, &setup_max_cpus);
+-	if (setup_max_cpus == 0)
++	if (setup_max_cpus == 0) {
+ 		disable_ioapic_setup();
+-
++		pci_no_msi();
++	}
+ 	return 0;
+ }
+ 
 
