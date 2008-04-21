@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbYDUADh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYDUAFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbYDUADh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 20:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYDUADG
+	id S1757163AbYDUAFA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYDUAEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 20:03:06 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:46055 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753905AbYDUADE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 20:03:04 -0400
-Date: Mon, 21 Apr 2008 03:02:38 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, hpa@zytor.com,
-       James.Bottomley@HansenPartnership.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Voyager phys_cpu_present_map compile error
-Message-ID: <20080421000238.GD26897@cs181133002.pp.htv.fi>
+	Sun, 20 Apr 2008 20:04:53 -0400
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:34640 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751768AbYDUAEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 20:04:52 -0400
+X-YMail-OSG: _.TdiBgVM1k50iwnY4TnP8NB4WMaLTI.yJDTBrYFU1enBctuPaBszYIhDapOs3AXH05mqtyN_0ymTqH_g36gAiWUMA0YDgszoEFF1Q--
+X-Yahoo-Newman-Property: ymail-3
+Date: Sun, 20 Apr 2008 19:00:55 -0500
+From: serge@hallyn.com
+To: David <david@unsolicited.net>
+Cc: casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morgan <morgan@kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+Message-ID: <20080421000055.GA17510@vino.hallyn.com>
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <480B7D72.7020503@unsolicited.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 2fe60147570231cde0d1f14711d2e34ccdf54b65
-(x86: move up & smp variables to setup.c) broke Voyager:
+Quoting David (david@unsolicited.net):
+> Casey Schaufler wrote:
+>> Do you have a libcap that reflects the change from 32 capabilities
+>> to 64? You'll be looking for libcap.so.2.06 or thereabouts.
+>>   
+> Adding libcap-2.08 and recompiling ntpd has fixed the issue, and I'm now 
+> running normally, thanks!
 
-<--  snip  -->
+I don't understand why, though.  Looking at the ntpd code (ntp-4.2.4p4)
+it just does a cap_set_proc(cap_from_text("X=epi"));  It should simply
+be sending in the _LINUX_CAPABILITY_VERSION which shipped with libcap,
+which should have been _V1, and the kernel should honor that so long as
+you didn't try to send in caps > 31, which ntpd wasn't.
 
-...
-  LD      vmlinux.o
-arch/x86/mach-voyager/built-in.o:(.bss+0x30): multiple definition of `phys_cpu_present_map'
-arch/x86/kernel/built-in.o:(.bss+0x13c8): first defined here
-ld: Warning: size of symbol `phys_cpu_present_map' changed from 32 in 
-arch/x86/kernel/built-in.o to 8 in arch/x86/mach-voyager/built-in.o
-make[1]: *** [vmlinux.o] Error 1
+> Was this userspace visible change planned in advance for 2.6.25 ? ... as I 
+> guess a few other people with venerable old userspace components may come 
+> across this issue.
+>
+> Cheers
+> David
 
-<--  snip  -->
+It's been in the works a long time and we thought we'd done pretty
+well with backward compatibility.  I really don't see why you had
+that failure!
 
-cu
-Adrian
+Do you know which version of libcap you had before?
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+thanks,
+-serge
