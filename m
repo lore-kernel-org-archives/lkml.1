@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbYDUT7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbYDUUC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761746AbYDUT7Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYDUT7F
+	id S1761622AbYDUUC3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 16:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbYDUUCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:59:05 -0400
-Received: from cpc4-cbly1-0-0-cust583.glfd.cable.ntl.com ([86.16.162.72]:40086
-	"EHLO crisp.demon.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752190AbYDUT7E (ORCPT
+	Mon, 21 Apr 2008 16:02:16 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:30262 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755283AbYDUUCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:59:04 -0400
-Date: Mon, 21 Apr 2008 20:59:01 +0100
-From: paul <fox@crisp.demon.co.uk>
-Message-Id: <200804211959.m3LJx1LK004833@crisp.demon.co.uk>
-Reply-To: fox@crisp.demon.co.uk
-To: jkosina@suse.cz
-Subject: Re: dtrace for linux
-Cc: linux-kernel@vger.kernel.org
-X-Mailer: CRiSP-Mail v4.0
+	Mon, 21 Apr 2008 16:02:16 -0400
+Message-ID: <480CF2C0.9050208@hp.com>
+Date: Mon, 21 Apr 2008 13:02:08 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Kok@vger.kernel.org, Auke <auke-jan.h.kok@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
+       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
+References: <aiXVe-Yn-7@gated-at.bofh.it> <ajGfA-7rt-9@gated-at.bofh.it>	<ajGfA-7rt-11@gated-at.bofh.it> <ajGfA-7rt-13@gated-at.bofh.it>	<ajGfA-7rt-15@gated-at.bofh.it> <ajGfA-7rt-7@gated-at.bofh.it>	<E1JnEcl-0000xc-D9@be1.7eggert.dyndns.org> <480CC3D8.3040700@hp.com> <alpine.LSU.0.999.0804212141050.4235@be1.lrz>
+In-Reply-To: <alpine.LSU.0.999.0804212141050.4235@be1.lrz>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> On Sun, 20 Apr 2008, paul wrote:
+Bodo Eggert wrote:
+> On Mon, 21 Apr 2008, Rick Jones wrote:
+>>Be it kernel or user space, for consistent benchmark results it needs to be
+>>able to be turned-off without turning the code.  That leaves me in agreement
+>>with Stephen that if it must exist, the user space one would be preferable.
+>>It can be easily terminated with extreme prejudice.
 > 
-> > If anyone wants to grab a copy (purely for reference - dont try and run 
-> > anything), you can visit
-> > http://www.crisp.demon.co.uk/tools
 > 
-> This gives 404.
-> 
-> -- 
-> Jiri Kosina
-> SUSE Labs
+> I agree that having a full-featured userspace balancer daemon with lots of 
+> intelligence will be theoretically better, but if you can have a simple
+> daemon doing OK on many machines for less than the userspace daemon's
+> kernel stack, why not?
 
-Sorry - that should be tools.html:
+Perhaps my judgement is too colored by benchmark(et)ing, and desires to 
+have repeatable results on things like neperf, but I very much like to 
+know where my interrupts are going and don't like them moving around. 
+That is why I am not particularly fond of either flavor of irq balancing.
 
-http://www.crisp.demon.co.uk/tools.html
+That being the case, whatever is out there aught to be able to be 
+disabled on a running system without having to roll bits or reboot.
 
-tx
+rick jones
