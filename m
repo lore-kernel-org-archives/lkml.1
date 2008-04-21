@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYDUHpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYDUHpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYDUHpU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYDUHpI
+	id S1754912AbYDUHpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYDUHpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:45:08 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32995 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbYDUHpG (ORCPT
+	Mon, 21 Apr 2008 03:45:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46584 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754195AbYDUHpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:45:06 -0400
-Date: Mon, 21 Apr 2008 08:42:41 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, kernel@wantstofly.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, galak@kernel.crashing.org,
-       David Miller <davem@davemloft.net>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, cooloney@kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git patches] minor irq handler cleanups
-Message-ID: <20080421074240.GA1938@flint.arm.linux.org.uk>
-References: <20080421013551.GA25960@havoc.gtf.org>
+	Mon, 21 Apr 2008 03:45:33 -0400
+Date: Mon, 21 Apr 2008 09:51:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080421075102.GB14446@one.firstfloor.org>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <200804201643.35830.dhazelton@enter.net> <480BB85A.6020508@firstfloor.org> <200804202145.45146.dhazelton@enter.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080421013551.GA25960@havoc.gtf.org>
+In-Reply-To: <200804202145.45146.dhazelton@enter.net>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 09:35:51PM -0400, Jeff Garzik wrote:
-> diff --git a/arch/arm/mach-integrator/time.c b/arch/arm/mach-integrator/time.c
-> index 5278f58..5235f64 100644
-> --- a/arch/arm/mach-integrator/time.c
-> +++ b/arch/arm/mach-integrator/time.c
-> @@ -125,7 +125,7 @@ static int rtc_probe(struct amba_device *dev, void *id)
->  	xtime.tv_sec = __raw_readl(rtc_base + RTC_DR);
->  
->  	ret = request_irq(dev->irq[0], arm_rtc_interrupt, IRQF_DISABLED,
-> -			  "rtc-pl030", dev);
-> +			  "rtc-pl030", NULL);
->  	if (ret)
->  		goto map_out;
->  
+> Never said it worked on a 32bit system. I was pointing out that there can be 
+> workloads that do reach 
 
-BTW, if you're removing the dev_id argument from request_irq(), that
-also needs to happen for the corresponding free_irq() calls.
-arch/arm/mach-integrator/time.c does:
+Ah your point was that people might do this on 64bit systems? 
 
-        free_irq(dev->irq[0], dev);
+They could indeed. It would not be very efficient but it should work
+in theory at least with enough memory. Of course they don't need 4k
+stacks for it. They can also try it on 32bit and it will work
+to some extent too, just not scale very far.  And 4k stack more or less
+won't make much difference for that because the stack is only
+a small part of the lowmem needed for a blocked thread with
+open sockets.
 
-and these are untouched.
+But this thread clearly was about 32bit systems only.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> that 50K thread-count that you seem to be 
+> calling "stupid". 
+
+Note I didn't come up with that number, it was quoted to me earlier
+(but one of its authors has distanced itself from it now, so it 
+seems to becoming more and more irrelevant indeed now) 
+
+Stupid in this case just refers to the general observation that
+it is quite inefficient to do one thread per request on servers
+who are expected to process lots of long running connections.
+
+Perhaps I could have put that better I will give you that. Please
+assume I always meant "inefficient" when I wrote "stupid".
+
+> talking about. If I had been running 4K stacks on that machine I probably 
+> would have survived the mis-configuration without the reboot it took to make 
+
+Now that is a very doubtful claim. You realize that a functional network
+server thread needs a lot more lowmem than just the stack? 
+
+-Andi
+
