@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYDUQyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYDUQzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbYDUQyc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYDUQyX
+	id S1758602AbYDUQzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYDUQze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:54:23 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48053 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbYDUQyW (ORCPT
+	Mon, 21 Apr 2008 12:55:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47502 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752458AbYDUQzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:54:22 -0400
-Date: Mon, 21 Apr 2008 10:54:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [DOC PATCH] Remove mention of semaphores from kernel-locking
-Message-ID: <20080421165405.GB20637@parisc-linux.org>
-References: <20080421145230.GX20637@parisc-linux.org> <200804220215.30855.rusty@rustcorp.com.au>
+	Mon, 21 Apr 2008 12:55:33 -0400
+Date: Mon, 21 Apr 2008 09:54:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <200804211812.16994.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0804210934190.2779@woody.linux-foundation.org>
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <200804211812.16994.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804220215.30855.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 02:15:30AM +1000, Rusty Russell wrote:
-> >     <title>Three Main Types of Kernel Locks: Spinlocks, Mutexes and
-> > Semaphores</title>
-> >
-> >     <para>
-> > -     There are three main types of kernel locks.  The fundamental type
-> > +     There are two main types of kernel locks.  The fundamental type
-> >       is the spinlock
-> >       (<filename class="headerfile">include/asm/spinlock.h</filename>),
-> >       which is a very simple single-holder lock: if you can't get the
+
+
+On Mon, 21 Apr 2008, Rafael J. Wysocki wrote:
 > 
-> Fix title, too?
+> Well, it seems that the oops is actually known from -mm:
+> 
+> http://lkml.org/lkml/2008/4/21/55
+> 
+> and something similar was observed with 2.6.25-rc8-mm2.
 
-Heh.  Oops, thanks.
+Hmm. Sadly, I doubt that really cuts down the suspect list very much. Most 
+of what has been merged since 2.6.25 has been in -mm, so while I agree 
+that it looks very similar, the fact that it was possibly already in 
+-rc8-mm2 doesn't much _help_.
 
-> Thanks for the other fixes too; this document needs some love,
+And in fact, those oopses in rc8-mm2 don't look _that_ similar. Those are 
+a corrupt f_mapping structure, it looks like (ie it looks like either 
+"struct address_space" or a "struct filp" rather than a "struct dentry").
 
-No problem ... I started out augmenting it to discuss semaphores and
-mutexes properly and realised I'd totally overloaded this document with
-detail.  I'm tempted to rip the RCU pieces out of this document and
-create a new one.  What we currently have just doesn't read nicely [1],
-but this is a project for another day.
+What is interesting about Jiri's version of the bug is that he has another 
+value for the corruption than you do: you had either all-ones, or a value 
+that *looked* like possibly a single nybble got cleared.
 
-> Acked,
-> Rusty.
+Jiri, in contrast, has a value of 00f0000000000000. Which is a bit 
+interesting in that it's again a *nybble* that looks corrupt, but it's a 
+different one.
 
-I'll add your ack.  Thanks!
+But assuming Jiri's two oopses are related (which is not entirely 
+unlikely), and assuming that this is a SLUB bucket re-use, then it's quite 
+likely that the reason that his -rc8-mm2 oops looks different just because 
+it was yet _another_ allocation that was in the same bucket. If so, the 
+most likely one is "struct filp", because it has the right size: for me a 
+filp is in the 192-byte bucket, which is very close to the 208-byte bucket 
+of dentry.
 
-[1] This seems to be a common problem in Linux's Documentation/ directory
-... just _read_ CodingStyle and you can tell which bits are Linus'
-(funny, deprecating, suggestions) and which bits were added later
-(stern, prescriptive, fascist).  The later bits break the flow of the
-document and I find them quite jarring.
+So I could imagine that some config option or other change just changed 
+the sizes around so that the two types ended up in different buckets in 
+rc8-mm2 and in 2.6.25-mm1 (ie neither the dentry nor the filp necessarily 
+changed sizes, but the *corrupting* type perhaps did?)
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+What I find interesting is that at least for me, I have the SLAB bucket 
+size for nf_conntrack_expect being 208 bytes. And the *biggest* merge by 
+far after 2.6.25 so far has been networking (and conntrack in particular)
+
+Is that a smoking gun? Not necessarily. But it *is* intriguing. But there 
+are other possible clashes (the 192-byte bucket has several different 
+suspects, and not all of them are in networking).1
+
+Jiri and Davem added to the Cc.
+
+Jiri - could you also confirm whether you are usign SLUB (which is not 
+necessarily at all indicative of a SLUB bug itself - it's just that SLAB 
+won't ever even merge different allocations of the same size into the same 
+buckets, so if it's a cross-slab corruption, you'd simply never see it 
+with SLAB).
+
+And if you are, can you please enable SLUB_DEBUG, and add a "slub_debug" 
+to your kernel command line to enable all the debugging? That would 
+hopefully catch any obvious use-after-free corruption.
+
+I'm just whistling in the dark here, but it does seem worth pursuing this 
+approach. The VFS layer has not changed *at*all* since 2.6.25, so I 
+seriously doubt it's a dentry or filp bug - I think the corruption is 
+external. And while networking is certainly not the only suspect (the x86 
+architecture changes are pretty extensive too), the allocation size thing 
+certainly makes it intriguing.
+
+			Linus
