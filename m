@@ -1,72 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYDUIEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYDUIFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbYDUIEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 04:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYDUIEJ
+	id S1755429AbYDUIFI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 04:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYDUIEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 04:04:09 -0400
-Received: from rs35.luxsci.com ([66.216.127.90]:44392 "EHLO rs35.luxsci.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172AbYDUIEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 04:04:08 -0400
-Message-ID: <480C4A35.7000109@firmworks.com>
-Date: Sun, 20 Apr 2008 22:03:01 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Mon, 21 Apr 2008 04:04:48 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:17216 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbYDUIEr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 04:04:47 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 1/5] IB/ehca: Prevent posting of SQ WQEs if QP not in RTS
+Date: Mon, 21 Apr 2008 09:04:44 +0100
+User-Agent: KMail/1.9.1
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200804211003.10695.fenkes@de.ibm.com>
+In-Reply-To: <200804211003.10695.fenkes@de.ibm.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andres Salomon <dilinger@queued.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	 <20080419031024.GC3503@nineveh.local>	 <20080418202925.b18452c5.akpm@linux-foundation.org>	 <20080419092544.378664a8@ephemeral>	 <20080419133909.5aa6b63e@ephemeral>	 <86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	 <480C0582.9010509@firmworks.com>	 <86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>	 <480C1286.3040307@firmworks.com> <86802c440804202150l535519c9mcb635c7ca55216ed@mail.gmail.com>
-In-Reply-To: <86802c440804202150l535519c9mcb635c7ca55216ed@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804211004.44666.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+...as required by IB Spec, C10-29.
+
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_classes.h |    1 +
+ drivers/infiniband/hw/ehca/ehca_qp.c      |    3 +++
+ drivers/infiniband/hw/ehca/ehca_reqs.c    |    5 +++++
+ 3 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index 0d13fe0..3d6d946 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -160,6 +160,7 @@ struct ehca_qp {
+ 	};
+ 	u32 qp_type;
+ 	enum ehca_ext_qp_type ext_type;
++	enum ib_qp_state state;
+ 	struct ipz_queue ipz_squeue;
+ 	struct ipz_queue ipz_rqueue;
+ 	struct h_galpas galpas;
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index 3eb14a5..5a653d7 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -550,6 +550,7 @@ static struct ehca_qp *internal_create_qp(
+ 	spin_lock_init(&my_qp->spinlock_r);
+ 	my_qp->qp_type = qp_type;
+ 	my_qp->ext_type = parms.ext_type;
++	my_qp->state = IB_QPS_RESET;
+ 
+ 	if (init_attr->recv_cq)
+ 		my_qp->recv_cq =
+@@ -1508,6 +1509,8 @@ static int internal_modify_qp(struct ib_qp *ibqp,
+ 	if (attr_mask & IB_QP_QKEY)
+ 		my_qp->qkey = attr->qkey;
+ 
++	my_qp->state = qp_new_state;
++
+ modify_qp_exit2:
+ 	if (squeue_locked) { /* this means: sqe -> rts */
+ 		spin_unlock_irqrestore(&my_qp->spinlock_s, flags);
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index a20bbf4..0b2359e 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -421,6 +421,11 @@ int ehca_post_send(struct ib_qp *qp,
+ 	int ret = 0;
+ 	unsigned long flags;
+ 
++	if (unlikely(my_qp->state != IB_QPS_RTS)) {
++		ehca_err(qp->device, "QP not in RTS state  qpn=%x", qp->qp_num);
++		return -EINVAL;
++	}
++
+ 	/* LOCK the QUEUE */
+ 	spin_lock_irqsave(&my_qp->spinlock_s, flags);
+ 
+-- 
+1.5.5
 
 
-Yinghai Lu wrote:
->> ...
->
-> geode is using SMI to simulate the pci conf space, wonder that could be problem.
->   
-
-On the current OLPC system, we don't use the SMI-based PCI config space 
-simulator.  The code for that "VSA" module is only partially open 
-sourced (some of it is open, and some of it is just not available).  The 
-parts of it for which we do have source can only be compiled with an old 
-proprietary toolchain that is no longer available.
-
-Instead of using the SMI-based simulation, we have added a PCI 
-configuration access method in the kernel that supplies the necessary 
-information from a table.  The code for that hardware-specific access 
-method is roughly 40 lines of code plus a few data tables.
-
-In the past few weeks, I have developed a rather complete Open 
-Firmware-based reimplementation of the SMI PCI config hardware 
-emulator.   All-told, it requires over 1000 lines.  It remains to be 
-seen whether the complicated version will ultimately be deployed.  
-Personally, I find it distasteful to use a lot of code to make the 
-hardware pretend that it is something other than what it really is, when 
-a much smaller driver works just as well.  The SMI-based emulator is 
-quite difficult to understand and maintain, because the Geode SMI 
-handling mechanism is complex, incompletely documented, and suffers from 
-many of the multiple-mode-switches problems as real-mode to 
-protected-mode gateway code.
-
-> later you have 64 runtime service for 64 platform like UEFI?
->   
-
-Possibly.   64-bit systems are not a problem per se - there have been 
-64-bit OFW implementations for 64-bit architectures like SPARC and Alpha 
-dating back to a long time ago.  The main issue from my point of view is 
-whether or not there is a customer to motivate the work.
-> YH
->
->   
