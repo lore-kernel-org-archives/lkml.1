@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbYDUMsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbYDUMvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758948AbYDUMsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 08:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbYDUMsP
+	id S1758964AbYDUMvj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 08:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYDUMv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 08:48:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38376 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbYDUMsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 08:48:14 -0400
-Subject: Re: v2.6.25: WARNING: at kernel/lockdep.c:2437
-	__lock_acquire+0xc69/0xfa0()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <19f34abd0804200329j3308b081vc0732c3ec5c0b721@mail.gmail.com>
-References: <19f34abd0804200329j3308b081vc0732c3ec5c0b721@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 14:48:10 +0200
-Message-Id: <1208782090.7115.179.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 08:51:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49919 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756452AbYDUMv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 08:51:27 -0400
+Date: Mon, 21 Apr 2008 14:51:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080421125107.GF9554@elte.hu>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain> <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain> <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org> <1208644076.3280.54.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208644076.3280.54.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-20 at 12:29 +0200, Vegard Nossum wrote:
-> Hi,
+
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Sat, 2008-04-19 at 13:14 -0700, Linus Torvalds wrote:
+> > On Sat, 19 Apr 2008, James Bottomley wrote:
+> > > 
+> > > Well, we already had this argument on linux-scsi when the interface was
+> > > first proposed:  Apart from select being very nasty and should only be
+> > > sparingly used
+> > 
+> > I'm still not understanding people who say that.
 > 
-> This appears in clean v2.6.25:
-> 
-> ------------[ cut here ]------------
-> WARNING: at kernel/lockdep.c:2437 __lock_acquire+0xc69/0xfa0()
-> Pid: 1002, comm: scsi_eh_4 Not tainted 2.6.25 #379
->  [<c011bb5c>] warn_on_slowpath+0x3c/0x50
->  [<c013b0f9>] ? __lock_acquire+0x219/0xfa0
->  [<c013b0f9>] ? __lock_acquire+0x219/0xfa0
->  [<c012c2c8>] ? __kernel_text_address+0x8/0x20
->  [<c0104fce>] ? dump_trace+0xce/0x120
->  [<c010a56c>] ? save_stack_trace+0x1c/0x40
->  [<c0138659>] ? save_trace+0x39/0xa0
->  [<c013a3d1>] ? mark_lock+0x61/0x540
->  [<c013bb49>] __lock_acquire+0xc69/0xfa0
->  [<c012b46a>] ? __cancel_work_timer+0x5a/0x140
->  [<c01082ac>] ? native_sched_clock+0x5c/0xb0
->  [<c013beee>] lock_acquire+0x6e/0x90
->  [<c02a8e23>] ? ata_scsi_error+0x33/0x6a0
->  [<c02e4946>] _spin_lock_irqsave+0x26/0x60
->  [<c02a8e23>] ? ata_scsi_error+0x33/0x6a0
->  [<c02a4ee0>] ? ata_bmdma_error_handler+0x0/0x50
->  [<c02a8e23>] ata_scsi_error+0x33/0x6a0
->  [<c02e249a>] ? schedule+0x27a/0x410
->  [<c0256dd1>] ? __scsi_iterate_devices+0x51/0x70
->  [<c025c681>] ? scsi_run_host_queues+0x21/0x30
->  [<c025ae5e>] scsi_error_handler+0x9e/0x4e0
->  [<c02e249a>] ? schedule+0x27a/0x410
->  [<c025adc0>] ? scsi_error_handler+0x0/0x4e0
->  [<c012dd86>] kthread+0x36/0x60
->  [<c012dd50>] ? kthread+0x0/0x60
->  [<c0104c27>] kernel_thread_helper+0x7/0x10
->  =======================
-> ---[ end trace 5e5d737e76fd4940 ]---
+> Well, I can ... even though SCSI is one of the major users of select 
+> in the tree.
 
-Indeed, quite easy to reproduce:
+you are handling it well then :) I tend to be amongst the first ones to 
+notice select trouble (randconfig is quite sensitive to it) and by far 
+the leading area of failure "in practice" is video drivers and sound 
+modules. Networking is an occasional blip on the radar (but that's 
+really just due to its sheer natural size and complexity) and i dont 
+remember any deep SCSI trouble there ever.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 81a4e4a..33901ef 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2434,6 +2434,13 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 	 * the hash, not class->key.
- 	 */
- 	id = class - lock_classes;
-+	if (id >= MAX_LOCKDEP_KEYS) {
-+		spinlock_t *slock = container_of(lock, spinlock_t, dep_map);
-+
-+		printk(KERN_EMERG "magic: %x\n", slock->magic);
-+		printk(KERN_EMERG "class: %p\n", class);
-+		printk(KERN_EMERG "id: %u\n", id);
-+	}
- 	if (DEBUG_LOCKS_WARN_ON(id >= MAX_LOCKDEP_KEYS))
- 		return 0;
- 
+pie-in-the-sky: a fundamentally simpler Kconfig space would be nice, 
+with strict hierarchies and where enabling a lower component 
+automatically selects all the upper components as well. The Kconfig 
+language should detect loops in hierarchies. (it already does so in a 
+number of situations)
 
+i.e. we should only describe what depends on what - and the rest would 
+be figured out automatically. In that sense "select" should be a _user 
+action_ that would never pop up in the language at all - and the 
+"selection" would all trickle through automatically via the 'depends on' 
+links without having to mention it in the Kconfig language.
 
-gives me:
+whenever due to a selection that a user made something becomes 
+unavailable, the kconfig tool/GUI should warn about that with an extra 
+confirmation step. I.e. it should all really be analogous to normal 
+user-space package management which has its own dependency resolution 
+process.
 
-ata3: PATA max PIO4 cmd 0x1e8 ctl 0x3ee irq 11
-magic: c050cf60
-class: c7c20e54
-id: 2265185251
-------------[ cut here ]------------
-WARNING: at /mnt/md0/src/linux-2.6-2/kernel/lockdep.c:2444
-__lock_acquire+0x57b/0xfd0()
-
-
-Looks like someone is stomping on the spinlock or just passing us
-garbage.
-
-
-
+	Ingo
