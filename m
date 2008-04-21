@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYDUVbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYDUVbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbYDUVbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYDUVbG
+	id S1756266AbYDUVbs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYDUVbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:31:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55335 "EHLO mx1.redhat.com"
+	Mon, 21 Apr 2008 17:31:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55359 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbYDUVbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:31:04 -0400
+	id S1754909AbYDUVbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:31:34 -0400
+Message-ID: <480D077C.3090509@redhat.com>
+Date: Mon, 21 Apr 2008 17:30:36 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Rick Jones <rick.jones2@hp.com>, Kok@vger.kernel.org,
+       Auke <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anton Titov <a.titov@host.bg>, "H. Willstrand" <h.willstrand@gmail.com>,
+       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
+References: <aiXVe-Yn-7@gated-at.bofh.it> <ajGfA-7rt-9@gated-at.bofh.it> <ajGfA-7rt-11@gated-at.bofh.it> <ajGfA-7rt-13@gated-at.bofh.it> <ajGfA-7rt-15@gated-at.bofh.it> <ajGfA-7rt-7@gated-at.bofh.it> <E1JnEcl-0000xc-D9@be1.7eggert.dyndns.org> <480CC3D8.3040700@hp.com> <alpine.LSU.0.999.0804212141050.4235@be1.lrz> <480CF2C0.9050208@hp.com> <alpine.LSU.0.999.0804212306330.15107@be1.lrz>
+In-Reply-To: <alpine.LSU.0.999.0804212306330.15107@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Jan Beulich" <jbeulich@novell.com>
-X-Fcc: ~/Mail/linus
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: prevent unconditional writes to DebugCtl MSR
-In-Reply-To: Jan Beulich's message of  Monday, 21 April 2008 17:34:19 +0100 <480CDE2B.76E4.0078.0@novell.com>
-References: <20080418194334.7483627037C@magilla.localdomain>
-	<20080421155534.GA1284@elte.hu>
-	<480CDE2B.76E4.0078.0@novell.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20080421213030.ECD0926F8F0@magilla.localdomain>
-Date: Mon, 21 Apr 2008 14:30:30 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >agreed. Jan, wanna send a fix for this?
+Bodo Eggert wrote:
+> On Mon, 21 Apr 2008, Rick Jones wrote:
+>> Bodo Eggert wrote:
+>>> On Mon, 21 Apr 2008, Rick Jones wrote:
 > 
-> Hmm, without knowing the context here I'd say the way it's done in
-> .25 is quite reasonable; a BUG_ON() here would seem quite rude to
-> me. I thought it really should be the call sites ensuring this doesn't
-> get called, and the silent ignoring is just to prevent bringing the
-> system down. A WARN_ON() (or perhaps even WARN_ON_ONCE()) would
-> be the most I'd be inclined to add there.
+>>>> Be it kernel or user space, for consistent benchmark results it needs to
+>>>> be
+>>>> able to be turned-off without turning the code.  That leaves me in
+>>>> agreement
+>>>> with Stephen that if it must exist, the user space one would be
+>>>> preferable.
+>>>> It can be easily terminated with extreme prejudice.
+>>>
+>>> I agree that having a full-featured userspace balancer daemon with lots of
+>>> intelligence will be theoretically better, but if you can have a simple
+>>> daemon doing OK on many machines for less than the userspace daemon's
+>>> kernel stack, why not?
+>> Perhaps my judgement is too colored by benchmark(et)ing, and desires to have
+>> repeatable results on things like neperf, but I very much like to know where
+>> my interrupts are going and don't like them moving around. That is why I am
+>> not particularly fond of either flavor of irq balancing.
+>>
+>> That being the case, whatever is out there aught to be able to be disabled on
+>> a running system without having to roll bits or reboot.
+> 
+> Adding a "module" parameter to disable it should be cheap, isn't it?
 
-Like I said, the call sites already do ensure that it doesn't get called.
-If there were any such bug, then the 2.6.25 behavior of silently being
-broken is inordinately rude.  Since we think there is no such bug now, the
-BUG_ON would not be hit, and if it is then it's deservedly so.  I don't
-care whether it's a BUG_ON or a WARN_ON, since the point is that it never
-happen.  What I object to is the change you made in 2.6.25, which ensures
-that extra cycles at low level will be spent on every call, to guarantee
-that any such bug in the future is maximally confusing.  That is not helping.
+Except the irq balancing is system-wide.  Adding per-device exemptions to an 
+obsolete feature seems like the wrong way to go.
 
-
-Thanks,
-Roland
+-- Chris
