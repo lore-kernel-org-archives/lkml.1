@@ -1,131 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYDUUaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYDUUbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbYDUUaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 16:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYDUU37
+	id S1756613AbYDUUbp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 16:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbYDUUbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 16:29:59 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:44971 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbYDUU36 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 16:29:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-	b=oeNEtSRvU8Jb0GD3gsgdObHOUHTEqJbQIxEbfJlIliRuytDfr/wz/w0AdrS1oG2NE499jk1OayhK5xfLf4k9+SAW8r6zepycGqdcm7W2Pydk4XqRUpG/ZQmvi9gMzPNgyBqKyjUPiVvE4gk2wJ8zpIuQ0q/SxZzQ9y3i1YqRYoY=;
-Message-ID: <480CF8DB.9010405@unsolicited.net>
-Date: Mon, 21 Apr 2008 21:28:11 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 21 Apr 2008 16:31:35 -0400
+Received: from smtp2-g19.free.fr ([212.27.42.28]:40377 "EHLO smtp2-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbYDUUbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 16:31:33 -0400
+Message-ID: <480CF8AF.9040501@ccr.jussieu.fr>
+Date: Mon, 21 Apr 2008 22:27:27 +0200
+From: Bernard Pidoux <pidoux@ccr.jussieu.fr>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: serge@hallyn.com
-CC: casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morgan <morgan@kernel.org>
-Subject: Re: 2.6.25 Kernel - Problems with capabilities
-References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com> <20080421080101.htzh4s03snescog4@unsolicited.net> <20080421183451.GA22071@vino.hallyn.com> <480CE167.8090907@unsolicited.net> <20080421190143.GA23365@vino.hallyn.com>
-In-Reply-To: <20080421190143.GA23365@vino.hallyn.com>
-X-Enigmail-Version: 0.95.6
+To: David Miller <davem@davemloft.net>
+CC: ralf@linux-mips.org, linux-kernel@vger.kernel.org,
+       linux-hams@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] soft lockup rose_node_list_lock
+References: <480A6034.1080806@ccr.jussieu.fr>	<20080419.184010.113401925.davem@davemloft.net>	<480B78C3.4040205@ccr.jussieu.fr> <20080420.155924.86075645.davem@davemloft.net>
+In-Reply-To: <20080420.155924.86075645.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-serge@hallyn.com wrote:
-> Quoting David (david@unsolicited.net):
+Hi David,
+
+I also spent a lot of time to understand how rose behaved and I agree 
+that it is difficult to decifer a code especially dealing
+with socket programming and when it was written by someone else.
+But as a radioamateur, Linux is a hobby for me and I like to learn.
+
+Actually, rose_get_neigh() is called when two different events are 
+occuring :
+
+- first, it is called by rose_connect() in order to find if an adjacent 
+node is ready to route to a specific ROSE address.
+- second, rose_route_frame() calls rose_get_neigh() every time an 
+incoming frame must be routed to an appropriate AX25 connection.
+
+By the way, rose_get_neigh() function is not optimized for it does not 
+check if an adjacent node is already connected before a new connect is 
+requested.
+For this purpose I have derived a new function, I named 
+rose_get_route(), that is called by rose_route_frame() to find a route 
+via an adjacent node.
+This function has been tested for months now and it works fine.
+It adds the automatic frames routing that rose needed desperately.
+I will send next a patch with this new rose_get_route().
+
+Bernard Pidoux
+
+p.s. my email client is set for MIME attachements, but it seems corrupted.
+    I will fix that. Sorry for the unvoluntary increase of workload it 
+gave you.
+
+
+David Miller a écrit :
+> From: Bernard Pidoux <pidoux@ccr.jussieu.fr>
+> Date: Sun, 20 Apr 2008 19:09:23 +0200
+>
 >   
->> serge@hallyn.com wrote:
->>     
->>>> /lib/libcap.so.1 -> libcap.so.1.92
->>>>
->>>> I guess that's 1.92 (should be the version shipped with SuSE 9.1).
->>>>     
->>>>         
->>> Ok, thanks, then it's definately not what I was thinking.
->>>
->>> (Will wait to check out your strace)
->>>   
->>>       
->> strace attached.
+>> Since rose_route_frame() does not use rose_node_list we can safely
+>> remove rose_node_list_lock spin lock here and let it be free for
+>> rose_get_neigh().
 >>
->> Cheers
->> David
+>> Signed-off-by: Bernard Pidoux <f6bvp@amsat.org>
+>>     
+>
+> Indeed, I went over this code several times and I can't
+> see any reason for rose_route_frame() to take the node
+> list lock.
+>
+> Patch applied, thanks Bernard.  But one thing...
+>
+>   
+>> diff --git a/net/rose/rose_route.c b/net/rose/rose_route.c
+>> index fb9359f..5053a53 100644
+>> --- a/net/rose/rose_route.c
+>> +++ b/net/rose/rose_route.c
+>> @@ -857,7 +857,6 @@ int rose_route_frame(struct sk_buff *skb, ax25_cb *ax25)
+>>          src_addr  = (rose_address *)(skb->data + 9);
+>>          dest_addr = (rose_address *)(skb->data + 4);
+>>
+>> -       spin_lock_bh(&rose_node_list_lock);
+>>          spin_lock_bh(&rose_neigh_list_lock);
+>>          spin_lock_bh(&rose_route_list_lock);
 >>
 >>     
 >
-> ...
->   
->> capget(0x20071026, 0, {, , })           = -1 EINVAL (Invalid argument)
->>     
+> Could you please fix your email client so it doesn't corrupt
+> patches like this?  I've had to apply all of your patches by
+> hand because the tabs have been converted into spaces.  Use
+> MIME attachments if you have to.
 >
-> This is odd.  libcap-1.x should be passing in 0x19980330.
+> Thanks again.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-hams" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
-> Next, given the -EINVAL return value ntpd should be seeing a NULL result
-> from cap_get_proc() and exiting right there.
 >
-> What version of ntpd is this?  (I must be looking at a wrong value, but
-> even so the fact that cap_get_proc()->capget() is using 0x20071026 for
-> version doesn't make sense)
->
->   
->> capset(0, 0, {CAP_NET_BIND_SERVICE|CAP_SYS_TIME, CAP_NET_BIND_SERVICE|CAP_SYS_TIME, CAP_NET_BIND_SERVICE|CAP_SYS_TIME}) = -1 EINVAL (Invalid argument)
->> time(NULL)                              = 1208803493
->> write(5, "21 Apr 19:44:53 ntpd[6118]: cap_"..., 92) = 92
->> munmap(0x40022000, 4096)                = 0
->> exit_group(-1)                          = ?
->> Process 6118 detached
->>     
->
->   
-Oh dear .. more investigation... here's the source from libcap-1.92. 
-capget() is being called with null arguments, which I guess returns with 
-the latest version in ch.version ?
-
-The switch then fails and the set gets called with version = 0 ??
-
-Cheers
-David
-
-void _libcap_establish_api(void)
-{
-    struct __user_cap_header_struct ch;
-    struct __user_cap_data_struct cs;
-
-    if (_libcap_kernel_version) {
-        _cap_debug("already identified kernal api 0x%.8x",
-                   _libcap_kernel_version);
-        return;
-    }
-
-    memset(&ch, 0, sizeof(ch));
-    memset(&cs, 0, sizeof(cs));
-
-    (void) capget(&ch, &cs);
-
-    switch (ch.version) {
-
-    case 0x19980330:
-        _libcap_kernel_version = 0x19980330;
-        _libcap_kernel_features = CAP_FEATURE_PROC;
-        break;
-
-    case 0x19990414:
-        _libcap_kernel_version = 0x19990414;
-        _libcap_kernel_features = CAP_FEATURE_PROC|CAP_FEATURE_FILE;
-        break;
-
-    default:
-        _libcap_kernel_version = 0x00000000;
-        _libcap_kernel_features = 0x00000000;
-    }
-
-    _cap_debug("version: %x, features: %x\n",
-               _libcap_kernel_version, _libcap_kernel_features);
-}
-
-
-> thanks,
-> -serge
 >   
 
