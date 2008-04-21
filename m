@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYDUXXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbYDUXZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYDUXXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 19:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYDUXXM
+	id S1758207AbYDUXZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 19:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYDUXZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 19:23:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57047 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbYDUXXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 19:23:11 -0400
-Date: Tue, 22 Apr 2008 01:23:08 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng 2.13.1.1 (security update)
-Message-ID: <20080421232308.GB3249@nb.net.home>
-MIME-Version: 1.0
+	Mon, 21 Apr 2008 19:25:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35027 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYDUXZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 19:25:38 -0400
+Date: Tue, 22 Apr 2008 00:25:34 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Sparc
+Message-ID: <20080421232534.GT27459@ZenIV.linux.org.uk>
+References: <20080421.153231.108090227.davem@davemloft.net> <alpine.LFD.1.10.0804211608570.2779@woody.linux-foundation.org> <20080421231815.GS27459@ZenIV.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080421231815.GS27459@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 22, 2008 at 12:18:15AM +0100, Al Viro wrote:
 
-The stable util-linux-ng 2.13.1.1 release is available at
+> FWIW, two things I _really_ want dead and gone are
+> 	* timod (or full rewrite of that animal; current one is badly racy
+> and plays fast and loose with way too many place in VFS guts)
+> 	* altroot (use chroot, damnit, and bind whatever you need in there)
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
+BTW, the part about altroot goes for other architectures too; it's badly
+broken and it's one hell of an obstacle to fs/namei.c work of any kind.
 
-
-(Note, 2.13.1.1 is a stable security release.)
-
-Feedback and bug reports, as always, are welcomed.
-
-
-	Karel
-
-
-Util-linux-ng 2.13.1.1 Release Notes (22-Apr-2008)
-==================================================
-
-Fixed security issue:
---------------------
-
- - audit log injection attack. This bug allows attackers to write
-   arbitrary characters to an audit log via a crafted username.
-
- The problem was originally reported for OpenSSH few months ago
- (CVE-2007-3102). The login(1) is affected by the same bug when
- built with the option "--with-audit".
-
-
-Changelog:
----------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
-
-
-login:
-   - audit log injection attack via login  [Steve Grubb]
-po:
-   - merge changes  [Karel Zak]
-   - update it.po (from translationproject.org)  [Marco Colombo]
-   - update nl.po (from translationproject.org)  [Benno Schulenberg]
-
--- 
- Karel Zak  <kzak@redhat.com>
+As absolute minimum we _must_ lose the "if we hadn't found what we wanted
+in that subtree, repeat lookup starting at real root"; that's causing
+nightmares in pathname resolution and there's no excuse whatsoever for
+that since we have bindings.
