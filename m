@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYDTX4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbYDUADM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYDTX4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 19:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYDTX4K
+	id S1755730AbYDUADM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYDUAC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 19:56:10 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60796 "EHLO smtp4.pp.htv.fi"
+	Sun, 20 Apr 2008 20:02:59 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:32777 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbYDTX4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 19:56:09 -0400
-Date: Mon, 21 Apr 2008 02:55:43 +0300
+	id S1752706AbYDUAC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 20:02:59 -0400
+Date: Mon, 21 Apr 2008 03:02:32 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: David Miller <davem@davemloft.net>, aacraid@adaptec.com,
-       James.Bottomley@HansenPartnership.com, wli@holomorphy.com,
-       sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] sparc: export kmap_atomic_to_page
-Message-ID: <20080420235543.GB26897@cs181133002.pp.htv.fi>
-References: <20080414141956.GN6695@cs181133002.pp.htv.fi> <20080415.003910.50277238.davem@davemloft.net> <20080420201443.GB14788@cs181133002.pp.htv.fi> <20080420.132829.220464348.davem@davemloft.net> <20080420234011.GT20637@parisc-linux.org>
+To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, hpa@zytor.com,
+       James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Voyager setup_trampoline() compile error
+Message-ID: <20080421000232.GC26897@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080420234011.GT20637@parisc-linux.org>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 05:40:11PM -0600, Matthew Wilcox wrote:
-> On Sun, Apr 20, 2008 at 01:28:29PM -0700, David Miller wrote:
-> > From: Adrian Bunk <bunk@kernel.org>
-> > Date: Sun, 20 Apr 2008 23:14:43 +0300
-> > 
-> > > On Tue, Apr 15, 2008 at 12:39:10AM -0700, David Miller wrote:
-> > > > From: Adrian Bunk <bunk@kernel.org>
-> > > >...
-> > > > > <--  snip  -->
-> > > > > 
-> > > > >   MODPOST 1741 modules
-> > > > > ERROR: "kmap_atomic_to_page" [drivers/scsi/aacraid/aacraid.ko] undefined!
-> > > > > ...
-> > > > > make[2]: *** [__modpost] Error 1
-> > > > > 
-> > > > > <--  snip  -->
-> > > > > 
-> > > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > > 
-> > > > Applied, thanks Adrian.
-> > > 
-> > > Please drop - aacraid no longer uses it in 2.6.26.
-> > 
-> > Ok, will do.
-> 
-> Looks like the only remaining user is in mm/shmem.c.  I guess it can be
-> unexported now?
+Commit 77ad386e596c6b0930cc2e09e3cce485e3ee7f72
+(x86: standalone trampoline code) broke Voyager:
 
-I'm already doing this (but the test compiles are still running).
+<--  snip  -->
+
+...
+  LD      vmlinux.o
+arch/x86/mach-voyager/built-in.o:(.bss+0x50): multiple definition of `trampoline_base'
+arch/x86/kernel/built-in.o:(.data+0x820): first defined here
+arch/x86/mach-voyager/built-in.o: In function `setup_trampoline':
+(.init.text+0x30e): multiple definition of `setup_trampoline'
+arch/x86/kernel/built-in.o:(.text+0x57c8): first defined here
+make[1]: *** [vmlinux.o] Error 1
+
 
 cu
 Adrian
