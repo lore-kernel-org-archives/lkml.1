@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760449AbYDURsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbYDURtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760449AbYDURsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYDURsN
+	id S1762044AbYDURtL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYDURs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:48:13 -0400
-Received: from outbound-mail-33.bluehost.com ([69.89.18.153]:56769 "HELO
-	outbound-mail-33.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752915AbYDURsM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:48:12 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: PCI MSI breaks when booting with nosmp
-Date: Mon, 21 Apr 2008 10:43:10 -0700
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <jdelvare@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Tejun Heo <htejun@gmail.com>,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
-References: <200804172140.02311.jdelvare@suse.de> <200804171308.37328.jbarnes@virtuousgeek.org> <200804172225.14373.jdelvare@suse.de>
-In-Reply-To: <200804172225.14373.jdelvare@suse.de>
+	Mon, 21 Apr 2008 13:48:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50233 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbYDURs4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 13:48:56 -0400
+Date: Mon, 21 Apr 2008 13:48:53 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Michael Trimarchi <trimarchimichael@yahoo.it>
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Michael Trimarchi <michael@evidence.eu.com>
+Subject: Re: [PATCH] Check the mtd device in do_emergency_remount()
+Message-ID: <20080421174853.GA15690@infradead.org>
+References: <561772.43514.qm@web26207.mail.ukl.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804211043.10410.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <561772.43514.qm@web26207.mail.ukl.yahoo.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, April 17, 2008 1:25 pm Jean Delvare wrote:
-> Le jeudi 17 avril 2008, Jesse Barnes a écrit :
-> > On Thursday, April 17, 2008 12:40 pm Jean Delvare wrote:
-> > > Booting with "nosmp" doesn't work on my Thinkpad T60p laptop while
-> > > booting with "nosmp pci=nomsi" works. Forcibly disabling PCI MSI
-> > > when booting with nosmp fixes the problem. I'm not sure if it's the
-> > > correct fix though.
-> >
-> > Seems like this is fixing the symptom, not the cause.  I'll see if I can
-> > reproduce locally...
->
-> If it helps, the device that breaks is:
-> 00:1f.2 SATA controller: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA
-> AHCI Controller (rev 02) i.e. SATA hard disk drive on an Intel ICH7
-> controller.
+On Mon, Apr 21, 2008 at 04:27:05PM +0000, Michael Trimarchi wrote:
+> Allow superblocks managed by the mtd layer to be remounted.
 
-Ok, I see this too on my desktop machine.  It looks like we're not getting 
-interrupts setup correctly in the nosmp case.  Still digging through to see 
-why though...
+Please just rip out do_emergency_remount entirely.  It's the equivalent
+to and attempted full-filesystem revoke and just can't work.
 
-Jesse
