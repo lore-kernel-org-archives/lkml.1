@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYDUNhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932746AbYDUNhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761968AbYDUNhL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760279AbYDUNej
+	id S932746AbYDUNhy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762008AbYDUNg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:34:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34432 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932348AbYDUNee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:34:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-Date: Mon, 21 Apr 2008 15:35:20 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <20080421131741.GI9554@elte.hu>
-In-Reply-To: <20080421131741.GI9554@elte.hu>
+	Mon, 21 Apr 2008 09:36:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:58550 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762383AbYDUNgZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 09:36:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=aIC83bTZrTitP05xVESCVCt9Ctgg1qCQ8lR58zdtCc1jVyD52aeYumH/tfGmp/5rJHucpepgRWkpli0p5n1VA5ndSk+/erdgaESsil25Cjdf8cPrh26adNwUjo9bFRch2zoVsXxuQusWipLtShqWNPfHBcqtW2rOTMaAIQCbhns=
+Date: Mon, 21 Apr 2008 09:36:21 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Anssi Hannula <anssi.hannula@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
+       linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       mit-devel@lists.printk.net, linux-kernel@vger.kernel.org
+Subject: Re: HID bus
+Message-ID: <20080421133621.GA27646@anvil.corenet.prv>
+References: <Pine.LNX.4.64.0804181333180.12972@jikos.suse.cz> <1208644696-29129-1-git-send-email-jirislaby@gmail.com> <480B6C16.40806@gmail.com> <Pine.LNX.4.64.0804211124060.19002@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804211535.21694.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0804211124060.19002@twin.jikos.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 21 of April 2008, Ingo Molnar wrote:
+On Mon, Apr 21, 2008 at 11:25:43AM +0200, Jiri Kosina wrote:
+> On Sun, 20 Apr 2008, Anssi Hannula wrote:
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > Hi,
+> > Why not just do something like
 > > 
-> > I've just got the following traces from 2.6.25-git2 on HP nx6325 
-> > (64-bit). I think they are related to the hang I described yesterday:
+> > #define HID_DEVICE(vend, dev) \
+> > 	.match_flags = USB_DEVICE_ID_MATCH_DEVICE | \
+> > 		       USB_DEVICE_ID_MATCH_INT_CLASS, \
+> > 	.idVendor = (vend), \
+> > 	.idProduct = (prod), \
+> > 	.bInterfaceClass = USB_INTERFACE_CLASS_HID
+> > (see linux/usb.h)
+> > 
+> > and use USB hotplugging?
+> > Or do we plan to match against something else as well, such as hid
+> > reports or something?
 > 
-> > [12844.112673]  [<ffffffff8029e236>] do_lookup+0x2c/0x1b2
-> > [12844.112683]  [<ffffffff802a04b4>] __link_path_walk+0x8e6/0xdbd
-> > [12844.112707]  [<ffffffffa004deb4>] ? :ext3:ext3_xattr_get_acl_default+0x18/0x1a
-> > [12844.112714]  [<ffffffff802b0869>] ? generic_getxattr+0x4e/0x5c
+> No, we plan to do matching based solely on VID/PID. The report-specific 
+> stuff is then handled between the specific driver and HID generic code.
 > 
-> so you've got ext3. Nothing changed in the VFS or in ext3 in -git yet.
-> 
-> the instruction pattern:
-> 
-> Code: f6 43 04 10 75 06 f0 ff 03 48 89 d8 fe 43 08 eb 31 fe 43 08 48 8b 
-> 45 d0 48 8b 00 48 89 45 d0 48 8b 45 d0 48 85 c0 74 18 48 89 c2 <48> 8b 
-> 00 48 8d 5a e8 44 39 73 30 0f 18 08 75 d9 e9 6a ff ff ff
->                            ========
-> 
-> shows that you've got "prefetchnta (%esi)" indirect:
-> 
->    0f 18 00                prefetcht0 (%eax)
-> 
-> so the prefetch instructions are patched in, neither the compiler nor 
-> the CPU should ignore them.
 
-Well, I don't really know what that means ...
+Hmm, [ab]using USB modalias makes me a bit uneasy. What about bluetooth
+HID devices?
 
-Besides, that's 64-bit code, but I guess that doesn't matter here.
-
-Thanks,
-Rafael
+-- 
+Dmitry
