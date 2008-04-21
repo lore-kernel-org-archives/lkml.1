@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYDUGYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbYDUGZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbYDUGYM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 02:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYDUGX4
+	id S1756153AbYDUGZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 02:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbYDUGZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 02:23:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46364 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbYDUGXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 02:23:55 -0400
-Message-ID: <480C323B.3060608@redhat.com>
-Date: Sun, 20 Apr 2008 23:20:43 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
-MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-Subject: Re: [PATCH] utimensat() non-conformances and fixes
-References: <47FA9DA1.8040508@gmail.com>
-In-Reply-To: <47FA9DA1.8040508@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 21 Apr 2008 02:25:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33561 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750976AbYDUGZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 02:25:32 -0400
+Date: Sun, 20 Apr 2008 23:24:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: hugh@veritas.com, menage@google.com, balbir@linux.vnet.ibm.com,
+       xemul@openvz.org, shiwh@cn.fujitsu.com, mel@csn.ul.ie,
+       linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+Message-Id: <20080420232427.1b399104.akpm@linux-foundation.org>
+In-Reply-To: <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0804210004470.1630@blonde.site>
+	<20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> On Mon, 21 Apr 2008 09:30:59 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Mon, 21 Apr 2008 00:51:30 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> > >  disable-the-memory-controller-by-default-v3.patch
+> > >  disable-the-memory-controller-by-default-v3-fix.patch
+> > 
+> > If those are to go in, then the sooner the better, yes.
+> > 
+> > But though I argued for cgroup_disable=memory (or some such),
+> > I think myself that taking it even further now (requiring an
+> > additional cgroup_enable=memory at boottime to get the memcg
+> > stuff you chose with CGROUP_MEM_RES_CTLR=y at build time) is
+> > confusing overkill, just messing around.
 
-Michael Kerrisk wrote:
-> 1. The draft POSIX.1-200x specification for utimensat() says that if a
-> times[n].tv_nsec field is UTIME_OMIT or UTIME_NOW, then the value in the
-> corresponding tv_sec field is ignored.  However the current Linux
-> implementation requires the tv_sec value to be zero (or the EINVAL error
-> results).  This requirement should be removed.
+Yes, it does sound a bit silly.  I'd say just enable it, and provide a
+cgroup_disable.
 
-OK, for now.  I think the implemented behavior is better, though.
-
-
-> However, the current implementation does not generate
-> EPERM if one tv_nsec field is UTIME_NOW while the other is UTIME_OMIT -- it
-> should give this error for that case.
-
-This is probably a necessary change.  Non-synchronized changes might be
-a security problem.
-
-
-> However, in
-> the same circumstances, when utimensat() is given a 'times' array in which
-> both tv_nsec fields are UTIME_NOW, which provides equivalent functionality
-> to specifying 'times' as NULL, the call succeeds.  I think that it should fail
-> with the error EACCES in this case.
-
-I guess so.
-
-
-> (times == NULL && times[0].tv_nsec == UTIME_NOW && times[1].tv_nsec ==
-> UTIME_NOW)
+> > Others think differently.  A compromise would be to improve the
+> > helptext for CGROUP_MEM_RES_CTLR (some of it is presently nonsense,
+> > isn't it?  Certainly there's a significant overhead, but it's the
+> > 32-bit struct page not the 64-bit which then suffers from crossing
+> > cacheline boundaries).  Not much point in mentioning
+> > cgroup_disable=memory if those patches go in, but needs to say
+> > cgroup_enable=memory bootoption also needed.
+> > 
+> My concern around this is "default" action of cgroups may be different
+> from each otther. It's confusing...
 > 
-> case should be treated like the traditional utimes() case where 'times'
-> is NULL.  That is, the call should succeed for a file marked append-only
-> and should give the error EACCES if the file is marked as immutable.
+> 
+> > >  memcgroup-check-and-initialize-page-cgroup-in-memmap_init_zone.patch
+> > 
+> > No, it was a good find from Shi, but you were right to think the patch
+> > fishy, and Kame put in lots of work (thank you!) to identify the actual
+> > culprit: he and Mel are discussing what the actual fix should be; and
+> > we might want to choose a different fix for stable than for 2.6.26.
+> > 
+> > I think you should drop that memmap_init_zone patch: the cgroup
+> > pointer is not the only field we assume is zeroed, both flags and
+> > mapping can cause trouble if they were not originally zeroed.
+> > Re-zero the whole struct page?  No, far better to fix the
+> > root of the corruption, that Kame and Mel are working on.
+> > 
+> I'll test and repodt Mel's patch later. I think Shi's patch will be
+> unnecessary.
 
-Is this something I changed?  I doubt I added this.
+OK, I'll drop that one.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Thanks - it helps.
 
-iEYEARECAAYFAkgMMjsACgkQ2ijCOnn/RHT9dwCgxhprkeAg86sW11ilKtHaVYtO
-Ae0An18utIREI/MnfwPO5HixxZbJz7zD
-=hrvK
------END PGP SIGNATURE-----
