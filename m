@@ -1,125 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbYDUXf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYDUXfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759175AbYDUXf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 19:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYDUXfV
+	id S1758262AbYDUXfw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 19:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbYDUXfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 19:35:21 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:27052 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754264AbYDUXfU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 19:35:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wFzY5QI/T+RTNDq2mbwL4oFK+lirjfHBDDI/BuIaudeFvOthdLfMor0L2kL8LkdxT3gP0tXD9KeS8RIBUTv1kKriy+6UC9CNXm3qprvLHi7KFGOymWYV1mYg3uNSxoJyC67DBlnzuwe8g7jgajbVLYP/bOVSyNoJHFcq/VBcVQM=
-Message-ID: <9a8748490804211635j134145c3gd8248524e8cc3272@mail.gmail.com>
-Date: Tue, 22 Apr 2008 01:35:16 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Please pull the (new) Trivial tree
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Adrian Bunk" <bunk@stusta.de>
-In-Reply-To: <alpine.LFD.1.10.0804211626230.2779@woody.linux-foundation.org>
+	Mon, 21 Apr 2008 19:35:39 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:46480 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755095AbYDUXfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 19:35:38 -0400
+Date: Mon, 21 Apr 2008 19:35:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: netdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 2/2] drivers/net: Fix synchronize_irq() bugs, redundancies
+Message-ID: <20080421233537.GA5223@havoc.gtf.org>
+References: <20080421233419.GA4923@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9a8748490804211615y25329beapf019d3c2907defe6@mail.gmail.com>
-	 <9a8748490804211621s7e19394bn6911d8d093fcb8dc@mail.gmail.com>
-	 <alpine.LFD.1.10.0804211626230.2779@woody.linux-foundation.org>
+In-Reply-To: <20080421233419.GA4923@havoc.gtf.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/04/2008, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->
->  On Tue, 22 Apr 2008, Jesper Juhl wrote:
->  > >
->  > >  Please pull git://git.kernel.org/pub/scm/linux/kernel/git/juhl/trivial.git
->  > >  for-linus
->
->
-> Please format this differently. I want to use cut-and-paste rather than
->  re-typing random letter combinations that people use, so please write this
->  as
->
->    Please pull branch 'for-linus' of my trivial tree from
->
->
->         git://git.kernel.org/pub/scm/linux/kernel/git/juhl/trivial.git for-linus
->
->
->    to get these changes:
->         ...
->
+free_irq() calls synchronize_irq() for you, so there is no need for
+drivers to manually do the same thing (again).  Thus, calls where
+sync-irq immediately precedes free-irq can be simplified.
 
-Understood. I'll use that format in the future. Thank you.
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+ drivers/net/8139cp.c       |    1 -
+ drivers/net/8139too.c      |    1 -
+ drivers/net/dl2k.c         |    2 +-
+ drivers/net/pci-skeleton.c |    1 -
+ drivers/net/tsi108_eth.c   |    1 -
+ drivers/net/typhoon.c      |    3 ---
+ 6 files changed, 1 insertion(+), 8 deletions(-)
 
->  where the important part is that I want the git repo address _and_ the
->  branch on one line, all by themselves. That way I don't have to pick
->  things up, I can just cut-and-paste the whole line (triple-click) without
->  worrying about boundaries or finding branch names somewhere else.
->
-Makes sense. Will do.
-
->  > I guess one thing I should remember to do is include the git-shortlog
->  > of the changes I'm asking you to pull ;-)
->
->
-> Also, git diffstat output, ie the output from a command something like:
->
->         git diff --stat --summary -M origin...
->
->  In fact, I think "git request-pull" will basically generate all of this.
->
-Ok, I'll be sure to include that going forward.
-Here it is for this pull request ('git diff --stat --summary -M
-3925e6fc1f774048404fdd910b0345b06c699eb4' - hope that's right) :
-
- Documentation/DocBook/kernel-locking.tmpl          |    4 ++--
- Documentation/DocBook/writing_usb_driver.tmpl      |   14 +++++++-------
- Documentation/SubmittingPatches                    |    4 ++--
- Documentation/block/biodoc.txt                     |    2 +-
- Documentation/cli-sti-removal.txt                  |    2 +-
- Documentation/dontdiff                             |    1 -
- Documentation/early-userspace/README               |    4 ++--
- .../firmware_class/firmware_sample_driver.c        |   14 ++++++--------
- MAINTAINERS                                        |    7 ++++++-
- Makefile                                           |    2 +-
- arch/arm/mach-pxa/mfp.c                            |    6 +++---
- drivers/acpi/ac.c                                  |    2 +-
- drivers/char/sonypi.c                              |    2 +-
- drivers/dma/dmaengine.c                            |    6 +++---
- drivers/md/md.c                                    |    2 +-
- drivers/media/dvb/frontends/or51132.c              |    4 ++--
- drivers/media/video/sn9c102/sn9c102_sensor.h       |    2 +-
- drivers/media/video/v4l1-compat.c                  |    2 +-
- drivers/misc/intel_menlow.c                        |    2 +-
- fs/ext2/ialloc.c                                   |    2 +-
- fs/ext2/inode.c                                    |    4 ++--
- fs/ext3/ialloc.c                                   |    2 +-
- fs/ext3/inode.c                                    |    6 +++---
- fs/ext4/ialloc.c                                   |    2 +-
- fs/ext4/inode.c                                    |    6 +++---
- fs/select.c                                        |    2 +-
- include/asm-arm/hardware/iop3xx-adma.h             |    4 ++--
- include/keys/rxrpc-type.h                          |    2 +-
- include/linux/dmaengine.h                          |    2 +-
- include/linux/jiffies.h                            |    2 +-
- include/linux/mmzone.h                             |    1 -
- kernel/signal.c                                    |    4 ++--
- kernel/stop_machine.c                              |    3 +--
- mm/pdflush.c                                       |    4 ++--
- net/core/sock.c                                    |    1 -
- sound/pci/sis7019.c                                |    6 +++---
- sound/ppc/snd_ps3.c                                |    2 +-
- 37 files changed, 68 insertions(+), 69 deletions(-)
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+diff --git a/drivers/net/8139cp.c b/drivers/net/8139cp.c
+index a453eda..b92cc15 100644
+--- a/drivers/net/8139cp.c
++++ b/drivers/net/8139cp.c
+@@ -1214,7 +1214,6 @@ static int cp_close (struct net_device *dev)
+ 
+ 	spin_unlock_irqrestore(&cp->lock, flags);
+ 
+-	synchronize_irq(dev->irq);
+ 	free_irq(dev->irq, dev);
+ 
+ 	cp_free_rings(cp);
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index 53bd903..fbdf831 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -2232,7 +2232,6 @@ static int rtl8139_close (struct net_device *dev)
+ 
+ 	spin_unlock_irqrestore (&tp->lock, flags);
+ 
+-	synchronize_irq (dev->irq);	/* racy, but that's ok here */
+ 	free_irq (dev->irq, dev);
+ 
+ 	rtl8139_tx_clear (tp);
+diff --git a/drivers/net/dl2k.c b/drivers/net/dl2k.c
+index e233d04..05f606d 100644
+--- a/drivers/net/dl2k.c
++++ b/drivers/net/dl2k.c
+@@ -1753,7 +1753,7 @@ rio_close (struct net_device *dev)
+ 
+ 	/* Stop Tx and Rx logics */
+ 	writel (TxDisable | RxDisable | StatsDisable, ioaddr + MACCtrl);
+-	synchronize_irq (dev->irq);
++
+ 	free_irq (dev->irq, dev);
+ 	del_timer_sync (&np->timer);
+ 
+diff --git a/drivers/net/pci-skeleton.c b/drivers/net/pci-skeleton.c
+index fffc49b..53451c3 100644
+--- a/drivers/net/pci-skeleton.c
++++ b/drivers/net/pci-skeleton.c
+@@ -1739,7 +1739,6 @@ static int netdrv_close (struct net_device *dev)
+ 
+ 	spin_unlock_irqrestore (&tp->lock, flags);
+ 
+-	synchronize_irq (dev->irq);
+ 	free_irq (dev->irq, dev);
+ 
+ 	netdrv_tx_clear (dev);
+diff --git a/drivers/net/tsi108_eth.c b/drivers/net/tsi108_eth.c
+index 6f33f84..e75dd88 100644
+--- a/drivers/net/tsi108_eth.c
++++ b/drivers/net/tsi108_eth.c
+@@ -1434,7 +1434,6 @@ static int tsi108_close(struct net_device *dev)
+ 		dev_kfree_skb(skb);
+ 	}
+ 
+-	synchronize_irq(data->irq_num);
+ 	free_irq(data->irq_num, dev);
+ 
+ 	/* Discard the RX ring. */
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index 333961b..7d2a4c6 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -334,8 +334,6 @@ enum state_values {
+ #define TYPHOON_RESET_TIMEOUT_NOSLEEP	((6 * 1000000) / TYPHOON_UDELAY)
+ #define TYPHOON_WAIT_TIMEOUT		((1000000 / 2) / TYPHOON_UDELAY)
+ 
+-#define typhoon_synchronize_irq(x) synchronize_irq(x)
+-
+ #if defined(NETIF_F_TSO)
+ #define skb_tso_size(x)		(skb_shinfo(x)->gso_size)
+ #define TSO_NUM_DESCRIPTORS	2
+@@ -2143,7 +2141,6 @@ typhoon_close(struct net_device *dev)
+ 		printk(KERN_ERR "%s: unable to stop runtime\n", dev->name);
+ 
+ 	/* Make sure there is no irq handler running on a different CPU. */
+-	typhoon_synchronize_irq(dev->irq);
+ 	free_irq(dev->irq, dev);
+ 
+ 	typhoon_free_rx_rings(tp);
