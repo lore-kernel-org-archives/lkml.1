@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYDUHq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYDUHvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbYDUHq1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYDUHqM
+	id S1754284AbYDUHvG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYDUHuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:46:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:32808 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751610AbYDUHqL (ORCPT
+	Mon, 21 Apr 2008 03:50:55 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:46141 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbYDUHuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:46:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=wYRek/59fvXfy4lHPbohuhW62BKKgICPJki00qfdLnKYXVYOzoU2N5QeJpXk5W0aCtPfo68cc53f2uw+oWAL3kU0RB2wsPApPvrjL+LMcrxwYC4RleQ9O/isOX4i52WZj5w/N0/UtdcNscqtrD6B3ibexvmHd/L4GptKCCT6ExY=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: x86: 4kstacks default
-Date: Mon, 21 Apr 2008 09:45:24 +0200
-User-Agent: KMail/1.8.2
-Cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <20080420121803.GK1595@cs181133002.pp.htv.fi> <480B4DB4.8070107@sandeen.net>
-In-Reply-To: <480B4DB4.8070107@sandeen.net>
+	Mon, 21 Apr 2008 03:50:54 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Apr 2008 03:50:54 EDT
+Date: Mon, 21 Apr 2008 01:44:12 -0600 (MDT)
+From: Paul Walmsley <paul@pwsan.com>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, David Brownell <david-b@pacbell.net>,
+       hiroshi.DOYU@nokia.com
+Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
+In-Reply-To: <20080420082925.GA32739@doriath.ww600.siemens.net>
+Message-ID: <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>
+References: <20080420082925.GA32739@doriath.ww600.siemens.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804210945.24479.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 April 2008 16:05, Eric Sandeen wrote:
-> Adrian Bunk wrote:
-> > But the more users will get 4k stacks the more testing we have, and the 
-> > better both existing and new bugs get shaken out.
-> > 
-> > And if there were only 4k stacks in the vanilla kernel, and therefore 
-> > all people on i386 testing -rc kernels would get it, that would give a 
-> > better chance of finding stack regressions before they get into a 
-> > stable kernel.
-> 
-> Heck, maybe you should make it 2k by default in all -rc kernels; that
-> way when people run -final with the 4k it'll be 100% bulletproof, right?
->  'cause all those piggy drivers that blow a 2k stack will finally have
-> to get fixed?  Or leave it at 2k and find a way to share pages for
-> stacks, think how much memory you could save and how many java threads
-> you could run!
-> 
-> 4K just happens to be the page size; other than that it's really just
-> some random/magic number picked, and now dictated that if you (and
-> everyting around you) doesn't fit, you're broken.
+Hello Dmitry,
 
-Some number has to be picked. Why fitting in 4k is "bad" and fitting
-in 8k is "not bad"?
+By way of introduction, I've been working on the Linux-OMAP clock tree 
+over the past several months.  I recently had the opportunity to take a 
+brief look at these clocklib patches that you're posting, and had a few 
+thoughts:
 
-Look what happens when this number is too big: Windows is "generous",
-and as a result Windows drivers routinely need 12k, sometimes 16k of stack.
-We know it from ndiswrapper. We don't want to go that way, right?
+- I understand from the discussions in this thread that the usage of your 
+  clocklib code will be optional. However, the way you implement various 
+  parts of the clock interface may effectively become mandatory, and 
+  clocklib may not be able to handle many of the platform-specific clock 
+  details that are necessary with more complex clock layouts like OMAP.  
+  Would you consider the main goal of your clocklib code to be simply the 
+  removal of several of the simpler ARM clock tree implementations?  Or is 
+  your intention for it to ultimately replace all of the current Linux 
+  clock implementations?  If the latter, your patchset will presumably 
+  need a higher standard of review, since once it is integrated, any 
+  changes will affect several architectures, rather than simply one.
 
-Forget about 50k threads. 4k of waste per process is a waste nevertheless.
-It's not at all unusual to have 250+ processes, and 250 processes with 8k
-stack each waste 1M. Do you think extra 1M won't be useful to have?
+- As others have mentioned earlier on this thread, it seems difficult to 
+  construct a good "one-size-fits-all" struct clk.  At the very least, 
+  I would also suggest adding a 'void *' to allow storage of clock-specific 
+  data.
 
-It seems that 4k works for everybody sans xfs. Making it work took some effort,
-but it is already done. Why not use it after all?
+- Hiroshi DOYU has proposed an alternate debugfs implementation for the
+  Linux-OMAP clock tree.  I prefer it to yours, as it implements each 
+  clock as a separate dentry, which makes it easy to implement additional 
+  debugging functions, such as set_rate/set_parent/round_rate debugging.  
+  Perhaps you'd consider it, or something similar to it, instead?  It is 
+  proposed here:
+     http://www.mail-archive.com/linux-omap@vger.kernel.org/msg00751.html
 
-And since i386 is such a common architecture, other 32-bit arches will be
-relieved from the burden of hunting down stack overflows which happen
-only on those arches. (For example, different ABI or different gcc behavior
-may make $OTHER_ARCH slightly more stack-greedy). God knows non-mainstream
-arches have enough problems already.
---
-vda
+- I don't think that I understand the clk_functions part of your code.  
+  Is this a shorthand to construct aliases to other struct clks?
+
+
+regards,
+
+- Paul
