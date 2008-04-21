@@ -1,45 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYDUF7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYDUF7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYDUF7P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 01:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYDUF7A
+	id S1755723AbYDUF7l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 01:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDUF7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 01:59:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52315 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751913AbYDUF67 (ORCPT
+	Mon, 21 Apr 2008 01:59:32 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54866 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbYDUF7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 01:58:59 -0400
-Date: Sun, 20 Apr 2008 22:58:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
- kmem_cache_destroy, scsi_put_host_cmd_pool()
-In-Reply-To: <Pine.LNX.4.64.0804191208430.25553@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0804202257120.13872@schroedinger.engr.sgi.com>
-References: <20080419085758.GA18612@elte.hu> <Pine.LNX.4.64.0804191208430.25553@sbz-30.cs.Helsinki.FI>
+	Mon, 21 Apr 2008 01:59:31 -0400
+Message-ID: <480C2D36.5050503@bull.net>
+Date: Mon, 21 Apr 2008 07:59:18 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulmck@linux.vnet.ibm.com
+Cc: efault@gmx.de, manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, peterz@infradead.org, xemul@openvz.org
+Subject: Re: [PATCH 00/13] Re: Scalability requirements for sysv ipc
+References: <20080411161702.460410000@bull.net> <20080419232539.GE20138@linux.vnet.ibm.com>
+In-Reply-To: <20080419232539.GE20138@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008, Pekka J Enberg wrote:
-
-> > [a few .config options were turned off: just accept all the defaults 
-> >  after 'make oldconfig']
+Paul E. McKenney wrote:
+> On Fri, Apr 11, 2008 at 06:17:02PM +0200, Nadia.Derbey@bull.net wrote:
 > 
-> I couldn't spot anything in particular in SLUB which makes me think SCSI 
-> code simply didn't free all objects before scsi_put_host_cmd_pool() called 
-> kmem_cache_destroy() to kill the cache.
+>>
+>>Here is finally the ipc ridr-based implementation I was talking about last
+>>week (see http://lkml.org/lkml/2008/4/4/208).
+>>I couldn't avoid much of the code duplication, but at least made things
+>>incremental.
+>>
+>>Does somebody now a test suite that exists for the idr API, that I could
+>>run on this new api?
+>>
+>>Mike, can you try to run it on your victim: I had such a hard time building
+>>this patch, that I couldn't re-run the test on my 8-core with this new
+>>version. So the last results I have are for 2.6.25-rc3-mm1.
+>>
+>>Also, I think a careful review should be done to avoid introducing yet other
+>>problems :-(
+>>
+>>*WARNING*: this patch contains a fix for idr.c
+>>           I know, I'm doing things bad, but I only saw the problem this
+>>           afternoon.
+>>
+>>It should be applied on linux-2.6.25-rc8-mm1, in the following order:
+>>
+>>[ PATCH 01/13 ] : copy_idr_code.patch
+>>[ PATCH 02/13 ] : change_ridr_struct.patch
+>>[ PATCH 03/13 ] : ridr_pre_get.patch
+>>[ PATCH 04/13 ] : ridr_alloc_layer.patch
+>>[ PATCH 05/13 ] : ridr_free_layer.patch
+>>[ PATCH 06/13 ] : ridr_sub_alloc.patch
+>>[ PATCH 07/13 ] : ridr_get_empty_slot.patch
+>>[ PATCH 08/13 ] : ridr_get_new.patch
+>>[ PATCH 09/13 ] : ridr_remove.patch
+>>[ PATCH 10/13 ] : ridr_find.patch
+>>[ PATCH 11/13 ] : ridr_integrate.patch
+>>[ PATCH 12/13 ] : ipc_use_ridr.patch
+>>[ PATCH 13/13 ] : remove_ipc_lock_down.patch
 > 
-> James, does this make sense or should I just look at SLUB harder?
+> 
+> And some more comments on the resulting ridr.c.  Note that we might in
+> fact want to keep the rcu_assign_pointer() calls that I complain about --
+> see Johannes Berg's posting about making sparse smarter about RCU.
+> 
 
-The WARN is intended to warn that a kmem_cache_destroy was run with 
-objects not freed.
+Paul,
 
+Thanks a lot for the review, but I have in any case to rework my 
+patches: I have left calls to sleeping functions inside the 
+ridr_pre_get() / ridr_preget_end() section which is a very bad thing. 
+I'll rework everything and resend.
 
-
+Regards,
+Nadia
