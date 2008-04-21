@@ -1,116 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762671AbYDURD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762806AbYDURFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762671AbYDURD1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYDURDQ
+	id S1762806AbYDURFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYDURFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:03:16 -0400
-Received: from mga02.intel.com ([134.134.136.20]:33196 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753120AbYDURDO convert rfc822-to-8bit (ORCPT
+	Mon, 21 Apr 2008 13:05:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54281 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754809AbYDURFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:03:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,690,1199692800"; 
-   d="scan'208";a="272913715"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 21 Apr 2008 13:05:06 -0400
+Message-ID: <480CC78D.3000202@zytor.com>
+Date: Mon, 21 Apr 2008 12:57:49 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Subject: RE: [build bug] iwl-3945-led.c:(.text+0x119e36): undefined reference to `__led_classdev_unregister'
-Date: Mon, 21 Apr 2008 20:03:06 +0300
-Message-ID: <C07C4589BE74A34981C3C3525EE1F80103BAF8B5@hasmsx412.ger.corp.intel.com>
-In-Reply-To: <20080420.005149.189096986.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [build bug] iwl-3945-led.c:(.text+0x119e36): undefined reference to `__led_classdev_unregister'
-Thread-Index: Aciiu2RtbPGIalMmR1itpuvYftMKKwBFiABQ
-References: <20080419135602.GA2499@elte.hu><20080420073441.GA31745@elte.hu> <20080420.005149.189096986.davem@davemloft.net>
-From: "Winkler, Tomas" <tomas.winkler@intel.com>
-To: "David Miller" <davem@davemloft.net>, <mingo@elte.hu>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>
-Cc: <linville@tuxdriver.com>, <linux-kernel@vger.kernel.org>,
-       <kaber@trash.net>, <torvalds@linux-foundation.org>,
-       <akpm@linux-foundation.org>, <netdev@vger.kernel.org>,
-       <netfilter-devel@vger.kernel.org>, <mabbas@linux.intel.com>,
-       <ischram@telenet.be>, <rjw@sisk.pl>
-X-OriginalArrivalTime: 21 Apr 2008 17:03:09.0833 (UTC) FILETIME=[93821F90:01C8A3D1]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Andres Salomon <dilinger@queued.net>, Mitch Bradley <wmb@firmworks.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       jordan.crouse@amd.com
+Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	 <20080419031024.GC3503@nineveh.local>	 <20080418202925.b18452c5.akpm@linux-foundation.org>	 <20080419092544.378664a8@ephemeral> <20080419133909.5aa6b63e@ephemeral>	 <86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	 <480C0582.9010509@firmworks.com>	 <86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>	 <480C1286.3040307@firmworks.com>  <20080421102417.6de71391@ephemeral> <1208793253.9212.507.camel@pmac.infradead.org>
+In-Reply-To: <1208793253.9212.507.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Woodhouse wrote:
+> 
+>> However, until we clean up the promfs stuff, there's no chance of getting
+>> an OFW device tree upstream.
+> 
+> I see no reason why we shouldn't be able to create a 'flattened'
+> device-tree during early boot, like the PowerPC kernel does. And use it
+> thereafter, having quiesced OpenFirmware. Haven't we already been
+> working on unifying this between SPARC and PowerPC kernels?
+> 
+> I definitely don't think we need to play these tricks to keep
+> OpenFirmware resident while the kernel is running. Take a look at your
+> second patch -- it's _all_ just lookups in the device-tree, and you're
+> inventing a new way to do it instead of using the existing one.
+> 
 
+If so, would this apply to OLPC as well?
 
->-----Original Message-----
->From: David Miller [mailto:davem@davemloft.net]
->Sent: Sunday, April 20, 2008 10:52 AM
->To: mingo@elte.hu
->Cc: linville@tuxdriver.com; Winkler, Tomas;
-linux-kernel@vger.kernel.org;
->kaber@trash.net; torvalds@linux-foundation.org;
-akpm@linux-foundation.org;
->netdev@vger.kernel.org; netfilter-devel@vger.kernel.org;
->mabbas@linux.intel.com; ischram@telenet.be; rjw@sisk.pl
->Subject: Re: [build bug] iwl-3945-led.c:(.text+0x119e36): undefined
->reference to `__led_classdev_unregister'
->
->From: Ingo Molnar <mingo@elte.hu>
->Date: Sun, 20 Apr 2008 09:34:41 +0200
->
->>  drivers/built-in.o: In function `iwl3945_led_unregister_led':
->>   iwl-3945-led.c:(.text+0x119e36): undefined reference to
->`__led_classdev_unregister'
->>  drivers/built-in.o: In function `iwl3945_led_register_led':
->>   iwl-3945-led.c:(.text+0x119ecd): undefined reference to
->`led_classdev_register'
->
->Thanks for the report.
->
->This is the classic "API_OPTION=m && API_USER=y" problem.
->
->In this case the best fix is probably to use select in the
->iwlwifi Kconfig files.  The following patch should cure it.
->
->iwlwifi: Use 'select' for MAC80211_LEDS and LEDS_CLASS instead of
-'depends'
->
->Signed-off-by: David S. Miller <davem@davemloft.net>
->
->diff --git a/drivers/net/wireless/iwlwifi/Kconfig
->b/drivers/net/wireless/iwlwifi/Kconfig
->index f844b73..c4e631d 100644
->--- a/drivers/net/wireless/iwlwifi/Kconfig
->+++ b/drivers/net/wireless/iwlwifi/Kconfig
->@@ -49,7 +49,9 @@ config IWL4965_HT
->
-> config IWL4965_LEDS
-> 	bool "Enable LEDS features in iwl4965 driver"
->-	depends on IWL4965 && MAC80211_LEDS && LEDS_CLASS
->+	depends on IWL4965
->+	select MAC80211_LEDS
->+	select LEDS_CLASS
-> 	select IWLWIFI_LEDS
-> 	---help---
-> 	  This option enables LEDS for the iwlwifi drivers
->@@ -134,7 +136,9 @@ config IWL3945_SPECTRUM_MEASUREMENT
->
-> config IWL3945_LEDS
-> 	bool "Enable LEDS features in iwl3945 driver"
->-	depends on IWL3945 && MAC80211_LEDS && LEDS_CLASS
->+	depends on IWL3945
->+	select MAC80211_LEDS
->+	select LEDS_CLASS
-> 	---help---
-> 	  This option enables LEDS for the iwl3945 driver.
->
-
-ACK
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+	-hpa
