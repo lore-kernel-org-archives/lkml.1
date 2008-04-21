@@ -1,105 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYDULdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYDULlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbYDULdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 07:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYDULdL
+	id S1756898AbYDULlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 07:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYDULlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 07:33:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37040 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755398AbYDULdK (ORCPT
+	Mon, 21 Apr 2008 07:41:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46554 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490AbYDULlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 07:33:10 -0400
-Message-ID: <480C7B59.9060801@bull.net>
-Date: Mon, 21 Apr 2008 13:32:41 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Mon, 21 Apr 2008 07:41:05 -0400
+Message-ID: <480C7D4C.1070502@firstfloor.org>
+Date: Mon, 21 Apr 2008 13:41:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: containers@lists.linux-foundation.org, nick@nick-andrew.net,
+To: Hugh Dickins <hugh@veritas.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
+       xemul@openvz.org, shiwh@cn.fujitsu.com, mel@csn.ul.ie,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] - v2 -  Object creation with a specified id
-References: <20080418054459.891481000@bull.net> <1208538427.25363.40.camel@nimitz.home.sr71.net>
-In-Reply-To: <1208538427.25363.40.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org> <Pine.LNX.4.64.0804210004470.1630@blonde.site> <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com> <20080420232427.1b399104.akpm@linux-foundation.org> <480C347C.6060702@linux.vnet.ibm.com> <20080421064725.GA32214@balbir.in.ibm.com> <Pine.LNX.4.64.0804211158001.10521@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0804211158001.10521@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Fri, 2008-04-18 at 07:44 +0200, Nadia.Derbey@bull.net wrote:
-> 
->>The syntax is one of:
->>   . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
->>     next object to be created will have an id set to XX
->>   . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
->>     next object to be created will have its ids set to XX0, ... X<n-1>
->>     This is particularly useful for processes that may have several ids if
->>     they belong to nested namespaces.
-> 
-> 
-> I still think, in its current form, this is pretty dangerous.  
-> 
-> It might be nice to have a central place to set ids, but there's no real
-> safety here for when we get a mishmash of 50 of these things.  We have a
-> queue and we fix the order in which things are inserted, but how do we
-> control the order in which the kernel extracts them?
+Hugh Dickins wrote:
+> On Mon, 21 Apr 2008, Balbir Singh wrote:
+> I've added Andi to the Cc's, I don't want to sneak away something
+> he's expecting there.  If 2.6.25 had gone out with a convention that
+> controller infrastructure gets compiled in, but has then to be enabled
+> at boottime or runtime, okay; 
 
-I thought that we were the ones who are going to be controlling the 
-restart phase?
+That is what I have been expecting yes.
 
-I think sysV IPCs are particular, since they could be recreated early 
-during the restart phase:
-we could define a callback routine that would be called by each process 
-being restarted and that would do:
-for each ipc type:
-   1. extract next ipc id for my uid and current ipc type
-   2. write(fd_next_id, id, id_sz)
-   3. call the XXXget() routine for current ipc_type
-   4. remove that id from the checkpoint file
+If later the slow down is fixed it can be also enabled by default too.
 
-I think this could only be applied to msg queues and sems, since the 
-creator pid is stored in the perm structure in the shm case. But in the 
-shm case, we can replace in 1. "my uid" by "my tgid_vnr"
-
-Then the processes hierarchy restore would take place, so no confusion 
-between the ids.
-
-
-> Can we 100%
-> conform to that order in the future and be consistent?  Won't that also
-> be dictated by the way userspace behaves?
-> 
-> If we're going to go this route, I think we need to do a few things.
-> First, these need to be more "type safe".  That means that sticking an
-> ids in here that you mean to go to an IPC should never, ever, ever be
-> able to get interpreted as a PID or as an inode number or anything else.
-> 
-> 	echo "IPC_SEM_ID NN" > /proc/self/task/<my_tid>/next_id
-> 	echo "PID MM" > /proc/self/task/<my_tid>/next_id
-> 
-> Maybe we should include the types in there as well, but those are kinda
-> implied by the kind of id you're setting.  Have you thought about 32-bit
-> userspace with 64-bit kernels? 
-
-No, but the ids are int in the ipc case and in the pid_t case too.
-
-> Does that cause any issues?
-> 
-> I also feel like we should have the kernel able to enumerate which
-> things in a process *are* settable.  What are the valid values for that
-> first word being echoed in the file?
-> 
-> Does anyone have a list of these ids that we're going to want to set
-> like this?  Oren?  I'm a bit worried that we might want to set things
-> other than ids with an interface like this and that it won't transition
-> well.
-> 
-
-Regards,
-Nadia
-
-
+-Andi
