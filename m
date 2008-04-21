@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYDUVAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbYDUVDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbYDUVAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYDUU7y
+	id S1754091AbYDUVDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYDUVDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 16:59:54 -0400
-Received: from mail.queued.net ([207.210.101.209]:1557 "EHLO mail.queued.net"
+	Mon, 21 Apr 2008 17:03:05 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58901 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750905AbYDUU7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 16:59:54 -0400
-Date: Mon, 21 Apr 2008 17:02:30 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Mitch Bradley <wmb@firmworks.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       jordan.crouse@amd.com
-Subject: [PATCH] OLPC: only check for OFW signature on VSA-less Geodes
-Message-ID: <20080421170230.2db18632@ephemeral>
-In-Reply-To: <1208809517.9212.537.camel@pmac.infradead.org>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<20080419031024.GC3503@nineveh.local>
-	<20080418202925.b18452c5.akpm@linux-foundation.org>
-	<20080419092544.378664a8@ephemeral>
-	<20080419133909.5aa6b63e@ephemeral>
-	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
-	<480C0582.9010509@firmworks.com>
-	<86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
-	<480C1286.3040307@firmworks.com>
-	<20080421102417.6de71391@ephemeral>
-	<1208793253.9212.507.camel@pmac.infradead.org>
-	<20080421130320.38b5f505@ephemeral>
-	<1208805491.9212.520.camel@pmac.infradead.org>
-	<20080421154618.2ed4978f@ephemeral>
-	<1208809517.9212.537.camel@pmac.infradead.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750905AbYDUVDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:03:04 -0400
+Date: Tue, 22 Apr 2008 00:02:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Voyager phys_cpu_present_map compile error
+Message-ID: <20080421210232.GD2633@cs181133002.pp.htv.fi>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <1208793533.3640.24.camel@localhost.localdomain> <20080421195148.GG8770@elte.hu> <20080421200949.GB2633@cs181133002.pp.htv.fi> <20080421201352.GM8770@elte.hu> <20080421202605.GC2633@cs181133002.pp.htv.fi> <20080421202919.GA28069@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080421202919.GA28069@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 21:25:17 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Mon, 2008-04-21 at 15:46 -0400, Andres Salomon wrote:
-> > Well, no, it wasn't already working; that's the reason this whole
-> > thread started.  It was crashing someone's machine.  That's why the OFW
-> > interface, as imperfect as it is, is an _improvement_.
+On Mon, Apr 21, 2008 at 10:29:19PM +0200, Ingo Molnar wrote:
 > 
-> You're proposing a new interface between bootloader and kernel as a
-> temporary hack just to work around that until we fix it properly?
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> That seems like overkill to me. I'd just go for is_geode() as you
-> suggested, and maybe PCI configuration tricks to detect the lack of VSA
-> so we can be _fairly_ sure it's OLPC before we poke at it?
+> > On Mon, Apr 21, 2008 at 10:13:52PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Adrian Bunk <bunk@kernel.org> wrote:
+> > > 
+> > > > > ok, that's good enough - that's why i excluded it from the auto-qa 
+> > > > > test-space as well. Adrian, could you please remove it from your 
+> > > > > config testset as well? If a user enables that config option it wont 
+> > > > > boot anyway so it's not a problem in practice.
+> > > > 
+> > > > Who said that Voyager won't boot?
+> > > 
+> > > Adrian, you build Voyager kernels so just try to boot it once on 
+> > > your PC and watch the show ...
+> > 
+> > Ingo, an ia64 kernel also won't boot on my computer, and I'll still 
+> > compile test my patches for ia64 ...
 > 
-> Or why not try '!page_is_ram(0xffffffc0 >> PAGE_SHIFT)' if it's just to
-> avoid that particular warning? :)
-> 
+> dont be silly... the ia64 kernel is not under arch/x86, it's not even 
+> the same instruction format. Voyager runs on x86 CPUs and is part of the 
+> x86 architecture tree.
 
+Your point is?
 
-Okay, does anyone have a problem with this?
+I'm compile testing 22 architectures (especially when sending my own 
+patches), and whether a kernel would boot on my computer doesn't make 
+any difference.
 
-    
+Why do you as an architecture maintainer want me to no longer spend my 
+spare time on compile testing one of the subarchitectures of your 
+architecture?
 
+Other architecture maintainers tend to say "thanks for your bug report" 
+and "thanks for your patch" when I'm sending bug reports and patches for 
+platforms that have userbases comparable to Voyager...
 
+> 	Ingo
 
-
-The OFW sig check requires an ioremap that is dangerous on non-OLPC
-systems.  Long term, we should be getting the signature from the
-device tree (/openprom/model), but for right now just limit the
-check to only run on a subset of Geode (GX2/LX) systems.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- arch/x86/kernel/olpc.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/olpc.c b/arch/x86/kernel/olpc.c
-index 11670be..3e66722 100644
---- a/arch/x86/kernel/olpc.c
-+++ b/arch/x86/kernel/olpc.c
-@@ -211,6 +211,10 @@ static int __init olpc_init(void)
- {
- 	unsigned char *romsig;
- 
-+	/* The ioremap check is dangerous; limit what we run it on */
-+	if (!is_geode() || geode_has_vsa2())
-+		return 0;
-+
- 	spin_lock_init(&ec_lock);
- 
- 	romsig = ioremap(0xffffffc0, 16);
--- 
-1.5.4.4
-
+cu
+Adrian
 
 -- 
-Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
