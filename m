@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYDUVUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYDUVU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbYDUVUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYDUVT4
+	id S1754866AbYDUVU4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYDUVUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:19:56 -0400
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:53421 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752338AbYDUVTz (ORCPT
+	Mon, 21 Apr 2008 17:20:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47236 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752477AbYDUVUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:19:55 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: PCI MSI breaks when booting with nosmp
-Date: Mon, 21 Apr 2008 14:14:44 -0700
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <jdelvare@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
-References: <200804172140.02311.jdelvare@suse.de> <200804212248.02986.jdelvare@suse.de> <20080421210909.GC21028@one.firstfloor.org>
-In-Reply-To: <20080421210909.GC21028@one.firstfloor.org>
+	Mon, 21 Apr 2008 17:20:45 -0400
+Date: Mon, 21 Apr 2008 14:19:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, paulmck@us.ibm.com, jirislaby@gmail.com
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <20080421.133940.52972455.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0804211407370.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <200804211812.16994.rjw@sisk.pl> <alpine.LFD.1.10.0804210934190.2779@woody.linux-foundation.org> <20080421.133940.52972455.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804211414.45629.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, April 21, 2008 2:09 pm Andi Kleen wrote:
-> > Both call disable_ioapic_setup(), so how can they not be the same?
->
-> See Jesse's explanation. Basically there is special code in the smp
-> boot up to handle 0 CPUs and it disables all APICs.
->
-> This is very old and crufty and somewhat obsolete logic,
-> but it is like that.
 
-This might be closer to a real fix.  Can you confirm that this works for you 
-Jean?
 
-Thanks,
-Jesse
+On Mon, 21 Apr 2008, David Miller wrote:
+> 
+> Do we know the offset within the object at which this all 1's
+> value is found?
+> 
+> My rough calculations show that on 32-bit that expect->mask member is
+> at offset 56 and on 64-bit it should be at offset 72.  Does that
+> match up to the offset of the filp or whatever bit being corrupted?
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index e6abe8a..7cdf930 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1138,14 +1138,10 @@ static int __init smp_sanity_check(unsigned max_cpus)
- 				 "forcing use of dummy APIC emulation.\n");
- 		smpboot_clear_io_apic();
- #ifdef CONFIG_X86_32
--		if (nmi_watchdog == NMI_LOCAL_APIC) {
--			printk(KERN_INFO "activating minimal APIC for"
--					 "NMI watchdog use.\n");
--			connect_bsp_APIC();
--			setup_local_APIC();
--			end_local_APIC_setup();
--		}
-+		connect_bsp_APIC();
- #endif
-+		setup_local_APIC();
-+		end_local_APIC_setup();
- 		return -1;
- 	}
- 
+No, I think that the d_hash list is at offset 24 (64-bit).
 
+But that changes if any of
+
+ - GENERIC_LOCKBREAK
+ - DEBUG_SPINLOCK
+ - DEBUG_LOCK_ALLOC (and if so, LOCK_STAT)
+
+is set, and then you might actually get to 72.
+
+However, the Code: line for one of the oopses shows that in that 
+particular case, it was at offset 0x18 (ie the normal 24), so at least one 
+of the oopses had no such thing going on.
+
+			Linus
