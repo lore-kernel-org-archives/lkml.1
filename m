@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYDUDz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbYDUEGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbYDUDz7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 23:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYDUDzt
+	id S1753893AbYDUEGL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 00:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbYDUEGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 23:55:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39497 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754476AbYDUDzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 23:55:38 -0400
-Date: Sun, 20 Apr 2008 15:33:17 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080420153317.3c85db8e@laptopd505.fenrus.org>
-In-Reply-To: <480BA12A.4000307@firstfloor.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	<20080420104444.GI1595@cs181133002.pp.htv.fi>
-	<87y778aezh.fsf@basil.nowhere.org>
-	<200804201144.33308.dhazelton@enter.net>
-	<480B7CB2.3080002@firstfloor.org>
-	<20080420114845.77bf3fed@laptopd505.fenrus.org>
-	<480BA12A.4000307@firstfloor.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Apr 2008 00:06:00 -0400
+Received: from rs35.luxsci.com ([66.216.127.90]:34093 "EHLO rs35.luxsci.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbYDUEF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 00:05:59 -0400
+Message-ID: <480C1286.3040307@firmworks.com>
+Date: Sun, 20 Apr 2008 18:05:26 -1000
+From: Mitch Bradley <wmb@firmworks.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andres Salomon <dilinger@queued.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       jordan.crouse@amd.com
+Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	 <20080419031024.GC3503@nineveh.local>	 <20080418202925.b18452c5.akpm@linux-foundation.org>	 <20080419092544.378664a8@ephemeral>	 <20080419133909.5aa6b63e@ephemeral>	 <86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	 <480C0582.9010509@firmworks.com> <86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
+In-Reply-To: <86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Apr 2008 22:01:46 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> 
-> 
-> > These are real customer workloads; java based "many things going
-> > on" at a time showed several thousands of threads fin the system (a
-> > dozen or two per request, multiplied by the number of outstanding
-> > connections) for *real customers*.
-> 
-> Several thousands or 50k? Several thousands sounds large, but not
-> entirely unreasonable, but it is far from 50k.
-
-it is you who keeps putting up the 50k argument.
-What I'm talking about is in the 10k to 20k range; and that is actual workloads
-by real customers.
-> 
-> > That you don't take that serious, fair, you can take serious
-> > whatever you want.
-> 
-> No I don't take 50k threads on 32bit serious. And I hope you do not
-> either.
-
-[ removed a bunch of stuff about 50k again ]
-
-> 
-> > was the observation that fragmentation is fundamentally unsolvable.
-> 
-> Where was that observation? 
-
-it was in the commit message from me you quoted, and was rather widely discussed at the time.
-It's also basic math; the Linux VM gets to deal with both short and long lasting allocations;
-no matter how hard you try to get some degree of fragmentation; especially due to the
-15:1 acceleration you get due to the lowmem issue.
-
-And before you say "you should use 64 bit on such machines"; I would love it if more people used 64 bit linux.
-Sadly the adoption rate of that is not very good still.... by far ;(
-
-> 
-> > Yes 2.4 sucked a lot more than 2.6 does. But even 2.6 will (and
-> > does) have fragmentation issues. We don't have effective physical
-> > address based reclaim yet for higher order allocs.
-> 
-> I don't see any evidence that there are serious order 1 fragmentation 
-> issues on 2.6. 
-
-I assume you're not asking me to give you customer confidential data from a previous job in public ;)
-
->If you have any please post it.
-
-just like you're posting the evidence that 4k stacks overflows?
-
-Google scores:
-
-1-order allocation failed		54000 pages
-do_IRQ: stack overflow			4560 pages
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Yinghai Lu wrote:
+> On Sun, Apr 20, 2008 at 8:09 PM, Mitch Bradley <wmb@firmworks.com> wrote:
+>   
+>>
+>>  Yinghai Lu wrote:
+>>
+>>     
+>>> how about changing to ofw_32.c?
+>>>
+>>> YH
+>>>
+>>>
+>>>       
+>>  Is your suggestion to change the filename from "ofw.c" to "ofw_32.c"?  That
+>> seems like a good idea to me.
+>>     
+>
+> Yes.
+>
+> BTW,  why olpc need OFW runtime service?
+> why not just put the info in in ram with some signiture, so
+> kernel/util just need to loot at the table if needed?
+>   
+
+In SPARC land, at least on SunOS and Solaris, it was very convenient for 
+debugging to interrupt the OS with Stop-A and use OFW to inspect the 
+system state.  That was especially handy for live crash analysis.  Dumps 
+are useful as far as they go, but they often fail to capture detailed 
+I/O device state.
+
+I was hoping to do that on x86 too.  So far we (OLPC) haven't 
+implemented a sysrq hook to enter OFW, but I haven't given up hope yet.  
+It doesn't cost much to leave OFW around, but once you decide to eject 
+it, you can't easily get it back.
+
+Apple made the early decision to eject OFW and just keep a device tree 
+table.  That decision was probably due to several factors, including the 
+rather lame state of Apple's first OFW implementation and the complexity 
+of their OS startup process at the time (which included "trampolining" 
+to a 68000 emulator to run their legacy code).  Once they went down that 
+path, the die was cast, and the PowerPC community got used to the "OFW 
+ends up as just a table" idea.
+
+>   
