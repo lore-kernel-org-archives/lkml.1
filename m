@@ -1,301 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYDUWoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYDUWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbYDUWoJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 18:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYDUWnz
+	id S1756570AbYDUWrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 18:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYDUWrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 18:43:55 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:65499 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751323AbYDUWnx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 18:43:53 -0400
-X-Trace: 4153320/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.86.229
-X-SBRS: None
-X-RemoteIP: 81.1.86.229
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjsFABa1DEhRAVbl/2dsb2JhbACBUak6
-Subject: Re: [PATCH] input: support maple controller on SEGA Dreamcast
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20080415141746.ZZRA012@mailhub.coreip.homeip.net>
-References: <1203862726.6474.18.camel@localhost.localdomain>
-	 <1204057817.6388.5.camel@localhost.localdomain>
-	 <20080415141746.ZZRA012@mailhub.coreip.homeip.net>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 23:43:30 +0100
-Message-Id: <1208817810.6383.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Mon, 21 Apr 2008 18:47:09 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40953 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753012AbYDUWrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 18:47:07 -0400
+Message-ID: <480D1968.5050704@sgi.com>
+Date: Mon, 21 Apr 2008 15:47:04 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH [1/1]: x86:fix i686 panic with the early_per_cpu macro
+References: <20080416133114.GL6304@elte.hu> <20080416134502.GA24209@elte.hu> <48061677.1080801@sgi.com> <48062928.6020304@sgi.com> <20080416192527.GA15973@elte.hu> <20080416192713.GA16802@elte.hu> <20080416210033.GA25899@elte.hu> <4807D200.6080103@sgi.com> <20080421154429.GG18452@elte.hu> <480CBA80.1030201@sgi.com> <20080421161627.GA10121@elte.hu> <480CE4BC.2030002@sgi.com>
+In-Reply-To: <480CE4BC.2030002@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Have reworked this in (I hope) ways suggested)
+Mike Travis wrote:
+> Ingo Molnar wrote:
+>> * Mike Travis <travis@sgi.com> wrote:
+>>
+>>> ...  Do you 
+>>> want me to consolidate the outstanding patches and send them again all 
+>>> together?  
+...
+>> resending would be appreciated, if it's not hard. I had to disable the 
+>> early-pointers cleanup patch because of the breakage it caused.
+>>
+>> 	Ingo
+> 
 
+The build tests have passed.  The kernel in all it's variations runs on
+my intel box fine but fails on the amd box with boot disk errors.  Here's
+what it should say:
 
-Add support for the maple control pad (as a joystick)
+    scsi0 : sata_nv
+    ata1: SATA max UDMA/133 cmd 0x34d0 ctl 0x34c4 bmdma 0x3490 irq 19
+    ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+    ata1.00: ATA-7: WDC WD2500YD-01NVB1, 10.02E01, max UDMA/133
+    ata1.00: 490234752 sectors, multi 16: LBA48 NCQ (depth 0/1)
+    ata1.00: configured for UDMA/133
+    scsi 0:0:0:0: Direct-Access     ATA      WDC WD2500YD-01N 10.0 PQ: 0 ANSI: 5
+    sd 0:0:0:0: [sda] 490234752 512-byte hardware sectors (251000 MB)
+    ...
+     sda: sda1 sda2 < sda5 sda6 sda7 sda8 >
+    sd 0:0:0:0: [sda] Attached SCSI disk
+    sd 0:0:0:0: Attached scsi generic sg0 type 0
+    ...
+    EXT3-fs: mounted filesystem with ordered data mode.
+    VFS: Mounted root (ext3 filesystem) readonly.
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
+But instead it fails:
 
-diff -ruN ./a/drivers/input/joystick/Kconfig ./b/drivers/input/joystick/Kconfig
---- ./a/drivers/input/joystick/Kconfig	2008-04-21 23:32:42.000000000 +0100
-+++ ./b/drivers/input/joystick/Kconfig	2008-04-21 21:17:17.000000000 +0100
-@@ -282,4 +282,17 @@
- 	  This option enables support for the LED which surrounds the Big X on
- 	  XBox 360 controller.
- 
-+config JOYSTICK_MAPLE
-+	tristate "Dreamcast control pad"
-+	depends on SH_DREAMCAST
-+	select MAPLE
-+	help
-+	  Say Y here if you have a SEGA Dreamcast and want to use your
-+	  controller.
-+
-+	  Most Dreamcast users will say Y.
-+
-+	  To compile this as a module choose M here: the
-+	  module will be called maplecontrol.
-+
- endif
-diff -ruN ./a/drivers/input/joystick/Makefile ./b/drivers/input/joystick/Makefile
---- ./a/drivers/input/joystick/Makefile	2008-04-21 23:32:42.000000000 +0100
-+++ ./b/drivers/input/joystick/Makefile	2008-04-21 21:17:17.000000000 +0100
-@@ -27,5 +27,6 @@
- obj-$(CONFIG_JOYSTICK_TWIDJOY)		+= twidjoy.o
- obj-$(CONFIG_JOYSTICK_WARRIOR)		+= warrior.o
- obj-$(CONFIG_JOYSTICK_XPAD)		+= xpad.o
-+obj-$(CONFIG_JOYSTICK_MAPLE)		+= maplecontrol.o
- 
- obj-$(CONFIG_JOYSTICK_IFORCE)		+= iforce/
-diff -ruN ./a/drivers/input/joystick/maplecontrol.c ./b/drivers/input/joystick/maplecontrol.c
---- ./a/drivers/input/joystick/maplecontrol.c	1970-01-01 01:00:00.000000000 +0100
-+++ ./b/drivers/input/joystick/maplecontrol.c	2008-04-21 21:17:17.000000000 +0100
-@@ -0,0 +1,217 @@
-+/*
-+ * 	SEGA Dreamcast controller driver
-+ *	Based on drivers/usb/iforce.c
-+ *
-+ * 	Copyright Yaegashi Takeshi, 2001
-+ *	Porting to 2.6 by Adrian McMenamin, copyright 2008
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/input.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/maple.h>
-+#include <asm/mach/maple.h>
-+
-+MODULE_AUTHOR("YAEGASHI Takeshi <t@keshi.org>");
-+MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
-+MODULE_LICENSE("GPL");
-+
-+struct dc_pad {
-+	struct input_dev *dev;
-+	struct maple_device *mdev;
-+};
-+
-+static void dc_pad_callback(struct mapleq *mq)
-+{
-+	unsigned short buttons;
-+	struct maple_device *mapledev = mq->dev;
-+	struct dc_pad *pad = mapledev->private_data;
-+	struct input_dev *dev = pad->dev;
-+	unsigned char *res = mq->recvbuf;
-+
-+	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
-+
-+	input_report_abs(dev, ABS_HAT0Y,
-+			 (buttons & 0x0010 ? -1:0) + (buttons & 0x0020 ? 1:0));
-+	input_report_abs(dev, ABS_HAT0X,
-+			 (buttons & 0x0040 ? -1:0) + (buttons & 0x0080 ? 1:0));
-+	input_report_abs(dev, ABS_HAT1Y,
-+			 (buttons & 0x1000 ? -1:0) + (buttons & 0x2000 ? 1:0));
-+	input_report_abs(dev, ABS_HAT1X,
-+			 (buttons & 0x4000 ? -1:0) + (buttons & 0x8000 ? 1:0));
-+
-+	input_report_key(dev, BTN_C,      buttons & 0x0001);
-+	input_report_key(dev, BTN_B,      buttons & 0x0002);
-+	input_report_key(dev, BTN_A,      buttons & 0x0004);
-+	input_report_key(dev, BTN_START,  buttons & 0x0008);
-+	input_report_key(dev, BTN_Z,      buttons & 0x0100);
-+	input_report_key(dev, BTN_Y,      buttons & 0x0200);
-+	input_report_key(dev, BTN_X,      buttons & 0x0400);
-+	input_report_key(dev, BTN_SELECT, buttons & 0x0800);
-+
-+	input_report_abs(dev, ABS_GAS,   res[10]);
-+	input_report_abs(dev, ABS_BRAKE, res[11]);
-+	input_report_abs(dev, ABS_X,     res[12]);
-+	input_report_abs(dev, ABS_Y,     res[13]);
-+	input_report_abs(dev, ABS_RX,    res[14]);
-+	input_report_abs(dev, ABS_RY,    res[15]);
-+}
-+
-+static void dc_pad_disconnect(struct maple_device *mdev)
-+{
-+	struct dc_pad *pad = mdev->private_data;
-+
-+	mdev->callback = NULL;
-+	input_unregister_device(pad->dev);
-+	kfree(pad);
-+}
-+
-+static int dc_pad_open(struct input_dev *dev)
-+{
-+	struct dc_pad *pad;
-+
-+	pad = dev->private;
-+	maple_getcond_callback(pad->mdev, dc_pad_callback, HZ/20,
-+		MAPLE_FUNC_CONTROLLER);
-+	return 0;
-+}
-+
-+static void dc_pad_close(struct input_dev *dev)
-+{
-+	struct dc_pad *pad;
-+	
-+	pad = dev->private;
-+	maple_getcond_callback(pad->mdev, dc_pad_callback, 0,
-+		MAPLE_FUNC_CONTROLLER);
-+}
-+
-+static int dc_pad_connect(struct maple_device *mdev)
-+{
-+	int i, error;
-+	unsigned long data = be32_to_cpu(mdev->devinfo.function_data[0]);
-+	struct dc_pad *pad;
-+	struct input_dev *dev;
-+
-+	const short btn_bit[32] = {
-+		BTN_C, BTN_B, BTN_A, BTN_START, -1, -1, -1, -1,
-+		BTN_Z, BTN_Y, BTN_X, BTN_SELECT, -1, -1, -1, -1,
-+		-1, -1, -1, -1, -1, -1, -1, -1,
-+		-1, -1, -1, -1, -1, -1, -1, -1,
-+	};
-+
-+	const short abs_bit[32] = {
-+		-1, -1, -1, -1, ABS_HAT0Y, ABS_HAT0Y, ABS_HAT0X, ABS_HAT0X,
-+		-1, -1, -1, -1, ABS_HAT1Y, ABS_HAT1Y, ABS_HAT1X, ABS_HAT1X,
-+		ABS_GAS, ABS_BRAKE, ABS_X, ABS_Y, ABS_RX, ABS_RY, -1, -1,
-+		-1, -1, -1, -1, -1, -1, -1, -1,
-+	};
-+
-+	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
-+	if (!pad){
-+		error = ENOMEM;
-+		goto fail_nomem_1;
-+	}
-+
-+	dev = input_allocate_device();
-+	if (!dev) {
-+		error = ENOMEM;
-+		goto fail_nomem_2;
-+	}
-+
-+	pad->dev = dev;
-+	pad->mdev = mdev;
-+	mdev->private_data = pad;
-+	dev->open = dc_pad_open;
-+	dev->close = dc_pad_close;
-+
-+	for (i = 0; i < 32; i++)
-+		if (data & (1<<i) && btn_bit[i] >= 0)
-+			dev->keybit[BIT_WORD(BTN_JOYSTICK)] |= BIT_MASK(btn_bit[i]);
-+
-+	if (dev->keybit[BTN_JOYSTICK/32])
-+		dev->evbit[0] |= BIT_MASK(EV_KEY);
-+
-+	for (i = 0; i < 32; i++)
-+		if (data & (1<<i) && abs_bit[i] >= 0)
-+			dev->absbit[0] |= BIT_MASK(abs_bit[i]);
-+
-+	if (dev->absbit[0])
-+		dev->evbit[0] |= BIT_MASK(EV_ABS);
-+
-+	for (i = ABS_X; i <= ABS_BRAKE; i++)
-+		input_set_abs_params(dev, i, 0, 255, 0, 0);
-+
-+	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++)
-+		input_set_abs_params(dev, i, 1, -1, 0, 0);
-+
-+	dev->private = pad;
-+	dev->event = NULL;
-+	dev->dev.parent = &mdev->dev;
-+	dev->name = mdev->product_name;
-+	dev->id.bustype = BUS_HOST;
-+	input_set_drvdata(dev, pad);
-+
-+	error = input_register_device(dev);
-+	if (error)
-+		goto fail_register;
-+
-+	return error;
-+
-+fail_register:
-+	input_free_device(pad->dev);
-+fail_nomem_2:
-+	kfree(pad);
-+fail_nomem_1:
-+	return -error;
-+}
-+
-+/* allow the controller to be used */
-+static int probe_maple_controller(struct device *dev)
-+{
-+	struct maple_device *mdev = to_maple_dev(dev);
-+	struct maple_driver *mdrv = to_maple_driver(dev->driver);
-+	int error;
-+
-+	error = dc_pad_connect(mdev);
-+	if (error)
-+		return error;
-+
-+	mdev->driver = mdrv;
-+
-+	return 0;
-+}
-+
-+static int remove_maple_controller(struct device *dev)
-+{
-+	struct maple_device *mdev = to_maple_dev(dev);
-+
-+	dc_pad_disconnect(mdev);
-+	return 0;
-+}
-+
-+static struct maple_driver dc_pad_driver = {
-+	.function =	MAPLE_FUNC_CONTROLLER,
-+	.connect =	dc_pad_connect,
-+	.disconnect =	dc_pad_disconnect,
-+	.drv = {
-+		.name = "Dreamcast_controller",
-+		.probe = probe_maple_controller,
-+		.remove = remove_maple_controller,
-+	},
-+};
-+
-+static int __init dc_pad_init(void)
-+{
-+	return 	maple_driver_register(&dc_pad_driver.drv);
-+}
-+
-+static void __exit dc_pad_exit(void)
-+{
-+	driver_unregister(&dc_pad_driver.drv);
-+}
-+
-+module_init(dc_pad_init);
-+module_exit(dc_pad_exit);
+    scsi0 : sata_nv
+    ata1: SATA max UDMA/133 cmd 0x34d0 ctl 0x34c4 bmdma 0x3490 irq 19
+    ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+    ...
+    Root-NFS: No NFS server available, giving up.
+    VFS: Unable to mount root fs via NFS, trying floppy.
+    VFS: Insert root floppy and press ENTER
 
+This is linux-2.6 + sched-latest with or without my patches installed
+and different configurations including the simplest nosmp.  The root
+FS is ok as I can boot an older kernel fine.  I've checked to insure
+the file system is configured (ext2 in this case).  [Obviously the sata
+driver is config'd.]
 
+Any ideas?
 
+Thanks,
+Mike
