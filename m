@@ -1,258 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYDUWKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYDUWMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbYDUWKD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 18:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYDUWJv
+	id S1756876AbYDUWMv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 18:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYDUWMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 18:09:51 -0400
-Received: from mga14.intel.com ([143.182.124.37]:32474 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753485AbYDUWJt convert rfc822-to-8bit (ORCPT
+	Mon, 21 Apr 2008 18:12:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:38339 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbYDUWMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 18:09:49 -0400
-X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Apr 2008 18:09:49 EDT
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,691,1199692800"; 
-   d="scan'208";a="235664744"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 21 Apr 2008 18:12:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QBYq3/vnnc7wD16bvWU4z5VaxnjfwkKt2+A/d0w49A8gApq4E5HQ7C4xwc5V9DtzL6Y1Bs3OvFLJpLRWUv4+0MKvORLTPAxoe/0VVRBzcioW3AEDJg56kedrB5+BiPEmNTtx/1ft0X3pLP00J4flTSN+Sm+RJC7CrsvWFazzuEk=
+Message-ID: <a44ae5cd0804211512x29c449c2v9151e6377037c859@mail.gmail.com>
+Date: Mon, 21 Apr 2008 18:12:39 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Frederik Deweerdt" <deweerdt@free.fr>
+Subject: Re: 2.6.25-mm1 -- WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Greg KH" <gregkh@suse.de>,
+       "Kay Sievers" <kay.sievers@vrfy.org>
+In-Reply-To: <a44ae5cd0804211501s7c269239qfee76726e3627d6b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH, RFC] Create 'slot' sysfsattributein/sys/devices/system/cpu/cpuN/topology/
-Date: Mon, 21 Apr 2008 15:00:02 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080421052450.GA24055@ldl.fc.hp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH, RFC] Create 'slot' sysfsattributein/sys/devices/system/cpu/cpuN/topology/
-Thread-Index: AcijcAhihNkPnAwGQG6tGpM9n5pMagAiayVQ
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com> <20080421052450.GA24055@ldl.fc.hp.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Alex Chiang" <achiang@hp.com>, <lenb@kernel.org>,
-       <linux-ia64@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Apr 2008 22:00:04.0490 (UTC) FILETIME=[0DDF0EA0:01C8A3FB]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <a44ae5cd0804181124s772fa61bp22035c2b758471b1@mail.gmail.com>
+	 <a44ae5cd0804211156n40e2a71cw25c3114db2f58d17@mail.gmail.com>
+	 <20080421210146.GK7134@slug>
+	 <a44ae5cd0804211501s7c269239qfee76726e3627d6b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3LMCuEB010412
 
-> I noticed that this patch wasn't in the git tree you sent to
-> Linus for 2.6.26. I don't remember seeing a NACK though -- is
-> there something that I could rework to make it more acceptable?
-
-I'm mostly ok with this version of the patch.  I didn't see any
-comments from the linux-kernel crowd on the whether they are fond
-of the new API ("slot" file in cpu/cpuN/topology/) and hate to make
-the presumption that because they are silent that they agree.
-
-The "mostly ok" part would transform to "fully ok" if there were a way
-to make sure the "slot" files only appeared on systems where they are
-meaningful (i.e. have a value other then -1 in them).  If there is
-an easy way to make this happen, then it would make me happier (less
-clutter in /sys) and perhaps others too (since this API is only useful
-on large systems where "slot" is meaningful, and there is generally
-some bias from the community at large about adding interfaces that
-aren't needed for normal desktop/laptop systems).
-
--Tony
-
-Patch follows to save people digging in the archives to see what we
-are talking about.
-
-
-> Subject: [PATCH] Create 'slot' sysfs attribute in /sys/devices/system/cpu/cpuN/topology/
-> From: Alex Chiang <achiang@hp.com>
-> 
-> /sys/devices/system/cpu/cpuN/topology/physical_package_id exists,
-> but may contain incorrect information, especially on older ia64
-> platforms that do not have modern firmware.
-> 
-> Create a 'slot' attribute and define an interface that may be
-> populated via alternate sources, without breaking existing
-> functionality.
-> 
-> Implement this interface on ia64 by invoking the _SUN method on a
-> per cpu basis.
-> 
-> Leave other archs alone for now.
-> 
-> v2 -> v3:
-> 	- Stop stomping on existing PBLK in the event of _SUN failure
-> 
-> v1 -> v2:
-> 	- Check for _SUN object on CPU before blindly attempting
-> 	  to call it
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  arch/ia64/kernel/setup.c      |    1 +
->  arch/ia64/kernel/topology.c   |    6 ++++++
->  drivers/acpi/processor_core.c |    8 ++++++++
->  drivers/base/topology.c       |    9 +++++++++
->  include/asm-ia64/cpu.h        |    1 +
->  include/asm-ia64/processor.h  |    7 ++++++-
->  include/asm-ia64/topology.h   |    3 +++
->  include/asm-x86/topology.h    |    2 ++
->  8 files changed, 36 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-> index 4aa9eae..228d960 100644
-> --- a/arch/ia64/kernel/setup.c
-> +++ b/arch/ia64/kernel/setup.c
-> @@ -735,6 +735,7 @@ identify_cpu (struct cpuinfo_ia64 *c)
->  	 */
->  	c->threads_per_core = c->cores_per_socket = c->num_log = 1;
->  	c->socket_id = -1;
-> +	c->slot = -1;
->  
->  	identify_siblings(c);
->  
-> diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
-> index a2484fc..512de14 100644
-> --- a/arch/ia64/kernel/topology.c
-> +++ b/arch/ia64/kernel/topology.c
-> @@ -27,6 +27,12 @@
->  
->  static struct ia64_cpu *sysfs_cpus;
->  
-> +void ia64_set_topology_slot(int num, u32 slot)
-> +{
-> +	cpu_data(num)->slot = slot;
-> +}
-> +EXPORT_SYMBOL_GPL(ia64_set_topology_slot);
-> +
->  int arch_register_cpu(int num)
->  {
->  #if defined (CONFIG_ACPI) && defined (CONFIG_HOTPLUG_CPU)
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 36a68fa..a3a740d 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -612,6 +612,14 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  		request_region(pr->throttling.address, 6, "ACPI CPU throttle");
->  	}
->  
-> +	/*
-> +	 * If ACPI describes a slot number for this CPU, let's fill it in
-> +	 */
-> +	status = acpi_evaluate_object(pr->handle, "_SUN", NULL, &buffer);
-> +	if (ACPI_FAILURE(status))
-> +		object.integer.value = -1;
-> +	arch_set_topology_slot(pr->id, object.integer.value);
-> +
->  	return 0;
->  }
->  
-> diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-> index e1d3ad4..4fcffca 100644
-> --- a/drivers/base/topology.c
-> +++ b/drivers/base/topology.c
-> @@ -57,6 +57,14 @@ define_one_ro(physical_package_id);
->  #define ref_physical_package_id_attr
->  #endif
->  
-> +#ifdef	topology_slot
-> +define_id_show_func(slot);
-> +define_one_ro(slot);
-> +#define ref_slot_attr			&attr_slot.attr,
-> +#else
-> +#define ref_slot_attr
-> +#endif
-> +
->  #ifdef topology_core_id
->  define_id_show_func(core_id);
->  define_one_ro(core_id);
-> @@ -83,6 +91,7 @@ define_one_ro(core_siblings);
->  
->  static struct attribute *default_attrs[] = {
->  	ref_physical_package_id_attr
-> +	ref_slot_attr
->  	ref_core_id_attr
->  	ref_thread_siblings_attr
->  	ref_core_siblings_attr
-> diff --git a/include/asm-ia64/cpu.h b/include/asm-ia64/cpu.h
-> index e87fa32..393e545 100644
-> --- a/include/asm-ia64/cpu.h
-> +++ b/include/asm-ia64/cpu.h
-> @@ -14,6 +14,7 @@ DECLARE_PER_CPU(struct ia64_cpu, cpu_devices);
->  
->  DECLARE_PER_CPU(int, cpu_state);
->  
-> +extern void arch_set_topology_slot(int num, u32 slot);
->  extern int arch_register_cpu(int num);
->  #ifdef CONFIG_HOTPLUG_CPU
->  extern void arch_unregister_cpu(int);
-> diff --git a/include/asm-ia64/processor.h b/include/asm-ia64/processor.h
-> index 741f7ec..066553c 100644
-> --- a/include/asm-ia64/processor.h
-> +++ b/include/asm-ia64/processor.h
-> @@ -125,6 +125,10 @@ struct ia64_psr {
->   */
->  struct cpuinfo_ia64 {
->  	__u32 softirq_pending;
-> +
-> +#ifdef CONFIG_SMP
-> +	int cpu;
-> +#endif
->  	__u64 itm_delta;	/* # of clock cycles between clock ticks */
->  	__u64 itm_next;		/* interval timer mask value to use for next clock tick */
->  	__u64 nsec_per_cyc;	/* (1000000000<<IA64_NSEC_PER_CYC_SHIFT)/itc_freq */
-> @@ -140,7 +144,6 @@ struct cpuinfo_ia64 {
->  
->  #ifdef CONFIG_SMP
->  	__u64 loops_per_jiffy;
-> -	int cpu;
->  	__u32 socket_id;	/* physical processor socket id */
->  	__u16 core_id;		/* core id */
->  	__u16 thread_id;	/* thread id */
-> @@ -150,6 +153,8 @@ struct cpuinfo_ia64 {
->  	__u8  threads_per_core;	/* Threads per core */
->  #endif
->  
-> +	__u32 slot;		/* physical slot; can differ from socket_id */
-> +
->  	/* CPUID-derived information: */
->  	__u64 ppn;
->  	__u64 features;
-> diff --git a/include/asm-ia64/topology.h b/include/asm-ia64/topology.h
-> index 2d67b72..f986693 100644
-> --- a/include/asm-ia64/topology.h
-> +++ b/include/asm-ia64/topology.h
-> @@ -110,12 +110,15 @@ void build_cpu_to_node_map(void);
->  
->  #ifdef CONFIG_SMP
->  #define topology_physical_package_id(cpu)	(cpu_data(cpu)->socket_id)
-> +#define topology_slot(cpu)			(cpu_data(cpu)->slot)
->  #define topology_core_id(cpu)			(cpu_data(cpu)->core_id)
->  #define topology_core_siblings(cpu)		(cpu_core_map[cpu])
->  #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
->  #define smt_capable() 				(smp_num_siblings > 1)
->  #endif
->  
-> +#define arch_set_topology_slot(num, slot)	ia64_set_topology_slot(num,slot)
-> +
->  #include <asm-generic/topology.h>
->  
->  #endif /* _ASM_IA64_TOPOLOGY_H */
-> diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
-> index 8af05a9..d4c922c 100644
-> --- a/include/asm-x86/topology.h
-> +++ b/include/asm-x86/topology.h
-> @@ -180,6 +180,8 @@ extern cpumask_t cpu_coregroup_map(int cpu);
->  #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
->  #endif
->  
-> +#define arch_set_topology_slot(num, slot)
-> +
->  #ifdef CONFIG_SMP
->  #define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
->  #define smt_capable()			(smp_num_siblings > 1)
-> -- 
-> 1.5.3.1.g1e61
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+On Mon, Apr 21, 2008 at 6:01 PM, Miles Lane <miles.lane@gmail.com> wrote:>> On Mon, Apr 21, 2008 at 5:01 PM, Frederik Deweerdt <deweerdt@free.fr> wrote:>  > On Mon, Apr 21, 2008 at 02:56:52PM -0400, Miles Lane wrote:>  >  > Is anyone interesting in following up on this?>  >  >>  >  Doesn't this>  >  http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-04/msg06990.html>  >  fixes it?>>  That patch seems to have some problems:>  http://groups.google.com/group/linux.kernel/browse_thread/thread/a9cfeae4ce67ee8e/2118788c3c81b2f3?#2118788c3c81b2f3>  Should I apply this instead or as well?>>  From: Kay Sievers <kay.siev...@vrfy.org>>  Subject: sysfs: fix duplicated device number registration in /sys/dev/>>  If the parent device has the same dev_t, we skip the registration>  for the device number at /sys/dev.>>  Cc: Dan Williams <dan.j.willi...@intel.com>>  Cc: Greg KH <g...@kroah.com>>  ï»¿Cc: Andrew Morton <a...@linux-foundation.org>>  Signed-off-by: Kay Sievers <kay.siev...@vrfy.org>>  --->>   core.c |   17 +++++++++++------>   1 file changed, 11 insertions(+), 6 deletions(-)>>  diff --git a/drivers/base/core.c b/drivers/base/core.c>  index de925f8..afedadb 100644>  --- a/drivers/base/core.c>  +++ b/drivers/base/core.c>  @@ -821,10 +821,13 @@ int device_add(struct device *dev)>                 if (error)>                         goto ueventattrError;>>  -               format_dev_t(devt_str, dev->devt);>  -               error = sysfs_create_link(kobj, &dev->kobj, devt_str);>  -               if (error)>  -                       goto devtattrError;>  +               /* do not create /sys/dev/ entry if parent already did */>  +               if (!(dev->parent && dev->parent->devt == dev->devt)) {>  +                       format_dev_t(devt_str, dev->devt);>  +                       error = sysfs_create_link(kobj, &dev->kobj, devt_str);>  +                       if (error)>  +                               goto devtattrError;>  +               }>         }>>         error = device_add_class_symlinks(dev);>  @@ -950,8 +953,10 @@ void device_del(struct device *dev)>         if (parent)>                 klist_del(&dev->knode_parent);>         if (MAJOR(dev->devt)) {>  -               format_dev_t(devt_str, dev->devt);>  -               sysfs_remove_link(device_to_dev_kobj(dev), devt_str);>  +               if (!(parent && parent->devt == dev->devt)) {>  +                       format_dev_t(devt_str, dev->devt);>  +                       sysfs_remove_link(device_to_dev_kobj(dev), devt_str);>  +               }>                 device_remove_file(dev, &devt_attr);>         }>         if (dev->class) {>>  --
+Applying this patch worked for me.
+Thanks!      Milesÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
