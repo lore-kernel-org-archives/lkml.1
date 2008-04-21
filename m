@@ -1,52 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762806AbYDURFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbYDURFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762806AbYDURFT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYDURFG
+	id S1761902AbYDURFw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759781AbYDURFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:05:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54281 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754809AbYDURFG (ORCPT
+	Mon, 21 Apr 2008 13:05:41 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54971 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755182AbYDURFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:05:06 -0400
-Message-ID: <480CC78D.3000202@zytor.com>
-Date: Mon, 21 Apr 2008 12:57:49 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Andres Salomon <dilinger@queued.net>, Mitch Bradley <wmb@firmworks.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+	Mon, 21 Apr 2008 13:05:38 -0400
+Date: Mon, 21 Apr 2008 10:05:26 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	 <20080419031024.GC3503@nineveh.local>	 <20080418202925.b18452c5.akpm@linux-foundation.org>	 <20080419092544.378664a8@ephemeral> <20080419133909.5aa6b63e@ephemeral>	 <86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	 <480C0582.9010509@firmworks.com>	 <86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>	 <480C1286.3040307@firmworks.com>  <20080421102417.6de71391@ephemeral> <1208793253.9212.507.camel@pmac.infradead.org>
-In-Reply-To: <1208793253.9212.507.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Message-ID: <20080421170526.GC9153@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com> <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
+On Mon, Apr 21, 2008 at 08:49:58AM -0700, Linus Torvalds wrote:
 > 
->> However, until we clean up the promfs stuff, there's no chance of getting
->> an OFW device tree upstream.
 > 
-> I see no reason why we shouldn't be able to create a 'flattened'
-> device-tree during early boot, like the PowerPC kernel does. And use it
-> thereafter, having quiesced OpenFirmware. Haven't we already been
-> working on unifying this between SPARC and PowerPC kernels?
+> On Sun, 20 Apr 2008, Paul E. McKenney wrote:
+> > > 
+> > > But I do concede that your version looks clearer, and has the
+> > > benefit that should prefetch ever be optimised out with no side-
+> > > effects, yours would still be correct while the current one will
+> > > lose the barrier completely.
+> > 
+> > Agreed as well -- compilers would also be within their right to bypass
+> > the rcu_dereference() around the test/prefetch, which would allow
+> > them to refetch.
 > 
-> I definitely don't think we need to play these tricks to keep
-> OpenFirmware resident while the kernel is running. Take a look at your
-> second patch -- it's _all_ just lookups in the device-tree, and you're
-> inventing a new way to do it instead of using the existing one.
+> That is *not* the main problem.
 > 
+> If you use "rcu_dereference()" on the wrong access, it not only loses the 
+> "smp_read_barrier_depends()" (which is a no-op on all sane architectures 
+> anyway), but it loses the ACCESS_ONCE() thing *entirely*.
 
-If so, would this apply to OLPC as well?
+Yep, "compilers would also be within their right to bypass the
+rcu_dereference()", which as you say, has the ACCESS_ONCE().
 
-	-hpa
+> Accessign a local automatic variable through a volatile pointer has 
+> absolutely no effect - it's a total no-op apart from possibly generating 
+> slightly worse code (although if I were a compiler, I'd just ignore it), 
+> since the compiler is totally free to spill and reload the local variable 
+> to its memory location - the stack - anyway!
+
+Agreed.  The only reasons I can think of for doing rcu_dereference()
+on a local variable are as follows:
+
+1.	The local variable is passed into a called function that is
+	also invoked on shared storage.  In this case, the use of
+	rcu_dereference() on a local variable is the cost of common
+	code.
+
+2.	The address of the local variable is published globally
+	so that other CPUs can access it under RCU protection.	Yes,
+	this is generally insane -- the last time I did this sort of
+	thing was in the early 1980s on a PDP-11, where it was necessary
+	due to that machine's 64K address space.  (No, I didn't use
+	RCU on this UP machine, but I did publish locals -- malloc()
+	choked badly in this case.)
+
+> So the important part (for sane architectures) of rcu_dereference() is 
+> that ACCESS_ONCE() hack, and it _only_ works if you actually do it on the 
+> value as it gets loaded from the RCU-protected data structure, not later.
+> 
+> So forget about the prefetch, and forget about the barrier. They had 
+> nothing to do with the bug. The bug existed even without the prefetch, 
+> even in the versions that didn't have it at all. For example, look at the 
+> "__list_for_each_rcu()" thing - the bug is there too, because it did just
+> 
+> 	pos = (head)->next ... pos = pos->next
+> 
+> where both of those assignments to pos were done without rcu_derefence, so 
+> the compiler could happily decide to use the value once, forget it, and 
+> then re-load it later (when it might have changed).
+> 
+> In other words, the thing I objected to was something much more 
+> fundamental than any barriers. It was the fact that "rcu_dereference()" 
+> simply *fundamentally* doesn't make sense when done on a local variable, 
+> it can only make sense when actually loading the value from the data 
+> structure.
+> 
+> In short:
+> 
+> 	pos = ..
+> 
+> 	rcu_dereference(pos)
+> 
+> is crazy and senseless, but
+> 
+> 	pos = rcu_dereference(pos->next)
+> 
+> actually has some logical meaning.
+
+Agreed.
+
+> Now, all this said, I seriously doubt this was the source of the bug 
+> itself. I do not actually really believe that the compiler had much room 
+> for reloading things with or without any rcu_dereference(), and I doubt 
+> the code generation really changes all that much in practice.
+
+Agreed -- you would have to have an uncommonly aggressive compiler to get
+this to happen.  Seems like it would be worth trying the patch, though.
+
+I did take a quick look for improperly freeing dentries -- unhashed
+dentries are freed directly, so if there is a code path that somehow
+unhashes dentries and then d_free()s them without a grace period, we
+have a problem.
+
+Hmmmm...  This could happen if someone called the final dput() on
+a dentry that was hashed.  If this can really happen, the crude and
+untested patch below might help.
+
+> (In fact, from a quick look, it seems that the only thing that 
+> the incorrect use of "rcu_derference()" did was to force the "node" 
+> variable onto the stack, since it did that volatime memory access through 
+> its pointer - and fixing the use of rcu_dereference() just means that 
+> "node" is kept in a register over the whole loop on x86-64, but the 
+> compiler still needs a stack slot, it just picks "str" instead. Which is a 
+> much better choice anyway.
+> 
+> So what the incorrect use of rcu_dereference() really resulted in was just 
+> this insane code (which is also seen in the BUG code):
+> 
+>   14:   48 8b 45 d0             mov    -0x30(%rbp),%rax
+>   18:   48 8b 00                mov    (%rax),%rax
+>   1b:   48 89 45 d0             mov    %rax,-0x30(%rbp)
+>   1f:   48 8b 45 d0             mov    -0x30(%rbp),%rax
+>   23:   48 85 c0                test   %rax,%rax
+>   26:   74 18                   je     0x40
+> 
+> and notice how insane that is, and how pointless?
+
+Yep.  Ugly as sin.
+
+> First it loads %rax (node) from the ->next pointer of the previous value 
+> of 'node' (which is a stack variable at -48(rbp)):
+> 
+> 	# node = node->next
+> 	mov    -0x30(%rbp),%rax
+> 	mov    (%rax),%rax
+> 
+> then it saves that to the stack and immediately reloads it (because of the 
+> volatile access on "pos" in "rcu_dereference(pos)"):
+> 
+> 	# rcu_dereference(node)
+> 	mov    %rax,-0x30(%rbp)
+> 	mov    -0x30(%rbp),%rax
+> 
+> and then it tests it for being NULL:
+> 
+> 	test   %rax,%rax
+> 	je     0x40
+> 
+> and notice how the only thing that rcu_dereference() did was a totally 
+> unnecessary store and load to the stack? But also notice how gcc could 
+> have done the accesses to "node" *before* this entry as multiple loads 
+> from the original because there was nothing really holding this back.
+> 
+> (But also notice how there really isn't much room for that in practice, 
+> since the code that actually uses "node->next" isn't going to do a whole 
+> lot of exciting stuff with it).
+> 
+> With the corrected version, the insane "store and immediately reload from 
+> stack" goes away" and diffstat on the assembly language actually shows 
+> that there are two less instructions (most of the changes are just 
+> compiler labels moving around, but there are a few real changes that 
+> actually makes the assembler code look a bit more natural too).
+> 
+> So to recap: I don't think this mattered in practice. But the code was 
+> buggy in theory, even though in practice I don't think it would ever 
+> generate any reloads on that "next" variable simply because nothing else 
+> than the loop logic really used it.
+
+Rafael, does the following (crude, untested, probably does not even
+compile) patch help?
+
+						Thanx, Paul
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ dcache.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.25/fs/dcache.c linux-2.6.25-d_free/fs/dcache.c
+--- linux-2.6.25/fs/dcache.c	2008-04-16 19:49:44.000000000 -0700
++++ linux-2.6.25-d_free/fs/dcache.c	2008-04-21 09:57:53.000000000 -0700
+@@ -88,11 +88,7 @@ static void d_free(struct dentry *dentry
+ {
+ 	if (dentry->d_op && dentry->d_op->d_release)
+ 		dentry->d_op->d_release(dentry);
+-	/* if dentry was never inserted into hash, immediate free is OK */
+-	if (hlist_unhashed(&dentry->d_hash))
+-		__d_free(dentry);
+-	else
+-		call_rcu(&dentry->d_u.d_rcu, d_callback);
++	call_rcu(&dentry->d_u.d_rcu, d_callback);
+ }
+ 
+ static void dentry_lru_remove(struct dentry *dentry)
