@@ -1,53 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbYDULID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYDULIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbYDULID (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 07:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYDULHx
+	id S1757251AbYDULIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 07:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbYDULID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 07:07:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:37993 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754164AbYDULHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 07:07:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m4YCZAe61kIe7KpguO77J8Tt0Z36hyFhFwwtG8ZyET3TDu2wcicjziE1wgw8AyNfkp9NZG04BccnT14+J/EKMiiNy51ulvnK189QQSOc2gjo1KdUJwYaOLlpUf3p0hRWoENFuFuvEFRc11aZ1H0miebeuqjY4eT6zRk7N20WM+Q=
-Message-ID: <e2e108260804210407j7262c814y7bc67f5387822273@mail.gmail.com>
-Date: Mon, 21 Apr 2008 13:07:51 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Matthias Andersson" <matthias.andersson@gmail.com>
-Subject: Re: Kernel panic
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9a5eeacd0804210356t2b84bb40t7a266467c3699bd9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 07:08:03 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35018 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755583AbYDULIA (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 07:08:00 -0400
+Date: Mon, 21 Apr 2008 21:07:48 +1000
+From: David Chinner <dgc@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       xfs-oss <xfs@oss.sgi.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: OOM killer doesn't kill the right task....
+Message-ID: <20080421110748.GN108924158@sgi.com>
+References: <20080421070123.GM108924158@sgi.com> <20080421172255.C45A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9a5eeacd0804210350v79db27f0of73a29c55e2b7311@mail.gmail.com>
-	 <9a5eeacd0804210356t2b84bb40t7a266467c3699bd9@mail.gmail.com>
+In-Reply-To: <20080421172255.C45A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 12:56 PM, Matthias Andersson
-<matthias.andersson@gmail.com> wrote:
->  I upgraded to Ubuntu 8.04 (Hardy Heron) four days ago and with it the
->  2.6.24-16 kernel.
->  The kernel worked fine until yesterday when I booted up the machine I
->  was greeted by the following error message:
->
->   /init: ./34: Can't open /scripts/functions
->  [   20.587228] kernel panic - not syncing: attempted to kill init!
->
->  What could have caused this failiure?
->  There were some upgrades installed before the final shutdown of the
->  system (prior to the kernel panic) but nothing system-critical.
+On Mon, Apr 21, 2008 at 05:24:04PM +0900, KOSAKI Motohiro wrote:
+> Hi David
+> 
+> > Running in a 512MB UML system without swap, XFSQA test 084 reliably
+> > kills the kernel completely as the OOM killer is unable to find a
+> > task to kill. log output is below.
+> > 
+> > I don't know when it started failing - ISTR this working just fine
+> > on 2.6.24 kernels.
+> 
+> Can you reproduce it on non UML box?
 
-Hello Matthias,
+Not exactly. On a 64k page size ia64 box it kills my ssh session and all
+it's children which includes the errant process (log below).
 
-This is an Ubuntu 8.04 issue, not a kernel issue. Please post this
-issue in an Ubuntu forum.
+It doesn't kill the machine, but if I cared enough I'd argue that
+even that is killing the wrong process because it's pretty damn
+clear that the only process on the box using more than a couple of
+MB of memory is the resvtest program....
 
-Bart.
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
+
+resvtest invoked oom-killer: gfp_mask=0x1280d2, order=0, oomkilladj=0
+
+Call Trace:
+ [<a0000001000125e0>] show_stack+0x40/0xa0
+                                sp=e000003022f0fb20 bsp=e000003022f01168
+ [<a000000100012670>] dump_stack+0x30/0x60
+                                sp=e000003022f0fcf0 bsp=e000003022f01150
+ [<a000000100104060>] oom_kill_process+0x80/0x3a0
+                                sp=e000003022f0fcf0 bsp=e000003022f010f8
+ [<a000000100104ce0>] out_of_memory+0x4e0/0x660
+                                sp=e000003022f0fd00 bsp=e000003022f010b0
+ [<a00000010010bf00>] __alloc_pages+0x500/0x620
+                                sp=e000003022f0fd90 bsp=e000003022f01040
+ [<a000000100145020>] alloc_page_vma+0x1c0/0x200
+                                sp=e000003022f0fda0 bsp=e000003022f01008
+ [<a000000100122d00>] handle_mm_fault+0x3a0/0xe60
+                                sp=e000003022f0fda0 bsp=e000003022f00f88
+ [<a00000010085b700>] ia64_do_page_fault+0x2a0/0xaa0
+                                sp=e000003022f0fda0 bsp=e000003022f00f30
+ [<a000000100009e20>] ia64_leave_kernel+0x0/0x270
+                                sp=e000003022f0fe30 bsp=e000003022f00f30
+Mem-info:
+Node 0 Normal per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+CPU    2: hi:    0, btch:   1 usd:   0
+CPU    3: hi:    0, btch:   1 usd:   0
+Active:5044 inactive:64 dirty:0 writeback:0 unstable:0
+ free:34 slab:1110 mapped:6 pagetables:104 bounce:0
+Node 0 Normal free:2176kB min:2880kB low:3584kB high:4288kB active:322816kB inactive:4096kB present:523776kB pages_scanned:32980 all_unreclaimable? yes
+lowmem_reserve[]: 0 0
+Node 0 Normal: 2*64kB 2*128kB 0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB 0*65536kB 0*131072kB 0*262144kB 0*524288kB 0*1048576kB 0*2097152kB 0*4194304kB = 2432kB
+76 total pagecache pages
+Swap cache: add 0, delete 0, find 0/0
+Free swap  = 0kB
+Total swap = 0kB
+Free swap:            0kB
+Node memory in pages:
+Node    0:  RAM:        8192, rsvd:     1327, shrd:        129, swpd:          0
+Node    1:  RAM:           0, rsvd:        0, shrd:          0, swpd:          0
+8192 pages of RAM
+1327 reserved pages
+129 pages shared
+0 pages swap cached
+Total of 45 pages in page table cache
+8117 free buffer pages
+Out of memory: kill process 2908 (sshd) score 379 or a child
+Killed process 2909 (bash)
+
