@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYDUKfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYDUKgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbYDUKfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbYDUKaX
+	id S1758851AbYDUKgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 06:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbYDUKa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:30:23 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:37887
+	Mon, 21 Apr 2008 06:30:26 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:37888
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755987AbYDUKaI (ORCPT
+	with ESMTP id S1756161AbYDUKaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:30:08 -0400
+	Mon, 21 Apr 2008 06:30:09 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 21/31] KVM: ppc: Add DCR access information to struct kvm_run
-Date: Mon, 21 Apr 2008 13:29:47 +0300
-Message-Id: <1208773797-7829-22-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 25/31] KVM: export kvm_lapic_set_tpr() to modules
+Date: Mon, 21 Apr 2008 13:29:51 +0300
+Message-Id: <1208773797-7829-26-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.5
 In-Reply-To: <1208773797-7829-1-git-send-email-avi@qumranet.com>
 References: <1208773797-7829-1-git-send-email-avi@qumranet.com>
@@ -23,45 +23,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Device Control Registers are essentially another address space found on PowerPC
-4xx processors, analogous to PIO on x86. DCRs are always 32 bits, and can be
-identified by a 32-bit number. We forward most DCR accesses to userspace for
-emulation (with the exception of CPR0 registers, which can be read directly
-for simplicity in timebase frequency determination).
+This patch exports the kvm_lapic_set_tpr() function from the lapic code to
+modules. It is required in the kvm-amd module to optimize CR8 intercepts.
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/kvm.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/x86/kvm/lapic.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index f8e211d..a281afe 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -82,6 +82,7 @@ struct kvm_irqchip {
- #define KVM_EXIT_TPR_ACCESS       12
- #define KVM_EXIT_S390_SIEIC       13
- #define KVM_EXIT_S390_RESET       14
-+#define KVM_EXIT_DCR              15
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 2ccf994..57ac4e4 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -822,6 +822,7 @@ void kvm_lapic_set_tpr(struct kvm_vcpu *vcpu, unsigned long cr8)
+ 	apic_set_tpr(apic, ((cr8 & 0x0f) << 4)
+ 		     | (apic_get_reg(apic, APIC_TASKPRI) & 4));
+ }
++EXPORT_SYMBOL_GPL(kvm_lapic_set_tpr);
  
- /* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
- struct kvm_run {
-@@ -161,6 +162,12 @@ struct kvm_run {
- #define KVM_S390_RESET_CPU_INIT  8
- #define KVM_S390_RESET_IPL       16
- 		__u64 s390_reset_flags;
-+		/* KVM_EXIT_DCR */
-+		struct {
-+			__u32 dcrn;
-+			__u32 data;
-+			__u8  is_write;
-+		} dcr;
- 		/* Fix the size of the union. */
- 		char padding[256];
- 	};
+ u64 kvm_lapic_get_cr8(struct kvm_vcpu *vcpu)
+ {
 -- 
 1.5.5
 
