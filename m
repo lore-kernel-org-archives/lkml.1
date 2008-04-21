@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbYDUTqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbYDUTts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761683AbYDUTqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYDUTqK
+	id S1760017AbYDUTts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYDUTti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:46:10 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:52332 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754233AbYDUTqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:46:09 -0400
-Message-ID: <480CEEED.2040705@aknet.ru>
-Date: Mon, 21 Apr 2008 23:45:49 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 21 Apr 2008 15:49:38 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:20852 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753076AbYDUTti (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:49:38 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
+Subject: Re: ISDN testing
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080420223959.GA17998@havoc.gtf.org>
+	<200804210205.38891.elendil@planet.nl> <480BF15D.2090100@garzik.org>
+	<200804211536.57655.elendil@planet.nl> <480CE960.4050000@garzik.org>
+Date: Mon, 21 Apr 2008 21:48:24 +0200
+In-Reply-To: <480CE960.4050000@garzik.org> (Jeff Garzik's message of "Mon, 21 Apr 2008 15:22:08 -0400")
+Message-ID: <878wz76lbr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Joseph Fannin <jfannin@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org> <s5hwsmrcvow.wl%tiwai@suse.de>
-In-Reply-To: <s5hwsmrcvow.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Apr 2008 19:41:35.0387 (UTC) FILETIME=[B5428EB0:01C8A3E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Jeff Garzik <jeff@garzik.org> writes:
+>
+> Yeah, that's what my patchset does -- splits the "hisax" driver into
+> multiple smaller drivers.  Thus, "modprobe hisax" produces the results
+> that you are seeing.
 
-On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
->>>>
->>>>> On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
->>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
->>>>> I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
->>>>> least, since that's the earliest -mm I've built in a while.  I don't
->>>>> get the same in mainline.
+That will break a lot of user's setup.
 
-As a quick workaround, say N to INPUT_PCSPKR:
-  │ Prompt: PC Speaker support
-  │   Location:
-  │     -> Device Drivers
-  │       -> Input device support
-  │         -> Generic input layer (needed for keyboard, mouse, ...)
-(INPUT │
-  │           -> Miscellaneous devices (INPUT_MISC [=y])
+> You'll need to determine which newly-created kernel module applies to
+> your hardware.  Let me know if you need help with that.  The new
+> drivers should be in
+> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/ provided that you
+> enabled them in the kernel configuration.
+
+One way to avoid that issue would be to continue having a dummy
+"hisax" module that just depends on all the other drivers with 
+a symbol reference.
+ 
+That could be optional with some compat CONFIG.
+
+-Andi
