@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbYDUNgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYDUNhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760772AbYDUNgo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933588AbYDUNeS
+	id S1761968AbYDUNhL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760279AbYDUNej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:34:18 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:64105 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761604AbYDUNeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:34:15 -0400
-Subject: Re: [PATCH 22/37] Input: add PS/2 serio driver for AVR32 devices
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Hans-Christian Egtvedt <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-In-Reply-To: <9f9439e92a7fb057d31a19636b99e43306192756.1208783694.git.dmitry.torokhov@gmail.com>
-References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-	 <9f9439e92a7fb057d31a19636b99e43306192756.1208783694.git.dmitry.torokhov@gmail.com>
-Content-Type: multipart/mixed; boundary="=-V86+Swls0hF2VHdwNq8T"
-Date: Mon, 21 Apr 2008 15:33:58 +0200
-Message-Id: <1208784838.30244.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Mon, 21 Apr 2008 09:34:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34432 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932348AbYDUNee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 09:34:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Date: Mon, 21 Apr 2008 15:35:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <20080421131741.GI9554@elte.hu>
+In-Reply-To: <20080421131741.GI9554@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804211535.21694.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-V86+Swls0hF2VHdwNq8T
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Tue, 2008-04-15 at 01:30 -0400, Hans-Christian Egtvedt wrote:
-> Add support for the PSIF peripheral on AVR32 AP7 devices.  It is implemented
-> as a serio driver and will behave like a serio 8042 device.
+On Monday, 21 of April 2008, Ingo Molnar wrote:
 > 
-> The driver has been tested with a Dell keyboard capable of running on 3.3
-> volts and a Logitech mouse on the STK1000 + STK1002 starter kit.  The Logitech
-> mouse was hacked by cutting the cord and using a bi-directional voltage
-> converter to get the required 5 volt I/O level.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> For more information about the PSIF module, see the datasheet for AT32AP700X at
-> http://www.atmel.com/dyn/products/datasheets.asp?family_id=682
+> > Hi,
+> > 
+> > I've just got the following traces from 2.6.25-git2 on HP nx6325 
+> > (64-bit). I think they are related to the hang I described yesterday:
 > 
-> Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
+> > [12844.112673]  [<ffffffff8029e236>] do_lookup+0x2c/0x1b2
+> > [12844.112683]  [<ffffffff802a04b4>] __link_path_walk+0x8e6/0xdbd
+> > [12844.112707]  [<ffffffffa004deb4>] ? :ext3:ext3_xattr_get_acl_default+0x18/0x1a
+> > [12844.112714]  [<ffffffff802b0869>] ? generic_getxattr+0x4e/0x5c
+> 
+> so you've got ext3. Nothing changed in the VFS or in ext3 in -git yet.
+> 
+> the instruction pattern:
+> 
+> Code: f6 43 04 10 75 06 f0 ff 03 48 89 d8 fe 43 08 eb 31 fe 43 08 48 8b 
+> 45 d0 48 8b 00 48 89 45 d0 48 8b 45 d0 48 85 c0 74 18 48 89 c2 <48> 8b 
+> 00 48 8d 5a e8 44 39 73 30 0f 18 08 75 d9 e9 6a ff ff ff
+>                            ========
+> 
+> shows that you've got "prefetchnta (%esi)" indirect:
+> 
+>    0f 18 00                prefetcht0 (%eax)
+> 
+> so the prefetch instructions are patched in, neither the compiler nor 
+> the CPU should ignore them.
 
-<snipp serio driver for AVR32>
+Well, I don't really know what that means ...
 
-> +MODULE_AUTHOR("Hans-Christian Egtvedt <hcegtvedt@atmel.com>");
+Besides, that's 64-bit code, but I guess that doesn't matter here.
 
-This address has been changed, please apply the attached patch.
-
-> +MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
-> +MODULE_LICENSE("GPL");
-
-PS! I think my old address even bounces a message, sorry about that :(
-
--- 
-With kind regards,
-Hans-Christian Egtvedt, Applications Engineer
-
---=-V86+Swls0hF2VHdwNq8T
-Content-Disposition: attachment; filename*0=0001-Change-MODULE_AUTHOR-in-at32psif-serio-driver-to-val.pat; filename*1=ch
-Content-Type: application/mbox; name=0001-Change-MODULE_AUTHOR-in-at32psif-serio-driver-to-val.patch
-Content-Transfer-Encoding: 7bit
-
->From 8a3056b55d3268a03b932830c79b242c5f264ced Mon Sep 17 00:00:00 2001
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Date: Mon, 21 Apr 2008 15:30:55 +0200
-Subject: [PATCH 1/1] Change MODULE_AUTHOR in at32psif serio driver to valid email address
-
-Signed-off-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
----
- drivers/input/serio/at32psif.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
-index e49747a..78acab7 100644
---- a/drivers/input/serio/at32psif.c
-+++ b/drivers/input/serio/at32psif.c
-@@ -302,6 +302,6 @@ static void __exit psif_exit(void)
- module_init(psif_init);
- module_exit(psif_exit);
- 
--MODULE_AUTHOR("Hans-Christian Egtvedt <hcegtvedt@atmel.com>");
-+MODULE_AUTHOR("Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>");
- MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
- MODULE_LICENSE("GPL");
--- 
-1.5.4.3
-
-
---=-V86+Swls0hF2VHdwNq8T--
-
+Thanks,
+Rafael
