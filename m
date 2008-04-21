@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbYDUTW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbYDUTcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbYDUTW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYDUTWP
+	id S1758165AbYDUTcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbYDUTcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:22:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36006 "EHLO mail.dvmed.net"
+	Mon, 21 Apr 2008 15:32:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56182 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757912AbYDUTWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:22:13 -0400
-Message-ID: <480CE960.4050000@garzik.org>
-Date: Mon, 21 Apr 2008 15:22:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1755681AbYDUTcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:32:09 -0400
+Date: Mon, 21 Apr 2008 21:31:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Patrick McHardy <kaber@trash.net>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on
+	latest -git
+Message-ID: <20080421193147.GA8770@elte.hu>
+References: <20080419100034.GA9475@elte.hu> <20080419.030337.244502148.davem@davemloft.net> <20080419103942.GA13599@elte.hu> <20080419.040945.13369499.davem@davemloft.net> <20080421082254.GA2522@elte.hu> <480C780C.2030402@trash.net>
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de
-Subject: Re: ISDN testing
-References: <20080420223959.GA17998@havoc.gtf.org> <200804210205.38891.elendil@planet.nl> <480BF15D.2090100@garzik.org> <200804211536.57655.elendil@planet.nl>
-In-Reply-To: <200804211536.57655.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480C780C.2030402@trash.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> On Monday 21 April 2008, Jeff Garzik wrote:
->> Frans Pop wrote:
->>> The cards I have are:
->>> - Teles 16.3 ISA -- worked way back when with Debian Woody
->>> - ITK ix1-micro 2.1 ISA
->>> - Eicon Diva 2.01 PCI
->> Honestly, a module-load test on real hardware can give us some useful
->> information, even if it's not connected to anything.
->>
->> My changes are primarily in the probe-the-hardware area, so successfully
->> making it past that new code would indeed be a useful data point.
->>
->> Check out the kernel found in 'isdn-pci' branch of
->> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
-> 
-> Turns out all 3 cards are supported by the same basic driver: hisax, so
-> I can only test for the one driver. The Eicon Diva uses an additional
-> module though: hisaxdiva.
-> 
-> I've put the last 2 cards in one machine and (after some fiddling with
-> jumpers and interrupts and IO ports :-) both are detected perfectly with
-> 2.6.24 when hisax is modprobed.
-> 
-> Advantage of using the two cards is that it covers both PCI and ISA.
-> The PCI card gets configured automagically, while the ISA card requires
-> module parameters for io/irq.
-> 
-> I've compiled a kernel based on your 'isdn-pci' branch, and it boots fine.
-> 
-> But when I tried to modprobe hisax, I got:
-> # modprobe hisax
-> FATAL: Module hisax not found.
-> 
-> Cause seems to be:
-> # depmod -a
-> WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisaxdiva.ko 
-> ignored, due to loop
-> WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/libhisax.ko 
-> ignored, due to loop
-> WARNING: Loop 
-> detected: /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko needs 
-> libhisax.ko which needs hisax.ko again!
-> WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko 
-> ignored, due to loop
 
-Yeah, that's what my patchset does -- splits the "hisax" driver into 
-multiple smaller drivers.  Thus, "modprobe hisax" produces the results 
-that you are seeing.
+* Patrick McHardy <kaber@trash.net> wrote:
 
-You'll need to determine which newly-created kernel module applies to 
-your hardware.  Let me know if you need help with that.  The new drivers 
-should be in /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/ 
-provided that you enabled them in the kernel configuration.
+>> for the last 3 days my own automated bug finding capacity is at 10% 
+>> of its normal throughput (it booted only 200 kernels, instead of 2000 
+>> kernels) - which is OK in early phases of the merge window, but you 
+>> seem to deny that i have any standing to argue development process 
+>> issues.
+>
+> In my perception networking is not doing worse than other subsystems, 
+> this (small) accumulation of build-bugs seems more like an unfortunate 
+> coincidence caused by two people being sloppy during testing (me and 
+> the LED guys).
 
-	Jeff
+nah, it's not doing worse at all and my comment was not really about the 
+bug itself (bugs happen), but about the most efficient way to report 
+that bug - which in hindsight is not an argument i should have gotten 
+into. arch/x86 has at least this proportion of build bugs if not more. 
+[and the scheduler is a 50 times smaller piece of code so it's not 
+really comparable.]
 
+btw., managed to test 755 random kernels today:
 
+  #define UTS_VERSION "#755 SMP PREEMPT Mon Apr 21 21:12:52 CEST 2008"
 
+with no runtime (or build) failure anywhere. [other than in freshly 
+added x86.git or scheduler patches that is.]
+
+	Ingo
