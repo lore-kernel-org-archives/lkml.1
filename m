@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYDUXVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYDUXXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbYDUXVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 19:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYDUXVg
+	id S1757710AbYDUXXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 19:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYDUXXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 19:21:36 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:25417 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYDUXVe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 19:21:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WboSPts8GmvV8h2jkF3AT9U3VUj1lv05W9x2ULudsG9gENCFTxD7UnUVlt0Y3GtnYBNPf7v0qVJnhV4mRu22muIZZwLh2k2SY+XUWmBlS6eYINmv360/2YookeXgWCbodBd6cEfREuZDlPAjAdcd2VAtazSENi0o/YwdCQEu0vc=
-Message-ID: <9a8748490804211621s7e19394bn6911d8d093fcb8dc@mail.gmail.com>
-Date: Tue, 22 Apr 2008 01:21:32 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Please pull the (new) Trivial tree
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Adrian Bunk" <bunk@stusta.de>, "Jesper Juhl" <jesper.juhl@gmail.com>
-In-Reply-To: <9a8748490804211615y25329beapf019d3c2907defe6@mail.gmail.com>
+	Mon, 21 Apr 2008 19:23:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57047 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbYDUXXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 19:23:11 -0400
+Date: Tue, 22 Apr 2008 01:23:08 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng 2.13.1.1 (security update)
+Message-ID: <20080421232308.GB3249@nb.net.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9a8748490804211615y25329beapf019d3c2907defe6@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/04/2008, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> Hi Linus,
->
->  Please pull git://git.kernel.org/pub/scm/linux/kernel/git/juhl/trivial.git
->  for-linus
->
->  This is the (new) trivial tree.
->
->  I took over Trivial maintainership from Adrian Bunk and this is my
->  very first pull request as maintainer, so please let me know if I've
->  done anything wrong.
->
->  I know you have better things to do than look through trivial patches
->  (that's my job now), but since this is the very first tree I've
->  created I would ask you to please take the time to look it over
->  carefully. I cloned your tip-of-tree and then applied all the patches
->  I had filtered out to a 'for-linus' branch. I plan to then merge those
->  patches back from you into my 'master' branch once you've pulled, then
->  ditch my 'for-linus' branch and create a new one with new patches once
->  the next merge window opens - if that's not the right way to go about
->  it, please let me know.
->
->  To the various other tree maintainers; if there are patches in this
->  tree that I should not have merged and then told Linus to pull, but
->  should instead have sent to you, please tell me so I can do a better
->  job next time. I want to develop a good working relationship with
->  other maintainers, but I'm new at this and don't know exactely what to
->  do, so I've tried my best and hope it's good enough - but if not, I
->  want to be told so I can learn and do better in the future.
->
->  I've tried to not add patches that were already merged elsewhere as
->  well as patches that didn't really qualify as trivial. I hope I
->  succeeded.
->
->  Any and all comments on the tree I created, the patches in it etc are
->  more than welcome.
->
 
-I guess one thing I should remember to do is include the git-shortlog
-of the changes I'm asking you to pull ;-)
+The stable util-linux-ng 2.13.1.1 release is available at
 
-Here it is :
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
 
-Benoit Boissinot (1):
-      ext*: spelling fix prefered -> preferred
 
-Cyril Brulebois (1):
-      Documentation: Remove last references to BitKeeper.
+(Note, 2.13.1.1 is a stable security release.)
 
-Jesper Juhl (1):
-      Correct a few trivial tree details in Documentation/SubmittingPatches
+Feedback and bug reports, as always, are welcomed.
 
-Johannes Weiner (1):
-      Remove unused MAX_NODES_SHIFT
 
-Nick Andrew (1):
-      RAID: remove trailing space from printk line
+	Karel
 
-Pavel Machek (2):
-      trivial: small cleanups
-      firmware_sample_driver.c: fix coding style
 
-Robert P. J. Day (5):
-      MAINTAINERS: Clarify access to OCFS2 development mailing list.
-      KEYS:  Fix the comment to match the file name in rxrpc-type.h.
-      DOCUMENTATION:  Use newer DEFINE_SPINLOCK macro in docs.
-      Generate a slightly more informative error msg for bad HZ
-      DOC:  A couple corrections and clarifications in USB doc.
+Util-linux-ng 2.13.1.1 Release Notes (22-Apr-2008)
+==================================================
 
-Rusty Russell (1):
-      Remove documentation of non-existent sk_alloc arg
+Fixed security issue:
+--------------------
 
-Sebastian Siewior (1):
-      DMA engine: typo fixes
+ - audit log injection attack. This bug allows attackers to write
+   arbitrary characters to an audit log via a crafted username.
 
-Tobias Klauser (8):
-      acpi: Storage class should be before const qualifier
-      ALSA: Storage class should be before const qualifier
-      arm: Storage class should be before const qualifier
-      DVB: Storage class should be before const qualifier
-      intel_menlow: Storage class should be before const qualifier
-      sonypi: Storage class should be before const qualifier
-      V4L: Storage class should be before const qualifier
-      V4L: Storage class should be before const qualifier (sn9c102)
+ The problem was originally reported for OpenSSH few months ago
+ (CVE-2007-3102). The login(1) is affected by the same bug when
+ built with the option "--with-audit".
 
-Uwe Kleine-König (1):
-      fix typo "is" -> "if" in Makefile
 
-Ville Syrjala (1):
-      MAINTAINERS: Add ati_remote2 driver
+Changelog:
+---------
 
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
+
+
+login:
+   - audit log injection attack via login  [Steve Grubb]
+po:
+   - merge changes  [Karel Zak]
+   - update it.po (from translationproject.org)  [Marco Colombo]
+   - update nl.po (from translationproject.org)  [Benno Schulenberg]
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+ Karel Zak  <kzak@redhat.com>
