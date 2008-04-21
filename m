@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbYDUPz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbYDUP4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761913AbYDUPz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYDUPzM
+	id S1762102AbYDUP4D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYDUPzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:55:12 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40147 "EHLO smtp4.pp.htv.fi"
+	Mon, 21 Apr 2008 11:55:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43670 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbYDUPzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:55:11 -0400
-Date: Mon, 21 Apr 2008 18:54:41 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-Subject: Re: [PATCH 29/37] Input: fix ordering in joystick Makefile
-Message-ID: <20080421155440.GK6011@cs181133002.pp.htv.fi>
-References: <cover.1208783694.git.dmitry.torokhov@gmail.com> <1b8930dc64b6842e50711441ba67482aacc475dd.1208783694.git.dmitry.torokhov@gmail.com> <20080421142245.GI6011@cs181133002.pp.htv.fi> <20080421153910.GA6884@anvil.corenet.prv>
+	id S1756054AbYDUPzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 11:55:52 -0400
+Date: Mon, 21 Apr 2008 17:55:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jan Beulich <jbeulich@novell.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: prevent unconditional writes to DebugCtl MSR
+Message-ID: <20080421155534.GA1284@elte.hu>
+References: <20080418194334.7483627037C@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080421153910.GA6884@anvil.corenet.prv>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080418194334.7483627037C@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1177]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 11:39:10AM -0400, Dmitry Torokhov wrote:
-> On Mon, Apr 21, 2008 at 05:22:45PM +0300, Adrian Bunk wrote:
->...
-> > BTW: The From: and To: headers in your emails were not correct.
+
+* Roland McGrath <roland@redhat.com> wrote:
+
+> If TIF_DEBUGCTLMSR is ever set on a machine without the support, that 
+> is a bug we should diagnose earlier.  If you want some paranoia, then 
+> keep update_debugctlmsr but make it do:
 > 
-> My fault. I was trying to use git-format-patch and formail and screwed
-> up. Why doesn't git-format-patch allow specify To: but only Cc:?
+> 	BUG_ON(boot_cpu_data.x86 < 6);
+> 
+> instead.
 
-Note that the From: headers had a different problem:
+agreed. Jan, wanna send a fix for this?
 
-  From: Jiri Kosina <dmitry.torokhov@gmail.com>
-        ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-> Dmitry
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
