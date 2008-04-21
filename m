@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbYDUVjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbYDUVj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbYDUVjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbYDUVdZ
+	id S1761946AbYDUVj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbYDUVdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:33:25 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60143 "EHLO smtp6.pp.htv.fi"
+	Mon, 21 Apr 2008 17:33:31 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60520 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758122AbYDUVdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:33:24 -0400
-Date: Tue, 22 Apr 2008 00:32:53 +0300
+	id S1756760AbYDUVda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:33:30 -0400
+Date: Tue, 22 Apr 2008 00:32:58 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper prototype for show_numa_map()
-Message-ID: <20080421213253.GY2633@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] mm/filemap.c should #include <linux/ramfs.h>
+Message-ID: <20080421213258.GZ2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,8 +22,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper prototype for show_numa_map()
-in include/linux/mempolicy.h
+Every file should include the headers containing the externs for its 
+global code (in this case for struct generic_file_vm_ops).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -34,42 +34,17 @@ This patch has been sent on:
 - 31 Mar 2008
 - 25 Feb 2008
 
- fs/proc/task_mmu.c        |    2 --
- include/linux/mempolicy.h |    3 +++
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-75c93e5637cf3337f8dcd2713bac390dec1cc987 diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 6dc0334..624faf1 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -721,8 +721,6 @@ const struct file_operations proc_pagemap_operations = {
- #endif /* CONFIG_PROC_PAGE_MONITOR */
- 
- #ifdef CONFIG_NUMA
--extern int show_numa_map(struct seq_file *m, void *v);
--
- static int show_numa_map_checked(struct seq_file *m, void *v)
- {
- 	struct proc_maps_private *priv = m->private;
-diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-index 59c4865..914fa6e 100644
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -37,6 +37,7 @@
- 
- struct vm_area_struct;
- struct mm_struct;
-+struct seq_file;
- 
- #ifdef CONFIG_NUMA
- 
-@@ -165,6 +166,8 @@ static inline void check_highest_zone(enum zone_type k)
- int do_migrate_pages(struct mm_struct *mm,
- 	const nodemask_t *from_nodes, const nodemask_t *to_nodes, int flags);
- 
-+int show_numa_map(struct seq_file *m, void *v);
+31f02514a5fdca74a4f4f48f13d3450880b7f038 diff --git a/mm/filemap.c b/mm/filemap.c
+index 5c74b68..9b58ae0 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -34,6 +34,8 @@
+ #include <linux/cpuset.h>
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
++#include <linux/ramfs.h>
 +
- #else
+ #include "internal.h"
  
- struct mempolicy {};
+ /*
 
