@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYDUHYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYDUH3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYDUHYK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYDUHX5
+	id S1754899AbYDUH3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYDUH3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:23:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47390 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbYDUHX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:23:56 -0400
-Message-ID: <480C4108.6050709@garzik.org>
-Date: Mon, 21 Apr 2008 03:23:52 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 21 Apr 2008 03:29:06 -0400
+Received: from hall2.aurel32.net ([91.121.138.14]:36174 "EHLO
+	hall2.aurel32.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbYDUH3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 03:29:05 -0400
+Date: Mon, 21 Apr 2008 09:28:51 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mips BCM47XX compile error
+Message-ID: <20080421072851.GA3381@hall2.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	linux-kernel@vger.kernel.org
+References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <200804201214.46936.mb@bu3sch.de> <20080420224942.GA21009@volta.aurel32.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
- -git
-References: <20080419100034.GA9475@elte.hu>
-In-Reply-To: <20080419100034.GA9475@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080420224942.GA21009@volta.aurel32.net>
+X-Mailer: Mutt 1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> btw., i found no thread to reply to on lkml or elsewhere - arent all git 
-> pull requests supposed to be Cc:-ed to lkml, with shortlog included?
+On Mon, Apr 21, 2008 at 12:49:42AM +0200, Aurelien Jarno wrote:
+> Michael Buesch a écrit :
+> > On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
+> >> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
+> >> (ssb: Add Gigabit Ethernet driver) causes the following
+> >> build error with bcm47xx_defconfig:
+> >>
+> >> <--  snip  -->
+> >>
+> >> ...
+> >>   LD      .tmp_vmlinux1
+> >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> >> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
+> >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> >> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
+> >> arch/mips/pci/built-in.o: In function `pcibios_init':
+> >> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
+> >> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
+> >> make[1]: *** [.tmp_vmlinux1] Error 1
+> > 
+> > Some parts of the new 47xx arch code are not ported, yet.
+> 
+> It would have been nice at least to warn before breaking a platform.
+> 
+> > Somebody should port all the new code from openwrt SVN over to mainline.
+> > I don't really have time for that, at the moment, though.
+> 
+> I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
+> can't find a possible fix among them. Do you have a better pointer?
+> 
 
-That's in the realm of maintainer choice, much like plenty of other 
-engineering practices.  There is no "rule" as such.
+I have finally found it, the code was not in a form of a patch, but in
+form of a C code file.
 
-	Jeff
+I am working on a fix.
 
-
-
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
