@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYDUNlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761802AbYDUNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759161AbYDUNlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932174AbYDUNka
+	id S1761802AbYDUNmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbYDUNmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:40:30 -0400
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:42932 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760380AbYDUNk2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:40:28 -0400
-Message-ID: <480C994A.1060406@blueyonder.co.uk>
-Date: Mon, 21 Apr 2008 14:40:26 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 3.0a1pre (X11/2007120104)
+	Mon, 21 Apr 2008 09:42:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34569 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755171AbYDUNmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 09:42:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: fault in __d_lookup [Was: 2.6.25-mm1]
+Date: Mon, 21 Apr 2008 15:42:30 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <20080421094515.GR27459@ZenIV.linux.org.uk> <480C6597.1000701@gmail.com>
+In-Reply-To: <480C6597.1000701@gmail.com>
 MIME-Version: 1.0
-To: Marc Dionne <marc.c.dionne@gmail.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-git1/2 not seeing /dev/sda1 (XFS root) or /dev/sda2 (swap)
- partitions on a SATA drive
-References: <480A9C1E.8050505@blueyonder.co.uk>	 <20080420112549.GB4902@martell.zuzino.mipt.ru>	 <480B3958.9010708@blueyonder.co.uk> <6041d2000804210454t4c83de95td9bfd85c98de80b6@mail.gmail.com>
-In-Reply-To: <6041d2000804210454t4c83de95td9bfd85c98de80b6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804211542.31356.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Dionne wrote:
-> On Sun, Apr 20, 2008 at 8:38 AM, Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
->>>> 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3.
->>>> With xfs it can't find these and drops into a shell.
->>>> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap
->>>>      swap       defaults              0 0
->>>> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /
->>>>   xfs        defaults              1 1
->>>>
->>>> 00:0c.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
->>>> 00:0d.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->>>> 00:0d.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->>>> 00:0d.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
->>>> 03:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA
->>>> Raid II Controller (rev 01)
+On Monday, 21 of April 2008, Jiri Slaby wrote:
+> On 04/21/2008 11:45 AM, Al Viro wrote:
+> > On Mon, Apr 21, 2008 at 11:37:40AM +0200, Jiri Slaby wrote:
+> >> On 04/21/2008 11:06 AM, Al Viro wrote:
+> >>> On Mon, Apr 21, 2008 at 10:31:40AM +0200, Jiri Slaby wrote:
+> >>>
+> >>>        hlist_for_each_entry_rcu(dentry, node, head, d_hash) {
+> >>>                struct qstr *qstr;
+> >>>
+> >>>                if (dentry->d_name.hash != hash)
+> >>>                        continue;
+> >>>
+> >>> walking into node == (struct hlist_node *)0x00f0000000000000...
+> >> Yup, true, In the last oops I stuck on memcmp few lines below.
+> >>
+> >> BTW. it's 100% reproducible after it happens once, but fixable by reboot. 
+> >> Any tests I should run (memtest, some printks sticked anywhere)?
+> > 
+> > Well, if list has such turd in it, you'll certainly hit it every time
+> > you walk that list, so 100% reproducible is not surprising.
+> > 
+> > How well is it reproducible from fresh boot?
 > 
-> Perhaps related to these threads ?
->     http://marc.info/?l=linux-ide&m=120866699221716
-The one above seems close to what I experience.
+> Few days with suspend/resume cycles. This one was booted 12 hours ago, one 
+> suspend/resume. Will keep an eye on it and keep you informed.
 
->     http://marc.info/?l=linux-scsi&m=120854308421912
-The patch is already mainstream.
-> 
-> Marc
-> 
-> 
-Regards
-Sid.
+I think that's exactly the same problem I reported here:
+http://lkml.org/lkml/2008/4/20/182
+for 2.6.25-git2, so it hit the mainline and seems to be related to RCU.
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Thanks,
+Rafael
