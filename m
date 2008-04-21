@@ -1,96 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYDUKIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbYDUKMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYDUKIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYDUKIJ
+	id S1756566AbYDUKMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 06:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYDUKMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:08:09 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:39656 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754900AbYDUKIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:08:06 -0400
-Message-ID: <480C677D.1010508@linux.vnet.ibm.com>
-Date: Mon, 21 Apr 2008 15:37:57 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Mon, 21 Apr 2008 06:12:35 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50932 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754517AbYDUKMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 06:12:35 -0400
+Date: Mon, 21 Apr 2008 11:12:32 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Shi Weihua <shiwh@cn.fujitsu.com>, akpm@linux-foundation.org,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
+Subject: Re: [PATCH]Fix usemap for DISCONTIG/FLATMEM with not-aligned zone initilaization.
+Message-ID: <20080421101231.GA629@csn.ul.ie>
+References: <20080418161522.GB9147@csn.ul.ie> <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com> <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com> <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com> <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: subrata@linux.vnet.ibm.com
-CC: Peter 1 Oberparleiter <Peter.Oberparleiter@de.ibm.com>,
-       linux-kernel@vger.kernel.org, ltp-list <ltp-list@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Oberparleiter <oberparleiter@googlemail.com>,
-       Peter Oberparleiter <peter.oberparleiter@gmx.de>
-Subject: Re: [LTP] [ANNOUNCE] gcov-kernel patches for Linux 2.6.25.
-References: <bb33bcf20804210152t676d9be3x6d5f403acdb7180@mail.gmail.com> <1208770501.5051.24.camel@subratamodak.linux.ibm.com>
-In-Reply-To: <1208770501.5051.24.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subrata Modak wrote:
-> Peter,
-> 
-> There has been a recent concern that these Patches does not compile on
-> the x86_64 architecture. We recently had this problem with the 2.6.24
-> GCOV Patches. Do you have any fixes for this ?
-> 
-> CC-ing Kamalesh, who reported this Problem. Kamalesh, can you please
-> exemplify your problem to Peter.
+On (21/04/08 11:20), KAMEZAWA Hiroyuki didst pronounce:
+> On Sat, 19 Apr 2008 02:25:56 +0900 (JST)
+> kamezawa.hiroyu@jp.fujitsu.com wrote:
+>  
+> > >What about something like the following? Instead of expanding the size of
+> > >structures, it sanity checks input parameters. It touches a number of places
+> > >because of an API change but it is otherwise straight-forward.
+> > >
+> > >Unfortunately, I do not have an IA-64 machine that can reproduce the problem
+> > >to see if this still fixes it or not so a test as well as a review would be
+> > >appreciated. What should happen is the machine boots but prints a warning
+> > >about the unexpected PFN ranges. It boot-tested fine on a number of other
+> > >machines (x86-32 x86-64 and ppc64).
+> > >
+> > ok, I'll test today if I have a chance. At least, I think I can test this
+> > until Monday. but I have one concern (below)
+> > 
+> I tested and found your patch doesn't work.
+> It seems because all valid page struct is not initialized.
 
-When the gcov patches are applied to the kernels over the x86_64 machines, 
-the kernel seg-faults during the bootup, 
+The fact I didn't calculate end_pfn properly as pointed out by Dave Hansen
+didn't help either. If that was corrected, I'd be surprised if the patch
+didn't work. If it is broken, it implies that arch-specific code is using
+PFN ranges that do not contain valid memory - something I find surprising.
 
-Linux version 2.6.24-gcov-autokern1 (root@bl6-13.ltc.austin.ibm.com) (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Fri Apr 4 13:15:01 CDT 2008
-Command line: ro root=/dev/VolGroup00/LogVol00 console=tty0 console=ttyS1,19200 selinux=no autobench_args: root=/dev/mapper/VolGroup00-LogVol00 ABAT:1207333349
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009d400 (usable)
- BIOS-e820: 000000000009d400 - 00000000000a0000 (reserved)
-.
-.
-<snip>
-.
-.
-powernow-k8: Found 1 Dual Core AMD Opteron(tm) Processor 270 processors (4 cpu cores) (version 2.20.00)
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-Freeing unused kernel memory: 456k freed
-Red Hat nash verinit[1]: segfault at ffffffff80ceccd8 rip ffffffffff60040c rsp 7fff05e68290 error 7
-sion 5.0.32 starKernel panic - not syncing: Attempted to kill init!
-ting
-
-Please let me know, If any other information is reaquired.
+> (By pfn_valid(), a page struct is valid if it exists regardless of zones.)
 > 
-> Regards--
-> Subrata
+> How about below ? I think this is simple.
+> Tested and worked well.
 > 
-> On Mon, 2008-04-21 at 14:22 +0530, Subrata Modak wrote:
->> Hi,
->>
->> GCOV-kernel patches for Linux 2.6.25 are now available for downloads
->> at:
->>
->> http://ltp.cvs.sourceforge.net/ltp/utils/analysis/gcov-kernel/,
->>
->> You can use them for generating code coverage on 2.6,25.
->>
->> -- 
->> Regards & Thanks--
->> Subrata
->> -------------------------------------------------------------------------
->> This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
->> Don't miss this year's exciting event. There's still time to save $100. 
->> Use priority code J8TL2D2. 
->> http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
->> _______________________________________________ Ltp-list mailing list Ltp-list@lists.sourceforge.net https://lists.sourceforge.net/lists/listinfo/ltp-list
 
+This patch is fine. It checks the ranges passed in a less-invasive
+fashion than the previous patch. Thanks
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ==
+> usemap must be initialized only when pfn is within zone.
+> If not, it corrupts memory.
+> 
+> After intialization, usemap is used for only pfn in valid range.
+> (We have to init memmap even in invalid range.)
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  mm/page_alloc.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.25/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.25.orig/mm/page_alloc.c
+> +++ linux-2.6.25/mm/page_alloc.c
+> @@ -2518,6 +2518,7 @@ void __meminit memmap_init_zone(unsigned
+>  	struct page *page;
+>  	unsigned long end_pfn = start_pfn + size;
+>  	unsigned long pfn;
+> +	struct zone *z;
+>  
+>  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+>  		/*
+> @@ -2536,7 +2537,7 @@ void __meminit memmap_init_zone(unsigned
+>  		init_page_count(page);
+>  		reset_page_mapcount(page);
+>  		SetPageReserved(page);
+> -
+> +		z = page_zone(page);
+>  		/*
+>  		 * Mark the block movable so that blocks are reserved for
+>  		 * movable at startup. This will force kernel allocations
+> @@ -2546,7 +2547,9 @@ void __meminit memmap_init_zone(unsigned
+>  		 * the start are marked MIGRATE_RESERVE by
+>  		 * setup_zone_migrate_reserve()
+>  		 */
+> -		if ((pfn & (pageblock_nr_pages-1)))
+> +		if ((z->zone_start_pfn < pfn)
+> +		    && (pfn < z->zone_start_pfn + z->spanned_pages)
+> +		    && !(pfn & (pageblock_nr_pages-1)))
+>  			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
+>  
+>  		INIT_LIST_HEAD(&page->lru);
+> @@ -4460,6 +4463,8 @@ void set_pageblock_flags_group(struct pa
+>  	pfn = page_to_pfn(page);
+>  	bitmap = get_pageblock_bitmap(zone, pfn);
+>  	bitidx = pfn_to_bitidx(zone, pfn);
+> +	VM_BUG_ON(pfn < zone->zone_start_pfn);
+> +	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
+>  
+>  	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
+>  		if (flags & value)
+>  
+> 
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
