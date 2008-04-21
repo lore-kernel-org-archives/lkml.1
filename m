@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYDUF7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYDUGK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYDUF7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 01:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDUF7c
+	id S1754865AbYDUGK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 02:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDUGKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 01:59:32 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54866 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbYDUF7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 01:59:31 -0400
-Message-ID: <480C2D36.5050503@bull.net>
-Date: Mon, 21 Apr 2008 07:59:18 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-Cc: efault@gmx.de, manfred@colorfullife.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, peterz@infradead.org, xemul@openvz.org
-Subject: Re: [PATCH 00/13] Re: Scalability requirements for sysv ipc
-References: <20080411161702.460410000@bull.net> <20080419232539.GE20138@linux.vnet.ibm.com>
-In-Reply-To: <20080419232539.GE20138@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 02:10:48 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57846 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751187AbYDUGKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 02:10:48 -0400
+Date: Mon, 21 Apr 2008 08:11:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stringify support commas
+Message-ID: <20080421061118.GA12222@uranus.ravnborg.org>
+References: <20080420183256.GA11350@Krystal> <20080420190631.GA6629@uranus.ravnborg.org> <20080420212124.GA18039@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080420212124.GA18039@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Fri, Apr 11, 2008 at 06:17:02PM +0200, Nadia.Derbey@bull.net wrote:
+On Sun, Apr 20, 2008 at 05:21:24PM -0400, Mathieu Desnoyers wrote:
+> * Sam Ravnborg (sam@ravnborg.org) wrote:
+> > On Sun, Apr 20, 2008 at 02:32:56PM -0400, Mathieu Desnoyers wrote:
+> > > #define MYDEF a, b, c
+> > > 
+> > > __stringify(MYDEF) should be replaced by "a, b, c", but compilation fails
+> > > because the __stringify macro expects only one argument. Fix it by using
+> > > variable macro arguments in __stringify and __stringify_1.
+> > > 
+> > > Needed in my current NMI safe iret paravirt support work so I can expand
+> > > a macro containing assembly code into a string.
+> > 
+> > This is a no-no for those archs that still use -traditional.
+> > I dunno if this is a problem for you at the moment and the
+> > right fix is anyway to nuke -traditional.
+> > 
+> > 	Sam
 > 
->>
->>Here is finally the ipc ridr-based implementation I was talking about last
->>week (see http://lkml.org/lkml/2008/4/4/208).
->>I couldn't avoid much of the code duplication, but at least made things
->>incremental.
->>
->>Does somebody now a test suite that exists for the idr API, that I could
->>run on this new api?
->>
->>Mike, can you try to run it on your victim: I had such a hard time building
->>this patch, that I couldn't re-run the test on my 8-core with this new
->>version. So the last results I have are for 2.6.25-rc3-mm1.
->>
->>Also, I think a careful review should be done to avoid introducing yet other
->>problems :-(
->>
->>*WARNING*: this patch contains a fix for idr.c
->>           I know, I'm doing things bad, but I only saw the problem this
->>           afternoon.
->>
->>It should be applied on linux-2.6.25-rc8-mm1, in the following order:
->>
->>[ PATCH 01/13 ] : copy_idr_code.patch
->>[ PATCH 02/13 ] : change_ridr_struct.patch
->>[ PATCH 03/13 ] : ridr_pre_get.patch
->>[ PATCH 04/13 ] : ridr_alloc_layer.patch
->>[ PATCH 05/13 ] : ridr_free_layer.patch
->>[ PATCH 06/13 ] : ridr_sub_alloc.patch
->>[ PATCH 07/13 ] : ridr_get_empty_slot.patch
->>[ PATCH 08/13 ] : ridr_get_new.patch
->>[ PATCH 09/13 ] : ridr_remove.patch
->>[ PATCH 10/13 ] : ridr_find.patch
->>[ PATCH 11/13 ] : ridr_integrate.patch
->>[ PATCH 12/13 ] : ipc_use_ridr.patch
->>[ PATCH 13/13 ] : remove_ipc_lock_down.patch
+> A quick grep through arch/ gives me the following :
 > 
+> arch/cris/arch-v10/boot/compressed/Makefile
+>         @$(CC) -D__ASSEMBLY__ -traditional -c $< -o $@
+> arch/cris/arch-v10/boot/rescue/Makefile
+> asflags-y += -traditional
+> arch/cris/arch-v10/lib/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/h8300/boot/compressed/Makefile
+> EXTRA_AFLAGS    := -traditional
+> arch/m32r/boot/compressed/Makefile
+> EXTRA_AFLAGS    := -traditional
+> arch/m32r/kernel/Makefile
+> EXTRA_AFLAGS    := -traditional
+> arch/m68k/fpsp040/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/m68k/ifpsp060/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/m68k/kernel/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/m68k/lib/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/m68k/math-emu/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/parisc/kernel/Makefile
+> AFLAGS_entry.o  := -traditional
+> AFLAGS_pacache.o := -traditional
+> arch/powerpc/boot/Makefile
+> BOOTAFLAGS      := -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+> arch/s390/kernel/Makefile
+> EXTRA_AFLAGS    := -traditional
+> arch/s390/lib/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/s390/math-emu/Makefile
+> EXTRA_AFLAGS := -traditional
+> arch/sh/boot/compressed/Makefile_32
+> EXTRA_AFLAGS    := -traditional
+> arch/sh/boot/compressed/Makefile_64
+> EXTRA_AFLAGS    := -traditional
 > 
-> And some more comments on the resulting ridr.c.  Note that we might in
-> fact want to keep the rcu_assign_pointer() calls that I complain about --
-> see Johannes Berg's posting about making sparse smarter about RCU.
-> 
+> Would their removal break something ?
+I do not recall why they were added but removing -traditional from
+x86 was painless.
+So a simple approach would be to send a patch towards the arch maintainers.
+But even better to try it out with a cross toolchain first.
+Any breakage should be obvious.
 
-Paul,
-
-Thanks a lot for the review, but I have in any case to rework my 
-patches: I have left calls to sleeping functions inside the 
-ridr_pre_get() / ridr_preget_end() section which is a very bad thing. 
-I'll rework everything and resend.
-
-Regards,
-Nadia
+	Sam
