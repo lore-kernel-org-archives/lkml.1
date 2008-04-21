@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYDUKl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbYDUKmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761362AbYDUKl2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbYDUKaq
+	id S1761366AbYDUKmD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 06:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbYDUKgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:30:46 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:37977
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756253AbYDUKaM (ORCPT
+	Mon, 21 Apr 2008 06:36:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39722 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760032AbYDUKgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:30:12 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 30/31] KVM: ppc: Kconfig fixes
-Date: Mon, 21 Apr 2008 13:29:56 +0300
-Message-Id: <1208773797-7829-31-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.5
-In-Reply-To: <1208773797-7829-1-git-send-email-avi@qumranet.com>
-References: <1208773797-7829-1-git-send-email-avi@qumranet.com>
+	Mon, 21 Apr 2008 06:36:07 -0400
+Date: Mon, 21 Apr 2008 19:40:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, shiwh@cn.fujitsu.com,
+       mel@csn.ul.ie, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+Message-Id: <20080421194023.c8d9733d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <480C6AA1.5000607@linux.vnet.ibm.com>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0804210004470.1630@blonde.site>
+	<20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080420232427.1b399104.akpm@linux-foundation.org>
+	<480C347C.6060702@linux.vnet.ibm.com>
+	<20080421064725.GA32214@balbir.in.ibm.com>
+	<1208770925.7115.167.camel@twins>
+	<480C6AA1.5000607@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+On Mon, 21 Apr 2008 15:51:21 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Don't allow building as a module (asm-offsets dependencies).
+> >> This would enable the memory controller by default, it can be disabled
+> >> using cgroup_disable=memory at boot time.
+> > 
+> > how about working on a runtime switch that only enables the whole
+> > memcgroup machinery when an actual cgroup gets created - and disable it
+> > again once the last cgroup goes.
+> > 
+> 
+> Sounds like an interesting option to explore. I'll explore that a bit more.
+> 
+Maybe force_empty() will be a help for disabling ;)
 
-Also, automatically select KVM_BOOKE_HOST until we better separate the guest
-and host layers.
+- stop accountig new pages.
+- calling force_empty if there are no childs.
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/powerpc/kvm/Kconfig |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+problem is enabling.
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 989ee82..6f73edd 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -15,10 +15,12 @@ menuconfig VIRTUALIZATION
- if VIRTUALIZATION
- 
- config KVM
--	tristate "Kernel-based Virtual Machine (KVM) support"
--	depends on EXPERIMENTAL
-+	bool "Kernel-based Virtual Machine (KVM) support"
-+	depends on 44x && EXPERIMENTAL
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
-+	# We can only run on Book E hosts so far
-+	select KVM_BOOKE_HOST
- 	---help---
- 	  Support hosting virtualized guest machines. You will also
- 	  need to select one or more of the processor modules below.
-@@ -26,13 +28,10 @@ config KVM
- 	  This module provides access to the hardware capabilities through
- 	  a character device node named /dev/kvm.
- 
--	  To compile this as a module, choose M here: the module
--	  will be called kvm.
--
- 	  If unsure, say N.
- 
- config KVM_BOOKE_HOST
--	tristate "KVM host support for Book E PowerPC processors"
-+	bool "KVM host support for Book E PowerPC processors"
- 	depends on KVM && 44x
- 	---help---
- 	  Provides host support for KVM on Book E PowerPC processors. Currently
--- 
-1.5.5
+A problem will be that we cannot account page-cache again because
+it's on radix-tree when cgroup is re-enabled.
+
+
+Thanks,
+-Kame
 
