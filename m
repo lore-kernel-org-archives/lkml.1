@@ -1,83 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYDUS5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759096AbYDUS5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYDUS5h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 14:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758814AbYDUS5J
+	id S1759096AbYDUS5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 14:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbYDUS5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 14:57:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47005 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758794AbYDUS5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 14:57:08 -0400
-Date: Mon, 21 Apr 2008 20:56:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
-	ffffffffffffffff
-Message-ID: <20080421185647.GA32598@elte.hu>
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <20080421131741.GI9554@elte.hu> <200804211535.21694.rjw@sisk.pl>
+	Mon, 21 Apr 2008 14:57:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:21314 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757107AbYDUS46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 14:56:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Src/Vncqbhla3N+rKMQFTJgO3sgEtHVFJTZ559BcD500VuQ8LoL8K0RurWF+XWD6dg4mgrVsl/Jo/4LSyaRb8mlMusOe0Pyd7XemSrw6tBv5gtN6EhIOqSPTdxYJ7IEIfhGGaAfIl/r3EKyO3KoV6vvdDnQ8prBLMcdSX4hQfjI=
+Message-ID: <a44ae5cd0804211156n40e2a71cw25c3114db2f58d17@mail.gmail.com>
+Date: Mon, 21 Apr 2008 14:56:52 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Greg KH" <gregkh@suse.de>,
+       "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: 2.6.25-mm1 -- WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
+In-Reply-To: <a44ae5cd0804181124s772fa61bp22035c2b758471b1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804211535.21694.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <a44ae5cd0804181124s772fa61bp22035c2b758471b1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Is anyone interesting in following up on this?
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Thanks,
+      Miles
 
-> On Monday, 21 of April 2008, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > I've just got the following traces from 2.6.25-git2 on HP nx6325 
-> > > (64-bit). I think they are related to the hang I described yesterday:
-> > 
-> > > [12844.112673]  [<ffffffff8029e236>] do_lookup+0x2c/0x1b2
-> > > [12844.112683]  [<ffffffff802a04b4>] __link_path_walk+0x8e6/0xdbd
-> > > [12844.112707]  [<ffffffffa004deb4>] ? :ext3:ext3_xattr_get_acl_default+0x18/0x1a
-> > > [12844.112714]  [<ffffffff802b0869>] ? generic_getxattr+0x4e/0x5c
-> > 
-> > so you've got ext3. Nothing changed in the VFS or in ext3 in -git yet.
-> > 
-> > the instruction pattern:
-> > 
-> > Code: f6 43 04 10 75 06 f0 ff 03 48 89 d8 fe 43 08 eb 31 fe 43 08 48 8b 
-> > 45 d0 48 8b 00 48 89 45 d0 48 8b 45 d0 48 85 c0 74 18 48 89 c2 <48> 8b 
-> > 00 48 8d 5a e8 44 39 73 30 0f 18 08 75 d9 e9 6a ff ff ff
-> >                            ========
-> > 
-> > shows that you've got "prefetchnta (%esi)" indirect:
-> > 
-> >    0f 18 00                prefetcht0 (%eax)
-> > 
-> > so the prefetch instructions are patched in, neither the compiler nor 
-> > the CPU should ignore them.
-> 
-> Well, I don't really know what that means ...
-> 
-> Besides, that's 64-bit code, but I guess that doesn't matter here.
-
-correct, for 64-bit code that's prefetcht0 (%rax) - a non-destructive 
-'prefetch stuff from there into the cache' x86 instruction. So real 
-prefetches are done so i'd exclude any true SMP related barrier race. 
-(not that it's likely on x86 hardware anyway - memory barriers usually 
-only matter on Alpha and similar weakly-ordered architectures.)
-
-	Ingo
+On Fri, Apr 18, 2008 at 2:24 PM, Miles Lane <miles.lane@gmail.com> wrote:
+> [    5.097022] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
+>  [    5.097026] Modules linked in: floppy ohci1394(+) ieee1394
+>  pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
+>  usbcore ssb thermal processor fan fuse
+>  [    5.097051] Pid: 1112, comm: modprobe Not tainted 2.6.25-mm1 #7
+>  [    5.097057]  [<c012883a>] warn_on_slowpath+0x41/0x67
+>  [    5.097354]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
+>  [    5.097363]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
+>  [    5.097379]  [<c0189ba5>] ? ifind+0x55/0x5f
+>  [    5.097391]  [<c02d7450>] ? _spin_unlock+0x38/0x44
+>  [    5.097403]  [<c0189ba5>] ? ifind+0x55/0x5f
+>  [    5.097411]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
+>  [    5.097421]  [<c01292f3>] ? printk+0x15/0x17
+>  [    5.097430]  [<c01b2703>] sysfs_add_one+0x33/0x9a
+>  [    5.097438]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
+>  [    5.097449]  [<c0259fef>] device_add+0x123/0x405
+>  [    5.097466]  [<c025a2e3>] device_register+0x12/0x15
+>  [    5.097474]  [<c025a35b>] device_create+0x75/0x9a
+>  [    5.097484]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
+>  [    5.097522]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
+>  [    5.097536]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
+>  [    5.097547]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
+>  [    5.097556]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
+>  [    5.097581]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
+>  [    5.097606]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
+>  [    5.097628]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.097637]  [<c025b984>] __device_attach+0x8/0xa
+>  [    5.097644]  [<c025b060>] bus_for_each_drv+0x39/0x63
+>  [    5.097653]  [<c025b9f6>] device_attach+0x51/0x67
+>  [    5.097660]  [<c025b97c>] ? __device_attach+0x0/0xa
+>  [    5.097668]  [<c025af18>] bus_attach_device+0x24/0x4e
+>  [    5.097676]  [<c025a190>] device_add+0x2c4/0x405
+>  [    5.097689]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
+>  [    5.097711]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
+>  [    5.097735]  [<c028191f>] ? pcibios_set_master+0x78/0x81
+>  [    5.097748]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
+>  [    5.097774]  [<c01fe704>] pci_device_probe+0x39/0x59
+>  [    5.097785]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.097793]  [<c025b95a>] __driver_attach+0x3d/0x5f
+>  [    5.097801]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
+>  [    5.097811]  [<c025b739>] driver_attach+0x14/0x16
+>  [    5.097817]  [<c025b91d>] ? __driver_attach+0x0/0x5f
+>  [    5.097825]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
+>  [    5.097834]  [<c025baa3>] driver_register+0x47/0xa3
+>  [    5.097841]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
+>  [    5.097852]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
+>  [    5.097861]  [<f8811035>] ohci_hcd_mod_init+0x35/0x63 [ohci_hcd]
+>  [    5.097874]  [<c014af69>] sys_init_module+0x15e5/0x177b
+>  [    5.097892]  [<c016a3c5>] ? vma_link+0x66/0x71
+>  [    5.097904]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
+>  [    5.097915]  [<c016aa18>] ? mmap_region+0x2cd/0x377
+>  [    5.097925]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
+>  [    5.097956]  [<c0106c32>] syscall_call+0x7/0xb
+>  [    5.097970]  =======================
+>  [    5.097975] ---[ end trace 3d0d724a7c8aa619 ]---
+>  [    5.097978] disabling CONFIG_USB_DEVICE_CLASS might fix this
+>
+>  [...]
+>
+>  [    5.258579] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
+>  [    5.258583] Modules linked in: floppy ohci1394(+) ieee1394
+>  pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
+>  usbcore ssb thermal processor fan fuse
+>  [    5.258610] Pid: 1112, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
+>  [    5.258617]  [<c012883a>] warn_on_slowpath+0x41/0x67
+>  [    5.258633]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
+>  [    5.258642]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
+>  [    5.258656]  [<c0189b66>] ? ifind+0x16/0x5f
+>  [    5.258668]  [<c02d7450>] ? _spin_unlock+0x38/0x44
+>  [    5.258680]  [<c0189ba5>] ? ifind+0x55/0x5f
+>  [    5.258687]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
+>  [    5.258696]  [<c01292f3>] ? printk+0x15/0x17
+>  [    5.258704]  [<c01b2703>] sysfs_add_one+0x33/0x9a
+>  [    5.258712]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
+>  [    5.258722]  [<c0259fef>] device_add+0x123/0x405
+>  [    5.258739]  [<c025a2e3>] device_register+0x12/0x15
+>  [    5.258746]  [<c025a35b>] device_create+0x75/0x9a
+>  [    5.258755]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
+>  [    5.258793]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
+>  [    5.258806]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
+>  [    5.258817]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
+>  [    5.258825]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
+>  [    5.258849]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
+>  [    5.258874]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
+>  [    5.258895]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.258904]  [<c025b984>] __device_attach+0x8/0xa
+>  [    5.258910]  [<c025b060>] bus_for_each_drv+0x39/0x63
+>  [    5.258919]  [<c025b9f6>] device_attach+0x51/0x67
+>  [    5.258925]  [<c025b97c>] ? __device_attach+0x0/0xa
+>  [    5.258934]  [<c025af18>] bus_attach_device+0x24/0x4e
+>  [    5.258941]  [<c025a190>] device_add+0x2c4/0x405
+>  [    5.258953]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
+>  [    5.258974]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
+>  [    5.258998]  [<c028191f>] ? pcibios_set_master+0x78/0x81
+>  [    5.259011]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
+>  [    5.259036]  [<c01fe704>] pci_device_probe+0x39/0x59
+>  [    5.259046]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.259054]  [<c025b95a>] __driver_attach+0x3d/0x5f
+>  [    5.259062]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
+>  [    5.259071]  [<c025b739>] driver_attach+0x14/0x16
+>  [    5.259077]  [<c025b91d>] ? __driver_attach+0x0/0x5f
+>  [    5.259084]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
+>  [    5.259092]  [<c025baa3>] driver_register+0x47/0xa3
+>  [    5.259098]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
+>  [    5.259109]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
+>  [    5.259117]  [<f8811035>] ohci_hcd_mod_init+0x35/0x63 [ohci_hcd]
+>  [    5.259130]  [<c014af69>] sys_init_module+0x15e5/0x177b
+>  [    5.259149]  [<c016a3c5>] ? vma_link+0x66/0x71
+>  [    5.259160]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
+>  [    5.259171]  [<c016aa18>] ? mmap_region+0x2cd/0x377
+>  [    5.259181]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
+>  [    5.259212]  [<c0106c32>] syscall_call+0x7/0xb
+>  [    5.259226]  =======================
+>  [    5.259230] ---[ end trace 3d0d724a7c8aa619 ]---
+>  [    5.259234] disabling CONFIG_USB_DEVICE_CLASS might fix this
+>
+>  [...]
+>
+>  [    5.347825] WARNING: at fs/sysfs/dir.c:427 sysfs_add_one+0x33/0x9a()
+>  [    5.347829] Modules linked in: floppy ohci1394(+) ieee1394
+>  pata_amd(+) 3c59x(+) mii libata ehci_hcd(+) ohci_hcd(+) forcedeth
+>  usbcore ssb thermal processor fan fuse
+>  [    5.347855] Pid: 1117, comm: modprobe Tainted: G        W 2.6.25-mm1 #7
+>  [    5.347862]  [<c012883a>] warn_on_slowpath+0x41/0x67
+>  [    5.347879]  [<c0128919>] ? test_ti_thread_flag+0xf/0x11
+>  [    5.347888]  [<c01292c7>] ? vprintk+0x3ab/0x3c2
+>  [    5.347902]  [<c0189b66>] ? ifind+0x16/0x5f
+>  [    5.347914]  [<c02d7450>] ? _spin_unlock+0x38/0x44
+>  [    5.347926]  [<c0189ba5>] ? ifind+0x55/0x5f
+>  [    5.347933]  [<c01b2410>] ? sysfs_ilookup_test+0x0/0x11
+>  [    5.347942]  [<c01292f3>] ? printk+0x15/0x17
+>  [    5.347950]  [<c01b2703>] sysfs_add_one+0x33/0x9a
+>  [    5.347958]  [<c01b331e>] sysfs_create_link+0xa7/0xd1
+>  [    5.347968]  [<c0259fef>] device_add+0x123/0x405
+>  [    5.347984]  [<c025a2e3>] device_register+0x12/0x15
+>  [    5.347992]  [<c025a35b>] device_create+0x75/0x9a
+>  [    5.348000]  [<f8893dc7>] usb_classdev_notify+0x40/0x72 [usbcore]
+>  [    5.348039]  [<c013cbae>] notifier_call_chain+0x2b/0x4a
+>  [    5.348052]  [<c013cd51>] __blocking_notifier_call_chain+0x37/0x4c
+>  [    5.348063]  [<c013cd72>] blocking_notifier_call_chain+0xc/0xe
+>  [    5.348071]  [<f8893fa4>] usb_notify_add_device+0x14/0x16 [usbcore]
+>  [    5.348095]  [<f889424c>] generic_probe+0x77/0x83 [usbcore]
+>  [    5.348120]  [<f888ee7c>] usb_probe_device+0x32/0x38 [usbcore]
+>  [    5.348141]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.348150]  [<c025b984>] __device_attach+0x8/0xa
+>  [    5.348156]  [<c025b060>] bus_for_each_drv+0x39/0x63
+>  [    5.348165]  [<c025b9f6>] device_attach+0x51/0x67
+>  [    5.348171]  [<c025b97c>] ? __device_attach+0x0/0xa
+>  [    5.348179]  [<c025af18>] bus_attach_device+0x24/0x4e
+>  [    5.348186]  [<c025a190>] device_add+0x2c4/0x405
+>  [    5.348198]  [<f8888ee1>] usb_new_device+0x4d/0x83 [usbcore]
+>  [    5.348219]  [<f888ba9e>] usb_add_hcd+0x420/0x55f [usbcore]
+>  [    5.348243]  [<c028191f>] ? pcibios_set_master+0x78/0x81
+>  [    5.348256]  [<f88947cf>] usb_hcd_pci_probe+0x252/0x30b [usbcore]
+>  [    5.348281]  [<c01fe704>] pci_device_probe+0x39/0x59
+>  [    5.348291]  [<c025b8a2>] driver_probe_device+0xa0/0x11b
+>  [    5.348299]  [<c025b95a>] __driver_attach+0x3d/0x5f
+>  [    5.348306]  [<c025b2aa>] bus_for_each_dev+0x3e/0x60
+>  [    5.348316]  [<c025b739>] driver_attach+0x14/0x16
+>  [    5.348322]  [<c025b91d>] ? __driver_attach+0x0/0x5f
+>  [    5.348329]  [<c025ad51>] bus_add_driver+0x9d/0x1ad
+>  [    5.348337]  [<c025baa3>] driver_register+0x47/0xa3
+>  [    5.348343]  [<c01f944e>] ? __spin_lock_init+0x24/0x48
+>  [    5.348354]  [<c01fe8e3>] __pci_register_driver+0x53/0x80
+>  [    5.348362]  [<f8831017>] ehci_hcd_init+0x17/0x19 [ehci_hcd]
+>  [    5.348374]  [<c014af69>] sys_init_module+0x15e5/0x177b
+>  [    5.348394]  [<f8864000>] ? amd_init+0x0/0x19 [pata_amd]
+>  [    5.348408]  [<f8887790>] ? usb_root_hub_lost_power+0x0/0x2f [usbcore]
+>  [    5.348439]  [<c0106c32>] syscall_call+0x7/0xb
+>  [    5.348453]  =======================
+>  [    5.348457] ---[ end trace 3d0d724a7c8aa619 ]---
+>  [    5.348461] disabling CONFIG_USB_DEVICE_CLASS might fix this
+>
