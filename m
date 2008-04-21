@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYDUUup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYDUUxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbYDUUup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 16:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYDUUug
+	id S1754865AbYDUUxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 16:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbYDUUxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 16:50:36 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49601 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbYDUUug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 16:50:36 -0400
-Subject: Re: [patch 01/17] hugetlb: modular state
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-To: npiggin@suse.de
-Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com,
-       andi@firstfloor.org, kniht@linux.vnet.ibm.com
-In-Reply-To: <20080410171100.425293000@nick.local0.net>
-References: <20080410170232.015351000@nick.local0.net>
-	 <20080410171100.425293000@nick.local0.net>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 15:51:24 -0500
-Message-Id: <1208811084.11866.10.camel@skynet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 16:53:06 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:34931 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751971AbYDUUxF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 16:53:05 -0400
+Date: Mon, 21 Apr 2008 22:34:58 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Andrew Paprocki <andrew@ishiboo.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: kernel BUG at /usr/src/linux-2.6.25/kernel/workqueue.c:224!
+	(r8169?)
+Message-ID: <20080421203458.GA2931@electric-eye.fr.zoreil.com>
+References: <76366b180804201548g309ae6cci286ed6552f3cb71e@mail.gmail.com> <76366b180804202016l19ac362cyb814781449f81e9a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76366b180804202016l19ac362cyb814781449f81e9a@mail.gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Paprocki <andrew@ishiboo.com> :
+> I just received a similar bug on workqueue.c:223 while I was not doing
+> anything with the card. These bugs seem to have increased with
+> frequency when running under 2.6.25. It used to take me some time to
+> cause a problem to appear under 2.6.24, but under 2.6.25 they appear
+> very readily. I was actually not touching the machine at all when this
+> appeared on the console:
 
-On Fri, 2008-04-11 at 03:02 +1000, npiggin@suse.de wrote:
+Does the patch below decrease the frequency of the bug ?
 
-<snip>
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 3acfeea..6ee9db1 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2398,8 +2398,6 @@ static void rtl8169_wait_for_quiescence(struct net_device *dev)
+ 	rtl8169_irq_mask_and_ack(ioaddr);
+ 
+ #ifdef CONFIG_R8169_NAPI
+-	tp->intr_mask = 0xffff;
+-	RTL_W16(IntrMask, tp->intr_event);
+ 	napi_enable(&tp->napi);
+ #endif
+ }
 
-> Index: linux-2.6/include/linux/hugetlb.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/hugetlb.h
-> +++ linux-2.6/include/linux/hugetlb.h
-> @@ -40,7 +40,7 @@ extern int sysctl_hugetlb_shm_group;
-> 
->  /* arch callbacks */
-> 
-> -pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr);
-> +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, int sz);
-
-<snip>
-
-The sz here needs to be a long to handle sizes such as 16G on powerpc.
-
-There are other places in hugetlb.c where the size also needs to be a
-long, but this one affects the arch code too since it is public.
-
-Jon
-Tollefson
-
-
+-- 
+Ueimor
