@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbYDUWxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbYDUWyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759309AbYDUWxQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 18:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYDUWvT
+	id S1757630AbYDUWyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 18:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYDUWyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 18:51:19 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52387 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 18:54:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41559 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755669AbYDUWvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 18:51:17 -0400
-Date: Tue, 22 Apr 2008 01:50:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] init/do_mounts.c should #include <linux/initrd.h>
-Message-ID: <20080421225046.GM2633@cs181133002.pp.htv.fi>
+	id S1752520AbYDUWyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 18:54:45 -0400
+Message-ID: <480D1B14.7070806@redhat.com>
+Date: Mon, 21 Apr 2008 18:54:12 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Adrian Bunk <bunk@kernel.org>
+CC: ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       bugme-daemon@bugzilla.kernel.org,
+       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
+References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>
+In-Reply-To: <20080421150656.GJ6011@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs for its 
-global code (in this case for rd_doload).
+Thank you for reporting.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
+(which is called from kprobe_exceptions_notify) by
+trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
+is set in pt_regs->flags, true hardirq is still off until returning
+from do_debug. Thus, lockdep assumes that hardirq is off without annotation.
 
----
+IMHO, one possible solution is that fixing hardirq flags right after
+notify_die in do_debug instead of in post_kprobe_handler.
 
-This patch has been sent on:
-- 14 Apr 2008
-- 31 Mar 2008
-- 1 Mar 2008
+Thanks,
 
-e5c6b847745aa7cb3d345ff3943c1b4c61b8ae91 foobar
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 56e3b17..a1c52ba 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -12,6 +12,7 @@
- #include <linux/device.h>
- #include <linux/init.h>
- #include <linux/fs.h>
-+#include <linux/initrd.h>
- 
- #include <linux/nfs_fs.h>
- #include <linux/nfs_fs_sb.h>
 
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
