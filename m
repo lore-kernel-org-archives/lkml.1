@@ -1,87 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbYDUSoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYDUSpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759759AbYDUSoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 14:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbYDUSn3
+	id S1758472AbYDUSpr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 14:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYDUSpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 14:43:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38178 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757885AbYDUSn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 14:43:26 -0400
-Message-ID: <480CE022.2080601@redhat.com>
-Date: Mon, 21 Apr 2008 14:42:42 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 21 Apr 2008 14:45:39 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:47388 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752998AbYDUSpi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 14:45:38 -0400
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Jean Delvare <jdelvare@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: PCI MSI breaks when booting with nosmp
+From: Andi Kleen <andi@firstfloor.org>
+References: <200804172140.02311.jdelvare@suse.de>
+	<200804171308.37328.jbarnes@virtuousgeek.org>
+	<200804172225.14373.jdelvare@suse.de>
+	<200804211043.10410.jbarnes@virtuousgeek.org>
+Date: Mon, 21 Apr 2008 20:45:05 +0200
+In-Reply-To: <200804211043.10410.jbarnes@virtuousgeek.org> (Jesse Barnes's message of "Mon, 21 Apr 2008 10:43:10 -0700")
+Message-ID: <87d4oj6o9a.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Jay Cliburn <jacliburn@bellsouth.net>,
-       Luca Tettamanti <kronos.it@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       torvalds@osdl.org
-Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
-References: <20080414183221.GA5234@martell.zuzino.mipt.ru> <20080414195613.GA4772@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com> <20080419111719.GA6724@martell.zuzino.mipt.ru> <20080419144535.GA4814@martell.zuzino.mipt.ru> <20080419215444.2d4623f5@osprey.hogchain.net> <20080420111453.GA4902@martell.zuzino.mipt.ru> <20080420060607.2b1be48b@osprey.hogchain.net> <20080420122631.GA4761@martell.zuzino.mipt.ru> <20080420133704.63f5cc10@osprey.hogchain.net> <20080420205500.GA4762@martell.zuzino.mipt.ru>
-In-Reply-To: <20080420205500.GA4762@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Apr 2008 18:38:16.0620 (UTC) FILETIME=[DD04B6C0:01C8A3DE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Sun, Apr 20, 2008 at 01:37:04PM -0500, Jay Cliburn wrote:
->> On Sun, 20 Apr 2008 16:26:31 +0400
->> Alexey Dobriyan <adobriyan@gmail.com> wrote:
->>
->>> On Sun, Apr 20, 2008 at 06:06:07AM -0500, Jay Cliburn wrote:
->>>> On Sun, 20 Apr 2008 15:14:53 +0400
->>>> Alexey Dobriyan <adobriyan@gmail.com> wrote:
->>>>
->>>>> On Sat, Apr 19, 2008 at 09:54:44PM -0500, Jay Cliburn wrote:
->>>>>> On Sat, 19 Apr 2008 18:45:35 +0400
->>>>>> Alexey Dobriyan <adobriyan@gmail.com> wrote:
->> [...]
->>>>>>> So, it's enough to scp 200 MB git archive and immediately
->>>>>>> start rebooting sequence for horrors described above to
->>>>>>> appear. It's not 100% reproducible but more like 90%.
->>>>>> Do I understand correctly that these failures occur only while
->>>>>> the network interface is going down?
->>>>> Yep. During up or running there were no problems with this card.
->>>>>
->>>> One more question:  Does it happen whether or not you're using atl1
->>>> as a netconsole?
->>> Without netconsole bugs happens too.
->>>
->> I can't duplicate this error, but it's probably because my machine
->> doesn't have 4GB of memory.
->>
->> I have one report in Febroary 2008 of another user encountering strange
->> oopses in 2.6.23.12 and 2.6.24 whenever he downed the interface.  I
->> suspect your experience is a repeat of that.
->>
->> Just to be clear, you transfer about 200MB to the NIC (Rx direction),
->> then immediately reboot, right?
-> 
-> Yup!
-> 
->> Can you duplicate the problem if you
->> simply ifconfig down instead of rebooting after the transfer?  
-> 
-> Aha, ifconfig down is enough. Here is how reproducer looks like now:
-> 
-> 	./sync-linux-linus && ssh core2 "sudo /sbin/ifconfig eth0 down"
-> 
-> where first script is basically scp(1).
-> 
-> Also, booting with 1G or 2G of RAM (mem=1024m) makes issue go away.
-> 
-> printk at dev_close() time shows that NETIF_F_HIGHDMA was not somehow
-> enabled.
-> 
+Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+>
+> Ok, I see this too on my desktop machine.  It looks like we're not getting 
+> interrupts setup correctly in the nosmp case.  Still digging through to see 
+> why though...
 
-Does the problem go away with iommu=nomerge?  If so, I suspect we're not 
-properly flushing an iowrite somewhere.
+NoSMP disables the io-apic and a lot of modern systems don't work without APIC.
 
--- Chris
+If you just want to run with a single cpu for testing etc. always use maxcpus=1 
+(not 0, that will disable the APIC too)
+
+-Andi
