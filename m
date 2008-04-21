@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbYDUVfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbYDUVf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbYDUVfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYDUVcm
+	id S1759906AbYDUVf4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbYDUVco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:32:42 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60454 "EHLO smtp4.pp.htv.fi"
+	Mon, 21 Apr 2008 17:32:44 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60106 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757122AbYDUVcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:32:41 -0400
-Date: Tue, 22 Apr 2008 00:32:09 +0300
+	id S1757241AbYDUVcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:32:43 -0400
+Date: Tue, 22 Apr 2008 00:32:12 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/proc/kmsg.c should #include <linux/proc_fs.h>
-Message-ID: <20080421213209.GN2633@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] proper spawn_ksoftirqd() prototype
+Message-ID: <20080421213212.GO2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,8 +22,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs its global 
-code.
+This patch adds a proper prototype for spawn_ksoftirqd() in 
+include/linux/interrupt.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -32,18 +32,36 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 14 Apr 2008
 - 31 Mar 2008
-- 17 Feb 2008
+- 22 Feb 2008
 
-b6f818ea9e2dd76d3fd7dbec2382240cabe66a6b diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
-index ff3b90b..9fa3a3d 100644
---- a/fs/proc/kmsg.c
-+++ b/fs/proc/kmsg.c
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/poll.h>
- #include <linux/fs.h>
-+#include <linux/proc_fs.h>
+ include/linux/interrupt.h |    1 +
+ init/main.c               |    2 --
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+be4c4228059d0d56bf9d5a7c902a244625d1f94b diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 8ccc912..1a5c3d1 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -276,6 +276,7 @@ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+ extern void raise_softirq(unsigned int nr);
++extern int spawn_ksoftirqd(void);
  
- #include <asm/uaccess.h>
- #include <asm/io.h>
+ 
+ /* Tasklets --- multithreaded analogue of BHs.
+diff --git a/init/main.c b/init/main.c
+index 8b19820..7dd9916 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -756,8 +756,6 @@ __setup("nosoftlockup", nosoftlockup_setup);
+ 
+ static void __init do_pre_smp_initcalls(void)
+ {
+-	extern int spawn_ksoftirqd(void);
+-
+ 	migration_init();
+ 	spawn_ksoftirqd();
+ 	if (!nosoftlockup)
+
 
