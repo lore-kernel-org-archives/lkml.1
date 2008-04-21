@@ -1,54 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYDUMIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYDUMMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbYDUMIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 08:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYDUMIA
+	id S1757943AbYDUMMg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 08:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbYDUMM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 08:08:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49996 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755616AbYDUMH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 08:07:59 -0400
-Date: Mon, 21 Apr 2008 14:07:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86: unexport kmap_atomic_to_page
-Message-ID: <20080421120736.GD6788@elte.hu>
-References: <20080421085144.GH26897@cs181133002.pp.htv.fi>
+	Mon, 21 Apr 2008 08:12:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:23683 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755660AbYDUMM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 08:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=v0ZVvKtzg7pwAyNG1cUkr0B0t+Thgny9o+NhBKj9P2mWW3dWmWO7rIfxl0jgEIP7EdIKCgCdt9L28exRTvD0Kr1EXN+7butm73XMCR17+vg8c3btyooVJePTT2MomyreDfDGAuTHLHFa663spqgkeX+G/EURTgTSxIzWanrOH0E=
+Message-ID: <524f69650804210510i44ae8822p6b9f32fc0141be83@mail.gmail.com>
+Date: Mon, 21 Apr 2008 07:10:15 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Possible circular locking dependency while running valgrind on an executable over CIFS
+In-Reply-To: <524f69650804210507x5e19971ajfdd42049e50d0e2b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080421085144.GH26897@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0002]
+References: <3c5a513f0804202004y35820ddfse9195f883428a7db@mail.gmail.com>
+	 <1208769262.7115.164.camel@twins>
+	 <524f69650804210507x5e19971ajfdd42049e50d0e2b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I thought that this was considered a false positive before, but Shaggy
+might remember if that was the same warning.
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+But it would seem impractical to delay sending read requests from
+readpages - seems to defeat the whole purpose of having a higher
+performance read interface.  If tcpsendmsg can deadlock when called
+from readpages or other code which holds this sem, wouldn't this
+deadlock all over the place (network block device drivers, SAN
+drivers, various network file systems, some cluster file systems)
+since readpages is a common entry point and sendmsg or equivalent
+could be used by various networking relating block drivers, file
+systems etc.
 
-> This patch removes the no longer used export of kmap_atomic_to_page.
 
-thanks - i applied all 6 patches of yours to x86.git.
+On Mon, Apr 21, 2008 at 4:14 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+ On Sun, 2008-04-20 at 20:04 -0700, Brandon Ehle wrote:
+ > While running valgrind on various executables located on a CIFS share,
+ > I eventually got the message below.  The machine in question is
+ > running 2.6.25 with a few of the debug options enabled, including lock
+ > debugging.  Any idea if this is indicative of a real problem or just a
+ > false positive?
 
-btw:
+ Looks like a simple AB-BA deadlock to me. I admint being a bit ignorant
+ about CIFS (nor really minding that) however it looks like you need to
+ delay or decouple the actual sending of the read request from
+ the .readpages() implementation.
 
-> ---
-> f31eb5842f0a727041ff53355819cac964288428 diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-> index 9cf33d3..165c871 100644
+ Steve?
 
-would you like this metadata to remain in the commit so that you can 
-track it easier? [i guess it's not really necessary as duplicate changes 
-are easy to find.]
+ > ==============================
+> =========================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.25 #29
+> > -------------------------------------------------------
+> > valgrind.bin/23200 is trying to acquire lock:
+> >  (sk_lock-AF_INET){--..}, at: [<c0557412>] tcp_sendmsg+0x17/0xb00
+> >
+> > but task is already holding lock:
+> >  (&mm->mmap_sem){----}, at: [<c05c2abd>] do_page_fault+0x16d/0x8e0
+> >
+> > which lock already depends on the new lock.
+> >
+> >
+> > the existing dependency chain (in reverse order) is:
+> >
+> > -> #1 (&mm->mmap_sem){----}:
+> >      [<c014bb79>] __lock_acquire+0xfa9/0xfdb
+> >      [<c014bc35>] lock_acquire+0x8a/0xbd
+> >      [<c05bf4f8>] down_read+0x3d/0x85
+> >      [<c05c2ad5>] do_page_fault+0x185/0x8e0
+> >      [<c05c102a>] error_code+0x72/0x78
+> >      [<c0526357>] memcpy_toiovec+0x43/0x5a
+> >      [<c0526910>] skb_copy_datagram_iovec+0x47/0x1d7
+> >      [<c0556e6a>] tcp_recvmsg+0xb3d/0xcc8
+> >      [<c051ff9f>] sock_common_recvmsg+0x3d/0x53
+> >      [<c051e8cf>] sock_recvmsg+0x10d/0x12a
+> >      [<c051f727>] sys_recvfrom+0x7c/0xc7
+> >      [<c051f7a8>] sys_recv+0x36/0x38
+> >      [<c051fbe8>] sys_socketcall+0x163/0x25b
+> >      [<c0104d78>] sysenter_past_esp+0x6d/0xc5
+> >      [<ffffffff>] 0xffffffff
+> >
+> > -> #0 (sk_lock-AF_INET){--..}:
+> >      [<c014b771>] __lock_acquire+0xba1/0xfdb
+> >      [<c014bc35>] lock_acquire+0x8a/0xbd
+> >      [<c052098c>] lock_sock_nested+0xb5/0xc2
+> >      [<c0557412>] tcp_sendmsg+0x17/0xb00
+> >      [<c051ea28>] sock_sendmsg+0xf9/0x116
+> >      [<c051ed79>] kernel_sendmsg+0x28/0x37
+> >      [<c02cd885>] SendReceive2+0x197/0x69b
+> >      [<c02bb122>] CIFSSMBRead+0x110/0x2a0
+> >      [<c02c4d81>] cifs_readpages+0x18c/0x5c7
+> >      [<c016db8a>] __do_page_cache_readahead+0x161/0x1e1
+> >      [<c016dc4f>] do_page_cache_readahead+0x45/0x59
+> >      [<c0166c6e>] filemap_fault+0x30f/0x467
+> >      [<c01739f4>] __do_fault+0x56/0x43a
+> >      [<c0175530>] handle_mm_fault+0x150/0x873
+> >      [<c05c2ced>] do_page_fault+0x39d/0x8e0
+> >      [<c05c102a>] error_code+0x72/0x78
+> >      [<ffffffff>] 0xffffffff
+> >
+> > other info that might help us debug this:
+> >
+> > 1 lock held by valgrind.bin/23200:
+> >  #0:  (&mm->mmap_sem){----}, at: [<c05c2abd>] do_page_fault+0x16d/0x8e0
+> >
+> > stack backtrace:
+> > Pid: 23200, comm: valgrind.bin Not tainted 2.6.25 #29
+> >  [<c014a979>] print_circular_bug_tail+0x68/0x6a
+> >  [<c014b771>] __lock_acquire+0xba1/0xfdb
+> >  [<c0104e81>] ? restore_nocheck+0x12/0x15
+> >  [<c014bc35>] lock_acquire+0x8a/0xbd
+> >  [<c0557412>] ? tcp_sendmsg+0x17/0xb00
+> >  [<c052098c>] lock_sock_nested+0xb5/0xc2
+> >  [<c0557412>] ? tcp_sendmsg+0x17/0xb00
+> >  [<c0557412>] tcp_sendmsg+0x17/0xb00
+> >  [<c0148a7d>] ? get_lock_stats+0x1b/0x3e
+> >  [<c0142185>] ? getnstimeofday+0x34/0xde
+> >  [<c0113253>] ? lapic_next_event+0x15/0x1e
+> >  [<c051ea28>] sock_sendmsg+0xf9/0x116
+> >  [<c01689e2>] ? mempool_alloc_slab+0xe/0x10
+> >  [<c013cb12>] ? autoremove_wake_function+0x0/0x3a
+> >  [<c05c078f>] ? _spin_unlock+0x27/0x42
+> >  [<c02cca11>] ? allocate_mid+0xec/0x149
+> >  [<c051ed79>] kernel_sendmsg+0x28/0x37
+> >  [<c02cd885>] SendReceive2+0x197/0x69b
+> >  [<c02bb122>] CIFSSMBRead+0x110/0x2a0
+> >  [<c02c4d81>] cifs_readpages+0x18c/0x5c7
+> >  [<c016bdf3>] ? __alloc_pages+0x6d/0x3c7
+> >  [<c014a3b1>] ? mark_held_locks+0x4d/0x84
+> >  [<c01604b1>] ? __rcu_read_unlock+0x81/0xa4
+> >  [<c02c4bf5>] ? cifs_readpages+0x0/0x5c7
+> >  [<c016db8a>] __do_page_cache_readahead+0x161/0x1e1
+> >  [<c016dc4f>] do_page_cache_readahead+0x45/0x59
+> >  [<c0166c6e>] filemap_fault+0x30f/0x467
+> >  [<c01739f4>] __do_fault+0x56/0x43a
+> >  [<c0175530>] handle_mm_fault+0x150/0x873
+> >  [<c0109d8f>] ? native_sched_clock+0xa6/0xea
+> >  [<c05c2abd>] ? do_page_fault+0x16d/0x8e0
+> >  [<c0140740>] ? down_read_trylock+0x51/0x59
+> >  [<c05c2ced>] do_page_fault+0x39d/0x8e0
+> >  [<c014aea1>] ? __lock_acquire+0x2d1/0xfdb
+> >  [<c017862a>] ? vma_link+0xbc/0xd4
+> >  [<c01670c0>] ? __filemap_fdatawrite_range+0x61/0x6d
+> >  [<c01672ef>] ? filemap_fdatawrite+0x26/0x28
+> >  [<c02c603e>] ? cifs_flush+0x1c/0x5c
+> >  [<c0104dc1>] ? sysenter_past_esp+0xb6/0xc5
+> >  [<c014a596>] ? trace_hardirqs_on+0x10a/0x15a
+> >  [<c05c2950>] ? do_page_fault+0x0/0x8e0
+> >  [<c05c102a>] error_code+0x72/0x78
+> >  =======================
+>
+> <snip .config>
+>
 
-	Ingo
+-- 
+Thanks,
+
+Steve
