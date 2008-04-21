@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYDUSg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYDUSi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbYDUSg3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 14:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYDUSgP
+	id S1756881AbYDUSi5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 14:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYDUSit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 14:36:15 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:2145 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbYDUSgM (ORCPT
+	Mon, 21 Apr 2008 14:38:49 -0400
+Received: from smtp109.sbc.mail.re2.yahoo.com ([68.142.229.96]:37876 "HELO
+	smtp109.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752171AbYDUSit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 14:36:12 -0400
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Mon, 21 Apr 2008 14:38:49 -0400
+X-YMail-OSG: HBrA8PMVM1kvflmnd5GcQtx7TOvIA6e7louyPI.Z.RwMb4N5LzRqlylkcvLQG0deJOo2m2aJjzjUZqCQ1a_wAtwHJMCVo1gnjxfCVg--
+X-Yahoo-Newman-Property: ymail-3
+Date: Mon, 21 Apr 2008 13:34:51 -0500
+From: serge@hallyn.com
+To: David R <david@unsolicited.net>
+Cc: serge@hallyn.com, casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
-       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
-From: Andi Kleen <andi@firstfloor.org>
-References: <1208282804.23631.27.camel@localhost>
-	<175f5a0f0804151315x1e192fc7p7dac1e84fd154211@mail.gmail.com>
-	<48051173.5030802@intel.com> <48051734.1000107@redhat.com>
-	<1208426550.6049.10.camel@localhost> <48078AF6.2020003@intel.com>
-	<20080421152821.GA18452@elte.hu> <480CC7A7.4070709@intel.com>
-Date: Mon, 21 Apr 2008 20:35:55 +0200
-In-Reply-To: <480CC7A7.4070709@intel.com> (Auke Kok's message of "Mon, 21 Apr 2008 09:58:15 -0700")
-Message-ID: <87hcdv6ook.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+       Andrew Morgan <morgan@kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+Message-ID: <20080421183451.GA22071@vino.hallyn.com>
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com> <20080421080101.htzh4s03snescog4@unsolicited.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Apr 2008 18:29:06.0462 (UTC) FILETIME=[951943E0:01C8A3DD]
+Content-Disposition: inline
+In-Reply-To: <20080421080101.htzh4s03snescog4@unsolicited.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kok, Auke" <auke-jan.h.kok@intel.com> writes:
+Quoting David R (david@unsolicited.net):
+> Quoting serge@hallyn.com:
+> 
+> > Quoting David (david@unsolicited.net):
+> >> Casey Schaufler wrote:
+> >>> Do you have a libcap that reflects the change from 32 capabilities
+> >>> to 64? You'll be looking for libcap.so.2.06 or thereabouts.
+> >>>
+> >> Adding libcap-2.08 and recompiling ntpd has fixed the issue, and I'm now
+> >> running normally, thanks!
+> >
+> > I don't understand why, though.  Looking at the ntpd code (ntp-4.2.4p4)
+> > it just does a cap_set_proc(cap_from_text("X=epi"));  It should simply
+> > be sending in the _LINUX_CAPABILITY_VERSION which shipped with libcap,
+> > which should have been _V1, and the kernel should honor that so long as
+> > you didn't try to send in caps > 31, which ntpd wasn't.
+> >
+> >> Was this userspace visible change planned in advance for 2.6.25 ? ... as I
+> >> guess a few other people with venerable old userspace components may come
+> >> across this issue.
+> >>
+> >> Cheers
+> >> David
+> >
+> > It's been in the works a long time and we thought we'd done pretty
+> > well with backward compatibility.  I really don't see why you had
+> > that failure!
+> >
+> > Do you know which version of libcap you had before?
+> 
+> /lib/libcap.so.1 -> libcap.so.1.92
+> 
+> I guess that's 1.92 (should be the version shipped with SuSE 9.1).
 
-> Ingo Molnar wrote:
->> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
->> 
->>> We keep seing this exact issue pop up everywhere - especially with 
->>> e1000(e) datacenter users - this code _has_ to go or be fixed. Since 
->>> there is a perfectly viable solution, I strongly suggest disabling it.
->> 
->> strongly agreed. Thanks Auke, applied.
->> 
->> 	Ingo
->
->
-> excellent, ignore my other reply to Pavel - I didn't see this reply yet :)
+Ok, thanks, then it's definately not what I was thinking.
 
-Shouldn't you just add it to the FeatureRemoval list too and remove it 
-then quickly? No need to keep disabled and known to be wrong code around.
+(Will wait to check out your strace)
 
--Andi
+thanks,
+-serge
