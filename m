@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYDUHC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYDUHLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYDUHC5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYDUHCu
+	id S1755207AbYDUHLH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYDUHKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:02:50 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:37139 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbYDUHCt convert rfc822-to-8bit (ORCPT
+	Mon, 21 Apr 2008 03:10:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:49803 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYDUHKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:02:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:To:Cc:Subject:References:In-Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-	b=UpQGjIG4q2/Lyeo1GOzozLweCmLmZNBRcD88WwL1bk8SAHlSTmTkIoqO/AsYbnd5iSZ620RCC/K+mwynMZlf+tJJS4Lw5ReWwPNgUkjTx3XNdMhZIyTySkFt3w1jZe4RgLzmeTajIDApotKu5MEnCJV2tXVXG+YXfRgQ7Uh4b84=;
-Message-ID: <20080421080101.htzh4s03snescog4@unsolicited.net>
-Date: Mon, 21 Apr 2008 08:01:01 +0100
-From: David R <david@unsolicited.net>
-To: serge@hallyn.com
-Cc: casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morgan <morgan@kernel.org>
-Subject: Re: 2.6.25 Kernel - Problems with capabilities
-References: <46016.36939.qm@web36608.mail.mud.yahoo.com>
-	<480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com>
-In-Reply-To: <20080421000055.GA17510@vino.hallyn.com>
+	Mon, 21 Apr 2008 03:10:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
+        b=fObGGrNbJwuXifLPZOjIP4NmyLzBk/wr5w9cbKHyeuBO3+KBDfByLghnWEoLskCDCnYzZiuom4lhC0bN0stwtsZeG93Y4wVFjHrdAtjIr4M39G5bk12EN+NhKn42MZJ/W2yLbFY9e9T1YZZ2tPaJBjIEmhmTX51Uvj4LuIK1tnU=
+Message-ID: <ed10ee420804210010g228aa4b7j9383e5417b7dcb8c@mail.gmail.com>
+Date: Mon, 21 Apr 2008 00:10:52 -0700
+From: "SL Baur" <steve@xemacs.org>
+To: yi.zhu@intel.com
+Subject: [PATCH] iwlwifi 3945 debug parameter should be writable via sysfs
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_19401_21967273.1208761852931"
+X-Google-Sender-Auth: db7a0ff7601d7445
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting serge@hallyn.com:
+------=_Part_19401_21967273.1208761852931
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Quoting David (david@unsolicited.net):
->> Casey Schaufler wrote:
->>> Do you have a libcap that reflects the change from 32 capabilities
->>> to 64? You'll be looking for libcap.so.2.06 or thereabouts.
->>>
->> Adding libcap-2.08 and recompiling ntpd has fixed the issue, and I'm now
->> running normally, thanks!
->
-> I don't understand why, though.  Looking at the ntpd code (ntp-4.2.4p4)
-> it just does a cap_set_proc(cap_from_text("X=epi"));  It should simply
-> be sending in the _LINUX_CAPABILITY_VERSION which shipped with libcap,
-> which should have been _V1, and the kernel should honor that so long as
-> you didn't try to send in caps > 31, which ntpd wasn't.
->
->> Was this userspace visible change planned in advance for 2.6.25 ? ... as I
->> guess a few other people with venerable old userspace components may come
->> across this issue.
->>
->> Cheers
->> David
->
-> It's been in the works a long time and we thought we'd done pretty
-> well with backward compatibility.  I really don't see why you had
-> that failure!
->
-> Do you know which version of libcap you had before?
+Is there any reason why the debug parameter in the iwlwifi driver
+should be read-only?
 
-/lib/libcap.so.1 -> libcap.so.1.92
+(Patch inlined and attached since I'm sure it will get whitespace
+broken).
 
-I guess that's 1.92 (should be the version shipped with SuSE 9.1).
 
-Cheers
-David
+The debug parameter of the Intel 3945ABG driver should be writable
+via sysfs.
 
+Signed-off-by: SL Baur <steve@xemacs.org>
+---
+This patch is against Linus' 2.6.25 release.
+
+--- linux-2.6/drivers/net/wireless/iwlwifi/iwl3945-base.c~	2008-04-17
+10:15:33.000000000 -0700
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl3945-base.c	2008-04-20
+23:49:35.000000000 -0700
+@@ -8855,7 +8855,7 @@ MODULE_PARM_DESC(disable, "manually disa
+ module_param_named(hwcrypto, iwl3945_param_hwcrypto, int, 0444);
+ MODULE_PARM_DESC(hwcrypto,
+ 		 "using hardware crypto engine (default 0 [software])\n");
+-module_param_named(debug, iwl3945_param_debug, int, 0444);
++module_param_named(debug, iwl3945_param_debug, int, 0644);
+ MODULE_PARM_DESC(debug, "debug output mask");
+ module_param_named(disable_hw_scan, iwl3945_param_disable_hw_scan, int, 0444);
+ MODULE_PARM_DESC(disable_hw_scan, "disable hardware scanning (default 0)");
+
+-sb
+
+------=_Part_19401_21967273.1208761852931
+Content-Type: application/octet-stream; name=iwl3945-debug.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ffapekiu
+Content-Disposition: attachment; filename=iwl3945-debug.patch
+
+ClRoZSBkZWJ1ZyBwYXJhbWV0ZXIgb2YgdGhlIEludGVsIDM5NDVBQkYgZHJpdmVyIHNob3VsZCBi
+ZSB3cml0YWJsZQp2aWEgc3lzZnMuCgpTaWduZWQtb2ZmLWJ5OiBTTCBCYXVyIDxzdGV2ZUB4ZW1h
+Y3Mub3JnPgotLS0KVGhpcyBwYXRjaCBpcyBhZ2FpbnN0IExpbnVzJyAyLjYuMjUgcmVsZWFzZS4g
+IEkndmUgb25seSBzdGFydGVkIHRvIHB1c2gKb24gaXQsIGJ1dCB0aGlzIGRyaXZlciB3b3JrcyBi
+ZXR0ZXIgb24gdGhlIHNhbWUgYm94IHRoYW4gdGhlIE1pY3Jvc29mdApXaW5kb3dzIFhQIGRyaXZl
+ci4KCi0tLSBsaW51eC0yLjYvZHJpdmVycy9uZXQvd2lyZWxlc3MvaXdsd2lmaS9pd2wzOTQ1LWJh
+c2UuY34JMjAwOC0wNC0xNyAxMDoxNTozMy4wMDAwMDAwMDAgLTA3MDAKKysrIGxpbnV4LTIuNi9k
+cml2ZXJzL25ldC93aXJlbGVzcy9pd2x3aWZpL2l3bDM5NDUtYmFzZS5jCTIwMDgtMDQtMjAgMjM6
+NDk6MzUuMDAwMDAwMDAwIC0wNzAwCkBAIC04ODU1LDcgKzg4NTUsNyBAQCBNT0RVTEVfUEFSTV9E
+RVNDKGRpc2FibGUsICJtYW51YWxseSBkaXNhCiBtb2R1bGVfcGFyYW1fbmFtZWQoaHdjcnlwdG8s
+IGl3bDM5NDVfcGFyYW1faHdjcnlwdG8sIGludCwgMDQ0NCk7CiBNT0RVTEVfUEFSTV9ERVNDKGh3
+Y3J5cHRvLAogCQkgInVzaW5nIGhhcmR3YXJlIGNyeXB0byBlbmdpbmUgKGRlZmF1bHQgMCBbc29m
+dHdhcmVdKVxuIik7Ci1tb2R1bGVfcGFyYW1fbmFtZWQoZGVidWcsIGl3bDM5NDVfcGFyYW1fZGVi
+dWcsIGludCwgMDQ0NCk7Cittb2R1bGVfcGFyYW1fbmFtZWQoZGVidWcsIGl3bDM5NDVfcGFyYW1f
+ZGVidWcsIGludCwgMDY0NCk7CiBNT0RVTEVfUEFSTV9ERVNDKGRlYnVnLCAiZGVidWcgb3V0cHV0
+IG1hc2siKTsKIG1vZHVsZV9wYXJhbV9uYW1lZChkaXNhYmxlX2h3X3NjYW4sIGl3bDM5NDVfcGFy
+YW1fZGlzYWJsZV9od19zY2FuLCBpbnQsIDA0NDQpOwogTU9EVUxFX1BBUk1fREVTQyhkaXNhYmxl
+X2h3X3NjYW4sICJkaXNhYmxlIGhhcmR3YXJlIHNjYW5uaW5nIChkZWZhdWx0IDApIik7Cg==
+------=_Part_19401_21967273.1208761852931--
