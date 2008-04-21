@@ -1,184 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762618AbYDURax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbYDURbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762618AbYDURax (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYDURaH
+	id S932284AbYDURbx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbYDURbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:30:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:41533 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756490AbYDURaF (ORCPT
+	Mon, 21 Apr 2008 13:31:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41310 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755851AbYDURbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:30:05 -0400
-Date: Mon, 21 Apr 2008 10:14:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: prasad@linux.vnet.ibm.com
-Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, hunt@redhat.com, michaele@au1.ibm.com,
-       dave@linux.vnet.ibm.com
-Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
-Message-Id: <20080421101403.cecf4d7b.randy.dunlap@oracle.com>
-In-Reply-To: <20080421124329.GA14118@in.ibm.com>
-References: <20080415111459.GB5295@in.ibm.com>
-	<20080415112603.GA5770@in.ibm.com>
-	<48066EBE.3040608@us.ibm.com>
-	<20080421124329.GA14118@in.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 21 Apr 2008 13:31:43 -0400
+Date: Mon, 21 Apr 2008 10:30:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <20080421170526.GC9153@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.1.10.0804211023090.2779@woody.linux-foundation.org>
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com>
+ <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org> <20080421170526.GC9153@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 18:13:29 +0530 K. Prasad wrote:
 
-> This patch introduces two new interfaces called debugfs_printk and 
-> debugfs_dump which can be used to print to the debugfs mount directly.
-> It uses the 'trace' infrastructure underneath and is a patch over it.
-> A sample file is also created to demonstrate its ease of use.
+
+On Mon, 21 Apr 2008, Paul E. McKenney wrote:
 > 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  Documentation/trace.txt        |   21 ++++
->  include/linux/trace.h          |   55 +++++++++++
->  lib/trace.c                    |  196 +++++++++++++++++++++++++++++++++++++++--
->  samples/trace/Makefile         |    2 
->  samples/trace/fork_new_trace.c |   97 ++++++++++++++++++++
->  5 files changed, 365 insertions(+), 6 deletions(-)
+> I did take a quick look for improperly freeing dentries -- unhashed
+> dentries are freed directly, so if there is a code path that somehow
+> unhashes dentries and then d_free()s them without a grace period, we
+> have a problem.
 
-> Index: linux-2.6.25-rc8-mm1/lib/trace.c
-> ===================================================================
-> --- linux-2.6.25-rc8-mm1.orig/lib/trace.c
-> +++ linux-2.6.25-rc8-mm1/lib/trace.c
-> @@ -561,3 +609,141 @@ void trace_cleanup(struct trace_info *tr
->  	kfree(trace);
->  }
->  EXPORT_SYMBOL_GPL(trace_cleanup);
-> +
-> +/**
-> + *	trace_cleanup_all - Removes all trace_info/directories created under a
-> + *			    parent_dir
+No, not even then.
 
-kernel-doc requires the "function name - description" to be on one line.
-You could change the *<tab> to be *<space(s)>.
+We *always* unhash the dentries before freeing them, but we very 
+consciously use "hlist_del_rcu()" on them, not "hlist_del_init()".
 
-> + *	@parent_dir: Name of the parent directory
-> + */
-> +void trace_cleanup_all(const char *parent_dir)
-> +{
-> +	struct list_head *pos, *pos_temp;
-> +	struct trace_dir *temp;
-> +
-> +	list_for_each_safe(pos, pos_temp, &trace_dirs) {
-> +		temp = list_entry(pos, struct trace_dir, trace_dir_list);
-> +		if (!strcmp(parent_dir, temp->trace_root->d_iname))
-> +			trace_cleanup(temp->ti);
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(trace_cleanup_all);
-> +
-...
-> +
-> +/*
-> + * debugfs_printk - A function to write into the debugfs mount 'directly'
-> + * using 'trace' infrastructure
-> + * @dpk - Structure containing info such as parent_dir and directory
-> + * @format - String containing format string specifiers
-> + * @ap - List of arguments
+That, in turn, will mean that the "pprev" pointer will still be set, so 
+the "hlist_unhashed()" thing will *not* trigger.
 
-This one isn't quite kernel-doc notation, but it's very close to it,
-and it should be kernel-doc since it's an exported symbol.
-So it needs the following changes:
+IOW, when we do that direct-free with:
 
-- begin with /**
-- put function name + short description on one line
-- use "@dpk: <description>" for function parameters (not "-")
+	if (hlist_unhashed(&dentry->d_hash))
+		__d_free(dentry);
 
-> + */
-> +int debugfs_printk(struct debugfs_printk_data *dpk, char *format, ...)
-> +{
-> +	int ret;
-> +	struct trace_info *ti;
-> +	va_list(ap);
-> +	unsigned long flags;
-> +
-> +	va_start(ap, format);
-> +
-> +	ti = init_trace_interface(dpk);
-> +
-> +	/* Now do the actual printing */
-> +	/* Take an RCU Lock over the trace_info state */
-> +	rcu_read_lock();
-> +	/* Take a spinlock for the global buffer used by relay */
-> +	if (dpk->flags & TRACE_GLOBAL_CHANNEL)
-> +		spin_lock_irqsave(&trace_lock, flags);
-> +	ret = trace_printf(ti, format, ap);
-> +	if (dpk->flags & TRACE_GLOBAL_CHANNEL)
-> +		spin_unlock_irqrestore(&trace_lock, flags);
-> +	rcu_read_unlock();
-> +
-> +	va_end(ap);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(debugfs_printk);
-> +
-> +/*
-> + * debugfs_printk - A function to write into the debugfs mount 'directly'
-> + * using 'trace' infrastructure
-> + * @dpk - Structure containing info such as parent_dir and directory
-> + * @output - Data that needs to be output
-> + * @output_len - Length of the output data
+the "hlist_unhashed()" will literally guarantee that i has *never* been on 
+a hash-list at all!
 
-Use kernel-doc notation.  Same comments as above.
+(If you want to test whether it is currently unhashed or not, you actually 
+have to use "d_unhashed()" on the dentry under the dentry lock, which 
+tests the DCACHE_UNHASHED bit).
 
-> + */
-> +int debugfs_dump(struct debugfs_printk_data *dpk, const void *output,
-> +							const int output_len)
-> +{
-> +	struct trace_info *ti;
-> +	char *record;
-> +
-> +	ti = init_trace_interface(dpk);
-> +
-> +	/* Now do the actual printing */
-> +	rcu_read_lock();
-> +	record = relay_reserve(ti->rchan, output_len);
-> +	if (record)
-> +		memcpy(record, output, output_len);
-> +	else
-> +		return -ENOMEM;
-> +	rcu_read_unlock();
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(debugfs_dump);
+Of course, there could be some bug in there, but the thing is, none of 
+this has even changed in a long time, certainly not since 2.6.25. Which is 
+why I think the dcache code is all fine, and the bug comes from somewhere 
+else corrupting the data structures.
 
-> Index: linux-2.6.25-rc8-mm1/Documentation/trace.txt
-> ===================================================================
-> --- linux-2.6.25-rc8-mm1.orig/Documentation/trace.txt
-> +++ linux-2.6.25-rc8-mm1/Documentation/trace.txt
-> @@ -150,6 +150,27 @@ The steps a kernel data provider takes t
->  5) Destroy the trace channel and underlying relay channel -
->     trace_cleanup().
->  
-> +Alternatively the user may choose to make use of two new interfaces
-
-                                                    two new interfaces --
-
-> +debugfs_printk() and debugfs_dump() to setup trace interface and
-
-                    and debugfs_dump() -- to setup trace interfaces and
-
-> +trace_cleanup_all() to tear-down the same.
-> +
-> +Steps to use:
-
-
----
-~Randy
+		Linus
