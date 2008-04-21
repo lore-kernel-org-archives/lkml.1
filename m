@@ -1,116 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYDUCXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYDUCfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYDUCXi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 22:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYDUCX2
+	id S1756617AbYDUCfc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 22:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYDUCfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 22:23:28 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49212 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753540AbYDUCX1 (ORCPT
+	Sun, 20 Apr 2008 22:35:22 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:28759 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbYDUCfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 22:23:27 -0400
-Date: Mon, 21 Apr 2008 11:20:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: Mel Gorman <mel@csn.ul.ie>, Shi Weihua <shiwh@cn.fujitsu.com>,
-       akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
-Subject: Re: [PATCH]Fix usemap for DISCONTIG/FLATMEM with not-aligned zone
- initilaization.
-Message-Id: <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080418161522.GB9147@csn.ul.ie>
-	<48080706.50305@cn.fujitsu.com>
-	<48080930.5090905@cn.fujitsu.com>
-	<48080B86.7040200@cn.fujitsu.com>
-	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
-	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Apr 2008 22:35:22 -0400
+Date: Sun, 20 Apr 2008 19:35:17 -0700 (PDT)
+From: Dave Olson <dave.olson@qlogic.com>
+To: Roland Dreier <rdreier@cisco.com>
+cc: Ingo Molnar <mingo@elte.hu>, Ralph Campbell <ralph.campbell@qlogic.com>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git
+In-Reply-To: <aday7789dkk.fsf@cisco.com>
+Message-ID: <alpine.LFD.1.00.0804201933560.11455@topaz.pathscale.com>
+References: <adaskxkh6s2.fsf@cisco.com> <20080419081614.GA2437@elte.hu> <adaod86aq9j.fsf@cisco.com> <alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com> <adafxthbz8p.fsf@cisco.com> <alpine.LFD.1.00.0804200746310.6811@topaz.pathscale.com>
+ <aday7789dkk.fsf@cisco.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 21 Apr 2008 02:35:21.0538 (UTC) FILETIME=[5862D220:01C8A358]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008 02:25:56 +0900 (JST)
-kamezawa.hiroyu@jp.fujitsu.com wrote:
- 
-> >What about something like the following? Instead of expanding the size of
-> >structures, it sanity checks input parameters. It touches a number of places
-> >because of an API change but it is otherwise straight-forward.
-> >
-> >Unfortunately, I do not have an IA-64 machine that can reproduce the problem
-> >to see if this still fixes it or not so a test as well as a review would be
-> >appreciated. What should happen is the machine boots but prints a warning
-> >about the unexpected PFN ranges. It boot-tested fine on a number of other
-> >machines (x86-32 x86-64 and ppc64).
-> >
-> ok, I'll test today if I have a chance. At least, I think I can test this
-> until Monday. but I have one concern (below)
-> 
-I tested and found your patch doesn't work.
-It seems because all valid page struct is not initialized.
-(By pfn_valid(), a page struct is valid if it exists regardless of zones.)
+On Sun, 20 Apr 2008, Roland Dreier wrote:
+|  > | so clearly ipath_init_iba7220_funcs() was intended to be built and used
+|  > | even if CONFIG_PCI_MSI was not defined.  From the code it looks like all
+|  > | should work fine if PCI_MSI is not set, so I don't know what you mean
+|  > | about conditional checks.
+|  > 
+|  > Actually, it wasn't.  It was a late cleanup for another problem, and
+|  > we didn't worry about the other issue, and should have.
+| 
+| Sorry, I still don't follow.  What is the antecedent of "it"?  What was
+| "the other issue"?
 
-How about below ? I think this is simple.
-Tested and worked well.
+The CONFIG_PCI_MSI check where init_iba7220 is called.
 
-==
-usemap must be initialized only when pfn is within zone.
-If not, it corrupts memory.
+| I'm not sure I know the right fix for the build breakage.  It seems
+| there are two possibilities:
+| 
+|  - build the iba7220 support unconditionally (the patch I posted).
 
-After intialization, usemap is used for only pfn in valid range.
-(We have to init memmap even in invalid range.)
+Yep; I already said I was OK with that.  It's simplest, let's go with it.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+| And given that at least some device support works even if neither
+| PCI_MSI nor HT_IRQ is defined, then it makes sense to me to remove that
+| Kconfig dependency.
 
----
- mm/page_alloc.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Go ahead.
 
-Index: linux-2.6.25/mm/page_alloc.c
-===================================================================
---- linux-2.6.25.orig/mm/page_alloc.c
-+++ linux-2.6.25/mm/page_alloc.c
-@@ -2518,6 +2518,7 @@ void __meminit memmap_init_zone(unsigned
- 	struct page *page;
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
-+	struct zone *z;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
- 		/*
-@@ -2536,7 +2537,7 @@ void __meminit memmap_init_zone(unsigned
- 		init_page_count(page);
- 		reset_page_mapcount(page);
- 		SetPageReserved(page);
--
-+		z = page_zone(page);
- 		/*
- 		 * Mark the block movable so that blocks are reserved for
- 		 * movable at startup. This will force kernel allocations
-@@ -2546,7 +2547,9 @@ void __meminit memmap_init_zone(unsigned
- 		 * the start are marked MIGRATE_RESERVE by
- 		 * setup_zone_migrate_reserve()
- 		 */
--		if ((pfn & (pageblock_nr_pages-1)))
-+		if ((z->zone_start_pfn < pfn)
-+		    && (pfn < z->zone_start_pfn + z->spanned_pages)
-+		    && !(pfn & (pageblock_nr_pages-1)))
- 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
- 
- 		INIT_LIST_HEAD(&page->lru);
-@@ -4460,6 +4463,8 @@ void set_pageblock_flags_group(struct pa
- 	pfn = page_to_pfn(page);
- 	bitmap = get_pageblock_bitmap(zone, pfn);
- 	bitidx = pfn_to_bitidx(zone, pfn);
-+	VM_BUG_ON(pfn < zone->zone_start_pfn);
-+	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
- 
- 	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
- 		if (flags & value)
- 
-
+Dave Olson
+dave.olson@qlogic.com
