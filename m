@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762376AbYDUP5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762536AbYDUP7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762376AbYDUP5l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbYDUP51
+	id S1762536AbYDUP7O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYDUP67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:57:27 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58668 "EHLO
+	Mon, 21 Apr 2008 11:58:59 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58722 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762151AbYDUP5Y (ORCPT
+	by vger.kernel.org with ESMTP id S1755715AbYDUP66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:57:24 -0400
-Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
-	kmem_cache_destroy, scsi_put_host_cmd_pool()
+	Mon, 21 Apr 2008 11:58:58 -0400
+Subject: Re: Voyager phys_cpu_present_map compile error
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080421134925.GK9554@elte.hu>
-References: <20080419085758.GA18612@elte.hu>
-	 <1208611357.3280.5.camel@localhost.localdomain>
-	 <20080421134925.GK9554@elte.hu>
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080421120054.GA6788@elte.hu>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
+	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
+	 <20080421120054.GA6788@elte.hu>
 Content-Type: text/plain
-Date: Mon, 21 Apr 2008 10:57:20 -0500
-Message-Id: <1208793440.3640.22.camel@localhost.localdomain>
+Date: Mon, 21 Apr 2008 10:58:53 -0500
+Message-Id: <1208793533.3640.24.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -31,120 +29,166 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-21 at 15:49 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Mon, 2008-04-21 at 14:00 +0200, Ingo Molnar wrote:
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> > > x86.git allyesconfig bootup test produced the following warning in 
-> > > slub.c (and a stream of similar warnings later on):
-> [...]
-> 
-> > > config and bootlog at:
-> > > 
-> > >  http://redhat.com/~mingo/misc/config-Sat_Apr_19_10_28_28_CEST_2008.bad
-> > >  http://redhat.com/~mingo/misc/log-Sat_Apr_19_10_28_28_CEST_2008.bad
-> > > 
-> > > [a few .config options were turned off: just accept all the defaults 
-> > >  after 'make oldconfig']
+> > I shouldn't send bug reports at 3 in the morning...
 > > 
-> > The WARN_ON is caused by kmem_cache_destroy() with apparently 
-> > outstanding objects, isn't it?
-> > 
-> > The most significant piece of the log seems to be before with all 
-> > those isa SCSI drivers ... I assume you don't actually have any of the 
-> > hardware, you're just randomly inserting the modules?
+> > Attached is the .config for both Voyager build errors I reported.
 > 
-> correct. As i mentioned it in the first sentence this is an allyesconfig 
-> bzImage bootup. I.e. this is the bootup log of a "make allyesconfig" 
-> kernel - roughly analogous to (trying to) insert every module in 
-> existence. In the boot log you'll find 4871 initcalls, done by over 3000 
-> drivers that each is attempted to be loaded by the kernel (!).
+> thanks, the three patches below should fix it.
 > 
-> I do those bootups to "run as much as possible" kernel code and to make 
-> sure that the maximum combination of debug and other features still 
-> produces a working kernel.
-> 
-> I had to work half a year to gradually get the kernel to that stage 
-> (started with it more than a year ago, as part of the -rt kernel) but 
-> these days i'm booting a 32-bit and a 64-bit allyesconfig bzImage kernel 
-> almost daily :) These bootups already caught a healthy amount of bugs in 
-> the kernel, both important and unimportant ones. Recently the size of 
-> the allyesconfig bzImage kernel surpassed 42MB, so it's massive.
-> 
-> Btw., i also boot "allnoconfig" kernels. [with just the minimal set of 
-> features turned on to make the kernel minimally boot up and report back 
-> via networking.]
+> i ended up excluding Voyager configs from our test space some time ago 
+> (and VISWS as well - there's one more visws fix in x86.git), that's how 
+> this broke. These subarchitectures seem not to be used at all and the 
+> code wont boot on normal PCs. We could mark it BROKEN but the fix seems 
+> simple in any case.
 
-Thanks ... it looks like we may have trouble from devices that alter the
-unchecked isa dma flag after scsi_host_alloc.  The guilty parties appear
-to be gdth, eata, u14-34f, ultrastor, BusLogic and advansys.
-
-The trouble is that if you alloc the host with it one way and free it
-with it the other, the wrong freelist is used and the ref counts are
-invalid.
-
-Try this pseudo fix: it avoids allocating the freelist until add time
-(by which time they should all have fixed the flag).  It still doesn't
-change the fact that the host is allocated in the wrong region, but that
-shouldn't matter too much.
+The voyager pieces of this code look fine to me.  I can't test at the
+moment because we're having the carpets cleaned and I can't get down
+into the cellar where the systems are, but I'll do so shortly.
 
 James
 
----
 
-diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
-index 1592640..75af254 100644
---- a/drivers/scsi/hosts.c
-+++ b/drivers/scsi/hosts.c
-@@ -199,9 +199,13 @@ int scsi_add_host(struct Scsi_Host *shost, struct device *dev)
- 	if (!shost->can_queue) {
- 		printk(KERN_ERR "%s: can_queue = 0 no longer supported\n",
- 				sht->name);
--		goto out;
-+		goto fail;
- 	}
- 
-+	error = scsi_setup_command_freelist(shost);
-+	if (error)
-+		goto fail;
-+
- 	if (!shost->shost_gendev.parent)
- 		shost->shost_gendev.parent = dev ? dev : &platform_bus;
- 
-@@ -255,6 +259,8 @@ int scsi_add_host(struct Scsi_Host *shost, struct device *dev)
-  out_del_gendev:
- 	device_del(&shost->shost_gendev);
-  out:
-+	scsi_destroy_command_freelist(shost);
-+ fail:
- 	return error;
- }
- EXPORT_SYMBOL(scsi_add_host);
-@@ -376,10 +382,6 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
- 	else
- 		shost->dma_boundary = 0xffffffff;
- 
--	rval = scsi_setup_command_freelist(shost);
--	if (rval)
--		goto fail_kfree;
--
- 	device_initialize(&shost->shost_gendev);
- 	snprintf(shost->shost_gendev.bus_id, BUS_ID_SIZE, "host%d",
- 		shost->host_no);
-@@ -395,14 +397,12 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
- 			"scsi_eh_%d", shost->host_no);
- 	if (IS_ERR(shost->ehandler)) {
- 		rval = PTR_ERR(shost->ehandler);
--		goto fail_destroy_freelist;
-+		goto fail_kfree;
- 	}
- 
- 	scsi_proc_hostdir_add(shost->hostt);
- 	return shost;
- 
-- fail_destroy_freelist:
--	scsi_destroy_command_freelist(shost);
-  fail_kfree:
- 	kfree(shost);
- 	return NULL;
-
+> 	Ingo
+> 
+> ---------------------->
+> Subject: x86: voyager fix
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Mon Apr 21 13:39:53 CEST 2008
+> 
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/Kconfig                    |    2 +-
+>  arch/x86/kernel/setup.c             |    2 ++
+>  arch/x86/mach-voyager/voyager_smp.c |   17 -----------------
+>  3 files changed, 3 insertions(+), 18 deletions(-)
+> 
+> Index: linux-x86.q/arch/x86/Kconfig
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/Kconfig
+> +++ linux-x86.q/arch/x86/Kconfig
+> @@ -23,7 +23,7 @@ config X86
+>  	select HAVE_KPROBES
+>  	select HAVE_KRETPROBES
+>  	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+> -	select HAVE_ARCH_KGDB
+> +	select HAVE_ARCH_KGDB if !X86_VOYAGER
+>  
+> 
+>  config GENERIC_LOCKBREAK
+> Index: linux-x86.q/arch/x86/kernel/setup.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/kernel/setup.c
+> +++ linux-x86.q/arch/x86/kernel/setup.c
+> @@ -21,8 +21,10 @@ EXPORT_SYMBOL(boot_cpu_physical_apicid);
+>  DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+>  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+>  
+> +#ifndef CONFIG_X86_VOYAGER
+>  /* Bitmask of physically existing CPUs */
+>  physid_mask_t phys_cpu_present_map;
+> +#endif
+>  
+>  #if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
+>  /*
+> Index: linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/mach-voyager/voyager_smp.c
+> +++ linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
+> @@ -208,11 +208,6 @@ static struct irq_chip vic_chip = {
+>  /* used to count up as CPUs are brought on line (starts at 0) */
+>  static int cpucount = 0;
+>  
+> -/* steal a page from the bottom of memory for the trampoline and
+> - * squirrel its address away here.  This will be in kernel virtual
+> - * space */
+> -unsigned char *trampoline_base;
+> -
+>  /* The per cpu profile stuff - used in smp_local_timer_interrupt */
+>  static DEFINE_PER_CPU(int, prof_multiplier) = 1;
+>  static DEFINE_PER_CPU(int, prof_old_multiplier) = 1;
+> @@ -429,18 +424,6 @@ void __init smp_store_cpu_info(int id)
+>  	identify_secondary_cpu(c);
+>  }
+>  
+> -/* set up the trampoline and return the physical address of the code */
+> -unsigned long __init setup_trampoline(void)
+> -{
+> -	/* these two are global symbols in trampoline.S */
+> -	extern const __u8 trampoline_end[];
+> -	extern const __u8 trampoline_data[];
+> -
+> -	memcpy(trampoline_base, trampoline_data,
+> -	       trampoline_end - trampoline_data);
+> -	return virt_to_phys(trampoline_base);
+> -}
+> -
+>  /* Routine initially called when a non-boot CPU is brought online */
+>  static void __init start_secondary(void *unused)
+>  {
+> 
+> Subject: x86: Drop duplicate from setup.c
+> From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Date: Mon, 21 Apr 2008 13:31:55 +0400
+> 
+> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/setup.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> Index: linux-x86.q/arch/x86/kernel/setup.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/kernel/setup.c
+> +++ linux-x86.q/arch/x86/kernel/setup.c
+> @@ -18,8 +18,6 @@ unsigned disabled_cpus __cpuinitdata;
+>  unsigned int boot_cpu_physical_apicid = -1U;
+>  EXPORT_SYMBOL(boot_cpu_physical_apicid);
+>  
+> -physid_mask_t phys_cpu_present_map;
+> -
+>  DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+>  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+>  
+> Subject: x86: fix compilation error in VisWS
+> From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Date: Mon, 21 Apr 2008 13:32:01 +0400
+> 
+> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/mach-visws/mpparse.c |   15 +--------------
+>  1 file changed, 1 insertion(+), 14 deletions(-)
+> 
+> Index: linux-x86.q/arch/x86/mach-visws/mpparse.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/mach-visws/mpparse.c
+> +++ linux-x86.q/arch/x86/mach-visws/mpparse.c
+> @@ -11,22 +11,9 @@
+>  /* Have we found an MP table */
+>  int smp_found_config;
+>  
+> -/*
+> - * Various Linux-internal data structures created from the
+> - * MP-table.
+> - */
+> -int apic_version [MAX_APICS];
+> -
+>  int pic_mode;
+> -unsigned long mp_lapic_addr;
+> -
+> -/* Processor that is doing the boot up */
+> -unsigned int boot_cpu_physical_apicid = -1U;
+> -
+> -/* Bitmask of physically existing CPUs */
+> -physid_mask_t phys_cpu_present_map;
+>  
+> -unsigned int __initdata maxcpus = NR_CPUS;
+> +extern unsigned int __cpuinitdata maxcpus;
+>  
+>  /*
+>   * The Visual Workstation is Intel MP compliant in the hardware
 
