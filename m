@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbYDUBp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYDUB4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbYDUBp4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 21:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYDUBps
+	id S1757379AbYDUB4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 21:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYDUB4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 21:45:48 -0400
-Received: from smtp.enter.net ([216.193.128.24]:1179 "EHLO smtp.enter.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYDUBpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 21:45:47 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: x86: 4kstacks default
-Date: Sun, 20 Apr 2008 21:45:44 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <200804201643.35830.dhazelton@enter.net> <480BB85A.6020508@firstfloor.org>
-In-Reply-To: <480BB85A.6020508@firstfloor.org>
+	Sun, 20 Apr 2008 21:56:05 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:17992 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbYDUB4E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 21:56:04 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Dave Olson <dave.olson@qlogic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Ralph Campbell <ralph.campbell@qlogic.com>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull infiniband.git
+References: <adaskxkh6s2.fsf@cisco.com> <20080419081614.GA2437@elte.hu>
+	<adaod86aq9j.fsf@cisco.com>
+	<alpine.LFD.1.00.0804190817280.21302@topaz.pathscale.com>
+	<adafxthbz8p.fsf@cisco.com>
+	<alpine.LFD.1.00.0804200746310.6811@topaz.pathscale.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 20 Apr 2008 18:55:23 -0700
+In-Reply-To: <alpine.LFD.1.00.0804200746310.6811@topaz.pathscale.com> (Dave
+	Olson's message of "Sun, 20 Apr 2008 07:47:56 -0700 (PDT)")
+Message-ID: <aday7789dkk.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804202145.45146.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Apr 2008 01:55:24.0141 (UTC) FILETIME=[C36D11D0:01C8A352]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 April 2008 17:40:42 Andi Kleen wrote:
-> Daniel Hazelton wrote:
-> > At 12 threads per request it'd only take about 4200 outstanding requests.
-> > That is high, but I can see it happening.
->
-> If it happens it just won't work on 32bit.
+ > | Not sure I really follow this response... ipath_driver.c has
+ > | 
+ > | 	case PCI_DEVICE_ID_INFINIPATH_7220:
+ > | #ifndef CONFIG_PCI_MSI
+ > | 		ipath_dbg("CONFIG_PCI_MSI is not enabled, "
+ > | 			  "using IntX for unit %u\n", dd->ipath_unit);
+ > | #endif
+ > | 		ipath_init_iba7220_funcs(dd);
+ > | 		break;
+ > | 
+ > | so clearly ipath_init_iba7220_funcs() was intended to be built and used
+ > | even if CONFIG_PCI_MSI was not defined.  From the code it looks like all
+ > | should work fine if PCI_MSI is not set, so I don't know what you mean
+ > | about conditional checks.
+ > 
+ > Actually, it wasn't.  It was a late cleanup for another problem, and
+ > we didn't worry about the other issue, and should have.
 
-No, it won't. Which is what I was pointing out. You're hitting a different 
-wall there.
+Sorry, I still don't follow.  What is the antecedent of "it"?  What was
+"the other issue"?
 
-> > Just makes you sound foolish. Run the numbers yourself and you'll see
-> > that it is easy for a machine running highly threaded code to easily hit
-> > 50K threads.
->
-> I ran the numbers and the numbers showed that you need > 1.5GB of lowmem
-> with a somewhat realistic scenario (32K per thread) at 50k threads. And
-> subtracting 4k from that 32k number won't make any significant
-> difference (still 1.3GB)
->
-> If you claim that works on a 32bit system with typically 300-600MB
-> lowmem available (which is also shared by other subsystem) I know who
-> sounds foolish.
+I'm not sure I know the right fix for the build breakage.  It seems
+there are two possibilities:
 
-Never said it worked on a 32bit system. I was pointing out that there can be 
-workloads that do reach that 50K thread-count that you seem to be 
-calling "stupid". 
+ - build the iba7220 support unconditionally (the patch I posted).
 
-As I pointed out later in the message, I *HAVE* run into lowmem starvation on 
-a 32bit x86 system. You thoughtfully removed this, perhaps because you felt 
-it damaged your argument. The machine in question is an old P3 box with less 
-than 1G of memory in it. (Phys+Swap on that machine is only about 1.4G)
+ - change the case statement I quoted above so that the
+   ipath_init_iba7220_funcs() call is inside the #ifdef block (and add
+   an error message if CONFIG_PCI_MSI is not defined, as for the 6120
+   block in the same case statement).
 
-So yes, on a 32bit machine you run into problems at much, much less of a 
-workload and a much lower thread-count than the magic 50K you are so fond of 
-talking about. If I had been running 4K stacks on that machine I probably 
-would have survived the mis-configuration without the reboot it took to make 
-the machine functional again - I probably would still have reconfigured 
-Apache and MySQL, though - the machine still would have gone largely 
-unresponsive.
+Since it seems iba7220 works with INTx interrupts, the first choice
+makes the most sense to me.
 
-DRH
+And since all the pci_msi functions have stubs that just fail
+unconditionally if CONFIG_PCI_MSI is not defined, it seems we can remove
+the #ifdef CONFIG_PCI_MSI from the iba7220 files.
 
---
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+And given that at least some device support works even if neither
+PCI_MSI nor HT_IRQ is defined, then it makes sense to me to remove that
+Kconfig dependency.
+
+If I have something wrong, please let me know.
+
+ - R.
