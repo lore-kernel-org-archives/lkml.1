@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbYDUSnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYDUSn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757753AbYDUSnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 14:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYDUSnN
+	id S1756661AbYDUSn4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 14:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758421AbYDUSn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 14:43:13 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41566
+	Mon, 21 Apr 2008 14:43:26 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41578
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752225AbYDUSnN (ORCPT
+	by vger.kernel.org with ESMTP id S1757586AbYDUSnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 14:43:13 -0400
+	Mon, 21 Apr 2008 14:43:23 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 0/2] sched: refreshes
+Subject: [PATCH 2/2] sched: Use a 2-d bitmap for searching lowest-pri CPU
 To: mingo@elte.hu
 Cc: suresh.b.siddha@intel.com, rostedt@goodmis.org, chinang.ma@intel.com,
        arjan@linux.intel.com, willy@linux.intel.com, ghaskins@novell.com,
        linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Date: Mon, 21 Apr 2008 14:10:10 -0400
-Message-ID: <20080421180747.4560.67794.stgit@novell1.haskins.net>
+Date: Mon, 21 Apr 2008 14:10:21 -0400
+Message-ID: <20080421181021.4560.56324.stgit@novell1.haskins.net>
+In-Reply-To: <20080421180747.4560.67794.stgit@novell1.haskins.net>
+References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,14 +28,438 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-  Here is a refresh of the two patches you asked for:
+The current code use a linear algorithm which causes scaling issues
+on larger SMP machines.  This patch replaces that algorithm with a
+2-dimensional bitmap to reduce latencies in the wake-up path.
 
-#1 is "v3" of the "pushed" patch which fixes the compilation issue on
- !CONFIG_SMP
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-#2 is a resend of the 2-d bitmap, which includes a fix for that typo I
- mentioned.
+ kernel/Makefile       |    1 
+ kernel/sched.c        |    7 ++
+ kernel/sched_cpupri.c |  174 +++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched_cpupri.h |   36 ++++++++++
+ kernel/sched_rt.c     |   98 ++++++----------------------
+ 5 files changed, 239 insertions(+), 77 deletions(-)
 
-Regards,
--Greg
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 7071d44..8c55d9e 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -79,6 +79,7 @@ obj-$(CONFIG_MARKERS) += marker.o
+ obj-$(CONFIG_LATENCYTOP) += latencytop.o
+ obj-$(CONFIG_FTRACE) += trace/
+ obj-$(CONFIG_TRACING) += trace/
++obj-$(CONFIG_SMP) += sched_cpupri.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+diff --git a/kernel/sched.c b/kernel/sched.c
+index d859649..5899c29 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -75,6 +75,8 @@
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+ 
++#include "sched_cpupri.h"
++
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  * This is default implementation.
+@@ -501,6 +503,9 @@ struct root_domain {
+ 	 */
+ 	cpumask_t rto_mask;
+ 	atomic_t rto_count;
++#ifdef CONFIG_SMP
++	struct cpupri cpupri;
++#endif
+ };
+ 
+ /*
+@@ -6923,6 +6928,8 @@ static void init_rootdomain(struct root_domain *rd)
+ 
+ 	cpus_clear(rd->span);
+ 	cpus_clear(rd->online);
++
++	cpupri_init(&rd->cpupri);
+ }
+ 
+ static void init_defrootdomain(void)
+diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
+new file mode 100644
+index 0000000..52154fe
+--- /dev/null
++++ b/kernel/sched_cpupri.c
+@@ -0,0 +1,174 @@
++/*
++ *  kernel/sched_cpupri.c
++ *
++ *  CPU priority management
++ *
++ *  Copyright (C) 2007-2008 Novell
++ *
++ *  Author: Gregory Haskins <ghaskins@novell.com>
++ *
++ *  This code tracks the priority of each CPU so that global migration
++ *  decisions are easy to calculate.  Each CPU can be in a state as follows:
++ *
++ *                 (INVALID), IDLE, NORMAL, RT1, ... RT99
++ *
++ *  going from the lowest priority to the highest.  CPUs in the INVALID state
++ *  are not eligible for routing.  The system maintains this state with
++ *  a 2 dimensional bitmap (the first for priority class, the second for cpus
++ *  in that class).  Therefore a typical application without affinity
++ *  restrictions can find a suitable CPU with O(1) complexity (e.g. two bit
++ *  searches).  For tasks with affinity restrictions, the algorithm has a
++ *  worst case complexity of O(min(102, nr_domcpus)), though the scenario that
++ *  yields the worst case search is fairly contrived.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; version 2
++ *  of the License.
++ */
++
++#include "sched_cpupri.h"
++
++/* Convert between a 140 based task->prio, and our 102 based cpupri */
++static int convert_prio(int prio)
++{
++	int cpupri;
++
++	if (prio == CPUPRI_INVALID)
++		cpupri = CPUPRI_INVALID;
++	else if (prio == MAX_PRIO)
++		cpupri = CPUPRI_IDLE;
++	else if (prio >= MAX_RT_PRIO)
++		cpupri = CPUPRI_NORMAL;
++	else
++		cpupri = MAX_RT_PRIO - prio + 1;
++
++	return cpupri;
++}
++
++#define for_each_cpupri_active(array, idx)                    \
++  for (idx = find_first_bit(array, CPUPRI_NR_PRIORITIES);     \
++       idx < CPUPRI_NR_PRIORITIES;                            \
++       idx = find_next_bit(array, CPUPRI_NR_PRIORITIES, idx+1))
++
++/**
++ * cpupri_find - find the best (lowest-pri) CPU in the system
++ * @cp: The cpupri context
++ * @p: The task
++ * @lowest_mask: A mask to fill in with selected CPUs
++ *
++ * Note: This function returns the recommended CPUs as calculated during the
++ * current invokation.  By the time the call returns, the CPUs may have in
++ * fact changed priorities any number of times.  While not ideal, it is not
++ * an issue of correctness since the normal rebalancer logic will correct
++ * any discrepancies created by racing against the uncertainty of the current
++ * priority configuration.
++ *
++ * Returns: (int)bool - CPUs were found
++ */
++int cpupri_find(struct cpupri *cp, struct task_struct *p,
++		cpumask_t *lowest_mask)
++{
++	int                  idx      = 0;
++	int                  task_pri = convert_prio(p->prio);
++
++	for_each_cpupri_active(cp->pri_active, idx) {
++		struct cpupri_vec *vec  = &cp->pri_to_cpu[idx];
++		cpumask_t mask;
++
++		if (idx >= task_pri)
++			break;
++
++		cpus_and(mask, p->cpus_allowed, vec->mask);
++
++		if (cpus_empty(mask))
++			continue;
++
++		*lowest_mask = mask;
++		return 1;
++	}
++
++	return 0;
++}
++
++/**
++ * cpupri_set - update the cpu priority setting
++ * @cp: The cpupri context
++ * @cpu: The target cpu
++ * @pri: The priority (INVALID-RT99) to assign to this CPU
++ *
++ * Note: Assumes cpu_rq(cpu)->lock is locked
++ *
++ * Returns: (void)
++ */
++void cpupri_set(struct cpupri *cp, int cpu, int newpri)
++{
++	int                 *currpri = &cp->cpu_to_pri[cpu];
++	int                  oldpri  = *currpri;
++	unsigned long        flags;
++
++	newpri = convert_prio(newpri);
++
++	BUG_ON(newpri >= CPUPRI_NR_PRIORITIES);
++
++	if (newpri == oldpri)
++		return;
++
++	/*
++	 * If the cpu was currently mapped to a different value, we
++	 * first need to unmap the old value
++	 */
++	if (likely(oldpri != CPUPRI_INVALID)) {
++		struct cpupri_vec *vec  = &cp->pri_to_cpu[oldpri];
++
++		spin_lock_irqsave(&vec->lock, flags);
++
++		vec->count--;
++		if (!vec->count)
++			clear_bit(oldpri, cp->pri_active);
++		cpu_clear(cpu, vec->mask);
++
++		spin_unlock_irqrestore(&vec->lock, flags);
++	}
++
++	if (likely(newpri != CPUPRI_INVALID)) {
++		struct cpupri_vec *vec = &cp->pri_to_cpu[newpri];
++
++		spin_lock_irqsave(&vec->lock, flags);
++
++		cpu_set(cpu, vec->mask);
++		vec->count++;
++		if (vec->count == 1)
++			set_bit(newpri, cp->pri_active);
++
++		spin_unlock_irqrestore(&vec->lock, flags);
++	}
++
++	*currpri = newpri;
++}
++
++/**
++ * cpupri_init - initialize the cpupri structure
++ * @cp: The cpupri context
++ *
++ * Returns: (void)
++ */
++void cpupri_init(struct cpupri *cp)
++{
++	int i;
++
++	memset(cp, 0, sizeof(*cp));
++
++	for (i = 0; i < CPUPRI_NR_PRIORITIES; i++) {
++		struct cpupri_vec *vec = &cp->pri_to_cpu[i];
++
++		spin_lock_init(&vec->lock);
++		vec->count = 0;
++		cpus_clear(vec->mask);
++	}
++
++	for_each_possible_cpu(i)
++		cp->cpu_to_pri[i] = CPUPRI_INVALID;
++}
++
++
+diff --git a/kernel/sched_cpupri.h b/kernel/sched_cpupri.h
+new file mode 100644
+index 0000000..0b6a3d1
+--- /dev/null
++++ b/kernel/sched_cpupri.h
+@@ -0,0 +1,36 @@
++#ifndef _LINUX_CPUPRI_H
++#define _LINUX_CPUPRI_H
++
++#include <linux/sched.h>
++
++#define CPUPRI_NR_PRIORITIES 2+MAX_RT_PRIO
++#define CPUPRI_NR_PRI_WORDS CPUPRI_NR_PRIORITIES/BITS_PER_LONG
++
++#define CPUPRI_INVALID -1
++#define CPUPRI_IDLE     0
++#define CPUPRI_NORMAL   1
++/* values 2-101 are RT priorities 0-99 */
++
++struct cpupri_vec {
++	spinlock_t lock;
++	int        count;
++	cpumask_t  mask;
++};
++
++struct cpupri {
++	struct cpupri_vec pri_to_cpu[CPUPRI_NR_PRIORITIES];
++	long              pri_active[CPUPRI_NR_PRI_WORDS];
++	int               cpu_to_pri[NR_CPUS];
++};
++
++#ifdef CONFIG_SMP
++int  cpupri_find(struct cpupri *cp,
++		 struct task_struct *p, cpumask_t *lowest_mask);
++void cpupri_set(struct cpupri *cp, int cpu, int pri);
++void cpupri_init(struct cpupri *cp);
++#else
++#define cpupri_set(cp, cpu, pri) do { } while (0)
++#define cpupri_init() do { } while (0)
++#endif
++
++#endif /* _LINUX_CPUPRI_H */
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 3cc98be..79e5ad5 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -391,8 +391,11 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ 	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
+ 	rt_rq->rt_nr_running++;
+ #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
+-	if (rt_se_prio(rt_se) < rt_rq->highest_prio)
++	if (rt_se_prio(rt_se) < rt_rq->highest_prio) {
++		struct rq *rq = rq_of_rt_rq(rt_rq);
+ 		rt_rq->highest_prio = rt_se_prio(rt_se);
++		cpupri_set(&rq->rd->cpupri, rq->cpu, rt_se_prio(rt_se));
++	}
+ #endif
+ #ifdef CONFIG_SMP
+ 	if (rt_se->nr_cpus_allowed > 1) {
+@@ -416,6 +419,10 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ static inline
+ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ {
++#ifdef CONFIG_SMP
++	int highest_prio = rt_rq->highest_prio;
++#endif
++
+ 	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
+ 	WARN_ON(!rt_rq->rt_nr_running);
+ 	rt_rq->rt_nr_running--;
+@@ -439,6 +446,11 @@ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ 		rq->rt.rt_nr_migratory--;
+ 	}
+ 
++	if (rt_rq->highest_prio != highest_prio) {
++		struct rq *rq = rq_of_rt_rq(rt_rq);
++		cpupri_set(&rq->rd->cpupri, rq->cpu, rt_rq->highest_prio);
++	}
++
+ 	update_rt_migration(rq_of_rt_rq(rt_rq));
+ #endif /* CONFIG_SMP */
+ #ifdef CONFIG_RT_GROUP_SCHED
+@@ -723,73 +735,6 @@ static struct task_struct *pick_next_highest_task_rt(struct rq *rq, int cpu)
+ 
+ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
+ 
+-static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+-{
+-	int       lowest_prio = -1;
+-	int       lowest_cpu  = -1;
+-	int       count       = 0;
+-	int       cpu;
+-
+-	cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
+-
+-	/*
+-	 * Scan each rq for the lowest prio.
+-	 */
+-	for_each_cpu_mask(cpu, *lowest_mask) {
+-		struct rq *rq = cpu_rq(cpu);
+-
+-		/* We look for lowest RT prio or non-rt CPU */
+-		if (rq->rt.highest_prio >= MAX_RT_PRIO) {
+-			/*
+-			 * if we already found a low RT queue
+-			 * and now we found this non-rt queue
+-			 * clear the mask and set our bit.
+-			 * Otherwise just return the queue as is
+-			 * and the count==1 will cause the algorithm
+-			 * to use the first bit found.
+-			 */
+-			if (lowest_cpu != -1) {
+-				cpus_clear(*lowest_mask);
+-				cpu_set(rq->cpu, *lowest_mask);
+-			}
+-			return 1;
+-		}
+-
+-		/* no locking for now */
+-		if ((rq->rt.highest_prio > task->prio)
+-		    && (rq->rt.highest_prio >= lowest_prio)) {
+-			if (rq->rt.highest_prio > lowest_prio) {
+-				/* new low - clear old data */
+-				lowest_prio = rq->rt.highest_prio;
+-				lowest_cpu = cpu;
+-				count = 0;
+-			}
+-			count++;
+-		} else
+-			cpu_clear(cpu, *lowest_mask);
+-	}
+-
+-	/*
+-	 * Clear out all the set bits that represent
+-	 * runqueues that were of higher prio than
+-	 * the lowest_prio.
+-	 */
+-	if (lowest_cpu > 0) {
+-		/*
+-		 * Perhaps we could add another cpumask op to
+-		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
+-		 * Then that could be optimized to use memset and such.
+-		 */
+-		for_each_cpu_mask(cpu, *lowest_mask) {
+-			if (cpu >= lowest_cpu)
+-				break;
+-			cpu_clear(cpu, *lowest_mask);
+-		}
+-	}
+-
+-	return count;
+-}
+-
+ static inline int pick_optimal_cpu(int this_cpu, cpumask_t *mask)
+ {
+ 	int first;
+@@ -811,17 +756,12 @@ static int find_lowest_rq(struct task_struct *task)
+ 	cpumask_t *lowest_mask = &__get_cpu_var(local_cpu_mask);
+ 	int this_cpu = smp_processor_id();
+ 	int cpu      = task_cpu(task);
+-	int count    = find_lowest_cpus(task, lowest_mask);
+ 
+-	if (!count)
+-		return -1; /* No targets found */
++	if (task->rt.nr_cpus_allowed == 1)
++		return -1; /* No other targets possible */
+ 
+-	/*
+-	 * There is no sense in performing an optimal search if only one
+-	 * target is found.
+-	 */
+-	if (count == 1)
+-		return first_cpu(*lowest_mask);
++	if (!cpupri_find(&task_rq(task)->rd->cpupri, task, lowest_mask))
++		return -1; /* No targets found */
+ 
+ 	/*
+ 	 * At this point we have built a mask of cpus representing the
+@@ -1178,6 +1118,8 @@ static void join_domain_rt(struct rq *rq)
+ {
+ 	if (rq->rt.overloaded)
+ 		rt_set_overload(rq);
++
++	cpupri_set(&rq->rd->cpupri, rq->cpu, rq->rt.highest_prio);
+ }
+ 
+ /* Assumes rq->lock is held */
+@@ -1185,6 +1127,8 @@ static void leave_domain_rt(struct rq *rq)
+ {
+ 	if (rq->rt.overloaded)
+ 		rt_clear_overload(rq);
++
++	cpupri_set(&rq->rd->cpupri, rq->cpu, CPUPRI_INVALID);
+ }
+ 
+ /*
+
