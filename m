@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbYDUS5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbYDUS6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbYDUS5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 14:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYDUS5N
+	id S1760600AbYDUS6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 14:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759583AbYDUS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 14:57:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:12750 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758843AbYDUS5L (ORCPT
+	Mon, 21 Apr 2008 14:57:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61736 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759565AbYDUS53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 14:57:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=PACGymrYD4nOOc6ImDH+0nFpyx9r1DGXR69chSBmS8txMASPC5OvcDbYH06lljJArb3IRUcc15ojiVejaTafG/v8M0vIwyNDyJOL0oYkMfNx/UqHrLA8yjtNk5zMXAZvoyLOLLJOj2f+FEdZUFWO0AKEdk2A+fuVIhdeZe1P/qQ=
-Date: Mon, 21 Apr 2008 20:57:03 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: don't ever allocate PTEs from lowmem
-Message-ID: <20080421185703.GA5022@damson.getinternet.no>
+	Mon, 21 Apr 2008 14:57:29 -0400
+Date: Mon, 21 Apr 2008 14:57:27 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86_64: fix kernel rodata NX setting
+In-Reply-To: <20080421214824.0c5dc637@daedalus.pq.iki.fi>
+Message-ID: <Pine.LNX.4.58.0804211455010.23157@gandalf.stny.rr.com>
+References: <20080419184137.79957a07@daedalus.pq.iki.fi> <20080419161956.GA24685@Krystal>
+ <20080420000657.20ba6b4b@daedalus.pq.iki.fi> <20080420005208.12ad32fd@daedalus.pq.iki.fi>
+ <20080419215826.GC2831@Krystal> <20080420014206.5cd61d4a@daedalus.pq.iki.fi>
+ <20080420000509.GA7496@Krystal> <20080420101408.518b21b4@daedalus.pq.iki.fi>
+ <20080420194440.GA15319@Krystal> <20080420231838.21eaf426@daedalus.pq.iki.fi>
+ <20080420202533.GA16538@Krystal> <20080421214824.0c5dc637@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This is needed for the kernel to boot properly without OOMing if PSE is
-not present or disabled for some reason. It is the fix that you proposed for
-the kmemcheck OOM-on-boot case. It would also be possible to check the PSE
-feature before deciding where to allocate from, but I don't think it really
-matters.
+On Mon, 21 Apr 2008, Pekka Paalanen wrote:
 
-Looks ok?
+> From 35922163c8054bd8d12df78ebae6a6a603760206 Mon Sep 17 00:00:00 2001
+> From: Pekka Paalanen <pq@iki.fi>
+> Date: Mon, 21 Apr 2008 21:36:09 +0300
+> Subject: [PATCH] x86_64: fix kernel rodata NX setting
+>
+> Without CONFIG_DYNAMIC_FTRACE, mark_rodata_ro() would mark a wrong
+> number of pages as no-execute. The bug was introduced in the patch
+> "ftrace: dont write protect kernel text". The symptom was machine reboot
+> after a CPU hotplug.
+>
+> Signed-off-by: Pekka Paalanen <pq@iki.fi>
 
-(And yes, this DOES fix the OOM for me. :-D)
+Good catch!
 
+Acked-by: Steven Rostedt <srostedt@redhat.com>
 
-Vegard
+-- Steve
 
-
->From a9ba2e2b1888fad824d3f73561460e2027b2a149 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Mon, 21 Apr 2008 20:41:44 +0200
-Subject: [PATCH] x86: don't ever allocate PTEs from lowmem
-
-The PSE feature can be non-present for other reasons than having
-CONFIG_DEBUG_PAGEALLOC=y and may OOM for those cases too. Therefore, always
-try to allocate PTEs from the normal bootmem pool before falling back to
-lowmem.
-
-This is an update of:
-
-commit 509a80c49c512ac88bd67b981145f925a306111b
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Oct 17 18:04:34 2007 +0200
-
-    x86: fix CONFIG_PAGEALLOC related boot hangs/OOMs
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/mm/init_32.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index ee1091a..d3a411b 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -91,9 +91,7 @@ static pte_t * __init one_page_table_init(pmd_t *pmd)
- 	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
- 		pte_t *page_table = NULL;
- 
--#ifdef CONFIG_DEBUG_PAGEALLOC
- 		page_table = (pte_t *) alloc_bootmem_pages(PAGE_SIZE);
--#endif
- 		if (!page_table) {
- 			page_table =
- 				(pte_t *)alloc_bootmem_low_pages(PAGE_SIZE);
--- 
-1.5.4.1
-
+>  arch/x86/mm/init_64.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index 7851773..d7ae30a 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -792,7 +792,7 @@ void mark_rodata_ro(void)
+>  	 * The rodata section (but not the kernel text!) should also be
+>  	 * not-executable.
+>  	 */
+> -	set_memory_nx(rodata_start, (end - start) >> PAGE_SHIFT);
+> +	set_memory_nx(rodata_start, (end - rodata_start) >> PAGE_SHIFT);
+>
+>  	rodata_test();
+>
+> --
+> 1.5.3.7
+>
+>
