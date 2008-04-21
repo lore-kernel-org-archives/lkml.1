@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYDUAbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYDUAhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbYDUAbk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 20:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYDUAbb
+	id S1756674AbYDUAhA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbYDUAgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 20:31:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41044 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYDUAbb (ORCPT
+	Sun, 20 Apr 2008 20:36:53 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33220 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbYDUAgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 20:31:31 -0400
-Date: Mon, 21 Apr 2008 09:30:59 +0900
+	Sun, 20 Apr 2008 20:36:53 -0400
+Date: Mon, 21 Apr 2008 09:41:43 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, Shi Weihua <shiwh@cn.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
-Message-Id: <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0804210004470.1630@blonde.site>
-References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0804210004470.1630@blonde.site>
+To: balbir@linux.vnet.ibm.com
+Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, menage@google.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       containers@lists.osdl.org
+Subject: Re: [RFC][-mm] Memory controller hierarchy support (v1)
+Message-Id: <20080421094143.bfd27db3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4809AE78.9030000@linux.vnet.ibm.com>
+References: <20080419053551.10501.44302.sendpatchset@localhost.localdomain>
+	<20080419065624.9837E5A15@siro.lan>
+	<4809AE78.9030000@linux.vnet.ibm.com>
 Organization: Fujitsu
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -31,49 +31,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 00:51:30 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
-> >  disable-the-memory-controller-by-default-v3.patch
-> >  disable-the-memory-controller-by-default-v3-fix.patch
-> 
-> If those are to go in, then the sooner the better, yes.
-> 
-> But though I argued for cgroup_disable=memory (or some such),
-> I think myself that taking it even further now (requiring an
-> additional cgroup_enable=memory at boottime to get the memcg
-> stuff you chose with CGROUP_MEM_RES_CTLR=y at build time) is
-> confusing overkill, just messing around.
-> 
-> Others think differently.  A compromise would be to improve the
-> helptext for CGROUP_MEM_RES_CTLR (some of it is presently nonsense,
-> isn't it?  Certainly there's a significant overhead, but it's the
-> 32-bit struct page not the 64-bit which then suffers from crossing
-> cacheline boundaries).  Not much point in mentioning
-> cgroup_disable=memory if those patches go in, but needs to say
-> cgroup_enable=memory bootoption also needed.
-> 
-My concern around this is "default" action of cgroups may be different
-from each otther. It's confusing...
+On Sat, 19 Apr 2008 14:04:00 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
+> YAMAMOTO Takashi wrote:
+> >> -	spin_lock_irqsave(&counter->lock, flags);
+> >> -	ret = res_counter_charge_locked(counter, val);
+> >> -	spin_unlock_irqrestore(&counter->lock, flags);
+> >> +	*limit_exceeded_at = NULL;
+> >> +	local_irq_save(flags);
+> >> +	for (c = counter; c != NULL; c = c->parent) {
+> >> +		spin_lock(&c->lock);
+> >> +		ret = res_counter_charge_locked(c, val);
+> >> +		spin_unlock(&c->lock);
+> >> +		if (ret < 0) {
+> >> +			*limit_exceeded_at = c;
+> >> +			goto unroll;
+> >> +		}
+> >> +	}
+> >> +	local_irq_restore(flags);
+> >> +	return 0;
+> >> +
+> >> +unroll:
+> >> +	for (unroll_c = counter; unroll_c != c; unroll_c = unroll_c->parent) {
+> >> +		spin_lock(&unroll_c->lock);
+> >> +		res_counter_uncharge_locked(unroll_c, val);
+> >> +		spin_unlock(&unroll_c->lock);
+> >> +	}
+> >> +	local_irq_restore(flags);
+> >>  	return ret;
+> >>  }
+> > 
+> > i wonder how much performance impacts this involves.
+> > 
+> > it increases the number of atomic ops per charge/uncharge and
+> > makes the common case (success) of every charge/uncharge in a system
+> > touch a global (ie. root cgroup's) cachelines.
+> > 
+> 
+> Yes, it does. I'll run some tests to see what the overhead looks like. The
+> multi-hierarchy feature is very useful though and one of the TODOs is to make
+> the feature user selectable (possibly at run-time)
+> 
+I think multilevel cgroup is useful but this routines handling of hierarchy
+seems never good. An easy idea to aginst this is making a child borrow some
+amount of charge from its parent for reducing checks.
+If you go this way, please show possibility to reducing overhead in your plan.
 
-> >  memcgroup-check-and-initialize-page-cgroup-in-memmap_init_zone.patch
-> 
-> No, it was a good find from Shi, but you were right to think the patch
-> fishy, and Kame put in lots of work (thank you!) to identify the actual
-> culprit: he and Mel are discussing what the actual fix should be; and
-> we might want to choose a different fix for stable than for 2.6.26.
-> 
-> I think you should drop that memmap_init_zone patch: the cgroup
-> pointer is not the only field we assume is zeroed, both flags and
-> mapping can cause trouble if they were not originally zeroed.
-> Re-zero the whole struct page?  No, far better to fix the
-> root of the corruption, that Kame and Mel are working on.
-> 
-I'll test and repodt Mel's patch later. I think Shi's patch will be
-unnecessary.
+BTW, do you have ideas of attributes for children<->parent other than 'limit' ?
+For example, 'priority' between childlen.
 
 Thanks,
 -Kame
-
-
 
