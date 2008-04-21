@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYDUGbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYDUGdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYDUGbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 02:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYDUGbI
+	id S1755514AbYDUGdi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 02:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYDUGda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 02:31:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54326 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbYDUGbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 02:31:05 -0400
-Message-ID: <480C33E2.7060101@redhat.com>
-Date: Sun, 20 Apr 2008 23:27:46 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: kernel list <linux-kernel@vger.kernel.org>
-Subject: sys_indirect or many syscalls?
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 21 Apr 2008 02:33:30 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:48935 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751110AbYDUGda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 02:33:30 -0400
+Date: Mon, 21 Apr 2008 01:33:25 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: balbir@linux.vnet.ibm.com, xemul@openvz.org, yamamoto@valinux.co.jp,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       containers@lists.osdl.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [RFC][-mm] Memory controller hierarchy support (v1)
+Message-Id: <20080421013325.03cdd1a8.pj@sgi.com>
+In-Reply-To: <6599ad830804190849u31f13191m4dcca4e471493c2b@mail.gmail.com>
+References: <20080419053551.10501.44302.sendpatchset@localhost.localdomain>
+	<6599ad830804190849u31f13191m4dcca4e471493c2b@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Paul M wrote:
+> Cpusets could make use of this too, since
+> it has to traverse hierarchies sometimes.
 
-Linux,
+Yeah - I suppose cpusets could use it, though
+it's not critical.  A fair bit of work already
+went into cpusets so that it would not need to
+traverse this hierarchy on any critical code path,
+or while holding inconvenient locks.
 
-will you please make a decision regarding sys_indirect?  There has been
-no other proposal so the alternative is to add more syscalls.
+So cpusets shouldn't be the driving motivation
+for this, but it will likely be happy to go along
+for the ride.
 
-This really is a problem.  For one instance, see
-
-  http://bugzilla.redhat.com/show_bug.cgi?id=443321
-
-The problem is actually a socket call and we cannot reliably set the
-CLOEXEC bit without massive program slowdowns.  This is just one example.
-
-I still think the sys_indirect method is the best since it avoids bloat
-in the number of system calls.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkgMM+IACgkQ2ijCOnn/RHRwiQCfXzlb3ihLjJTfgEXIK9BObyvx
-H6oAoJBRj4c8lfePA8+GWzRzJXSdss95
-=pnY+
------END PGP SIGNATURE-----
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
