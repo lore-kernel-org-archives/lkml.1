@@ -1,100 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYDUBUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYDUBdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYDUBUX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 21:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYDUBUL
+	id S1756668AbYDUBdX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 21:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYDUBdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 21:20:11 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:48179 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753702AbYDUBUK (ORCPT
+	Sun, 20 Apr 2008 21:33:13 -0400
+Received: from web36705.mail.mud.yahoo.com ([209.191.85.39]:35431 "HELO
+	web36705.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752562AbYDUBdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 21:20:10 -0400
-Date: Mon, 21 Apr 2008 09:18:55 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-Message-ID: <20080421011855.GA6243@gondor.apana.org.au>
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
+	Sun, 20 Apr 2008 21:33:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=YX85jgRyryny4GBL5VhL9awbYhyUGwgsZ6IbJtUW++CQ4H7lrnDte6Hz9rr0SDH3/0x3i5piblE0ZuOK3yN5cyuggp7IxaqelqdgZNw7Aq2GhOxRxYFBDWFpACp/MwONYKHmiURqFuNc5rHwi1NObwEVjn8xFScq0427naydkvY=;
+X-YMail-OSG: ciQisTcVM1kpHL4JCTVQDLvqElGueq0VcUk5vcwuTOaCcSFwzcZN2Wzob1jdFhBPJSt_ftp0X..1Tqqm9GJEr1kdfUYK_xk2Enk3HplqSgrHthpZ_ll5ybu.yQ--
+Date: Sun, 20 Apr 2008 18:33:11 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Smartmedia/xd card support - request for comments
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080420160115.GA20694@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <490135.81340.qm@web36705.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+> >
+> > I wonder if mtd shouldn't modified to handler more clever controller :
+> > I saw some raw nand controller where you can program a batch of 
+> > command/read/write/ecc checking (that work on a internal RAM of the 
+> > controller (and may be use DMA)) and all you have to do is to wait the 
+> > controller do the job.
+> > These controllers are very hard to integrate in current nand layer 
+> > because it is very low level controller oriented.
+> 
+> The obvious solution is to have seperate io scheduling from io
+> completion.  Requires an asynchronous interface to read/write and some
+> sort of request queue.
+> 
+> Not quite as obvious is the question of whether to add all this to mtd
+> or to replace mtd with block devices, which already have it.
+> 
 
-On Sun, Apr 20, 2008 at 02:31:48PM -0700, Linus Torvalds wrote:
->
-> Talking about RCU I also think that whoever did those "rcu_dereference()" 
-> macros in <linux/list.h> was insane. It's totally pointless to do 
-> "rcu_dereference()" on a local variable. It simply *cannot* make sense. 
-> Herbert, Paul, you guys should look at it.
+I was thinking about it myself and it appears to be the only solution outright.
 
-Since I made the macros look this way I'm obliged to defend it :)
+The interesting, but apparently hard way to do so is to define a couple of
+REQ_TYPE_SPECIAL mtd-specific commands and use the existing block device queue
+to manipulate them. This can even open the possibility of "static" request
+translation: mtd_blkdev can pop the block device request, put it through media
+specific translator and then push a necessary set of mtd operations back into
+the same queue, delegating the processing to raw mtd device.
 
->  #define list_for_each_rcu(pos, head) \
-> -	for (pos = (head)->next; \
-> -		prefetch(rcu_dereference(pos)->next), pos != (head); \
-> -        	pos = pos->next)
-> +	for (pos = rcu_dereference((head)->next); \
-> +		prefetch(pos->next), pos != (head); \
-> +        	pos = rcu_dereference(pos->next))
+The simpler approach I'm following with my xd_card_blk is to define a
+simplistic, block device like api. First, the translator is initialized with
+the request range (offset + length) and backend is notified to start
+processing. The backend then pulls flash requests (READ, WRITE, COPY, ERASE)
+from the translator, possibly putting them through additional, protocol/host
+specific translation layer.
 
-Semantically there should be no difference between the two versions.
-The purpose of rcu_dereference is really similar to smp_rmb, i.e.,
-it adds a (conditional) read barrier between what has been read so
-far (including its argument), and what will be read subsequently.
 
-So if we expand out the current code it would look like
 
-	fetch (head)->next
-	store into pos
-again:
-	smp_read_barrier_depends()
-	prefetch(pos->next)
-	pos != (head)
-
-	...loop body...
-
-	fetch pos->next
-	store into pos
-	goto again
-
-Yours looks like
-
-	fetch (head)->next
-	smp_read_barrier_depends()
-	store into pos
-again:
-	prefetch(pos->next)
-	pos != (head)
-
-	...loop body...
-
-	fetch pos->next
-	smp_read_barrier_depends()
-	store into pos
-	goto again
-
-As the objective here is to insert a barrier before dereferencing
-pos (e.g., reading pos->next or using it in the loop body), these
-two should be identical.
-
-But I do concede that your version looks clearer, and has the
-benefit that should prefetch ever be optimised out with no side-
-effects, yours would still be correct while the current one will
-lose the barrier completely.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
