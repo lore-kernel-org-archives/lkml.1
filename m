@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbYDUIvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbYDUIwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbYDUIvf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 04:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbYDUIuR
+	id S1756965AbYDUIwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 04:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYDUIvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 04:50:17 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:58418 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 04:51:16 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41163 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757136AbYDUIuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 04:50:14 -0400
-Date: Mon, 21 Apr 2008 11:49:46 +0300
+	id S1757215AbYDUIvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 04:51:15 -0400
+Date: Mon, 21 Apr 2008 11:50:46 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Harihara Kadayam <harihara.kadayam@qlogic.com>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make qla2x00_issue_iocb_timeout() static
-Message-ID: <20080421084946.GW26897@cs181133002.pp.htv.fi>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
+Subject: [2.6 patch] x86: make smp_intr_init() static
+Message-ID: <20080421085046.GY26897@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,42 +23,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global qla2x00_issue_iocb_timeout() 
-static.
+This patch makes the needlessly global smp_intr_init() static.
+
+To avoid problems, it also renames the voyager one to 
+voyager_smp_intr_init().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
- drivers/scsi/qla2xxx/qla_gbl.h |    4 ----
- drivers/scsi/qla2xxx/qla_mbx.c |    2 +-
- 2 files changed, 1 insertion(+), 5 deletions(-)
 
-ab0e24892984c1327b66d640805c32cc8e93ef1f diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h
-index a9571c2..baceaea 100644
---- a/drivers/scsi/qla2xxx/qla_gbl.h
-+++ b/drivers/scsi/qla2xxx/qla_gbl.h
-@@ -152,10 +152,6 @@ extern int
- qla2x00_issue_iocb(scsi_qla_host_t *, void *, dma_addr_t, size_t);
+ arch/x86/kernel/apic_32.c           |    2 +-
+ arch/x86/mach-voyager/setup.c       |    2 +-
+ arch/x86/mach-voyager/voyager_smp.c |    2 +-
+ include/asm-x86/arch_hooks.h        |    1 -
+ 4 files changed, 3 insertions(+), 4 deletions(-)
+
+1d594cbfd44430bb4d22ba2a318f493316ca64e5 diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index 8317401..4ddec7f 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -1338,7 +1338,7 @@ void smp_error_interrupt(struct pt_regs *regs)
+ }
  
- extern int
--qla2x00_issue_iocb_timeout(scsi_qla_host_t *, void *, dma_addr_t, size_t,
--    uint32_t);
--
--extern int
- qla2x00_abort_command(scsi_qla_host_t *, srb_t *);
- 
- extern int
-diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index 7d0a8a4..61229e8 100644
---- a/drivers/scsi/qla2xxx/qla_mbx.c
-+++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -681,7 +681,7 @@ qla2x00_verify_checksum(scsi_qla_host_t *ha, uint32_t risc_addr)
-  * Context:
-  *	Kernel context.
-  */
--int
-+static int
- qla2x00_issue_iocb_timeout(scsi_qla_host_t *ha, void *buffer,
-     dma_addr_t phys_addr, size_t size, uint32_t tov)
+ #ifdef CONFIG_SMP
+-void __init smp_intr_init(void)
++static void __init smp_intr_init(void)
  {
+ 	/*
+ 	 * IRQ0 must be given a fixed assignment and initialized,
+diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
+index 5ae5466..b2dc6e1 100644
+--- a/arch/x86/mach-voyager/setup.c
++++ b/arch/x86/mach-voyager/setup.c
+@@ -27,7 +27,7 @@ static struct irqaction irq2 = {
+ void __init intr_init_hook(void)
+ {
+ #ifdef CONFIG_SMP
+-	smp_intr_init();
++	voyager_smp_intr_init();
+ #endif
+ 
+ 	setup_irq(2, &irq2);
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index be7235b..b145290 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -1341,7 +1341,7 @@ static void handle_vic_irq(unsigned int irq, struct irq_desc *desc)
+ #define QIC_SET_GATE(cpi, vector) \
+ 	set_intr_gate((cpi) + QIC_DEFAULT_CPI_BASE, (vector))
+ 
+-void __init smp_intr_init(void)
++void __init voyager_smp_intr_init(void)
+ {
+ 	int i;
+ 
+diff --git a/include/asm-x86/arch_hooks.h b/include/asm-x86/arch_hooks.h
+index 768aee8..6fe8f61 100644
+--- a/include/asm-x86/arch_hooks.h
++++ b/include/asm-x86/arch_hooks.h
+@@ -13,7 +13,6 @@
+  * that can be used by the hooks */
+ extern void init_ISA_irqs(void);
+ extern void apic_intr_init(void);
+-extern void smp_intr_init(void);
+ extern irqreturn_t timer_interrupt(int irq, void *dev_id);
+ 
+ /* these are the defined hooks */
 
