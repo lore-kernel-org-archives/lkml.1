@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbYDUQ7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbYDURA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762129AbYDUQ7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYDUQ7m
+	id S1762627AbYDURA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbYDURAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:59:42 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10613 "EHLO mga09.intel.com"
+	Mon, 21 Apr 2008 13:00:50 -0400
+Received: from mail.queued.net ([207.210.101.209]:3084 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752784AbYDUQ7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:59:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,690,1199692800"; 
-   d="scan'208";a="319529868"
-Message-ID: <480CC7A7.4070709@intel.com>
-Date: Mon, 21 Apr 2008 09:58:15 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
-       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
-References: <1208282804.23631.27.camel@localhost> <175f5a0f0804151315x1e192fc7p7dac1e84fd154211@mail.gmail.com> <48051173.5030802@intel.com> <48051734.1000107@redhat.com> <1208426550.6049.10.camel@localhost> <48078AF6.2020003@intel.com> <20080421152821.GA18452@elte.hu>
-In-Reply-To: <20080421152821.GA18452@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755440AbYDURAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 13:00:49 -0400
+Date: Mon, 21 Apr 2008 13:03:20 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Mitch Bradley <wmb@firmworks.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       jordan.crouse@amd.com
+Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
+Message-ID: <20080421130320.38b5f505@ephemeral>
+In-Reply-To: <1208793253.9212.507.camel@pmac.infradead.org>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+	<20080418202925.b18452c5.akpm@linux-foundation.org>
+	<20080419092544.378664a8@ephemeral>
+	<20080419133909.5aa6b63e@ephemeral>
+	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
+	<480C0582.9010509@firmworks.com>
+	<86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
+	<480C1286.3040307@firmworks.com>
+	<20080421102417.6de71391@ephemeral>
+	<1208793253.9212.507.camel@pmac.infradead.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Apr 2008 16:59:30.0781 (UTC) FILETIME=[10F170D0:01C8A3D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+On Mon, 21 Apr 2008 16:54:13 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Mon, 2008-04-21 at 10:24 -0400, Andres Salomon wrote:
+> > I'm not actually convinced that we *do* want to keep OFW resident in memory,
+> > especially given the memory tricks we need to play.  I also don't actually
+> > like the OFW interface that we.  The debugging aspect of it was a
+> > compelling argument up until a week ago (when kernel debuggers started
+> > finally finding their way into the kernel).
 > 
->> We keep seing this exact issue pop up everywhere - especially with 
->> e1000(e) datacenter users - this code _has_ to go or be fixed. Since 
->> there is a perfectly viable solution, I strongly suggest disabling it.
+> I don't actually think that the debugging aspect was _ever_ a compelling
+> argument. It might have made it theoretically possible for _Mitch_ to
+> debug kernel problems, should he be inclined to do so -- but for the
+> rest of us mere mortals it's just a PITA trying to keep OpenFirmware
+> live. A gdb stub is much more useful, in my experience.
 > 
-> strongly agreed. Thanks Auke, applied.
+> > However, until we clean up the promfs stuff, there's no chance of getting
+> > an OFW device tree upstream.
 > 
-> 	Ingo
+> I see no reason why we shouldn't be able to create a 'flattened'b
+> device-tree during early boot, like the PowerPC kernel does. And use it
+> thereafter, having quiesced OpenFirmware. Haven't we already been
+> working on unifying this between SPARC and PowerPC kernels?
+
+Quite simply, it's a lot more work (*and* we have to play nice w/
+sparc and ppc).  I had intended to eventually do it, but first I wanted
+to get this stuff in for 2.6.26 so that we could at least boot upstream
+kernels on XOs.
+
+I was also hoping to not get into this conversation, but alas.. too
+late. :)
 
 
-excellent, ignore my other reply to Pavel - I didn't see this reply yet :)
+> 
+> I definitely don't think we need to play these tricks to keep
+> OpenFirmware resident while the kernel is running. Take a look at your
+> second patch -- it's _all_ just lookups in the device-tree, and you're
+> inventing a new way to do it instead of using the existing one.
+> 
 
-Thanks Ingo
 
-
-Auke
-
+-- 
+Need a kernel or Debian developer?  Contact me, I'm looking for contracts.
