@@ -1,148 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYDUJOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbYDUJPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756359AbYDUJOf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 05:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYDUJO0
+	id S1757151AbYDUJPH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 05:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbYDUJOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 05:14:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36479 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbYDUJOY (ORCPT
+	Mon, 21 Apr 2008 05:14:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:14233 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755191AbYDUJOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 05:14:24 -0400
-Subject: Re: Possible circular locking dependency while running valgrind on
-	an executable over CIFS
-From: Peter Zijlstra <peterz@infradead.org>
-To: Brandon Ehle <azverkan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Steve French <smfrench@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <3c5a513f0804202004y35820ddfse9195f883428a7db@mail.gmail.com>
-References: <3c5a513f0804202004y35820ddfse9195f883428a7db@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 11:14:22 +0200
-Message-Id: <1208769262.7115.164.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Mon, 21 Apr 2008 05:14:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FJwJRirtosUc7vyWOzd12jhHsNAPnwaMWfP/aZciYMePJhqcMo/ozgFH0hMwc35p5VDAfdSKNje6wjeVpf0VKWG+YYldNkbHGYBdWq3W0Cu7BS5UMIs/sNEJjsUkHPvvugzCQ8N2eaKgOsOFI71CfMBjJplqgCjUxpcSCoW4VlI=
+Message-ID: <c4e36d110804210214j5b6cd2e9p738b4a9c52d9aa03@mail.gmail.com>
+Date: Mon, 21 Apr 2008 11:14:48 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Kernel development list" <linux-kernel@vger.kernel.org>
+Subject: BUG: unable to handle kernel NULL pointer at d_free+0x18/0x80
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-20 at 20:04 -0700, Brandon Ehle wrote:
-> While running valgrind on various executables located on a CIFS share,
-> I eventually got the message below.  The machine in question is
-> running 2.6.25 with a few of the debug options enabled, including lock
-> debugging.  Any idea if this is indicative of a real problem or just a
-> false positive?
+Hello
 
-Looks like a simple AB-BA deadlock to me. I admint being a bit ignorant
-about CIFS (nor really minding that) however it looks like you need to
-delay or decouple the actual sending of the read request from
-the .readpages() implementation.
+This oops appeared in my log - unsure how it is related to my DVB-T
+tuner test before.
+But I've also seen another weird resume with some similar crash.
 
-Steve?
+Happens with 2.6.25 - commit 48a86f548fb74928f9a466f52527e83fecdb4575
+(T61, 2GB)
 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.25 #29
-> -------------------------------------------------------
-> valgrind.bin/23200 is trying to acquire lock:
->  (sk_lock-AF_INET){--..}, at: [<c0557412>] tcp_sendmsg+0x17/0xb00
-> 
-> but task is already holding lock:
->  (&mm->mmap_sem){----}, at: [<c05c2abd>] do_page_fault+0x16d/0x8e0
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #1 (&mm->mmap_sem){----}:
->      [<c014bb79>] __lock_acquire+0xfa9/0xfdb
->      [<c014bc35>] lock_acquire+0x8a/0xbd
->      [<c05bf4f8>] down_read+0x3d/0x85
->      [<c05c2ad5>] do_page_fault+0x185/0x8e0
->      [<c05c102a>] error_code+0x72/0x78
->      [<c0526357>] memcpy_toiovec+0x43/0x5a
->      [<c0526910>] skb_copy_datagram_iovec+0x47/0x1d7
->      [<c0556e6a>] tcp_recvmsg+0xb3d/0xcc8
->      [<c051ff9f>] sock_common_recvmsg+0x3d/0x53
->      [<c051e8cf>] sock_recvmsg+0x10d/0x12a
->      [<c051f727>] sys_recvfrom+0x7c/0xc7
->      [<c051f7a8>] sys_recv+0x36/0x38
->      [<c051fbe8>] sys_socketcall+0x163/0x25b
->      [<c0104d78>] sysenter_past_esp+0x6d/0xc5
->      [<ffffffff>] 0xffffffff
-> 
-> -> #0 (sk_lock-AF_INET){--..}:
->      [<c014b771>] __lock_acquire+0xba1/0xfdb
->      [<c014bc35>] lock_acquire+0x8a/0xbd
->      [<c052098c>] lock_sock_nested+0xb5/0xc2
->      [<c0557412>] tcp_sendmsg+0x17/0xb00
->      [<c051ea28>] sock_sendmsg+0xf9/0x116
->      [<c051ed79>] kernel_sendmsg+0x28/0x37
->      [<c02cd885>] SendReceive2+0x197/0x69b
->      [<c02bb122>] CIFSSMBRead+0x110/0x2a0
->      [<c02c4d81>] cifs_readpages+0x18c/0x5c7
->      [<c016db8a>] __do_page_cache_readahead+0x161/0x1e1
->      [<c016dc4f>] do_page_cache_readahead+0x45/0x59
->      [<c0166c6e>] filemap_fault+0x30f/0x467
->      [<c01739f4>] __do_fault+0x56/0x43a
->      [<c0175530>] handle_mm_fault+0x150/0x873
->      [<c05c2ced>] do_page_fault+0x39d/0x8e0
->      [<c05c102a>] error_code+0x72/0x78
->      [<ffffffff>] 0xffffffff
-> 
-> other info that might help us debug this:
-> 
-> 1 lock held by valgrind.bin/23200:
->  #0:  (&mm->mmap_sem){----}, at: [<c05c2abd>] do_page_fault+0x16d/0x8e0
-> 
-> stack backtrace:
-> Pid: 23200, comm: valgrind.bin Not tainted 2.6.25 #29
->  [<c014a979>] print_circular_bug_tail+0x68/0x6a
->  [<c014b771>] __lock_acquire+0xba1/0xfdb
->  [<c0104e81>] ? restore_nocheck+0x12/0x15
->  [<c014bc35>] lock_acquire+0x8a/0xbd
->  [<c0557412>] ? tcp_sendmsg+0x17/0xb00
->  [<c052098c>] lock_sock_nested+0xb5/0xc2
->  [<c0557412>] ? tcp_sendmsg+0x17/0xb00
->  [<c0557412>] tcp_sendmsg+0x17/0xb00
->  [<c0148a7d>] ? get_lock_stats+0x1b/0x3e
->  [<c0142185>] ? getnstimeofday+0x34/0xde
->  [<c0113253>] ? lapic_next_event+0x15/0x1e
->  [<c051ea28>] sock_sendmsg+0xf9/0x116
->  [<c01689e2>] ? mempool_alloc_slab+0xe/0x10
->  [<c013cb12>] ? autoremove_wake_function+0x0/0x3a
->  [<c05c078f>] ? _spin_unlock+0x27/0x42
->  [<c02cca11>] ? allocate_mid+0xec/0x149
->  [<c051ed79>] kernel_sendmsg+0x28/0x37
->  [<c02cd885>] SendReceive2+0x197/0x69b
->  [<c02bb122>] CIFSSMBRead+0x110/0x2a0
->  [<c02c4d81>] cifs_readpages+0x18c/0x5c7
->  [<c016bdf3>] ? __alloc_pages+0x6d/0x3c7
->  [<c014a3b1>] ? mark_held_locks+0x4d/0x84
->  [<c01604b1>] ? __rcu_read_unlock+0x81/0xa4
->  [<c02c4bf5>] ? cifs_readpages+0x0/0x5c7
->  [<c016db8a>] __do_page_cache_readahead+0x161/0x1e1
->  [<c016dc4f>] do_page_cache_readahead+0x45/0x59
->  [<c0166c6e>] filemap_fault+0x30f/0x467
->  [<c01739f4>] __do_fault+0x56/0x43a
->  [<c0175530>] handle_mm_fault+0x150/0x873
->  [<c0109d8f>] ? native_sched_clock+0xa6/0xea
->  [<c05c2abd>] ? do_page_fault+0x16d/0x8e0
->  [<c0140740>] ? down_read_trylock+0x51/0x59
->  [<c05c2ced>] do_page_fault+0x39d/0x8e0
->  [<c014aea1>] ? __lock_acquire+0x2d1/0xfdb
->  [<c017862a>] ? vma_link+0xbc/0xd4
->  [<c01670c0>] ? __filemap_fdatawrite_range+0x61/0x6d
->  [<c01672ef>] ? filemap_fdatawrite+0x26/0x28
->  [<c02c603e>] ? cifs_flush+0x1c/0x5c
->  [<c0104dc1>] ? sysenter_past_esp+0xb6/0xc5
->  [<c014a596>] ? trace_hardirqs_on+0x10a/0x15a
->  [<c05c2950>] ? do_page_fault+0x0/0x8e0
->  [<c05c102a>] error_code+0x72/0x78
->  =======================
 
-<snip .config>
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000110
+IP: [d_free+24/128] d_free+0x18/0x80
+PGD 0
+Oops: 0000 [1] PREEMPT SMP
+CPU 0
+Modules linked in: usb_storage dvb_usb_af9015 dvb_usb_dibusb_common
+dib3000mc dibx000_common dvb_usb dvb_core tun nls_iso8859_2 nls_cp852
+vfat fat i915 drm ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4
+xt_state nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables
+x_tables bridge llc nfsd lockd nfs_acl auth_rpcgss exportfs autofs4
+sunrpc binfmt_misc dm_mirror dm_log dm_multipath dm_mod uinput
+kvm_intel kvm snd_hda_intel arc4 ecb snd_seq_oss crypto_blkcipher
+snd_seq_midi_event snd_seq cryptomgr snd_seq_device snd_pcm_oss
+crypto_algapi iwl3945 mac80211 e1000e psmouse snd_mixer_oss rtc_cmos
+evdev rtc_core thinkpad_acpi video snd_pcm mmc_block sdhci mmc_core
+snd_timer iTCO_wdt iTCO_vendor_support battery backlight nvram rtc_lib
+i2c_i801 i2c_core ac snd soundcore snd_page_alloc intel_agp output
+serio_raw cfg80211 button uhci_hcd ohci_hcd ehci_hcd usbcore [last
+unloaded: dvb_core]
+Pid: 210, comm: kswapd0 Not tainted 2.6.25 #56
+RIP: 0010:[d_free+24/128]  [d_free+24/128] d_free+0x18/0x80
+RSP: 0018:ffff81007ced9cf0  EFLAGS: 00010206
+RAX: 00000000000000f0 RBX: ffff8100202723d8 RCX: 0000000000000132
+RDX: 0000000000005e5d RSI: ffff81007ced4048 RDI: ffff8100202723d8
+RBP: ffff81007ced9d00 R08: 0000000000000002 R09: d37a6f4de9bd37a7
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100202723d8
+R13: ffff81007c9329d8 R14: ffff8100202723e0 R15: 0000000000000029
+FS:  0000000000000000(0000) GS:ffffffff81486000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000110 CR3: 0000000001001000 CR4: 00000000000026e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process kswapd0 (pid: 210, threadinfo ffff81007ced8000, task ffff81007ced4000)
+Stack:  ffff8100202723d8 ffff81007b7e73d8 ffff81007ced9d20 ffffffff810cb3eb
+ ffff8100202723d8 0000000000000000 ffff81007ced9d40 ffffffff810cb4d5
+ ffff8100202723d8 ffff8100202723d8 ffff81007ced9d80 ffffffff810cb642
+Call Trace:
+ [d_kill+59/96] d_kill+0x3b/0x60
+ [prune_one_dentry+197/240] prune_one_dentry+0xc5/0xf0
+ [prune_dcache+322/512] prune_dcache+0x142/0x200
+ [shrink_dcache_memory+65/80] shrink_dcache_memory+0x41/0x50
+ [shrink_slab+274/480] shrink_slab+0x112/0x1e0
+ [kswapd+1232/1552] kswapd+0x4d0/0x610
+ [isolate_pages_global+0/64] ? isolate_pages_global+0x0/0x40
+ [autoremove_wake_function+0/64] ? autoremove_wake_function+0x0/0x40
+ [_spin_unlock_irqrestore+69/144] ? _spin_unlock_irqrestore+0x45/0x90
+ [kswapd+0/1552] ? kswapd+0x0/0x610
+ [kthread+73/144] kthread+0x49/0x90
+ [child_rip+10/18] child_rip+0xa/0x12
+ [restore_args+0/48] ? restore_args+0x0/0x30
+ [kthread+0/144] ? kthread+0x0/0x90
+ [child_rip+0/18] ? child_rip+0x0/0x12
 
+
+Code: 95 49 81 e8 ab ff 21 00 5b 41 5c c9 c3 66 0f 1f 44 00 00 55 48
+89 e5 53 48 89 fb 48 83 ec 08 48 8b 87 b8 00 00 00 48 85 c0 74 0b <48>
+8b 40 20 48 85 c0 74 02 ff d0 48 83 7b 50 00 74 1e 48 8d bb
+RIP  [d_free+24/128] d_free+0x18/0x80
+ RSP <ffff81007ced9cf0>
+CR2: 0000000000000110
+---[ end trace ca143223eefdc828 ]---
