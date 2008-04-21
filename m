@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYDUIxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbYDUIyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbYDUIxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 04:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbYDUIvr
+	id S1757963AbYDUIyM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 04:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbYDUIvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 04:51:47 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41199 "EHLO smtp6.pp.htv.fi"
+	Mon, 21 Apr 2008 04:51:52 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41214 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759078AbYDUIvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 04:51:46 -0400
-Date: Mon, 21 Apr 2008 11:51:17 +0300
+	id S1759178AbYDUIvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 04:51:51 -0400
+Date: Mon, 21 Apr 2008 11:51:23 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@redhat.com>
+To: jgarzik@pobox.com
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make sata_set_spd_needed() static
-Message-ID: <20080421085117.GC26897@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] libata-core.c: remove no longer used exports
+Message-ID: <20080421085123.GD26897@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,39 +23,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sata_set_spd_needed() can now become static.
+Since the usages went to libata-sff, the following exports are no longer 
+used:
+- ata_std_prereset
+- ata_do_eh
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/ata/libata-core.c |    2 +-
- drivers/ata/libata.h      |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/ata/libata-core.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-bb4bcf58edb56a5fc9d7401046adcafcffff46a6 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 4b918d7..8c2bb65 100644
+8f30ab861a3649ea3bab9c830b922346364dbd55 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 8c2bb65..d684a22 100644
 --- a/drivers/ata/libata-core.c
 +++ b/drivers/ata/libata-core.c
-@@ -2761,7 +2761,7 @@ static int __sata_set_spd_needed(struct ata_link *link, u32 *scontrol)
-  *	RETURNS:
-  *	1 if SATA spd configuration is needed, 0 otherwise.
-  */
--int sata_set_spd_needed(struct ata_link *link)
-+static int sata_set_spd_needed(struct ata_link *link)
- {
- 	u32 scontrol;
+@@ -6217,7 +6217,6 @@ EXPORT_SYMBOL_GPL(sata_set_spd);
+ EXPORT_SYMBOL_GPL(ata_wait_after_reset);
+ EXPORT_SYMBOL_GPL(sata_link_debounce);
+ EXPORT_SYMBOL_GPL(sata_link_resume);
+-EXPORT_SYMBOL_GPL(ata_std_prereset);
+ EXPORT_SYMBOL_GPL(sata_link_hardreset);
+ EXPORT_SYMBOL_GPL(sata_std_hardreset);
+ EXPORT_SYMBOL_GPL(ata_std_postreset);
+@@ -6278,7 +6277,6 @@ EXPORT_SYMBOL_GPL(ata_eh_freeze_port);
+ EXPORT_SYMBOL_GPL(ata_eh_thaw_port);
+ EXPORT_SYMBOL_GPL(ata_eh_qc_complete);
+ EXPORT_SYMBOL_GPL(ata_eh_qc_retry);
+-EXPORT_SYMBOL_GPL(ata_do_eh);
+ EXPORT_SYMBOL_GPL(ata_std_error_handler);
  
-diff --git a/drivers/ata/libata.h b/drivers/ata/libata.h
-index 4aeeabb..ae2cfd9 100644
---- a/drivers/ata/libata.h
-+++ b/drivers/ata/libata.h
-@@ -101,7 +101,6 @@ extern int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
- 			      unsigned int readid_flags);
- extern int ata_dev_configure(struct ata_device *dev);
- extern int sata_down_spd_limit(struct ata_link *link);
--extern int sata_set_spd_needed(struct ata_link *link);
- extern int ata_down_xfermask_limit(struct ata_device *dev, unsigned int sel);
- extern void ata_sg_clean(struct ata_queued_cmd *qc);
- extern void ata_qc_free(struct ata_queued_cmd *qc);
+ EXPORT_SYMBOL_GPL(ata_cable_40wire);
 
