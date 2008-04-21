@@ -1,154 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYDUP52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762376AbYDUP5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbYDUP52 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 11:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYDUP5R
+	id S1762376AbYDUP5l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 11:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbYDUP51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 11:57:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41184 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755439AbYDUP5Q (ORCPT
+	Mon, 21 Apr 2008 11:57:27 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58668 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762151AbYDUP5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 11:57:16 -0400
-Date: Mon, 21 Apr 2008 08:49:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-In-Reply-To: <20080421020806.GL20138@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org>
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 Apr 2008 11:57:24 -0400
+Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
+	kmem_cache_destroy, scsi_put_host_cmd_pool()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20080421134925.GK9554@elte.hu>
+References: <20080419085758.GA18612@elte.hu>
+	 <1208611357.3280.5.camel@localhost.localdomain>
+	 <20080421134925.GK9554@elte.hu>
+Content-Type: text/plain
+Date: Mon, 21 Apr 2008 10:57:20 -0500
+Message-Id: <1208793440.3640.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 20 Apr 2008, Paul E. McKenney wrote:
-> > 
-> > But I do concede that your version looks clearer, and has the
-> > benefit that should prefetch ever be optimised out with no side-
-> > effects, yours would still be correct while the current one will
-> > lose the barrier completely.
+On Mon, 2008-04-21 at 15:49 +0200, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> Agreed as well -- compilers would also be within their right to bypass
-> the rcu_dereference() around the test/prefetch, which would allow
-> them to refetch.
+> > > x86.git allyesconfig bootup test produced the following warning in 
+> > > slub.c (and a stream of similar warnings later on):
+> [...]
+> 
+> > > config and bootlog at:
+> > > 
+> > >  http://redhat.com/~mingo/misc/config-Sat_Apr_19_10_28_28_CEST_2008.bad
+> > >  http://redhat.com/~mingo/misc/log-Sat_Apr_19_10_28_28_CEST_2008.bad
+> > > 
+> > > [a few .config options were turned off: just accept all the defaults 
+> > >  after 'make oldconfig']
+> > 
+> > The WARN_ON is caused by kmem_cache_destroy() with apparently 
+> > outstanding objects, isn't it?
+> > 
+> > The most significant piece of the log seems to be before with all 
+> > those isa SCSI drivers ... I assume you don't actually have any of the 
+> > hardware, you're just randomly inserting the modules?
+> 
+> correct. As i mentioned it in the first sentence this is an allyesconfig 
+> bzImage bootup. I.e. this is the bootup log of a "make allyesconfig" 
+> kernel - roughly analogous to (trying to) insert every module in 
+> existence. In the boot log you'll find 4871 initcalls, done by over 3000 
+> drivers that each is attempted to be loaded by the kernel (!).
+> 
+> I do those bootups to "run as much as possible" kernel code and to make 
+> sure that the maximum combination of debug and other features still 
+> produces a working kernel.
+> 
+> I had to work half a year to gradually get the kernel to that stage 
+> (started with it more than a year ago, as part of the -rt kernel) but 
+> these days i'm booting a 32-bit and a 64-bit allyesconfig bzImage kernel 
+> almost daily :) These bootups already caught a healthy amount of bugs in 
+> the kernel, both important and unimportant ones. Recently the size of 
+> the allyesconfig bzImage kernel surpassed 42MB, so it's massive.
+> 
+> Btw., i also boot "allnoconfig" kernels. [with just the minimal set of 
+> features turned on to make the kernel minimally boot up and report back 
+> via networking.]
 
-That is *not* the main problem.
+Thanks ... it looks like we may have trouble from devices that alter the
+unchecked isa dma flag after scsi_host_alloc.  The guilty parties appear
+to be gdth, eata, u14-34f, ultrastor, BusLogic and advansys.
 
-If you use "rcu_dereference()" on the wrong access, it not only loses the 
-"smp_read_barrier_depends()" (which is a no-op on all sane architectures 
-anyway), but it loses the ACCESS_ONCE() thing *entirely*.
+The trouble is that if you alloc the host with it one way and free it
+with it the other, the wrong freelist is used and the ref counts are
+invalid.
 
-Accessign a local automatic variable through a volatile pointer has 
-absolutely no effect - it's a total no-op apart from possibly generating 
-slightly worse code (although if I were a compiler, I'd just ignore it), 
-since the compiler is totally free to spill and reload the local variable 
-to its memory location - the stack - anyway!
+Try this pseudo fix: it avoids allocating the freelist until add time
+(by which time they should all have fixed the flag).  It still doesn't
+change the fact that the host is allocated in the wrong region, but that
+shouldn't matter too much.
 
-So the important part (for sane architectures) of rcu_dereference() is 
-that ACCESS_ONCE() hack, and it _only_ works if you actually do it on the 
-value as it gets loaded from the RCU-protected data structure, not later.
+James
 
-So forget about the prefetch, and forget about the barrier. They had 
-nothing to do with the bug. The bug existed even without the prefetch, 
-even in the versions that didn't have it at all. For example, look at the 
-"__list_for_each_rcu()" thing - the bug is there too, because it did just
+---
 
-	pos = (head)->next ... pos = pos->next
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 1592640..75af254 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -199,9 +199,13 @@ int scsi_add_host(struct Scsi_Host *shost, struct device *dev)
+ 	if (!shost->can_queue) {
+ 		printk(KERN_ERR "%s: can_queue = 0 no longer supported\n",
+ 				sht->name);
+-		goto out;
++		goto fail;
+ 	}
+ 
++	error = scsi_setup_command_freelist(shost);
++	if (error)
++		goto fail;
++
+ 	if (!shost->shost_gendev.parent)
+ 		shost->shost_gendev.parent = dev ? dev : &platform_bus;
+ 
+@@ -255,6 +259,8 @@ int scsi_add_host(struct Scsi_Host *shost, struct device *dev)
+  out_del_gendev:
+ 	device_del(&shost->shost_gendev);
+  out:
++	scsi_destroy_command_freelist(shost);
++ fail:
+ 	return error;
+ }
+ EXPORT_SYMBOL(scsi_add_host);
+@@ -376,10 +382,6 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 	else
+ 		shost->dma_boundary = 0xffffffff;
+ 
+-	rval = scsi_setup_command_freelist(shost);
+-	if (rval)
+-		goto fail_kfree;
+-
+ 	device_initialize(&shost->shost_gendev);
+ 	snprintf(shost->shost_gendev.bus_id, BUS_ID_SIZE, "host%d",
+ 		shost->host_no);
+@@ -395,14 +397,12 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 			"scsi_eh_%d", shost->host_no);
+ 	if (IS_ERR(shost->ehandler)) {
+ 		rval = PTR_ERR(shost->ehandler);
+-		goto fail_destroy_freelist;
++		goto fail_kfree;
+ 	}
+ 
+ 	scsi_proc_hostdir_add(shost->hostt);
+ 	return shost;
+ 
+- fail_destroy_freelist:
+-	scsi_destroy_command_freelist(shost);
+  fail_kfree:
+ 	kfree(shost);
+ 	return NULL;
 
-where both of those assignments to pos were done without rcu_derefence, so 
-the compiler could happily decide to use the value once, forget it, and 
-then re-load it later (when it might have changed).
 
-In other words, the thing I objected to was something much more 
-fundamental than any barriers. It was the fact that "rcu_dereference()" 
-simply *fundamentally* doesn't make sense when done on a local variable, 
-it can only make sense when actually loading the value from the data 
-structure.
-
-In short:
-
-	pos = ..
-
-	rcu_dereference(pos)
-
-is crazy and senseless, but
-
-	pos = rcu_dereference(pos->next)
-
-actually has some logical meaning.
-
-Now, all this said, I seriously doubt this was the source of the bug 
-itself. I do not actually really believe that the compiler had much room 
-for reloading things with or without any rcu_dereference(), and I doubt 
-the code generation really changes all that much in practice.
-
-(In fact, from a quick look, it seems that the only thing that 
-the incorrect use of "rcu_derference()" did was to force the "node" 
-variable onto the stack, since it did that volatime memory access through 
-its pointer - and fixing the use of rcu_dereference() just means that 
-"node" is kept in a register over the whole loop on x86-64, but the 
-compiler still needs a stack slot, it just picks "str" instead. Which is a 
-much better choice anyway.
-
-So what the incorrect use of rcu_dereference() really resulted in was just 
-this insane code (which is also seen in the BUG code):
-
-  14:   48 8b 45 d0             mov    -0x30(%rbp),%rax
-  18:   48 8b 00                mov    (%rax),%rax
-  1b:   48 89 45 d0             mov    %rax,-0x30(%rbp)
-  1f:   48 8b 45 d0             mov    -0x30(%rbp),%rax
-  23:   48 85 c0                test   %rax,%rax
-  26:   74 18                   je     0x40
-
-and notice how insane that is, and how pointless?
-
-First it loads %rax (node) from the ->next pointer of the previous value 
-of 'node' (which is a stack variable at -48(rbp)):
-
-	# node = node->next
-	mov    -0x30(%rbp),%rax
-	mov    (%rax),%rax
-
-then it saves that to the stack and immediately reloads it (because of the 
-volatile access on "pos" in "rcu_dereference(pos)"):
-
-	# rcu_dereference(node)
-	mov    %rax,-0x30(%rbp)
-	mov    -0x30(%rbp),%rax
-
-and then it tests it for being NULL:
-
-	test   %rax,%rax
-	je     0x40
-
-and notice how the only thing that rcu_dereference() did was a totally 
-unnecessary store and load to the stack? But also notice how gcc could 
-have done the accesses to "node" *before* this entry as multiple loads 
-from the original because there was nothing really holding this back.
-
-(But also notice how there really isn't much room for that in practice, 
-since the code that actually uses "node->next" isn't going to do a whole 
-lot of exciting stuff with it).
-
-With the corrected version, the insane "store and immediately reload from 
-stack" goes away" and diffstat on the assembly language actually shows 
-that there are two less instructions (most of the changes are just 
-compiler labels moving around, but there are a few real changes that 
-actually makes the assembler code look a bit more natural too).
-
-So to recap: I don't think this mattered in practice. But the code was 
-buggy in theory, even though in practice I don't think it would ever 
-generate any reloads on that "next" variable simply because nothing else 
-than the loop logic really used it.
-
-			Linus
