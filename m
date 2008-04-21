@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYDUKWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYDUKZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbYDUKWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbYDUKWG
+	id S1755479AbYDUKZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 06:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbYDUKZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:22:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:15756 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754233AbYDUKWF (ORCPT
+	Mon, 21 Apr 2008 06:25:11 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:45630 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbYDUKZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:22:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nbwv9gyHAGjmMr9oEHkbPa78CvZpHeHtrYZ5I05ch0zC58hXg/0uvgi6yM8ruy7NBnR8VEQm0XzIlrrp9nWjcREIH3+y8OK240VbpcgVlENAj71kkXcvPBKaxIE6TcXDenuzM/w2gSCA0kw2RPmNYe3aza3fHjpgZ9wuSRffk88=
-Message-ID: <e2e108260804210322x5cb1f421pc2ad550c4324b39a@mail.gmail.com>
-Date: Mon, 21 Apr 2008 12:22:03 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: fox@crisp.demon.co.uk
-Subject: Re: dtrace for linux
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <E1JnMJE-0001et-Mr@pr-webmail-2.demon.net>
+	Mon, 21 Apr 2008 06:25:09 -0400
+Message-ID: <480C6AA1.5000607@linux.vnet.ibm.com>
+Date: Mon, 21 Apr 2008 15:51:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, shiwh@cn.fujitsu.com,
+       mel@csn.ul.ie, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org> <Pine.LNX.4.64.0804210004470.1630@blonde.site> <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com> <20080420232427.1b399104.akpm@linux-foundation.org> <480C347C.6060702@linux.vnet.ibm.com> <20080421064725.GA32214@balbir.in.ibm.com> <1208770925.7115.167.camel@twins>
+In-Reply-To: <1208770925.7115.167.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1JnMJE-0001et-Mr@pr-webmail-2.demon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 1:17 AM,  <fox@crisp.demon.co.uk> wrote:
->
->  I would like to announce that I am working on dtrace for Linux.
->  I have the userland dtrace binary compiled, along with the first
->  pre-pre-alpha dtracedrv.ko module loaded into my kernel.
+>> This would enable the memory controller by default, it can be disabled
+>> using cgroup_disable=memory at boot time.
+> 
+> how about working on a runtime switch that only enables the whole
+> memcgroup machinery when an actual cgroup gets created - and disable it
+> again once the last cgroup goes.
+> 
 
-This is great news. How will this dtrace implementation differ from
-SystemTap (http://sourceware.org/systemtap/) ?
+Sounds like an interesting option to explore. I'll explore that a bit more.
 
-Bart.
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
