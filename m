@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYDUTuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbYDUTv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762099AbYDUTuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYDUTt7
+	id S1760280AbYDUTv7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYDUTvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:49:59 -0400
-Received: from mail.windriver.com ([147.11.1.11]:37698 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759418AbYDUTt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:49:58 -0400
-Message-ID: <480CEFBC.6050808@windriver.com>
-Date: Mon, 21 Apr 2008 14:49:16 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Mon, 21 Apr 2008 15:51:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:42548 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754505AbYDUTvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:51:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=g9bHY9ITD/lreeA+CLDdhW3Q0FvItYeHbgYkUBwWH97XSW/3Zvf73ZCVWe31Zy8TXxE616jkOOJDq7iyTcY9yY7agJXAR3X2GXTaQCqwWkslxQlBUghZf1YLt325tBLkxNGg5Z/EgS/GBncZlYK0A+nf4bkGLG/t2HP1rBXoaAs=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+Subject: Re: x86: 4kstacks default
+Date: Mon, 21 Apr 2008 21:51:02 +0200
+User-Agent: KMail/1.8.2
+Cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804210945.24479.vda.linux@googlemail.com> <480C96BC.4020400@sandeen.net>
+In-Reply-To: <480C96BC.4020400@sandeen.net>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kgdb: trivial sparse fixes in kgdb test-suite
-References: <1208543475.17196.44.camel@brick>
-In-Reply-To: <1208543475.17196.44.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Apr 2008 19:49:04.0729 (UTC) FILETIME=[C116B490:01C8A3E8]
+Content-Disposition: inline
+Message-Id: <200804212151.02241.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> Shadowed variable and integer as NULL pointer fixes:
-> drivers/misc/kgdbts.c:877:6: warning: symbol 'sys_open_test' shadows
-an earlier one
-> drivers/misc/kgdbts.c:537:27: originally declared here
-> drivers/misc/kgdbts.c:378:22: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:386:22: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:468:30: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:472:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:502:30: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:506:30: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:509:30: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:523:20: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:527:20: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:530:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:541:21: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:545:21: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:548:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:559:30: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:563:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:573:16: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:574:19: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:578:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:588:16: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:589:19: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:593:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:602:16: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:604:15: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:925:3: warning: Using plain integer as NULL pointer
-> drivers/misc/kgdbts.c:938:3: warning: Using plain integer as NULL pointer
->
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Monday 21 April 2008 15:29, Eric Sandeen wrote:
+> > Some number has to be picked. Why fitting in 4k is "bad" and fitting
+> > in 8k is "not bad"?
+> 
+> 
+> Because well-written code in several subsystems, used in combination in
+> common configurations, does not always fit, that is why.
+> 
+> Show me the "bug" in an nfs+xfs+md+scsi writeback stack oops
 
-This patch looked fine Harvey, I queued it for the next pull request at:
+Why nfs+xfs+md+ide works? Does scsi intrinsically require more stack
+than ide?
 
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=for_linus
+Why xfs code is said to be 5 timed bigged than e.g. reiserfs?
+Does it have to be that big? Does it really have to eat lots of stack?
 
-I made one minor change to 5 different code comments so as to make the
-checkpatch.pl's 80 character check happy.
+> and I'm 
+> sure it'll get "fixed."  But if it's simply complex code that happens to
+> need >4k, I will continue to argue that the limited stack size selection
+> is the problem, not the code running in it.
 
-Thanks,
-Jason.
+8k stack is limited too. Other Operating System, no doubt in the name
+of better stability, has even larger stack (16k or more).
 
+For what its worth, I do realize that there is a point of diminishing
+returns and increased pain when one tries to reduce stack usage.
+I feel that 4k for 32-bit x86 is not too painful. IMO, of course.
+
+> If someone has a workload and configuration which happens to fit in 4k
+> then turn it on, test the heck out of it, and have fun.  I've not seen
+> what I consider to be a convincing argument for making it the default
+> for everyone.
+
+Conversely:
+
+"If someone is strongly concerned about possibility of stack overflow,
+then turn on 8k option, and enjoy the benefits of wide testing which
+is provided by millions of people who run 4k stacks. If _that_ works
+ok in practice, 8k _ought_ to be 100.00% safe versus stack overflow".
+
+These threads about 4k stack seem to degenerate in ping-ponging
+of these arguments again and again.
+--
+vda
