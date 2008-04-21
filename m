@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYDUG3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYDUGbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYDUG3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 02:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYDUG3I
+	id S1755267AbYDUGbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 02:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYDUGbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 02:29:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60504 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYDUG3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 02:29:06 -0400
-Date: Sun, 20 Apr 2008 23:35:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Ryan_Permeh@McAfee.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: potential security issue
-Message-ID: <20080421063521.GA5373@kroah.com>
-References: <4195346499A4614AA5E42F9D082B6E0C017ED813@SNCEXMB3.corp.nai.org>
+	Mon, 21 Apr 2008 02:31:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54326 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750792AbYDUGbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 02:31:05 -0400
+Message-ID: <480C33E2.7060101@redhat.com>
+Date: Sun, 20 Apr 2008 23:27:46 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4195346499A4614AA5E42F9D082B6E0C017ED813@SNCEXMB3.corp.nai.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kernel list <linux-kernel@vger.kernel.org>
+Subject: sys_indirect or many syscalls?
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 20, 2008 at 10:12:01PM -0700, Ryan_Permeh@McAfee.com wrote:
-> I need a security maintainer contact to discuss a potential security
-> issue.  Due to the sensitive nature of the issue, I'd prefer to not
-> discuss this in an open list.  Please provide me with a PGP key.  I've
-> attached mine to ensure secure communications.  I am not a member of the
-> list, so please respond to me directly.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-See the file in the kernel tree, Documentation/SecurityBugs for
-information on how to submit security related things, and who to send it
-to (hint, security@kernel.org is the address).  That file also details
-the conditions that the developers at that address follow (no long
-disclosures, etc.)
+Linux,
 
-thanks,
+will you please make a decision regarding sys_indirect?  There has been
+no other proposal so the alternative is to add more syscalls.
 
-greg k-h
+This really is a problem.  For one instance, see
+
+  http://bugzilla.redhat.com/show_bug.cgi?id=443321
+
+The problem is actually a socket call and we cannot reliably set the
+CLOEXEC bit without massive program slowdowns.  This is just one example.
+
+I still think the sys_indirect method is the best since it avoids bloat
+in the number of system calls.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkgMM+IACgkQ2ijCOnn/RHRwiQCfXzlb3ihLjJTfgEXIK9BObyvx
+H6oAoJBRj4c8lfePA8+GWzRzJXSdss95
+=pnY+
+-----END PGP SIGNATURE-----
