@@ -1,21 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYDUWup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYDUWvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbYDUWup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 18:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbYDUWuh
+	id S1757497AbYDUWvA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 18:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbYDUWuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 18:50:37 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52354 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 18:50:44 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:35331 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754280AbYDUWug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 18:50:36 -0400
-Date: Tue, 22 Apr 2008 01:50:05 +0300
+	id S1756652AbYDUWun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 18:50:43 -0400
+Date: Tue, 22 Apr 2008 01:50:12 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86: make debug_pagealloc_proc_init() static
-Message-ID: <20080421225005.GE2633@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] mm/oom_kill.c: proper externs
+Message-ID: <20080421225011.GF2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,23 +22,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global debug_pagealloc_proc_init() 
-static.
+This patch adds proper extern declarations for three variables in 
+include/linux/oom.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-1b967b3304fc459c0c17f756a3cd172325603791 diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index f7823a1..c29ebd0 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -993,7 +993,7 @@ static const struct file_operations dpa_fops = {
- 	.release	= single_release,
+
+This patch has been sent on:
+- 14 Apr 2008
+- 31 Mar 2008
+- 25 Feb 2008
+
+ include/linux/oom.h |    4 ++++
+ kernel/sysctl.c     |    4 +---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+5ac59cd3de28fdad038576ebef6a2ac41c5d7c69 diff --git a/include/linux/oom.h b/include/linux/oom.h
+index 3852436..f76bf07 100644
+--- a/include/linux/oom.h
++++ b/include/linux/oom.h
+@@ -23,6 +23,10 @@ enum oom_constraint {
+ 	CONSTRAINT_MEMORY_POLICY,
  };
  
--int __init debug_pagealloc_proc_init(void)
-+static int __init debug_pagealloc_proc_init(void)
- {
- 	struct dentry *de;
++extern int sysctl_panic_on_oom;
++extern int sysctl_oom_kill_allocating_task;
++extern int sysctl_oom_dump_tasks;
++
+ extern int try_set_zone_oom(struct zonelist *zonelist);
+ extern void clear_zonelist_oom(struct zonelist *zonelist);
  
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8b7e954..ffb687c 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -45,6 +45,7 @@
+ #include <linux/nfs_fs.h>
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
++#include <linux/oom.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -64,9 +65,6 @@ extern int C_A_D;
+ extern int print_fatal_signals;
+ extern int sysctl_overcommit_memory;
+ extern int sysctl_overcommit_ratio;
+-extern int sysctl_panic_on_oom;
+-extern int sysctl_oom_kill_allocating_task;
+-extern int sysctl_oom_dump_tasks;
+ extern int max_threads;
+ extern int core_uses_pid;
+ extern int suid_dumpable;
 
