@@ -1,144 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYDULzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYDUL6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbYDULzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 07:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbYDULzM
+	id S1757636AbYDUL6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 07:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYDUL6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 07:55:12 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:42973 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755487AbYDULzK (ORCPT
+	Mon, 21 Apr 2008 07:58:40 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45064 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755716AbYDUL6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 07:55:10 -0400
-Message-ID: <480C8098.5080304@blueyonder.co.uk>
-Date: Mon, 21 Apr 2008 12:55:04 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 3.0a1pre (X11/2007120104)
+	Mon, 21 Apr 2008 07:58:39 -0400
+Date: Mon, 21 Apr 2008 13:13:38 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andi Kleen <andi@firstfloor.org>
+cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
+       xemul@openvz.org, shiwh@cn.fujitsu.com, mel@csn.ul.ie,
+       linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+In-Reply-To: <480C7D4C.1070502@firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0804211301500.20183@blonde.site>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0804210004470.1630@blonde.site>
+ <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
+ <20080420232427.1b399104.akpm@linux-foundation.org> <480C347C.6060702@linux.vnet.ibm.com>
+ <20080421064725.GA32214@balbir.in.ibm.com> <Pine.LNX.4.64.0804211158001.10521@blonde.site>
+ <480C7D4C.1070502@firstfloor.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-git1/2 not seeing /dev/sda1 (XFS root) or /dev/sda2 (swap)partitions
- on a SATA drive
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
- > Sid Boyce wrote:
- >> 2.6.25 x86_64 boots fine as does -git1/2 boxes using reiserfs and ext3.
- >> With xfs it can't find these and drops into a shell.
- >> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part2 swap
- >> swap defaults 0 0
- >> /dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 /
- >> xfs defaults 1 1
- >>
- >> From my .config
- >> CONFIG_XFS_FS=m
- >> CONFIG_XFS_QUOTA=y
- >> CONFIG_XFS_POSIX_ACL=y
- >> CONFIG_XFS_RT=y
- >>
- >> The other boxes are configure pretty much the same, but I can diff the
- >> .config's if required.
+On Mon, 21 Apr 2008, Andi Kleen wrote:
+> Hugh Dickins wrote:
+> > On Mon, 21 Apr 2008, Balbir Singh wrote:
+> > I've added Andi to the Cc's, I don't want to sneak away something
+> > he's expecting there.  If 2.6.25 had gone out with a convention that
+> > controller infrastructure gets compiled in, but has then to be enabled
+> > at boottime or runtime, okay; 
+> 
+> That is what I have been expecting yes.
+> 
+> If later the slow down is fixed it can be also enabled by default too.
 
- > Does it not find the device, or does it not find the filesystem? What's
- > the relevant message? Does it enumerate the partitions it finds, and is
- > your partition in the list? Do you see the xfs module initialization
- > message go by before the error to indicate that it really did get loaded?
+It is disabled by default, in the config; and Paul/Balbir already
+provided the cgroup_disable=memory bootoption to override that.
 
- > -Eric
+Is it wise to add an additional hurdle now that 2.6.25 has gone out?
+Is it wise to switch it around in future?  Seems a source of confusion
+to me (I already wasted time testing the same things twice in -mm
+because of this).
 
-It doesn't find the device either with 2.6.25-git1 or 2.6.25-git2. I've 
-tried a new kernel with xfs compiled in rather than as a module. The odd 
-thing is that other boxes with ext3, jfs and reiserfs are fine, 2 of 
-them with SATA drives are working with 2.6.25-git2.
-The BIOS settings (it's the latest BIOS), but it's OK on 2.6.25, just a 
-problem from 2.6.25-git1.
-Primary IDE Master     [Optiarc DVD RW A]
-SATA 1                 [WDC WD5000AAKS-0]
-SATA2 to SATA6 [None]
+I guess Andrew needs to make an executive decision!
+Whichever way round, we ought to clarify the config helptext.
 
-(Onboard Device Configuration)
-Silicon SATAII Controller [SATA Mode]
-
-Here goes the messages on boot for 2.6.25-git2.
------------------------------------------------
-scsi0 : sata_sil24
-scsi1 : sata_sil24
-ata1: SATA max UDMA/100 host n128@0xfdef8000 port 0xfdef8000 irq 16
-ata2: SATA max UDMA/100 host n128@0xfdeff000 port 0xfdefa000 irq 16
-ata1: SATA link down (SStatus 0 SControl 0)
-ata2: SATA link down (SStatus 0 SControl 0)
-sata_nv 0000:00:0d.0  using SUNCQ mode
-scsi2: sata_nv
---- ditto to scsi16 ----
-FATAL: Module xfs not found ### I have it built-in this time ###
-BIOS EDD facility v0.16 2004-Jun-25, 6 devices found
-Creating device nodes with udev
-
-<<< USB STUFF NOT INCLUDED >>>>
-Trying normal resume from /dev/sda2
-resume device /dev/sda2 not found (ignoring)
-Trying manual resume from /dev/sda2
-resume device /dev/sda2 not found (ignoring)
-Waiting for device 
-/dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 to appear
-could not find 
-/dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1
-Want me to fall back to 
-/dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1? (Y/n) y
-Waiting for device 
-/dev/disk/by-id/scsi-SATA_WDC_WD5000AAKS-_WD-WCAS85018679-part1 to appear
-not found -- exiting to /bin/sh
-$
------------------------------------
-There is no /dev/disk directory, /sys/block/ is empty
-
-
- From 2.6.25 dmesg
-==================
-scsi0 : sata_sil24
-scsi1 : sata_sil24
-ata1: SATA max UDMA/100 host m128@0xfdeff000 port 0xfdef8000 irq 16
-ata2: SATA max UDMA/100 host m128@0xfdeff000 port 0xfdefa000 irq 16
-input: PS/2 Generic Mouse as /devices/platform/i8042/serio1/input/input2
-ata1: SATA link down (SStatus 0 SControl 0)
-ata2: SATA link down (SStatus 0 SControl 0)
-sata_nv 0000:00:0d.0: version 3.5
-scsi2 : sata_nv
-scsi3 : sata_nv
-ata3: SATA max UDMA/133 cmd 0x9f0 ctl 0xbf0 bmdma 0xe000 irq 23
-ata4: SATA max UDMA/133 cmd 0x970 ctl 0xb70 bmdma 0xe008 irq 23
-ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata3.00: ATA-8: WDC WD5000AAKS-00YGA0, 12.01C02, max UDMA/133
-ata3.00: 976773168 sectors, multi 1: LBA48 NCQ (depth 0/32)
-ata3.00: configured for UDMA/133
-ata4: SATA link down (SStatus 0 SControl 300)
-scsi 2:0:0:0: Direct-Access     ATA      WDC WD5000AAKS-0 12.0 PQ: 0 ANSI: 5
-
-
-Driver 'sd' needs updating - please use bus_type methods
-sd 2:0:0:0: [sda] 976773168 512-byte hardware sectors (500108 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-usbcore: registered new device driver usb
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
-sd 2:0:0:0: [sda] 976773168 512-byte hardware sectors (500108 MB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
-  sda: sda1 sda2
-
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Hugh
