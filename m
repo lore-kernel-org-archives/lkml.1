@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbYDURnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762821AbYDURnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759733AbYDURnY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbYDURnP
+	id S1762821AbYDURnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYDURng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:43:15 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58570 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbYDURnO (ORCPT
+	Mon, 21 Apr 2008 13:43:36 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37514 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbYDURnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:43:14 -0400
-Date: Mon, 21 Apr 2008 10:43:11 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-Message-ID: <20080421174311.GE9153@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com> <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org> <20080421170526.GC9153@linux.vnet.ibm.com> <alpine.LFD.1.10.0804211023090.2779@woody.linux-foundation.org>
+	Mon, 21 Apr 2008 13:43:35 -0400
+Message-ID: <480CD178.2070806@zytor.com>
+Date: Mon, 21 Apr 2008 13:40:08 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804211023090.2779@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bart Van Assche <bart.vanassche@gmail.com>
+CC: Frantisek Rysanek <Frantisek.Rysanek@post.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: What pokes the ISA IO port of 0x211 ?
+References: <480C92C9.18283.A24BB91B@localhost> <e2e108260804210851j5cd86901r37f65190fac8a024@mail.gmail.com>
+In-Reply-To: <e2e108260804210851j5cd86901r37f65190fac8a024@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 10:30:19AM -0700, Linus Torvalds wrote:
+Bart Van Assche wrote:
+> On Mon, Apr 21, 2008 at 1:12 PM, Frantisek Rysanek
+> <Frantisek.Rysanek@post.cz> wrote:
+>>  I'm dealing with an embedded PC motherboard that contains some custom
+>>  circuitry (GPIO), accessible via an ISA IO range between 0x200 and
+>>  0x218.
+>>
+>>  There's an interesting issue with this in recent Linux (tried
+>>  2.6.22.6 and 2.6.24.2): something probes IO port 0x211 on boot, which
+>>  happens to be an add-on buzzer control port - effectively the kernel
+>>  boot launches an accoustic alarm :-)
+>>
+>>  Any ideas what this could be?
 > 
-> 
-> On Mon, 21 Apr 2008, Paul E. McKenney wrote:
-> > 
-> > I did take a quick look for improperly freeing dentries -- unhashed
-> > dentries are freed directly, so if there is a code path that somehow
-> > unhashes dentries and then d_free()s them without a grace period, we
-> > have a problem.
-> 
-> No, not even then.
-> 
-> We *always* unhash the dentries before freeing them, but we very 
-> consciously use "hlist_del_rcu()" on them, not "hlist_del_init()".
-> 
-> That, in turn, will mean that the "pprev" pointer will still be set, so 
-> the "hlist_unhashed()" thing will *not* trigger.
-> 
-> IOW, when we do that direct-free with:
-> 
-> 	if (hlist_unhashed(&dentry->d_hash))
-> 		__d_free(dentry);
-> 
-> the "hlist_unhashed()" will literally guarantee that i has *never* been on 
-> a hash-list at all!
+> Did you already have a look at /proc/ioports ? This file should
+> contain every range of ISA bus address in use by any kernel component.
+>
 
-Got it, hlist_del_rcu() sets ->pprev to LIST_POISON2, which is non-NULL,
-so the dentry still gets to wait for a grace period.  Color me blind!!!
+This might not be the case if a probe fails and the driver unload 
+itself.  It might be easiest to put in a hack in the kernel by hacking 
+outb/outw/outl and print stack trace when called when trying to poke 
+this port.
 
-> (If you want to test whether it is currently unhashed or not, you actually 
-> have to use "d_unhashed()" on the dentry under the dentry lock, which 
-> tests the DCACHE_UNHASHED bit).
+For what it's worth, this port is specified as "Game Blaster" in the 
+Interrupt List.
 
-And as it looks like you guessed, I was misreading the hlist_unhashed()
-above as d_unhashed().  :-/
+	-hpa
 
-							Thanx, Paul
 
-> Of course, there could be some bug in there, but the thing is, none of 
-> this has even changed in a long time, certainly not since 2.6.25. Which is 
-> why I think the dcache code is all fine, and the bug comes from somewhere 
-> else corrupting the data structures.
-> 
-> 		Linus
