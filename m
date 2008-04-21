@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYDUQVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbYDUQXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYDUQVQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbYDUQU5
+	id S1761665AbYDUQXp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYDUQXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:20:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42347 "EHLO mx2.mail.elte.hu"
+	Mon, 21 Apr 2008 12:23:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48636 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754155AbYDUQU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:20:56 -0400
-Date: Mon, 21 Apr 2008 18:20:32 +0200
+	id S1753109AbYDUQXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 12:23:35 -0400
+Date: Mon, 21 Apr 2008 18:22:58 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: suresh.b.siddha@intel.com, rostedt@goodmis.org, chinang.ma@intel.com,
-       arjan@linux.intel.com, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH v2] sched: push rt tasks only if newly activated tasks
-	have been added
-Message-ID: <20080421162032.GA12645@elte.hu>
-References: <20080421153438.9212.79406.stgit@novell1.haskins.net> <20080421161744.GB10121@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PCI MAINTAINER change
+Message-ID: <20080421162258.GA13319@elte.hu>
+References: <20080421062139.GA4901@suse.de> <20080421062806.GA4919@suse.de> <200804210855.28405.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0804210914030.2779@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080421161744.GB10121@elte.hu>
+In-Reply-To: <alpine.LFD.1.10.0804210914030.2779@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,129 +37,127 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-got a build failure:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
- In file included from kernel/sched.c:1972:
- kernel/sched_rt.c: In function 'enqueue_task_rt':
- kernel/sched_rt.c:522: error: 'struct rt_rq' has no member named 'pushed'
+> On Mon, 21 Apr 2008, Jesse Barnes wrote:
+> > 
+> > And now I get to figure out just how much trouble I've gotten myself into...
+> 
+> Mwhahahaaa! Sucker. You'll find out.
+> 
+> The good news is that most of the time, the PCI code works fine. The 
+> bad news is that when it doesn't work, it's usually due to something 
+> *really* odd, like some magic motherboard device that has magic 
+> resources that aren't part of the standard PCI resource set and that 
+> clash with some of our resource allocation.
+> 
+> And they don't show up in the PnP lists because Windows never put 
+> anything that could clash with them, so there was no reason for the 
+> BIOS engineers to bother.
+> 
+> IOW, it's usually almost totally undebuggable crud like "driver X 
+> doesn't work on my machine", and then it turns out that it only 
+> happens on that particular motherboard that is totally identical to 
+> all other motherboards _except_ for that BIOS table not having the 
+> right reserved IO regions.
+> 
+> .. and then there's the pluggable PCI stuff, of course. I'm not sure 
+> whether you took that over too. That's a whole different set of 
+> issues.
 
-with this config:
-
- http://redhat.com/~mingo/misc/config-Mon_Apr_21_18_02_45_CEST_2008.bad
-
-with the patch below against sched-devel/latest.
+that reminds me of the observations about differences between Linux's 
+and Windows's PCI resource allocation stategies, see the bugzilla entry 
+from today below.
 
 	Ingo
 
------------>
-Subject: sched: push rt tasks only if newly activated tasks have been added
-From: Gregory Haskins <ghaskins@novell.com>
-Date: Mon, 21 Apr 2008 11:42:18 -0400
+----------------->
 
-SCHED_RR can context-switch many times without having changed the
-run-queue. Therefore trying to push on each context switch can just be
-wasted effort since if it failed the first time, it will likely fail any
-subsequent times as well.  Instead, set a flag when we have successfully
-pushed as many tasks away as possible, and only clear it when the
-runqueue adds new tasks (effectively becoming a run-queue "dirty bit").
-If new tasks are added we should try again.  If any remote run-queues
-downgrade their priority in the meantime, they will try to pull from us
-(as they always do).
+http://bugzilla.kernel.org/show_bug.cgi?id=10461
 
-This attempts to address a performance regression reported by Suresh
-Siddha, et. al. in the 2.6.25 series.
+------- Comment #6 from linux@tjworld.net  2008-04-18 11:03 -------
+After a few debug printk() runs watching the allocation strategy I wondered why
+the PCI resources region doesn't start at the beginning of the largest gap:
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-CC: suresh.b.siddha@intel.com
-CC: mingo@elte.hu
-CC: rostedt@goodmis.org
-CC: chinang.ma@intel.com
-CC: arjan@linux.intel.com
-CC: willy@linux.intel.com
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c    |    2 ++
- kernel/sched_rt.c |   22 ++++++++++++++++++++--
- 2 files changed, 22 insertions(+), 2 deletions(-)
+[    0.000000] Allocating PCI resources starting at c2000000 (gap:
+c0000000:20000000)
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -462,6 +462,7 @@ struct rt_rq {
- #ifdef CONFIG_SMP
- 	unsigned long rt_nr_migratory;
- 	int overloaded;
-+	int pushed;
- #endif
- 	int rt_throttled;
- 	u64 rt_time;
-@@ -8073,6 +8074,7 @@ static void init_rt_rq(struct rt_rq *rt_
- #ifdef CONFIG_SMP
- 	rt_rq->rt_nr_migratory = 0;
- 	rt_rq->overloaded = 0;
-+	rt_rq->pushed = 0;
- #endif
- 
- 	rt_rq->rt_time = 0;
-Index: linux/kernel/sched_rt.c
-===================================================================
---- linux.orig/kernel/sched_rt.c
-+++ linux/kernel/sched_rt.c
-@@ -514,6 +514,13 @@ static void enqueue_task_rt(struct rq *r
- 	for_each_sched_rt_entity(rt_se)
- 		enqueue_rt_entity(rt_se);
- 
-+	/*
-+	 * Clear the "pushed" state since we have changed the run-queue and
-+	 * may need to migrate some of these tasks (see push_rt_tasks() for
-+	 * details)
-+	 */
-+	rq->rt.pushed = 0;
-+
- 	inc_cpu_load(rq, p->se.load.weight);
- }
- 
-@@ -913,7 +920,7 @@ static int push_rt_task(struct rq *rq)
- 	int ret = 0;
- 	int paranoid = RT_MAX_TRIES;
- 
--	if (!rq->rt.overloaded)
-+	if (!rq->rt.overloaded || rq->rt.pushed)
- 		return 0;
- 
- 	next_task = pick_next_highest_task_rt(rq, -1);
-@@ -973,6 +980,15 @@ out:
- }
- 
- /*
-+ * push_rt_tasks()
-+ *
-+ * Push as many tasks away as possible.  We only need to try once whenever
-+ * one or more new tasks are added to our runqueue.  After an inital attempt,
-+ * further changes in remote runqueue state will be accounted for with pull
-+ * operations.  Therefore, we mark the run-queue as "pushed" here, and clear it
-+ * during enqueue.  This primarily helps SCHED_RR tasks which will tend to
-+ * have a higher context-switch to enqueue ratio.
-+ *
-  * TODO: Currently we just use the second highest prio task on
-  *       the queue, and stop when it can't migrate (or there's
-  *       no more RT tasks).  There may be a case where a lower
-@@ -987,6 +1003,8 @@ static void push_rt_tasks(struct rq *rq)
- 	/* push_rt_task will return true if it moved an RT */
- 	while (push_rt_task(rq))
- 		;
-+
-+	rq->rt.pushed = 1;
- }
- 
- static int pull_rt_task(struct rq *this_rq)
-@@ -1091,7 +1109,7 @@ static void post_schedule_rt(struct rq *
- 	 * the lock was owned by prev, we need to release it
- 	 * first via finish_lock_switch and then reaquire it here.
- 	 */
--	if (unlikely(rq->rt.overloaded)) {
-+	if (unlikely(rq->rt.overloaded && !rq->rt.pushed)) {
- 		spin_lock_irq(&rq->lock);
- 		push_rt_tasks(rq);
- 		spin_unlock_irq(&rq->lock);
+since, when 3GB RAM is installed, the gap starts at 0xC0000000 but the
+allocation region begins at 0xC2000000.
+
+The other issue is that only the largest gap seems to be used for allocations,
+which explains why smaller allocations for other devices effectively choke off
+use of the range in 32-bit address space.
+
+In contrast, from looking at the addresses in the allocation comparison with
+Windows, it looks as if Windows uses *all* gaps for allocation rather than just
+the largest. It is noticeable that Windows allocates smaller regions in the
+gaps between the various 'high' e820 reservations.
+
+In looking for the origins of the gap-rounding code I eventually found commit
+f0eca9626c6becb6fc56106b2e4287c6c784af3d from 2005-09-09:
+
+[PATCH] Update PCI IOMEM allocation start
+
+    This fixes the problem with "Averatec 6240 pcmcia_socket0: unable to
+    apply power", which was due to the CardBus IOMEM register region being
+    allocated at an address that was actually inside the RAM window that had
+    been reserved for video frame-buffers in an UMA setup.
+
+This introduces a simple 'rounding up' algorithm to create a 'gap' between top
+of system RAM and beginning of PCI IOMEM as a guard against unintentional
+over-writes.
+
+The algorithm used was suggested in an example by Linus Torvalds with some
+provisos but was adopted verbatim in the patch for the Averatec bug. In his
+email, Linus went on to say:
+
+"The other alternative is to make PCI allocations generally start at the
+high range of the allowable - judging by the lspci listings I've seem from
+people under Windows, that seems to be what Windows does, which might be a
+good idea (ie the closer we match windows allocation patterns, the more
+likely we're to not hit some unmarked region - because windows testing
+would have hit it too)."
+
+See:
+http://lists.infradead.org/pipermail/linux-pcmcia/2005-September/002625.html
+
+That comment reflects my findings in dealing with this bug. Looking at the bug
+there are four issues:
+
+1. No 256MB region on a 256MB boundary available for the GFX IOMEM in the
+single largest PCI IOMEM region.
+
+2. The first available 256MB region on a 256MB boundary is unusable because
+pci_mem_start is being 'rounded up' to gap_start + round.
+
+3. Multiple gaps higher in the address space are left unused whereas Windows
+uses them for smaller allocations thus keeping the largest gap free for the
+devices with large requirements.
+
+4. Resources aren't being allocated top-down (subtractive decode) as
+recommended in PCI specs and Intel chipset datasheets, and done by Windows.
+
+If [3] was implemented in addition to [4] the smaller allocations would be at
+the top of the 32-bit address space much like Windows.
+
+Implementing [3] and [4] together should avoid the need for commit f0eca962
+(Cardbus IOMEM in shared video RAM space) since the Cardbus IOMEM would be in a
+'high' gap (as it would be with Windws).
+
+Dropping commit f0eca962 would solve [2] since the GFX could allocate 256MB on
+the 256MB boundary at 0xC0000000 in the largest gap.
+
+There might be an issue if a system has an undeclared shared video memory
+region *and* another PCI device that needs a large allocation.
+
+Also, Linus' mention of maintaining an unused gap between top-of-RAM and
+bottom-of-PCI-IOMEM needs to be considered. Would implementation of [2] and [3]
+negate the need for it? 
+Windows doesn't maintain a similar gap - is there a reason that Linux should?
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
