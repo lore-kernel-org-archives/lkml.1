@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbYDURg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbYDURmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763088AbYDURg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 13:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759954AbYDURgI
+	id S1758165AbYDURmw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 13:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYDURmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 13:36:08 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:16518 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757885AbYDURgG (ORCPT
+	Mon, 21 Apr 2008 13:42:44 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:48553 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753830AbYDURmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 13:36:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hRWlcg7OGSe3BrqmAWuwWar0QcwCZJjHrGieZC+5pOMU6JA5u2BkH0myV/P78t7WT7WKt0LtA3ECkIHOO1PC5IHy0rlU3O8SSM2Ob+KeoyNC9V0sRaBwcO0B8VyKE1hmexLd/U32DPmkPda4jJr5cP/VuhM0HQNzogLEv0flMeM=
-Message-ID: <e85b9d30804211007w9d5a4dds79a98fc9b088caee@mail.gmail.com>
-Date: Mon, 21 Apr 2008 19:07:12 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "=?ISO-8859-1?Q?Thomas_B=E4chler?=" <thomas@archlinux.org>
-Subject: Fwd: Linux 2.6.25 (coretemp reads high temperatures)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <e85b9d30804210928n6bb08f3bqa4e30741798009fa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Apr 2008 13:42:43 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAFAD9vDEhMROPA/2dsb2JhbACBUalE
+Date: Mon, 21 Apr 2008 13:42:39 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>, mingo@elte.hu, akpm@osdl.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86 NMI-safe INT3 and Page Fault (v5)
+Message-ID: <20080421174239.GA14718@Krystal>
+References: <20080417165839.GA25198@Krystal> <20080417165944.GB25198@Krystal> <20080417201410.GB31616@Krystal> <20080421140054.GB4685@ucw.cz> <480CA337.3090709@zytor.com> <20080421150825.GA4070@Krystal> <480CADD3.3010209@zytor.com> <20080421154756.GA2424@Krystal> <20080421172327.GA32278@elf.ucw.cz> <480CCEB0.8040401@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <200804182151.49021.lenb@kernel.org> <480CBC92.4070502@archlinux.org>
-	 <e85b9d30804210928n6bb08f3bqa4e30741798009fa@mail.gmail.com>
+In-Reply-To: <480CCEB0.8040401@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:40:31 up 52 days, 13:51,  4 users,  load average: 0.34, 0.48,
+	0.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this is the last mail I sent, I apologize if it got there already
-correctly and only my browser displays it corrupted on lkml.org)
-
-thermal isn't working on this board (if you mean /proc/acpi/thermal_zone ...)
-
-I also tried a vanilla kernel & it showed the same higher temperature ;(
-
-here the last mail (on lkml it was corrupted) - I don't know if you
-were able to read it
-
->  sure, I'll test-drive the vanilla-kernel, too
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Pavel Machek wrote:
+>>> There is also the page fault case. I think putting this test in
+>>> ret_from_exception would be both safe (it is executed for any
+>>> exception return) and fast (exceptions are rare).
+>> Eh? I thought that page fault is one of the hottest paths in kernel
+>> (along with syscall and packet receive/send)...
+>> 								Pavel
 >
->  thanks
 
-ok, tested the vanilla-kernel this morning and it shows the exact high
-temperatures (with CONFIG_THERMAL=y)
+On x86_64, we can pinpoint only the page faults returning to the kernel,
+which are rare and only caused by vmalloc accesses. Ideally we could do
+the same on x86_32.
 
-I've got a question:
+> Yeah, and the concept of handling page faults inside an NMI handler is pure 
+> fantasy.
+>
+> 	-hpa
+>
 
-when trying to disable thermal it just sits there & won't change:
-<*> Hardware Monitoring support  --->
- -*- Generic Thermal sysfs driver  --->
-
-it seemingly depends on other things:
-Selected by: ACPI_THERMAL && !X86_VOYAGER && ACPI && ACPI_PROCESSOR
-
-is it safe to disable acpi_processor and acpi or CONFIG_THERMAL in
-general ? or will it burn down my box ? ;)
-
-I'm asking this because it says/writes:
-CONFIG_ACPI_THERMAL:
-
-This driver adds support for ACPI thermal zones.  Most mobile and
-some desktop systems support ACPI thermal zones.  It is HIGHLY
-recommended that this option be enabled, as your processor(s)
-may be damaged without it.
-
-
-thanks
-
-Mat
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
