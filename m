@@ -1,168 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760449AbYDUTTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYDUTWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760449AbYDUTTl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYDUTT3
+	id S1758861AbYDUTWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYDUTVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:19:29 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52032 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568AbYDUTT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:19:28 -0400
-Date: Mon, 21 Apr 2008 20:19:25 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Adam Litke <agl@us.ibm.com>
-Cc: wli@holomorphy.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
-Message-ID: <20080421191925.GB13100@csn.ul.ie>
-References: <20080421183621.GA13100@csn.ul.ie> <1208804726.17385.109.camel@localhost.localdomain>
+	Mon, 21 Apr 2008 15:21:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:48232 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753719AbYDUTVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:21:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=l+Pa0C7/Gl9Hr+lwByY+bsYLNB0iZE0Nx7RBEPOhNe453ab79hseY78P654mfPy6ezzgjKRgQP6rBT9x7DfOtitEzOZkJYlOsh7Wp5YqKCwHip4HueRetLTBDCQZmA/seHo5i0GTGIpL0zWFz2ZZ+mariF8Be8ecYzv/k6aAMfA=
+Reply-To: yhlu.kernel@gmail.com
+To: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4] x86_64: restore mask_bits in msi shutdown
+Date: Mon, 21 Apr 2008 12:21:21 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, tglx@linutronix.de,
+       aabdulla@nvidia.com, jeff@garzik.org
+References: <200804182028.m3IKSKHY013602@imap1.linux-foundation.org> <86802c440804182315y5f7e4d80j678e7f510a8f0763@mail.gmail.com> <m163udu5by.fsf@frodo.ebiederm.org>
+In-Reply-To: <m163udu5by.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208804726.17385.109.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200804211221.22207.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (21/04/08 14:05), Adam Litke didst pronounce:
-> On Mon, 2008-04-21 at 19:36 +0100, Mel Gorman wrote:
-> > MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time. This is
-> > so that all future faults will be guaranteed to succeed. Applications are not
-> > expected to use mlock() as this can result in poor NUMA placement.
-> > 
-> > MAP_PRIVATE mappings do not reserve pages. This can result in an application
-> > being SIGKILLed later if a large page is not available at fault time. This
-> > makes huge pages usage very ill-advised in some cases as the unexpected
-> > application failure is intolerable. Forcing potential poor placement with
-> > mlock() is not a great solution either.
-> > 
-> > This patch reserves huge pages at mmap() time for MAP_PRIVATE mappings similar
-> > to what happens for MAP_SHARED mappings. Once mmap() succeeds, the application
-> > developer knows that future faults will also succeed. However, there is no
-> > guarantee that children of the process will be able to write-fault the same
-> > mapping. The assumption is being made that the majority of applications that
-> > fork() either use MAP_SHARED as an IPC mechanism or are calling exec().
-> > 
-> > Opinions?
-> 
-> Very sound idea in my opinion and definitely a step in the right
-> direction toward even more reliable huge pages.  With this patch (my
-> comments included), the only remaining cause of unexpected SIGKILLs
-> would be copy-on-write.
-> 
+Andrew,
 
-Correct. I have a test case which trivially triggers that parent/child problem
-but the parent is able to complete properly which was the important thing. If
-the pool is empty and dynamic resizing is disabled, then the test case exits
-at mmap() time which is what I figured was better behaviour.
+We should use this one.
 
-> > @@ -40,6 +40,34 @@ static int hugetlb_next_nid;
-> >   */
-> >  static DEFINE_SPINLOCK(hugetlb_lock);
-> > 
-> > +/* Helpers to track the number of pages reserved for a MAP_PRIVATE vma */
-> > +static unsigned long vma_resv_huge_pages(struct vm_area_struct *vma)
-> > +{
-> > +	if (!(vma->vm_flags & VM_MAYSHARE))
-> > +		return (unsigned long)vma->vm_private_data;
-> > +	return 0;
-> > +}
-> > +
-> > +static void adjust_vma_resv_huge_pages(struct vm_area_struct *vma,
-> > +						int delta)
-> > +{
-> > +	BUG_ON((unsigned long)vma->vm_private_data > 100);
-> > +	WARN_ON_ONCE(vma->vm_flags & VM_MAYSHARE);
-> > +	if (!(vma->vm_flags & VM_MAYSHARE)) {
-> > +		unsigned long reserve;
-> > +		reserve = (unsigned long)vma->vm_private_data + delta;
-> > +		vma->vm_private_data = (void *)reserve;
-> > +	}
-> > +}
-> > +static void set_vma_resv_huge_pages(struct vm_area_struct *vma,
-> > +						unsigned long reserve)
-> > +{
-> > +	BUG_ON((unsigned long)vma->vm_private_data > 100);
-> 
-> I assume you're just playing it safe for this RFC, but surely a 100 page
-> max reservation is not sufficient (especially since we have a whole
-> unsigned long to work with).  Also, I am not sure a BUG_ON would be an
-> appropriate response to exceeding the maximum.
-> 
+YH
 
-That BUG_ON is a mistake. I was tracking down a reservation-related bug and
-I introduced this temporarily and then forgot about it. Sorry about that.
+---
 
-> <snip>
-> 
-> > @@ -1223,52 +1305,30 @@ static long region_truncate(struct list_
-> >  	return chg;
-> >  }
-> > 
-> > -static int hugetlb_acct_memory(long delta)
-> > +int hugetlb_reserve_pages(struct inode *inode,
-> > +					long from, long to,
-> > +					struct vm_area_struct *vma)
-> >  {
-> > -	int ret = -ENOMEM;
-> > +	long ret, chg;
-> > 
-> > -	spin_lock(&hugetlb_lock);
-> >  	/*
-> > -	 * When cpuset is configured, it breaks the strict hugetlb page
-> > -	 * reservation as the accounting is done on a global variable. Such
-> > -	 * reservation is completely rubbish in the presence of cpuset because
-> > -	 * the reservation is not checked against page availability for the
-> > -	 * current cpuset. Application can still potentially OOM'ed by kernel
-> > -	 * with lack of free htlb page in cpuset that the task is in.
-> > -	 * Attempt to enforce strict accounting with cpuset is almost
-> > -	 * impossible (or too ugly) because cpuset is too fluid that
-> > -	 * task or memory node can be dynamically moved between cpusets.
-> > -	 *
-> > -	 * The change of semantics for shared hugetlb mapping with cpuset is
-> > -	 * undesirable. However, in order to preserve some of the semantics,
-> > -	 * we fall back to check against current free page availability as
-> > -	 * a best attempt and hopefully to minimize the impact of changing
-> > -	 * semantics that cpuset has.
-> > +	 * Shared mappings and read-only mappings should based their reservation
-> > +	 * on the number of pages that are already allocated on behalf of the
-> > +	 * file. Private mappings that are writable need to reserve the full
-> > +	 * area. Note that a read-only private mapping that subsequently calls
-> > +	 * mprotect() to make it read-write may not work reliably
-> >  	 */
-> > -	if (delta > 0) {
-> > -		if (gather_surplus_pages(delta) < 0)
-> > -			goto out;
-> > -
-> > -		if (delta > cpuset_mems_nr(free_huge_pages_node)) {
-> > -			return_unused_surplus_pages(delta);
-> > -			goto out;
-> > -		}
-> > +	if (vma->vm_flags & VM_SHARED)
-> > +		chg = region_chg(&inode->i_mapping->private_list, from, to);
-> > +	else {
-> > +		if (vma->vm_flags & VM_MAYWRITE)
-> > +			chg = to - from;
-> > +		else
-> > +			chg = region_chg(&inode->i_mapping->private_list,
-> > +								from, to);
-> > +		set_vma_resv_huge_pages(vma, chg);
-> 
-> To promote reliability, might it be advisable to just reserve the pages
-> regardless of VM_MAYWRITE?  Otherwise we might want to consider
-> reserving the pages in hugetlb_change_protection().
-> 
+[PATCH] irq: restore mask_bits in msi shutdown -v2
 
-It will mean excessive reservations for read-only mappings but I imagine
-that is a fairly rare case anyway so I'll do that. The patch as-is is
-vunerable to mprotect() making a read-only mapping read-write and the
-application later dying. Reserving everything up-front might be
-excessive but it's also a bit more robust.
+From: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Thanks Adam.
+Yinghai found after using 2.6.25-rc3 later to kexec RHEL 5.1,
+NIC can not be used.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+bisected to
+
+| commit 89d694b9dbe769ca1004e01db0ca43964806a611
+| Author: Thomas Gleixner <tglx@linutronix.de>
+| Date:   Mon Feb 18 18:25:17 2008 +0100
+|
+|   genirq: do not leave interupts enabled on free_irq
+|
+|   The default_disable() function was changed in commit:
+|
+|    76d2160147f43f982dfe881404cfde9fd0a9da21
+|    genirq: do not mask interrupts by default
+|
+|   It removed the mask function in favour of the default delayed
+|   interrupt disabling. Unfortunately this also broke the shutdown in
+|   free_irq() when the last handler is removed from the interrupt for
+|   those architectures which rely on the default implementations. Now we
+|   can end up with a enabled interrupt line after the last handler was
+|   removed, which can result in spurious interrupts.
+|
+|   Fix this by adding a default_shutdown function, which is only
+|   installed, when the irqchip implementation does provide neither a
+|   shutdown nor a disable function.
+|
+|   [@stable: affected versions: .21 - .24 ]
+
+for MSI, default_shutdown will call mask_bit for msi device.  so all mask bits
+will left disabled after free_irq.  then if kexec next kernel that only can
+use msi_enable bit.  all device's MSI can not be used.
+
+want to try to restore MSI mask bits that is saved before using msi in first
+kernel.
+
+Eric said:
+This is over complicated and for hardware that erroneously triggers
+a msi irq after free_irq may have potential problems.
+
+So lets do the much simpler, much safer, and more general method of
+restoring the mask bit to it's pci reset defined value (enabled) when
+we disable the kernels use of msi.
+
+it will work, because pci_diable_msi is called after free_irq is called.
+
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Tested-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 26938da..b9ff895 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -583,6 +583,9 @@ void pci_disable_msi(struct pci_dev* dev)
+ 
+ 	BUG_ON(list_empty(&dev->msi_list));
+ 	entry = list_entry(dev->msi_list.next, struct msi_desc, list);
++	/* Return the the pci reset with msi irqs unmasked */
++	if (entry->msi_attrib.maskbit)
++		msi_set_mask_bit(dev->irq, 0);
+ 	if (!entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI) {
+ 		return;
+ 	}
