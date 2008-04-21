@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYDUH3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYDUHpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbYDUH3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYDUH3G
+	id S1753973AbYDUHpU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYDUHpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:29:06 -0400
-Received: from hall2.aurel32.net ([91.121.138.14]:36174 "EHLO
-	hall2.aurel32.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbYDUH3F (ORCPT
+	Mon, 21 Apr 2008 03:45:08 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32995 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbYDUHpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:29:05 -0400
-Date: Mon, 21 Apr 2008 09:28:51 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mips BCM47XX compile error
-Message-ID: <20080421072851.GA3381@hall2.aurel32.net>
-Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
-	Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-	linux-kernel@vger.kernel.org
-References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <200804201214.46936.mb@bu3sch.de> <20080420224942.GA21009@volta.aurel32.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Mon, 21 Apr 2008 03:45:06 -0400
+Date: Mon, 21 Apr 2008 08:42:41 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, kernel@wantstofly.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, galak@kernel.crashing.org,
+       David Miller <davem@davemloft.net>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, cooloney@kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [git patches] minor irq handler cleanups
+Message-ID: <20080421074240.GA1938@flint.arm.linux.org.uk>
+References: <20080421013551.GA25960@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080420224942.GA21009@volta.aurel32.net>
-X-Mailer: Mutt 1.5.13 (2006-08-11)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080421013551.GA25960@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 12:49:42AM +0200, Aurelien Jarno wrote:
-> Michael Buesch a écrit :
-> > On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
-> >> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
-> >> (ssb: Add Gigabit Ethernet driver) causes the following
-> >> build error with bcm47xx_defconfig:
-> >>
-> >> <--  snip  -->
-> >>
-> >> ...
-> >>   LD      .tmp_vmlinux1
-> >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> >> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
-> >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> >> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
-> >> arch/mips/pci/built-in.o: In function `pcibios_init':
-> >> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
-> >> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
-> >> make[1]: *** [.tmp_vmlinux1] Error 1
-> > 
-> > Some parts of the new 47xx arch code are not ported, yet.
-> 
-> It would have been nice at least to warn before breaking a platform.
-> 
-> > Somebody should port all the new code from openwrt SVN over to mainline.
-> > I don't really have time for that, at the moment, though.
-> 
-> I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
-> can't find a possible fix among them. Do you have a better pointer?
-> 
+On Sun, Apr 20, 2008 at 09:35:51PM -0400, Jeff Garzik wrote:
+> diff --git a/arch/arm/mach-integrator/time.c b/arch/arm/mach-integrator/time.c
+> index 5278f58..5235f64 100644
+> --- a/arch/arm/mach-integrator/time.c
+> +++ b/arch/arm/mach-integrator/time.c
+> @@ -125,7 +125,7 @@ static int rtc_probe(struct amba_device *dev, void *id)
+>  	xtime.tv_sec = __raw_readl(rtc_base + RTC_DR);
+>  
+>  	ret = request_irq(dev->irq[0], arm_rtc_interrupt, IRQF_DISABLED,
+> -			  "rtc-pl030", dev);
+> +			  "rtc-pl030", NULL);
+>  	if (ret)
+>  		goto map_out;
+>  
 
-I have finally found it, the code was not in a form of a patch, but in
-form of a C code file.
+BTW, if you're removing the dev_id argument from request_irq(), that
+also needs to happen for the corresponding free_irq() calls.
+arch/arm/mach-integrator/time.c does:
 
-I am working on a fix.
+        free_irq(dev->irq[0], dev);
+
+and these are untouched.
 
 -- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
