@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbYDUOxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYDUOzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbYDUOxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 10:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYDUOxI
+	id S1755810AbYDUOzi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 10:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYDUOz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 10:53:08 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:9736 "EHLO
-	outbound5-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751245AbYDUOxG (ORCPT
+	Mon, 21 Apr 2008 10:55:28 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35799 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYDUOz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 10:53:06 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0JZOJUM-01-PMO-01
-Date: Mon, 21 Apr 2008 08:56:19 -0600
-From: Jordan Crouse <jordan.crouse@amd.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jfannin@gmail.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: 2.6.25-mm1
-Message-ID: <20080421145619.GA6354@cosmic.amd.com>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <20080419031024.GC3503@nineveh.local> <20080418202925.b18452c5.akpm@linux-foundation.org> <20080419092544.378664a8@ephemeral> <20080419103833.8b609319.akpm@linux-foundation.org> <20080419135047.5f77dfdb@ephemeral>
+	Mon, 21 Apr 2008 10:55:27 -0400
+Date: Mon, 21 Apr 2008 07:55:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
+       linux-wireless@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [RFC 0/3] Examples for the new sparse context tracking functionality
+Message-ID: <20080421145525.GB9153@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080410134810.629048000@sipsolutions.net> <20080419233338.GG20138@linux.vnet.ibm.com> <1208766355.26186.37.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080419135047.5f77dfdb@ephemeral>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 21 Apr 2008 14:48:56.0494 (UTC) FILETIME=[D3581CE0:01C8A3BE]
+In-Reply-To: <1208766355.26186.37.camel@johannes.berg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/04/08 13:50 -0400, Andres Salomon wrote:
-> On Sat, 19 Apr 2008 10:38:33 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, Apr 21, 2008 at 10:25:55AM +0200, Johannes Berg wrote:
 > 
-> > > On Sat, 19 Apr 2008 09:25:44 -0400 Andres Salomon <dilinger@queued.net> wrote:
-> > > On Fri, 18 Apr 2008 20:29:25 -0700
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Fri, 18 Apr 2008 23:10:24 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
-> > > > 
-> > > > > On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
-> [...]
-> > > > 
-> > > > which we probably just shouldn't do this at all unless we're running on the
-> > > > OLPC hardware.  But we need to do this to find out if we're running on the OLPC
-> > > > hardware!  Perhaps the warning should just be removed.
-> > > 
-> > > Hm.  We could either protect that code with an:
-> > > 
-> > > if (!is_geode())
-> > >   return;
-> > > 
-> > > Or I could add the OpenFirmware patches which would allow us to get
-> > > rid of this code, and instead check for the existence of OFW using
-> > > that.
-> > > 
-> > > The former is quick and easy; the latter is (imo) nicer, so long as
-> > > people don't have problems w/ the OFW code.  :)
-> > > 
-> > 
-> > Do both ;)
-> > 
-> > The quick-n-easy version sounds suitable for now.
+> > At some point in the future, we might want to distinguish between
+> > the different flavors of RCU -- except that there is already common
+> > code that doesn't care which flavor of RCU is in use, as long as
+> > some sort of RCU is present.  So make that "some point in the distant
+> > future"...
 > 
-> Heh, I already had sent the nicer version.  If people have some fundamental
-> problem w/ it, I can send the quick-n-easy version.
+> No big deal, just declare
+> 
+> my_specific_rcu_get() __acquires(RCU) __acquires(specificRCU);
+> 
+> and then annotate whatever needs the specific RCU type with
+> __requires(specificRCU)
 
-I prefer the nicer version.  It is not a good policy IMHO to wrap OLPC
-specfic code with is_geode() and friends.  Even by Geode standards, we've
-abused the code greatly for the benefit of the Geode, and few of those
-abuses would translate very well even to the general Geode community.  I 
-would prefer that we use the is_olpc() and #ifdef wrappers to ensure
-that the code that is exclusively OLPC stays exclusively OLPC.
+Cute!!!  I didn't realize you could mark a single interface with
+multiple __acquires() markings.
 
-Thanks,
-Jordan
+So if there is at least one match, sparse is happy?
 
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+							Thanx, Paul
