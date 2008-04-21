@@ -1,200 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYDUCIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYDUCXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYDUCIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 22:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYDUCIP
+	id S1755894AbYDUCXi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 22:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYDUCX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 22:08:15 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:50525 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYDUCIN (ORCPT
+	Sun, 20 Apr 2008 22:23:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49212 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbYDUCX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 22:08:13 -0400
-Date: Sun, 20 Apr 2008 19:08:07 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-Message-ID: <20080421020806.GL20138@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080421011855.GA6243@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 20 Apr 2008 22:23:27 -0400
+Date: Mon, 21 Apr 2008 11:20:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: Mel Gorman <mel@csn.ul.ie>, Shi Weihua <shiwh@cn.fujitsu.com>,
+       akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com
+Subject: Re: [PATCH]Fix usemap for DISCONTIG/FLATMEM with not-aligned zone
+ initilaization.
+Message-Id: <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080418161522.GB9147@csn.ul.ie>
+	<48080706.50305@cn.fujitsu.com>
+	<48080930.5090905@cn.fujitsu.com>
+	<48080B86.7040200@cn.fujitsu.com>
+	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
+	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 09:18:55AM +0800, Herbert Xu wrote:
-> Hi Linus:
-> 
-> On Sun, Apr 20, 2008 at 02:31:48PM -0700, Linus Torvalds wrote:
+On Sat, 19 Apr 2008 02:25:56 +0900 (JST)
+kamezawa.hiroyu@jp.fujitsu.com wrote:
+ 
+> >What about something like the following? Instead of expanding the size of
+> >structures, it sanity checks input parameters. It touches a number of places
+> >because of an API change but it is otherwise straight-forward.
 > >
-> > Talking about RCU I also think that whoever did those "rcu_dereference()" 
-> > macros in <linux/list.h> was insane. It's totally pointless to do 
-> > "rcu_dereference()" on a local variable. It simply *cannot* make sense. 
-> > Herbert, Paul, you guys should look at it.
+> >Unfortunately, I do not have an IA-64 machine that can reproduce the problem
+> >to see if this still fixes it or not so a test as well as a review would be
+> >appreciated. What should happen is the machine boots but prints a warning
+> >about the unexpected PFN ranges. It boot-tested fine on a number of other
+> >machines (x86-32 x86-64 and ppc64).
+> >
+> ok, I'll test today if I have a chance. At least, I think I can test this
+> until Monday. but I have one concern (below)
 > 
-> Since I made the macros look this way I'm obliged to defend it :)
-> 
-> >  #define list_for_each_rcu(pos, head) \
-> > -	for (pos = (head)->next; \
-> > -		prefetch(rcu_dereference(pos)->next), pos != (head); \
-> > -        	pos = pos->next)
-> > +	for (pos = rcu_dereference((head)->next); \
-> > +		prefetch(pos->next), pos != (head); \
-> > +        	pos = rcu_dereference(pos->next))
-> 
-> Semantically there should be no difference between the two versions.
-> The purpose of rcu_dereference is really similar to smp_rmb, i.e.,
-> it adds a (conditional) read barrier between what has been read so
-> far (including its argument), and what will be read subsequently.
-> 
-> So if we expand out the current code it would look like
-> 
-> 	fetch (head)->next
-> 	store into pos
-> again:
-> 	smp_read_barrier_depends()
-> 	prefetch(pos->next)
-> 	pos != (head)
-> 
-> 	...loop body...
-> 
-> 	fetch pos->next
-> 	store into pos
-> 	goto again
-> 
-> Yours looks like
-> 
-> 	fetch (head)->next
-> 	smp_read_barrier_depends()
-> 	store into pos
-> again:
-> 	prefetch(pos->next)
-> 	pos != (head)
-> 
-> 	...loop body...
-> 
-> 	fetch pos->next
-> 	smp_read_barrier_depends()
-> 	store into pos
-> 	goto again
-> 
-> As the objective here is to insert a barrier before dereferencing
-> pos (e.g., reading pos->next or using it in the loop body), these
-> two should be identical.
-> 
-> But I do concede that your version looks clearer, and has the
-> benefit that should prefetch ever be optimised out with no side-
-> effects, yours would still be correct while the current one will
-> lose the barrier completely.
+I tested and found your patch doesn't work.
+It seems because all valid page struct is not initialized.
+(By pfn_valid(), a page struct is valid if it exists regardless of zones.)
 
-Agreed as well -- compilers would also be within their right to bypass
-the rcu_dereference() around the test/prefetch, which would allow
-them to refetch.  For example, with __list_for_each_rcu(), the original
-implementation allows the compiler to treat a use of "pos" within the body
-of the loop as if it was a use of (head)->next, refetching if convenient.
-Not so good.
+How about below ? I think this is simple.
+Tested and worked well.
 
-So good catch, Linus!!!
+==
+usemap must be initialized only when pfn is within zone.
+If not, it corrupts memory.
 
-Could we also eliminate the (both unused in 2.6.25 and useless as
-well) list_for_each_safe_rcu()?  After all, if you use list_del_rcu()
-and call_rcu(), all the RCU list-traversal primitives are "safe" in
-this sense.  Patch attached (testing in progress), based on Linus's
-earlier patch.
+After intialization, usemap is used for only pfn in valid range.
+(We have to init memmap even in invalid range.)
 
-Signed_off_by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
 ---
+ mm/page_alloc.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- list.h |   47 +++++++++++++++--------------------------------
- 1 file changed, 15 insertions(+), 32 deletions(-)
-
-diff -urpNa linux-2.6.25/include/linux/list.h linux-2.6.25-rcu-list/include/linux/list.h
---- linux-2.6.25/include/linux/list.h	2008-04-16 19:49:44.000000000 -0700
-+++ linux-2.6.25-rcu-list/include/linux/list.h	2008-04-20 18:44:55.000000000 -0700
-@@ -631,31 +631,14 @@ static inline void list_splice_init_rcu(
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define list_for_each_rcu(pos, head) \
--	for (pos = (head)->next; \
--		prefetch(rcu_dereference(pos)->next), pos != (head); \
--        	pos = pos->next)
-+	for (pos = rcu_dereference((head)->next); \
-+		prefetch(pos->next), pos != (head); \
-+        	pos = rcu_dereference(pos->next))
+Index: linux-2.6.25/mm/page_alloc.c
+===================================================================
+--- linux-2.6.25.orig/mm/page_alloc.c
++++ linux-2.6.25/mm/page_alloc.c
+@@ -2518,6 +2518,7 @@ void __meminit memmap_init_zone(unsigned
+ 	struct page *page;
+ 	unsigned long end_pfn = start_pfn + size;
+ 	unsigned long pfn;
++	struct zone *z;
  
- #define __list_for_each_rcu(pos, head) \
--	for (pos = (head)->next; \
--		rcu_dereference(pos) != (head); \
--        	pos = pos->next)
+ 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+ 		/*
+@@ -2536,7 +2537,7 @@ void __meminit memmap_init_zone(unsigned
+ 		init_page_count(page);
+ 		reset_page_mapcount(page);
+ 		SetPageReserved(page);
 -
--/**
-- * list_for_each_safe_rcu
-- * @pos:	the &struct list_head to use as a loop cursor.
-- * @n:		another &struct list_head to use as temporary storage
-- * @head:	the head for your list.
-- *
-- * Iterate over an rcu-protected list, safe against removal of list entry.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as list_add_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define list_for_each_safe_rcu(pos, n, head) \
--	for (pos = (head)->next; \
--		n = rcu_dereference(pos)->next, pos != (head); \
--		pos = n)
-+	for (pos = rcu_dereference((head)->next); \
-+		pos != (head); \
-+        	pos = rcu_dereference(pos->next))
++		z = page_zone(page);
+ 		/*
+ 		 * Mark the block movable so that blocks are reserved for
+ 		 * movable at startup. This will force kernel allocations
+@@ -2546,7 +2547,9 @@ void __meminit memmap_init_zone(unsigned
+ 		 * the start are marked MIGRATE_RESERVE by
+ 		 * setup_zone_migrate_reserve()
+ 		 */
+-		if ((pfn & (pageblock_nr_pages-1)))
++		if ((z->zone_start_pfn < pfn)
++		    && (pfn < z->zone_start_pfn + z->spanned_pages)
++		    && !(pfn & (pageblock_nr_pages-1)))
+ 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
  
- /**
-  * list_for_each_entry_rcu	-	iterate over rcu list of given type
-@@ -668,10 +651,10 @@ static inline void list_splice_init_rcu(
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define list_for_each_entry_rcu(pos, head, member) \
--	for (pos = list_entry((head)->next, typeof(*pos), member); \
--		prefetch(rcu_dereference(pos)->member.next), \
-+	for (pos = list_entry(rcu_dereference((head)->next), typeof(*pos), member); \
-+		prefetch(pos->member.next), \
- 			&pos->member != (head); \
--		pos = list_entry(pos->member.next, typeof(*pos), member))
-+		pos = list_entry(rcu_dereference(pos->member.next), typeof(*pos), member))
+ 		INIT_LIST_HEAD(&page->lru);
+@@ -4460,6 +4463,8 @@ void set_pageblock_flags_group(struct pa
+ 	pfn = page_to_pfn(page);
+ 	bitmap = get_pageblock_bitmap(zone, pfn);
+ 	bitidx = pfn_to_bitidx(zone, pfn);
++	VM_BUG_ON(pfn < zone->zone_start_pfn);
++	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
  
+ 	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
+ 		if (flags & value)
  
- /**
-@@ -686,9 +669,9 @@ static inline void list_splice_init_rcu(
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define list_for_each_continue_rcu(pos, head) \
--	for ((pos) = (pos)->next; \
--		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
--        	(pos) = (pos)->next)
-+	for ((pos) = rcu_dereference((pos)->next); \
-+		prefetch((pos)->next), (pos) != (head); \
-+        	(pos) = rcu_dereference((pos)->next))
- 
- /*
-  * Double linked lists with a single pointer list head.
-@@ -986,10 +969,10 @@ static inline void hlist_add_after_rcu(s
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
--	for (pos = (head)->first;					 \
--	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	 \
-+	for (pos = rcu_dereference((head)->first);			 \
-+	        ({ prefetch(pos->next); 1;}) &&				 \
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
--	     pos = pos->next)
-+	     pos = rcu_dereference(pos->next))
- 
- #else
- #warning "don't include kernel headers in userspace"
+
