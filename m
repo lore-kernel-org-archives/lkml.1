@@ -1,100 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbYDULlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbYDULnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbYDULlu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 07:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYDULlj
+	id S1758172AbYDULnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 07:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYDULnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 07:41:39 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42850 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758200AbYDULli (ORCPT
+	Mon, 21 Apr 2008 07:43:18 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46338 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755510AbYDULnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 07:41:38 -0400
-Message-ID: <480C7C4E.6070309@zytor.com>
-Date: Mon, 21 Apr 2008 07:36:46 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Mitch Bradley <wmb@firmworks.com>
-CC: Andres Salomon <dilinger@queued.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419031024.GC3503@nineveh.local>	<20080418202925.b18452c5.akpm@linux-foundation.org>	<20080419092544.378664a8@ephemeral>	<20080419133909.5aa6b63e@ephemeral>	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	<480B321B.5020802@zytor.com> <20080420135948.61bdb4c9@ephemeral> <480B8E9F.8000701@firmworks.com> <480B95B4.5030203@zytor.com> <480C0C5B.2050403@firmworks.com>
-In-Reply-To: <480C0C5B.2050403@firmworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 Apr 2008 07:43:17 -0400
+Message-Id: <1208778196.9210.1248995009@webmail.messagingengine.com>
+X-Sasl-Enc: rKn+ivFsxkjA+O+VNv1apNy0BuKkOi7wxjxosuJ2PA+C 1208778196
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Matti Aarnio" <matti.aarnio@zmailer.org>
+Cc: "Joe Perches" <joe@perches.com>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <alpine.DEB.1.10.0804181642150.6108@twinlark.arctic.org>
+   <1208563762.10414.19.camel@brick>
+   <alpine.DEB.1.10.0804181719390.6108@twinlark.arctic.org>
+   <1208566724.4891.25.camel@localhost>
+   <1208567093.10414.20.camel@brick>
+   <alpine.DEB.1.10.0804181810500.6108@twinlark.arctic.org>
+   <1208573728.11990.14.camel@localhost>
+   <20080419222911.GJ3700@mea-ext.zmailer.org>
+   <1208660817.12388.40.camel@localhost>
+   <1208680941.5276.1248837773@webmail.messagingengine.com>
+   <20080420123146.GN3700@mea-ext.zmailer.org>
+Subject: Re: Alternative implementation of the generic __ffs
+In-Reply-To: <20080420123146.GN3700@mea-ext.zmailer.org>
+Date: Mon, 21 Apr 2008 13:43:16 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mitch Bradley wrote:
+On Sun, 20 Apr 2008 15:31:46 +0300, "Matti Aarnio"
+<matti.aarnio@zmailer.org> said:
+> On Sun, Apr 20, 2008 at 10:42:21AM +0200, Alexander van Heukelum wrote:
+> > On Sat, 19 Apr 2008 20:06:57 -0700, "Joe Perches" <joe@perches.com>
+> > said:
+> > > On Sun, 2008-04-20 at 01:29 +0300, Matti Aarnio wrote:
+> > > > I am curious, why not take the code already in glibc ffs() for ARM ?
+> > > > That is, if the ffs() is all that important detail in kernel ?
+> > 
+> > Hi,
+> > 
+> > The glibc version is based on a table-lookup. This makes it
+> > behave differently in hot and cold cache situations. That's
+> > fine if __ffs is used in tight loops, but in the kernel such
+> > use of __ffs is avoided because it might be slow. I added it
+> > to the benchmark, but it would need testing for the cold
+> > cache case too.
+> > 
+> > As for the importance of __ffs in the kernel: as far as I
+> > know the hot-spots in the kernel using __ffs are the
+> > schedular (sched_find_first_bit) and the cpu mask walking
+> > code (for_each_cpu_mask).
 > 
-> d) OFW itself lives at the top of the virtual address space, just below 
-> the ROM.  (The ROM is mapped virtual=physical  for convenience)  OFW 
-> uses RAM allocated from the top of physical memory, mapped at the 
-> aforementioned high virtual addresses.  One page directory entry - the 
-> next to last one - is used for that RAM mapping and also for mapping 
-> additional miscellaneous I/O devices.  The 8MB frame buffer requires 2 
-> additional PDEs, just below.  When Linux takes over the display, OFW no 
-> longer needs the frame buffer mapping, but it is convenient to preserve 
-> that mapping temporarily while using OFW as a debugger.
+> Perhaps those hot-spots would benefit from more broadly
+> accelerable algorithms.
+
+That would be a possibility too ;). The advantages of bitmaps
+are that they are so compact and so easy to understand.
+
+>                      ARM architecture v5 introduced
+> a CLZ instruction -- Count Leading Zeroes.
+
+Yeah, if such an instruction exist, the arch should provide
+optimized versions for the bit functions. The interest here
+was to provide a (beter) generic version in pure C for
+architectures without such instructions.
+
+Inline assembly versions are indeed provided in
+asm-arm/bitops.h for ARM5+.
+
+Greetings,
+    Alexander
+
+> Well, gcc's  __builtin_ffs() for ARM Arch5 and up (including
+> XScale) does things in a bit more interesting way:
 > 
-
-So let me see here... you want the virtual address range [0xffc00000, 
-0xfff00000) to be reserved for OFW, and you are prohibiting the kernel 
-from using PAE?
-
-> e) Low memory - everything except the ~1Meg that OFW lives in - is 
-> mapped virtual=physical.
-
-Are you making this assumption when called from the kernel, too?
-
-> j) Linux must save the following information during early startup:
->  1) The callback function address - either from the initial value of eax 
-> or from the OFW info block.
->  2) The the next-to-last page directory entry - just the pointer to the 
-> page table.  The page table itself lives in OFW's reserved memory.
+>   http://mail-index.netbsd.org/port-arm/2002/08/20/0001.html
 > 
-> k) When calling back into OFW, Linux must:
->  1) Establish a page directory that contains OFW's PDE (saved in j2 
-> above) and that maps the client interface argument array, including any 
-> buffer pointers.
->  2) Call callback_function with the address of the argument array in 
-> eax.  (Ordinary 32-bit near call).
+> $ cat try.c
+> int foo(int i)
+> {
+>         return __builtin_ffs(i);
+> }
+> $ arm-gp2x-linux-gcc -S -O -march=armv5 try.c 
+> $ more try.s 
+>         .file   "try.c"
+>         .text
+>         .align  2
+>         .global foo
+>         .type   foo, %function
+> foo:
+>         @ args = 0, pretend = 0, frame = 0
+>         @ frame_needed = 0, uses_anonymous_args = 0
+>         @ link register save eliminated.
+>         @ lr needed for prologue
+>         rsb     r3, r0, #0
+>         and     r3, r3, r0
+>         clz     r3, r3
+>         rsb     r0, r3, #32
+>         bx      lr
+>         .size   foo, .-foo
+>         .ident  "GCC: (GNU) 4.1.2 (Fedora GP2X 4.1.2-8.fc9)"
 > 
-> For all of the OLPC kernel's current callbacks into OFW, the 
-> requirements (j2) and (k1) are easily satisfied by "priming" 
-> swapper_pg_dir with the contents of the current page directory (as 
-> pointed to by the CR3 register).
+> 
+> > Greetings,
+> >     Alexander
+> 
+> /Matti Aarnio
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-I do not like it, simply because it amounts to "initialize this 
-otherwise zero-initialized piece of data without making any kind of 
-reservations and blindly hope nothing else overwrites it."
-
-I'm also troubled with the assumption that the kernel doesn't use PAE. 
-I realize that this is not an issue for OLPC, but it certainly makes 
-this a less-than-generic solution.
-
-Having mapped page table entries which are not under kernel control is a 
-very serious problem for PAT - PAT requires, by hardware specification, 
-the kernel to eliminate all potential aliases with different mappings.
-
-One way to deal with this, of course, is to save the firmware-provided 
-PGD and only use it for OFW calls.  On the other hand, perhaps a better 
-questions is to what extent it is needed at all.
-
-Furthermore, since you're using a nonstandard OFW interface (not 
-compliant with the x86 OFW binding document), all of this should be 
-called something like OLPC_OFW to make it clear that it's the OLPC variant.
-
-If I had designed this, I would probably have used an SMI; since you 
-have control over the firmware you can do that.  SMI saves the entire 
-machine state including all the modes, cleans them all up for you, and 
-puts it all back together at RSM time.  It is slow, of course, but it 
-completely decouples the firmware and the OS, which is why it's used.
-
-	-hpa
+-- 
+http://www.fastmail.fm - I mean, what is it about a decent email service?
 
