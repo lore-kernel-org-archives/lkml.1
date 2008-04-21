@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbYDUNex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933557AbYDUNiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932343AbYDUNex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbYDUN2F
+	id S933557AbYDUNiV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760137AbYDUNhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:28:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46661 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932961AbYDUN2D (ORCPT
+	Mon, 21 Apr 2008 09:37:07 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:36781 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758176AbYDUNhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:28:03 -0400
-Message-ID: <480C930D.3090706@zytor.com>
-Date: Mon, 21 Apr 2008 09:13:49 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 21 Apr 2008 09:37:04 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: ISDN testing
+Date: Mon, 21 Apr 2008 15:36:56 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       isdn4linux@listserv.isdn4linux.de
+References: <20080420223959.GA17998@havoc.gtf.org> <200804210205.38891.elendil@planet.nl> <480BF15D.2090100@garzik.org>
+In-Reply-To: <480BF15D.2090100@garzik.org>
 MIME-Version: 1.0
-To: Mitch Bradley <wmb@firmworks.com>
-CC: Andres Salomon <dilinger@queued.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419031024.GC3503@nineveh.local>	<20080418202925.b18452c5.akpm@linux-foundation.org>	<20080419092544.378664a8@ephemeral>	<20080419133909.5aa6b63e@ephemeral>	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	<480B321B.5020802@zytor.com> <20080420135948.61bdb4c9@ephemeral> <480B8E9F.8000701@firmworks.com> <480B95B4.5030203@zytor.com> <480C0C5B.2050403@firmworks.com> <480C7C4E.6070309@zytor.com>
-In-Reply-To: <480C7C4E.6070309@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804211536.57655.elendil@planet.nl>
+X-OriginalArrivalTime: 21 Apr 2008 13:36:58.0425 (UTC) FILETIME=[C5931290:01C8A3B4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, stepping back a few steps, it's pretty clear that most of my 
-objections aren't really an issue for Geode/OLPC; however, I *really* 
-don't want others to pick it up as being "the" Open Firmware interface.
+On Monday 21 April 2008, Jeff Garzik wrote:
+> Frans Pop wrote:
+> > The cards I have are:
+> > - Teles 16.3 ISA -- worked way back when with Debian Woody
+> > - ITK ix1-micro 2.1 ISA
+> > - Eicon Diva 2.01 PCI
+>
+> Honestly, a module-load test on real hardware can give us some useful
+> information, even if it's not connected to anything.
+>
+> My changes are primarily in the probe-the-hardware area, so successfully
+> making it past that new code would indeed be a useful data point.
+>
+> Check out the kernel found in 'isdn-pci' branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-Within those constraints it makes sense to set up the PDEs in 
-swapper_pg_dir and let them propagate using the normal mechanisms.
+Turns out all 3 cards are supported by the same basic driver: hisax, so
+I can only test for the one driver. The Eicon Diva uses an additional
+module though: hisaxdiva.
 
-** This is assuming that your OF interface does not rely on a 1:1 
-mapping of low memory being present at the time it makes a call.  If it 
-*does*, then a separate page directory needs to be maintained for the OF 
-class. **
+I've put the last 2 cards in one machine and (after some fiddling with
+jumpers and interrupts and IO ports :-) both are detected perfectly with
+2.6.24 when hisax is modprobed.
 
+Advantage of using the two cards is that it covers both PCI and ISA.
+The PCI card gets configured automagically, while the ISA card requires
+module parameters for io/irq.
 
-Thus, I'm willing to accept this with these changes:
+I've compiled a kernel based on your 'isdn-pci' branch, and it boots fine.
 
-- Please name things specific to the interface (as opposed to Open 
-Firmware in general, like the device tree) olpc_ofw or olpcfw, to denote 
-that this is an OLPC-specific interface.  Thus, 
-CONFIG_OLPC_OPEN_FIRMWARE or something along those lines.
+But when I tried to modprobe hisax, I got:
+# modprobe hisax
+FATAL: Module hisax not found.
 
-- Make it explicit in Kconfig that OLPC_OPEN_FIRMWARE conflicts with 
-X86_PAE, 64BIT, or X86_PAT.
+Cause seems to be:
+# depmod -a
+WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisaxdiva.ko 
+ignored, due to loop
+WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/libhisax.ko 
+ignored, due to loop
+WARNING: Loop 
+detected: /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko needs 
+libhisax.ko which needs hisax.ko again!
+WARNING: Module /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko 
+ignored, due to loop
 
-- Change VMALLOC_END in include/asm-x86/pgtable_32.h so the kernel will 
-know to avoid this virtual memory range.
+If needed I can also try with vanilla 2.6.25 to get a bit more current
+baseline test than I now have with 2.6.24.
 
-- Add a memory region to arch/x86/mm/dump_tabletables.c.
-
-	-hpa
+Cheers,
+FJP
