@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYDUVjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbYDUVjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761599AbYDUVjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbYDUVdR
+	id S1761497AbYDUVjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbYDUVdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:33:17 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49778 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 17:33:25 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60143 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758048AbYDUVdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:33:14 -0400
-Date: Tue, 22 Apr 2008 00:32:42 +0300
+	id S1758122AbYDUVdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:33:24 -0400
+Date: Tue, 22 Apr 2008 00:32:53 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper prototypes for vread/vwrite
-Message-ID: <20080421213242.GX2633@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] proper prototype for show_numa_map()
+Message-ID: <20080421213253.GY2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,8 +22,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds proper prototypes for vread/vwrite in 
-include/linux/vmalloc.h 
+This patch adds a proper prototype for show_numa_map()
+in include/linux/mempolicy.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -34,36 +34,42 @@ This patch has been sent on:
 - 31 Mar 2008
 - 25 Feb 2008
 
- drivers/char/mem.c      |    3 ---
- include/linux/vmalloc.h |    3 +++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ fs/proc/task_mmu.c        |    2 --
+ include/linux/mempolicy.h |    3 +++
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-ce4fe62358ed9369d3ff4e67d621164b381234ab diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 20070b7..da6319f 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -350,9 +350,6 @@ static ssize_t read_oldmem(struct file *file, char __user *buf,
- }
- #endif
+75c93e5637cf3337f8dcd2713bac390dec1cc987 diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 6dc0334..624faf1 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -721,8 +721,6 @@ const struct file_operations proc_pagemap_operations = {
+ #endif /* CONFIG_PROC_PAGE_MONITOR */
  
--extern long vread(char *buf, char *addr, unsigned long count);
--extern long vwrite(char *buf, char *addr, unsigned long count);
+ #ifdef CONFIG_NUMA
+-extern int show_numa_map(struct seq_file *m, void *v);
 -
- /*
-  * This function reads the *virtual* memory as seen by the kernel.
-  */
-diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index ce8e7da..7bdd809 100644
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -55,6 +55,9 @@ extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
- 							unsigned long pgoff);
- void vmalloc_sync_all(void);
-  
-+long vread(char *buf, char *addr, unsigned long count);
-+long vwrite(char *buf, char *addr, unsigned long count);
+ static int show_numa_map_checked(struct seq_file *m, void *v)
+ {
+ 	struct proc_maps_private *priv = m->private;
+diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
+index 59c4865..914fa6e 100644
+--- a/include/linux/mempolicy.h
++++ b/include/linux/mempolicy.h
+@@ -37,6 +37,7 @@
+ 
+ struct vm_area_struct;
+ struct mm_struct;
++struct seq_file;
+ 
+ #ifdef CONFIG_NUMA
+ 
+@@ -165,6 +166,8 @@ static inline void check_highest_zone(enum zone_type k)
+ int do_migrate_pages(struct mm_struct *mm,
+ 	const nodemask_t *from_nodes, const nodemask_t *to_nodes, int flags);
+ 
++int show_numa_map(struct seq_file *m, void *v);
 +
- /*
-  *	Lowlevel-APIs (not for driver use!)
-  */
+ #else
+ 
+ struct mempolicy {};
 
