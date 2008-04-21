@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYDUUmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYDUUpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbYDUUmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 16:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYDUUmY
+	id S1754878AbYDUUpo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 16:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYDUUpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 16:42:24 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:33800 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYDUUmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 16:42:23 -0400
-Message-ID: <2615.198.182.194.170.1208810542.squirrel@clueserver.org>
-In-Reply-To: <86802c440804211232q39b35837ob50674718c617348@mail.gmail.com>
-References: <48738.12.172.32.236.1208805186.squirrel@clueserver.org>
-    <86802c440804211232q39b35837ob50674718c617348@mail.gmail.com>
-Date: Mon, 21 Apr 2008 13:42:22 -0700 (PDT)
-Subject: Re: Aperture memory hole on x86_64
-From: "Alan" <alan@clueserver.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Alan" <alan@clueserver.org>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
+	Mon, 21 Apr 2008 16:45:36 -0400
+Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:41207 "HELO
+	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751925AbYDUUpg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 16:45:36 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jean Delvare <jdelvare@suse.de>
+Subject: Re: PCI MSI breaks when booting with nosmp
+Date: Mon, 21 Apr 2008 13:40:20 -0700
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
+References: <200804172140.02311.jdelvare@suse.de> <87d4oj6o9a.fsf@basil.nowhere.org> <200804212220.20577.jdelvare@suse.de>
+In-Reply-To: <200804212220.20577.jdelvare@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804211340.21713.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Apr 21, 2008 at 12:13 PM, Alan <alan@clueserver.org> wrote:
->> Something I noticed on my new AMD64 laptop with 4 gigs of RAM and a
->> 256meg
->>  video card.
->>
->>  I am running 2.6.25 from Fedora 9 beta.
->>
->>  When i boot, I get the following messages:
->>
->>  Checking aperture...
->>  Node 0: aperture @ 9816000000 size 32 MB
->>  Aperture beyond 4GB. Ignoring.
->>  No AGP bridge found
->>  Your BIOS doesn't leave a aperture memory hole
->>  Please enable the IOMMU option in the bios setup
->>  Mapping aperture over 65536 KB of RAM @ c000000
->>
->>  Is this a bug or is the x86_64 supposed to map the video aperture into
->>  something that is 32bit addressable?
->>
->>  Also, there is no video settings at all on this particular laptop in
->> bios.
->>   (It is an HP dv6700 with almost everything maxed out.)
->>
->>  Just curious if this is correct behavior or not. (Since I am using the
->>  xorg nv driver, it may not make any difference.)
+On Monday, April 21, 2008 1:20 pm Jean Delvare wrote:
+> Hi Andi,
 >
-> you have 4G ram installed, and hw mem hole is enabled, so you memory
-> top is above 4g.
-> and kernel need to use gart for iommu.
+> Le lundi 21 avril 2008, Andi Kleen a écrit :
+> > Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+> > > Ok, I see this too on my desktop machine.  It looks like we're not
+> > > getting interrupts setup correctly in the nosmp case.  Still digging
+> > > through to see why though...
+> >
+> > NoSMP disables the io-apic and a lot of modern systems don't work without
+> > APIC.
+> >
+> > If you just want to run with a single cpu for testing etc. always use
+> > maxcpus=1 (not 0, that will disable the APIC too)
 >
-> and you bios didn't setup your gart because you didn't have agp..
->
-> please check if you BIOS have setup for gart, and you can set size to
-> 64M, and then you could get 64M ram back.
+> In my case, booting with noapic works fine, so I don't think that the
+> problem is related to APIC being disabled.
 
-There is no memory or video related setting options in the bios at all. 
-It is about as barebones as you can get.
+One difference between noapic and nosmp is that in the nosmp case even the 
+local APIC setup won't occur in native_smp_prepare_cpus(), due to 
+smp_sanity_check() returning -1 in the setup_max_cpus == 0 case.
 
-If you want, I can send the output of dmesg or other diagnostics for this
-machine.
+So we either need smp_sanity_check to do a little more APIC setup if max_cpus 
+== 0 or shuffle things around in native_smp_prepare_cpus().  Since the former 
+is already done for 32 bit builds for the NMI vector, maybe we should just 
+make it unconditional so that MSI works?
+
+Jesse
