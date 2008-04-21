@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYDUK5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYDULDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYDUK5P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYDUK5A
+	id S1756148AbYDULDd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 07:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYDULDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:57:00 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:2154 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753101AbYDUK47 (ORCPT
+	Mon, 21 Apr 2008 07:03:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:9516 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754538AbYDULDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:56:59 -0400
+	Mon, 21 Apr 2008 07:03:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fMFn2yYUNmUvVOxRA/NsfuVRav0u63fvXRZ3iyD9XGjJ7U0zBNzy6ifqrOvaUFqdfiYr1WJrJva6/kYLYmsmML0Saq7g/2gqX9Szcu7hSgHdFrg64IC4qLyhN5VGMDNllk8nET0lNr2JkzCzr190gaV5aL+2g4IUiG/V4lZnnCY=
-Message-ID: <9a5eeacd0804210356t2b84bb40t7a266467c3699bd9@mail.gmail.com>
-Date: Mon, 21 Apr 2008 13:56:58 +0300
-From: "Matthias Andersson" <matthias.andersson@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel panic
-In-Reply-To: <9a5eeacd0804210350v79db27f0of73a29c55e2b7311@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wZVzYB5HBTVc41Jn/QDmz4Sf8R3RqEQ+tUA2L5Z9pLDIfHXQSF1fkO+J21FbawuIV1hkY6yYiFHVgervBMK7T+kzH4pGEu2yC2QB6zp6FOiouiO7kIvFyrYb52mBm6XiarbrRR5GkJZAhDUaztLqCP6uQ3bY7JZS4wI6FP2FvII=
+Message-ID: <b647ffbd0804210403g1fe02f2pb653eafd704ad624@mail.gmail.com>
+Date: Mon, 21 Apr 2008 13:03:20 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Dan Upton" <upton.dan.linux@gmail.com>
+Subject: Re: migration thread and active_load_balance
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <ba7d8f720804201744m10cfa1b7n1a37b9d7c52b3622@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9a5eeacd0804210350v79db27f0of73a29c55e2b7311@mail.gmail.com>
+References: <ba7d8f720804201121h6c024dcrabd301c8b4be7a4@mail.gmail.com>
+	 <b647ffbd0804201426r3bb55daw2899f6045b78fa51@mail.gmail.com>
+	 <ba7d8f720804201744m10cfa1b7n1a37b9d7c52b3622@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 21/04/2008, Dan Upton <upton.dan.linux@gmail.com> wrote:
+> [ ... ]
+>
+>  kernel BUG at kernel/sched.c:2103
 
-I upgraded to Ubuntu 8.04 (Hardy Heron) four days ago and with it the
-2.6.24-16 kernel.
-The kernel worked fine until yesterday when I booted up the machine I
-was greeted by the following error message:
+and what's this line in your patched sched.c?
 
- /init: ./34: Can't open /scripts/functions
-[   20.587228] kernel panic - not syncing: attempted to kill init!
+is it -- BUG_ON(!irqs_disabled());  ?
 
-What could have caused this failiure?
-There were some upgrades installed before the final shutdown of the
-system (prior to the kernel panic) but nothing system-critical.
+anything in your unposted code (e.g. find_coolest_cpu()) that might
+re-enable the interrupts before __migration_task() is called?
 
-//Matthias Andersson
+If you post your modifications as a patch
+(Documentation/applying-patches.txt) that contains _all_ relevant
+modifications, it'd be easier to guess what's wrong.
+
+
+>
+>  -dan
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
