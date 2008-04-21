@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYDUHWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYDUHYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYDUHWv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 03:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYDUHWm
+	id S1755255AbYDUHYK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 03:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYDUHX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 03:22:42 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:42302 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbYDUHWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 03:22:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:To:Cc:Subject:References:In-Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-	b=U2ULbSjCyWsKZrG+o9DoXX5g/gIyuOV6k0xXGn2L4DPuEPQsaspAN8bxwJil5sRQYR0ye9oSkZaMMAxk/qNfjah9GI4568+gkibqLYWm1OY5vPaL02W2W/5qtjqEtT10bqBsYOVLVAGmUJdhdRKQV5oHSzmUgx0C31vT4e5H9OY=;
-Message-ID: <20080421082049.dduawz94j0s0o0c4@unsolicited.net>
-Date: Mon, 21 Apr 2008 08:20:49 +0100
-From: David R <david@unsolicited.net>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: serge@hallyn.com, casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25 Kernel - Problems with capabilities
-References: <46016.36939.qm@web36608.mail.mud.yahoo.com>
-	<480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com>
-	<480BE354.408@kernel.org>
-In-Reply-To: <480BE354.408@kernel.org>
+	Mon, 21 Apr 2008 03:23:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47390 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751955AbYDUHX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 03:23:56 -0400
+Message-ID: <480C4108.6050709@garzik.org>
+Date: Mon, 21 Apr 2008 03:23:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on latest
+ -git
+References: <20080419100034.GA9475@elte.hu>
+In-Reply-To: <20080419100034.GA9475@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morgan <morgan@kernel.org>:
+Ingo Molnar wrote:
+> btw., i found no thread to reply to on lkml or elsewhere - arent all git 
+> pull requests supposed to be Cc:-ed to lkml, with shortlog included?
 
-> David, can you run strace on the failing program (configuration)?
+That's in the realm of maintainer choice, much like plenty of other 
+engineering practices.  There is no "rule" as such.
 
-I'll not be able to do that 'till this evening (GMT+1), but will post  
-an strace then.
+	Jeff
 
-Cheers
-David
+
 
