@@ -1,95 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYDUXK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758370AbYDUXLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbYDUXK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 19:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758536AbYDUXKq
+	id S1758370AbYDUXLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 19:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYDUXLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 19:10:46 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:34800 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758415AbYDUXKo (ORCPT
+	Mon, 21 Apr 2008 19:11:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:2167 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883AbYDUXLb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 19:10:44 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
-Date: Mon, 21 Apr 2008 17:10:37 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080418204955.342963315@ldl.fc.hp.com> <48097886.9000907@keyaccess.nl> <480CDFDB.3020703@keyaccess.nl>
-In-Reply-To: <480CDFDB.3020703@keyaccess.nl>
+	Mon, 21 Apr 2008 19:11:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hs/5FNo65hf9ttuT1N0Ed81sYr8AG6wXbPYenu/3pR0c2LdNBPKkHwsKmDyFqBm6A3R/2nxafeCnUZK20p4akDbVhvWW9B/cmjO+IwH4atnjeQWdUuQrmANPmjsBuy+AQ113K8Iv58i+9OGk0rv1+vQwc32Q27UFbxQQtWuMUZw=
+Message-ID: <c4e36d110804211611ke56cba9td23e5735f40a469@mail.gmail.com>
+Date: Tue, 22 Apr 2008 01:11:27 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Cc: paulmck@linux.vnet.ibm.com, "David Miller" <davem@davemloft.net>,
+       torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au
+In-Reply-To: <480D1CF1.7010300@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200804211710.38660.bjorn.helgaas@hp.com>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
+	 <200804211812.16994.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0804210934190.2779@woody.linux-foundation.org>
+	 <20080421.133940.52972455.davem@davemloft.net>
+	 <480D04A2.5000006@gmail.com> <480D0E14.1040306@gmail.com>
+	 <480D147C.90602@gmail.com> <20080421225452.GF9153@linux.vnet.ibm.com>
+	 <480D1CF1.7010300@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 April 2008 12:41:31 pm Rene Herman wrote:
-> isapnp_get_resources didn't allocate simply since it hasn't been called yet; 
-> there's nothing to get from an inactive device. It is pnp_assign_resources 
-> which constructs the table which isapnp_set_resources then puts to the hardware.
+2008/4/22, Jiri Slaby <jirislaby@gmail.com>:
+> On 04/22/2008 12:54 AM, Paul E. McKenney wrote:
+>
+> > On Tue, Apr 22, 2008 at 12:26:04AM +0200, Jiri Slaby wrote:
+> >
+> > >
+> > > > Having slub_debug enabled, tomorrow will be results, I guess...
+> > > >
+> > > Sorry, one more entry:
+> > >
+> > > 00000000000000f0 dentry.d_op (Zdenek, offset ? around 136)
+> > >
+> >
+>
+>  Zdenek's is at offset 184.
+>
+>
+> >
+> > > 00f0000000000000 dentry.d_hash.next (me, offset 24)
+> > > ffff81f02003f16c dentry.d_name.name (me, offset 56)
+> > >        memory ORed by 000000f000000000
+> > > fffff0002004c1b0 file.f_mapping (me, offset 176)
+> > >        memory hole, it was something like
+> > >        (ffff81002004c1b0 & ~00000f0000000000) | 0000f00000000000?
+> > > ffffffffffffffff dentry.d_hash.next (Rafael, offset ? around 24)
+> > >        -1, ~0ULL
+> > >
+> >
+> > Are these running with CONFIG_PREEMPT_RCU?  Grasping at straws, but
+> > there are a couple of patches that need to move from -rt to mainline,
+> > but mostly related to SELinux.  So if both PREEMPT_RCU and SELinux
+> > were in use, we might be missing "rcu-various-fixups.patch" from:
+> >
+>
+>  $ grep RCU .config
+>  CONFIG_CLASSIC_RCU=y
+>  # CONFIG_RCU_TORTURE_TEST is not set
+>  $ grep SECU .config
+>  # CONFIG_EXT4DEV_FS_SECURITY is not set
+>  # CONFIG_SECURITY is not set
+>  # CONFIG_SECURITY_FILE_CAPABILITIES is not set
+>
+>  I guess not.
+>
+>  BTW the corruption I mentioned earlier was char 'ð' and it's ('p' | 0xf0)
+> in latin2. I think it was set_ðending_irq IIRC. Whatever, it won't help us.
+>
 
-Yes, right.  I reproduced this on an ACPI system where the BIOS leaves
-a couple devices disabled.
+I've kernel compiled with preemptible RCU & Security - but usually
+using selinux=off as a kernel parameter
 
-> Getting things working also needs setting pnp_res->index (to nport, nmem, 
-> nirq, ndma in pnp_assign_resources) so that the isapnp_set_resources which 
-> follows sets to the correct hardware index, but at that point position in 
-> the list and the index are mixing together in unhealthy ways -- in the 
-> pnp_assign_foo helpers, pnp_get_resource(.., idx) just get the "idx-th" 
-> resource of the correct type in the list but it seems it really should be 
-> getting the resource of the correct type with its ->index set to "idx".
-
-I don't mind setting pnp_res->index in the generic pnp_assign_* code.
-We have to do that already in pnp_set_current_resources() (the /sys
-interface), and I don't see a good way around it.
-
-In pnp_assign_resources(), we currently assume that all independent
-options appear before any dependent ones because we compute nport,
-nmem, etc by iterating through the independent options first.  Then
-we use those nport, nmem, etc values as the "index" (CSR index for
-ISAPNP, nth resource type in the template for PNPBIOS and PNPACPI).
-I don't know whether this assumption is in the spec, but at least
-we've assumed it for a long time.
-
-I'm trying to figure out the cases where pnp_assign_resources()
-has to pay attention to pre-existing configuration.  It looks like
-the common case is that we'll start with an empty resource list, and
-we can just find non-conflicting values and use pnp_add_foo_resource().
-
-But I'm concerned about all the IORESOURCE_AUTO stuff.  Seems like
-we should only get to pnp_assign_foo() with !IORESOURCE_AUTO if
-(a) we've used /sys to set some but not all resources, or (b) the
-BIOS described fewer things in _CRS than in _PRS (which seems like
-a BIOS bug).  But I'm not comfortable with this yet.
-
-> Anyways, currently things really don't work though, due to
-> 
-> 1) pnp_assign_resources needing to construct the list and
-> 2) it needing to match resources by their index.
-> 
-> (do note that pnp_assign_foo are the only callers of pnp_check_foo and they 
-> could be either merged together or at least not communicate via "idx" but 
-> simply by passing the res/pnp_res).
-
-Yes, I'd like to do that.  But I think I'd better wait or I'll never
-get anything finished :-)
-
-> Also note -- manually set resources are skipped in pnp_assign_resources, yet 
-> they also definitely need their index initialized for use by 
-> isapnp_set_resources.
-
-Yes.  "Manually set resources" includes ones from /sys and also the
-resources we discover from active devices.  We should already be setting
-those in the /sys and ISAPNP "read resources" paths.
-
-Bjorn
+Zdenek
