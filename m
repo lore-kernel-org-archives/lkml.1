@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYDUAIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYDUAbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbYDUAIK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Apr 2008 20:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYDUAH5
+	id S1756048AbYDUAbk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Apr 2008 20:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYDUAbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Apr 2008 20:07:57 -0400
-Received: from flatoutfitness.com ([66.178.130.209]:54930 "EHLO www.seiner.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbYDUAH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Apr 2008 20:07:56 -0400
-X-Greylist: delayed 2119 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Apr 2008 20:07:56 EDT
-Message-ID: <480BD294.9040504@seiner.com>
-Date: Sun, 20 Apr 2008 16:32:36 -0700
-From: Yan Seiner <yan@seiner.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: uinput question
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 20 Apr 2008 20:31:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41044 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbYDUAbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Apr 2008 20:31:31 -0400
+Date: Mon, 21 Apr 2008 09:30:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, Shi Weihua <shiwh@cn.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.26 (memcgroup)
+Message-Id: <20080421093059.57a61bc3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0804210004470.1630@blonde.site>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0804210004470.1630@blonde.site>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to set up a system with multiple IR remotes acting as 
-keyboards for specific X sessions.
+On Mon, 21 Apr 2008 00:51:30 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
+> >  disable-the-memory-controller-by-default-v3.patch
+> >  disable-the-memory-controller-by-default-v3-fix.patch
+> 
+> If those are to go in, then the sooner the better, yes.
+> 
+> But though I argued for cgroup_disable=memory (or some such),
+> I think myself that taking it even further now (requiring an
+> additional cgroup_enable=memory at boottime to get the memcg
+> stuff you chose with CGROUP_MEM_RES_CTLR=y at build time) is
+> confusing overkill, just messing around.
+> 
+> Others think differently.  A compromise would be to improve the
+> helptext for CGROUP_MEM_RES_CTLR (some of it is presently nonsense,
+> isn't it?  Certainly there's a significant overhead, but it's the
+> 32-bit struct page not the 64-bit which then suffers from crossing
+> cacheline boundaries).  Not much point in mentioning
+> cgroup_disable=memory if those patches go in, but needs to say
+> cgroup_enable=memory bootoption also needed.
+> 
+My concern around this is "default" action of cgroups may be different
+from each otther. It's confusing...
 
-lirc <http://www.lirc.org> is a way to send infrared remote keystrokes 
-to applications.  Some time ago I wrote a small patch to kbdd 
-<http://handhelds.org/moin/moin.cgi/kbdd> that lets me inject button 
-pushes on an IR remote into the /dev/input/uinput system as keyboard 
-events.
 
-Now I'd like to send those keyboard events to only one X session, not 
-all of them.
-
-In the kbdd code, there is the following snippet when the 
-/dev/input/uinput device is opened:
-
-        memset(&dev, 0, sizeof(dev));
-        strncpy(dev.name, "SerKBD", UINPUT_MAX_NAME_SIZE);
-        dev.idbus = BUS_RS232;
-        dev.idvendor = 0x00;
-        dev.idproduct = 0x00;
-        dev.idversion = 0x00;
-
-So this would indicate to me that I can emulate different devices by 
-changing the names, IDs, and events.  Then I want to select only those 
-events that pertain to my app... 
-
-So...
--   Create a 'virtual' eventNN device based on the data fed to kbdd
--   Send various keyboard events to the kernel via the uinput device 
-from several physical devices
--   Select only those events destined for my virtual device
--   Have those events pop out of my eventNN device so I can handle them 
-back in userspace
-
-How do I do that?  Where can I find some information on how to handle 
-uinput devices?
+> >  memcgroup-check-and-initialize-page-cgroup-in-memmap_init_zone.patch
+> 
+> No, it was a good find from Shi, but you were right to think the patch
+> fishy, and Kame put in lots of work (thank you!) to identify the actual
+> culprit: he and Mel are discussing what the actual fix should be; and
+> we might want to choose a different fix for stable than for 2.6.26.
+> 
+> I think you should drop that memmap_init_zone patch: the cgroup
+> pointer is not the only field we assume is zeroed, both flags and
+> mapping can cause trouble if they were not originally zeroed.
+> Re-zero the whole struct page?  No, far better to fix the
+> root of the corruption, that Kame and Mel are working on.
+> 
+I'll test and repodt Mel's patch later. I think Shi's patch will be
+unnecessary.
 
 Thanks,
+-Kame
 
---Yan
 
-
--- 
-  o__
-  ,>/'_          o__
-  (_)\(_)        ,>/'_        o__
-Yan Seiner      (_)\(_)       ,>/'_     o__
-Certified Personal Trainer   (_)\(_)    ,>/'_        o__
-Licensed Professional Engineer         (_)\(_)       ,>/'_
-Who says engineers have to be pencil necked geeks?  (_)\(_)
-
-Help out my kids' school: http://www.seiner.com/blog/Travels/
 
