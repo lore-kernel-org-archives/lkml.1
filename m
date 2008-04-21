@@ -1,283 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYDUFZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYDUF2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbYDUFZG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 01:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYDUFYy
+	id S1754019AbYDUF2X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 01:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYDUF2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 01:24:54 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:47652 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYDUFYw (ORCPT
+	Mon, 21 Apr 2008 01:28:16 -0400
+Received: from sncsmrelay2.nai.com ([67.97.80.206]:41346 "HELO
+	sncsmrelay2.nai.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750873AbYDUF2P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 01:24:52 -0400
-Date: Sun, 20 Apr 2008 23:24:50 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
-       linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Create 'slot' sysfs
-	attributein/sys/devices/system/cpu/cpuN/topology/
-Message-ID: <20080421052450.GA24055@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
-	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com>
+	Mon, 21 Apr 2008 01:28:15 -0400
+X-Greylist: delayed 836 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Apr 2008 01:28:15 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326185912.GA30749@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: potential security issue
+Date: Sun, 20 Apr 2008 22:12:01 -0700
+Message-ID: <4195346499A4614AA5E42F9D082B6E0C017ED813@SNCEXMB3.corp.nai.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: potential security issue
+Thread-Index: AcijbjsdNgOOOSElTwqtiTZdQj5etQ==
+From: <Ryan_Permeh@McAfee.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 21 Apr 2008 05:12:49.0968 (UTC) FILETIME=[5816D300:01C8A36E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
+I need a security maintainer contact to discuss a potential security
+issue.  Due to the sensitive nature of the issue, I'd prefer to not
+discuss this in an open list.  Please provide me with a PGP key.  I've
+attached mine to ensure secure communications.  I am not a member of the
+list, so please respond to me directly.
 
-I noticed that this patch wasn't in the git tree you sent to
-Linus for 2.6.26. I don't remember seeing a NACK though -- is
-there something that I could rework to make it more acceptable?
+Ryan
 
-Thanks.
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: PGP Desktop 9.7.0 (Build 1012)
 
-/ac
-
-* Alex Chiang <achiang@hp.com>:
-> Hi Tony,
-> 
-> * Luck, Tony <tony.luck@intel.com>:
-> > +	if (ACPI_SUCCESS(acpi_get_handle(pr->handle, "_SUN", &handle))) {
-> > +		status = acpi_evaluate_object(pr->handle,
-> > +						"_SUN", NULL, &buffer);
-> > +		if (ACPI_FAILURE(status))
-> > +			object.integer.value = -1;
-> > +	} else {
-> > +		object.integer.value = -1;
-> > +	}
-> > +	arch_set_topology_slot(pr->id, object.integer.value);
-> > +
-> >  	if (!object.processor.pblk_address)
-> >  		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No PBLK (NULL address)\n"));
-> >  	else if (object.processor.pblk_length != 6)
-> > 
-> > I'm still seeing these messages:
-> > 
-> >  "ACPI: Invalid PBLK length [0]"
-> > 
-> > for every cpu.  Presumably because "object" is a union and when
-> > you did the "object.integer.value = -1;" you scribbled on some bits
-> > that were needed in the subsequent code.
-> 
-> Yes, you're right. Sorry about the sloppy code.
-> 
-> Here is v3. I've verified that:
-> 
-> 	- it's benign on tiger (does not create errors/console
-> 	  noise). You'll still see the -1 if you cat
-> 	  /sys/devices/system/cpu/cpuN/topology/slot, but you
-> 	  would also get the -1 if you cat physical_package_id
-> 
-> 	- it does the right thing on platforms that do supply
-> 	  _SUN for processor objects. On my rx2600,
-> 	  physical_package_id is -1, but I get valid values for
-> 	  'slot' now.
-> 
-> Thanks.
-> 
-> /ac
-> 
-> Subject: [PATCH] Create 'slot' sysfs attribute in /sys/devices/system/cpu/cpuN/topology/
-> From: Alex Chiang <achiang@hp.com>
-> 
-> /sys/devices/system/cpu/cpuN/topology/physical_package_id exists,
-> but may contain incorrect information, especially on older ia64
-> platforms that do not have modern firmware.
-> 
-> Create a 'slot' attribute and define an interface that may be
-> populated via alternate sources, without breaking existing
-> functionality.
-> 
-> Implement this interface on ia64 by invoking the _SUN method on a
-> per cpu basis.
-> 
-> Leave other archs alone for now.
-> 
-> v2 -> v3:
-> 	- Stop stomping on existing PBLK in the event of _SUN failure
-> 
-> v1 -> v2:
-> 	- Check for _SUN object on CPU before blindly attempting
-> 	  to call it
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  arch/ia64/kernel/setup.c      |    1 +
->  arch/ia64/kernel/topology.c   |    6 ++++++
->  drivers/acpi/processor_core.c |    8 ++++++++
->  drivers/base/topology.c       |    9 +++++++++
->  include/asm-ia64/cpu.h        |    1 +
->  include/asm-ia64/processor.h  |    7 ++++++-
->  include/asm-ia64/topology.h   |    3 +++
->  include/asm-x86/topology.h    |    2 ++
->  8 files changed, 36 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-> index 4aa9eae..228d960 100644
-> --- a/arch/ia64/kernel/setup.c
-> +++ b/arch/ia64/kernel/setup.c
-> @@ -735,6 +735,7 @@ identify_cpu (struct cpuinfo_ia64 *c)
->  	 */
->  	c->threads_per_core = c->cores_per_socket = c->num_log = 1;
->  	c->socket_id = -1;
-> +	c->slot = -1;
->  
->  	identify_siblings(c);
->  
-> diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
-> index a2484fc..512de14 100644
-> --- a/arch/ia64/kernel/topology.c
-> +++ b/arch/ia64/kernel/topology.c
-> @@ -27,6 +27,12 @@
->  
->  static struct ia64_cpu *sysfs_cpus;
->  
-> +void ia64_set_topology_slot(int num, u32 slot)
-> +{
-> +	cpu_data(num)->slot = slot;
-> +}
-> +EXPORT_SYMBOL_GPL(ia64_set_topology_slot);
-> +
->  int arch_register_cpu(int num)
->  {
->  #if defined (CONFIG_ACPI) && defined (CONFIG_HOTPLUG_CPU)
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 36a68fa..a3a740d 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -612,6 +612,14 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  		request_region(pr->throttling.address, 6, "ACPI CPU throttle");
->  	}
->  
-> +	/*
-> +	 * If ACPI describes a slot number for this CPU, let's fill it in
-> +	 */
-> +	status = acpi_evaluate_object(pr->handle, "_SUN", NULL, &buffer);
-> +	if (ACPI_FAILURE(status))
-> +		object.integer.value = -1;
-> +	arch_set_topology_slot(pr->id, object.integer.value);
-> +
->  	return 0;
->  }
->  
-> diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-> index e1d3ad4..4fcffca 100644
-> --- a/drivers/base/topology.c
-> +++ b/drivers/base/topology.c
-> @@ -57,6 +57,14 @@ define_one_ro(physical_package_id);
->  #define ref_physical_package_id_attr
->  #endif
->  
-> +#ifdef	topology_slot
-> +define_id_show_func(slot);
-> +define_one_ro(slot);
-> +#define ref_slot_attr			&attr_slot.attr,
-> +#else
-> +#define ref_slot_attr
-> +#endif
-> +
->  #ifdef topology_core_id
->  define_id_show_func(core_id);
->  define_one_ro(core_id);
-> @@ -83,6 +91,7 @@ define_one_ro(core_siblings);
->  
->  static struct attribute *default_attrs[] = {
->  	ref_physical_package_id_attr
-> +	ref_slot_attr
->  	ref_core_id_attr
->  	ref_thread_siblings_attr
->  	ref_core_siblings_attr
-> diff --git a/include/asm-ia64/cpu.h b/include/asm-ia64/cpu.h
-> index e87fa32..393e545 100644
-> --- a/include/asm-ia64/cpu.h
-> +++ b/include/asm-ia64/cpu.h
-> @@ -14,6 +14,7 @@ DECLARE_PER_CPU(struct ia64_cpu, cpu_devices);
->  
->  DECLARE_PER_CPU(int, cpu_state);
->  
-> +extern void arch_set_topology_slot(int num, u32 slot);
->  extern int arch_register_cpu(int num);
->  #ifdef CONFIG_HOTPLUG_CPU
->  extern void arch_unregister_cpu(int);
-> diff --git a/include/asm-ia64/processor.h b/include/asm-ia64/processor.h
-> index 741f7ec..066553c 100644
-> --- a/include/asm-ia64/processor.h
-> +++ b/include/asm-ia64/processor.h
-> @@ -125,6 +125,10 @@ struct ia64_psr {
->   */
->  struct cpuinfo_ia64 {
->  	__u32 softirq_pending;
-> +
-> +#ifdef CONFIG_SMP
-> +	int cpu;
-> +#endif
->  	__u64 itm_delta;	/* # of clock cycles between clock ticks */
->  	__u64 itm_next;		/* interval timer mask value to use for next clock tick */
->  	__u64 nsec_per_cyc;	/* (1000000000<<IA64_NSEC_PER_CYC_SHIFT)/itc_freq */
-> @@ -140,7 +144,6 @@ struct cpuinfo_ia64 {
->  
->  #ifdef CONFIG_SMP
->  	__u64 loops_per_jiffy;
-> -	int cpu;
->  	__u32 socket_id;	/* physical processor socket id */
->  	__u16 core_id;		/* core id */
->  	__u16 thread_id;	/* thread id */
-> @@ -150,6 +153,8 @@ struct cpuinfo_ia64 {
->  	__u8  threads_per_core;	/* Threads per core */
->  #endif
->  
-> +	__u32 slot;		/* physical slot; can differ from socket_id */
-> +
->  	/* CPUID-derived information: */
->  	__u64 ppn;
->  	__u64 features;
-> diff --git a/include/asm-ia64/topology.h b/include/asm-ia64/topology.h
-> index 2d67b72..f986693 100644
-> --- a/include/asm-ia64/topology.h
-> +++ b/include/asm-ia64/topology.h
-> @@ -110,12 +110,15 @@ void build_cpu_to_node_map(void);
->  
->  #ifdef CONFIG_SMP
->  #define topology_physical_package_id(cpu)	(cpu_data(cpu)->socket_id)
-> +#define topology_slot(cpu)			(cpu_data(cpu)->slot)
->  #define topology_core_id(cpu)			(cpu_data(cpu)->core_id)
->  #define topology_core_siblings(cpu)		(cpu_core_map[cpu])
->  #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
->  #define smt_capable() 				(smp_num_siblings > 1)
->  #endif
->  
-> +#define arch_set_topology_slot(num, slot)	ia64_set_topology_slot(num,slot)
-> +
->  #include <asm-generic/topology.h>
->  
->  #endif /* _ASM_IA64_TOPOLOGY_H */
-> diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
-> index 8af05a9..d4c922c 100644
-> --- a/include/asm-x86/topology.h
-> +++ b/include/asm-x86/topology.h
-> @@ -180,6 +180,8 @@ extern cpumask_t cpu_coregroup_map(int cpu);
->  #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
->  #endif
->  
-> +#define arch_set_topology_slot(num, slot)
-> +
->  #ifdef CONFIG_SMP
->  #define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
->  #define smt_capable()			(smp_num_siblings > 1)
-> -- 
-> 1.5.3.1.g1e61
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+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
+=Zpas
+-----END PGP PUBLIC KEY BLOCK-----
