@@ -1,115 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbYDUQp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYDUQyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbYDUQp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYDUQpS
+	id S1756771AbYDUQyc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYDUQyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:45:18 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34474 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754584AbYDUQpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:45:17 -0400
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, urhausen@urifabi.net,
-       Jan Kara <jack@suse.cz>
-Subject: [PATCH] reiserfs: Unpack tails on quota files
-Date: Mon, 21 Apr 2008 18:45:14 +0200
-Message-Id: <12087963143563-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: y
-References: y
+	Mon, 21 Apr 2008 12:54:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:48053 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbYDUQyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 12:54:22 -0400
+Date: Mon, 21 Apr 2008 10:54:05 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [DOC PATCH] Remove mention of semaphores from kernel-locking
+Message-ID: <20080421165405.GB20637@parisc-linux.org>
+References: <20080421145230.GX20637@parisc-linux.org> <200804220215.30855.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804220215.30855.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quota files cannot have tails because quota_write and quota_read functions do
-not support them. So far when quota files did have tail, we just refused to
-turn quotas on it. Sadly this check has been wrong and so there are now plenty
-installations where quota files don't have NOTAIL flag set and so now after
-fixing the check, they suddently fail to turn quotas on. Since it's easy to
-unpack the tail from kernel, do this from reiserfs_quota_on() which solves the
-problem and is generally nicer to users anyway.
+On Tue, Apr 22, 2008 at 02:15:30AM +1000, Rusty Russell wrote:
+> >     <title>Three Main Types of Kernel Locks: Spinlocks, Mutexes and
+> > Semaphores</title>
+> >
+> >     <para>
+> > -     There are three main types of kernel locks.  The fundamental type
+> > +     There are two main types of kernel locks.  The fundamental type
+> >       is the spinlock
+> >       (<filename class="headerfile">include/asm/spinlock.h</filename>),
+> >       which is a very simple single-holder lock: if you can't get the
+> 
+> Fix title, too?
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Reported-by: urhausen@urifabi.net
+Heh.  Oops, thanks.
 
----
- fs/reiserfs/ioctl.c         |    4 +---
- fs/reiserfs/super.c         |   17 ++++++++++++-----
- include/linux/reiserfs_fs.h |    1 +
- 3 files changed, 14 insertions(+), 8 deletions(-)
+> Thanks for the other fixes too; this document needs some love,
 
-diff --git a/fs/reiserfs/ioctl.c b/fs/reiserfs/ioctl.c
-index e0f0f09..9f877ab 100644
---- a/fs/reiserfs/ioctl.c
-+++ b/fs/reiserfs/ioctl.c
-@@ -11,8 +11,6 @@
- #include <linux/smp_lock.h>
- #include <linux/compat.h>
- 
--static int reiserfs_unpack(struct inode *inode, struct file *filp);
--
- /*
- ** reiserfs_ioctl - handler for ioctl for inode
- ** supported commands:
-@@ -140,7 +138,7 @@ int reiserfs_prepare_write(struct file *f, struct page *page,
- ** Function try to convert tail from direct item into indirect.
- ** It set up nopack attribute in the REISERFS_I(inode)->nopack
- */
--static int reiserfs_unpack(struct inode *inode, struct file *filp)
-+int reiserfs_unpack(struct inode *inode, struct file *filp)
- {
- 	int retval = 0;
- 	int index;
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index 65e17e1..1dfbc7d 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -2025,6 +2025,7 @@ static int reiserfs_quota_on(struct super_block *sb, int type, int format_id,
- {
- 	int err;
- 	struct nameidata nd;
-+	struct inode *inode;
- 
- 	if (!(REISERFS_SB(sb)->s_mount_opt & (1 << REISERFS_QUOTA)))
- 		return -EINVAL;
-@@ -2036,12 +2037,18 @@ static int reiserfs_quota_on(struct super_block *sb, int type, int format_id,
- 		path_put(&nd.path);
- 		return -EXDEV;
- 	}
-+	inode = nd.path.dentry->d_inode;
- 	/* We must not pack tails for quota files on reiserfs for quota IO to work */
--	if (!(REISERFS_I(nd.path.dentry->d_inode)->i_flags & i_nopack_mask)) {
--		reiserfs_warning(sb,
--				 "reiserfs: Quota file must have tail packing disabled.");
--		path_put(&nd.path);
--		return -EINVAL;
-+	if (!(REISERFS_I(inode)->i_flags & i_nopack_mask)) {
-+		err = reiserfs_unpack(inode, NULL);
-+		if (err) {
-+			reiserfs_warning(sb,
-+				"reiserfs: Unpacking tail of quota file failed"
-+				" (%d). Cannot turn on quotas.", err);
-+			path_put(&nd.path);
-+			return -EINVAL;
-+		}
-+		mark_inode_dirty(inode);
- 	}
- 	/* Not journalling quota? No more tests needed... */
- 	if (!REISERFS_SB(sb)->s_qf_names[USRQUOTA] &&
-diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
-index 8e7eff2..4aacaee 100644
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -2176,6 +2176,7 @@ int reiserfs_ioctl(struct inode *inode, struct file *filp,
- 		   unsigned int cmd, unsigned long arg);
- long reiserfs_compat_ioctl(struct file *filp,
- 		   unsigned int cmd, unsigned long arg);
-+int reiserfs_unpack(struct inode *inode, struct file *filp);
- 
- /* ioctl's command */
- #define REISERFS_IOC_UNPACK		_IOW(0xCD,1,long)
+No problem ... I started out augmenting it to discuss semaphores and
+mutexes properly and realised I'd totally overloaded this document with
+detail.  I'm tempted to rip the RCU pieces out of this document and
+create a new one.  What we currently have just doesn't read nicely [1],
+but this is a project for another day.
+
+> Acked,
+> Rusty.
+
+I'll add your ack.  Thanks!
+
+[1] This seems to be a common problem in Linux's Documentation/ directory
+... just _read_ CodingStyle and you can tell which bits are Linus'
+(funny, deprecating, suggestions) and which bits were added later
+(stern, prescriptive, fascist).  The later bits break the flow of the
+document and I find them quite jarring.
+
 -- 
-1.5.2.4
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
