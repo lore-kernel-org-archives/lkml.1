@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbYDUQTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbYDUQUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762711AbYDUQTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 12:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYDUQTc
+	id S1762793AbYDUQUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 12:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYDUQUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 12:19:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754859AbYDUQTb (ORCPT
+	Mon, 21 Apr 2008 12:20:38 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:40888 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbYDUQUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 12:19:31 -0400
-Date: Mon, 21 Apr 2008 09:18:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PCI MAINTAINER change
-In-Reply-To: <200804210855.28405.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.1.10.0804210914030.2779@woody.linux-foundation.org>
-References: <20080421062139.GA4901@suse.de> <20080421062806.GA4919@suse.de> <200804210855.28405.jbarnes@virtuousgeek.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 21 Apr 2008 12:20:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lQ645gc6pzsQCtPNhMWsAHbv7RM8rYHr5nBS8iCeyOKzB1uELlIufhud+/A75meSkxW0VArmGuEJoxqfsoAY0eRMbT4uFIamLzIwrmKXTytBIgFmy4hOR7KBLdkO6/1u/CaIcUePYRPSMQ+NuG3WcVCSPqHFrKOAD+/mfNERzmU=
+Date: Mon, 21 Apr 2008 12:20:14 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 29/37] Input: fix ordering in joystick Makefile
+Message-ID: <20080421162014.GA7819@anvil.corenet.prv>
+References: <cover.1208783694.git.dmitry.torokhov@gmail.com> <1b8930dc64b6842e50711441ba67482aacc475dd.1208783694.git.dmitry.torokhov@gmail.com> <Pine.LNX.4.64.0804211532090.12972@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804211532090.12972@jikos.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jiri,
 
-
-On Mon, 21 Apr 2008, Jesse Barnes wrote:
+On Mon, Apr 21, 2008 at 03:40:05PM +0200, Jiri Kosina wrote:
+> On Mon, 10 Mar 2008, Jiri Kosina wrote:
 > 
-> And now I get to figure out just how much trouble I've gotten myself into...
+> > Make entries in drivers/input/joystick/Makefile properly alphabetically
+> > ordered.
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> 
+> Hi Dmitry,
+> 
+> this patch of mine assumed that the driver for SEGA Dreamcast controller 
+> [1] is merged, but it doesn't seem to be present in the lineup you have 
+> sent ... ?
+> 
 
-Mwhahahaaa! Sucker. You'll find out.
+The maple driver is not quite ready yet, I sent my comments to Adrian
+and he is going to send me a new patch soon. Unfortunately I screwed up
+the merge process trying to carve it out of the patch stream. I will fix
+it before sending request to Linus.
 
-The good news is that most of the time, the PCI code works fine. The bad 
-news is that when it doesn't work, it's usually due to something *really* 
-odd, like some magic motherboard device that has magic resources that 
-aren't part of the standard PCI resource set and that clash with some of 
-our resource allocation.
-
-And they don't show up in the PnP lists because Windows never put anything 
-that could clash with them, so there was no reason for the BIOS engineers 
-to bother.
-
-IOW, it's usually almost totally undebuggable crud like "driver X doesn't 
-work on my machine", and then it turns out that it only happens on that 
-particular motherboard that is totally identical to all other motherboards 
-_except_ for that BIOS table not having the right reserved IO regions.
-
-.. and then there's the pluggable PCI stuff, of course. I'm not sure 
-whether you took that over too. That's a whole different set of issues.
-
-			Linus
+-- 
+Dmitry
