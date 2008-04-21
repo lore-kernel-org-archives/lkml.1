@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbYDUNeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYDUNfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbYDUNeX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 09:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932920AbYDUN1g
+	id S1759601AbYDUNfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 09:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbYDUN3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 09:27:36 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60007 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932588AbYDUN1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 09:27:34 -0400
-Date: Mon, 21 Apr 2008 16:27:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
-       hpa@zytor.com, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Voyager phys_cpu_present_map compile error
-Message-ID: <20080421132705.GG6011@cs181133002.pp.htv.fi>
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu>
+	Mon, 21 Apr 2008 09:29:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37006 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932787AbYDUN3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 09:29:50 -0400
+Message-ID: <480C9470.5050400@zytor.com>
+Date: Mon, 21 Apr 2008 09:19:44 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080421120054.GA6788@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mitch Bradley <wmb@firmworks.com>
+CC: Andres Salomon <dilinger@queued.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       jordan.crouse@amd.com
+Subject: Re: [PATCH 1/2] OLPC: Add support for calling into Open Firmware
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419031024.GC3503@nineveh.local>	<20080418202925.b18452c5.akpm@linux-foundation.org>	<20080419092544.378664a8@ephemeral>	<20080419133909.5aa6b63e@ephemeral>	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>	<480B321B.5020802@zytor.com> <20080420135948.61bdb4c9@ephemeral> <480B8E9F.8000701@firmworks.com> <480B95B4.5030203@zytor.com> <480C0C5B.2050403@firmworks.com> <480C7C4E.6070309@zytor.com>
+In-Reply-To: <480C7C4E.6070309@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 02:00:54PM +0200, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > I shouldn't send bug reports at 3 in the morning...
-> > 
-> > Attached is the .config for both Voyager build errors I reported.
-> 
-> thanks, the three patches below should fix it.
->...
-> 	Ingo
->...
-> --- linux-x86.q.orig/arch/x86/kernel/setup.c
-> +++ linux-x86.q/arch/x86/kernel/setup.c
-> @@ -21,8 +21,10 @@ EXPORT_SYMBOL(boot_cpu_physical_apicid);
->  DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
->  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
->  
-> +#ifndef CONFIG_X86_VOYAGER
->  /* Bitmask of physically existing CPUs */
->  physid_mask_t phys_cpu_present_map;
-> +#endif
->...
+Okay, stepping back a few steps, it's pretty clear that most of my 
+objections aren't really an issue for Geode/OLPC; however, I *really* 
+don't want others to pick it up as being "the" Open Firmware interface.
 
-Alexey noted that phys_cpu_present_map for Voyager and !Voyager also 
-have different types and suggested to make the Voyager one static 
-instead (additional renaming of the Voyager one also makes sense).
+Within those constraints it makes sense to set up the PDEs in 
+swapper_pg_dir and let them propagate using the normal mechanisms.
 
-cu
-Adrian
+** This is assuming that your OF interface does not rely on a 1:1 
+mapping of low memory being present at the time it makes a call.  If it 
+*does*, then a separate page directory needs to be maintained for the OF 
+class. **
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thus, I'm willing to accept this with these changes:
 
+- Please name things specific to the interface (as opposed to Open 
+Firmware in general, like the device tree) olpc_ofw or olpcfw, to denote 
+that this is an OLPC-specific interface.  Thus, 
+CONFIG_OLPC_OPEN_FIRMWARE or something along those lines.
+
+- Make it explicit in Kconfig that OLPC_OPEN_FIRMWARE conflicts with 
+X86_PAE, 64BIT, or X86_PAT.
+
+- Change VMALLOC_END in include/asm-x86/pgtable_32.h so the kernel will 
+know to avoid this virtual memory range.
+
+- Add a memory region to arch/x86/mm/dump_tabletables.c.
+
+	-hpa
