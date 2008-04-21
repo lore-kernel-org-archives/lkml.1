@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbYDUTc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760398AbYDUTdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759930AbYDUTc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYDUTcr
+	id S1760398AbYDUTdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYDUTdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:32:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:31667 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753369AbYDUTcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:32:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YxNUeaLyQthskpA1XrAeIvK9zZ53wEk3j/DAHR+qaY4LoOU3L3YSfbKhAeCe1b0qikgYGsLkkMR4jzqh2tMVnEUxwC7ik6oEZav7/+zLJFi7NpfcWl253TC9o24dt5/kou/FhgS7TMqOVu4g5PSFqAeZ/w47wyqNeleHU7hIUM8=
-Message-ID: <86802c440804211232q39b35837ob50674718c617348@mail.gmail.com>
-Date: Mon, 21 Apr 2008 12:32:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: Alan <alan@clueserver.org>
-Subject: Re: Aperture memory hole on x86_64
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48738.12.172.32.236.1208805186.squirrel@clueserver.org>
+	Mon, 21 Apr 2008 15:33:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60828 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755959AbYDUTdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:33:25 -0400
+Date: Mon, 21 Apr 2008 21:32:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: yhlu.kernel@gmail.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, tglx@linutronix.de,
+       aabdulla@nvidia.com, jeff@garzik.org
+Subject: Re: [patch 3/4] x86_64: restore mask_bits in msi shutdown
+Message-ID: <20080421193230.GB8770@elte.hu>
+References: <200804182028.m3IKSKHY013602@imap1.linux-foundation.org> <86802c440804182315y5f7e4d80j678e7f510a8f0763@mail.gmail.com> <m163udu5by.fsf@frodo.ebiederm.org> <200804211221.22207.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48738.12.172.32.236.1208805186.squirrel@clueserver.org>
+In-Reply-To: <200804211221.22207.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0240]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 12:13 PM, Alan <alan@clueserver.org> wrote:
-> Something I noticed on my new AMD64 laptop with 4 gigs of RAM and a 256meg
->  video card.
->
->  I am running 2.6.25 from Fedora 9 beta.
->
->  When i boot, I get the following messages:
->
->  Checking aperture...
->  Node 0: aperture @ 9816000000 size 32 MB
->  Aperture beyond 4GB. Ignoring.
->  No AGP bridge found
->  Your BIOS doesn't leave a aperture memory hole
->  Please enable the IOMMU option in the bios setup
->  Mapping aperture over 65536 KB of RAM @ c000000
->
->  Is this a bug or is the x86_64 supposed to map the video aperture into
->  something that is 32bit addressable?
->
->  Also, there is no video settings at all on this particular laptop in bios.
->   (It is an HP dv6700 with almost everything maxed out.)
->
->  Just curious if this is correct behavior or not. (Since I am using the
->  xorg nv driver, it may not make any difference.)
 
-you have 4G ram installed, and hw mem hole is enabled, so you memory
-top is above 4g.
-and kernel need to use gart for iommu.
+* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
 
-and you bios didn't setup your gart because you didn't have agp..
+> Andrew,
+> 
+> We should use this one.
 
-please check if you BIOS have setup for gart, and you can set size to
-64M, and then you could get 64M ram back.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-YH
+	Ingo
