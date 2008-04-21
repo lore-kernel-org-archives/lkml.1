@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762217AbYDUTot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbYDUTqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762217AbYDUTot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761732AbYDUToi
+	id S1761683AbYDUTqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYDUTqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:44:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49980 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762073AbYDUToh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:44:37 -0400
-Message-ID: <480CEEA2.1040106@firstfloor.org>
-Date: Mon, 21 Apr 2008 21:44:34 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Mon, 21 Apr 2008 15:46:10 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:52332 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754233AbYDUTqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 15:46:09 -0400
+Message-ID: <480CEEED.2040705@aknet.ru>
+Date: Mon, 21 Apr 2008 23:45:49 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jean Delvare <jdelvare@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: PCI MSI breaks when booting with nosmp
-References: <200804172140.02311.jdelvare@suse.de> <200804171308.37328.jbarnes@virtuousgeek.org> <200804172225.14373.jdelvare@suse.de> <200804211043.10410.jbarnes@virtuousgeek.org> <87d4oj6o9a.fsf@basil.nowhere.org> <20080421194336.GC32278@elf.ucw.cz>
-In-Reply-To: <20080421194336.GC32278@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Joseph Fannin <jfannin@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-mm1
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org> <s5hwsmrcvow.wl%tiwai@suse.de>
+In-Reply-To: <s5hwsmrcvow.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Mon 2008-04-21 20:45:05, Andi Kleen wrote:
->> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
->>> Ok, I see this too on my desktop machine.  It looks like we're not getting 
->>> interrupts setup correctly in the nosmp case.  Still digging through to see 
->>> why though...
->> NoSMP disables the io-apic and a lot of modern systems don't work
->> without APIC.
-> 
-> Are you sure? I still boot DOS on very recent boxes, and they seem to
-> work. How can PC-compatible machine require an APIC?
+Hi.
 
-The machine doesn't, but the drivers do. DOS likely doesn't use all
-hardware.
+On Fri, 18 Apr 2008 22:13:43 -0400 Joseph Fannin <jfannin@gmail.com> wrote:
+>>>>
+>>>>> On Fri, Apr 18, 2008 at 01:47:57AM -0700, Andrew Morton wrote:
+>>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1/ 
+>>>>> I've been seeing the following backtraces since 2.6.25-rc8-mm1 -- at
+>>>>> least, since that's the earliest -mm I've built in a while.  I don't
+>>>>> get the same in mainline.
 
--Andi
+As a quick workaround, say N to INPUT_PCSPKR:
+  │ Prompt: PC Speaker support
+  │   Location:
+  │     -> Device Drivers
+  │       -> Input device support
+  │         -> Generic input layer (needed for keyboard, mouse, ...)
+(INPUT │
+  │           -> Miscellaneous devices (INPUT_MISC [=y])
