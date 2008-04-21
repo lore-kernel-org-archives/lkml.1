@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYDUKAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYDUKCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbYDUKAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 06:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYDUKAH
+	id S1756732AbYDUKCg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 06:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYDUKC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 06:00:07 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:62594 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbYDUKAF (ORCPT
+	Mon, 21 Apr 2008 06:02:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:27055 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbYDUKC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 06:00:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Z04BoZ+oxmCys9jlbJ/YRkaZSMYCL3xtU2KfUC3G+4lhUW+bWSOZN4SIxo9YMgh/ASzlKgRr4j5D15/EsmCkWP7evlRvh0VDTVzBtLL1Tc4accskVwNso9+EiR8aSiVjO8EVZP7vF/LPtAQFWTsDGT9Jw83sAE+NxpgXdT9yBa4=
-Message-ID: <480C6597.1000701@gmail.com>
-Date: Mon, 21 Apr 2008 11:59:51 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 21 Apr 2008 06:02:28 -0400
+Date: Mon, 21 Apr 2008 03:01:53 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make struct ocfs2_control_device static
+Message-ID: <20080421100153.GA7059@ca-server1.us.oracle.com>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
+	linux-kernel@vger.kernel.org
+References: <20080421084926.GS26897@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: fault in __d_lookup [Was: 2.6.25-mm1]
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <480C50EC.2090803@gmail.com> <20080421090610.GO27459@ZenIV.linux.org.uk> <480C6064.10801@gmail.com> <20080421094515.GR27459@ZenIV.linux.org.uk>
-In-Reply-To: <20080421094515.GR27459@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080421084926.GS26897@cs181133002.pp.htv.fi>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/21/2008 11:45 AM, Al Viro wrote:
-> On Mon, Apr 21, 2008 at 11:37:40AM +0200, Jiri Slaby wrote:
->> On 04/21/2008 11:06 AM, Al Viro wrote:
->>> On Mon, Apr 21, 2008 at 10:31:40AM +0200, Jiri Slaby wrote:
->>>
->>>        hlist_for_each_entry_rcu(dentry, node, head, d_hash) {
->>>                struct qstr *qstr;
->>>
->>>                if (dentry->d_name.hash != hash)
->>>                        continue;
->>>
->>> walking into node == (struct hlist_node *)0x00f0000000000000...
->> Yup, true, In the last oops I stuck on memcmp few lines below.
->>
->> BTW. it's 100% reproducible after it happens once, but fixable by reboot. 
->> Any tests I should run (memtest, some printks sticked anywhere)?
+On Mon, Apr 21, 2008 at 11:49:26AM +0300, Adrian Bunk wrote:
+> This patch makes the needlessly global struct ocfs2_control_device 
+> static.
 > 
-> Well, if list has such turd in it, you'll certainly hit it every time
-> you walk that list, so 100% reproducible is not surprising.
-> 
-> How well is it reproducible from fresh boot?
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Joel Becker <joel.becker@oracle.com>
 
-Few days with suspend/resume cycles. This one was booted 12 hours ago, one 
-suspend/resume. Will keep an eye on it and keep you informed.
+> 
+> ---
+> d8837f8ed79bc615105e5ca2724c3d22c9f26089 diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+> index 7428663..b503772 100644
+> --- a/fs/ocfs2/stack_user.c
+> +++ b/fs/ocfs2/stack_user.c
+> @@ -635,7 +635,7 @@ static const struct file_operations ocfs2_control_fops = {
+>  	.owner   = THIS_MODULE,
+>  };
+>  
+> -struct miscdevice ocfs2_control_device = {
+> +static struct miscdevice ocfs2_control_device = {
+>  	.minor		= MISC_DYNAMIC_MINOR,
+>  	.name		= "ocfs2_control",
+>  	.fops		= &ocfs2_control_fops,
+> 
+
+-- 
+
+Life's Little Instruction Book #356
+
+	"Be there when people need you."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
