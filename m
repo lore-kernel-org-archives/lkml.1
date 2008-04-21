@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbYDUWv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYDUWwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbYDUWv5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 18:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbYDUWu6
+	id S1758602AbYDUWwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 18:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYDUWvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 18:50:58 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52373 "EHLO smtp5.pp.htv.fi"
+	Mon, 21 Apr 2008 18:51:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:35346 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754678AbYDUWu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 18:50:57 -0400
-Date: Tue, 22 Apr 2008 01:50:26 +0300
+	id S1754384AbYDUWvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 18:51:03 -0400
+Date: Tue, 22 Apr 2008 01:50:31 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86: make start_secondary() static
-Message-ID: <20080421225026.GI2633@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Bernhard Walle <bwalle@suse.de>, Paul Gortmaker <p_gortmaker@yahoo.com>
+Subject: [2.6 patch] drivers/char/rtc.c: make 2 functions static
+Message-ID: <20080421225031.GJ2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,22 +23,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-start_secondary() needlessly became global.
+The following functions can now become static:
+- rtc_interrupt()
+- rtc_get_rtc_time()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Bernhard Walle <bwalle@suse.de>
+Acked-by:  Paul Gortmaker <p_gortmaker@yahoo.com>
 
 ---
-c2c97ec1631c669a4da2f3d927a47183a8de6784 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 679c0ca..3000fff 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -301,7 +301,7 @@ void __cpuinit smp_callin(void)
- /*
-  * Activate a secondary processor.
+
+This patch has been sent on:
+- 14 Apr 2008
+- 31 Mar 2008
+- 27 Feb 2008
+- 13 Feb 2008
+
+ drivers/char/rtc.c  |    5 +++--
+ include/linux/rtc.h |    2 --
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+e642155f0065ec03a83ed95eef2a78f272e73e01 
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 78b151c..39aba90 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -144,6 +144,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
+ 
+ static int rtc_ioctl(struct inode *inode, struct file *file,
+ 		     unsigned int cmd, unsigned long arg);
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+ 
+ #ifdef RTC_IRQ
+ static unsigned int rtc_poll(struct file *file, poll_table *wait);
+@@ -235,7 +236,7 @@ static inline unsigned char rtc_is_updating(void)
+  *	(See ./arch/XXXX/kernel/time.c for the set_rtc_mmss() function.)
   */
--void __cpuinit start_secondary(void *unused)
-+static void __cpuinit start_secondary(void *unused)
+ 
+-irqreturn_t rtc_interrupt(int irq, void *dev_id)
++static irqreturn_t rtc_interrupt(int irq, void *dev_id)
  {
  	/*
- 	 * Don't put *anything* before cpu_init(), SMP booting is too
+ 	 *	Can be an alarm interrupt, update complete interrupt,
+@@ -1298,7 +1299,7 @@ static int rtc_proc_open(struct inode *inode, struct file *file)
+ }
+ #endif
+ 
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm)
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+ 	unsigned long uip_watchdog = jiffies, flags;
+ 	unsigned char ctrl;
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index f2d0d15..1fc4f60 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -208,8 +208,6 @@ typedef struct rtc_task {
+ int rtc_register(rtc_task_t *task);
+ int rtc_unregister(rtc_task_t *task);
+ int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+-irqreturn_t rtc_interrupt(int irq, void *dev_id);
+ 
+ #endif /* __KERNEL__ */
+ 
 
