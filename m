@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbYDUVeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYDUVeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbYDUVeN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 17:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbYDUVc3
+	id S1758817AbYDUVeg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 17:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbYDUVcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 17:32:29 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60101 "EHLO smtp6.pp.htv.fi"
+	Mon, 21 Apr 2008 17:32:32 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:49748 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756870AbYDUVc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 17:32:26 -0400
-Date: Tue, 22 Apr 2008 00:31:55 +0300
+	id S1754005AbYDUVcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 17:32:31 -0400
+Date: Tue, 22 Apr 2008 00:32:00 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make parport_cs_release() static
-Message-ID: <20080421213155.GJ2633@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] parport/share.c: proper externs
+Message-ID: <20080421213200.GK2633@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,7 +22,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global parport_cs_release() static.
+This patch adds proper externs for parport_default_timeslice and 
+parport_default_spintime in include/linux/parport.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -31,17 +32,35 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 14 Apr 2008
 
-5b7ec7ccc6ba2d62a2e68a2211049cbdfa2b5dea diff --git a/drivers/parport/parport_cs.c b/drivers/parport/parport_cs.c
-index 802a81d..00e1d96 100644
---- a/drivers/parport/parport_cs.c
-+++ b/drivers/parport/parport_cs.c
-@@ -235,7 +235,7 @@ failed:
-     
- ======================================================================*/
+ drivers/parport/procfs.c |    3 ---
+ include/linux/parport.h  |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+4b9040d06db3fe544aa9971ba18184e2fb9b52ce diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
+index d950fc3..554e11f 100644
+--- a/drivers/parport/procfs.c
++++ b/drivers/parport/procfs.c
+@@ -429,9 +429,6 @@ struct parport_default_sysctl_table
+ 	ctl_table dev_dir[2];
+ };
  
--void parport_cs_release(struct pcmcia_device *link)
-+static void parport_cs_release(struct pcmcia_device *link)
- {
- 	parport_info_t *info = link->priv;
+-extern unsigned long parport_default_timeslice;
+-extern int parport_default_spintime;
+-
+ static struct parport_default_sysctl_table
+ parport_default_sysctl_table = {
+ 	.sysctl_header	= NULL,
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index d1ad546..2794fcc 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -560,5 +560,8 @@ extern int parport_device_proc_unregister(struct pardevice *device);
  
+ #endif /*  !CONFIG_PARPORT_NOT_PC  */
+ 
++extern unsigned long parport_default_timeslice;
++extern int parport_default_spintime;
++
+ #endif /* __KERNEL__ */
+ #endif /* _PARPORT_H_ */
 
