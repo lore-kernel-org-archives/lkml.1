@@ -1,58 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbYDUMQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDUMY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509AbYDUMQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 08:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYDUMQQ
+	id S1757422AbYDUMY0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 08:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYDUMYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 08:16:16 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55221 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756069AbYDUMQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 08:16:16 -0400
-Date: Mon, 21 Apr 2008 15:15:47 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86: unexport kmap_atomic_to_page
-Message-ID: <20080421121547.GC6011@cs181133002.pp.htv.fi>
-References: <20080421085144.GH26897@cs181133002.pp.htv.fi> <20080421120736.GD6788@elte.hu>
+	Mon, 21 Apr 2008 08:24:14 -0400
+Received: from stinky.trash.net ([213.144.137.162]:39005 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755374AbYDUMYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 08:24:13 -0400
+Message-ID: <480C8766.9010802@trash.net>
+Date: Mon, 21 Apr 2008 14:24:06 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080421120736.GD6788@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Roel Kluin <12o3l@tiscali.nl>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, coreteam@netfilter.org,
+       netfilter@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [netfilter-core] [PATCH 5/6] NETFILTER: signed tcphoff for	ipv6_skip_exthdr()
+ retval
+References: <480558CA.7090800@tiscali.nl> <48062282.4070204@tiscali.nl>
+In-Reply-To: <48062282.4070204@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 02:07:36PM +0200, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
->...
-> btw:
-> 
-> > ---
-> > f31eb5842f0a727041ff53355819cac964288428 diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-> > index 9cf33d3..165c871 100644
-> 
-> would you like this metadata to remain in the commit so that you can 
-> track it easier? [i guess it's not really necessary as duplicate changes 
-> are easy to find.]
+Roel Kluin wrote:
+> if tcphoff remains unsigned, a negative ipv6_skip_exthdr() return value will
+> go unnoticed,
 
-I'm using git only as a diff generation tool and all my actual patch 
-handling is done inside mutt, so this metadata is useless for me
-(I'm just too lazy to remove it from patches).
-
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Applied, thanks.
