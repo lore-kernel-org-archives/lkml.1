@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757833AbYDUT6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbYDUT7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757833AbYDUT6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 15:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbYDUT6k
+	id S1761746AbYDUT7Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 15:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYDUT7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 15:58:40 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:62569 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756814AbYDUT6j (ORCPT
+	Mon, 21 Apr 2008 15:59:05 -0400
+Received: from cpc4-cbly1-0-0-cust583.glfd.cable.ntl.com ([86.16.162.72]:40086
+	"EHLO crisp.demon.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752190AbYDUT7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 15:58:39 -0400
-From: fox@crisp.demon.co.uk
-To: bart.vanassche@gmail.com
-Cc: linux-kernel@vger.kernel.org
+	Mon, 21 Apr 2008 15:59:04 -0400
+Date: Mon, 21 Apr 2008 20:59:01 +0100
+From: paul <fox@crisp.demon.co.uk>
+Message-Id: <200804211959.m3LJx1LK004833@crisp.demon.co.uk>
+Reply-To: fox@crisp.demon.co.uk
+To: jkosina@suse.cz
 Subject: Re: dtrace for linux
-Date: Mon, 21 Apr 2008 20:58:25 +0100
-User-Agent: Demon-WebMail/2.0
-MIME-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Message-Id: <E1Jo29h-0004Ku-1i@pr-webmail-1.mail.demon.net>
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: CRiSP-Mail v4.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> On Sun, Apr 20, 2008 at 1:17 AM,  <fox@crisp.demon.co.uk> wrote:
-> >
-> >  I would like to announce that I am working on dtrace for Linux.
-> >  I have the userland dtrace binary compiled, along with the first
-> >  pre-pre-alpha dtracedrv.ko module loaded into my kernel.
+> On Sun, 20 Apr 2008, paul wrote:
 > 
-> This is great news. How will this dtrace implementation differ from
-> SystemTap (http://sourceware.org/systemtap/) ?
+> > If anyone wants to grab a copy (purely for reference - dont try and run 
+> > anything), you can visit
+> > http://www.crisp.demon.co.uk/tools
 > 
-> Bart.
+> This gives 404.
 > 
-> 
+> -- 
+> Jiri Kosina
+> SUSE Labs
 
-Hello Bart,
+Sorry - that should be tools.html:
 
+http://www.crisp.demon.co.uk/tools.html
 
-I dont know systemtap all that well, other than what i have
-read on the net and browsed in the source. systemtap is similar,
-but dtrace provides a high level functional language (D) and
-a set of methodologies and scripts which mean learning/training
-will make it easier to use.
-
-In addition, dtrace promises to be kernel safe (whether or not it
-is will be down to how good a job I do I guess!)
-
-
-
+tx
