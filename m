@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbYDVO14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965100AbYDVO2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934002AbYDVO14 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbYDVO1q
+	id S965100AbYDVO2w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbYDVO2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:27:46 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:26469 "EHLO kernel.dk"
+	Tue, 22 Apr 2008 10:28:43 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54771 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754802AbYDVO1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:27:44 -0400
-Date: Tue, 22 Apr 2008 16:27:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, Kyle McMartin <kyle@parisc-linux.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH 9/11] parisc: convert to generic helpers for IPI  function calls
-Message-ID: <20080422142738.GH12774@kernel.dk>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-10-git-send-email-jens.axboe@oracle.com> <20080422140914.GD19802@phobos.i.cabal.ca>
+	id S1751266AbYDVO2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:28:42 -0400
+Date: Tue, 22 Apr 2008 17:28:07 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] xfs: #define out unused parameters of
+	xfs_bmap_add_free and xfs_btree_read_bufl
+Message-ID: <20080422142807.GD16895@cs181133002.pp.htv.fi>
+References: <20080419142329.GA5339@elte.hu> <200804221142.00914.vda.linux@googlemail.com> <200804221216.25905.vda.linux@googlemail.com> <200804221320.54147.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080422140914.GD19802@phobos.i.cabal.ca>
+In-Reply-To: <200804221320.54147.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22 2008, Kyle McMartin wrote:
-> On Tue, Apr 22, 2008 at 09:57:35AM +0200, Jens Axboe wrote:
-> > This converts mips to use the new helpers for smp_call_function() and
-> > friends, and adds support for smp_call_function_single(). Not tested,
-> > not even compiled.
-> > 
+On Tue, Apr 22, 2008 at 01:20:54PM +0200, Denys Vlasenko wrote:
+> Hi David,
 > 
-> At first glance, this looks alright. +1 from me.
+> xfs_bmap_add_free and xfs_btree_read_bufl functions
+> use some of their parameters only in some cases
+> (e.g. if DEBUG is defined, or on non-Linux OS :)
+> 
+> This patch removes these parameters using #define hack
+> which makes them "disappear" without the need of uglifying
+> every callsite with #ifdefs.
+> 
+> Code size difference on 32-bit x86:
+>  393457    2904    2952  399313   617d1 linux-2.6-xfs6-TEST/fs/xfs/xfs.o
+>  393441    2904    2952  399297   617c1 linux-2.6-xfs7-TEST/fs/xfs/xfs.o
+>...
 
-Is that an official parisc ack? :-)
+Elimination of completely unused parameters makes sense, but IMHO using 
+such #define hacks for minuscule code size and stack usage advantages is 
+not worth it.
 
-And I'll make sure the patch comment matches... I wish that Andrews xb
-compiler collection had all the supported archs covered.
+cu
+Adrian
 
 -- 
-Jens Axboe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
