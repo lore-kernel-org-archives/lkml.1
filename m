@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYDVNQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYDVNVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYDVNQQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYDVNPn
+	id S1758715AbYDVNVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbYDVNVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:15:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:49726 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756381AbYDVNPl (ORCPT
+	Tue, 22 Apr 2008 09:21:46 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44738
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753975AbYDVNVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:15:41 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Will Newton" <will.newton@gmail.com>
-Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
-Date: Tue, 22 Apr 2008 15:15:26 +0200
-User-Agent: KMail/1.9.9
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, monstr@seznam.cz, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
-In-Reply-To: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 22 Apr 2008 09:21:45 -0400
+Date: Tue, 22 Apr 2008 15:21:43 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080422132143.GS12709@duo.random>
+References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random> <20080409185500.GT11364@sgi.com> <20080422072026.GM12709@duo.random> <20080422120056.GR12709@duo.random> <20080422130120.GR22493@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804221515.28075.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18z/Gyi7qzTAHF41shpe5l/c+/pijN2c4CF1RO
- 2UYK47v8OJfVEM7ii/Ft0tzbaf27NB8pdSiuODAN1vWr4a5C1j
- RWsN2vnsasKKgemN6DJRg==
+In-Reply-To: <20080422130120.GR22493@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008, Will Newton wrote:
-> This patch introduces a __ARCH_WANT_SYS_SYSFS #define for
-> architectures that support the sysfs(2) system call. At the moment
-> that's everybody but blackfin, but future architectures may want to
-> save the (admittedly small) code size that it adds to the kernel as
-> well.
+On Tue, Apr 22, 2008 at 08:01:20AM -0500, Robin Holt wrote:
+> On Tue, Apr 22, 2008 at 02:00:56PM +0200, Andrea Arcangeli wrote:
+> > On Tue, Apr 22, 2008 at 09:20:26AM +0200, Andrea Arcangeli wrote:
+> > >     invalidate_range_start {
+> > > 	spin_lock(&kvm->mmu_lock);
+> > > 
+> > > 	kvm->invalidate_range_count++;
+> > > 	rmap-invalidate of sptes in range
+> > > 
+> > 
+> > 	write_seqlock; write_sequnlock;
+> 
+> I don't think you need it here since invalidate_range_count is already
+> elevated which will accomplish the same effect.
 
-Yes, good thing to have. Since we'll be getting a new architecture
-(microblaze) soon, I think we should extend this mechanism (even though
-it's ugly) to all syscalls that we don't want to have in new architectures
-and make sure that microblaze doesn't have to set any of them.
-
-	Arnd <><
+Agreed, seqlock only in range_end should be enough. BTW, the fact
+seqlock is needed regardless of invalidate_page existing or not,
+really makes invalidate_page a no brainer not just from the core VM
+point of view, but from the driver point of view too. The
+kvm_page_fault logic would be the same even if I remove
+invalidate_page from the mmu notifier patch but it'd run slower both
+when armed and disarmed.
