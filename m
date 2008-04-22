@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934566AbYDVOQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763620AbYDVOUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934566AbYDVOQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934098AbYDVOMT
+	id S1763620AbYDVOUM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDVOT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:12:19 -0400
-Received: from styx.suse.cz ([82.119.242.94]:52085 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763677AbYDVOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:12:16 -0400
-Date: Tue, 22 Apr 2008 16:12:15 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: davej@codemonkey.org.uk, lenb@kernel.org
-cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       cpufreq@lists.linux.org.uk, Greg KH <greg@kroah.com>
-Subject: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
-Message-ID: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
+	Tue, 22 Apr 2008 10:19:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41978 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751843AbYDVOT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:19:57 -0400
+Date: Tue, 22 Apr 2008 16:19:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix x86_64 page fault scheduler race
+Message-ID: <20080422141909.GE24966@elte.hu>
+References: <20080422132151.GA32120@Krystal> <20080422132614.GC7311@elte.hu> <20080422140636.GA1683@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080422140636.GA1683@Krystal>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I am getting the acpi-cpufreq-drivercore warning below when booting 
-current git (807501475)
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-powernow-k8: Found 1 AMD Athlon(tm) 64 Processor 3000+ processors (1 cpu 
-cores) (version 2.20.00)
-powernow-k8: BIOS error - no PSB or ACPI _PSS objects
-sysdev: class cpu: driver (ffffffff8057fd10) has already been registered 
-to a class, something is wrong, but will forge on!
-------------[ cut here ]------------
-WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
-Modules linked in: acpi_cpufreq(+) snd_mixer_oss freq_table snd_seq loop 
-dm_mod snd_via82xx gameport snd_ac97_codec ac97_bus snd_pcm snd_timer 
-snd_page_alloc snd_mpu401_uart snd_rawmidi parport_pc snd_seq_device 
-parport snd shpchp floppy i2c_viapro i2c_core soundcore pci_hotplug sr_mod 
-r8169 cdrom button sg usbhid hid sd_mod edd ext3 mbcache jbd fan pata_via 
-sata_via libata scsi_mod dock thermal processor
-Pid: 2284, comm: modprobe Not tainted 2.6.25-default-03410-g8075014 #27
+> > the scheduler disables interrupts around __switch_to(). (x86 does 
+> > not set __ARCH_WANT_INTERRUPTS_ON_CTXSW)
+> 
+> Ok, so I guess it's only useful to NMIs then. However, it makes me 
+> wonder why this comment was there in the first place on x86_32 
+> vmalloc_fault() and why it uses read_cr3() :
+> 
+>         * Do _not_ use "current" here. We might be inside
+>         * an interrupt in the middle of a task switch..
 
-Call Trace:
- [<ffffffff8022dcc7>] warn_on_slowpath+0x58/0x6b
- [<ffffffff8022eba7>] ? printk+0x67/0x69
- [<ffffffff8042777a>] ? __mutex_unlock_slowpath+0xf9/0x105
- [<ffffffff8042778f>] ? mutex_unlock+0x9/0xb
- [<ffffffff8042927d>] ? _spin_unlock_irqrestore+0x3f/0x47
- [<ffffffff80368b33>] sysdev_driver_register+0x75/0x12e
- [<ffffffff803a9fb3>] cpufreq_register_driver+0x95/0x12f
- [<ffffffffa00f503f>] :acpi_cpufreq:acpi_cpufreq_init+0x3f/0x41
- [<ffffffff80252b4b>] sys_init_module+0x19d1/0x1b02
- [<ffffffff80285eda>] ? __kmalloc+0x0/0xea
- [<ffffffff8024a87b>] ? trace_hardirqs_on+0xf1/0x115
- [<ffffffff80428afc>] ? trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020bf7b>] system_call_after_swapgs+0x7b/0x80
+hm, i guess it's still useful to keep the 
+__ARCH_WANT_INTERRUPTS_ON_CTXSW case working too. On -rt we used to 
+enable it to squeeze a tiny bit more latency out of the system.
 
----[ end trace 21ad653327c7db6f ]---
-
--- 
-Jiri Kosina
+	Ingo
