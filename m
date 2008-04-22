@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762228AbYDVNCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762612AbYDVNDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762228AbYDVNCl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYDVNCb
+	id S1762612AbYDVNDw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759044AbYDVNDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:02:31 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54427 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755043AbYDVNCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:02:30 -0400
-Date: Tue, 22 Apr 2008 16:01:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080422130155.GA16895@cs181133002.pp.htv.fi>
-References: <20080419142329.GA5339@elte.hu> <200804212151.02241.vda.linux@googlemail.com> <20080422012819.GT108924158@sgi.com> <200804221448.09828.vda.linux@googlemail.com>
+	Tue, 22 Apr 2008 09:03:43 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:3804 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755596AbYDVNDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:03:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KHS/j7aI0nqXEqhA6Vwe3rcL7i6HE/YV7xtF1h5P7BLAv5hSFet/MQpYXrtpgj2i7vE3mBs6F/+4DG8ZouSPR6oVCwYjQjwvoWi51NZJEw6An36pG84lZ8siFNhg50GHx7Oas7kj561xfs9uXHGBfeecU1kO1gwTWkAb7KfoFG8=
+Message-ID: <480DE215.2070803@gmail.com>
+Date: Tue, 22 Apr 2008 22:03:17 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200804221448.09828.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       oliver@neukum.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       zaitcev@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH 1/2] klist: implement KLIST_INIT() and DEFINE_KLIST()
+References: <480DB6A4.20101@gmail.com> <1208869049.7115.254.camel@twins>
+In-Reply-To: <1208869049.7115.254.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 02:48:09PM +0200, Denys Vlasenko wrote:
-> On Tuesday 22 April 2008 03:28, David Chinner wrote:
->...
-> > Patches are welcome - I'd be over the moon if any of the known 4k
-> > stack advocates sent a stack reduction patch for XFS, but it seems
-> > that actually trying to fix the problems is much harder than
-> > resending a one line patch every few months....
+Peter Zijlstra wrote:
+> On Tue, 2008-04-22 at 18:57 +0900, Tejun Heo wrote:
+>> klist is missing static initializers and definition helper.  Add them.
+>>
+>> Signed-off-by: Tejun Heo <htejun@gmail.com>
+>> ---
+>> I can't tell who's in charge of this code, so I'm including last two
+>> people who made changes and Andrew :-) This will be used by later USB
+>> mode switch support, so I'm cc'ing USB people too.
+>>
+>> Thanks.
+>>
+>>  include/linux/klist.h |    8 ++++++++
+>>  1 files changed, 8 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/klist.h b/include/linux/klist.h
+>> index 7407125..c6b697c 100644
+>> --- a/include/linux/klist.h
+>> +++ b/include/linux/klist.h
+>> @@ -25,6 +25,14 @@ struct klist {
+>>  	void			(*put)(struct klist_node *);
+>>  };
+>>  
+>> +#define KLIST_INIT(_name, _get, _put)					\
+>> +	{ .k_lock	= __SPIN_LOCK_UNLOCKED(klist.k_lock),		\
 > 
-> Sent a few.
-> I would like to ask you to ACK/NAK every individual patch
-> in some reasonable period of time, say, 1-3 days. If you NAK a patch,
-> please let me know what is wrong with it.
->...
+> May I ask you make that: __SPIN_LOCK_UNLOCKED(_name.k_lock)
+ >
+> Otherwise we'll end up with multiple classes that have the same name.
 
-I know the feeling of resending patches again and again without any 
-reaction quite well, but that's not David's fault and not true for XFS 
-patches, so when you try to put pressure on him you hit the wrong 
-person.
+These locks don't nest so being in the same class should be okay and I 
+was following what (at least some of) other __SPIN_LOCK_UNLOCKED users 
+are doing.  If putting these locks into separate classes is the RTTD, sure.
 
-> Best regards, Denys.
-
-cu
-Adrian
+Thanks.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+tejun
