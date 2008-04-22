@@ -1,100 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765037AbYDVNlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762327AbYDVNle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765037AbYDVNlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYDVNkz
+	id S1762327AbYDVNle (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764261AbYDVNk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:40:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48326 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764960AbYDVNkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:40:52 -0400
-Date: Tue, 22 Apr 2008 15:40:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Pete Zaitcev <zaitcev@redhat.com>,
-       linux-usb@vger.kernel.org, gregkh@suse.de, penberg@cs.helsinki.fi
-Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
-Message-ID: <20080422134034.GF7311@elte.hu>
-References: <200804212310.41729.elendil@planet.nl>
+	Tue, 22 Apr 2008 09:40:56 -0400
+Received: from hu-out-0506.google.com ([72.14.214.228]:1945 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764284AbYDVNkx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:40:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=GfR9NGsCppC3yyJ2CmJUOowzXf6vj27KelFCz99Bsec9UUBDkTI4P6R4vnvs5l3lDclhA/Az5q+O5pjNhxHz18dzprnhvY9HahmHn6XAY65/jr1gbcaqKvgd+So+9BJMZMruasETb1Qtm7mxTc3tjRn4WsnCZRSND4kfLDfRz44=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: [PATCH] xfs: remove unused params from functions in xfs/quota/*
+Date: Tue, 22 Apr 2008 15:40:12 +0200
+User-Agent: KMail/1.8.2
+Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804221351.03885.vda.linux@googlemail.com> <200804221532.22701.vda.linux@googlemail.com>
+In-Reply-To: <200804221532.22701.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804212310.41729.elendil@planet.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_8qeDIUYBL82VY1V"
+Message-Id: <200804221540.12382.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_8qeDIUYBL82VY1V
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Frans Pop <elendil@planet.nl> wrote:
+Hi David,
 
-> I got the following warning while running sched-devel/latest.
-> 
-> I was not doing any tracing at that point (for the glibc compilation 
-> issue). I suspect it was while I was using a KDE application (amarok) 
-> as the desktop froze for a few seconds at one point.
+This patch deals with remaining cases of unused parameters in fs/xfs/quota/*
+as far as I can see so far. The rest of unused parameters
+in fs/xfs/quota/* cannot be easily eliminated due to addresses
+of functions being taken.
 
-i think this message is harmless to system stability.
+Code size difference on 32-bit x86:
+ 393289    2904    2952  399145   61729 linux-2.6-xfs8-TEST/fs/xfs/xfs.o
+ 393236    2904    2952  399092   616f4 linux-2.6-xfs9-TEST/fs/xfs/xfs.o
 
-Cc:-ing USB folks as the kmem_cache_destroy() comes from 
-drivers/usb/mon/mon_text.c.
+Compile tested only.
 
-Context: SLUB recently started warning about caches that get destroyed 
-with still outstanding allocations.
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
 
-Pekka, it might make sense to turn this SLUB warning into something more 
-specific? It does seem to trigger in practice.
+--Boundary-00=_8qeDIUYBL82VY1V
+Content-Type: text/x-diff;
+  charset="koi8-r";
+  name="xfs8-quota-remove_unused_params.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="xfs8-quota-remove_unused_params.patch"
 
-> Cheers,
-> FJP
-> 
-> ------------[ cut here ]------------
-> WARNING: at mm/slub.c:2443 kmem_cache_destroy+0x168/0x1a9()
-> Modules linked in: snd_rtctimer i915 drm tun ppdev lp ac battery nfs lockd 
-> nfs_acl sunrpc bridge llc fuse lm85 hwmon_vid cpufreq_ondemand acpi_cpufreq 
-> freq_table firewire_sbp2 ipv6 snd_hda_intel snd_pcm_oss snd_mixer_oss 
-> snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi 
-> snd_seq_midi_event snd_seq snd_timer snd_seq_device psmouse snd parport_pc 
-> i2c_i801 button iTCO_wdt parport serio_raw i2c_core intel_agp joydev 
-> soundcore evdev pcspkr snd_page_alloc ext3 jbd mbcache dm_mirror 
-> dm_snapshot dm_mod ide_cd_mod ata_piix ata_generic sg sr_mod cdrom sd_mod 
-> piix usbhid hid floppy ahci libata scsi_mod dock ide_pci_generic ide_core 
-> firewire_ohci firewire_core crc_itu_t ehci_hcd uhci_hcd e1000e thermal 
-> processor fan
-> Pid: 32428, comm: cat Not tainted 2.6.26-rc0-sched-devel.git-x86-latest.git 
-> #3
-> 
-> Call Trace:
->  [<ffffffff80237c7b>] warn_on_slowpath+0x58/0x6b
->  [<ffffffff80273676>] ? get_pageblock_migratetype+0x1b/0x1d
->  [<ffffffff80274291>] ? free_hot_page+0xb/0xd
->  [<ffffffff802742ab>] ? __free_pages+0x18/0x21
->  [<ffffffff80292170>] ? __free_slab+0xdc/0xe9
->  [<ffffffff80293c5d>] kmem_cache_destroy+0x168/0x1a9
->  [<ffffffff803974d8>] mon_text_release+0x89/0xae
->  [<ffffffff80299254>] __fput+0xb9/0x161
->  [<ffffffff8029957b>] fput+0x14/0x16
->  [<ffffffff80296892>] filp_close+0x66/0x71
->  [<ffffffff80239eea>] put_files_struct+0x77/0xcb
->  [<ffffffff80239f72>] __exit_files+0x34/0x39
->  [<ffffffff8023b1ec>] do_exit+0x256/0x683
->  [<ffffffff8023b694>] do_group_exit+0x7b/0x96
->  [<ffffffff8024409f>] get_signal_to_deliver+0x2c4/0x2f1
->  [<ffffffff8020b9bb>] do_notify_resume+0xd0/0x8d5
->  [<ffffffff80232e0d>] ? default_wake_function+0x0/0xf
->  [<ffffffff80397b45>] ? mon_text_read_u+0x2b/0x2b6
->  [<ffffffff802eb576>] ? security_file_permission+0x11/0x13
->  [<ffffffff80298bce>] ? vfs_read+0xa4/0xde
->  [<ffffffff8020c374>] ? sysret_signal+0x1c/0x27
->  [<ffffffff8020c5f7>] ptregscall_common+0x67/0xb0
-> 
-> ---[ end trace 55672de67f8b5497 ]---
+diff -urpN linux-2.6-xfs8/fs/xfs/quota/xfs_dquot.c linux-2.6-xfs9/fs/xfs/quota/xfs_dquot.c
+--- linux-2.6-xfs8/fs/xfs/quota/xfs_dquot.c	2008-04-22 11:34:01.000000000 +0200
++++ linux-2.6-xfs9/fs/xfs/quota/xfs_dquot.c	2008-04-22 15:12:08.000000000 +0200
+@@ -640,7 +640,11 @@ xfs_qm_dqtobp(
+  * and release the buffer immediately.
+  *
+  */
+-/* ARGSUSED */
++#ifndef DEBUG
++/* "id" is used only for debugging */
++#define xfs_qm_dqread(tpp, id, dqp, flags) \
++	xfs_qm_dqread(tpp, dqp, flags)
++#endif
+ STATIC int
+ xfs_qm_dqread(
+ 	xfs_trans_t	**tpp,
+diff -urpN linux-2.6-xfs8/fs/xfs/quota/xfs_qm.c linux-2.6-xfs9/fs/xfs/quota/xfs_qm.c
+--- linux-2.6-xfs8/fs/xfs/quota/xfs_qm.c	2008-04-22 11:34:31.000000000 +0200
++++ linux-2.6-xfs9/fs/xfs/quota/xfs_qm.c	2008-04-22 15:12:54.000000000 +0200
+@@ -65,6 +65,8 @@ kmem_zone_t	*qm_dqtrxzone;
+ 
+ static cred_t	xfs_zerocr;
+ 
++/* "str" and "n" are unused */
++#define xfs_qm_list_init(list, str, n) xfs_qm_list_init(list)
+ STATIC void	xfs_qm_list_init(xfs_dqlist_t *, char *, int);
+ STATIC void	xfs_qm_list_destroy(xfs_dqlist_t *);
+ 
+@@ -210,10 +212,10 @@ xfs_qm_destroy(
+  * structures are pretty independent, but it helps the XQM keep a
+  * global view of what's going on.
+  */
+-/* ARGSUSED */
+ STATIC int
+ xfs_qm_hold_quotafs_ref(
+-	struct xfs_mount *mp)
++	void
++	/*struct xfs_mount *mp*/)
+ {
+ 	/*
+ 	 * Need to lock the xfs_Gqm structure for things like this. For example,
+@@ -243,7 +245,8 @@ xfs_qm_hold_quotafs_ref(
+ /* ARGSUSED */
+ STATIC void
+ xfs_qm_rele_quotafs_ref(
+-	struct xfs_mount *mp)
++	void
++	/*struct xfs_mount *mp*/)
+ {
+ 	xfs_dquot_t	*dqp, *nextdqp;
+ 
+@@ -1122,7 +1125,7 @@ xfs_qm_init_quotainfo(
+ 	/*
+ 	 * Tell XQM that we exist as soon as possible.
+ 	 */
+-	if ((error = xfs_qm_hold_quotafs_ref(mp))) {
++	if ((error = xfs_qm_hold_quotafs_ref(/* mp */))) {
+ 		return error;
+ 	}
+ 
+@@ -1233,7 +1236,7 @@ xfs_qm_destroy_quotainfo(
+ 	 * when the XQM structure should be freed. We cannot assume
+ 	 * that xfs_Gqm is non-null after this point.
+ 	 */
+-	xfs_qm_rele_quotafs_ref(mp);
++	xfs_qm_rele_quotafs_ref(/* mp */);
+ 
+ 	spinlock_destroy(&qi->qi_pinlock);
+ 	xfs_qm_list_destroy(&qi->qi_dqlist);
+
+--Boundary-00=_8qeDIUYBL82VY1V--
