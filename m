@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbYDVCIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbYDVCLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762212AbYDVCIj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 22:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbYDVCI0
+	id S1762287AbYDVCLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 22:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYDVCLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 22:08:26 -0400
-Received: from fmailhost03.isp.att.net ([204.127.217.103]:55959 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754363AbYDVCIZ (ORCPT
+	Mon, 21 Apr 2008 22:11:31 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:59999 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756330AbYDVCLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 22:08:25 -0400
-X-Originating-IP: [74.251.45.88]
-Date: Mon, 21 Apr 2008 21:08:21 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
-       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       torvalds@osdl.org
-Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
-Message-ID: <20080421210821.28053a92@osprey.hogchain.net>
-In-Reply-To: <20080420205500.GA4762@martell.zuzino.mipt.ru>
-References: <20080414183221.GA5234@martell.zuzino.mipt.ru>
-	<20080414195613.GA4772@martell.zuzino.mipt.ru>
-	<Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
-	<20080419111719.GA6724@martell.zuzino.mipt.ru>
-	<20080419144535.GA4814@martell.zuzino.mipt.ru>
-	<20080419215444.2d4623f5@osprey.hogchain.net>
-	<20080420111453.GA4902@martell.zuzino.mipt.ru>
-	<20080420060607.2b1be48b@osprey.hogchain.net>
-	<20080420122631.GA4761@martell.zuzino.mipt.ru>
-	<20080420133704.63f5cc10@osprey.hogchain.net>
-	<20080420205500.GA4762@martell.zuzino.mipt.ru>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Apr 2008 22:11:30 -0400
+Date: Mon, 21 Apr 2008 22:11:03 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/8] omfs: add inode routines
+Message-ID: <20080422021103.GA9730@hash.localnet>
+References: <1208637457-24969-4-git-send-email-me@bobcopeland.com> <E1Jnxhm-0002we-Tx@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jnxhm-0002we-Tx@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 00:55:00 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Mon, Apr 21, 2008 at 05:13:18PM +0200, Miklos Szeredi wrote:
+> > +	if (sbi->s_num_blocks != be64_to_cpu(omfs_rb->r_num_blocks)) {
+> > +		printk(KERN_ERR "omfs: block count discrepancy between "
+> > +			"super and root blocks (%llx, %llx)\n",
+> > +			sbi->s_num_blocks, be64_to_cpu(omfs_rb->r_num_blocks));
+> > +		goto out_bh;
+> 
+> Jump to wrong label.
+> 
+> Also label names are a bit chaotic.  But that's a matter of taste...
 
-> Aha, ifconfig down is enough. Here is how reproducer looks like now:
-> 
-> 	./sync-linux-linus && ssh core2 "sudo /sbin/ifconfig eth0
-> down"
-> 
-> where first script is basically scp(1).
-> 
-> Also, booting with 1G or 2G of RAM (mem=1024m) makes issue go away.
-> 
-> printk at dev_close() time shows that NETIF_F_HIGHDMA was not somehow
-> enabled.
-> 
+Thanks, fixed and I changed the label names to e.g. out_brelse_bh2.
 
-Alexey, can you please try this (very minimally tested) patch?
+-- 
+Bob Copeland %% www.bobcopeland.com 
 
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 5586fc6..07fe5c0 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -1115,9 +1115,6 @@ static void atl1_free_ring_resources(struct atl1_adapter *adapter)
- 	struct atl1_rrd_ring *rrd_ring = &adapter->rrd_ring;
- 	struct atl1_ring_header *ring_header = &adapter->ring_header;
- 
--	atl1_clean_tx_ring(adapter);
--	atl1_clean_rx_ring(adapter);
--
- 	kfree(tpd_ring->buffer_info);
- 	pci_free_consistent(pdev, ring_header->size, ring_header->desc,
- 		ring_header->dma);
-@@ -3423,6 +3420,8 @@ static int atl1_set_ringparam(struct net_device *netdev,
- 		adapter->rrd_ring = rrd_old;
- 		adapter->tpd_ring = tpd_old;
- 		adapter->ring_header = rhdr_old;
-+		atl1_clean_tx_ring(adapter);
-+		atl1_clean_rx_ring(adapter);
- 		atl1_free_ring_resources(adapter);
- 		adapter->rfd_ring = rfd_new;
- 		adapter->rrd_ring = rrd_new;
