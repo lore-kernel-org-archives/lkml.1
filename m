@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbYDVAzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbYDVBDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761663AbYDVAzO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbYDVAyz
+	id S1761405AbYDVBDx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 21:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760164AbYDVBDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:54:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57213 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332AbYDVAyy (ORCPT
+	Mon, 21 Apr 2008 21:03:42 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:39614 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757693AbYDVBDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:54:54 -0400
-Date: Mon, 21 Apr 2008 20:54:51 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dwalker@mvista.com, sdietrich@novell.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com
-Subject: Re: [PATCH] SELinux fixups needed for preemptable RCU from -rt
-In-Reply-To: <20080422003412.GA9983@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.58.0804212053530.25185@gandalf.stny.rr.com>
-References: <20080422003412.GA9983@linux.vnet.ibm.com>
+	Mon, 21 Apr 2008 21:03:41 -0400
+Date: Tue, 22 Apr 2008 09:03:04 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Message-ID: <20080422010304.GA14994@gondor.apana.org.au>
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com> <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 21 Apr 2008, Paul E. McKenney wrote:
-> @@ -807,8 +810,14 @@ int avc_ss_reset(u32 seqno)
+On Mon, Apr 21, 2008 at 08:49:58AM -0700, Linus Torvalds wrote:
 >
->  	for (i = 0; i < AVC_CACHE_SLOTS; i++) {
->  		spin_lock_irqsave(&avc_cache.slots_lock[i], flag);
-> +		/*
-> +		 * On -rt the outer spinlock does not prevent RCU
-> +		 * from being performed:
+> That is *not* the main problem.
+> 
+> If you use "rcu_dereference()" on the wrong access, it not only loses the 
+> "smp_read_barrier_depends()" (which is a no-op on all sane architectures 
+> anyway), but it loses the ACCESS_ONCE() thing *entirely*.
 
-I would suggest to change this comment to "With preemptible RCU" from
-"On -rt".
+Actually rcu_dereference didn't have ACCESS_ONCE when I did this.
+That only appearaed later with the preemptible RCU work.
 
--- Steve
+The original purpose of rcu_dereference was exactly to replace the
+explicit barriers that people were using for RCU, nothing more,
+nothing less.
 
-> +		 */
-> +		rcu_read_lock();
->  		list_for_each_entry(node, &avc_cache.slots[i], list)
->  			avc_node_delete(node);
-> +		rcu_read_unlock();
->  		spin_unlock_irqrestore(&avc_cache.slots_lock[i], flag);
->  	}
->
-5A
+Oh and I totally agree that the compiler is going to generate insane
+code whenever ACCESS_ONCE is used.  In this case we may have avoided
+it by rearranging the code, but in general the introduction of ACCESS_ONCE
+in rcu_dereference is likely to have a negative impact on the code
+generated.
+
+Remember that "volatile" discussion? I think this is where it all came
+from.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
