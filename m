@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYDVVVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763002AbYDVVVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762047AbYDVVVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbYDVVVD
+	id S1763002AbYDVVVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762369AbYDVVVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:21:03 -0400
-Received: from mail.windriver.com ([147.11.1.11]:53972 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755594AbYDVVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:21:01 -0400
-Message-ID: <480E567B.6060708@windriver.com>
-Date: Tue, 22 Apr 2008 16:19:55 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 22 Apr 2008 17:21:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:48591 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761714AbYDVVVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 17:21:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HBR563uiqEED8dpIDn0NhOnOgFCSFr9K/8LjJGyNCya019DEf0m3HtIjlR2wCVmiI3al8lcFgkbFd/ZYDAyXfTXp7nVjEf/Rgpa9J+iTz/pM2bpZlHsbTTEmGjJeJroOIRsraoQHDYE9cfKjagUkIGUzX+/V/N5sCvgI3LWiLsY=
+Message-ID: <9a8748490804221421x43271510nac6934f1ce37f500@mail.gmail.com>
+Date: Tue, 22 Apr 2008 23:21:10 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH] hfs: if match_strdup() fails to allocate memory in parse_options(), don't blow up the kernel.
+Cc: "Roman Zippel" <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1208899044.8636.80.camel@localhost>
 MIME-Version: 1.0
-To: Randy Dunlap <RANDY.DUNLAP@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: kgdb: core
-References: <200804181741.m3IHfTeC012089@hera.kernel.org>	<20080418150930.476ea7aa.akpm@linux-foundation.org>	<20080421141252.GR9554@elte.hu>	<20080421214636.617970c6.akpm@linux-foundation.org>	<20080422082519.62adc7f1.randy.dunlap@oracle.com> <20080422135716.c6ee339b.akpm@linux-foundation.org> <5739699.1208898133855.JavaMail.oracle@acsmt302.oracle.com>
-In-Reply-To: <5739699.1208898133855.JavaMail.oracle@acsmt302.oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 21:19:44.0503 (UTC) FILETIME=[95DC1870:01C8A4BE]
+Content-Disposition: inline
+References: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
+	 <1208899044.8636.80.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> --- Original Message --- (akpm wrote:)
->>> On Tue, 22 Apr 2008 08:25:19 -0700 Randy Dunlap
-<randy.dunlap@oracle.com> wrote:
->>>
->>> kernel-doc output doesn't depend on build $ARCH.
->> Ah, interesting.  I made an ass of u and me.
->>
->> In that case documentng them in x86 .c and leaving all other definitions
->> and declarations uncommented sounds the way to go?  
+On 22/04/2008, Joe Perches <joe@perches.com> wrote:
+> On Tue, 2008-04-22 at 23:12 +0200, Jesper Juhl wrote:
+>  > From: Jesper Juhl <jesper.juhl@gmail.com>
 >
-> Yes, that would be fine and traditional (historical).
+> > diff --git a/fs/hfs/super.c b/fs/hfs/super.c
+>  > index 32de44e..221e314 100644
+>  > --- a/fs/hfs/super.c
+>  > +++ b/fs/hfs/super.c
+>  > @@ -297,6 +297,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+>  >                               return 0;
+>  >                       }
+>  >                       p = match_strdup(&args[0]);
+>  > +                     if (!p) {
+>  > +                             printk(KERN_ERR "hfs: mem alloc failed in match_strdup()\n");
+>  > +                             return 0;
+>  > +                     }
+>  >                       hsb->nls_disk = load_nls(p);
+>  >                       if (!hsb->nls_disk) {
+>  >                               printk(KERN_ERR "hfs: unable to load codepage \"%s\"\n", p);
+>  > @@ -311,6 +315,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+>  >                               return 0;
+>  >                       }
+>  >                       p = match_strdup(&args[0]);
+>  > +                     if (!p) {
+>  > +                             printk(KERN_ERR "hfs: memory allocation failed in match_strdup()\n");
+>  > +                             return 0;
+>  > +                     }
+>  >                       hsb->nls_io = load_nls(p);
+>  >                       if (!hsb->nls_io) {
+>  >                               printk(KERN_ERR "hfs: unable to load iocharset \"%s\"\n", p);
+>  >
 >
-> ~Randy
+>
+> Using different strings in the printk wastes memory.
 >
 
-So is the summary here that we cannot just document the actual
-interface API in the incude/linux/kgdb.h?
+True, but I personally prefer being able to do  grep "error message"
+and hit just one source location over saving a few bytes of memory...
+If Roman wants the strings to be identical I can resubmit the patch. Roman?
 
-The problem I had here was pretty simple in that not all of the
-functions in the API are used by all the archs.  It seemed pretty
-reasonable at the time to just document everything in the .h file
-because it was more for the folks who wanted to add kgdb support to an
-arch and of little to no use to end users of kgdb.
-
-The mainline only has a small chunk of the docs right now because not
-all of kgdb is merged.  I was just hoping it was real easy to generate
-some reasonable looking docs.  The docs for all the kgdb code that
-exists (in mainline and not in mainline) can be viewed here as an
-example.
-
-http://kernel.org/pub/linux/kernel/people/jwessel/kgdb/
-
-Jason.
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
