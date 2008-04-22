@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933475AbYDVNyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765690AbYDVNzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933475AbYDVNyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763089AbYDVNyf
+	id S1765690AbYDVNzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbYDVNzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:54:35 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:38904 "EHLO
+	Tue, 22 Apr 2008 09:55:18 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:38968 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764502AbYDVNye (ORCPT
+	with ESMTP id S932854AbYDVNzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:54:34 -0400
-Date: Tue, 22 Apr 2008 22:54:33 +0900 (JST)
-Message-Id: <20080422.225433.113622843.taka@valinux.co.jp>
+	Tue, 22 Apr 2008 09:55:16 -0400
+Date: Tue, 22 Apr 2008 22:55:15 +0900 (JST)
+Message-Id: <20080422.225515.128486479.taka@valinux.co.jp>
 To: jens.axboe@oracle.com, agk@sourceware.org
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 4/10] I/O context inheritance
+Subject: [RFC][PATCH 5/10] I/O context inheritance
 From: Hirokazu Takahashi <taka@valinux.co.jp>
 In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
 References: <20080422.224935.00673711.taka@valinux.co.jp>
@@ -27,74 +27,62 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Make the aio kernel thread work on the iocontext of the process
-which request an I/O.
+The raid1 module makes use of temporary bios to sync physical disks
+under the same md device. Make the bios point the iocontext of one of
+the kernel threads in the module.
 
+Meanwhile, regular read/write I/O requests will be cloned and may be
+handled by one of the kernel threads in the modules. In this case,
+the iocontext will be inherited from the source bio.
 
 Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 
 
---- linux-2.6.25.bio0/include/linux/aio.h	2008-04-22 15:48:36.000000000 +0900
-+++ linux-2.6.25/include/linux/aio.h	2008-04-22 15:52:07.000000000 +0900
-@@ -181,6 +181,7 @@ struct kioctx {
- 	atomic_t		users;
- 	int			dead;
- 	struct mm_struct	*mm;
+--- linux-2.6.25.bio0/include/linux/raid/raid1.h	2008-04-22 15:48:32.000000000 +0900
++++ linux-2.6.25/include/linux/raid/raid1.h	2008-04-22 15:52:38.000000000 +0900
+@@ -100,6 +100,7 @@ struct r1bio_s {
+ 
+ 	struct list_head	retry_list;
+ 	struct bitmap_update	*bitmap_update;
 +	struct io_context	*io_context;
- 
- 	/* This needs improving */
- 	unsigned long		user_id;
---- linux-2.6.25.bio0/fs/aio.c	2008-04-22 15:48:31.000000000 +0900
-+++ linux-2.6.25/fs/aio.c	2008-04-22 15:52:07.000000000 +0900
-@@ -31,6 +31,7 @@
- #include <linux/workqueue.h>
- #include <linux/security.h>
- #include <linux/eventfd.h>
-+#include <linux/blkdev.h>
- 
- #include <asm/kmap_types.h>
- #include <asm/uaccess.h>
-@@ -217,6 +218,10 @@ static struct kioctx *ioctx_alloc(unsign
- 	mm = ctx->mm = current->mm;
- 	atomic_inc(&mm->mm_count);
- 
-+	ctx->io_context = get_io_context(GFP_KERNEL, -1);
-+	if (!ctx->io_context)
-+		goto out_freectx2;
-+
- 	atomic_set(&ctx->users, 1);
- 	spin_lock_init(&ctx->ctx_lock);
- 	spin_lock_init(&ctx->ring_info.ring_lock);
-@@ -255,6 +260,8 @@ out_cleanup:
- 	return ERR_PTR(-EAGAIN);
- 
- out_freectx:
-+	put_io_context(ctx->io_context);
-+out_freectx2:
- 	mmdrop(mm);
- 	kmem_cache_free(kioctx_cachep, ctx);
- 	ctx = ERR_PTR(-ENOMEM);
-@@ -376,6 +383,7 @@ void __put_ioctx(struct kioctx *ctx)
- 	aio_free_ring(ctx);
- 	mmdrop(ctx->mm);
- 	ctx->mm = NULL;
-+	put_io_context(ctx->io_context);
- 	pr_debug("__put_ioctx: freeing %p\n", ctx);
- 	kmem_cache_free(kioctx_cachep, ctx);
- 
-@@ -841,6 +849,7 @@ static void aio_kick_handler(struct work
- 	struct mm_struct *mm;
- 	int requeue;
- 
-+	current->io_context = ctx->io_context;
- 	set_fs(USER_DS);
- 	use_mm(ctx->mm);
- 	spin_lock_irq(&ctx->ctx_lock);
-@@ -849,6 +858,7 @@ static void aio_kick_handler(struct work
- 	spin_unlock_irq(&ctx->ctx_lock);
-  	unuse_mm(mm);
- 	set_fs(oldfs);
-+	current->io_context = NULL;
  	/*
- 	 * we're in a worker thread already, don't use queue_delayed_work,
- 	 */
+ 	 * if the IO is in WRITE direction, then multiple bios are used.
+ 	 * We choose the number when they are allocated.
+--- linux-2.6.25.bio0/drivers/md/raid1.c	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/drivers/md/raid1.c	2008-04-22 17:18:08.000000000 +0900
+@@ -200,6 +200,8 @@ static void put_buf(r1bio_t *r1_bio)
+ 		if (bio->bi_end_io)
+ 			rdev_dec_pending(conf->mirrors[i].rdev, r1_bio->mddev);
+ 	}
++	put_io_context(r1_bio->io_context);
++	r1_bio->io_context = NULL;
+ 
+ 	mempool_free(r1_bio, conf->r1buf_pool);
+ 
+@@ -1731,6 +1733,7 @@ static sector_t sync_request(mddev_t *md
+ 	r1_bio->sector = sector_nr;
+ 	r1_bio->state = 0;
+ 	set_bit(R1BIO_IsSync, &r1_bio->state);
++	r1_bio->io_context = ioc_object_link(current->io_context);
+ 
+ 	for (i=0; i < conf->raid_disks; i++) {
+ 		mdk_rdev_t *rdev;
+@@ -1747,6 +1750,7 @@ static sector_t sync_request(mddev_t *md
+ 		bio->bi_size = 0;
+ 		bio->bi_end_io = NULL;
+ 		bio->bi_private = NULL;
++		bio->bi_io_context = r1_bio->io_context;
+ 
+ 		rdev = rcu_dereference(conf->mirrors[i].rdev);
+ 		if (rdev == NULL ||
+--- linux-2.6.25.bio0/drivers/md/md.c	2008-04-22 15:48:33.000000000 +0900
++++ linux-2.6.25/drivers/md/md.c	2008-04-22 15:52:38.000000000 +0900
+@@ -5451,6 +5451,8 @@ void md_do_sync(mddev_t *mddev)
+ 	else
+ 		desc = "recovery";
+ 
++	current->io_context = alloc_io_context(GFP_KERNEL, -1); /*XXX*/
++
+ 	/* we overload curr_resync somewhat here.
+ 	 * 0 == not engaged in resync at all
+ 	 * 2 == checking that there is no conflict with another sync
