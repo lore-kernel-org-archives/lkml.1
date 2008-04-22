@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765660AbYDVS56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765722AbYDVS6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765660AbYDVS56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbYDVSzx
+	id S1765722AbYDVS6g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765469AbYDVS4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:55:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57355 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932238AbYDVSzw (ORCPT
+	Tue, 22 Apr 2008 14:56:32 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:57513 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765467AbYDVS4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:55:52 -0400
-Date: Tue, 22 Apr 2008 11:48:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-In-Reply-To: <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com>
- <20080422095315.GA28014@elte.hu> <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Apr 2008 14:56:30 -0400
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object
+	creation with a specified id)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, orenl@cs.columbia.edu,
+       nick@nick-andrew.net
+In-Reply-To: <20080422193612.GA15835@martell.zuzino.mipt.ru>
+References: <20080418054459.891481000@bull.net>
+	 <20080422193612.GA15835@martell.zuzino.mipt.ru>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 11:56:20 -0700
+Message-Id: <1208890580.17117.14.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Apr 2008, Zdenek Kabelac wrote:
+On Tue, 2008-04-22 at 23:36 +0400, Alexey Dobriyan wrote:
+> On Fri, Apr 18, 2008 at 07:44:59AM +0200, Nadia.Derbey@bull.net wrote:
+> >    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
+> >      next object to be created will have an id set to XX
+> >    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
+> >      next object to be created will have its ids set to XX0, ... X<n-1>
+> >      This is particularly useful for processes that may have several ids if
+> >      they belong to nested namespaces.
 > 
-> Unsure how it is related to my orginal Oops post - but now when I've
-> debug pagealloc enabled this appeared in my log after resume - should
-> I open new bug for this - or could this be part of the problem I've
-> experienced later?
+> Can we answer the following questions before merging this patch:
 > 
-> (Note - now I'm running commit: 8a81f2738f10ca817c975cec893aa58497e873b2
+> a) should mainline kernel have checkpoint/restart feature at all
+> b) if yes, should it be done from kernel- or userspace?
 > 
->  sd 0:0:0:0: [sda] Starting disk
->  mmc0: new SD card at address 5a61
->  mmc mmc0:5a61: parent mmc0 is sleeping, will not add
->  ------------[ cut here ]------------
->  WARNING: at drivers/base/power/main.c:78 device_pm_add+0x6c/0xf0()
+> Until agreement will be "yes/from userspace" such patches don't make
+> sense in mainline.
 
-This is unrelated to the other issue, I think.
+What do you mean by "from kernel" or "from userspace"?  Userspace has to
+be involved somewhere, right?  It at least need to open() the checkpoint
+file and pass it into the kernel.  		
 
-Your warning comes from commit 58aca23226a19983571bd3b65167521fc64f5869, 
-which admittedly looks like total crap. Rafael, what's the point of that 
-commit?
+-- Dave
 
-I read the commit message, but I can't make myself agree with the commit 
-code itself. If it's a "checking that the order is correct" thing, it 
-should be a warning, but not change the actual _action_ of the code.
-
-Because the commit refused to add the device, it is also then the direct 
-reason for the oops you get later, as far as I can tell:
-
->  BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
->  IP: [klist_del+29/128] klist_del+0x1d/0x80
->  PGD 0
->  Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
->  CPU 0
->  Call Trace:
->   [bus_remove_device+158/208] bus_remove_device+0x9e/0xd0
->   [device_add+1358/1376] device_add+0x54e/0x560
-
-So I would suggest reverting that commit, or at least just making it a 
-warning (while still registering the device).
-
-		Linus
