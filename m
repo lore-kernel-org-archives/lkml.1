@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYDVQYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYDVQ3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760205AbYDVQYo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYDVQYe
+	id S1757302AbYDVQ3l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYDVQ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:24:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43469 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754065AbYDVQYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:24:33 -0400
-Message-ID: <480E10FA.3050401@redhat.com>
-Date: Tue, 22 Apr 2008 12:23:22 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 22 Apr 2008 12:29:31 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31787 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752133AbYDVQ3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:29:30 -0400
+Message-ID: <480E1245.4000300@ru.mvista.com>
+Date: Tue, 22 Apr 2008 20:28:53 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       bugme-daemon@bugzilla.kernel.org,
-       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
-References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>	 <480D1B14.7070806@redhat.com>  <1208869770.7115.265.camel@twins>	 <1208870791.7115.269.camel@twins>  <480E034F.5@redhat.com> <1208880358.7115.285.camel@twins>
-In-Reply-To: <1208880358.7115.285.camel@twins>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] scc_pata: add ->dma_host_set and ->dma_start methods
+References: <200804122104.26846.bzolnier@gmail.com>
+In-Reply-To: <200804122104.26846.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-04-22 at 11:25 -0400, Masami Hiramatsu wrote:
->> Peter Zijlstra wrote:
->>> On Tue, 2008-04-22 at 15:09 +0200, Peter Zijlstra wrote:
->>>> On Mon, 2008-04-21 at 18:54 -0400, Masami Hiramatsu wrote:
->>>>> Thank you for reporting.
->>>>>
->>>>> Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
->>>>> (which is called from kprobe_exceptions_notify) by
->>>>> trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
->>>>> is set in pt_regs->flags, true hardirq is still off until returning
->>>>> from do_debug. Thus, lockdep assumes that hardirq is off without annotation.
->>> Ah, can you clarrify? pt_regs->flags will only be set when returning to
->>> the original trap site? in that case we should not need a lockdep
->>> annotation I guess, unless its allowed and exptected for the int3 site
->>> to change IRQ state.
->> As far as I took a look at the lockdep, your suggestion is correct.
->> post_kprobe_handler should not set a lockdep annotation, because
->> processor's IF is not changed yet in that time.
-> 
-> That much was clear; but when _will_ it be changed?
+Bartlomiej Zolnierkiewicz wrote:
 
-processor's IF bit is changed when an iret(q) is issued.
-In other words, when returning from a debug/int3 exception.
+> Add ->dma_host_set and ->dma_start methods (+ __scc_dma_end() helper)
+> so scc_ide_{in,out}b() can be used directly.
 
+    In fact, you could have used in/out_be32() instead like the rest of the 
+code in this driver...
 
--- 
-Masami Hiramatsu
+> There should be no functional changes caused by this patch.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-e-mail: mhiramat@redhat.com
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+> Index: b/drivers/ide/pci/scc_pata.c
+> ===================================================================
+> --- a/drivers/ide/pci/scc_pata.c
+> +++ b/drivers/ide/pci/scc_pata.c
+> @@ -260,6 +260,20 @@ static void scc_set_dma_mode(ide_drive_t
+>  	out_be32((void __iomem *)udenvt_port, reg);
+>  }
+>  
+> +static void scc_dma_host_set(ide_drive_t *drive, int on)
+> +{
+> +	ide_hwif_t *hwif = drive->hwif;
+> +	u8 unit = (drive->select.b.unit & 0x01);
+
+    Needless parens.
+
+> +	u8 dma_stat = scc_ide_inb(hwif->dma_status);
+> +
+> +	if (on)
+> +		dma_stat |= (1 << (5 + unit));
+
+   Again...
+
+MBR, Sergei
