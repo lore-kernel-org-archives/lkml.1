@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbYDVVOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDVVSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120AbYDVVOh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbYDVVO3
+	id S1760718AbYDVVSV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYDVVSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:14:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47997 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756344AbYDVVO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:14:29 -0400
-Date: Tue, 22 Apr 2008 16:08:47 -0500
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] dlm updates for 2.6.26
-Message-ID: <20080422210847.GB14594@redhat.com>
-References: <20080422135116.GA14594@redhat.com> <alpine.LFD.1.10.0804221344470.2779@woody.linux-foundation.org>
+	Tue, 22 Apr 2008 17:18:14 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1556 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbYDVVSN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 17:18:13 -0400
+Subject: Re: [PATCH] hfs: if match_strdup() fails to allocate memory in
+	parse_options(), don't blow up the kernel.
+From: Joe Perches <joe@perches.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
+References: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 14:17:24 -0700
+Message-Id: <1208899044.8636.80.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804221344470.2779@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 01:46:54PM -0700, Linus Torvalds wrote:
+On Tue, 2008-04-22 at 23:12 +0200, Jesper Juhl wrote:
+> From: Jesper Juhl <jesper.juhl@gmail.com>
+> diff --git a/fs/hfs/super.c b/fs/hfs/super.c
+> index 32de44e..221e314 100644
+> --- a/fs/hfs/super.c
+> +++ b/fs/hfs/super.c
+> @@ -297,6 +297,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+>  				return 0;
+>  			}
+>  			p = match_strdup(&args[0]);
+> +			if (!p) {
+> +				printk(KERN_ERR "hfs: mem alloc failed in match_strdup()\n");
+> +				return 0;
+> +			}
+>  			hsb->nls_disk = load_nls(p);
+>  			if (!hsb->nls_disk) {
+>  				printk(KERN_ERR "hfs: unable to load codepage \"%s\"\n", p);
+> @@ -311,6 +315,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+>  				return 0;
+>  			}
+>  			p = match_strdup(&args[0]);
+> +			if (!p) {
+> +				printk(KERN_ERR "hfs: memory allocation failed in match_strdup()\n");
+> +				return 0;
+> +			}
+>  			hsb->nls_io = load_nls(p);
+>  			if (!hsb->nls_io) {
+>  				printk(KERN_ERR "hfs: unable to load iocharset \"%s\"\n", p);
 > 
-> 
-> On Tue, 22 Apr 2008, David Teigland wrote:
-> > 
-> > Please pull dlm updates for 2.6.26 from:
-> 
-> Small detail: can you please use "--stat --summary -M" to generate the 
-> diffstat, because you had:
-> 
-> >  ...
-> >  21 files changed, 614 insertions(+), 499 deletions(-)
-> 
-> but what I then check against notices the rename, and becomes:
-> 
->  ...
->  20 files changed, 276 insertions(+), 161 deletions(-)
->  rename fs/{gfs2/locking => }/dlm/plock.c (67%)
->  create mode 100644 include/linux/dlm_plock.h
->  delete mode 100644 include/linux/lock_dlm_plock.h
-> 
-> which I think is more accurate as to how big the changes were, as well as 
-> just more human-readable and informative.
-> 
-> (Apparently the naming changes in lock_dlm_plock.h -> dlm_plock.h makes it 
-> be effectively a rewrite, explaining why it's not two renames..)
 
-Yep, will do.  Nice diffstat for the record,
-
- fs/dlm/Makefile                   |    1 +
- fs/dlm/config.c                   |   50 +++++++++--
- fs/dlm/config.h                   |    3 +-
- fs/dlm/dlm_internal.h             |    8 +-
- fs/dlm/lock.c                     |    5 +-
- fs/dlm/lock.h                     |    1 -
- fs/dlm/main.c                     |    7 ++
- fs/dlm/member.c                   |   34 +++++++-
- fs/{gfs2/locking => }/dlm/plock.c |  169 ++++++++++++++++++++++---------------
- fs/dlm/recoverd.c                 |    1 +
- fs/gfs2/locking/dlm/Makefile      |    2 +-
- fs/gfs2/locking/dlm/lock_dlm.h    |   12 +---
- fs/gfs2/locking/dlm/main.c        |    8 --
- fs/gfs2/locking/dlm/mount.c       |   21 +++++
- include/linux/Kbuild              |    2 +-
- include/linux/dlm.h               |    7 +-
- include/linux/dlm_device.h        |   11 ++-
- include/linux/dlm_plock.h         |   50 +++++++++++
- include/linux/dlmconstants.h      |    4 +
- include/linux/lock_dlm_plock.h    |   41 ---------
- 20 files changed, 276 insertions(+), 161 deletions(-)
- rename fs/{gfs2/locking => }/dlm/plock.c (67%)
- create mode 100644 include/linux/dlm_plock.h
- delete mode 100644 include/linux/lock_dlm_plock.h
+Using different strings in the printk wastes memory.
 
