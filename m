@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYDVTwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765110AbYDVTxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYDVTwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765176AbYDVTvp
+	id S1765110AbYDVTxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763251AbYDVTw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:51:45 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36742 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765156AbYDVTvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:51:44 -0400
-Date: Tue, 22 Apr 2008 14:51:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       containers@lists.linux-foundation.org, nick@nick-andrew.net,
-       Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object
-	creation with a specified id)
-Message-ID: <20080422195142.GA22145@sergelap.austin.ibm.com>
-References: <20080418054459.891481000@bull.net> <20080422193612.GA15835@martell.zuzino.mipt.ru> <1208890580.17117.14.camel@nimitz.home.sr71.net>
+	Tue, 22 Apr 2008 15:52:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51185 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759300AbYDVTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:52:56 -0400
+Message-ID: <480E41D3.8040608@redhat.com>
+Date: Tue, 22 Apr 2008 15:51:47 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208890580.17117.14.camel@nimitz.home.sr71.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       bugme-daemon@bugzilla.kernel.org,
+       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
+References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>	 <480D1B14.7070806@redhat.com>  <1208869770.7115.265.camel@twins>	 <1208870791.7115.269.camel@twins>  <480E034F.5@redhat.com> <1208880358.7115.285.camel@twins> <480E10FA.3050401@redhat.com>
+In-Reply-To: <480E10FA.3050401@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Tue, 2008-04-22 at 23:36 +0400, Alexey Dobriyan wrote:
-> > On Fri, Apr 18, 2008 at 07:44:59AM +0200, Nadia.Derbey@bull.net wrote:
-> > >    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
-> > >      next object to be created will have an id set to XX
-> > >    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
-> > >      next object to be created will have its ids set to XX0, ... X<n-1>
-> > >      This is particularly useful for processes that may have several ids if
-> > >      they belong to nested namespaces.
-> > 
-> > Can we answer the following questions before merging this patch:
-> > 
-> > a) should mainline kernel have checkpoint/restart feature at all
-> > b) if yes, should it be done from kernel- or userspace?
-> > 
-> > Until agreement will be "yes/from userspace" such patches don't make
-> > sense in mainline.
-> 
-> What do you mean by "from kernel" or "from userspace"?  Userspace has to
-> be involved somewhere, right?  It at least need to open() the checkpoint
-> file and pass it into the kernel.  		
+Masami Hiramatsu wrote:
+> processor's IF bit is changed when an iret(q) is issued.
+> In other words, when returning from a debug/int3 exception.
 
-Well let's start by answering a) :
+By the way, when returning from an exception on x86-64, it seems
+paranoidexit@entry_64.S doesn't use TRACE_IRQS_IRETQ except for
+it executes swapgs, does it?
 
-	I vote yes  :-)
+If not, I guess the lockdep on x86-64 may causes an warning
+by below code:
 
-As for b), good question.  Except as Dave points out I think it's pretty
-unlikely that we'll end up with "sys_checkpoint(checkpoint_dirnam)"
-and "sys_restart(checkpointed_dirnam)".  Anything more user-space
-driven will likely require userspace to set ids on resources, right?
+spin_lock(...)
+kprobe_target_function()
+spin_unlock(...)
 
-But yes, we have to completely answer b) before this patch goes in, no
-doubt about that.
+Thanks,
 
-Alexey, are you advocating for a completely kernel-driven approach, or
-just making sure we come to a decision?
+-- 
+Masami Hiramatsu
 
-thanks,
--serge
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
