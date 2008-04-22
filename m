@@ -1,25 +1,24 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965346AbYDVOaA (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 22 Apr 2008 10:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbYDVO3q
+	id S965531AbYDVOar (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 22 Apr 2008 10:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965342AbYDVO37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:29:46 -0400
-Received: from ag-out-0708.google.com ([72.14.246.250]:62252 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757104AbYDVO3p (ORCPT
+	Tue, 22 Apr 2008 10:29:59 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:60405 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965334AbYDVO36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:29:45 -0400
-Message-ID: <62b9aab80804220729h3e7ed641wcb823ce4445c05e3@mail.gmail.com>
-Date: Tue, 22 Apr 2008 22:29:40 +0800
-From: "ling jully" <a95ef75f1@gmail.com>
-To: webmaster@lz-net.de, fuegemann@pressetext.com,
-	kohler@agentur-feuerstein.de, mn.dbbb7d839f577ec5.81808@gmail.com,
-	mn.dbbc7d83a2d67e57.84673@spam.it, redaktion@fuldaerzeitung.de,
-	lotzmann.frank@dd-v.de, office@boerse-express.at, blog@be24.at,
-	webmaster@weltwoche.ch, deu@china.org.cn, dewenjiucuo@china.org.cn,
-	info@badische-zeitung.de, feedback-de@google.com, online@hna.de,
+	Tue, 22 Apr 2008 10:29:58 -0400
+Message-ID: <588969830804220715l16d40005h9d0c72c4758d7aeb@mail.gmail.com>
+Date: Tue, 22 Apr 2008 22:15:19 +0800
+From: "zhu caroy" <a32246b37@gmail.com>
+To: webkinztipz@yahoo.com, cinedl@newsis.com, coolhj@newsis.com,
+	dshong@yna.co.kr, ironshutter@yna.co.kr, news@photoro.com,
+	sohublog@sohu-inc.com, antcomic@gmail.com, scmurley@gmail.com,
+	none@example.com, hello@rocketboom.com, lee.jayeon@gmail.com,
+	vae@163.com, chinese_t@google.com, david@google.com,
 	a7238086@yahoo.com.tw
-Subject: =?BIG5?B?Iy9NPT09PT0gpFSzcaWys8akdajjILDqu9qo6qVkvvcgPT0=?= =?BIG5?B?PT09PT09PSWiqSCh0Sah9aHxofEvL6G0P6H4ofUmoeEj?=
+Subject: =?BIG5?B?ofWh80I9PT09PSC69Lj0qOqlZL73PaX+snmmrLPmID09PQ==?= =?BIG5?B?PT09PT09P6G5IKG/oqgvJH6iqaKpIyOhvy8+Lz6h7w==?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=BIG5
 Content-Transfer-Encoding: base64
@@ -27,20 +26,20 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S965346AbYDVOaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S965531AbYDVOar@vger.kernel.org>
 
-oqih70A9PT09PaX+snmmrLPmIKRqs7CrSKXOpWSq97/EpWQopX6lZCukuqVkKSCs/LDquUKzcaVk
-IKRqqNOlZCBWSVNBIE1BU1RFUiBKQkM9PT09PT09oqihv6HRob2iqC+huUCh4qH2obQvCkChvaG/
-ofSh8woKpOuvsjMwMDAgs12pd7ZPNjQwMApAJCRAPT09PbVMp86w06t+qkGwyLd+pWml073QLS0t
-LS0tLS0tILjqrsanub7jM6Tppd+nWbZ9s3Goz6XOLS0tLS0tLS0tLS0tLS0tLaKpobs8oqkmPzwm
-oqmhuaG0ob+iqQoKMT2t06RIICCkvaVxp6GlaaXTv+wgPT21TKfOsNOrfiAgs9KwyKpBsMimrLZP
-p6GlaajPpc4KMi49q0ilzrflsquhQq9Tru2m5rd+peelab/ssnoKMy49pWmw6rvapeap9go0Lj2+
-QaZYuvSp56FCqr2+UKFCpcGxSqFCuUGz9aFCpKSlaqiupuahQlNPSE+x2qFCt0+1vbnOxemhQrdo
-rmGkvaVxoUK2VKn2sNOhQqbbwOew06FCrPyuZbd+oUK4ybLfr1qhQrj0w+TFdaFCxUul1qvOoUIu
-Li4uLqZVpuamVbd+CjUuPbvIpuawaKXzoUKp7r73oUKp2qaspua3frOjpWmo/LJ6CjY9pf6yeaas
-s+Y9Pby3tNogIKVpq/ypd7n0p08KNy49pWm4YLV8IKzZtXwKpf6yeaass+aleMZXsM+lTrJ6PT2k
-pLXYpXyk6Lr0uPSs7KfeqtGl96azra2kvaVxIL5HuGeyeiAwOTE1MTExMTI4IDA5ODI2Nzg2NDcK
-vkGkaqSktdiwz6XNt06puajTqM+lziA9PT09xf2xeqX+snmkarVvuUYKCgoKCgqxxKXOc2J0czMu
-MbVvq0izbsXpIE1TTiA6IGEwOTE1MTExMTI4ICAgIFlBSE9Pq0i9Y7FiuLlhMzkyODU0Nz09Panb
-ttK4Z75QpKQxMHVuaXRzPT6iqaKoofAlobkKPz8lofU/ob0/oe6h7qH1ofih4i8+Jj6h4qHvJH4k
-fqHxPnUxaiCh+KHuob6huaHxob8vPiR+obmhuaHuLyR+obmh8aH3QKHvofEK
+ofKh+KG5PT09PT2l/rJ5pqyz5iCkarOwq0ilzqVkqve/xKVkKKV+pWQrpLqlZCkgrPyw6rlCs3Gl
+ZCCkaqjTpWQgVklTQSBNQVNURVIgSkJDPT09PT09PaG9P6HwJSYlob2huaH4PqG9ofEKofOh4j6i
+qKG9Cgqk66+yMzAwMCCzXal3tk82NDAwCkAkJEA9PT09tUynzrDTq36qQbDIt36laaXTvdAtLS0t
+LS0tLS0guOquxqe5vuMzpOml36dZtn2zcajPpc4tLS0tLS0tLS0tLS0tLS0tIyR+P6KpI6H4ofOh
+uaH3oe+h76KpofYKCjE9rdOkSCAgpL2lcaehpWml07/sID09tUynzrDTq34gILPSsMiqQbDIpqy2
+T6ehpWmoz6XOCjIuPatIpc635bKroUKvU67tpua3fqXnpWm/7LJ6CjMuPaVpsOq72qXmqfYKNC49
+vkGmWLr0qeehQqq9vlChQqXBsUqhQrlBs/WhQqSkpWqorqbmoUJTT0hPsdqhQrdPtb25zsXpoUK3
+aK5hpL2lcaFCtlSp9rDToUKm28DnsNOhQqz8rmW3fqFCuMmy369aoUK49MPkxXWhQsVLpdarzqFC
+Li4uLi6mVabmplW3fgo1Lj27yKbmsGil86FCqe6+96FCqdqmrKbmt36zo6VpqPyyego2PaX+snmm
+rLPmPT28t7TaICClaav8qXe59KdPCjcuPaVpuGC1fCCs2bV8CqX+snmmrLPmpXjGV7DPpU6yej09
+pKS12KV8pOi69Lj0rOyn3qrRpfems62tpL2lcSC+R7hnsnogMDkxNTExMTEyOCAwOTgyNjc4NjQ3
+Cr5BpGqkpLXYsM+lzbdOqbmo06jPpc4gPT09PcX9sXql/rJ5pGq1b7lGCgoKCgoKscSlznNidHMz
+LjG1b6tIs27F6SBNU04gOiBhMDkxNTExMTEyOCAgICBZQUhPT6tIvWOxYri5YTM5Mjg1NDc9PT2p
+27bSuGe+UKSkMTB1bml0cz2h7qHzobqh4qH4ofcKobk/obqh7j4/ofSh9SOh9D+huyM/ofU/ob+h
+8j+h9CR+ofM0S1Mgob5Aob+h4i8/PKH1oqih8qHRoqih8KKpQD+h7iR+ofSh8Qo=
