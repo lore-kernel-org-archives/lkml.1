@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934253AbYDVP1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbYDVP1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934253AbYDVP1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934107AbYDVP0e
+	id S932127AbYDVP1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934263AbYDVP1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:26:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58791 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764172AbYDVP0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:26:32 -0400
-Message-ID: <480E034F.5@redhat.com>
-Date: Tue, 22 Apr 2008 11:25:03 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       bugme-daemon@bugzilla.kernel.org,
-       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
-References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>	 <480D1B14.7070806@redhat.com>  <1208869770.7115.265.camel@twins> <1208870791.7115.269.camel@twins>
-In-Reply-To: <1208870791.7115.269.camel@twins>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 11:27:22 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:16174 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934257AbYDVP1U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:27:20 -0400
+Message-Id: <480E2001.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 22 Apr 2008 16:27:29 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: separate cmpxchg8b checking from PAE checking
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-04-22 at 15:09 +0200, Peter Zijlstra wrote:
->> On Mon, 2008-04-21 at 18:54 -0400, Masami Hiramatsu wrote:
->>> Thank you for reporting.
->>>
->>> Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
->>> (which is called from kprobe_exceptions_notify) by
->>> trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
->>> is set in pt_regs->flags, true hardirq is still off until returning
->>> from do_debug. Thus, lockdep assumes that hardirq is off without annotation.
-> 
-> Ah, can you clarrify? pt_regs->flags will only be set when returning to
-> the original trap site? in that case we should not need a lockdep
-> annotation I guess, unless its allowed and exptected for the int3 site
-> to change IRQ state.
+.. allowing the former to be use in non-PAE kernels, too.
 
-As far as I took a look at the lockdep, your suggestion is correct.
-post_kprobe_handler should not set a lockdep annotation, because
-processor's IF is not changed yet in that time.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Thanks,
+---
+ arch/x86/Kconfig.cpu                |    4 ++++
+ include/asm-x86/required-features.h |    6 +++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
--- 
-Masami Hiramatsu
+--- linux-2.6.25/arch/x86/Kconfig.cpu	2008-04-17 04:49:44.000000000 +0200
++++ 2.6.25-x86-cmpxchg64/arch/x86/Kconfig.cpu	2008-04-15 10:49:20.000000000 +0200
+@@ -394,6 +394,10 @@ config X86_TSC
+ 	def_bool y
+ 	depends on ((MWINCHIP3D || MWINCHIP2 || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ) || X86_64
+ 
++config X86_CMPXCHG64
++	def_bool y
++	depends on X86_PAE || X86_64
++
+ # this should be set for all -march=.. options where the compiler
+ # generates cmov.
+ config X86_CMOV
+--- linux-2.6.25/include/asm-x86/required-features.h	2008-01-24 23:58:37.000000000 +0100
++++ 2.6.25-x86-cmpxchg64/include/asm-x86/required-features.h	2008-04-15 10:49:20.000000000 +0200
+@@ -19,9 +19,13 @@
+ 
+ #if defined(CONFIG_X86_PAE) || defined(CONFIG_X86_64)
+ # define NEED_PAE	(1<<(X86_FEATURE_PAE & 31))
+-# define NEED_CX8	(1<<(X86_FEATURE_CX8 & 31))
+ #else
+ # define NEED_PAE	0
++#endif
++
++#ifdef CONFIG_X86_CMPXCHG64
++# define NEED_CX8	(1<<(X86_FEATURE_CX8 & 31))
++#else
+ # define NEED_CX8	0
+ #endif
+ 
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
 
