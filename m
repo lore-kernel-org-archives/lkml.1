@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761805AbYDVBPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbYDVBZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761805AbYDVBPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 21:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYDVBPf
+	id S1761836AbYDVBZz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 21:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbYDVBZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 21:15:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761462AbYDVBPe (ORCPT
+	Mon, 21 Apr 2008 21:25:44 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:48363 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761610AbYDVBZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 21:15:34 -0400
-Date: Mon, 21 Apr 2008 18:14:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jiri Slaby <jirislaby@gmail.com>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-In-Reply-To: <200804220254.45251.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> <200804220254.45251.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 Apr 2008 21:25:43 -0400
+Date: Mon, 21 Apr 2008 19:27:40 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PCI MAINTAINER change
+In-reply-to: <fa.JwWRxW97po7bp7uP8gASvgGakFc@ifi.uio.no>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <480D3F0C.9090606@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.TS+5+HinmGrscLiHGCM7C9dFSbk@ifi.uio.no>
+ <fa.EEEat9giRPyWOGUiYHgSIStt6vw@ifi.uio.no>
+ <fa.zR5oiQ1hgiLPwoqLOEK2ySOHKLA@ifi.uio.no>
+ <fa.vh1MNsau5uBs7WyWWCN0Huvxe98@ifi.uio.no>
+ <fa.JwWRxW97po7bp7uP8gASvgGakFc@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
-> > 
-> > The same place, dentry.d_hash.next is 1. No slub debug clues... I think, I'll 
-> > give slab a try. Any other clues?
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Well, SLUB uses some per CPU data structures.  Is it possible that they get
-> corrupted and which leads to the observed symptoms?
+>> On Mon, 21 Apr 2008, Jesse Barnes wrote:
+>>> And now I get to figure out just how much trouble I've gotten myself into...
+>> Mwhahahaaa! Sucker. You'll find out.
+>>
+>> The good news is that most of the time, the PCI code works fine. The 
+>> bad news is that when it doesn't work, it's usually due to something 
+>> *really* odd, like some magic motherboard device that has magic 
+>> resources that aren't part of the standard PCI resource set and that 
+>> clash with some of our resource allocation.
+>>
+>> And they don't show up in the PnP lists because Windows never put 
+>> anything that could clash with them, so there was no reason for the 
+>> BIOS engineers to bother.
+>>
+>> IOW, it's usually almost totally undebuggable crud like "driver X 
+>> doesn't work on my machine", and then it turns out that it only 
+>> happens on that particular motherboard that is totally identical to 
+>> all other motherboards _except_ for that BIOS table not having the 
+>> right reserved IO regions.
+>>
+>> .. and then there's the pluggable PCI stuff, of course. I'm not sure 
+>> whether you took that over too. That's a whole different set of 
+>> issues.
+> 
+> that reminds me of the observations about differences between Linux's 
+> and Windows's PCI resource allocation stategies, see the bugzilla entry 
+> from today below.
+> 
+> 	Ingo
+> 
+> ----------------->
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10461
+> 
+> ------- Comment #6 from linux@tjworld.net  2008-04-18 11:03 -------
+> After a few debug printk() runs watching the allocation strategy I wondered why
+> the PCI resources region doesn't start at the beginning of the largest gap:
+> 
+> [    0.000000] Allocating PCI resources starting at c2000000 (gap:
+> c0000000:20000000)
+> 
+> since, when 3GB RAM is installed, the gap starts at 0xC0000000 but the
+> allocation region begins at 0xC2000000.
+> 
+> The other issue is that only the largest gap seems to be used for allocations,
+> which explains why smaller allocations for other devices effectively choke off
+> use of the range in 32-bit address space.
+> 
+> In contrast, from looking at the addresses in the allocation comparison with
+> Windows, it looks as if Windows uses *all* gaps for allocation rather than just
+> the largest. It is noticeable that Windows allocates smaller regions in the
+> gaps between the various 'high' e820 reservations.
 
-It really doesn't look like the slub allocations themselves would be 
-corrupted. It very much looks like wild pointers corrupting allocations 
-that themselves were fine.
-
-The nybble pattern looked intriguing (especially as it apparently also hit 
-a normal page cache page!) but obviously not everything matches that 
-pattern (eg your value of 1).
-
-What do you do to trigger this? Any particular load? Is it still just 
-doing suspend/resume, or do you have something else that you are playing 
-with?
-
-Also, have you tried CONFIG_DEBUG_PAGEALLOC? That can also be a very 
-powerful way to find memory corruption.
-
-Does anybody see any other patterns? Looking at the modules linked in in 
-the oopses from Zdenek, Rafael and Jiri, I don't see anything odd. You 
-both all have 80211 support, maybe the corruption comes from the wireless 
-layer?
-
-Or maybe it's the x86 code changes themselves, and it really is about the 
-suspend/resume sequence itself. Are all the people who see this doing 
-suspends? 
-
-		Linus
+I think the reason for this being needed in the first place was in the 
+old days we didn't honor the ACPI reserved motherboard resources, or did 
+only for certain resource types (and we still have problems with this, 
+like the hard-coded limit on max number of PnPACPI resources that's hit 
+by many boards and which results in us ignoring some of the BIOS 
+reservations). Once that junk is fixed, hopefully we won't have to worry 
+about such problems.
