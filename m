@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbYDVNmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbYDVNmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762765AbYDVNmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765042AbYDVNlU
+	id S1765513AbYDVNmu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765415AbYDVNmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:41:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44055 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765032AbYDVNlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:41:19 -0400
-Message-ID: <480DEAF6.4020005@redhat.com>
-Date: Tue, 22 Apr 2008 08:41:10 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 22 Apr 2008 09:42:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:40696 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765414AbYDVNmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:42:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=B7vdk/LfsHceli9DzuZtfs8dT+fVC9DbNweLQt36rmB7Oc3Pe6HipKlKYmvrHpQMLfHFzMX86GwpN48t8f0Zf31M9bexvSCQJTLTbnqWqIr9AneTCQ1nj5PWx3JiTiCq6YZF6upwpqPhPQhtqfy+U0ZvTp55mr+Qygj51rUKCj4=
+Message-ID: <480DEB1F.5060500@gmail.com>
+Date: Tue, 22 Apr 2008 22:41:51 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Mark Lord <lkml@rtr.ca>, linux-ext4@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: Freeing blocks not in datazone
-References: <4803A109.5080800@rtr.ca> <4803AF3B.2020702@redhat.com> <4803BF54.4040205@rtr.ca> <4803C5E4.3030804@redhat.com> <20080422093145.GB21922@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080422093145.GB21922@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com>
+In-Reply-To: <480DE9E8.2070809@ru.mvista.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->> Mark Lord wrote:
->>> Eric Sandeen wrote:
->>>> Mark Lord wrote:
->>>>> One of my test systems here, running 2.6.25-rc8-git*,
->>>>> just now crapped out with this in the tail end of dmesg:
->>>>>
->>>>> [   20.927780] EXT3-fs error (device sda1): ext3_free_blocks: Freeing blocks not in datazone - block
->>>>> [   20.928756] Aborting journal on device sda1.
->>>> I've got a similar report from the F9 installer, also on 2.6.25-rc8* ...
->>>>  trying to reproduce locally.
->>> ..
->>>
->>> Well, if it's of any help, here it was on a 2.4GHz Intel QuadCore,
->>> 32-bit kernel/userspace, 4GB RAM, PAE-enabled.
->> Any chance you had done a resize2fs, online or offline, before this?
->> Just a guess based on the installer thing I'm looking at...
->   Hmm, Eric, how exactly did the corruption looked like? Are you running
-> SLUB allocator? I'm just wondering whether it doesn't have something in
-> common with the memory corruption as discussed in the thread starting at
-> http://lkml.org/lkml/2008/4/19/85
+Sergei Shtylyov wrote:
+>>>    Jeff, Tejun, what "sff" in the file name actually means? Isn't it 
+>>> strange that the drivers lacking DMA support or not really compliant 
+>>> with SFF-8038i have to link with this file?
+> 
+>> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
+>> and bmdma is acceptable, hopefully, right?
+> 
+>    What's sff sans bmdma?
 
-It turns out that that problem (sorry, should have followed up) was due
-to the installer not copying the last bit of a filesystem image onto the
-device, and the fs was then trying to use whatever it found on the
-un-copied portion of the disk as metadata.
+Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
+although it's entirely possible that I misunderstood it and used it in 
+the wrong way.  Alan, can you please clear up the confusion?
 
-So not an ext3 bug in that case.
-
--Eric
+-- 
+tejun
