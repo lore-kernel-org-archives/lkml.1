@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763394AbYDVVFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbYDVVGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763394AbYDVVFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYDVVF1
+	id S1763550AbYDVVGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbYDVVGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:05:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52044 "EHLO
+	Tue, 22 Apr 2008 17:06:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57195 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756009AbYDVVF0 (ORCPT
+	by vger.kernel.org with ESMTP id S1756744AbYDVVGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:05:26 -0400
-Date: Tue, 22 Apr 2008 13:58:43 -0700 (PDT)
+	Tue, 22 Apr 2008 17:06:07 -0400
+Date: Tue, 22 Apr 2008 14:05:29 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
-cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jiri Slaby <jirislaby@gmail.com>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, herbert@gondor.apana.org.au,
-       Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: device_pm_add (was: Re: 2.6.25-git2: BUG: unable to handle kernel
- paging request at ffffffffffffffff)
-In-Reply-To: <200804222234.19936.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0804221350110.2779@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com> <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <200804222234.19936.rjw@sisk.pl>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] mfd: kconfig exposing unbuildable driver
+In-Reply-To: <20080422203334.GA9809@flint.arm.linux.org.uk>
+Message-ID: <alpine.LFD.1.10.0804221359360.2779@woody.linux-foundation.org>
+References: <1208895950.24124.9.camel@brick> <20080422203334.GA9809@flint.arm.linux.org.uk>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,44 +30,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
-> 
-> There is a bug in device_add() that IMO can be fixed this way:
+On Tue, 22 Apr 2008, Russell King wrote:
+>
+> That was my initial approach as well, which got shot down by Andrew
+> Morton and others as being unacceptable.
 
-Ok, looks fine. Greg?
+Hmm. While I in general support the notion of trying to compile drivers on 
+as wide a variety as hardware as possible, if that HTC_PASIC3 thing really 
+is a PXA-only piece of hardware, I don't really see the point of not 
+making the config file accurately represent that.
 
-> Index: linux-2.6/drivers/base/core.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/core.c
-> +++ linux-2.6/drivers/base/core.c
-> @@ -820,11 +820,11 @@ int device_add(struct device *dev)
->  	error = bus_add_device(dev);
->  	if (error)
->  		goto BusError;
-> +	bus_attach_device(dev);
->  	error = device_pm_add(dev);
->  	if (error)
->  		goto PMError;
->  	kobject_uevent(&dev->kobj, KOBJ_ADD);
-> -	bus_attach_device(dev);
->  	if (parent)
->  		klist_add_tail(&dev->knode_parent, &parent->klist_children);
->  
-> The problem is that bus_remove_device() assumes bus_attach_device() to have
-> run, AFAICS.
+That said, as far as I can tell, the compile failure is because of this 
+line:
 
-As to the other issue:
+	#include <asm/arch/pxa-regs.h>
 
-> > So I would suggest reverting that commit, or at least just making it a 
-> > warning (while still registering the device).
-> 
-> Are drivers supposed to register children of suspended devices?  That doesn't
-> make much sense IMO ...
+and I cannot for the life of me see _why_ it tries to include that header 
+file. It seems to compile fine on x96-64 if you just remove that include, 
+and while I still think it should depend on ARCH_PXA just because it makes 
+no sense _not_ to, I do wonder why that include is there in the first 
+place.
 
-Well, that's why I think the warning itself makes sense - and then we can 
-decide whether it makes sense for that particular case or not. Clearly it 
-happens (since it triggered), now we need to figure out _why_ it happened. 
-
-But I don't think debugging messages should change behaviour.
+Hmm?
 
 		Linus
