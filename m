@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbYDVKik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbYDVKqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762881AbYDVKik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 06:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbYDVKic
+	id S1762678AbYDVKqm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 06:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbYDVKqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 06:38:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48161 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754101AbYDVKia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 06:38:30 -0400
-Date: Tue, 22 Apr 2008 12:38:29 +0200
-From: Jan Kara <jack@suse.cz>
-To: Toralf =?iso-8859-2?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ./fs/partitions/check.c: off-by-one error ?
-Message-ID: <20080422103829.GC21922@atrey.karlin.mff.cuni.cz>
-References: <200804201235.46552.toralf.foerster@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804201235.46552.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 Apr 2008 06:46:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42789 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754887AbYDVKqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 06:46:32 -0400
+Subject: Re: [PATCH 05/15] drivers/char: minor irq handler cleanups
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+Cc: Jeff Garzik <jeff@garzik.org>, alan@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080422101326.GD23482@bitwizard.nl>
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
+	 <e3b010fa8e3bc3a5e386759f01f69c80918923e7.1208559659.git.jgarzik@redhat.com>
+	 <20080419060011.GA29321@bitwizard.nl> <1208851540.9640.95.camel@pasglop>
+	 <20080422101326.GD23482@bitwizard.nl>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 20:46:08 +1000
+Message-Id: <1208861168.9640.109.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Inserting an 2 GB SD Card into my digikam and mounting it as an USB drive I've
-> in my system log :
-> 
-> Apr 20 12:27:54 n22 usb 2-2: new full speed USB device using uhci_hcd and address 4
-> Apr 20 12:27:54 n22 usb 2-2: configuration #1 chosen from 1 choice
-> Apr 20 12:27:54 n22 SCSI subsystem initialized
-> Apr 20 12:27:54 n22 Initializing USB Mass Storage driver...
-> Apr 20 12:27:54 n22 scsi0 : SCSI emulation for USB Mass Storage devices
-> Apr 20 12:27:54 n22 usbcore: registered new interface driver usb-storage
-> Apr 20 12:27:54 n22 USB Mass Storage support registered.
-> Apr 20 12:27:54 n22 usb-storage: device found at 4
-> Apr 20 12:27:54 n22 usb-storage: waiting for device to settle before scanning
-> Apr 20 12:27:59 n22 scsi 0:0:0:0: Direct-Access     MATSHITA DMC-TZ3          0100 PQ: 0 ANSI: 2
-> Apr 20 12:27:59 n22 usb-storage: device scan complete
-> Apr 20 12:27:59 n22 Driver 'sd' needs updating - please use bus_type methods
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] 3902463 512-byte hardware sectors (1998 MB)
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Write Protect is off
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Mode Sense: 04 00 00 00
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Assuming drive cache: write through
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] 3902463 512-byte hardware sectors (1998 MB)
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Write Protect is off
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Mode Sense: 04 00 00 00
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Assuming drive cache: write through
-> Apr 20 12:27:59 n22 sda: sda1
-> Apr 20 12:27:59 n22 sda: p1 exceeds device capacity
-> Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Attached SCSI removable disk
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> Apr 20 12:27:59 n22 attempt to access beyond end of device
-> Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
-> Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
-> 
-> My system is a :
-> 
-> tfoerste@n22 ~/devel/linux-2.6/fs/partitions $ uname -a
-> Linux n22 2.6.24-gentoo-r4 #4 Sun Apr 20 12:16:18 CEST 2008 i686 Intel(R)
-> Pentium(R) M processor 1700MHz GenuineIntel GNU/Linux
-> 
-> I already re-formatted the card under Linux as well as under Windows XP and got
-> always the same behaviour.
-  This looks more like a strange interaction of your device size (it
-claims to have 3902463 sectors) and your partitioning programs which
-create partition ending at sector 3902464. Can you send the partition
-table you have on the device? E.g:
-  fdisk /dev/sda
-  x
-  p
 
-  will print detailed information about the partition table.
+On Tue, 2008-04-22 at 12:13 +0200, Rogier Wolff wrote:
+> > You should let the kernel generic code deal with the runaway
+> interrupt,
+> > it should be capable of doing so nowadays pretty reliably.
+> > 
+> > free_irq() is definitely not going to be happy when it start messing
+> > with /proc from an interrupt... It will at least give you a WARN_ON.
+> 
+> The situation is NOT normal operation. It is an emergency measure in
+> an attempt to prevent a full hang. It is great that other parts of the
+> kernel also "shout" that something is wrong.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+But free_irq at interrupt time has great chances of crashing the machine
+or currupting data structures in subtle ways. You should -not- do that.
+
+Either let the kernel handle the runaway interrupt, or eventually if you
+want to be brutal, call disable_irq_nosync yourself, but not free_irq.
+
+> Consider it similar to a "kernel null pointer dereference". Once that
+> happens, all bets are off. In practise you've probably seen one, and
+> you were able to continue to work. It is advisable to save everything
+> you can, and reboot. This is similar. 
+
+It would be if you used something like disable_irq_nosync. Not free_irq.
+The later is just bogus.
+
+> The "generic code for runaway interrupts" didn't exist when this was
+> written. If it exists, and works for the case that this was written
+> for, then all is fine, and we can remove my code. As you can see, I
+> copied over the code from one driver to the next after I got bitten
+> again with the second driver. So having something generic is of course
+> preferable. :-)
+
+Well, if you know how to trigger the bug, it would be useful to verify
+that the kernel generic code properly detects and masks the runaway
+interrupt. If that works, then remove your code completely. If not, it
+would be useful to figure out why :-) But either way, just replace it
+with disable_irq_nosync.
+
+Cheers,
+Ben.
+
+
