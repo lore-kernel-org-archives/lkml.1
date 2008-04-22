@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYDVE07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbYDVEa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYDVE07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 00:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYDVE0t
+	id S1756346AbYDVEa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 00:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYDVEaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 00:26:49 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:65416 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbYDVE0s (ORCPT
+	Tue, 22 Apr 2008 00:30:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:53033 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYDVEaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 00:26:48 -0400
-X-Greylist: delayed 3624 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 00:26:48 EDT
-Message-Id: <200804220325.m3M3Pqkx002242@www262.sakura.ne.jp>
-Subject: [PATCH] serial: access-after-NULL-check-at-uart_flush_buffer
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
+	Tue, 22 Apr 2008 00:30:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fLBoNI/a/57cQEwZFawYEAzjdBs7cscAryteYonTpq+UgFVG9H0wh64Hq562g+qDeeKL5WTSCGntzVuvJDbrjECB5tDPxX5NkjDlJ5vCGOqvoEcBUMyZYbY5PHvCJZG8x7xOzlx6nFAi5+90bphTq6M/24VTAc7BMvbb+R+ivww=
+Message-ID: <ed10ee420804212130r59833142lc031afe49107123d@mail.gmail.com>
+Date: Mon, 21 Apr 2008 21:30:09 -0700
+From: "SL Baur" <steve@xemacs.org>
+To: "Tomas Winkler" <tomasw@gmail.com>
+Subject: Re: [PATCH] iwlwifi 3945 debug parameter should be writable via sysfs
+Cc: yi.zhu@intel.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1ba2fa240804211451o1c7eb062q3ae292c06ed11406@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 22 Apr 2008 12:25:52 +0900
+Content-Disposition: inline
+References: <ed10ee420804210010g228aa4b7j9383e5417b7dcb8c@mail.gmail.com>
+	 <1ba2fa240804211451o1c7eb062q3ae292c06ed11406@mail.gmail.com>
+X-Google-Sender-Auth: ceff3df5ce97eed0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that
+On 4/21/08, Tomas Winkler <tomasw@gmail.com> wrote:
+> On Mon, Apr 21, 2008 at 10:10 AM, SL Baur <steve@xemacs.org> wrote:
+>  > Is there any reason why the debug parameter in the iwlwifi driver
+>  >  should be read-only?
 
-  static void uart_flush_buffer(struct tty_struct *tty)
-  {
-  	struct uart_state *state = tty->driver_data;
-  	struct uart_port *port = state->port;
-  	unsigned long flags;
-  	
-  	/*
-  	 * This means you called this function _after_ the port was
-  	 * closed.  No cookie for you.
-  	 */
-  	if (!state || !state->info) {
-  		WARN_ON(1);
-  		return;
-  	}
+> it doesn't have any affect on debug output though.  This variable is
+>  copied to to another one in pci proble
+>  so unless you have 2 cards there is no use for it.
+>  Run time debug output can be handled through debug_level sysfs entry
+>  /sys/bus/pci/drivers/iwl4965/debug_level
+>  Yet this will be changed as well to be per device instead of per driver
 
-is too late for checking state != NULL.
-This change applies to kernels from 2.6.16 till 2.6.25.
+O.K.  The driver help recommended turning on debug for first time usage
+and I was surprised when I didn't get any debug output.  And I see now
+that /proc/bus/pci/drivers/iwl3945/debug_level *is* writable.  I'm lost in a
+twisty maze of /sys directories, all subtlely different.
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- drivers/serial/serial_core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
+The driver itself works fine, but I'm having trouble getting decent speed out
+of it, similar to the horrible performance I had under another operating
+system, not quite as bad but still worse than a MacBook Pro.  Any clues on what
+I can look for to see why it so relatively slow?  I'm going to put it to the WoW
+test as soon as I can get a modern userland & Wine on the machine, it's running
+RHEL 4 now.  The machine is a Lenovo T60.
 
---- linux-2.6.25.orig/drivers/serial/serial_core.c
-+++ linux-2.6.25/drivers/serial/serial_core.c
-@@ -535,7 +535,7 @@ static int uart_chars_in_buffer(struct t
- static void uart_flush_buffer(struct tty_struct *tty)
- {
- 	struct uart_state *state = tty->driver_data;
--	struct uart_port *port = state->port;
-+	struct uart_port *port;
- 	unsigned long flags;
- 
- 	/*
-@@ -547,6 +547,7 @@ static void uart_flush_buffer(struct tty
- 		return;
- 	}
- 
-+	port = state->port;
- 	pr_debug("uart_flush_buffer(%d) called\n", tty->index);
- 
- 	spin_lock_irqsave(&port->lock, flags);
+-sb
