@@ -1,69 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbYDVF0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYDVF30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbYDVF0P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 01:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYDVF0B
+	id S1756539AbYDVF30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 01:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYDVF3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 01:26:01 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:14087 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbYDVF0A (ORCPT
+	Tue, 22 Apr 2008 01:29:18 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:37174 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbYDVF3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 01:26:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=RDMxrgvYfcegexGQo4UrTK1I5wMBcI2UdrP1aMZvHaZ5Ma+X8ez/cQv5TcLRp/9agBNWjaQypiieEP5hkEhNkUPTIc3nrLg/wrY9yUhZCvhkQ+NBP6Pib58KEkrSqRdIfZaFR20slBrNcrin9lpd/jfKCFWln67R94D/pKao1Zg=
-Message-ID: <480D75EF.9040902@gmail.com>
-Date: Tue, 22 Apr 2008 07:21:51 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 22 Apr 2008 01:29:17 -0400
+Message-ID: <480D77AC.7080202@kernel.org>
+Date: Mon, 21 Apr 2008 22:29:16 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: BIOS bug, APIC version if 0 for CPU#0
-References: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com>
-In-Reply-To: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+To: serge@hallyn.com, David <david@unsolicited.net>
+CC: casey@schaufler-ca.com, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 Kernel - Problems with capabilities
+References: <46016.36939.qm@web36608.mail.mud.yahoo.com> <480B7D72.7020503@unsolicited.net> <20080421000055.GA17510@vino.hallyn.com> <20080421080101.htzh4s03snescog4@unsolicited.net> <20080421183451.GA22071@vino.hallyn.com> <480CE167.8090907@unsolicited.net> <20080421190143.GA23365@vino.hallyn.com> <480CF8DB.9010405@unsolicited.net> <20080422024259.GA27223@vino.hallyn.com>
+In-Reply-To: <20080422024259.GA27223@vino.hallyn.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Hello;
-> with the latest git on a macbook the system can barely boot without
-> freezing, a work around for me at leat is either disable smp, or once
-> booted  turn on glxgears,or compiling the kernel i.g. when using the
-> processors I'm not receiving a freeze, only when everything starts
-> lowering down. in dmesg I'm noticing BIOS bug, APIC version is 0 for
-> CPU#0! fixing up to 0x10. (tell you're hw vendor) could this be the
-> reason for the system freezes?,
+Short version:
 
-I don't think so. On my machine there's no freezes with latest git and:
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+As you have found, libcap2 does address your problem. I suspect that
+libcap-1.97 here:
 
-I've got exactly the same messages.
+http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap1/
 
-> also I didnt have a camera handy on me
-> but the screen spit out = Bug spinlock lockup on CPU#0
-> swapper/0. c17fa7c0 PID 0, comm: swapper not tainted.
+will also prove successful. Please try it and report...
 
-Can you try to write down more of those bug messages?
+Thanks
 
-> I dont have a problem disabling smp, except when I cat /proc/cpuinfo I
-> don't see anything about my cores.
+Andrew
 
-What exactly you expect to see in /proc/cpuinfp while smp is disabled?
+Long, and "almost funny" version:
 
-> I know this is a stupid question
-> but will it hurt the system if smp is disabled
-> for the macbook pro ati chipset.?
+A reason this fails on SUSE, is that SUSE appears to be shipping an
+experimental version of libcap 1.92 (+ patches). That is I downloaded
+the src.rpm from here:
 
-No it won't.
+http://download.opensuse.org/distribution/SL-10.1/inst-source/suse/src/
 
--Jacek
+Did the "rpm2cpoi/cpio --extract" chicken dance and, much to my
+surprise, discovered the package is based on an experimental version of
+libcap that I had made (on a speculative libcap2 branch on sourceforge)
+to work with some ancient (and experimental) filesystem capability
+support (patches etc., captured here):
+
+http://www.kernel.org/pub/linux/libs/security/linux-privs/old/kernel-2.2-fcap/README
+
+This kernel patch was never integrated into the kernel, and Serge did
+not go even remotely close to it for the final implementation of
+filesystem capabilities in the kernel. Needless to say that this (old)
+'experimental' libcap fails to work with the new 'released' kernel
+support is not at all surprising! :-(
+
+[FWIW The old experimental support extended the capset/capget system
+call interface to manipulate filesystem capabilities, where Serge's
+patch does this directly via extended attribute system calls. These two
+access methods appear to be clashing quite horribly - but failing "safe".]
+
+I believe code based on released version: libcap-1.10 and/or libcap-1.97
+which you can download here:
+
+http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap1/
+
+should work. You might like to try 1.97 as a replacement for the SUSE
+version and report any issues (the SUSE guys may need to think about a
+migration path).
+
+serge@hallyn.com wrote:
+| Quoting David (david@unsolicited.net):
+|> serge@hallyn.com wrote:
+|>> Quoting David (david@unsolicited.net):
+|>>
+|>>> serge@hallyn.com wrote:
+|>>>
+|>>>>> /lib/libcap.so.1 -> libcap.so.1.92
+|>>>>>
+|>>>>> I guess that's 1.92 (should be the version shipped with SuSE 9.1).
+|>>>>>
+|>>>> Ok, thanks, then it's definately not what I was thinking.
+|>>>>
+|>>>> (Will wait to check out your strace)
+|>>>>
+|>>> strace attached.
+|>>>
+|>>> Cheers
+|>>> David
+|>>>
+|>>>
+|>> ...
+|>>
+|>>> capget(0x20071026, 0, {, , })           = -1 EINVAL (Invalid argument)
+|>>>
+|>> This is odd.  libcap-1.x should be passing in 0x19980330.
+|>>
+|>> Next, given the -EINVAL return value ntpd should be seeing a NULL result
+|>> from cap_get_proc() and exiting right there.
+|>>
+|>> What version of ntpd is this?  (I must be looking at a wrong value, but
+|>> even so the fact that cap_get_proc()->capget() is using 0x20071026 for
+|>> version doesn't make sense)
+|>>
+|>>
+|>>> capset(0, 0, {CAP_NET_BIND_SERVICE|CAP_SYS_TIME,
+|>>> CAP_NET_BIND_SERVICE|CAP_SYS_TIME,
+CAP_NET_BIND_SERVICE|CAP_SYS_TIME}) =
+|>>> -1 EINVAL (Invalid argument)
+|>>> time(NULL)                              = 1208803493
+|>>> write(5, "21 Apr 19:44:53 ntpd[6118]: cap_"..., 92) = 92
+|>>> munmap(0x40022000, 4096)                = 0
+|>>> exit_group(-1)                          = ?
+|>>> Process 6118 detached
+|>>>
+|>>
+|> Oh dear .. more investigation... here's the source from libcap-1.92.
+|> capget() is being called with null arguments, which I guess returns with
+|> the latest version in ch.version ?
+|>
+|> The switch then fails and the set gets called with version = 0 ??
+|>
+|> Cheers
+|> David
+|>
+|> void _libcap_establish_api(void)
+|> {
+|>    struct __user_cap_header_struct ch;
+|>    struct __user_cap_data_struct cs;
+|>
+|>    if (_libcap_kernel_version) {
+|>        _cap_debug("already identified kernal api 0x%.8x",
+|>                   _libcap_kernel_version);
+|>        return;
+|>    }
+|>
+|>    memset(&ch, 0, sizeof(ch));
+|>    memset(&cs, 0, sizeof(cs));
+|>
+|>    (void) capget(&ch, &cs);
+|>
+|>    switch (ch.version) {
+|>
+|>    case 0x19980330:
+|>        _libcap_kernel_version = 0x19980330;
+|>        _libcap_kernel_features = CAP_FEATURE_PROC;
+|>        break;
+|>
+|>    case 0x19990414:
+|>        _libcap_kernel_version = 0x19990414;
+|>        _libcap_kernel_features = CAP_FEATURE_PROC|CAP_FEATURE_FILE;
+|>        break;
+|>
+|>    default:
+|>        _libcap_kernel_version = 0x00000000;
+|>        _libcap_kernel_features = 0x00000000;
+|>    }
+|>
+|>    _cap_debug("version: %x, features: %x\n",
+|>               _libcap_kernel_version, _libcap_kernel_features);
+|> }
+|
+| Interesting.  The version I was looking at (1.10) has nothing like this.
+|
+| I don't know what shipped with recent RedHat and Fedora distros, but I
+| guess based on this we can in fact expect more failures from at least
+| SuSe distros.
+|
+| We can't reasonably have newer kernels reply to a query with an older
+| libcap version, so I don't know what to do here.  Andrew, do you have
+| any ideas?
+|
+| thanks,
+| -serge
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFIDXes+bHCR3gb8jsRAt/MAKCOJ3FA9ubvcxY/T69J1Lx4efwpwgCeJI/2
+g19NRIbvrZKueObVZYngd04=
+=iV8y
+-----END PGP SIGNATURE-----
