@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYDVQTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYDVQTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbYDVQTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYDVQSy
+	id S1759417AbYDVQTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYDVQTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:18:54 -0400
-Received: from hu-out-0506.google.com ([72.14.214.237]:50063 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbYDVQSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:18:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=gKufr+uwshAvru7UNoDLd62bBc2XuUKyDyLLVLaQIfVqLDVm6O5xbPg1ZM3tA5lV9yOjj3e8s6pk6Hj0YU96D8T0DDpMvCkhFiPbbelf2trq47PkqkGX7oEO6PeXbKMeqd4CsE4u8eVqLi1JK8s9uPyXZf1ZbAvWoCxt67NH8Js=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] xfs: #define out unused parameters of xfs_bmap_add_free and xfs_btree_read_bufl
-Date: Tue, 22 Apr 2008 18:17:03 +0200
-User-Agent: KMail/1.8.2
-Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804221320.54147.vda.linux@googlemail.com> <20080422142807.GD16895@cs181133002.pp.htv.fi>
-In-Reply-To: <20080422142807.GD16895@cs181133002.pp.htv.fi>
+	Tue, 22 Apr 2008 12:19:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60620 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753252AbYDVQTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:19:30 -0400
+Message-ID: <480E0FCF.1030704@redhat.com>
+Date: Tue, 22 Apr 2008 12:18:23 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       bugme-daemon@bugzilla.kernel.org,
+       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
+References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>	 <480D1B14.7070806@redhat.com> <1208869770.7115.265.camel@twins>
+In-Reply-To: <1208869770.7115.265.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804221817.03945.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 16:28, Adrian Bunk wrote:
-> > xfs_bmap_add_free and xfs_btree_read_bufl functions
-> > use some of their parameters only in some cases
-> > (e.g. if DEBUG is defined, or on non-Linux OS :)
-> > 
-> > This patch removes these parameters using #define hack
-> > which makes them "disappear" without the need of uglifying
-> > every callsite with #ifdefs.
-> > 
-> > Code size difference on 32-bit x86:
-> >  393457    2904    2952  399313   617d1 linux-2.6-xfs6-TEST/fs/xfs/xfs.o
-> >  393441    2904    2952  399297   617c1 linux-2.6-xfs7-TEST/fs/xfs/xfs.o
-> >...
+Hi Peter,
+
+Thank you for the patch,
+
+Peter Zijlstra wrote:
+> So the below makes it work - but I'm not getting this code; at the time
+> I wrote that stuff I CC'ed each and every kprobe maintainer listed in
+> the usual places but got no reposonse - can some please explain this
+> stuff to me?
+
+Sure, I came to the same decision. It is enough to remove unnecessary
+trace_hardirqs_fixup_flags() from post_kprobe_handler. pt_regs->flags is
+just a variable on stack -- not effective flags in that time. So we don't
+need to change thread's hardirq flag.
+
+> Are the saved flags only for the TF bit or are they made in full effect
+> later (and if so, where) ?
+
+The saved flags is for TF and IF bits.
+Actually, kprobes does following:
+
+---
+do_int3()
+ kprobe_exceptions_notify()
+  kprobe_handler()
+   prepare_singlestep() : save regs->flags, set TF and clear IF on regs->flags
+"iret" : pop regs->flags image to EFLAGS reg.
+
+<single step an instruction>
+
+do_debug()
+ kprobe_exceptions_notify()
+  post_kprobe_handler() : restore regs->flags (clearing TF and restoring IF)
+"iret" : pop regs->flags image to EFLAGS reg.
+---
+
+While executing a single step, EFLAGS is different from the original EFLAGS.
+However, it will be recovered soon by post_kprobe_handler.
+NOTE: if the single-stepping instruction is a pushf, kprobes writes saved
+     EFLAGS to the top of stack.
+
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+I tested it on x86-64/i386.
+
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+> ---
+> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+> index 34a5912..fe71e64 100644
+> --- a/arch/x86/kernel/kprobes.c
+> +++ b/arch/x86/kernel/kprobes.c
+> @@ -865,7 +865,6 @@ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
+>  
+>         resume_execution(cur, regs, kcb);
+>         regs->flags |= kcb->kprobe_saved_flags;
+> -       trace_hardirqs_fixup_flags(regs->flags);
+>  
+>         /* Restore back the original saved kprobes variables and continue. */
+>         if (kcb->kprobe_status == KPROBE_REENTER) {
 > 
-> Elimination of completely unused parameters makes sense, but IMHO using 
-> such #define hacks for minuscule code size and stack usage advantages is 
-> not worth it.
+> 
+> 
 
-In busybox this trick is used extensively.
+-- 
+Masami Hiramatsu
 
-I don't know how to eliminate these unused parameters with less
-intervention, but I also don't want to leave it unfixed.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-I want to eventually reach the state with no warnings
-about unused parameters.
---
-vda
+e-mail: mhiramat@redhat.com
+
