@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765525AbYDVS45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbYDVS5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765525AbYDVS45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764884AbYDVSxY
+	id S1762234AbYDVS5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765332AbYDVSzC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:53:24 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:49345 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762955AbYDVSxV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:53:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Containers <containers@lists.osdl.org>,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com>
-	<1207779313.16926.12.camel@x61.ebiederm.org>
-	<20080410015955.GA18227@sergelap.austin.rr.com>
-	<1207812980.7509.25.camel@x61.ebiederm.org>
-	<20080422142539.GA12623@sergelap.austin.ibm.com>
-Date: Tue, 22 Apr 2008 11:53:07 -0700
-In-Reply-To: <20080422142539.GA12623@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Tue, 22 Apr 2008 09:25:39 -0500")
-Message-ID: <m1hcdtsovg.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 22 Apr 2008 14:55:02 -0400
+Received: from h155.mvista.com ([63.81.120.155]:34179 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765323AbYDVSy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 14:54:59 -0400
+Message-ID: <480E345D.9090406@ru.mvista.com>
+Date: Tue, 22 Apr 2008 22:54:21 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca> <480DFE76.8000809@ru.mvista.com>
+In-Reply-To: <480DFE76.8000809@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
->> 
->> I'm hoping to be able to get back at this in the week or so as things
->> settle down from my move.  My last patches should be in my proof of
->> concept network namespace tree, if they don't show up elsewhere.
->
-> Is that the tree I'd get from
->
-> git-fetch
-> git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-netns.git
-> master:ebieder.master
+Hello, I wrote:
 
-Yes.
+>> I suppose.   If we were needlessly pedantic, then perhaps
+>> the libata-bmdma.c should be renamed to libata-sff.c,
 
-> ?  So I'd add a user_ns to the struct sysfs_tag_info?
->
-> If so I'll give it a whirl.
+    It *was* renamed to libata-sff.c, back in 2006. :-)
 
-Sounds good.  My apologies I keep being almost on the verge
-of getting someplace.
+>> and the libata-sff.c should be renamed libata-tf.c
 
-Eric
+    Not before splitting SFF-8038i stuff from it.
+
+>> But there's probably been a document or two since then,
+>> where the SFF folks have documented the TF interfaces, too.
+
+>    Don't know, at least I haven't encountered such spec. Unless you mean 
+> SFF-8020i (ATAPI CD-ROM spec).
+
+    I've looked thru the list of their spec. and it didn't seem to have any 
+about taskfile specifically. SFF-8070 (ATAPI CD-RW) refers to ATA/PI-4 for 
+that matter.
+
+MBR, Sergei
+
