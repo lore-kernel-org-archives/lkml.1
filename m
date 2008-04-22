@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763809AbYDVWwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933464AbYDVWyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763809AbYDVWwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 18:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbYDVWwG
+	id S933464AbYDVWyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 18:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbYDVWy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 18:52:06 -0400
-Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:60402 "HELO
-	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755764AbYDVWwF (ORCPT
+	Tue, 22 Apr 2008 18:54:29 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56052
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755750AbYDVWy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 18:52:05 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Broken] PCI: clean up resource alignment management
-Date: Tue, 22 Apr 2008 15:51:56 -0700
-User-Agent: KMail/1.9.9
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <b6a2187b0804220943l26f7b441sb5a7309dff0e84dc@mail.gmail.com> <alpine.LFD.1.10.0804221451270.2779@woody.linux-foundation.org> <alpine.LFD.1.10.0804221510420.2779@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804221510420.2779@woody.linux-foundation.org>
+	Tue, 22 Apr 2008 18:54:28 -0400
+Date: Wed, 23 Apr 2008 00:54:24 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 10 of 12] Convert mm_lock to use semaphores after
+	i_mmap_lock and anon_vma_lock
+Message-ID: <20080422225424.GT24536@duo.random>
+References: <f8210c45f1c6f8b38d15.1208872286@duo.random> <Pine.LNX.4.64.0804221325490.3640@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804221551.56502.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <Pine.LNX.4.64.0804221325490.3640@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, April 22, 2008 3:13 pm Linus Torvalds wrote:
-> On Tue, 22 Apr 2008, Linus Torvalds wrote:
-> > (In fact, I think cardbus bridges have a much more flexible alignment
-> > than that size thing, and can be aligned at finer granularity, but I
-> > forget the exact details, and since we didn't add a special "alignment"
-> > field, we can't take advantage of it anyway).
->
-> Yeah, I double-checked: the IO alignment is 4 bytes, the MEM alignment is
-> 4k.
->
-> So if we had a separate alignment word we could use that, but in the
-> meantime I think IORESOURCE_SIZEALIGN is good enough, and a bit more
-> readable than the STARTALIGN thing.
->
-> Now we just need to have somebody test it. It turns out that I no longer
-> have any Cardbus cards, since my laptops now all have built-in wireless.
-> Boo hiss for me.
+On Tue, Apr 22, 2008 at 01:26:13PM -0700, Christoph Lameter wrote:
+> Doing the right patch ordering would have avoided this patch and allow 
+> better review.
 
-I may be in the same boat, I'll have to dig around and see if I have any...  
-That said, I think an explicit alignment field would make things even cleaner 
-(and like you said allow us to take advantage of bus specific alignment 
-better).
+I didn't actually write this patch myself. This did it instead:
 
-Jesse
+s/anon_vma_lock/anon_vma_sem/
+s/i_mmap_lock/i_mmap_sem/
+s/locks/sems/
+s/spinlock_t/struct rw_semaphore/
+
+so it didn't look a big deal to redo it indefinitely.
+
+The right patch ordering isn't necessarily the one that reduces the
+total number of lines in the patchsets. The mmu-notifier-core is
+already converged and can go in. The rest isn't converged at
+all... nearly nobody commented on the other part (the few comments so
+far were negative), so there's no good reason to delay indefinitely
+what is already converged, given it's already feature complete for
+certain users of the code. My patch ordering looks more natural to
+me. What is finished goes in, the rest is orthogonal anyway.
