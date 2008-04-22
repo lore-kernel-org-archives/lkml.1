@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbYDVAvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761492AbYDVAwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761466AbYDVAvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbYDVAvV
+	id S1761492AbYDVAwk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760463AbYDVAw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:51:21 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60171 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760497AbYDVAvU (ORCPT
+	Mon, 21 Apr 2008 20:52:27 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:38108 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760915AbYDVAw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:51:20 -0400
-Date: Mon, 21 Apr 2008 17:51:15 -0700
+	Mon, 21 Apr 2008 20:52:26 -0400
+Date: Mon, 21 Apr 2008 17:52:22 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
@@ -19,8 +19,8 @@ Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
        a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
        dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
        oleg@tv-sign.ru, jamesclhuang@yahoo.com
-Subject: Re: [PATCH 0/5] call_rcu_sched() series
-Message-ID: <20080422005115.GG3693@linux.vnet.ibm.com>
+Subject: [PATCH 4/5] Add call_rcu_sched() and friends to rcutorture
+Message-ID: <20080422005222.GH3693@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 References: <20080422004454.GA3517@linux.vnet.ibm.com> <20080422004820.GD3693@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -32,7 +32,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resend, this time with correct subject: line.]
+[Reresend, this time I promise with corrected subject: line!!!]
 
 Add entry to rcu_torture_ops allowing the correct barrier function to
 be used upon exit from rcutorture.  Also add torture options for the
