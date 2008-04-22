@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763604AbYDVNKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763725AbYDVNLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763604AbYDVNKz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763465AbYDVNKZ
+	id S1763725AbYDVNLc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763534AbYDVNKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:10:25 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:18189 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760307AbYDVNKX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:10:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=im5fp9lhSOfK2qNGCjNWZUs6UbIHOXs8xLpuwRB4SiQxvu7l6c7xZUPOhn23soPIcvUDHcUCr9kt4PX+9nErHrpWL32+KDi/5YCEoCJRfUO5r6BPgxWjoEFylENRIajkiS9SSUySL1Jooafe0JeRMnR56rXAdKL7Xh+Q5uoDxgc=
-Message-ID: <480DE3B3.6050702@gmail.com>
-Date: Tue, 22 Apr 2008 22:10:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 22 Apr 2008 09:10:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51752 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763527AbYDVNKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:10:38 -0400
+Date: Tue, 22 Apr 2008 15:10:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
+	kmem_cache_destroy, scsi_put_host_cmd_pool()
+Message-ID: <20080422131020.GB7311@elte.hu>
+References: <20080419085758.GA18612@elte.hu> <1208611357.3280.5.camel@localhost.localdomain> <20080421134925.GK9554@elte.hu> <1208793440.3640.22.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       oliver@neukum.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       zaitcev@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 1/2] klist: implement KLIST_INIT() and DEFINE_KLIST()
-References: <480DB6A4.20101@gmail.com> <1208869049.7115.254.camel@twins>	 <480DE215.2070803@gmail.com> <1208869591.7115.263.camel@twins>
-In-Reply-To: <1208869591.7115.263.camel@twins>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208793440.3640.22.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->> These locks don't nest so being in the same class should be okay and I 
->> was following what (at least some of) other __SPIN_LOCK_UNLOCKED users 
->> are doing.  If putting these locks into separate classes is the RTTD, sure.
-> 
-> Ah, they'll actually be in seprate classes all of the same name. So I
-> think it is cleaner to cause them to have separate names too.
-> 
-> see look_up_lock_class() in kernel/lockdep.c:
-> 
->         /*
->          * Static locks do not have their class-keys yet - for them the key
->          * is the lock object itself:
->          */
->         if (unlikely(!lock->key))
->                 lock->key = (void *)lock;
 
-Ah.. I'll put change it to name.  Thanks.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
--- 
-tejun
+> Thanks ... it looks like we may have trouble from devices that alter 
+> the unchecked isa dma flag after scsi_host_alloc.  The guilty parties 
+> appear to be gdth, eata, u14-34f, ultrastor, BusLogic and advansys.
+> 
+> The trouble is that if you alloc the host with it one way and free it 
+> with it the other, the wrong freelist is used and the ref counts are 
+> invalid.
+> 
+> Try this pseudo fix: it avoids allocating the freelist until add time 
+> (by which time they should all have fixed the flag).  It still doesn't 
+> change the fact that the host is allocated in the wrong region, but 
+> that shouldn't matter too much.
+
+ok - do you intend to push this pseudo-fix upstream? If yes then please 
+consider it fixed as far as i'm concerned - i'll re-reply if the warning 
+resurfaces (it wasnt lethal to the bootup otherwise). Or if you've got 
+some other approach/fix then i can test that too.
+
+	Ingo
