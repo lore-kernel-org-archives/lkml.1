@@ -1,83 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761557AbYDVJ0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbYDVJ23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761557AbYDVJ0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbYDVJ0J
+	id S1762259AbYDVJ23 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 05:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYDVJ2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:26:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:57773 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756681AbYDVJ0I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:26:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mXRtMSXZeo78Asa4ghPN8tPsqMZ8QrKMbIwtUzPOAEZhivfCEejjaF3eT26+o49irajgMDjPaIjir7y+g5ZHWT2zfIyv/osKbMW5UXd8GvhErAcsc5GRJ06PjjE9iO1kdjLV/AUGa3bceRsOBOvyRm5F4EydHuQtZRctcpgFMQc=
-Message-ID: <e85b9d30804220226p142826e7n19f7a0a7b1ef89d0@mail.gmail.com>
-Date: Tue, 22 Apr 2008 11:26:05 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Fwd: Linux 2.6.25 (coretemp reads high temperatures)
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>,
-       torvalds@linux-foundation.org, "Rudolf Marek" <r.marek@assembler.cz>,
-       "Gene Heskett" <gene.heskett@gmail.com>, "Len Brown" <lenb@kernel.org>
-In-Reply-To: <e85b9d30804211007w9d5a4dds79a98fc9b088caee@mail.gmail.com>
+	Tue, 22 Apr 2008 05:28:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45815 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756553AbYDVJ2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 05:28:20 -0400
+Date: Tue, 22 Apr 2008 11:27:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
+Subject: Re: linux-next: Intel iommu: new warning
+Message-ID: <20080422092757.GA16374@elte.hu>
+References: <20080422144258.9564e2fa.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <200804182151.49021.lenb@kernel.org> <480CBC92.4070502@archlinux.org>
-	 <e85b9d30804210928n6bb08f3bqa4e30741798009fa@mail.gmail.com>
-	 <e85b9d30804211007w9d5a4dds79a98fc9b088caee@mail.gmail.com>
+In-Reply-To: <20080422144258.9564e2fa.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----------- Forwarded message ----------
-...
 
-(this is the last mail I sent, I apologize if it got there already
- correctly and only my browser displays it corrupted on lkml.org)
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
+> Hi Ingo,
+> 
+> Commit 2be621498d461b63ca6124f86e3b9582e1a8e722 ("x86: dma-ops on 
+> highmem fix") in Linus' tree introduced a new warning (noticed in the 
+> x86_64 allmodconfig build of linux-next):
+> 
+> drivers/pci/intel-iommu.c:2240: warning: initialization from 
+> incompatible pointer type
+> 
+> Which I think points at an instance of map_single that needs updating.
 
+good catch! The patch below should fix it.
 
- thermal isn't working on this board (if you mean /proc/acpi/thermal_zone ...)
+	Ingo
 
- I also tried a vanilla kernel & it showed the same higher temperature ;(
+---------------------------------->
+Subject: intel-iommu.c: dma ops fix
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue Apr 22 11:09:04 CEST 2008
 
- here the last mail (on lkml it was corrupted) - I don't know if you
- were able to read it
+Stephen Rothwell noticed that:
 
- >  sure, I'll test-drive the vanilla-kernel, too
- >
- >  thanks
+Commit 2be621498d461b63ca6124f86e3b9582e1a8e722 ("x86: dma-ops on highmem
+fix") in Linus' tree introduced a new warning (noticed in the x86_64
+allmodconfig build of linux-next):
 
- ok, tested the vanilla-kernel this morning and it shows the exact high
- temperatures (with CONFIG_THERMAL=y)
+drivers/pci/intel-iommu.c:2240: warning: initialization from incompatible pointer type
 
- I've got a question:
+Which points at an instance of map_single that needs updating.
 
- when trying to disable thermal it just sits there & won't change:
- <*> Hardware Monitoring support  --->
-  -*- Generic Thermal sysfs driver  --->
+Fix it to the new prototype.
 
- it seemingly depends on other things:
- Selected by: ACPI_THERMAL && !X86_VOYAGER && ACPI && ACPI_PROCESSOR
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/pci/intel-iommu.c |   35 +++++++++++++++++------------------
+ 1 file changed, 17 insertions(+), 18 deletions(-)
 
- is it safe to disable acpi_processor and acpi or CONFIG_THERMAL in
- general ? or will it burn down my box ? ;)
-
- I'm asking this because it says/writes:
- CONFIG_ACPI_THERMAL:
-
- This driver adds support for ACPI thermal zones.  Most mobile and
- some desktop systems support ACPI thermal zones.  It is HIGHLY
- recommended that this option be enabled, as your processor(s)
- may be damaged without it.
-
-
- thanks
-
- Mat
+Index: linux-x86.q/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-x86.q.orig/drivers/pci/intel-iommu.c
++++ linux-x86.q/drivers/pci/intel-iommu.c
+@@ -1905,32 +1905,31 @@ get_valid_domain_for_dev(struct pci_dev 
+ 	return domain;
+ }
+ 
+-static dma_addr_t intel_map_single(struct device *hwdev, void *addr,
+-	size_t size, int dir)
++static dma_addr_t
++intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwdev);
+-	int ret;
+ 	struct dmar_domain *domain;
+-	unsigned long start_addr;
++	unsigned long start_paddr;
+ 	struct iova *iova;
+ 	int prot = 0;
++	int ret;
+ 
+ 	BUG_ON(dir == DMA_NONE);
+ 	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
+-		return virt_to_bus(addr);
++		return paddr;
+ 
+ 	domain = get_valid_domain_for_dev(pdev);
+ 	if (!domain)
+ 		return 0;
+ 
+-	addr = (void *)virt_to_phys(addr);
+-	size = aligned_size((u64)addr, size);
++	size = aligned_size((u64)paddr, size);
+ 
+ 	iova = __intel_alloc_iova(hwdev, domain, size);
+ 	if (!iova)
+ 		goto error;
+ 
+-	start_addr = iova->pfn_lo << PAGE_SHIFT_4K;
++	start_paddr = iova->pfn_lo << PAGE_SHIFT_4K;
+ 
+ 	/*
+ 	 * Check if DMAR supports zero-length reads on write only
+@@ -1942,33 +1941,33 @@ static dma_addr_t intel_map_single(struc
+ 	if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
+ 		prot |= DMA_PTE_WRITE;
+ 	/*
+-	 * addr - (addr + size) might be partial page, we should map the whole
++	 * paddr - (paddr + size) might be partial page, we should map the whole
+ 	 * page.  Note: if two part of one page are separately mapped, we
+-	 * might have two guest_addr mapping to the same host addr, but this
++	 * might have two guest_addr mapping to the same host paddr, but this
+ 	 * is not a big problem
+ 	 */
+-	ret = domain_page_mapping(domain, start_addr,
+-		((u64)addr) & PAGE_MASK_4K, size, prot);
++	ret = domain_page_mapping(domain, start_paddr,
++		((u64)paddr) & PAGE_MASK_4K, size, prot);
+ 	if (ret)
+ 		goto error;
+ 
+ 	pr_debug("Device %s request: %lx@%llx mapping: %lx@%llx, dir %d\n",
+-		pci_name(pdev), size, (u64)addr,
+-		size, (u64)start_addr, dir);
++		pci_name(pdev), size, (u64)paddr,
++		size, (u64)start_paddr, dir);
+ 
+ 	/* it's a non-present to present mapping */
+ 	ret = iommu_flush_iotlb_psi(domain->iommu, domain->id,
+-			start_addr, size >> PAGE_SHIFT_4K, 1);
++			start_paddr, size >> PAGE_SHIFT_4K, 1);
+ 	if (ret)
+ 		iommu_flush_write_buffer(domain->iommu);
+ 
+-	return (start_addr + ((u64)addr & (~PAGE_MASK_4K)));
++	return (start_paddr + ((u64)paddr & (~PAGE_MASK_4K)));
+ 
+ error:
+ 	if (iova)
+ 		__free_iova(&domain->iovad, iova);
+ 	printk(KERN_ERR"Device %s request: %lx@%llx dir %d --- failed\n",
+-		pci_name(pdev), size, (u64)addr, dir);
++		pci_name(pdev), size, (u64)paddr, dir);
+ 	return 0;
+ }
+ 
+@@ -2082,7 +2081,7 @@ static void * intel_alloc_coherent(struc
+ 		return NULL;
+ 	memset(vaddr, 0, size);
+ 
+-	*dma_handle = intel_map_single(hwdev, vaddr, size, DMA_BIDIRECTIONAL);
++	*dma_handle = intel_map_single(hwdev, virt_to_bus(vaddr), size, DMA_BIDIRECTIONAL);
+ 	if (*dma_handle)
+ 		return vaddr;
+ 	free_pages((unsigned long)vaddr, order);
