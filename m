@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762414AbYDVCRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761594AbYDVCVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762414AbYDVCRn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 22:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762017AbYDVCRd
+	id S1761594AbYDVCVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 22:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYDVCVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 22:17:33 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47886 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761239AbYDVCRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 22:17:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,691,1199692800"; 
-   d="scan'208";a="273112956"
-Date: Tue, 22 Apr 2008 10:01:40 +0800
-From: alek du <alek.du@intel.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: gregkh@suse.de, jesse.barnes@intel.com
-Subject: [PATCH 1/3] pci: Add Intel SCH PCI IDs
-Message-ID: <20080422100140.71f947ca@dxy.sh.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 02:17:03.0765 (UTC) FILETIME=[F479B450:01C8A41E]
+	Mon, 21 Apr 2008 22:21:13 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:58048 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756106AbYDVCVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 22:21:12 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: mingo@elte.hu (Ingo Molnar)
+Subject: Re: [bug] build failure in net/netfilter/nf_conntrack_sip.c, on	latest -git
+Cc: jeff@garzik.org, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <20080421133953.GJ9554@elte.hu>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1Jo87g-0004HT-00@gondolin.me.apana.org.au>
+Date: Tue, 22 Apr 2008 10:20:44 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds Intel SCH chipsets (US15W, US15L, UL11L) PCI IDs, these IDs
-will be used by following SCH driver patches.
+Ingo Molnar <mingo@elte.hu> wrote:
+>
+> but the only information i had at that point was that 'something in that 
+> recent appearance of a large group of networking commits introduced the 
+> problem'. There was no commit log entry of even the merge.
 
-Signed-off-by: Alek Du <alek.du@intel.com>
----
- include/linux/pci_ids.h |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+It is human nature to blame someone/something when things go wrong.
+It just happens that the lack of a merge request was the first you
+tacked onto in this case :)
 
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 70eb3c8..b72b3b4 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2413,6 +2413,20 @@
- #define PCI_DEVICE_ID_INTEL_82443GX_0	0x71a0
- #define PCI_DEVICE_ID_INTEL_82443GX_2	0x71a2
- #define PCI_DEVICE_ID_INTEL_82372FB_1	0x7601
-+#define PCI_DEVICE_ID_INTEL_SCH_HC	0x8100
-+#define PCI_DEVICE_ID_INTEL_SCH_PE1	0x8110
-+#define PCI_DEVICE_ID_INTEL_SCH_PE2	0x8112
-+#define PCI_DEVICE_ID_INTEL_SCH_UC1	0x8114
-+#define PCI_DEVICE_ID_INTEL_SCH_UC2	0x8115
-+#define PCI_DEVICE_ID_INTEL_SCH_UC3	0x8116
-+#define PCI_DEVICE_ID_INTEL_SCH_EC	0x8117
-+#define PCI_DEVICE_ID_INTEL_SCH_UT	0x8118
-+#define PCI_DEVICE_ID_INTEL_SCH_LPC	0x8119
-+#define PCI_DEVICE_ID_INTEL_SCH_IDE	0x811a
-+#define PCI_DEVICE_ID_INTEL_SCH_HDA	0x811b
-+#define PCI_DEVICE_ID_INTEL_SCH_SD1	0x811c
-+#define PCI_DEVICE_ID_INTEL_SCH_SD2	0x811d
-+#define PCI_DEVICE_ID_INTEL_SCH_SD3	0x811e
- #define PCI_DEVICE_ID_INTEL_82454GX	0x84c4
- #define PCI_DEVICE_ID_INTEL_82450GX	0x84c5
- #define PCI_DEVICE_ID_INTEL_82451NX	0x84ca
+I don't think we can seriously argue that had there been a merge
+request on lkml that these build issues would have somehow gone
+away or resolved any sooner than they have been.  The fact is
+with or without the merge request you would have realised that
+network bug reports == davem :)
+
+> no. I simply failed to put this (trivial) bugreport into some sort of 
+> existing context of discussion, and made a brief and neutral(-looking) 
+> comment about that. Under no other development style could i have done 
+> that because the context was simply missing from the mailing lists.
+
+Unfortunately the email medium tends to make what one thinks of as
+a neutral and balanced critique appear anything but to the recipient.
+And I must say that in this case your messages did have that
+appearance.
+
+My only suggestion is for us to all move on to something a little
+bit more useful than letting off steam.
+
+Cheers,
 -- 
-1.5.2.5
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
