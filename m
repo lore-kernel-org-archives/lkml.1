@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYDVRb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764219AbYDVRbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbYDVRb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763218AbYDVR3P
+	id S1764219AbYDVRbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763254AbYDVR3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:29:15 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53802 "EHLO smtp.polymtl.ca"
+	Tue, 22 Apr 2008 13:29:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53782 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761974AbYDVR3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:29:09 -0400
-Message-Id: <20080422172842.809030360@polymtl.ca>
+	id S1763103AbYDVR3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 13:29:07 -0400
+Message-Id: <20080422172843.602304016@polymtl.ca>
 References: <20080422172404.502954084@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 22 Apr 2008 13:24:11 -0400
+Date: Tue, 22 Apr 2008 13:24:13 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: [RFC patch 7/9] S390 remove -traditional
-Content-Disposition: inline; filename=s390-remove-traditional.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 22 Apr 2008 17:28:43 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, akpm@osdl.org
+Subject: [RFC patch 9/9] Stringify support commas
+Content-Disposition: inline; filename=stringify-support-commas.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 22 Apr 2008 17:28:44 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [RFC patch 7/9] Re: [PATCH] Stringify support commas
- > This is a no-no for those archs that still use -traditional.
- > > I dunno if this is a problem for you at the moment and the
- > > right fix is anyway to nuke -traditional.
- > > 
- > >     Sam
+#define MYDEF a, b, c
 
-(cross-compile test ok)
+__stringify(MYDEF) should be replaced by "a, b, c", but compilation fails
+because the __stringify macro expects only one argument. Fix it by using
+variable macro arguments in __stringify and __stringify_1.
+
+Needed in my current NMI safe iret paravirt support work so I can expand
+a macro containing assembly code into a string.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Sam Ravnborg <sam@ravnborg.org>
-CC: schwidefsky@de.ibm.com
-CC: heiko.carstens@de.ibm.com
-CC: linux390@de.ibm.com
-CC: linux-s390@vger.kernel.org
+CC: akpm@osdl.org
 ---
- arch/s390/kernel/Makefile   |    2 --
- arch/s390/lib/Makefile      |    2 --
- arch/s390/math-emu/Makefile |    1 -
- 3 files changed, 5 deletions(-)
+ include/linux/stringify.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/arch/s390/kernel/Makefile
+Index: linux-2.6-lttng/include/linux/stringify.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/s390/kernel/Makefile	2008-04-21 10:04:43.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/kernel/Makefile	2008-04-21 10:04:47.000000000 -0400
-@@ -2,8 +2,6 @@
- # Makefile for the linux kernel.
- #
+--- linux-2.6-lttng.orig/include/linux/stringify.h	2008-04-20 14:25:12.000000000 -0400
++++ linux-2.6-lttng/include/linux/stringify.h	2008-04-20 14:25:33.000000000 -0400
+@@ -6,7 +6,7 @@
+  * converts to "bar".
+  */
  
--EXTRA_AFLAGS	:= -traditional
--
- #
- # Passing null pointers is ok for smp code, since we access the lowcore here.
- #
-Index: linux-2.6-lttng/arch/s390/lib/Makefile
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/lib/Makefile	2008-04-21 10:04:55.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/lib/Makefile	2008-04-21 10:05:00.000000000 -0400
-@@ -2,8 +2,6 @@
- # Makefile for s390-specific library files..
- #
+-#define __stringify_1(x)	#x
+-#define __stringify(x)		__stringify_1(x)
++#define __stringify_1(x...)	#x
++#define __stringify(x...)	__stringify_1(x)
  
--EXTRA_AFLAGS := -traditional
--
- lib-y += delay.o string.o uaccess_std.o uaccess_pt.o
- obj-$(CONFIG_32BIT) += div64.o qrnnd.o
- lib-$(CONFIG_64BIT) += uaccess_mvcos.o
-Index: linux-2.6-lttng/arch/s390/math-emu/Makefile
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/math-emu/Makefile	2008-04-21 10:05:04.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/math-emu/Makefile	2008-04-21 10:05:08.000000000 -0400
-@@ -5,4 +5,3 @@
- obj-$(CONFIG_MATHEMU) := math.o
- 
- EXTRA_CFLAGS := -I$(src) -Iinclude/math-emu -w
--EXTRA_AFLAGS := -traditional
+ #endif	/* !__LINUX_STRINGIFY_H */
 
 -- 
 Mathieu Desnoyers
