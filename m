@@ -1,98 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765859AbYDVN4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765994AbYDVN4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765859AbYDVN4Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763262AbYDVNz6
+	id S1765994AbYDVN4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763394AbYDVN4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:55:58 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:39122 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757957AbYDVNz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:55:57 -0400
-Date: Tue, 22 Apr 2008 22:55:56 +0900 (JST)
-Message-Id: <20080422.225556.64548415.taka@valinux.co.jp>
-To: jens.axboe@oracle.com, agk@sourceware.org
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 6/10] I/O context inheritance
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
-References: <20080422.224935.00673711.taka@valinux.co.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 22 Apr 2008 09:56:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52874 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763262AbYDVN4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:56:33 -0400
+Date: Tue, 22 Apr 2008 08:51:16 -0500
+From: David Teigland <teigland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] dlm updates for 2.6.26
+Message-ID: <20080422135116.GA14594@redhat.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-The raid10 module also makes use of temporary bios to sync physical disks
-under the same md device. Make these bios point the iocontext of a kernel
-thread in the module.
+Please pull dlm updates for 2.6.26 from:
 
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+ git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
+
+They have been in linux-next and -mm for some time.  The only really notable
+patch is the one that moves gfs2's posix lock handling into the dlm so that it
+can be shared by both gfs2 and ocfs2.  The plock code isn't technically related
+to the dlm, but it seems like a sensible common place for both gfs2 and ocfs2
+to get to it.  It can also take advantage of the userspace cluster pieces
+already in place for the dlm instead of replicating it.  The plock code was
+never closely tied to gfs2 either, so the move required no functional changes.
+
+Thanks,
+Dave
 
 
---- linux-2.6.25.bio0/include/linux/raid/raid10.h	2008-04-22 15:48:32.000000000 +0900
-+++ linux-2.6.25/include/linux/raid/raid10.h	2008-04-22 15:52:58.000000000 +0900
-@@ -94,6 +94,7 @@ struct r10bio_s {
- 	int			read_slot;
- 
- 	struct list_head	retry_list;
-+	struct io_context	*io_context;
- 	/*
- 	 * if the IO is in WRITE direction, then multiple bios are used,
- 	 * one for each copy.
---- linux-2.6.25.bio0/drivers/md/raid10.c	2008-04-22 15:48:33.000000000 +0900
-+++ linux-2.6.25/drivers/md/raid10.c	2008-04-22 17:19:50.000000000 +0900
-@@ -199,6 +199,9 @@ static void put_buf(r10bio_t *r10_bio)
- {
- 	conf_t *conf = mddev_to_conf(r10_bio->mddev);
- 
-+	put_io_context(r10_bio->io_context);
-+	r10_bio->io_context = NULL;
-+
- 	mempool_free(r10_bio, conf->r10buf_pool);
- 
- 	lower_barrier(conf);
-@@ -1761,6 +1764,7 @@ static sector_t sync_request(mddev_t *md
- 				r10_bio->mddev = mddev;
- 				set_bit(R10BIO_IsRecover, &r10_bio->state);
- 				r10_bio->sector = sect;
-+				r10_bio->io_context = ioc_object_link(current->io_context);
- 
- 				raid10_find_phys(conf, r10_bio);
- 				/* Need to check if this section will still be
-@@ -1793,6 +1797,7 @@ static sector_t sync_request(mddev_t *md
- 						bio->bi_bdev = conf->mirrors[d].rdev->bdev;
- 						atomic_inc(&conf->mirrors[d].rdev->nr_pending);
- 						atomic_inc(&r10_bio->remaining);
-+						bio->bi_io_context = r10_bio->io_context;
- 						/* and we write to 'i' */
- 
- 						for (k=0; k<conf->copies; k++)
-@@ -1808,6 +1813,7 @@ static sector_t sync_request(mddev_t *md
- 						bio->bi_sector = r10_bio->devs[k].addr +
- 							conf->mirrors[i].rdev->data_offset;
- 						bio->bi_bdev = conf->mirrors[i].rdev->bdev;
-+						bio->bi_io_context = r10_bio->io_context;
- 
- 						r10_bio->devs[0].devnum = d;
- 						r10_bio->devs[1].devnum = i;
-@@ -1861,6 +1867,7 @@ static sector_t sync_request(mddev_t *md
- 		set_bit(R10BIO_IsSync, &r10_bio->state);
- 		raid10_find_phys(conf, r10_bio);
- 		r10_bio->sectors = (sector_nr | conf->chunk_mask) - sector_nr +1;
-+		r10_bio->io_context = ioc_object_link(current->io_context);
- 
- 		for (i=0; i<conf->copies; i++) {
- 			int d = r10_bio->devs[i].devnum;
-@@ -1880,6 +1887,7 @@ static sector_t sync_request(mddev_t *md
- 			bio->bi_sector = r10_bio->devs[i].addr +
- 				conf->mirrors[d].rdev->data_offset;
- 			bio->bi_bdev = conf->mirrors[d].rdev->bdev;
-+			bio->bi_io_context = r10_bio->io_context;
- 			count++;
- 		}
- 
+Adrian Bunk (1):
+      dlm: make dlm_print_rsb() static
+
+David Teigland (4):
+      dlm: save master info after failed no-queue request
+      dlm: recover nodes that are removed and re-added
+      dlm: move plock code from gfs2
+      dlm: common max length definitions
+
+Harvey Harrison (1):
+      dlm: match signedness between dlm_config_info and cluster_set
+
+Mike Frysinger (1):
+      dlm: linux/{dlm,dlm_device}.h: cleanup for userspace
+
+
+ fs/dlm/Makefile                |    1 +
+ fs/dlm/config.c                |   50 ++++-
+ fs/dlm/config.h                |    3 +-
+ fs/dlm/dlm_internal.h          |    8 +-
+ fs/dlm/lock.c                  |    5 +-
+ fs/dlm/lock.h                  |    1 -
+ fs/dlm/main.c                  |    7 +
+ fs/dlm/member.c                |   34 +++-
+ fs/dlm/plock.c                 |  439 ++++++++++++++++++++++++++++++++++++++++
+ fs/dlm/recoverd.c              |    1 +
+ fs/gfs2/locking/dlm/Makefile   |    2 +-
+ fs/gfs2/locking/dlm/lock_dlm.h |   12 +-
+ fs/gfs2/locking/dlm/main.c     |    8 -
+ fs/gfs2/locking/dlm/mount.c    |   21 ++
+ fs/gfs2/locking/dlm/plock.c    |  406 -------------------------------------
+ include/linux/Kbuild           |    2 +-
+ include/linux/dlm.h            |    7 +-
+ include/linux/dlm_device.h     |   11 +-
+ include/linux/dlm_plock.h      |   50 +++++
+ include/linux/dlmconstants.h   |    4 +
+ include/linux/lock_dlm_plock.h |   41 ----
+ 21 files changed, 614 insertions(+), 499 deletions(-)
+
