@@ -1,160 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbYDVTRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762241AbYDVTSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759559AbYDVTRp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYDVTRe
+	id S1762241AbYDVTSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbYDVTSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:17:34 -0400
-Received: from mail-in-16.arcor-online.net ([151.189.21.56]:36686 "EHLO
-	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750709AbYDVTRe (ORCPT
+	Tue, 22 Apr 2008 15:18:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:52688 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754717AbYDVTSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:17:34 -0400
-Subject: Re: 2.6.25 regression: vivi - scheduling while atomic
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: brandon@ifup.org, jasny@vidsoft.de, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, mchehab@infradead.org, stable@kernel.org
-In-Reply-To: <20080422062938.0e491c0c.akpm@linux-foundation.org>
-References: <20080421081639.GE26724@vidsoft.de>
-	 <20080421223751.GD9073@plankton.ifup.org>
-	 <1208822912.10519.24.camel@pc10.localdom.local>
-	 <20080422062938.0e491c0c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 21:17:04 +0200
-Message-Id: <1208891824.3311.44.camel@pc10.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 15:18:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Fe/yNJSDAS593U9e6WFUkJhVskPStHcPRqlcHroPSmE3jRRIuEMsNnnkyBqE2VAn8Ytsf4CUafAJPddPWE/gc35lpc0dxydV8VyIeiji4uEsBS+/6bJER4DyGizSH97ytdmoxq5btpUaJi4qm76F8ikN5/b5CGtJ6oJUmdS5Lu4=
+Message-ID: <480E3A00.7060401@gmail.com>
+Date: Tue, 22 Apr 2008 23:18:24 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] x86: random clean-ups
+References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com> <20080421122504.GF6788@elte.hu> <90edad820804210541h26c8e66dh70895f32e4b4038d@mail.gmail.com> <20080422140203.GB24966@elte.hu>
+In-Reply-To: <20080422140203.GB24966@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Am Dienstag, den 22.04.2008, 06:29 -0700 schrieb Andrew Morton:
-> > On Tue, 22 Apr 2008 02:08:32 +0200 hermann pitton <hermann-pitton@arcor.de> wrote:
-> > Hi,
-> > 
-> > Am Montag, den 21.04.2008, 15:37 -0700 schrieb Brandon Philips:
-> > > On 10:16 Mon 21 Apr 2008, Gregor Jasny wrote:
-> > > > Call Trace:
-> > > >  [<ffffffff803efc9b>] schedule+0xe5/0x5c7
-> > > >  [<ffffffff80251c90>] __rmqueue_smallest+0x88/0x107
-> > > >  [<ffffffff8023e84b>] getnstimeofday+0x2f/0x83
-> > > >  [<ffffffff8023cf8a>] ktime_get_ts+0x17/0x48
-> > > >  [<ffffffff803f0424>] schedule_timeout+0x1e/0xad
-> > > >  [<ffffffff80220498>] enqueue_task+0x13/0x1e
-> > > >  [<ffffffff803efab8>] wait_for_common+0xf6/0x16b
-> > > >  [<ffffffff802230a0>] default_wake_function+0x0/0xe
-> > > >  [<ffffffff8023a270>] kthread_create+0xa3/0x108
-> > > >  [<ffffffff880d2471>] :vivi:vivi_thread+0x0/0x779
-> > > >  [<ffffffff802634cb>] remap_vmalloc_range+0xa1/0xe6
-> > > >  [<ffffffff80231242>] lock_timer_base+0x26/0x4c
-> > > >  [<ffffffff8023138e>] __mod_timer+0xb6/0xc5
-> > > >  [<ffffffff880d23fc>] :vivi:vivi_start_thread+0x54/0xc9
-> > > >  [<ffffffff88053603>] :videobuf_core:videobuf_streamon+0x6c/0xaa
-> > > >  [<ffffffff8809dba3>] :videodev:__video_do_ioctl+0x1327/0x2ad9
-> > > >  [<ffffffff80222d76>] __wake_up+0x38/0x4f
-> > > >  [<ffffffff80242f1f>] futex_wake+0xdb/0xfa
-> > > >  [<ffffffff8809f6ab>] :videodev:video_ioctl2+0x17c/0x210
-> > > >  [<ffffffff8025bb36>] handle_mm_fault+0x6b1/0x6cb
-> > > >  [<ffffffff8027b47d>] vfs_ioctl+0x55/0x6b
-> > > >  [<ffffffff8027b6e6>] do_vfs_ioctl+0x253/0x264
-> > > >  [<ffffffff8027b733>] sys_ioctl+0x3c/0x5d
-> > > >  [<ffffffff8020afcb>] system_call_after_swapgs+0x7b/0x80
-> > > >
-> > > > This happenes on a vanilla 2.6.25 with loaded nvidia graphics module.
-> > > > System architecture is x86_64. If it matters I'll try to reproduce this
-> > > > error on a non tainted kernel.
-> > > 
-> > > No need to reproduce on a non-tainted Kernel.  This is a known issue
-> > > with patches merged into the v4l-dvb tree several weeks ago but it seems
-> > > to not have made it into 2.6.25 :(
-> > > 
-> > >  http://linuxtv.org/hg/v4l-dvb/rev/06eb92ed0b18
-> > >  http://linuxtv.org/hg/v4l-dvb/rev/c50180f4ddfc
-> > > 
-> > > I can rebase the patches for 2.6.25 but they are too big to go into the
-> > > stable 2.6.25 tree...
-> > > 
-> > > Thanks for the report,
-> > > 
-> > > 	Brandon
-> > > 
-> > 
-> > hmm, because of that 100 lines only rule including offsets?
-> > 
-> > The current v4l-dvb on 2.6.24 has 233 modules.
-> > 
-> > It is usual that changes, if needed, are going over lots of them.
-> > 
-> > How far one can come with _such_ rules, given that one single line
-> > changed counts up to seven with the offsets?
-> > 
-> > How can one even comment on that brain damage?
-> > 
+Ingo Molnar пишет:
+> * Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
 > 
-> There is no "100 line rule" for -stable patches, if that is what you were
-> referring to.
+>>> thanks Dmitri, applied #1/#2/#4, as per the discussion.
+>> Hi Ingo,
+>>
+>> This should be #1, #3 and #4. The NexGen patch, which was #2 in the 
+>> original series, have been replaced by a bigger patch that kills 
+>> NexGen altogether. Plese check, if you have time for that.
 > 
-> Please just send the patches to stable@kernel.org, along with a full
-> description of why they are needed in 2.6.25.x.  If those fine folk see a
-> problem with merging the patches then they will explain that problem and
-> discussion will ensue.  It will not involve the term "100 line rule"!
+> yeah, i did the right thing and described the wrong selection :) You can 
+> check the end result via:
+> 
+>   http://people.redhat.com/mingo/x86.git/README
 
-Yes, the people are fine and it is always worth to show them possible
-fixes.
+... which indicates that #4 is still not there, which is a pity, since
+the #4 patch gave me a more-than-negligible binary shrinkage for the case
+CONFIG_SYSFS=n :)
 
-However, recently I was close to give up on forwarding a fix to
-2.6.24.4. It didn't get the usual immediate attention of our guys
-forwarding such, likely also because it was about some exotic details on
-22kHz tone generation on new or rare cards and difficult to test on all
-affected drivers and cards and had a 9 months history.
+Dmitri
 
-Also there was a report on bugzilla, that a patch, which was for testing
-on the lists, fixed one of the newer cards, but we still had no reports
-yet what happened with the older. No testers available. It went into the
-2.6.24 release and only recently we got the reports for the older cards,
-broken by us ...
-
-Considering to send the fix myself to stable I did read
-Documentation/stable_kernel_rules and started ranting at home :)
-
-For the price that we'll have support for lots of new card types now and
-in the future, we have a bug on 2.6.24 and we hang on a 100 line rule to
-fix it?
-
-It helped immediately, but better would be to improve that text.
-The 100 line rule is there, see below. It might cause that people not
-even try to submit.
-
-Also that one needs to run checkpatch.pl against such will cause a lot
-of unrelated fixes in the offsets on the old code we have around.
-
-Thanks,
-Hermann
-
-
-Everything you ever wanted to know about Linux 2.6 -stable releases.
-
-Rules on what kind of patches are accepted, and which ones are not, into the
-"-stable" tree:
-
- - It must be obviously correct and tested.
- - It cannot be bigger than 100 lines, with context.
- - It must fix only one thing.
- - It must fix a real bug that bothers people (not a, "This could be a
-   problem..." type thing).
- - It must fix a problem that causes a build error (but not for things
-   marked CONFIG_BROKEN), an oops, a hang, data corruption, a real
-   security issue, or some "oh, that's not good" issue.  In short, something
-   critical.
- - No "theoretical race condition" issues, unless an explanation of how the
-   race can be exploited is also provided.
- - It cannot contain any "trivial" fixes in it (spelling changes,
-   whitespace cleanups, etc).
- - It must follow the Documentation/SubmittingPatches rules.
- - It or an equivalent fix must already exist in Linus' tree.  Quote the
-   respective commit ID in Linus' tree in your patch submission to -stable.
-
+> 
+> 	Ingo
+> 
 
