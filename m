@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYDVR1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763063AbYDVR2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYDVR1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbYDVR1W
+	id S1763063AbYDVR2l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbYDVR2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:27:22 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36475 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756566AbYDVR1V (ORCPT
+	Tue, 22 Apr 2008 13:28:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21524 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756977AbYDVR2c convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:27:21 -0400
-Date: Tue, 22 Apr 2008 20:27:19 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Pete Zaitcev <zaitcev@redhat.com>, linux-usb@vger.kernel.org,
-       gregkh@suse.de, clameter@sgi.com
-Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
-In-Reply-To: <20080422134034.GF7311@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804222022530.17337@sbz-30.cs.Helsinki.FI>
-References: <200804212310.41729.elendil@planet.nl> <20080422134034.GF7311@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 13:28:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,695,1199692800"; 
+   d="scan'208";a="375399477"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] sched: remove unnecessary kzalloc in sched_init_smp
+Date: Tue, 22 Apr 2008 10:28:27 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC012AF094@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <480E1A9A.6070301@sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] sched: remove unnecessary kzalloc in sched_init_smp
+Thread-Index: AciknVWSRtIYfIspQ/e1GfbniZ21ygAAI3Wg
+References: <20080405011100.720014000@polaris-admin.engr.sgi.com>	 <20080405011101.534396000@polaris-admin.engr.sgi.com> <12c511ca0804220916i5c181202pecf8fee7153e54fc@mail.gmail.com> <480E1A9A.6070301@sgi.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Mike Travis" <travis@sgi.com>, "Ingo Molnar" <mingo@elte.hu>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 22 Apr 2008 17:28:31.0313 (UTC) FILETIME=[48CB4C10:01C8A49E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008, Ingo Molnar wrote:
-> * Frans Pop <elendil@planet.nl> wrote:
-> 
-> > I got the following warning while running sched-devel/latest.
-> > 
-> > I was not doing any tracing at that point (for the glibc compilation 
-> > issue). I suspect it was while I was using a KDE application (amarok) 
-> > as the desktop froze for a few seconds at one point.
-> 
-> i think this message is harmless to system stability.
-> 
-> Cc:-ing USB folks as the kmem_cache_destroy() comes from 
-> drivers/usb/mon/mon_text.c.
-> 
-> Context: SLUB recently started warning about caches that get destroyed 
-> with still outstanding allocations.
-> 
-> Pekka, it might make sense to turn this SLUB warning into something more 
-> specific? It does seem to trigger in practice.
+Acked-by: Tony Luck <tony.luck@intel.com>
 
-Oh absolutely. Something like this?
+> For inclusion into sched-devel/latest tree.
 
-[PATCH] slub: improve kmem_cache_destroy() error message
+Needs to head to Linus tree ... the preceeding patches have already
+been merged there and are causing build errors for me.
 
-As pointed out by Ingo, the SLUB warning of calling kmem_cache_destroy() 
-with cache that still has objects triggers in practice. So turn this 
-WARN_ON() into a nice SLUB specific error message to avoid people 
-confusing it to a SLUB bug.
-
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Mike Travis <travis@sgi.com>
 ---
+ kernel/sched.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 7f8aaa2..c372e88 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2426,8 +2426,11 @@ void kmem_cache_destroy(struct kmem_cache *s)
- 	if (!s->refcount) {
- 		list_del(&s->list);
- 		up_write(&slub_lock);
--		if (kmem_cache_close(s))
--			WARN_ON(1);
-+		if (kmem_cache_close(s)) {
-+			printk(KERN_ERR "SLUB %s: %s called for cache that "
-+				"still has objects.\n", s->name, __func__);
-+			dump_stack();
-+		}
- 		sysfs_slab_remove(s);
- 	} else
- 		up_write(&slub_lock);
+--- linux-2.6.sched.orig/kernel/sched.c
++++ linux-2.6.sched/kernel/sched.c
+@@ -8028,11 +8028,6 @@ void __init sched_init_smp(void)
+ #else
+ void __init sched_init_smp(void)
+ {
+-#if defined(CONFIG_NUMA)
+-	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
+-								GFP_KERNEL);
+-	BUG_ON(sched_group_nodes_bycpu == NULL);
+-#endif
+ 	sched_init_granularity();
+ }
+ #endif /* CONFIG_SMP */
