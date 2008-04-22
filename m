@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbYDVIBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762536AbYDVIB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbYDVIBi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 04:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757833AbYDVH5c
+	id S1762536AbYDVIB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 04:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbYDVH5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 03:57:32 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:26346 "EHLO kernel.dk"
+	Tue, 22 Apr 2008 03:57:34 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26347 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbYDVH5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753157AbYDVH5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Apr 2008 03:57:10 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de, torvalds@linux-foundation.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: npiggin@suse.de, torvalds@linux-foundation.org
 Subject: [PATCH 11/11] s390: convert to generic helpers for IPI function calls
-Date: Tue, 22 Apr 2008 09:57:37 +0200
-Message-Id: <1208851058-8500-12-git-send-email-jens.axboe@oracle.com>
+Date: Tue, 22 Apr 2008 09:57:38 +0200
+Message-Id: <1208851058-8500-13-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.5.1.57.g5909c
 In-Reply-To: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
 References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
@@ -25,259 +22,109 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts s390 to use the new helpers for smp_call_function() and
-friends, and adds support for smp_call_function_single(). Not tested,
-but it compiles.
+While working on the more scalable and faster
+smp_call_function_single(), the amount of arch duplicated code in there
+botherered me. So I started adding a generic kernel/smp.c helper that
+the archs could use instead.
 
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- arch/s390/Kconfig                   |    5 +
- arch/s390/kernel/smp.c              |  160 ++---------------------------------
- arch/sparc64/kernel/sparc64_ksyms.c |    1 +
- include/asm-s390/sigp.h             |    1 +
- include/asm-s390/smp.h              |    2 -
- 5 files changed, 15 insertions(+), 154 deletions(-)
+Arch code exports two helper functions:
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index f6a68e1..ebaf50f 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -62,6 +62,11 @@ config GENERIC_LOCKBREAK
- 	default y
- 	depends on SMP && PREEMPT
- 
-+config GENERIC_SMP_HELPERS
-+	bool
-+	depends on SMP
-+	default y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index 0dfa988..2ee3484 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -77,164 +77,18 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
- 
- static void smp_ext_bitcall(int, ec_bit_sig);
- 
--/*
-- * Structure and data for __smp_call_function_map(). This is designed to
-- * minimise static memory requirements. It also looks cleaner.
-- */
--static DEFINE_SPINLOCK(call_lock);
--
--struct call_data_struct {
--	void (*func) (void *info);
--	void *info;
--	cpumask_t started;
--	cpumask_t finished;
--	int wait;
--};
--
--static struct call_data_struct *call_data;
--
--/*
-- * 'Call function' interrupt callback
-- */
--static void do_call_function(void)
-+void arch_send_call_function_ipi(cpumask_t mask)
- {
--	void (*func) (void *info) = call_data->func;
--	void *info = call_data->info;
--	int wait = call_data->wait;
--
--	cpu_set(smp_processor_id(), call_data->started);
--	(*func)(info);
--	if (wait)
--		cpu_set(smp_processor_id(), call_data->finished);;
--}
--
--static void __smp_call_function_map(void (*func) (void *info), void *info,
--				    int nonatomic, int wait, cpumask_t map)
--{
--	struct call_data_struct data;
--	int cpu, local = 0;
--
--	/*
--	 * Can deadlock when interrupts are disabled or if in wrong context.
--	 */
--	WARN_ON(irqs_disabled() || in_irq());
--
--	/*
--	 * Check for local function call. We have to have the same call order
--	 * as in on_each_cpu() because of machine_restart_smp().
--	 */
--	if (cpu_isset(smp_processor_id(), map)) {
--		local = 1;
--		cpu_clear(smp_processor_id(), map);
--	}
--
--	cpus_and(map, map, cpu_online_map);
--	if (cpus_empty(map))
--		goto out;
--
--	data.func = func;
--	data.info = info;
--	data.started = CPU_MASK_NONE;
--	data.wait = wait;
--	if (wait)
--		data.finished = CPU_MASK_NONE;
--
--	spin_lock(&call_lock);
--	call_data = &data;
-+	int cpu;
- 
--	for_each_cpu_mask(cpu, map)
-+	for_each_cpu_mask(cpu, mask)
- 		smp_ext_bitcall(cpu, ec_call_function);
--
--	/* Wait for response */
--	while (!cpus_equal(map, data.started))
--		cpu_relax();
--	if (wait)
--		while (!cpus_equal(map, data.finished))
--			cpu_relax();
--	spin_unlock(&call_lock);
--out:
--	if (local) {
--		local_irq_disable();
--		func(info);
--		local_irq_enable();
--	}
- }
- 
--/*
-- * smp_call_function:
-- * @func: the function to run; this must be fast and non-blocking
-- * @info: an arbitrary pointer to pass to the function
-- * @nonatomic: unused
-- * @wait: if true, wait (atomically) until function has completed on other CPUs
-- *
-- * Run a function on all other CPUs.
-- *
-- * You must not call this function with disabled interrupts, from a
-- * hardware interrupt handler or from a bottom half.
-- */
--int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
--		      int wait)
-+void arch_send_call_function_single_ipi(int cpu)
- {
--	cpumask_t map;
--
--	preempt_disable();
--	map = cpu_online_map;
--	cpu_clear(smp_processor_id(), map);
--	__smp_call_function_map(func, info, nonatomic, wait, map);
--	preempt_enable();
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function);
--
--/*
-- * smp_call_function_single:
-- * @cpu: the CPU where func should run
-- * @func: the function to run; this must be fast and non-blocking
-- * @info: an arbitrary pointer to pass to the function
-- * @nonatomic: unused
-- * @wait: if true, wait (atomically) until function has completed on other CPUs
-- *
-- * Run a function on one processor.
-- *
-- * You must not call this function with disabled interrupts, from a
-- * hardware interrupt handler or from a bottom half.
-- */
--int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
--			     int nonatomic, int wait)
--{
--	preempt_disable();
--	__smp_call_function_map(func, info, nonatomic, wait,
--				cpumask_of_cpu(cpu));
--	preempt_enable();
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function_single);
--
--/**
-- * smp_call_function_mask(): Run a function on a set of other CPUs.
-- * @mask: The set of cpus to run on.  Must not include the current cpu.
-- * @func: The function to run. This must be fast and non-blocking.
-- * @info: An arbitrary pointer to pass to the function.
-- * @wait: If true, wait (atomically) until function has completed on other CPUs.
-- *
-- * Returns 0 on success, else a negative status code.
-- *
-- * If @wait is true, then returns once @func has returned; otherwise
-- * it returns just before the target cpu calls @func.
-- *
-- * You must not call this function with disabled interrupts or from a
-- * hardware interrupt handler or from a bottom half handler.
-- */
--int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
--			   int wait)
--{
--	preempt_disable();
--	cpu_clear(smp_processor_id(), mask);
--	__smp_call_function_map(func, info, 0, wait, mask);
--	preempt_enable();
--	return 0;
-+	smp_ext_bitcall(cpu, ec_call_function_single);
- }
--EXPORT_SYMBOL(smp_call_function_mask);
- 
- void smp_send_stop(void)
- {
-@@ -277,7 +131,9 @@ static void do_ext_call_interrupt(__u16 code)
- 	bits = xchg(&S390_lowcore.ext_call_fast, 0);
- 
- 	if (test_bit(ec_call_function, &bits))
--		do_call_function();
-+		generic_smp_call_function_interrupt();
-+	else if (test_bit(ec_call_function_single, &bits))
-+		generic_smp_call_function_single_interrupt();
- }
- 
- /*
-diff --git a/arch/sparc64/kernel/sparc64_ksyms.c b/arch/sparc64/kernel/sparc64_ksyms.c
-index 3873646..17b16b1 100644
---- a/arch/sparc64/kernel/sparc64_ksyms.c
-+++ b/arch/sparc64/kernel/sparc64_ksyms.c
-@@ -112,6 +112,7 @@ EXPORT_SYMBOL(__write_unlock);
- EXPORT_SYMBOL(__write_trylock);
- 
- EXPORT_SYMBOL(smp_call_function);
-+EXPORT_SYMBOL(smp_call_function_single);
- #endif /* CONFIG_SMP */
- 
- #if defined(CONFIG_MCOUNT)
-diff --git a/include/asm-s390/sigp.h b/include/asm-s390/sigp.h
-index e16d56f..ec403d4 100644
---- a/include/asm-s390/sigp.h
-+++ b/include/asm-s390/sigp.h
-@@ -61,6 +61,7 @@ typedef enum
- {
- 	ec_schedule=0,
- 	ec_call_function,
-+	ec_call_function_single,
- 	ec_bit_last
- } ec_bit_sig;
- 
-diff --git a/include/asm-s390/smp.h b/include/asm-s390/smp.h
-index 6f3821a..ae0d0b5 100644
---- a/include/asm-s390/smp.h
-+++ b/include/asm-s390/smp.h
-@@ -93,8 +93,6 @@ extern int __cpu_up (unsigned int cpu);
- extern struct mutex smp_cpu_state_mutex;
- extern int smp_cpu_polarization[];
- 
--extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
--	void *info, int wait);
- #endif
- 
- #ifndef CONFIG_SMP
+arch_send_call_function_single_ipi(cpu)
+	Send call function single ipi to given cpu
+arch_send_call_function_ipi(cpumask)
+	Send call function ipi to cpus in cpumask
+
+and then use the generic ipi interrupt helpers to execute the code. I
+converted most of the archs capable of SMP, I think only sparc and
+sparc64 are still missing. Archs set CONFIG_GENERIC_SMP_HELPERS if they
+wish to use the generic helpers for this.
+
+The end result is that we have unified code for handling ipi for
+function calls. Even with adding special handling for the single cpu
+function call, the diffstat is pretty nice (see below.
+
+There are a couple of changes that affect all archs, and changes that
+affect some archs:
+
+- smp_call_function() and friends used to wait for all other CPUs to see
+  the individual structure before returning, even if 'wait' wasn't set.
+  Not sure what the reasoning behind this was, the new code does not
+  wait for other CPUs to start up before returning. If 'wait' is 1,
+  it'll wait for completion as before of course. This affects all archs.
+  It's easy enough to add if there's a good reason, it'll slow it down a
+  little and add an atomic_t to the call_single_data structure.
+
+- A few archs had timeout code, most did not. I removed the timeout
+  code, we can add it back if requested.
+
+- The ipi_lock is a little muddy, which may or may not break cpu
+  onlining.
+
+In general the new code should be easier to maintain, and it is much
+faster than before. The code works fine on x86, x86-64, ia64, and
+powerpc. Other archs have been compiled whenever possible, some have
+not. Each arch patch should contain a note saying what the status of it
+is.
+
+ arch/alpha/Kconfig                         |    5 
+ arch/alpha/kernel/core_marvel.c            |    6 
+ arch/alpha/kernel/smp.c                    |  170 ---------
+ arch/arm/Kconfig                           |    5 
+ arch/arm/kernel/smp.c                      |  148 --------
+ arch/ia64/Kconfig                          |    5 
+ arch/ia64/kernel/smp.c                     |  239 -------------
+ arch/m32r/Kconfig                          |    5 
+ arch/m32r/kernel/smp.c                     |  128 -------
+ arch/m32r/kernel/traps.c                   |    3 
+ arch/mips/Kconfig                          |    5 
+ arch/mips/kernel/smp-mt.c                  |   27 +
+ arch/mips/kernel/smp.c                     |  133 -------
+ arch/mips/kernel/smtc.c                    |    7 
+ arch/mips/sibyte/bcm1480/smp.c             |    3 
+ arch/mips/sibyte/sb1250/smp.c              |    2 
+ arch/parisc/Kconfig                        |    5 
+ arch/parisc/kernel/smp.c                   |  134 +------
+ arch/powerpc/Kconfig                       |    5 
+ arch/powerpc/kernel/smp.c                  |  220 ------------
+ arch/powerpc/platforms/cell/interrupt.c    |    1 
+ arch/powerpc/platforms/ps3/smp.c           |    7 
+ arch/powerpc/platforms/pseries/xics.c      |    6 
+ arch/powerpc/sysdev/mpic.c                 |    2 
+ arch/s390/Kconfig                          |    5 
+ arch/s390/kernel/smp.c                     |  160 ---------
+ arch/sh/Kconfig                            |    5 
+ arch/sh/kernel/smp.c                       |   48 --
+ arch/sparc64/kernel/sparc64_ksyms.c        |    1 
+ arch/x86/Kconfig                           |    5 
+ arch/x86/kernel/apic_32.c                  |    4 
+ arch/x86/kernel/entry_64.S                 |    3 
+ arch/x86/kernel/i8259_64.c                 |    4 
+ arch/x86/kernel/smp.c                      |  148 +-------
+ arch/x86/kernel/smpcommon.c                |   56 ---
+ arch/x86/mach-voyager/voyager_smp.c        |   91 -----
+ arch/x86/xen/enlighten.c                   |    1 
+ arch/x86/xen/mmu.c                         |    2 
+ arch/x86/xen/smp.c                         |  108 +-----
+ include/asm-alpha/smp.h                    |    2 
+ include/asm-ia64/smp.h                     |    3 
+ include/asm-m32r/smp.h                     |    1 
+ include/asm-mips/smp.h                     |   12 
+ include/asm-powerpc/smp.h                  |    5 
+ include/asm-s390/sigp.h                    |    1 
+ include/asm-s390/smp.h                     |    2 
+ include/asm-sh/smp.h                       |   12 
+ include/asm-x86/hw_irq_32.h                |    1 
+ include/asm-x86/hw_irq_64.h                |    2 
+ include/asm-x86/mach-default/entry_arch.h  |    1 
+ include/asm-x86/mach-default/irq_vectors.h |    1 
+ include/asm-x86/mach-voyager/entry_arch.h  |    2 
+ include/asm-x86/mach-voyager/irq_vectors.h |    4 
+ include/asm-x86/smp.h                      |   10 
+ include/linux/smp.h                        |   27 +
+ init/main.c                                |    3 
+ kernel/Makefile                            |    1 
+ kernel/smp.c                               |  366 +++++++++++++++++++++
+ 58 files changed, 694 insertions(+), 1674 deletions(-)
+
 -- 
-1.5.5.49.gf43e2
-
+Jens Axboe
