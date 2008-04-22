@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965614AbYDVOa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbYDVOft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965614AbYDVOa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762041AbYDVOaV
+	id S1762276AbYDVOft (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbYDVOfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:30:21 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:39087 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965388AbYDVOaS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:30:18 -0400
-Date: Tue, 22 Apr 2008 10:30:16 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, Kyle McMartin <kyle@parisc-linux.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH 9/11] parisc: convert to generic helpers for IPI
-	function calls
-Message-ID: <20080422143016.GE19802@phobos.i.cabal.ca>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-10-git-send-email-jens.axboe@oracle.com> <20080422140914.GD19802@phobos.i.cabal.ca> <20080422142738.GH12774@kernel.dk>
+	Tue, 22 Apr 2008 10:35:38 -0400
+Received: from rtr.ca ([76.10.145.34]:2895 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753154AbYDVOfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:35:37 -0400
+Message-ID: <480DF7B7.9030000@rtr.ca>
+Date: Tue, 22 Apr 2008 10:35:35 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422142738.GH12774@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com>
+In-Reply-To: <480DEB1F.5060500@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 04:27:38PM +0200, Jens Axboe wrote:
-> On Tue, Apr 22 2008, Kyle McMartin wrote:
-> > On Tue, Apr 22, 2008 at 09:57:35AM +0200, Jens Axboe wrote:
-> > > This converts mips to use the new helpers for smp_call_function() and
-> > > friends, and adds support for smp_call_function_single(). Not tested,
-> > > not even compiled.
-> > > 
-> > 
-> > At first glance, this looks alright. +1 from me.
+Tejun Heo wrote:
+> Sergei Shtylyov wrote:
+>>>>    Jeff, Tejun, what "sff" in the file name actually means? Isn't it 
+>>>> strange that the drivers lacking DMA support or not really compliant 
+>>>> with SFF-8038i have to link with this file?
+>>
+>>> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
+>>> and bmdma is acceptable, hopefully, right?
+>>
+>>    What's sff sans bmdma?
 > 
-> Is that an official parisc ack? :-)
-> 
-> And I'll make sure the patch comment matches... I wish that Andrews xb
-> compiler collection had all the supported archs covered.
-> 
+> Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
+> although it's entirely possible that I misunderstood it and used it in 
+> the wrong way.  Alan, can you please clear up the confusion?
+..
 
-I'm not sure if these are still good, but:
-http://kyle.mcmartin.ca/hppa-hp-linux-gcc-3.4.tar
-http://kyle.mcmartin.ca/hppa64-hp-linux-gcc-3.4.tar
+SFF stands for "Small Form Factor", as in the "SFF Committee Information
+Specification for Bus Master Programming Interface for IDE ATA Controllers Rev 1.0"
+from May 16, 1994.
 
-cheers, Kyle
+That document is basically a committee rubber-stamp of the earlier Intel
+"PCI IDE Controller Specification Revision 1.0" dated 3/4/94.
+
+Would anyone like copies ?
+
+Cheers
+
+ 
+
