@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763002AbYDVTG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbYDVTJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763002AbYDVTG2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYDVTGQ
+	id S1762253AbYDVTJa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYDVTJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:06:16 -0400
-Received: from ZSM1387.piap.pl ([195.187.100.11]:41779 "EHLO khc.piap.pl"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754393AbYDVTGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:06:15 -0400
-To: James Chapman <jchapman@katalix.com>
-Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <20080412115950.1cbb9cfa@core>
-	<m33apqomgf.fsf@maximus.localdomain>
-	<m33apjp32f.fsf@maximus.localdomain>
-	<20080418.153256.253949503.davem@davemloft.net>
-	<m3ve2b9qe8.fsf@maximus.localdomain> <480CEB7D.8070702@katalix.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 22 Apr 2008 21:06:12 +0200
-In-Reply-To: <480CEB7D.8070702@katalix.com> (James Chapman's message of "Mon\, 21 Apr 2008 20\:31\:09 +0100")
-Message-ID: <m33apdyajf.fsf@maximus.localdomain>
+	Tue, 22 Apr 2008 15:09:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54776 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752761AbYDVTJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:09:21 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] posix timers: don't discard the signal if the timer was explicitly destroyed
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 22 April 2008 19:38:21 +0400 <20080422153821.GA19903@tv-sign.ru>
+References: <20080422153821.GA19903@tv-sign.ru>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080422190849.6443E270381@magilla.localdomain>
+Date: Tue, 22 Apr 2008 12:08:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Chapman <jchapman@katalix.com> writes:
+> I am not sure this patch is really needed, please review.
 
-> Generic ppp isn't specialized at all, and it isn't limited to async
-> serial devices. PPPoE, PPPoATM and L2TP use it.
+I don't think this is worth doing.
 
-Perhaps I should write "dial-up" and other non-fixed connections.
+> The previous patch adds the user-visible change. It is not clear to me why
+> should we cancel the pending signal sent by the timer after timer_delete().
+> Suppose the signal is blocked, pending, the user checks sys_rt_sigpending(),
+> destroys the timer and then doesn't see the signal.
 
-It's complex, I think kernel interface to generic HDLC would mean more
-code than PPP implementation required for fixed lines.
-Additional requirement - userspace daemon with additional plugin - may
-not be the best thing for fixed lines either.
+So?  POSIX says it's unspecified what happens to such a signal, so an
+application can't rely on it one way or the other.  I don't see any reason
+to complicate it further.
 
-That would break backward compatibility, too.
 
-Personally I think it could be acceptable but it's not for me to
-decide.
--- 
-Krzysztof Halasa
+Thanks,
+Roland
