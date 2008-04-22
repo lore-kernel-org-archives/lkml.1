@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbYDVMwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYDVM6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbYDVMwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 08:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYDVMvq
+	id S1757285AbYDVM6O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 08:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYDVM56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 08:51:46 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:51550 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753380AbYDVMvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 08:51:44 -0400
-From: Jiri Slaby <xslaby@fi.muni.cz>
-To: megaraidlinux@lsi.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       <James.Bottomley@HansenPartnership.com>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] SCSI: megaraid, fix suspend/resume sections
-Date: Tue, 22 Apr 2008 14:51:22 +0200
-Message-Id: <1208868682-12311-1-git-send-email-xslaby@decibel.fi.muni.cz>
-X-Mailer: git-send-email 1.5.5
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Muni-Envelope-From: xslaby@fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 22 Apr 2008 14:51:24 +0200 (CEST)
+	Tue, 22 Apr 2008 08:57:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54449 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753351AbYDVM55 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 08:57:57 -0400
+Subject: Re: [PATCH 1/2] klist: implement KLIST_INIT() and DEFINE_KLIST()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       oliver@neukum.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       zaitcev@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+In-Reply-To: <480DB6A4.20101@gmail.com>
+References: <480DB6A4.20101@gmail.com>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 14:57:29 +0200
+Message-Id: <1208869049.7115.254.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+On Tue, 2008-04-22 at 18:57 +0900, Tejun Heo wrote:
+> klist is missing static initializers and definition helper.  Add them.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> I can't tell who's in charge of this code, so I'm including last two
+> people who made changes and Andrew :-) This will be used by later USB
+> mode switch support, so I'm cc'ing USB people too.
+> 
+> Thanks.
+> 
+>  include/linux/klist.h |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/klist.h b/include/linux/klist.h
+> index 7407125..c6b697c 100644
+> --- a/include/linux/klist.h
+> +++ b/include/linux/klist.h
+> @@ -25,6 +25,14 @@ struct klist {
+>  	void			(*put)(struct klist_node *);
+>  };
+>  
+> +#define KLIST_INIT(_name, _get, _put)					\
+> +	{ .k_lock	= __SPIN_LOCK_UNLOCKED(klist.k_lock),		\
 
-megaraid_sas suspend and resume are inappropriatelly placed in
-__devinit section. Remove those placements and make the stuff
-dependent on CONFIG_PM.
+May I ask you make that: __SPIN_LOCK_UNLOCKED(_name.k_lock)
 
-While at it, mark remove function as __devexit.
+Otherwise we'll end up with multiple classes that have the same name.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Neela Syam Kolli <megaraidlinux@lsi.com>
----
- drivers/scsi/megaraid/megaraid_sas.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/scsi/megaraid/megaraid_sas.c b/drivers/scsi/megaraid/megaraid_sas.c
-index b937e9c..a90944c 100644
---- a/drivers/scsi/megaraid/megaraid_sas.c
-+++ b/drivers/scsi/megaraid/megaraid_sas.c
-@@ -2650,12 +2650,13 @@ static void megasas_shutdown_controller(struct megasas_instance *instance,
- 	return;
- }
- 
-+#ifdef CONFIG_PM
- /**
-  * megasas_suspend -	driver suspend entry point
-  * @pdev:		PCI device structure
-  * @state:		PCI power state to suspend routine
-  */
--static int __devinit
-+static int
- megasas_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct Scsi_Host *host;
-@@ -2687,7 +2688,7 @@ megasas_suspend(struct pci_dev *pdev, pm_message_t state)
-  * megasas_resume-      driver resume entry point
-  * @pdev:               PCI device structure
-  */
--static int __devinit
-+static int
- megasas_resume(struct pci_dev *pdev)
- {
- 	int rval;
-@@ -2782,12 +2783,16 @@ fail_ready_state:
- 
- 	return -ENODEV;
- }
-+#else
-+#define megasas_suspend	NULL
-+#define megasas_resume	NULL
-+#endif
- 
- /**
-  * megasas_detach_one -	PCI hot"un"plug entry point
-  * @pdev:		PCI device structure
-  */
--static void megasas_detach_one(struct pci_dev *pdev)
-+static void __devexit megasas_detach_one(struct pci_dev *pdev)
- {
- 	int i;
- 	struct Scsi_Host *host;
--- 
-1.5.4.5
+> +	  .k_list	= LIST_HEAD_INIT(_name.k_list),			\
+> +	  .get		= _get,						\
+> +	  .put		= _put, }
+> +
+> +#define DEFINE_KLIST(_name, _get, _put)					\
+> +	struct klist _name = KLIST_INIT(_name, _get, _put)
+>  
+>  extern void klist_init(struct klist * k, void (*get)(struct klist_node *),
+>  		       void (*put)(struct klist_node *));
 
