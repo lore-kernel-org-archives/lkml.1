@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965421AbYDVOaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965614AbYDVOa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965421AbYDVOaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbYDVO36
+	id S965614AbYDVOa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762041AbYDVOaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:29:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55606 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965327AbYDVO35 (ORCPT
+	Tue, 22 Apr 2008 10:30:21 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:39087 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965388AbYDVOaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:29:57 -0400
-Date: Tue, 22 Apr 2008 07:29:33 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Reuben Farrelly <reuben-linuxkernel@reub.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: StackProtector Oopses - Re: 2.6.25-mm1
-Message-ID: <20080422072933.751fe86f@laptopd505.fenrus.org>
-In-Reply-To: <20080422083408.GB28970@elte.hu>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<48089BDE.6040100@reub.net>
-	<20080418133645.GF31797@elte.hu>
-	<4808B4EF.8030901@reub.net>
-	<20080421150604.GH5474@elte.hu>
-	<20080421184859.48efcb67@laptopd505.fenrus.org>
-	<20080422083408.GB28970@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 22 Apr 2008 10:30:18 -0400
+Date: Tue, 22 Apr 2008 10:30:16 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, Kyle McMartin <kyle@parisc-linux.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [PATCH 9/11] parisc: convert to generic helpers for IPI
+	function calls
+Message-ID: <20080422143016.GE19802@phobos.i.cabal.ca>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-10-git-send-email-jens.axboe@oracle.com> <20080422140914.GD19802@phobos.i.cabal.ca> <20080422142738.GH12774@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080422142738.GH12774@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008 10:34:08 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > > yeah. Arjan - any new patches to try that might fix the bootup
-> > > test?
+On Tue, Apr 22, 2008 at 04:27:38PM +0200, Jens Axboe wrote:
+> On Tue, Apr 22 2008, Kyle McMartin wrote:
+> > On Tue, Apr 22, 2008 at 09:57:35AM +0200, Jens Axboe wrote:
+> > > This converts mips to use the new helpers for smp_call_function() and
+> > > friends, and adds support for smp_call_function_single(). Not tested,
+> > > not even compiled.
+> > > 
 > > 
-> > I've looked at the disassembly and compared it to mine, and the gcc
-> > is doing something... rather unexpected. The only thing I can think
-> > of is the patch below, it should make it a ton more robust...
+> > At first glance, this looks alright. +1 from me.
 > 
-> > -	memset(&foo, 0, 2*sizeof(foo)); /* deliberate buffer
-> > overflow */
-> > +	if (current->stack_canary == *(((unsigned long *)&foo)+1))
-> > +		*(((unsigned long *)&foo)+1) = 0;
-> > +	else
-> > +		printk(KERN_ERR "No -ftack-protector canary
-> > found\n");
+> Is that an official parisc ack? :-)
 > 
-> ok, i queued this up. (with the typo that Valdis noticed fixed)
+> And I'll make sure the patch comment matches... I wish that Andrews xb
+> compiler collection had all the supported archs covered.
 > 
-> but ... this bug needs to be figured out, not worked around.
 
-well what I figured out was that the stack layout was "different".
-Why/how I don't know, but being more robust against that is a good idea
-in general.
+I'm not sure if these are still good, but:
+http://kyle.mcmartin.ca/hppa-hp-linux-gcc-3.4.tar
+http://kyle.mcmartin.ca/hppa64-hp-linux-gcc-3.4.tar
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+cheers, Kyle
