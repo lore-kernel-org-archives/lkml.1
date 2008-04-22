@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762471AbYDVI7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762646AbYDVI7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762471AbYDVI7Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 04:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbYDVI7R
+	id S1762646AbYDVI7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 04:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761953AbYDVI7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 04:59:17 -0400
-Received: from hu-out-0506.google.com ([72.14.214.233]:54664 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757616AbYDVI7P (ORCPT
+	Tue, 22 Apr 2008 04:59:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60787
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757764AbYDVI73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 04:59:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=WYFMWvJ+uVtDzO5AtqKMjwjP6DL21+zSaGiWAryBf3OvdaRdlVYr+BcqVzIbCiEvesgMQWceialmpmPQ2W2PzLvV1uw9O7GECc54UaMT0zz2rMtQstBvQXER22Jzt/fslIadXVKs8m4X9LuSoQLQ3R/t5tlG6paD9zfMeRKAwTE=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: [PATCH] xfs: do not pass unused params to xfs_flush_pages
-Date: Tue, 22 Apr 2008 10:57:33 +0200
-User-Agent: KMail/1.8.2
-Cc: David Chinner <dgc@sgi.com>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804220503.16888.vda.linux@googlemail.com> <480D586C.1030305@sandeen.net>
-In-Reply-To: <480D586C.1030305@sandeen.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Apr 2008 04:59:29 -0400
+Date: Tue, 22 Apr 2008 01:59:31 -0700 (PDT)
+Message-Id: <20080422.015931.70144614.davem@davemloft.net>
+To: mingo@elte.hu
+CC: linux-kernel@vger.kernel.org
+Subject: Soft lockup regression from today's sched.git merge.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804221057.33324.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 05:15, Eric Sandeen wrote:
-> Denys Vlasenko wrote:
-> > Hi David,
-> > 
-> > xfs_flush_pages() does not use some of its parameters, namely:
-> > first, last and fiops.
-> > 
-> > This patch removes these parameters from all callsites.
-> > 
-> > Code size difference on 32-bit x86:
-> > 
-> >    text    data     bss     dec     hex filename
-> >  390739    2748    1708  395195   607bb linux-2.6-xfs1-TEST/fs/xfs/xfs.o
-> >  390567    2748    1708  395023   6070f linux-2.6-xfs2-TEST/fs/xfs/xfs.o
-> > 
-> > Compile-tested only.
-> 
-> FWIW this one actually does not seem to reduce stack usage anywhere.
 
-I hope this will not deteriorate into a contest whether
-every particular patch reduces stack usage or not, but:
+The following commit:
 
-You do not see reduced stack usage in "make checkstack",
-because "make checkstack" shows only stack usage caused by
-local variables (it analyses sub %esp,NN instructions which
-make room for them). Parameters also take up stack, but
-they are pushed on stack with push instruction,
-and so are invisible in "make checkstack" output.
---
-vda
+commit 27ec4407790d075c325e1f4da0a19c56953cce23
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Thu Feb 28 21:00:21 2008 +0100
+
+    sched: make cpu_clock() globally synchronous
+    
+    Alexey Zaytsev reported (and bisected) that the introduction of
+    cpu_clock() in printk made the timestamps jump back and forth.
+    
+    Make cpu_clock() more reliable while still keeping it fast when it's
+    called frequently.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+causes watchdog triggers when a cpu exits NOHZ state when it has been
+there for >= the soft lockup threshold, for example here are some
+messages from a 128 cpu Niagara2 box:
+
+[  168.106406] BUG: soft lockup - CPU#11 stuck for 128s! [dd:3239]
+[  168.989592] BUG: soft lockup - CPU#21 stuck for 86s! [swapper:0]
+[  168.999587] BUG: soft lockup - CPU#29 stuck for 91s! [make:4511]
+[  168.999615] BUG: soft lockup - CPU#2 stuck for 85s! [swapper:0]
+[  169.020514] BUG: soft lockup - CPU#37 stuck for 91s! [swapper:0]
+[  169.020514] BUG: soft lockup - CPU#45 stuck for 91s! [sh:4515]
+[  169.020515] BUG: soft lockup - CPU#69 stuck for 92s! [swapper:0]
+[  169.020515] BUG: soft lockup - CPU#77 stuck for 92s! [swapper:0]
+[  169.020515] BUG: soft lockup - CPU#61 stuck for 92s! [swapper:0]
+[  169.112554] BUG: soft lockup - CPU#85 stuck for 92s! [swapper:0]
+[  169.112554] BUG: soft lockup - CPU#101 stuck for 92s! [swapper:0]
+[  169.112554] BUG: soft lockup - CPU#109 stuck for 92s! [swapper:0]
+[  169.112554] BUG: soft lockup - CPU#117 stuck for 92s! [swapper:0]
+[  169.171483] BUG: soft lockup - CPU#40 stuck for 80s! [dd:3239]
+[  169.331483] BUG: soft lockup - CPU#13 stuck for 86s! [swapper:0]
+[  169.351500] BUG: soft lockup - CPU#43 stuck for 101s! [dd:3239]
+[  169.531482] BUG: soft lockup - CPU#9 stuck for 129s! [mkdir:4565]
+[  169.595754] BUG: soft lockup - CPU#20 stuck for 93s! [swapper:0]
+[  169.626787] BUG: soft lockup - CPU#52 stuck for 93s! [swapper:0]
+[  169.626787] BUG: soft lockup - CPU#84 stuck for 92s! [swapper:0]
+[  169.636812] BUG: soft lockup - CPU#116 stuck for 94s! [swapper:0]
+
+It's simple enough to trigger this by doing a 10 minute sleep after a
+fresh bootup then starting a parallel kernel build.
+
+I suspect this might be reintroducing a problem we've had and fixed
+before, see the thread:
+
+http://marc.info/?l=linux-kernel&m=119546414004065&w=2
+
+Please have a look, thank you.
