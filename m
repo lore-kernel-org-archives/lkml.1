@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYDVSbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbYDVSbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbYDVSbW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbYDVSbM
+	id S1762721AbYDVSbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbYDVSbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:31:12 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:51592 "EHLO mail.aknet.ru"
+	Tue, 22 Apr 2008 14:31:37 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58912 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754347AbYDVSbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:31:11 -0400
-Message-ID: <480E2EE5.5040208@aknet.ru>
-Date: Tue, 22 Apr 2008 22:31:01 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5h8wz7cng7.wl%tiwai@suse.de>	<480CD50F.20706@aknet.ru> <s5hbq42b3j7.wl%tiwai@suse.de>
-In-Reply-To: <s5hbq42b3j7.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/mixed;
- boundary="------------020000010802080808080906"
+	id S1755189AbYDVSbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 14:31:35 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org
+Cc: Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       clameter@sgi.com
+Message-Id: <20080422183133.13750.57133.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/4] Verification and debugging of memory initialisation V3
+Date: Tue, 22 Apr 2008 19:31:33 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020000010802080808080906
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Other than a rebase to the latest -mm, there are not many big changes.
+Credit goes to Christoph Lameter, an off-list reviewer and in particular
+Ingo Molnar for helping bash this into shape.
 
-Hello.
+Changelog since V2
+  o (Mel) Rebase to 2.6.25-mm1 and rewrite zonelist dump
+  o (Mel) Depend on DEBUG_VM instead of DEBUG_KERNEL
+  o (Mel) Use __meminitdata instead of __initdata for logging level
+  o (Christoph) Get rid of FLAGS_RESERVED references
+  o (Christoph) Print out flag usage information
+  o (Ingo) Default do the verifications on DEBUG_VM and instead control the
+           level of verbose logging with mminit_loglevel= instead of
+	   mminit_debug_level=
+  o (Anon) Log at KERN_DEBUG level
+  o (Anon) Optimisation to the mminit_debug_printk macro
 
-Takashi Iwai wrote:
-> It's no big problem but I just find the phrase "you have to
-> disable..." too strict.  It's just a sound-quality problem as you
-> mentioned in the above.
-> BTW, I noticed that the message includes a few line breaks.  You need
-> a proper KERN_ prefix for each line in such a case.  A fix patch would
-> be appreciated.
-Like the attached one?
+Changelog since V1
+  o (Ingo) Make memory initialisation verification a DEBUG option depending on
+    DEBUG_KERNEL option. By default it will then to verify structures but
+    tracing can be enabled via the command-line. Without the CONFIG option,
+    checks will still be made on PFN ranges passed by the architecture-specific
+    code and a warning printed once if a problem is encountered
+  o (Ingo) WARN_ON_ONCE when PFNs from the architecture violate SPARSEMEM
+    limitations. The warning should be "harmless" as the system will boot
+    regardless but it acts as a reminder that bad input is being used.
+  o (Anon) Convert mminit_debug_printk() to a macro
+  o (Anon) Spelling mistake corrections
+  o (Anon) Use of KERN_CONT properly for multiple printks
+  o (Mel) Reshuffle the patches so that the zonelist printing is at the
+    end of the patchset. This is because -mm requires a different patch to
+    print zonelists and this allows the end patch to be temporarily dropped
+    when testing against -mm
+  o (Mel) Rebase on top of Ingo's sparsemem fix for easier testing
+  o (Mel) Document mminit_debug_level=
+  o (Mel) Fix check on pageflags where the masks were not being shifted
+  o (Mel) The zone ID should should have used page_zonenum not page_zone_id
+  o (Mel) Iterate all zonelists correctly
+  o (Mel) Correct typo of SECTIONS_SHIFT
 
---------------020000010802080808080906
-Content-Type: text/x-patch;
- name="pcsp_wrn.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pcsp_wrn.diff"
+Boot initialisation has always been a bit of a mess with a number
+of ugly points. While significant amounts of the initialisation
+is architecture-independent, it trusts of the data received from the
+architecture layer. This was a mistake in retrospect as it has resulted in
+a number of difficult-to-diagnose bugs.
 
-# HG changeset patch
-# User Stas Sergeev <stsp@users.sourceforge.net>
-# Date 1208888978 -14400
-# Node ID 00c36aa3903d861198e8f57c46e75194f3e172d6
-# Parent  f8fbce7ba45922a73a9679d68c4a4b07ebef42de
-pcsp: fix wording in DEBUG_PAGEALLOC warning.
+This patchset adds some validation and tracing to memory initialisation when
+CONFIG_DEBUG_VM is set. The configuration option can be explicitly disabled
+for embedded systems. It also introduces a few basic defencive measures and
+depending on a boot parameter, will perform additional tests for errors
+"that should never occur". The intention is that additional checks are
+added over time that would have identified mysterious boot failures faster.
 
-Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-
-diff -r f8fbce7ba459 -r 00c36aa3903d drivers/pcsp/pcsp.c
---- a/drivers/pcsp/pcsp.c	Tue Apr 22 18:39:49 2008 +0200
-+++ b/drivers/pcsp/pcsp.c	Tue Apr 22 22:29:38 2008 +0400
-@@ -147,12 +147,8 @@ static int __devinit alsa_card_pcsp_init
- 
- #ifdef CONFIG_DEBUG_PAGEALLOC
- 	/* Well, CONFIG_DEBUG_PAGEALLOC makes the sound horrible. Lets alert */
--	printk(KERN_WARNING
--	       "PCSP: Warning, CONFIG_DEBUG_PAGEALLOC is enabled!\n"
--	       "You have to disable it if you want to use the PC-Speaker "
--	       "driver.\n"
--	       "Unless it is disabled, enjoy the horrible, distorted "
--	       "and crackling noise.\n");
-+	printk(KERN_WARNING "PCSP: CONFIG_DEBUG_PAGEALLOC is enabled, "
-+		KERN_WARNING "which may make the sound noisy.\n");
- #endif
- 
- 	return 0;
-
---------------020000010802080808080906--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
