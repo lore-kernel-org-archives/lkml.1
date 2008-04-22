@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763620AbYDVOUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbYDVOWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763620AbYDVOUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDVOT6
+	id S1764576AbYDVOWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYDVOWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:19:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41978 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYDVOT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:19:57 -0400
-Date: Tue, 22 Apr 2008 16:19:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix x86_64 page fault scheduler race
-Message-ID: <20080422141909.GE24966@elte.hu>
-References: <20080422132151.GA32120@Krystal> <20080422132614.GC7311@elte.hu> <20080422140636.GA1683@Krystal>
-MIME-Version: 1.0
+	Tue, 22 Apr 2008 10:22:23 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:11400 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbYDVOWW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:22:22 -0400
+X-IronPort-AV: E=Sophos;i="4.25,694,1199685600"; 
+   d="scan'208";a="582498329"
+Date: Tue, 22 Apr 2008 09:21:03 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: werner <werner@copaya.yi.org>, linux-kernel@vger.kernel.org,
+       Tim Gardner <tim.gardner@canonical.com>
+Subject: Re: EDD problem -- regression -- crash on booting by probing EDD
+Message-ID: <20080422142103.GA5652@auslistsprd01.us.dell.com>
+References: <1208730812.6879@copaya.yi.org> <20080422062840.195b4d3d.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422140636.GA1683@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080422062840.195b4d3d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> > the scheduler disables interrupts around __switch_to(). (x86 does 
-> > not set __ARCH_WANT_INTERRUPTS_ON_CTXSW)
+On Tue, Apr 22, 2008 at 06:28:40AM -0700, Andrew Morton wrote:
+> > On Sun, 20 Apr 2008 19:33:32 -0300 (GFT) "werner" <werner@copaya.yi.org> wrote:
+> > There is a regression in 2.6.25.
 > 
-> Ok, so I guess it's only useful to NMIs then. However, it makes me 
-> wonder why this comment was there in the first place on x86_32 
-> vmalloc_fault() and why it uses read_cr3() :
+> Rafael bcc'ed.
 > 
->         * Do _not_ use "current" here. We might be inside
->         * an interrupt in the middle of a task switch..
+> >   Booting stops with: Probing EDD (edd=off to disable) message.
+> > 
+> > It dont work the kernel boot parameter edd=off .  With pci=off the computer continues to boot, but later it dont find hard disks etc.
+> 
+> Tim and Matt cc'ed.
+> 
+> > Thats happening on 2.6.25   definitive, but was verified to go back until 2.6.24-rc6-git8, but it wasnt yet at 2.6.24-rc6-git2 which worked correctly.
+> > 
+> 
+> hm, that's a nice narrow window.  Unfortunately for the next few days I
+> can't personally get in and find out what we changed during it.
 
-hm, i guess it's still useful to keep the 
-__ARCH_WANT_INTERRUPTS_ON_CTXSW case working too. On -rt we used to 
-enable it to squeeze a tiny bit more latency out of the system.
+I've scanned the diff between these, and can't see anything that would
+obviously cause a problem.  Nothing that touches the EDD codepath
+directly at least.  I'll be curious to see the additional initcall
+debug data.
 
-	Ingo
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
