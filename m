@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYDVAaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbYDVAb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbYDVAaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYDVAaK
+	id S1760150AbYDVAb2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759668AbYDVAbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:30:10 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60457 "EHLO mail.dvmed.net"
+	Mon, 21 Apr 2008 20:31:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44189 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759568AbYDVAaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:30:09 -0400
-Message-ID: <480D3186.2000307@garzik.org>
-Date: Mon, 21 Apr 2008 20:29:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, kernel@wantstofly.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, galak@kernel.crashing.org,
-       David Miller <davem@davemloft.net>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, cooloney@kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git patches] minor irq handler cleanups
-References: <20080421013551.GA25960@havoc.gtf.org> <20080421074240.GA1938@flint.arm.linux.org.uk> <480C4DF1.2030204@garzik.org> <alpine.LFD.1.10.0804211559230.2779@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804211559230.2779@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1759576AbYDVAbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 20:31:18 -0400
+Date: Tue, 22 Apr 2008 10:31:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Philipp Zabel <philipp.zabel@gmail.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: linux-next: Linus' tree build breakage
+Message-Id: <20080422103111.e1d38371.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I decided you knew what you were doing.
+--Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That was your first mistake!  /me hides...
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+drivers/mfd/htc-pasic3.c:22:31: error: asm/arch/pxa-regs.h: No such file or=
+ directory
 
-> So please do send a fixup patch.
+I have reverted commit 5dc3339aa5ba29593ea57814049ddca8c12831c8 ("[ARM]
+4964/1: htc-pasic3: MFD driver for PASIC3 LED control + DS1WM chip") as
+the easiest thing.
 
-Yep, on it.
+Russell, this is why I would have liked you to participate in the
+linux-next tree ...
 
-	Jeff
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFIDTHUTgG2atn1QN8RAr45AJ9QbFfEWZOA3FXuQrAB0ZBPN2TUeACdF8Y+
+deSgWEOdKCaW8wD3FXoZoiI=
+=BqUK
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR--
