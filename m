@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbYDVVE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763394AbYDVVFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762463AbYDVVE4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbYDVVEs
+	id S1763394AbYDVVFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYDVVF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:04:48 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:16680 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755724AbYDVVEs (ORCPT
+	Tue, 22 Apr 2008 17:05:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52044 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756009AbYDVVF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:04:48 -0400
-Message-ID: <c913039c0804221404h5d387d61i9f1c2e1006c88c8d@mail.gmail.com>
-Date: Tue, 22 Apr 2008 23:04:45 +0200
-From: "Abdel !" <abdel@benamrouche.com>
-To: linux-kernel@vger.kernel.org
-Subject: unofficial linux-0.01-3.5
+	Tue, 22 Apr 2008 17:05:26 -0400
+Date: Tue, 22 Apr 2008 13:58:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
+cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Slaby <jirislaby@gmail.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, herbert@gondor.apana.org.au,
+       Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: device_pm_add (was: Re: 2.6.25-git2: BUG: unable to handle kernel
+ paging request at ffffffffffffffff)
+In-Reply-To: <200804222234.19936.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0804221350110.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com> <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <200804222234.19936.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-I have released linux 0.01-3.3 on january 1, 2008.
-And I often be asked 2 question :
-
-the 1st was, "I can't build linux-0.01-3.3, why ?"
-===================================
-
-Well linux 0.01 was very well written, except 1 thing in the
-Makefile :
-To get file size of the kernel image, Linus Torvalds used the
-following ( and ugly ) command :
-"ls -l tools/system | grep system | cut -c31-37" which may be invalid
-for you.
-
-So the unofficial linux-0.01-3.5 ( which was released on the end of
-January ) fix that and use
-stat command instead. It should work on any computer.
-
-by the way, linux 0.01 rocks !
-a very small kernel, well writen, easy to understand and wich can do
-real kernel job !
-(  scheduler works, paging system was already implemented,  filesystem
-worked in a different thread, and main syscall was already implemented )
 
 
-the 2nd question was "I can't access to you website, where can I get
-the source ?"
-=====================================================
+On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
+> 
+> There is a bug in device_add() that IMO can be fixed this way:
 
-I get some mail from chinese guy saying that they can't access  to
-http://draconux.free.fr/os_dev/linux0.01.html
-I suppose even http://free.fr will not work.
-Maybe this is because of politics problem between France and China ?
+Ok, looks fine. Greg?
 
-Anyway, you can get the last kernel source code here:
-http://www.kernel.org/pub/linux/kernel/people/abdel/linux_0.01/sources/linux-0.01-rm-3.5.tar.gz
-hopefully kernel.org work in any country :D
+> Index: linux-2.6/drivers/base/core.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/core.c
+> +++ linux-2.6/drivers/base/core.c
+> @@ -820,11 +820,11 @@ int device_add(struct device *dev)
+>  	error = bus_add_device(dev);
+>  	if (error)
+>  		goto BusError;
+> +	bus_attach_device(dev);
+>  	error = device_pm_add(dev);
+>  	if (error)
+>  		goto PMError;
+>  	kobject_uevent(&dev->kobj, KOBJ_ADD);
+> -	bus_attach_device(dev);
+>  	if (parent)
+>  		klist_add_tail(&dev->knode_parent, &parent->klist_children);
+>  
+> The problem is that bus_remove_device() assumes bus_attach_device() to have
+> run, AFAICS.
 
-Regards,
+As to the other issue:
 
--- 
-Abdel
-http://draconux.free.fr/
+> > So I would suggest reverting that commit, or at least just making it a 
+> > warning (while still registering the device).
+> 
+> Are drivers supposed to register children of suspended devices?  That doesn't
+> make much sense IMO ...
+
+Well, that's why I think the warning itself makes sense - and then we can 
+decide whether it makes sense for that particular case or not. Clearly it 
+happens (since it triggered), now we need to figure out _why_ it happened. 
+
+But I don't think debugging messages should change behaviour.
+
+		Linus
