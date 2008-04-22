@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbYDVS5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765660AbYDVS56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762234AbYDVS5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765332AbYDVSzC
+	id S1765660AbYDVS56 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbYDVSzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:55:02 -0400
-Received: from h155.mvista.com ([63.81.120.155]:34179 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765323AbYDVSy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:54:59 -0400
-Message-ID: <480E345D.9090406@ru.mvista.com>
-Date: Tue, 22 Apr 2008 22:54:21 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 22 Apr 2008 14:55:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57355 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932238AbYDVSzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 14:55:52 -0400
+Date: Tue, 22 Apr 2008 11:48:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com>
+ <20080422095315.GA28014@elte.hu> <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca> <480DFE76.8000809@ru.mvista.com>
-In-Reply-To: <480DFE76.8000809@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
 
->> I suppose.   If we were needlessly pedantic, then perhaps
->> the libata-bmdma.c should be renamed to libata-sff.c,
 
-    It *was* renamed to libata-sff.c, back in 2006. :-)
+On Tue, 22 Apr 2008, Zdenek Kabelac wrote:
+> 
+> Unsure how it is related to my orginal Oops post - but now when I've
+> debug pagealloc enabled this appeared in my log after resume - should
+> I open new bug for this - or could this be part of the problem I've
+> experienced later?
+> 
+> (Note - now I'm running commit: 8a81f2738f10ca817c975cec893aa58497e873b2
+> 
+>  sd 0:0:0:0: [sda] Starting disk
+>  mmc0: new SD card at address 5a61
+>  mmc mmc0:5a61: parent mmc0 is sleeping, will not add
+>  ------------[ cut here ]------------
+>  WARNING: at drivers/base/power/main.c:78 device_pm_add+0x6c/0xf0()
 
->> and the libata-sff.c should be renamed libata-tf.c
+This is unrelated to the other issue, I think.
 
-    Not before splitting SFF-8038i stuff from it.
+Your warning comes from commit 58aca23226a19983571bd3b65167521fc64f5869, 
+which admittedly looks like total crap. Rafael, what's the point of that 
+commit?
 
->> But there's probably been a document or two since then,
->> where the SFF folks have documented the TF interfaces, too.
+I read the commit message, but I can't make myself agree with the commit 
+code itself. If it's a "checking that the order is correct" thing, it 
+should be a warning, but not change the actual _action_ of the code.
 
->    Don't know, at least I haven't encountered such spec. Unless you mean 
-> SFF-8020i (ATAPI CD-ROM spec).
+Because the commit refused to add the device, it is also then the direct 
+reason for the oops you get later, as far as I can tell:
 
-    I've looked thru the list of their spec. and it didn't seem to have any 
-about taskfile specifically. SFF-8070 (ATAPI CD-RW) refers to ATA/PI-4 for 
-that matter.
+>  BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
+>  IP: [klist_del+29/128] klist_del+0x1d/0x80
+>  PGD 0
+>  Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+>  CPU 0
+>  Call Trace:
+>   [bus_remove_device+158/208] bus_remove_device+0x9e/0xd0
+>   [device_add+1358/1376] device_add+0x54e/0x560
 
-MBR, Sergei
+So I would suggest reverting that commit, or at least just making it a 
+warning (while still registering the device).
 
+		Linus
