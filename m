@@ -1,172 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763522AbYDVWj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933361AbYDVWlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763522AbYDVWj6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 18:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759538AbYDVWjs
+	id S933361AbYDVWlD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 18:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYDVWkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 18:39:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44807 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759306AbYDVWjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 18:39:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-Date: Tue, 22 Apr 2008 23:46:04 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Jiri Slaby" <jirislaby@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       paulmck@linux.vnet.ibm.com, "David Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080422095315.GA28014@elte.hu> <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
-In-Reply-To: <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
+	Tue, 22 Apr 2008 18:40:53 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60439
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758764AbYDVWkw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 18:40:52 -0400
+Date: Wed, 23 Apr 2008 00:40:48 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
+	lock (first and not last
+Message-ID: <20080422224048.GR24536@duo.random>
+References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random> <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804222346.05886.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 of April 2008, Zdenek Kabelac wrote:
-> 2008/4/22, Ingo Molnar <mingo@elte.hu>:
-> >
-> >  * Jiri Slaby <jirislaby@gmail.com> wrote:
-> >
-> >  >> What do you do to trigger this? Any particular load? Is it still just
-> >  >> doing suspend/resume, or do you have something else that you are
-> >  >> playing with?
-> >  >
-> >  > Yesterday I did 2 suspend/resumes after 1 hour of uptime and ran
-> >  > git-status for a fraction of a second until it was killed. So I can
-> >  > perfectly reproduce it when I suspend, resume and produce some io
-> >  > load. I guess it's time to bisect 2.6.25-rc8-mm2 as I'm able to
-> >  > reproduce it the best and haven't seen that bug in -rc8-mm1 for over
-> >  > week of suspending and working.
-> >
-> >
-> > the most dangerous x86 change we added was the PAT stuff. Does it
-> >  influence the crashes in any way if you boot with 'nopat' or if you
-> >  disable CONFIG_X86_PAT=y into the .config?
-> >
-> >  the other area was the DMA ops change - that should be rather trivial on
-> >  64-bit though.
-> 
-> 
-> Unsure how it is related to my orginal Oops post - but now when I've
-> debug pagealloc enabled this appeared in my log after resume - should
-> I open new bug for this - or could this be part of the problem I've
-> experienced later?
-> 
-> (Note - now I'm running commit: 8a81f2738f10ca817c975cec893aa58497e873b2
-> 
->  sd 0:0:0:0: [sda] Starting disk
->  mmc0: new SD card at address 5a61
->  mmc mmc0:5a61: parent mmc0 is sleeping, will not add
->  ------------[ cut here ]------------
->  WARNING: at drivers/base/power/main.c:78 device_pm_add+0x6c/0xf0()
->  Modules linked in: tda18271 nls_iso8859_2 nls_cp852 vfat fat i915 drm
-> ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state
-> nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables
-> bridge llc nfsd lockd nfs_acl auth_rpcgss exportfs autofs4 sunrpc
-> binfmt_misc dm_mirror dm_log dm_multipath dm_mod uinput kvm_intel kvm
-> snd_hda_intel snd_seq_oss snd_seq_midi_event snd_seq arc4
-> snd_seq_device snd_pcm_oss ecb crypto_blkcipher cryptomgr
-> crypto_algapi iwl3945 snd_mixer_oss mac80211 snd_pcm mmc_block video
-> sdhci thinkpad_acpi mmc_core i2c_i801 snd_timer rtc_cmos rtc_core
-> backlight iTCO_wdt cfg80211 evdev snd i2c_core e1000e psmouse
-> soundcore snd_page_alloc nvram intel_agp rtc_lib iTCO_vendor_support
-> output serio_raw ac battery button uhci_hcd ohci_hcd ehci_hcd usbcore
-> [last unloaded: microcode]
->  Pid: 1240, comm: kmmcd Not tainted 2.6.25 #57
-> 
->  Call Trace:
->   [warn_on_slowpath+95/144] warn_on_slowpath+0x5f/0x90
->   [device_pm_add+24/240] ? device_pm_add+0x18/0xf0
->   [device_pm_add+108/240] device_pm_add+0x6c/0xf0
->   [device_add+1092/1376] device_add+0x444/0x560
->   [_end+510110570/2109230024] :mmc_core:mmc_add_card+0xa2/0x140
->   [_end+510117927/2109230024] :mmc_core:mmc_attach_sd+0x17f/0x860
->   [_end+510109176/2109230024] ? :mmc_core:mmc_rescan+0x0/0x1c0
->   [_end+510109545/2109230024] :mmc_core:mmc_rescan+0x171/0x1c0
->   [run_workqueue+246/560] run_workqueue+0xf6/0x230
->   [worker_thread+167/288] worker_thread+0xa7/0x120
->   [autoremove_wake_function+0/64] ? autoremove_wake_function+0x0/0x40
->   [worker_thread+0/288] ? worker_thread+0x0/0x120
->   [kthread+73/144] kthread+0x49/0x90
->   [child_rip+10/18] child_rip+0xa/0x12
->   [restore_args+0/48] ? restore_args+0x0/0x30
->   [kthread+0/144] ? kthread+0x0/0x90
->   [child_rip+0/18] ? child_rip+0x0/0x12
-> 
->  ---[ end trace ca143223eefdc828 ]---
->  BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
->  IP: [klist_del+29/128] klist_del+0x1d/0x80
->  PGD 0
->  Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
->  CPU 0
->  Modules linked in: tda18271 nls_iso8859_2 nls_cp852 vfat fat i915 drm
-> ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state
-> nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables
-> bridge llc nfsd lockd nfs_acl auth_rpcgss exportfs autofs4 sunrpc
-> binfmt_misc dm_mirror dm_log dm_multipath dm_mod uinput kvm_intel kvm
-> snd_hda_intel snd_seq_oss snd_seq_midi_event snd_seq arc4
-> snd_seq_device snd_pcm_oss ecb crypto_blkcipher cryptomgr
-> crypto_algapi iwl3945 snd_mixer_oss mac80211 snd_pcm mmc_block video
-> sdhci thinkpad_acpi mmc_core i2c_i801 snd_timer rtc_cmos rtc_core
-> backlight iTCO_wdt cfg80211 evdev snd i2c_core e1000e psmouse
-> soundcore snd_page_alloc nvram intel_agp rtc_lib iTCO_vendor_support
-> output serio_raw ac battery button uhci_hcd ohci_hcd ehci_hcd usbcore
-> [last unloaded: microcode]
->  Pid: 1240, comm: kmmcd Not tainted 2.6.25 #57
->  RIP: 0010:[klist_del+29/128]  [klist_del+29/128] klist_del+0x1d/0x80
->  RSP: 0000:ffff81007cabbd00  EFLAGS: 00010286
->  RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000003
->  RDX: 0000000000000008 RSI: ffffffffa0102308 RDI: 0000000000000000
->  RBP: ffff81007cabbd20 R08: 0000000000000001 R09: 0000000000000000
->  R10: 0000000000000001 R11: ffff81007c9a6d10 R12: ffff81007c517530
->  R13: ffffffffa0102260 R14: ffff81007cabbdf0 R15: ffff81007c5175a8
->  FS:  0000000000000000(0000) GS:ffffffff8148c000(0000) knlGS:0000000000000000
->  CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->  CR2: 0000000000000050 CR3: 0000000001001000 CR4: 00000000000026e0
->  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  Process kmmcd (pid: 1240, threadinfo ffff81007caba000, task ffff81007cac0000)
->  Stack:  ffff81007cabbd10 0000000000000050 ffff81007c5173f8 ffffffffa0102260
->   ffff81007cabbd50 ffffffff812012fe ffff81007cabbd50 ffff81007c5173f8
->   00000000fffffff0 ffff81007c5175f0 ffff81007cabbdb0 ffffffff8120016e
->  Call Trace:
->   [bus_remove_device+158/208] bus_remove_device+0x9e/0xd0
->   [device_add+1358/1376] device_add+0x54e/0x560
->   [_end+510110570/2109230024] :mmc_core:mmc_add_card+0xa2/0x140
-> hald[2531]: forcibly attempting to lazy unmount /dev/mmcblk0p1 as
-> enclosing drive was disconnected
->   [_end+510117927/2109230024] :mmc_core:mmc_attach_sd+0x17f/0x860
->   [_end+510109176/2109230024] ? :mmc_core:mmc_rescan+0x0/0x1c0
->   [_end+510109545/2109230024] :mmc_core:mmc_rescan+0x171/0x1c0
->   [run_workqueue+246/560] run_workqueue+0xf6/0x230
->   [worker_thread+167/288] worker_thread+0xa7/0x120
->   [autoremove_wake_function+0/64] ? autoremove_wake_function+0x0/0x40
->   [worker_thread+0/288] ? worker_thread+0x0/0x120
->   [kthread+73/144] kthread+0x49/0x90
->   [child_rip+10/18] child_rip+0xa/0x12
->   [restore_args+0/48] ? restore_args+0x0/0x30
->   [kthread+0/144] ? kthread+0x0/0x90
->   [child_rip+0/18] ? child_rip+0x0/0x12
-> 
-> 
->  Code: 8b 28 41 0f 95 c7 eb 87 66 0f 1f 44 00 00 55 48 89 e5 48 83 ec
-> 20 4c 89 65 f0 48 89 5d e8 4c 89 6d f8 49 89 fc 48 8b 1f 48 89 df <4c>
-> 8b 6b 50 e8 9a 40 01 00 49 8d 7c 24 18 48 c7 c6 20 a4 2d 81
->  RIP  [klist_del+29/128] klist_del+0x1d/0x80
->   RSP <ffff81007cabbd00>
->  CR2: 0000000000000050
->  ---[ end trace ca143223eefdc828 ]---
+On Tue, Apr 22, 2008 at 01:24:21PM -0700, Christoph Lameter wrote:
+> Reverts a part of an earlier patch. Why isnt this merged into 1 of 12?
 
-Zdenek, can you please send me the full dmesg containing this?
-
-Thanks,
-Rafael
+To give zero regression risk to 1/12 when MMU_NOTIFIER=y or =n and the
+mmu notifiers aren't registered by GRU or KVM. Keep in mind that the
+whole point of my proposed patch ordering from day 0, is to keep as
+1/N, the absolutely minimum change that fully satisfy GRU and KVM
+requirements. 4/12 isn't required by GRU/KVM so I keep it in a later
+patch. I now moved mmu_notifier_unregister in a later patch too for
+the same reason.
