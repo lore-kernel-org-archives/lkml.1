@@ -1,56 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbYDVNwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933031AbYDVNxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932835AbYDVNwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765650AbYDVNvy
+	id S933031AbYDVNxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbYDVNxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:51:54 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:12782 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763121AbYDVNvx (ORCPT
+	Tue, 22 Apr 2008 09:53:05 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:38767 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754672AbYDVNxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:51:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=V786tcQXWhEVeqgtq5vYCBkGYEcHE14v5wTnORX3XylpHgHmrb4SQlDE+It7hDk5Or25fMXinwYM5oujaf5iVXdAA4x8JlyrFOJ4NiCYU4QiO9vzzgMBKBBnu2JFvjfElYOM+8PbqvO33/TBoJGQaiq7EkBMPWCvKZIIq7IgRiw=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: x86: 4kstacks default
-Date: Tue, 22 Apr 2008 15:51:11 +0200
-User-Agent: KMail/1.8.2
-Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804221448.09828.vda.linux@googlemail.com> <20080422130155.GA16895@cs181133002.pp.htv.fi>
-In-Reply-To: <20080422130155.GA16895@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 22 Apr 2008 09:53:03 -0400
+Date: Tue, 22 Apr 2008 22:53:01 +0900 (JST)
+Message-Id: <20080422.225301.114961903.taka@valinux.co.jp>
+To: jens.axboe@oracle.com, agk@sourceware.org
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 2/10] I/O context inheritance
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
+References: <20080422.224935.00673711.taka@valinux.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804221551.11488.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 15:01, Adrian Bunk wrote:
-> > Sent a few.
-> > I would like to ask you to ACK/NAK every individual patch
-> > in some reasonable period of time, say, 1-3 days. If you NAK a patch,
-> > please let me know what is wrong with it.
-> >...
-> 
-> I know the feeling of resending patches again and again without any 
-> reaction quite well, but that's not David's fault and not true for XFS 
-> patches, so when you try to put pressure on him you hit the wrong 
-> person.
 
-Yeah, sorry about that. I was not implying that XFS people were
-not responsive.
---
-vda
+Every I/O scheduler should get a iocontext from a given bio,
+not from the current process.
+
+
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+
+
+--- linux-2.6.25.bio0/block/blk-core.c	2008-04-22 15:48:32.000000000 +0900
++++ linux-2.6.25/block/blk-core.c	2008-04-22 16:13:31.000000000 +0900
+@@ -600,7 +600,8 @@ static inline void blk_free_request(stru
+ }
+ 
+ static struct request *
+-blk_alloc_request(struct request_queue *q, int rw, int priv, gfp_t gfp_mask)
++blk_alloc_request(struct request_queue *q, int rw, int priv, gfp_t gfp_mask,
++						struct io_context *ioc)
+ {
+ 	struct request *rq = mempool_alloc(q->rq.rq_pool, gfp_mask);
+ 
+@@ -614,7 +615,7 @@ blk_alloc_request(struct request_queue *
+ 	rq->cmd_flags = rw | REQ_ALLOCED;
+ 
+ 	if (priv) {
+-		if (unlikely(elv_set_request(q, rq, gfp_mask))) {
++		if (unlikely(elv_set_request(q, rq, gfp_mask, ioc))) {
+ 			mempool_free(rq, q->rq.rq_pool);
+ 			return NULL;
+ 		}
+@@ -702,7 +703,7 @@ static struct request *get_request(struc
+ {
+ 	struct request *rq = NULL;
+ 	struct request_list *rl = &q->rq;
+-	struct io_context *ioc = NULL;
++	struct io_context *ioc;
+ 	const int rw = rw_flags & 0x01;
+ 	int may_queue, priv;
+ 
+@@ -710,9 +711,12 @@ static struct request *get_request(struc
+ 	if (may_queue == ELV_MQUEUE_NO)
+ 		goto rq_starved;
+ 
++	ioc = bio ? bio->bi_io_context : current->io_context;
++
+ 	if (rl->count[rw]+1 >= queue_congestion_on_threshold(q)) {
+ 		if (rl->count[rw]+1 >= q->nr_requests) {
+-			ioc = current_io_context(GFP_ATOMIC, q->node);
++			if (!ioc)
++				ioc = current_io_context(GFP_ATOMIC, q->node);
+ 			/*
+ 			 * The queue will fill after this allocation, so set
+ 			 * it as full, and mark this process as "batching".
+@@ -754,7 +758,7 @@ static struct request *get_request(struc
+ 
+ 	spin_unlock_irq(q->queue_lock);
+ 
+-	rq = blk_alloc_request(q, rw_flags, priv, gfp_mask);
++	rq = blk_alloc_request(q, rw_flags, priv, gfp_mask, ioc);
+ 	if (unlikely(!rq)) {
+ 		/*
+ 		 * Allocation failed presumably due to memory. Undo anything
+--- linux-2.6.25.bio0/include/linux/elevator.h	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/include/linux/elevator.h	2008-04-22 15:51:27.000000000 +0900
+@@ -22,7 +22,7 @@ typedef struct request *(elevator_reques
+ typedef void (elevator_completed_req_fn) (struct request_queue *, struct request *);
+ typedef int (elevator_may_queue_fn) (struct request_queue *, int);
+ 
+-typedef int (elevator_set_req_fn) (struct request_queue *, struct request *, gfp_t);
++typedef int (elevator_set_req_fn) (struct request_queue *, struct request *, gfp_t, struct io_context *);
+ typedef void (elevator_put_req_fn) (struct request *);
+ typedef void (elevator_activate_req_fn) (struct request_queue *, struct request *);
+ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct request *);
+@@ -113,7 +113,7 @@ extern int elv_register_queue(struct req
+ extern void elv_unregister_queue(struct request_queue *q);
+ extern int elv_may_queue(struct request_queue *, int);
+ extern void elv_completed_request(struct request_queue *, struct request *);
+-extern int elv_set_request(struct request_queue *, struct request *, gfp_t);
++extern int elv_set_request(struct request_queue *, struct request *, gfp_t, struct io_context *);
+ extern void elv_put_request(struct request_queue *, struct request *);
+ 
+ /*
+--- linux-2.6.25.bio0/block/elevator.c	2008-04-22 15:48:32.000000000 +0900
++++ linux-2.6.25/block/elevator.c	2008-04-22 15:51:27.000000000 +0900
+@@ -864,12 +864,13 @@ struct request *elv_former_request(struc
+ 	return NULL;
+ }
+ 
+-int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++int elv_set_request(struct request_queue *q, struct request *rq,
++				 gfp_t gfp_mask, struct io_context *ioc)
+ {
+ 	elevator_t *e = q->elevator;
+ 
+ 	if (e->ops->elevator_set_req_fn)
+-		return e->ops->elevator_set_req_fn(q, rq, gfp_mask);
++		return e->ops->elevator_set_req_fn(q, rq, gfp_mask, ioc);
+ 
+ 	rq->elevator_private = NULL;
+ 	return 0;
+--- linux-2.6.25.bio0/block/cfq-iosched.c	2008-04-22 15:48:32.000000000 +0900
++++ linux-2.6.25/block/cfq-iosched.c	2008-04-22 17:15:21.000000000 +0900
+@@ -1571,14 +1571,16 @@ static int cfq_cic_link(struct cfq_data 
+  * than one device managed by cfq.
+  */
+ static struct cfq_io_context *
+-cfq_get_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
++cfq_get_io_context(struct cfq_data *cfqd, struct io_context *ioc, gfp_t gfp_mask)
+ {
+-	struct io_context *ioc = NULL;
+ 	struct cfq_io_context *cic;
+ 
+ 	might_sleep_if(gfp_mask & __GFP_WAIT);
+ 
+-	ioc = get_io_context(gfp_mask, cfqd->queue->node);
++	ioc = ioc_object_link(ioc);
++
++	if (!ioc)
++		ioc = get_io_context(gfp_mask, cfqd->queue->node);
+ 	if (!ioc)
+ 		return NULL;
+ 
+@@ -1938,7 +1940,8 @@ static void cfq_put_request(struct reque
+  * Allocate cfq data structures associated with this request.
+  */
+ static int
+-cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask,
++				struct io_context *ioc)
+ {
+ 	struct cfq_data *cfqd = q->elevator->elevator_data;
+ 	struct cfq_io_context *cic;
+@@ -1949,7 +1952,7 @@ cfq_set_request(struct request_queue *q,
+ 
+ 	might_sleep_if(gfp_mask & __GFP_WAIT);
+ 
+-	cic = cfq_get_io_context(cfqd, gfp_mask);
++	cic = cfq_get_io_context(cfqd, ioc, gfp_mask);
+ 
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 
