@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765163AbYDVPFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932719AbYDVPIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765163AbYDVPFn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763594AbYDVPFI
+	id S932719AbYDVPIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbYDVPIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:05:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45733 "EHLO smtps.tip.net.au"
+	Tue, 22 Apr 2008 11:08:05 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:13123 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762821AbYDVPFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:05:06 -0400
-Date: Wed, 23 Apr 2008 01:04:58 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Linus' tree build breakage
-Message-Id: <20080423010458.4114ec83.sfr@canb.auug.org.au>
-In-Reply-To: <20080422073622.GB22955@flint.arm.linux.org.uk>
-References: <20080422103111.e1d38371.sfr@canb.auug.org.au>
-	<20080422073622.GB22955@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Apr_2008_01_04_58_+1000_dfP4Sj6wJCFsQ4zh"
+	id S1755273AbYDVPIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:08:02 -0400
+Date: Tue, 22 Apr 2008 17:07:56 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+Message-ID: <20080422150756.GM12774@kernel.dk>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org> <alpine.LFD.1.10.0804220749450.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804220749450.2779@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Apr_2008_01_04_58_+1000_dfP4Sj6wJCFsQ4zh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 22 2008, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 22 Apr 2008, Linus Torvalds wrote:
+> > 
+> > You forgot to free the "data" here? The waiter must also free the object, 
+> > since now the callee does not.
+> 
+> Ahh. For the single case, the caller will have it on the stack.
 
-Hi Russell,
+Yes, if wait is set, it's on the stack.
 
-On Tue, 22 Apr 2008 08:36:22 +0100 Russell King <rmk+lkml@arm.linux.org.uk>=
- wrote:
->
-> linux-next will not give me anything which -mm isn't giving me.  As I
-> said in the discussion, linux-next value is _very_ small for me.
+> But the smp_call_function_mask() case seems to leak these things.
 
-Let me try again (others may want to read as well).
+Hmm yes, double checking it and it would seem to leak for wait &&
+kmalloc'ed data. I think I originally had the wait case as always on
+stack, which would explain this leak.
 
-What you get:
-	- 5 times a week your tree gets merged with lots of other code
-	  destined for Linus' next release.  From this you get to find
-	  out about things in other trees that clash with yours.
-	- This tree gets built on several architectures for several configs
-	  (including arm).  So you find out if other trees will break yours.
-	- I am happy to build more (basically all) the arm configs as I
-	  have offered before.
+> How about just always doing the "wait" case on the stack? Also, I'd 
+> suggest you get rid of the static allocation, and just turn it into a wait 
+> case, so that you don't need *three* different allocation cases, just two.
 
-What others get:
-	- You get told if your changes clash or break other's changes.
-	- They get told if your tree may require changes to theirs.
+Alright, I'll make 'wait' always alloc on the stack and I'll make
+allocation failure turn into 'wait' as well. That'll leave just
+kmalloc() and stack allocation, killing the static data fallback.
 
-What it costs:
-	- you need to create a tree (o quilt series) that contains the
-	  changes you expect to submit to Linus in the next merge window.
-	  This is not so different from the tree you currently send to
-	  Andrew (and is probably a subset of that). You update this tree
-	  as you want to and I fetch it at least daily.
-	- Reading a few extra emails if/when I find problems that may
-	  concern you.
+> Or am I missing something?
 
-Thanks for listening.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+No, I think that should work ok. I'll post a new series with the changes
+so we can see if we agree.
 
---Signature=_Wed__23_Apr_2008_01_04_58_+1000_dfP4Sj6wJCFsQ4zh
-Content-Type: application/pgp-signature
+-- 
+Jens Axboe
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIDf6gTgG2atn1QN8RAtvxAJ9Iy+cu9cDagdiiyBr1snqyHws7GgCdFvG0
-OIHqbNJUNkZ3jbkJfJfjjUk=
-=URUo
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Apr_2008_01_04_58_+1000_dfP4Sj6wJCFsQ4zh--
