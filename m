@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbYDVNyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933475AbYDVNyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbYDVNyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760785AbYDVNx5
+	id S933475AbYDVNyp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763089AbYDVNyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:53:57 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:38845 "EHLO
+	Tue, 22 Apr 2008 09:54:35 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:38904 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756564AbYDVNx4 (ORCPT
+	with ESMTP id S1764502AbYDVNye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:53:56 -0400
-Date: Tue, 22 Apr 2008 22:53:55 +0900 (JST)
-Message-Id: <20080422.225355.07850141.taka@valinux.co.jp>
+	Tue, 22 Apr 2008 09:54:34 -0400
+Date: Tue, 22 Apr 2008 22:54:33 +0900 (JST)
+Message-Id: <20080422.225433.113622843.taka@valinux.co.jp>
 To: jens.axboe@oracle.com, agk@sourceware.org
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 3/10] I/O context inheritance
+Subject: [RFC][PATCH 4/10] I/O context inheritance
 From: Hirokazu Takahashi <taka@valinux.co.jp>
 In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
 References: <20080422.224935.00673711.taka@valinux.co.jp>
@@ -27,39 +27,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Make every bio points the iocontext of the process which originally
-generated an I/O request. (part 2)
+Make the aio kernel thread work on the iocontext of the process
+which request an I/O.
 
- - Assign the iocontext which the source bio has to a bio when it is
-   allocated as a bounce buffer.
- - Assign the iocontext which the source bio has to bios when the source
-   bio is split into several ones, which some device mapper modules require.
 
 Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 
 
---- linux-2.6.25.bio0/mm/bounce.c	2008-04-22 15:48:32.000000000 +0900
-+++ linux-2.6.25/mm/bounce.c	2008-04-22 15:51:33.000000000 +0900
-@@ -195,8 +195,11 @@ static void __blk_queue_bounce(struct re
- 		/*
- 		 * irk, bounce it
- 		 */
--		if (!bio)
-+		if (!bio) {
- 			bio = bio_alloc(GFP_NOIO, (*bio_orig)->bi_vcnt);
-+			put_io_context(bio->bi_io_context);
-+			bio->bi_io_context = ioc_object_link((*bio_orig)->bi_io_context);
-+		}
+--- linux-2.6.25.bio0/include/linux/aio.h	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/include/linux/aio.h	2008-04-22 15:52:07.000000000 +0900
+@@ -181,6 +181,7 @@ struct kioctx {
+ 	atomic_t		users;
+ 	int			dead;
+ 	struct mm_struct	*mm;
++	struct io_context	*io_context;
  
- 		to = bio->bi_io_vec + i;
+ 	/* This needs improving */
+ 	unsigned long		user_id;
+--- linux-2.6.25.bio0/fs/aio.c	2008-04-22 15:48:31.000000000 +0900
++++ linux-2.6.25/fs/aio.c	2008-04-22 15:52:07.000000000 +0900
+@@ -31,6 +31,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/security.h>
+ #include <linux/eventfd.h>
++#include <linux/blkdev.h>
  
---- linux-2.6.25.bio0/drivers/md/dm.c	2008-04-22 15:48:33.000000000 +0900
-+++ linux-2.6.25/drivers/md/dm.c	2008-04-22 17:16:49.000000000 +0900
-@@ -665,6 +665,7 @@ static struct bio *split_bvec(struct bio
- 	clone->bi_size = to_bytes(len);
- 	clone->bi_io_vec->bv_offset = offset;
- 	clone->bi_io_vec->bv_len = clone->bi_size;
-+	clone->bi_io_context = ioc_object_link(bio->bi_io_context);
+ #include <asm/kmap_types.h>
+ #include <asm/uaccess.h>
+@@ -217,6 +218,10 @@ static struct kioctx *ioctx_alloc(unsign
+ 	mm = ctx->mm = current->mm;
+ 	atomic_inc(&mm->mm_count);
  
- 	return clone;
- }
++	ctx->io_context = get_io_context(GFP_KERNEL, -1);
++	if (!ctx->io_context)
++		goto out_freectx2;
++
+ 	atomic_set(&ctx->users, 1);
+ 	spin_lock_init(&ctx->ctx_lock);
+ 	spin_lock_init(&ctx->ring_info.ring_lock);
+@@ -255,6 +260,8 @@ out_cleanup:
+ 	return ERR_PTR(-EAGAIN);
+ 
+ out_freectx:
++	put_io_context(ctx->io_context);
++out_freectx2:
+ 	mmdrop(mm);
+ 	kmem_cache_free(kioctx_cachep, ctx);
+ 	ctx = ERR_PTR(-ENOMEM);
+@@ -376,6 +383,7 @@ void __put_ioctx(struct kioctx *ctx)
+ 	aio_free_ring(ctx);
+ 	mmdrop(ctx->mm);
+ 	ctx->mm = NULL;
++	put_io_context(ctx->io_context);
+ 	pr_debug("__put_ioctx: freeing %p\n", ctx);
+ 	kmem_cache_free(kioctx_cachep, ctx);
+ 
+@@ -841,6 +849,7 @@ static void aio_kick_handler(struct work
+ 	struct mm_struct *mm;
+ 	int requeue;
+ 
++	current->io_context = ctx->io_context;
+ 	set_fs(USER_DS);
+ 	use_mm(ctx->mm);
+ 	spin_lock_irq(&ctx->ctx_lock);
+@@ -849,6 +858,7 @@ static void aio_kick_handler(struct work
+ 	spin_unlock_irq(&ctx->ctx_lock);
+  	unuse_mm(mm);
+ 	set_fs(oldfs);
++	current->io_context = NULL;
+ 	/*
+ 	 * we're in a worker thread already, don't use queue_delayed_work,
+ 	 */
