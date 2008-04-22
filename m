@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYDVQGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYDVQGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbYDVQGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYDVQGX
+	id S1760623AbYDVQGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759232AbYDVQGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:06:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49503 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYDVQGW (ORCPT
+	Tue, 22 Apr 2008 12:06:44 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:6006 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbYDVQGn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:06:22 -0400
-Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       bugme-daemon@bugzilla.kernel.org,
-       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <480E034F.5@redhat.com>
-References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>
-	 <480D1B14.7070806@redhat.com>  <1208869770.7115.265.camel@twins>
-	 <1208870791.7115.269.camel@twins>  <480E034F.5@redhat.com>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 18:05:58 +0200
-Message-Id: <1208880358.7115.285.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 12:06:43 -0400
+From: "Fischer, Anna" <anna.fischer@hp.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 22 Apr 2008 16:06:02 +0000
+Subject: Duplicate SYSFS entries???
+Thread-Topic: Duplicate SYSFS entries???
+Thread-Index: AcikksL7JShjfHaYTFWhfXNELnp8qg==
+Message-ID: <38CBA1F6A350B044AF785E63AAC3C6776497AFEB5C@G5W0276.americas.hpqcorp.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 11:25 -0400, Masami Hiramatsu wrote:
-> Peter Zijlstra wrote:
-> > On Tue, 2008-04-22 at 15:09 +0200, Peter Zijlstra wrote:
-> >> On Mon, 2008-04-21 at 18:54 -0400, Masami Hiramatsu wrote:
-> >>> Thank you for reporting.
-> >>>
-> >>> Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
-> >>> (which is called from kprobe_exceptions_notify) by
-> >>> trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
-> >>> is set in pt_regs->flags, true hardirq is still off until returning
-> >>> from do_debug. Thus, lockdep assumes that hardirq is off without annotation.
-> > 
-> > Ah, can you clarrify? pt_regs->flags will only be set when returning to
-> > the original trap site? in that case we should not need a lockdep
-> > annotation I guess, unless its allowed and exptected for the int3 site
-> > to change IRQ state.
-> 
-> As far as I took a look at the lockdep, your suggestion is correct.
-> post_kprobe_handler should not set a lockdep annotation, because
-> processor's IF is not changed yet in that time.
+I'm creating a SYSFS hierarchy that consists of several symlinks that I'm generating by calling sysfs_create_link(). However, I realized that when I'm calling this with a link name that is already in the directory, I actually don't get an error back but the kernel creates another symlink with the same name, but the destination of the link is arbitrary. For example, this has created the following structure under SYSFS on my system:
 
-That much was clear; but when _will_ it be changed?
+ls -l /X
 
+total 0
+lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:13:21:1f:2d:35 -> ../../../vnetmod/vms/vm0
+lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
+lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
+lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
+lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
+
+
+Actually, I have created the symlinks with different target directories but they all (obviously) point to the same one (vm13). Shouldn't the kernel return an error code and disallow the creation of multiple files (or symlinks) with the same name in the same directory??
+
+I'm running kernel version 2.6.16.13-4-smp #1 SMP Wed May 3 04:53:23 UTC 2006 x86_64 x86_64 x86_64 GNU/Linux.
+
+Many thanks,
+Anna
