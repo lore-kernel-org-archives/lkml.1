@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbYDVMnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYDVMpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600AbYDVMnb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 08:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYDVMnW
+	id S1760958AbYDVMpO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 08:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYDVMo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 08:43:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:48658 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753097AbYDVMnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 08:43:21 -0400
+	Tue, 22 Apr 2008 08:44:59 -0400
+Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:54942 "EHLO
+	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753167AbYDVMo7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 08:44:59 -0400
+From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+To: "Peer Chen" <pchen@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+Date: Tue, 22 Apr 2008 14:44:55 +0200
+User-Agent: KMail/1.9.9
+Cc: "Jeff Garzik" <jeff@garzik.org>, "Tejun Heo" <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Kuan Luo" <kluo@nvidia.com>
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804191548.04013.volker.armin.hemmann@tu-clausthal.de> <15F501D1A78BD343BE8F4D8DB854566B277C048A@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B277C048A@hkemmail01.nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18445.56653.957832.720681@cargo.ozlabs.ibm.com>
-Date: Tue, 22 Apr 2008 22:42:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, anton@samba.org
-Subject: Re: [PATCH 3/11] powerpc: convert to generic helpers for IPI function calls
-In-Reply-To: <20080422121315.GE12774@kernel.dk>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
-	<1208851058-8500-4-git-send-email-jens.axboe@oracle.com>
-	<18445.54284.194023.553595@cargo.ozlabs.ibm.com>
-	<20080422121315.GE12774@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804221444.55483.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe writes:
+On Dienstag, 22. April 2008, Peer Chen wrote:
+> Looks like the BIOS trap had been applied, GHC.AE suppose should be set
+> correctly. Volker, could you try to set the AE twice in the driver or using
+> mmapper to set the AE manually to check if AE will be set correctly or not?
 
-> I touched on both of these points in the initial mail, but perhaps you
-> missed it as I didn't CC everyone for the 0/11 part. I'll add the full
-> explanation to the 1/11 patch as well.
+emm, I am totally out of my depth here. I don't even know what you are talking 
+about. If you explain me in nice, little word or even better, with examples, 
+what I shall try, I will happily do so.
 
-OK, that would be fine.  I didn't read right to the end of the 0/11
-mail in detail, I admit. :)
-
-Now that I have, I don't see anything about smp_send_stop trying to
-get the interrupt sent off in a panic situation when some other cpu
-might be stuck holding the lock (unless that's the "ipi_lock is a
-little muddy" part, but that only talks about cpu onlining).  That bit
-looks to be powerpc-specific, added in commit e057d985 in December
-2007, so perhaps a mention that that has gone away now in the
-description for 3/11 would be good.
-
-Regards,
-Paul.
+Glück Auf,
+Volker
