@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbYDVAb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbYDVAdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbYDVAb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759668AbYDVAbT
+	id S1760252AbYDVAdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759775AbYDVAdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:31:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44189 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759576AbYDVAbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:31:18 -0400
-Date: Tue, 22 Apr 2008 10:31:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Philipp Zabel <philipp.zabel@gmail.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: linux-next: Linus' tree build breakage
-Message-Id: <20080422103111.e1d38371.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR"
+	Mon, 21 Apr 2008 20:33:11 -0400
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.144]:60693 "EHLO
+	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758321AbYDVAdK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 20:33:10 -0400
+X-Authenticated-Name: js.dnsmadeeasy
+X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
+Message-ID: <480D3240.5050106@avtrex.com>
+Date: Mon, 21 Apr 2008 17:33:04 -0700
+From: David Daney <ddaney@avtrex.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 5/6] Scheduler support for HARDWARE_WATCHPOINTS.
+References: <480D2151.2020701@avtrex.com>
+In-Reply-To: <480D2151.2020701@avtrex.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2008 00:33:05.0654 (UTC) FILETIME=[6E458160:01C8A410]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is the meat of the patch.  Here we install the watch register values when we
+schedule a new thread.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+The implemtation of __restore_watch() is in asm/watch.h.  In the case where there
+are no watch registers to install (the normal case) the overhead is 5 machine
+instructions with gcc-3.4.3.
 
-drivers/mfd/htc-pasic3.c:22:31: error: asm/arch/pxa-regs.h: No such file or=
- directory
+Signed-off-by: David Daney <ddaney@avtrex.com>
+---
+ include/asm-mips/system.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-I have reverted commit 5dc3339aa5ba29593ea57814049ddca8c12831c8 ("[ARM]
-4964/1: htc-pasic3: MFD driver for PASIC3 LED control + DS1WM chip") as
-the easiest thing.
+diff --git a/include/asm-mips/system.h b/include/asm-mips/system.h
+index a944eda..cd30f83 100644
+--- a/include/asm-mips/system.h
++++ b/include/asm-mips/system.h
+@@ -20,6 +20,7 @@
+ #include <asm/cmpxchg.h>
+ #include <asm/cpu-features.h>
+ #include <asm/dsp.h>
++#include <asm/watch.h>
+ #include <asm/war.h>
+ 
+ 
+@@ -76,6 +77,7 @@ do {									\
+ 		__restore_dsp(current);					\
+ 	if (cpu_has_userlocal)						\
+ 		write_c0_userlocal(current_thread_info()->tp_value);	\
++	__restore_watch();						\
+ } while (0)
+ 
+ static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
+-- 
+1.5.5
 
-Russell, this is why I would have liked you to participate in the
-linux-next tree ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIDTHUTgG2atn1QN8RAr45AJ9QbFfEWZOA3FXuQrAB0ZBPN2TUeACdF8Y+
-deSgWEOdKCaW8wD3FXoZoiI=
-=BqUK
------END PGP SIGNATURE-----
-
---Signature=_Tue__22_Apr_2008_10_31_11_+1000_k1f/6PbVyBJ_AFsR--
