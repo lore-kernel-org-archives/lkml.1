@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYDVQGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbYDVQJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbYDVQGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759232AbYDVQGo
+	id S1758432AbYDVQJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYDVQJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:06:44 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:6006 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYDVQGn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:06:43 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 22 Apr 2008 16:06:02 +0000
-Subject: Duplicate SYSFS entries???
-Thread-Topic: Duplicate SYSFS entries???
-Thread-Index: AcikksL7JShjfHaYTFWhfXNELnp8qg==
-Message-ID: <38CBA1F6A350B044AF785E63AAC3C6776497AFEB5C@G5W0276.americas.hpqcorp.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 22 Apr 2008 12:09:50 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31567 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753758AbYDVQJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:09:49 -0400
+Message-ID: <480E0DA8.20306@ru.mvista.com>
+Date: Tue, 22 Apr 2008 20:09:12 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] ide: skip "VLB sync" if host uses MMIO
+References: <200804122103.51449.bzolnier@gmail.com>
+In-Reply-To: <200804122103.51449.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm creating a SYSFS hierarchy that consists of several symlinks that I'm generating by calling sysfs_create_link(). However, I realized that when I'm calling this with a link name that is already in the directory, I actually don't get an error back but the kernel creates another symlink with the same name, but the destination of the link is arbitrary. For example, this has created the following structure under SYSFS on my system:
+Bartlomiej Zolnierkiewicz wrote:
 
-ls -l /X
+> * Skip "VLB sync" in ata_{in,out}put_data() if host uses MMIO.
 
-total 0
-lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:13:21:1f:2d:35 -> ../../../vnetmod/vms/vm0
-lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
-lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
-lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
-lrwxrwxrwx 1 root root 0 2008-04-22 16:37 00:50:56:19:a6:01 -> ../../../vnetmod/vms/vm13
+> * Use I/O ops directly in ata_vlb_sync() an drop no longer needed
+>   'ide_drive_t *drive' argument.
 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Actually, I have created the symlinks with different target directories but they all (obviously) point to the same one (vm13). Shouldn't the kernel return an error code and disallow the creation of multiple files (or symlinks) with the same name in the same directory??
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-I'm running kernel version 2.6.16.13-4-smp #1 SMP Wed May 3 04:53:23 UTC 2006 x86_64 x86_64 x86_64 GNU/Linux.
-
-Many thanks,
-Anna
+MBR, Sergei
