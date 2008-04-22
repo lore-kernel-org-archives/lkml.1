@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762201AbYDVJrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762604AbYDVJtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762201AbYDVJrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYDVJrO
+	id S1762604AbYDVJtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 05:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYDVJtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:47:14 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:61019 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756784AbYDVJrN (ORCPT
+	Tue, 22 Apr 2008 05:49:11 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:37716 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758144AbYDVJtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:47:13 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-3.tower-29.messagelabs.com!1208857632!11720050!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Tue, 22 Apr 2008 11:47:08 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/3] UIO: cleanup and platform driver
-Message-ID: <20080422094708.GB27126@digi.com>
-References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Tue, 22 Apr 2008 05:49:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Yw9/A2U62acv7QczEHmHGTixBVr7cZvrKXO7Iqz2+oBX65YktrNAIQ6sVFbS4IdPLgslixdD9fPmZ74xtyyUl9wwome7yCL42VpZtDZUOL51Hnw1/cU0bYBfJYcDQaFHuk4ZVh2cHyI1GCsizEoDTaXFqWf6wgajqitb7yujrfk=
+Message-ID: <480DB493.6080004@gmail.com>
+Date: Tue, 22 Apr 2008 11:49:07 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 22 Apr 2008 09:47:09.0183 (UTC) FILETIME=[D4F578F0:01C8A45D]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15864.006
-X-TM-AS-Result: No--7.459000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       mingo@elte.hu
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> <200804220254.45251.rjw@sisk.pl> <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Linus Torvalds napsal(a):
+> 
+> On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
+>>> The same place, dentry.d_hash.next is 1. No slub debug clues... I think, I'll 
+>>> give slab a try. Any other clues?
+>> Well, SLUB uses some per CPU data structures.  Is it possible that they get
+>> corrupted and which leads to the observed symptoms?
+> 
+> It really doesn't look like the slub allocations themselves would be 
+> corrupted. It very much looks like wild pointers corrupting allocations 
+> that themselves were fine.
 
-there are three patches left in my uio queue that didn't made it into
-mainline up to now.
+Hmm, correct.
 
-You can find the patches in my uio branch at 
+> What do you do to trigger this? Any particular load? Is it still just 
+> doing suspend/resume, or do you have something else that you are playing 
+> with?
 
-	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git uio
+Yesterday I did 2 suspend/resumes after 1 hour of uptime and ran git-status 
+for a fraction of a second until it was killed. So I can perfectly reproduce 
+it when I suspend, resume and produce some io load. I guess it's time to 
+bisect 2.6.25-rc8-mm2 as I'm able to reproduce it the best and haven't seen 
+that bug in -rc8-mm1 for over week of suspending and working.
 
-and I will resend the patches as a reply to this mail.
+> Also, have you tried CONFIG_DEBUG_PAGEALLOC? That can also be a very 
+> powerful way to find memory corruption.
 
-Shortlog and diffstat can be found below.
+Not yet.
 
-Best regards
-Uwe
+> Does anybody see any other patterns? Looking at the modules linked in in 
+> the oopses from Zdenek, Rafael and Jiri, I don't see anything odd. You 
+> both all have 80211 support, maybe the corruption comes from the wireless 
+> layer?
 
-Uwe Kleine-König (3):
-      UIO: don't let UIO_CIF and UIO_SMX depend twice on UIO
-      provide a dummy implementation of the clk API
-      UIO: generic platform driver
-
- drivers/uio/Kconfig    |   10 +++-
- drivers/uio/Makefile   |    1 +
- drivers/uio/uio_pdrv.c |  155 ++++++++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig            |    6 ++
- lib/Makefile           |    2 +
- lib/dummyclk.c         |   54 +++++++++++++++++
- 6 files changed, 226 insertions(+), 2 deletions(-)
-
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+May be, however I don't use that stack, it's a desktop machine, it's only 
+sitting there not turned on, but sure, it's loaded.
