@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933715AbYDVPWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbYDVPXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933715AbYDVPWo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762181AbYDVPWc
+	id S933853AbYDVPXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933748AbYDVPWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:22:32 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:15974 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755900AbYDVPWb convert rfc822-to-8bit (ORCPT
+	Tue, 22 Apr 2008 11:22:51 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45036 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933744AbYDVPWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:22:31 -0400
-Message-Id: <480E1EE3.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Tue, 22 Apr 2008 16:22:43 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86-64: eliminate dead code
+	Tue, 22 Apr 2008 11:22:49 -0400
+X-Greylist: delayed 1305 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 11:22:49 EDT
+Subject: Re: [PATCH 6/11] arm: convert to generic helpers for IPI function
+	calls
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <1208851058-8500-7-git-send-email-jens.axboe@oracle.com>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
+	 <1208851058-8500-7-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 22 Apr 2008 16:00:47 +0100
+Message-Id: <1208876447.31997.30.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2008 14:59:29.0015 (UTC) FILETIME=[76C4E870:01C8A489]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+On Tue, 2008-04-22 at 09:57 +0200, Jens Axboe wrote:
+> This converts arm to use the new helpers for smp_call_function() and
+> friends, and adds support for smp_call_function_single(). Not tested
+> at all, not even compiled.
 
----
- arch/x86/kernel/entry_64.S |    4 ----
- arch/x86/kernel/traps_64.c |    3 ---
- 2 files changed, 7 deletions(-)
+With the minor fixes below, it compiles and seems to run OK on RealView
+EB + ARM11MPCore (4 CPUs):
 
---- linux-2.6.25/arch/x86/kernel/entry_64.S	2008-04-17 04:49:44.000000000 +0200
-+++ 2.6.25-x86_64-dead-code/arch/x86/kernel/entry_64.S	2008-04-15 10:49:20.000000000 +0200
-@@ -1122,10 +1122,6 @@ ENTRY(coprocessor_segment_overrun)
- 	zeroentry do_coprocessor_segment_overrun
- END(coprocessor_segment_overrun)
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index 9c85329..6344466 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -484,7 +484,7 @@ asmlinkage void __exception do_IPI(struct pt_regs *regs)
+ 				generic_smp_call_function_interrupt();
+ 				break;
  
--ENTRY(reserved)
--	zeroentry do_reserved
--END(reserved)
--
- 	/* runs on exception stack */
- ENTRY(double_fault)
- 	XCPT_FRAME
---- linux-2.6.25/arch/x86/kernel/traps_64.c	2008-04-17 04:49:44.000000000 +0200
-+++ 2.6.25-x86_64-dead-code/arch/x86/kernel/traps_64.c	2008-04-15 10:49:20.000000000 +0200
-@@ -69,7 +69,6 @@ asmlinkage void general_protection(void)
- asmlinkage void page_fault(void);
- asmlinkage void coprocessor_error(void);
- asmlinkage void simd_coprocessor_error(void);
--asmlinkage void reserved(void);
- asmlinkage void alignment_check(void);
- asmlinkage void machine_check(void);
- asmlinkage void spurious_interrupt_bug(void);
-@@ -694,12 +693,10 @@ DO_ERROR_INFO( 0, SIGFPE,  "divide error
- DO_ERROR( 4, SIGSEGV, "overflow", overflow)
- DO_ERROR( 5, SIGSEGV, "bounds", bounds)
- DO_ERROR_INFO( 6, SIGILL,  "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip)
--DO_ERROR( 7, SIGSEGV, "device not available", device_not_available)
- DO_ERROR( 9, SIGFPE,  "coprocessor segment overrun", coprocessor_segment_overrun)
- DO_ERROR(10, SIGSEGV, "invalid TSS", invalid_TSS)
- DO_ERROR(11, SIGBUS,  "segment not present", segment_not_present)
- DO_ERROR_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0)
--DO_ERROR(18, SIGSEGV, "reserved", reserved)
+-			case IPI_CALL_FUNC:
++			case IPI_CALL_FUNC_SINGLE:
+ 				generic_smp_call_function_single_interrupt();
+ 				break;
  
- /* Runs on IST stack */
- asmlinkage void do_stack_segment(struct pt_regs *regs, long error_code)
+@@ -536,14 +536,13 @@ int setup_profiling_timer(unsigned int multiplier)
+ }
+ 
+ static int
+-on_each_cpu_mask(void (*func)(void *), void *info, int retry, int wait,
+-		 cpumask_t mask)
++on_each_cpu_mask(void (*func)(void *), void *info, int wait, cpumask_t mask)
+ {
+ 	int ret = 0;
+ 
+ 	preempt_disable();
+ 
+-	ret = smp_call_function_mask(mask, func, info, retry, wait);
++	ret = smp_call_function_mask(mask, func, info, wait);
+ 	if (cpu_isset(smp_processor_id(), mask))
+ 		func(info);
+ 
+@@ -612,7 +611,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	cpumask_t mask = mm->cpu_vm_mask;
+ 
+-	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, 1, mask);
++	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, mask);
+ }
+ 
+ void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
+@@ -623,7 +622,7 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
+ 	ta.ta_vma = vma;
+ 	ta.ta_start = uaddr;
+ 
+-	on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, 1, mask);
++	on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, mask);
+ }
+ 
+ void flush_tlb_kernel_page(unsigned long kaddr)
+@@ -645,7 +644,7 @@ void flush_tlb_range(struct vm_area_struct *vma,
+ 	ta.ta_start = start;
+ 	ta.ta_end = end;
+ 
+-	on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, 1, mask);
++	on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, mask);
+ }
+ 
+ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 
 
+-- 
+Catalin
 
