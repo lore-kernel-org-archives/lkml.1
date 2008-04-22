@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDVVSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYDVVVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbYDVVSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYDVVSO
+	id S1762047AbYDVVVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbYDVVVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:18:14 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1556 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbYDVVSN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:18:13 -0400
-Subject: Re: [PATCH] hfs: if match_strdup() fails to allocate memory in
-	parse_options(), don't blow up the kernel.
-From: Joe Perches <joe@perches.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
-References: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 14:17:24 -0700
-Message-Id: <1208899044.8636.80.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+	Tue, 22 Apr 2008 17:21:03 -0400
+Received: from mail.windriver.com ([147.11.1.11]:53972 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755594AbYDVVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 17:21:01 -0400
+Message-ID: <480E567B.6060708@windriver.com>
+Date: Tue, 22 Apr 2008 16:19:55 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Randy Dunlap <RANDY.DUNLAP@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: kgdb: core
+References: <200804181741.m3IHfTeC012089@hera.kernel.org>	<20080418150930.476ea7aa.akpm@linux-foundation.org>	<20080421141252.GR9554@elte.hu>	<20080421214636.617970c6.akpm@linux-foundation.org>	<20080422082519.62adc7f1.randy.dunlap@oracle.com> <20080422135716.c6ee339b.akpm@linux-foundation.org> <5739699.1208898133855.JavaMail.oracle@acsmt302.oracle.com>
+In-Reply-To: <5739699.1208898133855.JavaMail.oracle@acsmt302.oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2008 21:19:44.0503 (UTC) FILETIME=[95DC1870:01C8A4BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 23:12 +0200, Jesper Juhl wrote:
-> From: Jesper Juhl <jesper.juhl@gmail.com>
-> diff --git a/fs/hfs/super.c b/fs/hfs/super.c
-> index 32de44e..221e314 100644
-> --- a/fs/hfs/super.c
-> +++ b/fs/hfs/super.c
-> @@ -297,6 +297,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
->  				return 0;
->  			}
->  			p = match_strdup(&args[0]);
-> +			if (!p) {
-> +				printk(KERN_ERR "hfs: mem alloc failed in match_strdup()\n");
-> +				return 0;
-> +			}
->  			hsb->nls_disk = load_nls(p);
->  			if (!hsb->nls_disk) {
->  				printk(KERN_ERR "hfs: unable to load codepage \"%s\"\n", p);
-> @@ -311,6 +315,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
->  				return 0;
->  			}
->  			p = match_strdup(&args[0]);
-> +			if (!p) {
-> +				printk(KERN_ERR "hfs: memory allocation failed in match_strdup()\n");
-> +				return 0;
-> +			}
->  			hsb->nls_io = load_nls(p);
->  			if (!hsb->nls_io) {
->  				printk(KERN_ERR "hfs: unable to load iocharset \"%s\"\n", p);
-> 
+Randy Dunlap wrote:
+> --- Original Message --- (akpm wrote:)
+>>> On Tue, 22 Apr 2008 08:25:19 -0700 Randy Dunlap
+<randy.dunlap@oracle.com> wrote:
+>>>
+>>> kernel-doc output doesn't depend on build $ARCH.
+>> Ah, interesting.  I made an ass of u and me.
+>>
+>> In that case documentng them in x86 .c and leaving all other definitions
+>> and declarations uncommented sounds the way to go?  
+>
+> Yes, that would be fine and traditional (historical).
+>
+> ~Randy
+>
 
-Using different strings in the printk wastes memory.
+So is the summary here that we cannot just document the actual
+interface API in the incude/linux/kgdb.h?
+
+The problem I had here was pretty simple in that not all of the
+functions in the API are used by all the archs.  It seemed pretty
+reasonable at the time to just document everything in the .h file
+because it was more for the folks who wanted to add kgdb support to an
+arch and of little to no use to end users of kgdb.
+
+The mainline only has a small chunk of the docs right now because not
+all of kgdb is merged.  I was just hoping it was real easy to generate
+some reasonable looking docs.  The docs for all the kgdb code that
+exists (in mainline and not in mainline) can be viewed here as an
+example.
+
+http://kernel.org/pub/linux/kernel/people/jwessel/kgdb/
+
+Jason.
 
