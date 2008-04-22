@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbYDVPon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbYDVPtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932170AbYDVPon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbYDVPoe
+	id S1756459AbYDVPtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYDVPs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:44:34 -0400
-Received: from h155.mvista.com ([63.81.120.155]:30862 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753647AbYDVPod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:44:33 -0400
-Message-ID: <480E07BC.3050107@ru.mvista.com>
-Date: Tue, 22 Apr 2008 19:43:56 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 22 Apr 2008 11:48:58 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59971 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751007AbYDVPs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:48:57 -0400
+Date: Tue, 22 Apr 2008 11:48:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Jan Kara <jack@suse.cz>, <linux-usb@vger.kernel.org>,
+       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: ./fs/partitions/check.c: off-by-one error ?
+In-Reply-To: <20080422083214.cbfa3786.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.44L0.0804221145050.8058-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [PATCH 3/3] atyfb: Fix 64 bits resources on 32 bits archs
-References: <20080422012726.42775DE2A3@ozlabs.org>
-In-Reply-To: <20080422012726.42775DE2A3@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
+On Tue, 22 Apr 2008, Randy Dunlap wrote:
 
-> This fixes atyfb to not truncate 64 bits resources on 32 bits
-> platforms. Unfortunately, there are still issues with addresses
-> returned to userspace via struct fb_fix_screeninfo. This will
-> have to be dealt with separately.
+> On Tue, 22 Apr 2008 12:38:29 +0200 Jan Kara wrote:
+> 
+> > > I already re-formatted the card under Linux as well as under Windows XP and got
+> > > always the same behaviour.
+> >   This looks more like a strange interaction of your device size (it
+> > claims to have 3902463 sectors) and your partitioning programs which
+> > create partition ending at sector 3902464. Can you send the partition
+> > table you have on the device? E.g:
+> >   fdisk /dev/sda
+> >   x
+> >   p
+> > 
+> >   will print detailed information about the partition table.
+> 
+> Is this something that using US_FL_FIX_CAPACITY will fix?
+> 
+> US_FL_FIX_CAPACITY -> sets ->fix_capacity, then:
+> 
+> 	/* Some devices return the total number of sectors, not the
+> 	 * highest sector number.  Make the necessary adjustment. */
+> 	if (sdp->fix_capacity) {
+> 		--sdkp->capacity;
 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-[...]
-> --- linux-work.orig/drivers/video/aty/atyfb_base.c	2008-04-22 11:21:46.000000000 +1000
-> +++ linux-work/drivers/video/aty/atyfb_base.c	2008-04-22 11:23:58.000000000 +1000
-> @@ -2842,7 +2842,7 @@ static int atyfb_setcolreg(u_int regno, 
->  #ifdef __sparc__
->  
->  static int __devinit atyfb_setup_sparc(struct pci_dev *pdev,
-> -			struct fb_info *info, unsigned long addr)
-> +			struct fb_info *info, resource_size_t addr)
+FIX_CAPACITY will make it worse.  The device would appear to have only
+3902462 sectors and the partition table will still refer sector
+3902464.
 
-    Not sure what that change gives us -- this function mostly treats 'addr' 
-as unsigned long (casting it to char/void *), ot compares it to 'unsigned 
-long' 'base' variable -- which should be made 'resource_size_t' in its turn 
-being assigned resource's start value.  So, this part of patch looks incomplete
-(and yet I'm not sure if SPARC really needs all that)...
+The card should be repartitioned as well as reformatted, both under 
+Linux.
 
-WBR, Sergei
+Alan Stern
+
