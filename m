@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751074AbYDVOCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYDVODa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751074AbYDVOCf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYDVOCY
+	id S1755284AbYDVODa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYDVODV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:02:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44483 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753903AbYDVOCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:02:23 -0400
-Date: Tue, 22 Apr 2008 16:02:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] x86: random clean-ups
-Message-ID: <20080422140203.GB24966@elte.hu>
-References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com> <20080421122504.GF6788@elte.hu> <90edad820804210541h26c8e66dh70895f32e4b4038d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <90edad820804210541h26c8e66dh70895f32e4b4038d@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0298]
+	Tue, 22 Apr 2008 10:03:21 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:34250 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751031AbYDVODT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:03:19 -0400
+Date: Tue, 22 Apr 2008 23:03:18 +0900 (JST)
+Message-Id: <20080422.230318.112756414.taka@valinux.co.jp>
+To: jens.axboe@oracle.com, agk@sourceware.org
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 0/10] I/O context inheritance
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
+References: <20080422.224935.00673711.taka@valinux.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+Sorry, these patches are for linux-2.6.25.
 
-> > thanks Dmitri, applied #1/#2/#4, as per the discussion.
+> This series of patches make the block I/O layer and the I/O schedulers
+> be able to determine the right io_context of every I/O.
 > 
-> Hi Ingo,
+> The current implementation of the block I/O layer and the I/O schedulers
+> assume that the current process is the one which issued the given I/O,
+> then use the io_context of this process to control the I/O.
+> But this assumption isn't quite right because several kernel threads
+> will handle I/O requests on behalf of the processes which originated them.
+> This often happens when you want to use device mapper modules.
 > 
-> This should be #1, #3 and #4. The NexGen patch, which was #2 in the 
-> original series, have been replaced by a bigger patch that kills 
-> NexGen altogether. Plese check, if you have time for that.
-
-yeah, i did the right thing and described the wrong selection :) You can 
-check the end result via:
-
-  http://people.redhat.com/mingo/x86.git/README
-
-	Ingo
+> The patches make every bio has a pointer to an io_context, which will
+> be set when it is allocated or cloned. So it makes it possible to find
+> the right io_context from any bio at any place.
+> 
+> I'm waiting for your comments.
+> 
+> Thank you,
+> Hirokazu Takahashi.
