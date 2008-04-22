@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbYDVOA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbYDVOAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbYDVOA0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYDVOAG
+	id S933777AbYDVOAq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933812AbYDVOAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:00:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43904 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbYDVOAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:00:00 -0400
-Date: Tue, 22 Apr 2008 15:59:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] x86: cleanup early per cpu variables/accesses
-	v3-folded
-Message-ID: <20080422135944.GA24966@elte.hu>
-References: <20080422013415.955439000@polaris-admin.engr.sgi.com> <20080422013416.483730000@polaris-admin.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422013416.483730000@polaris-admin.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 Apr 2008 10:00:20 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:57406 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933809AbYDVOAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:00:18 -0400
+Date: Tue, 22 Apr 2008 23:00:17 +0900 (JST)
+Message-Id: <20080422.230017.69986283.taka@valinux.co.jp>
+To: jens.axboe@oracle.com, agk@sourceware.org
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 10/10] I/O context inheritance
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
+References: <20080422.224935.00673711.taka@valinux.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+The floppy driver will allocate a bio on its stack, so its iocontext
+should be set here.
 
->   * Introduce a new PER_CPU macro called "EARLY_PER_CPU".  This is
->     used by some per_cpu variables that are initialized and accessed
->     before there are per_cpu areas allocated.
+This code hasn't been tested yet.
 
-build fails with:
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 
-arch/x86/kernel/built-in.o: In function `flat_apic_id_registered':
-genapic_flat_64.c:(.text+0x13e1d): undefined reference to `phys_cpu_present_map'
-genapic_flat_64.c:(.text+0x13e24): undefined reference to `phys_cpu_present_map'
-arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
-: undefined reference to `phys_cpu_present_map'
-[...]
 
-with this config:
-
-  http://redhat.com/~mingo/misc/config-Tue_Apr_22_15_40_10_CEST_2008.bad
-
-	Ingo
+--- linux-2.6.25.bio0/drivers/block/floppy.c	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/drivers/block/floppy.c	2008-04-22 21:33:40.000000000 +0900
+@@ -3845,12 +3845,14 @@ static int __floppy_read_block_0(struct 
+ 	init_completion(&complete);
+ 	bio.bi_private = &complete;
+ 	bio.bi_end_io = floppy_rb0_complete;
++	bio.bi_io_context = get_io_context(GFP_NOIO, -1);
+ 
+ 	submit_bio(READ, &bio);
+ 	generic_unplug_device(bdev_get_queue(bdev));
+ 	process_fd_request();
+ 	wait_for_completion(&complete);
+ 
++	put_io_context(bio.bi_io_context);
+ 	__free_page(page);
+ 
+ 	return 0;
