@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYDVBz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbYDVCBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbYDVBz4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 21:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755106AbYDVBzp
+	id S1761318AbYDVCBh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 22:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbYDVCB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 21:55:45 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:49966 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754892AbYDVBzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 21:55:44 -0400
-Date: Mon, 21 Apr 2008 21:55:20 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 4/8] omfs: add directory routines
-Message-ID: <20080422015520.GB9591@hash.localnet>
-References: <1208637457-24969-5-git-send-email-me@bobcopeland.com> <E1Jnxmc-0002xo-T8@pomaz-ex.szeredi.hu>
+	Mon, 21 Apr 2008 22:01:29 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49529 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753738AbYDVCB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 22:01:29 -0400
+Message-ID: <480D46F6.3080305@garzik.org>
+Date: Mon, 21 Apr 2008 22:01:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Jnxmc-0002xo-T8@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: cdrom: use kmalloced buffers instead of buffers on stack
+References: <200804220100.m3M10sva024025@hera.kernel.org>
+In-Reply-To: <200804220100.m3M10sva024025@hera.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 05:18:18PM +0200, Miklos Szeredi wrote:
-> These are leaking the inode reference.
+Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=22a9189fd073db3d03a4cf8b8c098aa207602de1
+> Commit:     22a9189fd073db3d03a4cf8b8c098aa207602de1
+> Parent:     0a0c4114df4a6903bccb65b06cabb6ddc968f877
+> Author:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> AuthorDate: Wed Mar 26 12:09:38 2008 +0100
+> Committer:  Jens Axboe <jens.axboe@oracle.com>
+> CommitDate: Mon Apr 21 09:50:08 2008 +0200
 > 
-> There's more like these in the patch, please check all
-> omfs_new_inode() calls.
+>     cdrom: use kmalloced buffers instead of buffers on stack
+>     
+>     If cdrom commands are issued to a scsi drive in most cases the buffer will be
+>     filled via dma.  This leads to bad stack corruption on non coherent platforms,
+>     because the buffers are neither cache line aligned nor is the size a multiple
+>     of the cache line size.  Using kmalloced buffers avoids this.
+>     
+>     Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/cdrom/cdrom.c |  274 ++++++++++++++++++++++++++++++++-----------------
+>  1 files changed, 181 insertions(+), 93 deletions(-)
 
-Er, yeah, that's embarrassing.  The other two are in omfs_create which
-only differs from mkdir by a couple of lines; I should probably merge
-them.
+Eh... AFAICS this is only really useful in two of the cases converted.
 
-Thanks again for the review!
+For all the other cases (<= 32 bytes), it is _far_ less complex, far 
+less code to simply communicate the additional alignment requirements to 
+the compiler.
 
--- 
-Bob Copeland %% www.bobcopeland.com 
+What about __attribute__ __aligned__?  Was that tried?
+
+	Jeff
+
 
