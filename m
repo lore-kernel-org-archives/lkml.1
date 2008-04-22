@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761302AbYDVS0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYDVS15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761302AbYDVS0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbYDVS0q
+	id S1757272AbYDVS15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYDVS1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:26:46 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:40015 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754583AbYDVS0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:26:46 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci_try_set_mwi() in sata_promise
-Date: Tue, 22 Apr 2008 21:26:56 +0300
-User-Agent: KMail/1.9.7
-Cc: Jeff Garzik <jgarzik@pobox.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux-ide@vger.kernel.org
+	Tue, 22 Apr 2008 14:27:47 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62341 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753935AbYDVS1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 14:27:47 -0400
+Date: Tue, 22 Apr 2008 19:26:54 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Daniel Jacobowitz <dan@debian.org>
+cc: David Daney <ddaney@avtrex.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Patch 6/6] Ptrace support for HARDWARE_WATCHPOINTS.
+In-Reply-To: <20080422162343.GA14790@caradoc.them.org>
+Message-ID: <Pine.LNX.4.55.0804221923010.23679@cliff.in.clinika.pl>
+References: <480D2151.2020701@avtrex.com> <480D33EB.30808@avtrex.com>
+ <20080422162343.GA14790@caradoc.them.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804222126.56321.mitov@issp.bas.bg>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, 22 Apr 2008, Daniel Jacobowitz wrote:
 
-The BIOS (Asus A8V Deluxe) is setting incorrectly PCI
-Cache Line Size Register (as seen in lspci -vvv output), 
-so try to correct it by pci_try_set_mwi(pdev).
+> On Mon, Apr 21, 2008 at 05:40:11PM -0700, David Daney wrote:
+> > +struct mips32_watch_regs {
+> > +	unsigned int num_valid;
+> > +	unsigned int reg_mask;
+> > +	unsigned int irw_mask;
+> > +	unsigned long watchlo[8];
+> > +	unsigned int watchhi[8];
+> > +};
+> 
+> Please do not use long in new ptrace interfaces.  Use either
+> uint32_t or uint64_t as appropriate so that it doesn't depend
+> on how the kernel or debugger was built.
 
-Marin Mitov
-----------------------------------------------------------
-Enable Memory-Write-and-Invalidate in sata_promise driver and 
-get rid of strange BIOS-set value for cache line size register.
+ A minor nit from my side too -- since it is a new API it may be wise to
+move wider structure members to the beginning not to waste gaps in memory
+due to alignment.
 
-According to Documentation/pci.txt:  "This enables...
-...and also ensures that the cache line size register
-is set correctly".
-
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-----------------------------------------------------------
---- a/drivers/ata/sata_promise.c	2008-04-22 13:09:15.000000000 +0300
-+++ b/drivers/ata/sata_promise.c	2008-04-22 13:11:01.000000000 +0300
-@@ -1114,6 +1114,7 @@ static int pdc_ata_init_one(struct pci_d
-
- 	/* start host, request IRQ and attach */
- 	pci_set_master(pdev);
-+	pci_try_set_mwi(pdev);
- 	return ata_host_activate(host, pdev->irq, pdc_interrupt, IRQF_SHARED,
- 				 &pdc_ata_sht);
- }
-
-
+  Maciej
