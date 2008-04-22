@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbYDVRvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbYDVRz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763407AbYDVRvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbYDVRvg
+	id S1762846AbYDVRz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYDVRzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:51:36 -0400
-Received: from hu-out-0506.google.com ([72.14.214.225]:30664 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758488AbYDVRvf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:51:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kPldULYSHmWi8IKlAjhw1+c7nHyJ6IHuv+UW0UD+E4qEn7AVewlcM/cENB5fHPs7VN6Wsui10fvnuT3HnKZ7DF8wgSaq3f4ps57FBoFjx8pbyIFRDjxVakBHVSwLHvuXV76dvsCR9ZNV7RstG6dtdfppEEExC6IOjE1RmcEiD4c=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: [PATCH] xfs: #define out unused parameters =?utf-8?q?of=09xfs=5Fbmap=5Fadd=5Ffree_and?= xfs_btree_read_bufl
-Date: Tue, 22 Apr 2008 19:50:54 +0200
-User-Agent: KMail/1.8.2
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20080419142329.GA5339@elte.hu> <20080422172156.GB28933@cs181133002.pp.htv.fi> <480E1FAE.20509@sandeen.net>
-In-Reply-To: <480E1FAE.20509@sandeen.net>
+	Tue, 22 Apr 2008 13:55:10 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:60247 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756546AbYDVRzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 13:55:09 -0400
+Message-ID: <480E2666.9080609@aknet.ru>
+Date: Tue, 22 Apr 2008 21:54:46 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804221950.54827.vda.linux@googlemail.com>
+To: Takashi Iwai <tiwai@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-mm1 (snd-pcsp causes driver conflict)
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5hwsmrcvow.wl%tiwai@suse.de>	<480CD281.6050902@aknet.ru> <s5hd4oib3qt.wl%tiwai@suse.de>
+In-Reply-To: <s5hd4oib3qt.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/mixed;
+ boundary="------------030104060101010102030606"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 19:26, Eric Sandeen wrote:
-> >> I want to eventually reach the state with no warnings
-> >> about unused parameters.
-> > 
-> > The standard kernel pattern in using empty static inline functions (that 
-> > allow type checking).
-> > 
-> > And I'm not sure whether the number of functions you'd have to change 
-> > for reaching your goal has four, five or six digits.
-> 
-> It would be a huge undertaking.
-> 
-> Just building xfs w/ the warning in place exposes tons of unused
-> parameter warnings from outside xfs as well.
+This is a multi-part message in MIME format.
+--------------030104060101010102030606
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Eh... I meant "no warnings about unused parameters" for fs/xfs/* only,
-not for the entire kernel. I filter out other warnings.
+Hello.
 
-I want to do it not as an excercise in perfectionism,
-but as means of making sure we do not waste stack
-passing useless parameters, which is important for xfs.
---
-vda
+Takashi Iwai wrote:
+> Err, no, this wasn't merged to sound git tree because apparently the
+> patch is to 2.6.22 and you didn't resubmit it...
+That's simply because the old one
+applies fine. :)
+
+> No, I gave no ACK yet.
+OK, sorry.
+
+> I'd rather add a new line with a single "depends on SND_PCSP=n".
+> You see a clear difference in the art of dependencies, one for
+> architectures and one for driver-specific.
+Done.
+
+---
+- Update CREDITS with the pc-speaker
+driver authors.
+- Prevent pcspkr from being built together
+with snd-pcsp.
+
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+
+--------------030104060101010102030606
+Content-Type: text/x-patch;
+ name="pcsp-kernel-2.6.25-01.diff"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="pcsp-kernel-2.6.25-01.diff"
+
+diff -ur linux-2.6.25/CREDITS linux-2.6.25-pcsp-kern/CREDITS
+--- linux-2.6.25/CREDITS	2008-02-16 22:37:23.000000000 +0300
++++ linux-2.6.25-pcsp-kern/CREDITS	2008-04-22 21:45:23.000000000 +0400
+@@ -403,6 +403,8 @@
+ N: Erik Inge Bolsø
+ E: knan@mo.himolde.no
+ D: Misc kernel hacks
++D: Updated PC speaker driver for 2.3
++S: Norway
+ 
+ N: Andreas E. Bombe
+ E: andreas.bombe@munich.netsurf.de
+@@ -3116,6 +3118,12 @@
+ S: Sunnyvale, California 94088-4132
+ S: USA
+ 
++N: Stas Sergeev
++E: stsp@users.sourceforge.net
++D: PCM PC-Speaker driver
++D: misc fixes
++S: Russia
++
+ N: Simon Shapiro
+ E: shimon@i-Connect.Net
+ W: http://www.-i-Connect.Net/~shimon
+diff -ur linux-2.6.25/drivers/input/misc/Kconfig linux-2.6.25-pcsp-kern/drivers/input/misc/Kconfig
+--- linux-2.6.25/drivers/input/misc/Kconfig	2008-04-22 20:50:41.000000000 +0400
++++ linux-2.6.25-pcsp-kern/drivers/input/misc/Kconfig	2008-04-22 21:45:23.000000000 +0400
+@@ -15,6 +15,7 @@
+ config INPUT_PCSPKR
+ 	tristate "PC Speaker support"
+ 	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
++	depends on SND_PCSP=n
+ 	help
+ 	  Say Y here if you want the standard PC Speaker to be used for
+ 	  bells and whistles.
+
+--------------030104060101010102030606--
