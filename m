@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764050AbYDVXV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbYDVXrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764050AbYDVXV1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 19:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYDVXVJ
+	id S933529AbYDVXrk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 19:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDVXr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 19:21:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46304 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751638AbYDVXVI (ORCPT
+	Tue, 22 Apr 2008 19:47:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:42697 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYDVXr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 19:21:08 -0400
-Date: Tue, 22 Apr 2008 16:20:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk
-Subject: Re: [git patch] free_irq() fixes
-In-Reply-To: <480E6DE5.6010103@garzik.org>
-Message-ID: <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
-References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 19:47:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wv4jmjFyxlyCdizmsmwA0Hj0xi9A3PO6pTeISEb17z4dkZEIAtYkqM48OkT7FP/n6VNyxryXWcQNbvEj2va+dTbswvEDgtKgRVv9RapuaBBI1axfmpgwgRu8rhPpy8qc/MOA/57L7L7QFifGCjUNGXtAlunLKyxhS0YIXaJ7BXM=
+Message-ID: <86802c440804221647y51fba831wcd176dd37533b655@mail.gmail.com>
+Date: Tue, 22 Apr 2008 16:47:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [bisected] Latest git not seeing HD with sata_nv
+Cc: "Tejun Heo" <htejun@gmail.com>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <adazlrlcw9f.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <adazlrlcw9f.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 22, 2008 at 4:20 PM, Roland Dreier <rdreier@cisco.com> wrote:
+> It seems that commit 305d2a1a ("libata: unify mechanism to request
+>  follow-up SRST") causes sata_nv not to see the HD on a system I have
+>  here; with current git (80750147), I get this in my bootlog:
+>
+>  [    2.425108] Driver 'sd' needs updating - please use bus_type methods
+>  [    2.435751] ACPI: PCI Interrupt Link [LSA0] enabled at IRQ 23
+>  [    2.441508] ACPI: PCI Interrupt 0000:00:05.0[A] -> Link [LSA0] -> GSI 23 (level, low) -> IRQ 23
+>  [    2.452929] sata_nv 0000:00:05.0: Using SWNCQ mode
+>  [    2.457892] scsi0 : sata_nv
+>  [    2.461813] scsi1 : sata_nv
+>  [    2.465891] ata1: SATA max UDMA/133 cmd 0xd480 ctl 0xd400 bmdma 0xcc00 irq 23
+>  [    2.473034] ata2: SATA max UDMA/133 cmd 0xd080 ctl 0xd000 bmdma 0xcc08 irq 23
+>  [    2.565962] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>  [    3.003517] ata2: SATA link down (SStatus 0 SControl 300)
+>  [    3.137171] ACPI: PCI Interrupt Link [LSA1] enabled at IRQ 22
+>  [    3.142926] ACPI: PCI Interrupt 0000:00:05.1[B] -> Link [LSA1] -> GSI 22 (level, low) -> IRQ 22
+>  [    3.151675] sata_nv 0000:00:05.1: Using SWNCQ mode
+>  [    3.156582] scsi2 : sata_nv
+>  [    3.160553] scsi3 : sata_nv
+>
+>  ie no HD is found, even thought he ata1 link comes up, which of course
+>  leads to:
+>
+>  [    4.763274] VFS: Cannot open root device "sda1" or unknown-block(0,0)
+>  [    4.769724] Please append a correct "root=" boot option; here are the available partitions:
+>
+>  and the system is dead.
+>
+>  I did a bisection and came up with 305d2a1a as the culprit.  Then I
+>  applied the revert patch below by hand (since 305d2a1a doesn't revert
+>  entirely cleanly), and things worked again:
+>
+good. my test system had the same problem. just want to start the bisect
+
+other things in the bisect list
+1. clocktest is broken.
+2. kexec RHEL 5.1 the mpt sas only can support 2 cards...
 
 
-On Tue, 22 Apr 2008, Jeff Garzik wrote:
-> 
-> (note, for mwave I couldn't use pSettings, since that might fail the ambiguity
-> test)
-
-Ok, so using the pointer to inside a specific pSettings field is fine.
-
-But can you also explain to me why that insane driver does this:
-
-	 static irqreturn_t UartInterrupt(int irq, void *dev_id)
-	 {
-	-       int irqno = (int)(unsigned long) dev_id;
-	+       unsigned short *irqno = dev_id;
-		...
-		*irqno, dev_id);
-
-instead of just ignoring "dev_id" entirely, and then just using that "irq" 
-argument directly?
-
-		Linus
+YH
