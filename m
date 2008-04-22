@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932904AbYDVW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763860AbYDVW32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932904AbYDVW25 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 18:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbYDVW2s
+	id S1763860AbYDVW32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 18:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759027AbYDVW3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 18:28:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:53859 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758370AbYDVW2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 18:28:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=s7qSxJ4195Y2CKG/9xTj2SM/XtU4jqvQA/Co2S96ZJZnDmQz2YDaNfQ9eF+wc0YS6bGGsvtNV8mMW4s6hrUjlNpxgXMm+kHDHTcemwEr1T4CB5/lrfYagdwOFjq8ySn6t7uF+4IBAEZRtw5emw9HDoh6fzssG55sLMbvXycW8y0=
-Date: Wed, 23 Apr 2008 00:28:47 +0200 (CEST)
-To: Shaohua Li <shaohua.li@intel.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-Subject: [PATCH] PCI Express ASPM support should default to 'No'
-Message-ID: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Tue, 22 Apr 2008 18:29:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33733 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759026AbYDVW3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 18:29:11 -0400
+Message-ID: <480E6687.60804@redhat.com>
+Date: Tue, 22 Apr 2008 17:28:23 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Eric Sandeen <sandeen@sandeen.net>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Joe Perches <joe@perches.com>
+Subject: Re: [PATCH V2] use canary at end of stack to indicate overruns at
+ oops time
+References: <480D5F27.1030101@redhat.com>  <480E5ACF.7010105@sandeen.net> <1208902460.24124.17.camel@brick>
+In-Reply-To: <1208902460.24124.17.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running 'make oldconfig' I just noticed that PCIEASPM defaults to 
-'y' in Kconfig even though the feature is both experimental and the 
-help text recommends that if you are unsure you say 'n'.
-It seems to me that this really should default to 'n', not 'y' at the 
-moment.
-The following patch makes that change. Please consider applying.
+Harvey Harrison wrote:
 
+> Also, do you expect this to ever be used outside of sched.c?  Maybe just
+> leave it as a static function there rather than an inline in the header.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+the patch uses it in exit.c....
 
- Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-index 25b04fb..5a0c6ad 100644
---- a/drivers/pci/pcie/Kconfig
-+++ b/drivers/pci/pcie/Kconfig
-@@ -33,7 +33,7 @@ source "drivers/pci/pcie/aer/Kconfig"
- config PCIEASPM
- 	bool "PCI Express ASPM support(Experimental)"
- 	depends on PCI && EXPERIMENTAL && PCIEPORTBUS
--	default y
-+	default n
- 	help
- 	  This enables PCI Express ASPM (Active State Power Management) and
- 	  Clock Power Management. ASPM supports state L0/L0s/L1.
-
-
+-Eric
