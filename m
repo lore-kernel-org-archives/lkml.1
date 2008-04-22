@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933361AbYDVWlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933400AbYDVWno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933361AbYDVWlD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 18:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYDVWkx
+	id S933400AbYDVWno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 18:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759683AbYDVWng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 18:40:53 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60439
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758764AbYDVWkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 18:40:52 -0400
-Date: Wed, 23 Apr 2008 00:40:48 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
-	lock (first and not last
-Message-ID: <20080422224048.GR24536@duo.random>
-References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random> <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
+	Tue, 22 Apr 2008 18:43:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45387 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758970AbYDVWng (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 18:43:36 -0400
+Date: Wed, 23 Apr 2008 08:43:09 +1000
+From: David Chinner <dgc@sgi.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] xfs: #define out unused parameters of xfs_bmap_add_free and xfs_btree_read_bufl
+Message-ID: <20080422224309.GW108924158@sgi.com>
+References: <20080419142329.GA5339@elte.hu> <200804221142.00914.vda.linux@googlemail.com> <200804221216.25905.vda.linux@googlemail.com> <200804221320.54147.vda.linux@googlemail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
+In-Reply-To: <200804221320.54147.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 01:24:21PM -0700, Christoph Lameter wrote:
-> Reverts a part of an earlier patch. Why isnt this merged into 1 of 12?
+On Tue, Apr 22, 2008 at 01:20:54PM +0200, Denys Vlasenko wrote:
+> Hi David,
+> 
+> xfs_bmap_add_free and xfs_btree_read_bufl functions
+> use some of their parameters only in some cases
+> (e.g. if DEBUG is defined, or on non-Linux OS :)
+> 
+> This patch removes these parameters using #define hack
+> which makes them "disappear" without the need of uglifying
+> every callsite with #ifdefs.
 
-To give zero regression risk to 1/12 when MMU_NOTIFIER=y or =n and the
-mmu notifiers aren't registered by GRU or KVM. Keep in mind that the
-whole point of my proposed patch ordering from day 0, is to keep as
-1/N, the absolutely minimum change that fully satisfy GRU and KVM
-requirements. 4/12 isn't required by GRU/KVM so I keep it in a later
-patch. I now moved mmu_notifier_unregister in a later patch too for
-the same reason.
+We don't use pre-processor hacks to hide function variables for different
+config options.  The XFS header files are messy enough without adding
+additional redefinitions of function types to them.
+
+w.r.t xfs_bmap_add_free(), the correct thing to do is to factor the
+debug code out into a different function that is only compiled
+on debug kernels and remove all the debug checks from xfs_bmap_add_free().
+
+As it is, I don't think that the change is worth the maintenance
+cost for a few bytes of stack space in non-critical paths.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
