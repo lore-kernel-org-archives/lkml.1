@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbYDVQoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYDVQor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761702AbYDVQoX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYDVQoO
+	id S1758623AbYDVQor (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYDVQoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:44:14 -0400
-Received: from sandeen.net ([209.173.210.139]:31023 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417AbYDVQoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:44:13 -0400
-Message-ID: <480E15DC.5040301@sandeen.net>
-Date: Tue, 22 Apr 2008 11:44:12 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 22 Apr 2008 12:44:38 -0400
+Received: from el-out-1112.google.com ([209.85.162.177]:12132 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754482AbYDVQoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:44:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ht9S30oYqcauO4KKrU2zwj5pNgH0Wiq9uBhBNXUuIH696oOzkHTQT4CuQipDHMPhcPKCkFBRFUMHAEot9LLhllawJPer+lfTDpa0QkXWE41qm4jRFdPk7zMp8vkSzComZFu28boWJ4pS3LOypulQjQFHLCReANIDCcjcaHcUgTw=
+Message-ID: <b6a2187b0804220944h43f84cb4j3b06ffdee4557f2@mail.gmail.com>
+Date: Wed, 23 Apr 2008 00:44:26 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [Broken] PCI: clean up resource alignment management
+In-Reply-To: <b6a2187b0804220943l26f7b441sb5a7309dff0e84dc@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Eric Sandeen <sandeen@redhat.com>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] use canary at end of stack to indicate overruns at	oops
- time
-References: <480D5F27.1030101@redhat.com> <20080422084404.GA2388@elte.hu>
-In-Reply-To: <20080422084404.GA2388@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b6a2187b0804220943l26f7b441sb5a7309dff0e84dc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Eric Sandeen <sandeen@redhat.com> wrote:
+Linus, Ivan,
 
->> With the code in place, an intentionally-bloated stack oops does:
->>
->> BUG: unable to handle kernel paging request at ffff8103f84cc680
->> IP: [<ffffffff810253df>] update_curr+0x9a/0xa8
->> PGD 8063 PUD 0 
->> Thread overran stack or stack corrupted
->> Oops: 0000 [1] SMP 
->> CPU 0 
->> ...
-> 
-> excellent. I've queued this up, it's definitely an improvement in 
-> debuggability.
+ I'm having problem loading pccard (Sony PC300 broadband card) with the
+ recent git download, and bisected down to this commit.
 
-Crud, just realized this probably doesn't play well with
-CONFIG_DEBUG_STACK_USAGE.  I think it will need something like:
+ commit 884525655d07fdee9245716b998ecdc45cdd8007
+ Author: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+ Date:   Sun Mar 30 19:50:14 2008 +0400
 
-Index: linux-2.6.25-rc7/kernel/exit.c
-===================================================================
---- linux-2.6.25-rc7.orig/kernel/exit.c	2008-04-20 22:34:16.000000000 -0500
-+++ linux-2.6.25-rc7/kernel/exit.c	2008-04-22 11:38:05.769412824 -0500
-@@ -826,6 +826,8 @@ static void check_stack_usage(void)
- 	unsigned long *n = end_of_stack(current);
- 	unsigned long free;
-
-+	n++;	/* skip over canary at end */
-+
- 	while (*n == 0)
- 		n++;
- 	free = (unsigned long)n - (unsigned long)end_of_stack(current);
+    PCI: clean up resource alignment management
 
 
-Testing now... want me to resend the whole patch, Ingo, or you want to
-just fix it up?  (I'll follow up with the testing results)
+ The symptom that I'm seeing is ...
 
-Thanks,
--Eric
+ yenta_cardbus 0000:15:00.0: device not available because of BAR 7
+ [100:1ff] collisions
+ yenta_cardbus: probe of 0000:15:00.0 failed with error -16
+
+ Reverting the commit solves the problem.
+
+ Let me know if you need me to debug further.
+
+ Thanks,
+ Jeff.
