@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbYDVLLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762999AbYDVLOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762804AbYDVLLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 07:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbYDVLK7
+	id S1762999AbYDVLOT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 07:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760723AbYDVLOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 07:10:59 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:55248 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755129AbYDVLK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 07:10:59 -0400
-Subject: Re: [git pull] scheduler changes for v2.6.26
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: kjwinchester@gmail.com, mingo@elte.hu, elendil@planet.nl,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, efault@gmx.de, richie@coderworld.net,
-       rjw@sisk.pl
-In-Reply-To: <20080422.034935.134139117.davem@davemloft.net>
-References: <200804211831.29976.elendil@planet.nl>
-	 <20080421194359.GD8770@elte.hu> <480DB2DB.9040908@gmail.com>
-	 <20080422.034935.134139117.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 13:10:54 +0200
-Message-Id: <1208862654.7115.228.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 07:14:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3675 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756355AbYDVLOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 07:14:08 -0400
+Date: Tue, 22 Apr 2008 13:14:03 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+Message-ID: <20080422111403.GX12774@kernel.dk>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480DACDD.7040108@qumranet.com> <20080422092230.GW12774@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080422092230.GW12774@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 03:49 -0700, David Miller wrote:
-> From: Kevin Winchester <kjwinchester@gmail.com>
-> Date: Tue, 22 Apr 2008 06:41:47 -0300
+On Tue, Apr 22 2008, Jens Axboe wrote:
+> On Tue, Apr 22 2008, Avi Kivity wrote:
+> > Jens Axboe wrote:
+> > >This adds kernel/smp.c which contains helpers for IPI function calls. In
+> > >addition to supporting the existing smp_call_function() in a more efficient
+> > >manner, it also adds a more scalable variant called 
+> > >smp_call_function_single()
+> > >for calling a given function on a single CPU only.
+> > >
+> > >The core of this is based on the x86-64 patch from Nick Piggin, lots of
+> > >changes since then. "Alan D. Brunelle" <Alan.Brunelle@hp.com> has
+> > >contributed lots of fixes and suggestions as well.
+> > >
+> > >+int smp_call_function_single(int cpu, void (*func) (void *info), void 
+> > >*info,
+> > >+			     int retry, int wait)
+> > >+{
+> > >+	unsigned long flags;
+> > >+	/* prevent preemption and reschedule on another processor */
+> > >+	int me = get_cpu();
+> > >+	int ret = 0;
+> > >+
+> > >+	/* Can deadlock when called with interrupts disabled */
+> > >+	WARN_ON(wait && irqs_disabled());
+> > >+
+> > >+	if (cpu == me) {
+> > >+		local_irq_save(flags);
+> > >+		func(info);
+> > >+		local_irq_restore(flags);
+> > >+	} else {
+> > >+		struct call_single_data d;
+> > >+		struct call_single_data *data;
+> > >+
+> > >+		if (!wait) {
+> > >+			data = kmalloc(sizeof(*data), GFP_ATOMIC);
+> > >+			if (unlikely(!data)) {
+> > >+				ret = -ENOMEM;
+> > >+				goto out;
+> > >+			}
+> > >+			data->flags = CSD_FLAG_ALLOC;
+> > >+		} else {
+> > >+			data = &d;
+> > >+			data->flags = CSD_FLAG_WAIT;
+> > >+		}
+> > >+
+> > >  
+> > 
+> > Instead of introducing a rare error case, how about falling back to the 
+> > wait case if the allocation fails?
+> > 
+> > Of course, if the called function relies on the calling cpu doing 
+> > something else, then this fails, but I don't think anybody would do 
+> > that?  On the other hand, there is at least one use of 
+> > smp_call_function_single() with !wait, which doesn't check the error return.
 > 
-> > kevin@alekhine:~/linux$ ./watch-rq-clock.sh
-> > 89.986517
-> > 81.033471
-> > 76.942776
-> > 90.986318
-> > 75.988551
-> > 85.987089
-> > 74.988696
-> > 85.987078
-> > 73.988858
-> > 88.986641
-> > 68.989600
-> 
-> The results on my 128-cpu Niagara2 box are even more interesting:
-> 
-> davem@maramba:~$ /bin/bash ./watch-rq-clock.sh 
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> 0
-> ....
-> 
-> I guess this script doesn't work correctly when the cpu
-> whose clock value it greps out of /proc/sched_debug is
-> in NOHZ mode?
+> Sure, either failling back to waiting, or add a static call_single_data
+> like it exists for smp_call_function(). In reality it'll never happen,
+> so the fallback static structure appeals the most to me.
 
-Yeah - looking at the script it seems to look at the last one, so if
-indeed that cpu is fully idle its rq clock will be stalled.
+We don't need any extra statically allocated data, we can just reuse the
+'csd' element of the existing call_data_fallback. So that is what I did.
+Once all archs are converted, we can now change
+smp_call_function_single() to a void return, as it always succeeds now.
 
-The fix that went in right after .25 was that when it came out of nohz
-mode rq->clock could catch up 1 jiffy even though it had been out much
-longer.
-
-So the interesting thing to know is whether rq->clock properly accounts
-for all idle time when the cpu leaves idle mode.
-
+-- 
+Jens Axboe
 
