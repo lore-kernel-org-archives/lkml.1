@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765349AbYDVNlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbYDVNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765349AbYDVNlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762734AbYDVNlN
+	id S1762765AbYDVNmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765042AbYDVNlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:41:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35361 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765005AbYDVNlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:41:10 -0400
-Date: Tue, 22 Apr 2008 06:40:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: paulmck@linux.vnet.ibm.com, hch@lst.de, davem@davemloft.net,
-       peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0.01/1] hlist_for_each_entry_xxx: kill the "pos"
- argument
-Message-Id: <20080422064030.82b37fd9.akpm@linux-foundation.org>
-In-Reply-To: <20080422090921.GA130@tv-sign.ru>
-References: <20080421151443.GA29670@tv-sign.ru>
-	<20080422013302.GJ9153@linux.vnet.ibm.com>
-	<20080422090921.GA130@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Apr 2008 09:41:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44055 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765032AbYDVNlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:41:19 -0400
+Message-ID: <480DEAF6.4020005@redhat.com>
+Date: Tue, 22 Apr 2008 08:41:10 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Mark Lord <lkml@rtr.ca>, linux-ext4@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext3: Freeing blocks not in datazone
+References: <4803A109.5080800@rtr.ca> <4803AF3B.2020702@redhat.com> <4803BF54.4040205@rtr.ca> <4803C5E4.3030804@redhat.com> <20080422093145.GB21922@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20080422093145.GB21922@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 22 Apr 2008 13:09:21 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> On 04/21, Paul E. McKenney wrote:
-> >
-> > On Mon, Apr 21, 2008 at 07:14:43PM +0400, Oleg Nesterov wrote:
-> > > (The actual patch is huge, 116K, I'll send it offline. This email contains
-> > >  the chunk for list.h only).
-> > > 
-> > > COMPILE TESTED ONLY (make allyesconfig).
-> > > 
-> > > All hlist_for_each_entry_xxx() macros require the "pos" argument, which is not
-> > > actually needed and can be removed. See the changes in include/linux/list.h
-> > > (note that hlist_for_each_entry_safe() now does prefetch() too).
-> > 
-> > Might it be better to do this in two
-> > phases to allow these patches to be applied incrementally?
-> > 
-> > 1.	Change all to "obsolete" __hlist_for_each_entry_xxx().
-> > 
-> > 2.	Incrementally change to hlist_for_each_entry_xxx(), removing
-> > 	the extra variable where possible.
-> 
-> Yes sure. Actually this was my initial plan.
-> 
-> Andrew, which way do you prefer?
+Jan Kara wrote:
+>> Mark Lord wrote:
+>>> Eric Sandeen wrote:
+>>>> Mark Lord wrote:
+>>>>> One of my test systems here, running 2.6.25-rc8-git*,
+>>>>> just now crapped out with this in the tail end of dmesg:
+>>>>>
+>>>>> [   20.927780] EXT3-fs error (device sda1): ext3_free_blocks: Freeing blocks not in datazone - block
+>>>>> [   20.928756] Aborting journal on device sda1.
+>>>> I've got a similar report from the F9 installer, also on 2.6.25-rc8* ...
+>>>>  trying to reproduce locally.
+>>> ..
+>>>
+>>> Well, if it's of any help, here it was on a 2.4GHz Intel QuadCore,
+>>> 32-bit kernel/userspace, 4GB RAM, PAE-enabled.
+>> Any chance you had done a resize2fs, online or offline, before this?
+>> Just a guess based on the installer thing I'm looking at...
+>   Hmm, Eric, how exactly did the corruption looked like? Are you running
+> SLUB allocator? I'm just wondering whether it doesn't have something in
+> common with the memory corruption as discussed in the thread starting at
+> http://lkml.org/lkml/2008/4/19/85
 
-Neither ;)
+It turns out that that problem (sorry, should have followed up) was due
+to the installer not copying the last bit of a filesystem image onto the
+device, and the fs was then trying to use whatever it found on the
+un-copied portion of the disk as metadata.
 
-The smoothest transition would come by adding new macros with new names,
-then migrating all callers over then removing the old macros.
+So not an ext3 bug in that case.
 
-Preferably after leaving the old, unused macros in place for a kernel
-cycle, but there's not much value in that unless we can make them emil
-warnings when used, which isn't completely trivial.
-
-Plus there is no sensible new name which we can use.  Maybe you can think
-of one, in which case that'd be a nice way to go.
-
-> and should I wait for -rc1?
-
-I wouldn't consider a change like this before -rc1.
+-Eric
