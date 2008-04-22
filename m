@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYDVOGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762494AbYDVOIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYDVOGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYDVOGj
+	id S1762494AbYDVOIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYDVOI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:06:39 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:62229 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754115AbYDVOGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:06:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAOKNDUhMROPA/2dsb2JhbACBUqsS
-Date: Tue, 22 Apr 2008 10:06:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@osdl.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix x86_64 page fault scheduler race
-Message-ID: <20080422140636.GA1683@Krystal>
-References: <20080422132151.GA32120@Krystal> <20080422132614.GC7311@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 22 Apr 2008 10:08:26 -0400
+Received: from sandeen.net ([209.173.210.139]:29986 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbYDVOIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:08:25 -0400
+Message-ID: <480DF158.60909@sandeen.net>
+Date: Tue, 22 Apr 2008 09:08:24 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+MIME-Version: 1.0
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: David Chinner <dgc@sgi.com>, Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xfs: expose no-op xfs_put_perag()
+References: <20080419142329.GA5339@elte.hu> <200804221532.22701.vda.linux@googlemail.com> <200804221540.12382.vda.linux@googlemail.com> <200804221546.58136.vda.linux@googlemail.com>
+In-Reply-To: <200804221546.58136.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080422132614.GC7311@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:55:04 up 53 days, 10:06,  6 users,  load average: 0.43, 0.80,
-	0.69
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+Denys Vlasenko wrote:
+> Hi David,
 > 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> Inline function xfs_put_perag() in fs/xfs/xfs_mount.h is a no-op.
 > 
-> > You are right in that x86_64 does not seems to play as safely as 
-> > x86_32 on this matter; it uses current->mm. Probably it shouldn't 
-> > assume "current" is valid. Actually, I don't see where x86_64 disables 
-> > interrupts around __switch_to, so this would seem to be a race 
-> > condition. Or have I missed something ?
+> This patch converts it to no-op macro.
 > 
-> the scheduler disables interrupts around __switch_to(). (x86 does not 
-> set __ARCH_WANT_INTERRUPTS_ON_CTXSW)
+> As a result, gcc will emit warning about unused variables,
+> parameters and so on not in this function, but in its callers,
+> which is more useful.
 > 
-> 	Ingo
+> This patch, together with previous ones, has already resulted
+> in more unused params discovered and warned about by gcc.
+> 
+> There is no object code size difference from this change.
 
+Denys, thanks for going through all this; I didn't mean to discount the
+work with the stackcheck reports.  I've done a lot of similar xfs
+pruning in the past, and every little bit helps.  It is still hard to
+find significant reductions in the critical callchains though!
 
-Ok, so I guess it's only useful to NMIs then. However, it makes me
-wonder why this comment was there in the first place on x86_32
-vmalloc_fault() and why it uses read_cr3() :
+If the xfs codebase gets to the point where things are fairly well
+cleaned up it might be nice to add the gcc warning to the makefiles, add
+unused attributes to the vfs ops vectors as needed, and keep it clean
+from this point on...
 
-        * Do _not_ use "current" here. We might be inside
-        * an interrupt in the middle of a task switch..
+Thanks,
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-Eric
