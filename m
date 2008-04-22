@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764967AbYDVNs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765552AbYDVNtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764967AbYDVNs6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYDVNsu
+	id S1765552AbYDVNtt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762821AbYDVNtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:48:50 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:53692
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752584AbYDVNst (ORCPT
+	Tue, 22 Apr 2008 09:49:40 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:48519 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760988AbYDVNtj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:48:49 -0400
-Date: Tue, 22 Apr 2008 15:48:47 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 0 of 9] mmu notifier #v12
-Message-ID: <20080422134847.GT12709@duo.random>
-References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random> <20080409185500.GT11364@sgi.com> <20080422072026.GM12709@duo.random> <20080422120056.GR12709@duo.random> <20080422130120.GR22493@sgi.com> <20080422132143.GS12709@duo.random> <20080422133604.GN30298@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422133604.GN30298@sgi.com>
+	Tue, 22 Apr 2008 09:49:39 -0400
+Date: Tue, 22 Apr 2008 22:49:35 +0900 (JST)
+Message-Id: <20080422.224935.00673711.taka@valinux.co.jp>
+To: Jens Axboe <jens.axboe@oracle.com>
+From: taka@valinux.co.jp
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 08:36:04AM -0500, Robin Holt wrote:
-> I am a little confused about the value of the seq_lock versus a simple
-> atomic, but I assumed there is a reason and left it at that.
+To agk@sourceware.org
+cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 0/10] I/O context inheritance
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-There's no value for anything but get_user_pages (get_user_pages takes
-its own lock internally though). I preferred to explain it as a
-seqlock because it was simpler for reading, but I totally agree in the
-final implementation it shouldn't be a seqlock. My code was meant to
-be pseudo-code only. It doesn't even need to be atomic ;).
+Hi,
 
-> I don't know what you mean by "it'd" run slower and what you mean by
-> "armed and disarmed".
+This series of patches make the block I/O layer and the I/O schedulers
+be able to determine the right io_context of every I/O.
 
-1) when armed the time-window where the kvm-page-fault would be
-blocked would be a bit larger without invalidate_page for no good
-reason
+The current implementation of the block I/O layer and the I/O schedulers
+assume that the current process is the one which issued the given I/O,
+then use the io_context of this process to control the I/O.
+But this assumption isn't quite right because several kernel threads
+will handle I/O requests on behalf of the processes which originated them.
+This often happens when you want to use device mapper modules.
 
-2) if you were to remove invalidate_page when disarmed the VM could
-would need two branches instead of one in various places
+The patches make every bio has a pointer to an io_context, which will
+be set when it is allocated or cloned. So it makes it possible to find
+the right io_context from any bio at any place.
 
-I don't want to waste cycles if not wasting them improves performance
-both when armed and disarmed.
+I'm waiting for your comments.
 
-> For the sake of this discussion, I will assume "it'd" means the kernel in
-> general and not KVM.  With the two call sites for range_begin/range_end,
+Thank you,
+Hirokazu Takahashi.
 
-I actually meant for both.
 
-> By disarmed, I will assume you mean no notifiers registered for a
-> particular mm.  In that case, the cache will make the second call
-> effectively free.  So, for the disarmed case, I see no measurable
-> difference.
 
-For rmap is sure effective free, for do_wp_page it costs one branch
-for no good reason.
 
-> For the case where there is a notifier registered, I certainly can see
-> a difference.  I am not certain how to quantify the difference as it
 
-Agreed.
-
-> When I was discussing this difference with Jack, he reminded me that
-> the GRU, due to its hardware, does not have any race issues with the
-> invalidate_page callout simply doing the tlb shootdown and not modifying
-> any of its internal structures.  He then put a caveat on the discussion
-> that _either_ method was acceptable as far as he was concerned.  The real
-> issue is getting a patch in that satisfies all needs and not whether
-> there is a seperate invalidate_page callout.
-
-Sure, we have that patch now, I'll send it out in a minute, I was just
-trying to explain why it makes sense to have an invalidate_page too
-(which remains the only difference by now), removing it would be a
-regression on all sides, even if a minor one.
