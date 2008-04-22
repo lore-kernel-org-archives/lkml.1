@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbYDVB30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932824AbYDVBaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932703AbYDVB30 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 21:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761600AbYDVB25
+	id S932824AbYDVBaR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 21:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760393AbYDVB3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 21:28:57 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43690 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756696AbYDVB2y (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 21:28:54 -0400
-Date: Tue, 22 Apr 2008 11:28:19 +1000
-From: David Chinner <dgc@sgi.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-Message-ID: <20080422012819.GT108924158@sgi.com>
-References: <20080419142329.GA5339@elte.hu> <200804210945.24479.vda.linux@googlemail.com> <480C96BC.4020400@sandeen.net> <200804212151.02241.vda.linux@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 Apr 2008 21:29:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38113 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761396AbYDVB3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 21:29:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Date: Tue, 22 Apr 2008 03:30:25 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jiri Slaby <jirislaby@gmail.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <200804220254.45251.rjw@sisk.pl> <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200804212151.02241.vda.linux@googlemail.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200804220330.27034.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 09:51:02PM +0200, Denys Vlasenko wrote:
-> On Monday 21 April 2008 15:29, Eric Sandeen wrote:
-> > > Some number has to be picked. Why fitting in 4k is "bad" and fitting
-> > > in 8k is "not bad"?
-> > 
-> > 
-> > Because well-written code in several subsystems, used in combination in
-> > common configurations, does not always fit, that is why.
-> > 
-> > Show me the "bug" in an nfs+xfs+md+scsi writeback stack oops
+On Tuesday, 22 of April 2008, Linus Torvalds wrote:
 > 
-> Why nfs+xfs+md+ide works?
+> On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > The same place, dentry.d_hash.next is 1. No slub debug clues... I think, I'll 
+> > > give slab a try. Any other clues?
+> > 
+> > Well, SLUB uses some per CPU data structures.  Is it possible that they get
+> > corrupted and which leads to the observed symptoms?
+> 
+> It really doesn't look like the slub allocations themselves would be 
+> corrupted. It very much looks like wild pointers corrupting allocations 
+> that themselves were fine.
+> 
+> The nybble pattern looked intriguing (especially as it apparently also hit 
+> a normal page cache page!) but obviously not everything matches that 
+> pattern (eg your value of 1).
+> 
+> What do you do to trigger this? Any particular load? Is it still just 
+> doing suspend/resume, or do you have something else that you are playing 
+> with?
 
-Luck?
+I've seen that only once, so far.  Jiri seems to be able to trigger it more often.
 
-With 4k stacks, you really don't need NFS at all - you just have
-enter memory reclaim at the wrong time (i.e. when something else
-was already consuming 2/3rds of the 4k stack).
+> Also, have you tried CONFIG_DEBUG_PAGEALLOC? That can also be a very 
+> powerful way to find memory corruption.
 
-> Does scsi intrinsically require more stack than ide?
+I always have CONFIG_DEBUG_PAGEALLOC set.
 
-<shrug>
+> Does anybody see any other patterns? Looking at the modules linked in in 
+> the oopses from Zdenek, Rafael and Jiri, I don't see anything odd. You 
+> both all have 80211 support, maybe the corruption comes from the wireless 
+> layer?
 
-> Why xfs code is said to be 5 timed bigged than e.g. reiserfs?
-> Does it have to be that big?
+Well, I thought about that too.  However, I had a hang before 2.6.25-git2 that
+I suspect was related (I couldn't get any information from the box, as it just
+hung solid), so I'd rather suspect some x86 changes.
 
-If we cut the bulkstat code out, the handle interface, the
-preallocation, the journalled quota, the delayed allocation, all the
-runtime validation, the shutdown code, the debug code, the tracing
-code, etc, then we might get down to the same size reiser....
+> Or maybe it's the x86 code changes themselves, and it really is about the 
+> suspend/resume sequence itself.
 
-> Does it really have to eat lots of stack?
+It seems to be specific to x86-64, AFAICS.
 
-Writeback is done under ENOMEM pressure, and XFS can't provide the
-guarantees mempools need to work. That leaves the stack as the only
-place we can put the things we need. e.g. the args structures that
-tell the allocator what to do and retain state between subsequent
-low level allocation calls use ~250 bytes of stack just by
-themselves....
+> Are all the people who see this doing suspends? 
 
-We've already chopped off the low hanging fruit, added noinline to
-every function definition to prevent compiler heuristics from
-blowing out stack usage by 25% and reduced use of temporary
-variables as much as possible. There's very little fat left to trim,
-and still we can't reliably fit in 4k stacks.
+I'm not sure.
 
-Patches are welcome - I'd be over the moon if any of the known 4k
-stack advocates sent a stack reduction patch for XFS, but it seems
-that actually trying to fix the problems is much harder than
-resending a one line patch every few months....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Thanks,
+Rafael
