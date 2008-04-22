@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYDVRHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762514AbYDVRIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbYDVRHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYDVRHd
+	id S1762514AbYDVRIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYDVRI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:07:33 -0400
-Received: from xenotime.net ([66.160.160.81]:43722 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755736AbYDVRHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:07:32 -0400
-Date: Tue, 22 Apr 2008 10:07:22 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: linux-kernel@vger.kernel.org
-cc: torvalds@linux-foundation.org, mingo@redhat.com
-Subject: [PATCH] kernel-doc: fix sched.c missing parameter
-Message-ID: <Pine.LNX.4.64.0804221006160.4897@shark.he.net>
+	Tue, 22 Apr 2008 13:08:27 -0400
+Received: from mail.ttlc.net ([66.94.32.4]:3161 "EHLO mail.ttlc.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755747AbYDVRI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 13:08:26 -0400
+Message-ID: <480E19C9.7080807@isomerica.net>
+Date: Tue, 22 Apr 2008 13:00:57 -0400
+From: Dan Noe <dpn@isomerica.net>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sanjeev Aditya Naga <sanjeev.kernel@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: config file part of kernel!
+References: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
+In-Reply-To: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 4/22/2008 12:53, Sanjeev Aditya Naga wrote:
+> Will it be good, if we make the `config` file (used to
+> build a kernel) part of the built kernel. So that one in
+> need, can extract it from the kernel using some
+> userspace tool!?
 
-Add missing kernel-doc in kernel/sched.c:
+Enable the CONFIG_IKCONFIG and CONFIG_IKCONFIG_PROC option.  It allows 
+you to access the active kernel's .config from /proc.
 
-Warning(linux-2.6.25-git3//kernel/sched.c:7044): No description found for parameter 'span'
+Cheers,
+Dan
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- kernel/sched.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6.25-git3.orig/kernel/sched.c
-+++ linux-2.6.25-git3/kernel/sched.c
-@@ -7035,6 +7035,7 @@ static int find_next_best_node(int node,
- /**
-  * sched_domain_node_span - get a cpumask for a node's sched_domain
-  * @node: node whose cpumask we're constructing
-+ * @span: resulting cpumask
-  *
-  * Given a node, construct a good cpumask for its sched_domain to span. It
-  * should be one that prevents unnecessary balancing, but also spreads tasks
+-- 
+Dan Noe (dpn@lampreynetworks.com)
+Software Engineer
+Lamprey Networks, Inc.
