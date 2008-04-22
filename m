@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbYDVOyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbYDVOz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764701AbYDVOyd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYDVOy0
+	id S1761246AbYDVOz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYDVOzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:54:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27898 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbYDVOyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:54:25 -0400
-Date: Tue, 22 Apr 2008 16:54:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: agk@sourceware.org, dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/10] I/O context inheritance
-Message-ID: <20080422145418.GL12774@kernel.dk>
-References: <20080422.224935.00673711.taka@valinux.co.jp> <20080422.230318.112756414.taka@valinux.co.jp>
+	Tue, 22 Apr 2008 10:55:19 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33934 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750726AbYDVOzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:55:18 -0400
+Date: Tue, 22 Apr 2008 10:55:17 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: False positive in checkpatch (2.6.25)
+In-Reply-To: <20080422080547.GC26446@shadowen.org>
+Message-ID: <Pine.LNX.4.44L0.0804221054310.8058-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422.230318.112756414.taka@valinux.co.jp>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22 2008, Hirokazu Takahashi wrote:
-> Hi,
-> 
-> Sorry, these patches are for linux-2.6.25.
-> 
-> > This series of patches make the block I/O layer and the I/O schedulers
-> > be able to determine the right io_context of every I/O.
-> > 
-> > The current implementation of the block I/O layer and the I/O schedulers
-> > assume that the current process is the one which issued the given I/O,
-> > then use the io_context of this process to control the I/O.
-> > But this assumption isn't quite right because several kernel threads
-> > will handle I/O requests on behalf of the processes which originated them.
-> > This often happens when you want to use device mapper modules.
-> > 
-> > The patches make every bio has a pointer to an io_context, which will
-> > be set when it is allocated or cloned. So it makes it possible to find
-> > the right io_context from any bio at any place.
-> > 
-> > I'm waiting for your comments.
+On Tue, 22 Apr 2008, Andy Whitcroft wrote:
 
-Can you give a brief summary of what you need this stuff for?
+> On Thu, Apr 17, 2008 at 03:33:48PM -0400, Alan Stern wrote:
+> 
+> > ERROR: space prohibited after that '*' (ctx:ExW)
+> > #15: FILE: drivers/usb/core/driver.c:1544:
+> > +        * when the system suspend started, so we don't want to resume it
+> >          ^
+> > 
+> > ERROR: Missing Signed-off-by: line(s)
+> 
+> Yes, pretty sure that was triggered by a bug in comment tracking when
+> it moved into quote tracking.  From my testing here it should have been
+> fixed in v0.17, you have v0.16.  Andrew has the change queued up so it
+> should be on its way to mainline.  You can get the latest from the url
+> below to confirm:
+> 
+> 	http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/
+> 
+> Thanks for the report.
 
--- 
-Jens Axboe
+Confirmed: checkpatch.pl-next doesn't have this problem.
+
+Alan Stern
 
