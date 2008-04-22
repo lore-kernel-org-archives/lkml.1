@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761866AbYDVRNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbYDVRSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761866AbYDVRNp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYDVRNd
+	id S1760180AbYDVRSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYDVRSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:13:33 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6797 "EHLO kernel.dk"
+	Tue, 22 Apr 2008 13:18:25 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:34365 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbYDVRNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:13:32 -0400
-Date: Tue, 22 Apr 2008 19:13:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-Message-ID: <20080422171324.GP12774@kernel.dk>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org> <20080422145105.GJ12774@kernel.dk> <alpine.LFD.1.10.0804220759020.2779@woody.linux-foundation.org> <20080422164947.GN12774@kernel.dk> <20080422170405.GO12774@kernel.dk>
-MIME-Version: 1.0
+	id S1755753AbYDVRSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 13:18:24 -0400
+Date: Tue, 22 Apr 2008 20:23:37 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, hch@lst.de, davem@davemloft.net,
+       peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0.01/1] hlist_for_each_entry_xxx: kill the "pos" argument
+Message-ID: <20080422162337.GB19909@tv-sign.ru>
+References: <20080421151443.GA29670@tv-sign.ru> <20080422013302.GJ9153@linux.vnet.ibm.com> <20080422090921.GA130@tv-sign.ru> <20080422064030.82b37fd9.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422170405.GO12774@kernel.dk>
+In-Reply-To: <20080422064030.82b37fd9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22 2008, Jens Axboe wrote:
-> On Tue, Apr 22 2008, Jens Axboe wrote:
-> > +		data = kmalloc(sizeof(*data), GFP_ATOMIC);
-> > +		if (!unlikely(!data)) {
-> 
-> Woops. I'll test everything and send out the full series, at least the
-> intention should have been clear.
+On 04/22, Andrew Morton wrote:
+>
+> > On Tue, 22 Apr 2008 13:09:21 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> > On 04/21, Paul E. McKenney wrote:
+> > >
+> > > Might it be better to do this in two
+> > > phases to allow these patches to be applied incrementally?
+> > >
+> > > 1.	Change all to "obsolete" __hlist_for_each_entry_xxx().
+> > >
+> > > 2.	Incrementally change to hlist_for_each_entry_xxx(), removing
+> > > 	the extra variable where possible.
+> >
+> > Yes sure. Actually this was my initial plan.
+> >
+> > Andrew, which way do you prefer?
+>
+> Neither ;)
+>
+> The smoothest transition would come by adding new macros with new names,
+> then migrating all callers over then removing the old macros.
 
-But wait, falling back to wait cannot always be safe if we are called
-with interrupts disabled. I don't see any way around using the global
-fallback for that case.
+OK, will do, but....
 
--- 
-Jens Axboe
+> Preferably after leaving the old, unused macros in place for a kernel
+> cycle, but there's not much value in that unless we can make them emil
+> warnings when used, which isn't completely trivial.
+
+we can make
+
+	static inline void __deprecated nop_for_hlist_for_each_entry(void) {}
+
+and insert it into the old macro's body
+
+> Plus there is no sensible new name which we can use.  Maybe you can think
+> of one, in which case that'd be a nice way to go.
+
+Ah. But this _is_ the problem. There is no a good name for hlist_for_each_entry()
+except of course hlist_for_each_entry.
+
+Well. I'll use hnode_for_each_entry_xxx(), but please let me know if you
+change your mind ;)
+
+Oleg.
 
