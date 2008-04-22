@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbYDVOWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbYDVOZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764576AbYDVOWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYDVOWX
+	id S1763926AbYDVOZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYDVOZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:22:23 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:11400 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbYDVOWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:22:22 -0400
-X-IronPort-AV: E=Sophos;i="4.25,694,1199685600"; 
-   d="scan'208";a="582498329"
-Date: Tue, 22 Apr 2008 09:21:03 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: werner <werner@copaya.yi.org>, linux-kernel@vger.kernel.org,
-       Tim Gardner <tim.gardner@canonical.com>
-Subject: Re: EDD problem -- regression -- crash on booting by probing EDD
-Message-ID: <20080422142103.GA5652@auslistsprd01.us.dell.com>
-References: <1208730812.6879@copaya.yi.org> <20080422062840.195b4d3d.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Tue, 22 Apr 2008 10:25:46 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55387 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753411AbYDVOZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:25:45 -0400
+Date: Tue, 22 Apr 2008 09:25:39 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080422142539.GA12623@sergelap.austin.ibm.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422062840.195b4d3d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1207812980.7509.25.camel@x61.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 06:28:40AM -0700, Andrew Morton wrote:
-> > On Sun, 20 Apr 2008 19:33:32 -0300 (GFT) "werner" <werner@copaya.yi.org> wrote:
-> > There is a regression in 2.6.25.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> On Wed, 2008-04-09 at 20:59 -0500, Serge E. Hallyn wrote:
 > 
-> Rafael bcc'ed.
-> 
-> >   Booting stops with: Probing EDD (edd=off to disable) message.
+> > Feh, so of course sysfs would have the most interactions for a device
+> > namespace, but now we have pty, network, and user namespace all needing
+> > some sort of sysfs solution.  For a quickfix for
+> > CONFIG_USER_SCHED+CONFIG_USER_NS, I just moved /sys/kernel/uids/<uid>
+> > to /sys/kernel/uids/<userns_address>/<uid>.  But what would be a *good*
+> > general solution?
 > > 
-> > It dont work the kernel boot parameter edd=off .  With pci=off the computer continues to boot, but later it dont find hard disks etc.
+> > ln -s /sys /proc/self/sys?
 > 
-> Tim and Matt cc'ed.
+> LOL
 > 
-> > Thats happening on 2.6.25   definitive, but was verified to go back until 2.6.24-rc6-git8, but it wasnt yet at 2.6.24-rc6-git2 which worked correctly.
-> > 
+> In /proc I prefer the /proc/self approach because we can do it and it is
+> just much easier to setup and use.  (Plus we have weird problems if we
+> try and capture more then the pid namespace).
 > 
-> hm, that's a nice narrow window.  Unfortunately for the next few days I
-> can't personally get in and find out what we changed during it.
+> For other filesystems the only really viable option is to capture
+> namespaces at mount time, as we are doing for devpts and proc with
+> respect to the pid namespace.
+> 
+> For the network namespace where it is very much more then a single
+> directory with symlinks from physical devices pointing at logical
+> network interfaces.
+> 
+> My last effort in that area was ok'd by Tejun lightly tested by a few
+> others and misplaced by gregkh so I don't think we have a real problem
+> with resurrecting those patches cleaning them up a bit and merging them.
+> 
+> The biggest gotcha with sysfs is that the VFS locking for the dcache
+> is in the wrong order for distributed filesystems, where we would like
+> to make the change atomically on the server and them make the change in
+> the local cache.  Or in this case the sysfs internal data structures.
+> The truly nasty case is supporting rename (as sysfs does) as the VFS
+> is not at all happy if you just punt and shoot down the dentries and 
+> instantiate new ones.
+> 
+> I'm hoping to be able to get back at this in the week or so as things
+> settle down from my move.  My last patches should be in my proof of
+> concept network namespace tree, if they don't show up elsewhere.
 
-I've scanned the diff between these, and can't see anything that would
-obviously cause a problem.  Nothing that touches the EDD codepath
-directly at least.  I'll be curious to see the additional initcall
-debug data.
+Is that the tree I'd get from
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+git-fetch
+git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-netns.git
+master:ebieder.master
+
+?  So I'd add a user_ns to the struct sysfs_tag_info?
+
+If so I'll give it a whirl.
+
+thanks,
+-serge
+
+> It isn't my perception that we have a design problem rather, we just
+> need to move an important piece of code in a subtle and moderately
+> uninteresting direction for it's primary maintainer.  
+> 
+> Further what I did for the network namespace should easily handle the
+> uid/gid namespace and should be a good starting place for a general
+> device namespace.
+> 
+> Eric
+> 
