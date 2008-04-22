@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965100AbYDVO2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965421AbYDVOaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965100AbYDVO2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbYDVO2n
+	id S965421AbYDVOaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbYDVO36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:28:43 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:54771 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYDVO2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:28:42 -0400
-Date: Tue, 22 Apr 2008 17:28:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] xfs: #define out unused parameters of
-	xfs_bmap_add_free and xfs_btree_read_bufl
-Message-ID: <20080422142807.GD16895@cs181133002.pp.htv.fi>
-References: <20080419142329.GA5339@elte.hu> <200804221142.00914.vda.linux@googlemail.com> <200804221216.25905.vda.linux@googlemail.com> <200804221320.54147.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200804221320.54147.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 22 Apr 2008 10:29:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55606 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965327AbYDVO35 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:29:57 -0400
+Date: Tue, 22 Apr 2008 07:29:33 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Reuben Farrelly <reuben-linuxkernel@reub.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: StackProtector Oopses - Re: 2.6.25-mm1
+Message-ID: <20080422072933.751fe86f@laptopd505.fenrus.org>
+In-Reply-To: <20080422083408.GB28970@elte.hu>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<48089BDE.6040100@reub.net>
+	<20080418133645.GF31797@elte.hu>
+	<4808B4EF.8030901@reub.net>
+	<20080421150604.GH5474@elte.hu>
+	<20080421184859.48efcb67@laptopd505.fenrus.org>
+	<20080422083408.GB28970@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 01:20:54PM +0200, Denys Vlasenko wrote:
-> Hi David,
-> 
-> xfs_bmap_add_free and xfs_btree_read_bufl functions
-> use some of their parameters only in some cases
-> (e.g. if DEBUG is defined, or on non-Linux OS :)
-> 
-> This patch removes these parameters using #define hack
-> which makes them "disappear" without the need of uglifying
-> every callsite with #ifdefs.
-> 
-> Code size difference on 32-bit x86:
->  393457    2904    2952  399313   617d1 linux-2.6-xfs6-TEST/fs/xfs/xfs.o
->  393441    2904    2952  399297   617c1 linux-2.6-xfs7-TEST/fs/xfs/xfs.o
->...
+On Tue, 22 Apr 2008 10:34:08 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Elimination of completely unused parameters makes sense, but IMHO using 
-such #define hacks for minuscule code size and stack usage advantages is 
-not worth it.
+> 
+> * Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > > yeah. Arjan - any new patches to try that might fix the bootup
+> > > test?
+> > 
+> > I've looked at the disassembly and compared it to mine, and the gcc
+> > is doing something... rather unexpected. The only thing I can think
+> > of is the patch below, it should make it a ton more robust...
+> 
+> > -	memset(&foo, 0, 2*sizeof(foo)); /* deliberate buffer
+> > overflow */
+> > +	if (current->stack_canary == *(((unsigned long *)&foo)+1))
+> > +		*(((unsigned long *)&foo)+1) = 0;
+> > +	else
+> > +		printk(KERN_ERR "No -ftack-protector canary
+> > found\n");
+> 
+> ok, i queued this up. (with the typo that Valdis noticed fixed)
+> 
+> but ... this bug needs to be figured out, not worked around.
 
-cu
-Adrian
+well what I figured out was that the stack layout was "different".
+Why/how I don't know, but being more robust against that is a good idea
+in general.
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
