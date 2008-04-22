@@ -1,51 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbYDVNmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbYDVNrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765513AbYDVNmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765415AbYDVNmO
+	id S1762856AbYDVNrr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYDVNrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:42:14 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:40696 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765414AbYDVNmL (ORCPT
+	Tue, 22 Apr 2008 09:47:37 -0400
+Received: from hu-out-0506.google.com ([72.14.214.232]:10430 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbYDVNrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:42:11 -0400
+	Tue, 22 Apr 2008 09:47:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=B7vdk/LfsHceli9DzuZtfs8dT+fVC9DbNweLQt36rmB7Oc3Pe6HipKlKYmvrHpQMLfHFzMX86GwpN48t8f0Zf31M9bexvSCQJTLTbnqWqIr9AneTCQ1nj5PWx3JiTiCq6YZF6upwpqPhPQhtqfy+U0ZvTp55mr+Qygj51rUKCj4=
-Message-ID: <480DEB1F.5060500@gmail.com>
-Date: Tue, 22 Apr 2008 22:41:51 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=GY5EnQApscUA2F2tNyj7xA1Fu+aCmIatZhEPBZZmZ7F9SfmhS/JQ+IJyx0SYaXSNreU7YqpYY8CaRU5GK9qR6AobZVQstIBRvJFu41OZiwmvN3MKaTbzGeiiy9oqExQd3T6T4W6fo/ddAcr1jVaT7Al5AXp/gvj4dIjwQsdKeA0=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: [PATCH] xfs: expose no-op xfs_put_perag()
+Date: Tue, 22 Apr 2008 15:46:58 +0200
+User-Agent: KMail/1.8.2
+Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804221532.22701.vda.linux@googlemail.com> <200804221540.12382.vda.linux@googlemail.com>
+In-Reply-To: <200804221540.12382.vda.linux@googlemail.com>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com>
-In-Reply-To: <480DE9E8.2070809@ru.mvista.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_SxeDIsUInYBOR5T"
+Message-Id: <200804221546.58136.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
->>>    Jeff, Tejun, what "sff" in the file name actually means? Isn't it 
->>> strange that the drivers lacking DMA support or not really compliant 
->>> with SFF-8038i have to link with this file?
-> 
->> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
->> and bmdma is acceptable, hopefully, right?
-> 
->    What's sff sans bmdma?
+--Boundary-00=_SxeDIsUInYBOR5T
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
-although it's entirely possible that I misunderstood it and used it in 
-the wrong way.  Alan, can you please clear up the confusion?
+Hi David,
 
--- 
-tejun
+Inline function xfs_put_perag() in fs/xfs/xfs_mount.h is a no-op.
+
+This patch converts it to no-op macro.
+
+As a result, gcc will emit warning about unused variables,
+parameters and so on not in this function, but in its callers,
+which is more useful.
+
+This patch, together with previous ones, has already resulted
+in more unused params discovered and warned about by gcc.
+
+There is no object code size difference from this change.
+
+Compile tested only.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
+
+--Boundary-00=_SxeDIsUInYBOR5T
+Content-Type: text/x-diff;
+  charset="koi8-r";
+  name="xfs_trivial0-expose-xfs_put_perag-noop.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="xfs_trivial0-expose-xfs_put_perag-noop.patch"
+
+diff -urpN linux-2.6-xfs5/fs/xfs/xfs_mount.h linux-2.6-xfs6/fs/xfs/xfs_mount.h
+--- linux-2.6-xfs5/fs/xfs/xfs_mount.h	2008-04-22 04:06:44.000000000 +0200
++++ linux-2.6-xfs6/fs/xfs/xfs_mount.h	2008-04-22 12:13:17.000000000 +0200
+@@ -471,11 +471,17 @@ xfs_get_perag(struct xfs_mount *mp, xfs_
+ 	return &mp->m_perag[XFS_INO_TO_AGNO(mp, ino)];
+ }
+ 
++/* Macro (instead of inline) makes gcc understand that params are not used
++ * and emit "unused" warnings *in callers* if they otherwise are not using
++ * variables passed to xfs_put_perag. We want to know that. */
++#define xfs_put_perag(mp, pag) ((void)0)
++#if 0
+ static inline void
+ xfs_put_perag(struct xfs_mount *mp, xfs_perag_t *pag)
+ {
+ 	/* nothing to see here, move along */
+ }
++#endif
+ 
+ /*
+  * Per-cpu superblock locking functions
+
+--Boundary-00=_SxeDIsUInYBOR5T--
