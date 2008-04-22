@@ -1,72 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbYDVJ7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbYDVKF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762873AbYDVJ7n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbYDVJ7c
+	id S1762685AbYDVKF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 06:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbYDVKFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:59:32 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:59518 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758851AbYDVJ7b (ORCPT
+	Tue, 22 Apr 2008 06:05:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36608
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758558AbYDVKFR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:59:31 -0400
-Subject: Re: [git pull] scheduler changes for v2.6.26
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Frans Pop <elendil@planet.nl>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Richard Jonsson <richie@coderworld.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-In-Reply-To: <20080422085905.GA9939@elte.hu>
-References: <20080419181304.GB21353@elte.hu>
-	 <200804192147.43719.elendil@planet.nl> <20080421123903.GE9554@elte.hu>
-	 <200804211831.29976.elendil@planet.nl> <20080421194359.GD8770@elte.hu>
-	 <1208854300.4695.7.camel@marge.simson.net>  <20080422085905.GA9939@elte.hu>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 11:59:23 +0200
-Message-Id: <1208858363.7115.223.camel@twins>
+	Tue, 22 Apr 2008 06:05:17 -0400
+Date: Tue, 22 Apr 2008 03:05:19 -0700 (PDT)
+Message-Id: <20080422.030519.259068348.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: Soft lockup regression from today's sched.git merge.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080422091456.GC9939@elte.hu>
+References: <20080422.015931.70144614.davem@davemloft.net>
+	<20080422091456.GC9939@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 10:59 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > > the 700-800 msecs of delays you see are very "brutal" so there must 
-> > > be something fundamentally wrong going on here.
-> > 
-> > I'm seeing latency hits with 26.git, whereas 25 is hit free.
-> 
-> ok. I think what happens is that your broken sched-clock hid the real 
-> breakage. Lets try fix the real breakage now.
-> 
-> I've uploaded a new sched-devel.git that is against very latest -git, 
-> could you try ftrace (with a sufficiently large 
-> /debug/tracing/tracing_max_entries value) - perhaps the 
-> worst-case-wakeup-latency tracer shows large latencies? If not, then 
-> maybe the sched_switch tracer gives a better insight into what's 
-> happening?
-> 
-> > Erm, should my Q6600 emit such?
-> 
-> on nohz it could happen - and fixed in -git. Patch looked too dangerous 
-> for late-2.6.25 to merge.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 22 Apr 2008 11:14:56 +0200
 
-Also, it only happens when the cpu has idle time; and that typically
-happens when its well,. idle - so not much to schedule wrong.
+> so i only have the untested patch below for now - does it fix the bug 
+> for you?
+ ...
+> Index: linux/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux.orig/kernel/time/tick-sched.c
+> +++ linux/kernel/time/tick-sched.c
+> @@ -393,6 +393,7 @@ void tick_nohz_restart_sched_tick(void)
+>  		sub_preempt_count(HARDIRQ_OFFSET);
+>  	}
+>  
+> +	touch_softlockup_watchdog();
+>  	/*
+>  	 * Cancel the scheduled timer and restore the tick
+>  	 */
 
-That said; yes there are boundary effect that could make it show up.
+The NOHZ lockup warnings are gone.  But this seems like
+a band-aid.  We made sure that cpus don't get into this
+state via commit:
 
-> > On 26.git, I get numbers like yours, but with occasional dips down to 
-> > ~700, though the latency hits don't _seem_ to be synchronous with 
-> > watch-rq-clock.sh glitchies.
-> 
-> hm, the dips shouldnt be happening normally.
+----------------------------------------
+commit d3938204468dccae16be0099a2abf53db4ed0505
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Wed Nov 28 15:52:56 2007 +0100
 
-Agreed, those ought to be gone.. Guillaume do you see any holes in the
-current rq clock code?
+    softlockup: fix false positives on CONFIG_NOHZ
+    
+    David Miller reported soft lockup false-positives that trigger
+    on NOHZ due to CPUs idling for more than 10 seconds.
+    
+    The solution is touch the softlockup watchdog when we return from
+    idle. (by definition we are not 'locked up' when we were idle)
+    
+     http://bugzilla.kernel.org/show_bug.cgi?id=9409
+    
+    Reported-by: David Miller <davem@davemloft.net>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 27a2338..cb89fa8 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -133,6 +133,8 @@ void tick_nohz_update_jiffies(void)
+ 	if (!ts->tick_stopped)
+ 		return;
+ 
++	touch_softlockup_watchdog();
++
+ 	cpu_clear(cpu, nohz_cpu_mask);
+ 	now = ktime_get();
+----------------------------------------
+
+While what the guilty patch we're discussing here does is change how
+cpu_clock() is computed, that's it.  softlockup uses cpu_clock() to
+calculate it's timestamp.  The guilty change modified nothing about
+when touch_softlockup_watchdog() is called, nor any other aspect about
+how the softlockup mechanism itself works.
+
+So we need to figure out why in the world changing how cpu_clock()
+gets calculated makes a difference.
+
+Anyways, this is with HZ=1000 FWIW.  And I really don't feel this is a
+128-cpu moster system thing, I bet my 2-cpu workstation triggers this
+too, and I'll make sure of that for you..
+
+BTW, I'm also getting cpu's wedged in the group aggregate code:
+
+[  121.338742] TSTATE: 0000009980001602 TPC: 000000000054ea20 TNPC: 0000000000456828 Y: 00000000    Not tainted
+[  121.338778] TPC: <__first_cpu+0x4/0x28>
+[  121.338791] g0: 0000000000000000 g1: 0000000000000002 g2: 0000000000000000 g3: 0000000000000002
+[  121.338809] g4: fffff803fe9b24c0 g5: fffff8001587c000 g6: fffff803fe9d0000 g7: 00000000007b7260
+[  121.338827] o0: 0000000000000002 o1: 00000000007b7258 o2: 0000000000000000 o3: 00000000007b7800
+[  121.338845] o4: 0000000000845000 o5: 0000000000000400 sp: fffff803fe9d2ed1 ret_pc: 0000000000456820
+[  121.338879] RPC: <aggregate_group_shares+0x10c/0x16c>
+[  121.338893] l0: 0000000000000400 l1: 000000000000000d l2: 00000000000003ff l3: 0000000000000000
+[  121.338911] l4: 0000000000000000 l5: 0000000000000000 l6: fffff803fe9d0000 l7: 0000000080009002
+[  121.338928] i0: 0000000000801c20 i1: fffff800161ca508 i2: 00000000000001d8 i3: 0000000000000001
+[  121.338946] i4: fffff800161d9c00 i5: 0000000000000001 i6: fffff803fe9d2f91 i7: 0000000000456904
+[  121.338968] I7: <aggregate_get_down+0x84/0x13c>
+
+I'm suspecting the deluge of cpumask changes that also went in today.
+
+I guess I'll be bisecting all day tomorrow too :-/
