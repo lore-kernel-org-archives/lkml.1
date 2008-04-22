@@ -1,158 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761492AbYDVAwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbYDVAy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761492AbYDVAwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760463AbYDVAw1
+	id S1761592AbYDVAy3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYDVAyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:52:27 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38108 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760915AbYDVAw0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:52:26 -0400
-Date: Mon, 21 Apr 2008 17:52:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
-       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
-       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
-       oleg@tv-sign.ru, jamesclhuang@yahoo.com
-Subject: [PATCH 4/5] Add call_rcu_sched() and friends to rcutorture
-Message-ID: <20080422005222.GH3693@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080422004454.GA3517@linux.vnet.ibm.com> <20080422004820.GD3693@linux.vnet.ibm.com>
+	Mon, 21 Apr 2008 20:54:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37979 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760468AbYDVAyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 20:54:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Date: Tue, 22 Apr 2008 02:54:43 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>
+In-Reply-To: <480D208A.9050909@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080422004820.GD3693@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200804220254.45251.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Reresend, this time I promise with corrected subject: line!!!]
+On Tuesday, 22 of April 2008, Jiri Slaby wrote:
+> On 04/22/2008 01:02 AM, Jiri Slaby wrote:
+> > On 04/22/2008 12:54 AM, Paul E. McKenney wrote:
+> >> On Tue, Apr 22, 2008 at 12:26:04AM +0200, Jiri Slaby wrote:
+> >>>> Having slub_debug enabled, tomorrow will be results, I guess...
+> 
+> OK, methinks it's tomorrow yet, at least here.
+> 
+> >>> Sorry, one more entry:
+> >>>
+> >>> 00000000000000f0 dentry.d_op (Zdenek, offset ? around 136)
+> > 
+> > Zdenek's is at offset 184.
+> > 
+> >>> 00f0000000000000 dentry.d_hash.next (me, offset 24)
+> >>> ffff81f02003f16c dentry.d_name.name (me, offset 56)
+> >>>         memory ORed by 000000f000000000
+> >>> fffff0002004c1b0 file.f_mapping (me, offset 176)
+> >>>         memory hole, it was something like
+> >>>         (ffff81002004c1b0 & ~00000f0000000000) | 0000f00000000000?
+> >>> ffffffffffffffff dentry.d_hash.next (Rafael, offset ? around 24)
+> >>>         -1, ~0ULL
+> 
+> The same place, dentry.d_hash.next is 1. No slub debug clues... I think, I'll 
+> give slab a try. Any other clues?
 
-Add entry to rcu_torture_ops allowing the correct barrier function to
-be used upon exit from rcutorture.  Also add torture options for the
-new call_rcu_sched() API.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcutorture.c |   34 +++++++++++++++++++++++++++++++---
- 1 file changed, 31 insertions(+), 3 deletions(-)
-
-diff -urpNa -X dontdiff linux-2.6.25-C3-rcu_barrier_sched/kernel/rcutorture.c linux-2.6.25-C4-rcutorture/kernel/rcutorture.c
---- linux-2.6.25-C3-rcu_barrier_sched/kernel/rcutorture.c	2008-04-16 19:49:44.000000000 -0700
-+++ linux-2.6.25-C4-rcutorture/kernel/rcutorture.c	2008-04-21 12:08:51.000000000 -0700
-@@ -191,6 +191,7 @@ struct rcu_torture_ops {
- 	int (*completed)(void);
- 	void (*deferredfree)(struct rcu_torture *p);
- 	void (*sync)(void);
-+	void (*cb_barrier)(void);
- 	int (*stats)(char *page);
- 	char *name;
- };
-@@ -264,6 +265,7 @@ static struct rcu_torture_ops rcu_ops = 
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_torture_deferred_free,
- 	.sync = synchronize_rcu,
-+	.cb_barrier = rcu_barrier,
- 	.stats = NULL,
- 	.name = "rcu"
- };
-@@ -303,6 +305,7 @@ static struct rcu_torture_ops rcu_sync_o
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = synchronize_rcu,
-+	.cb_barrier = NULL,
- 	.stats = NULL,
- 	.name = "rcu_sync"
- };
-@@ -363,6 +366,7 @@ static struct rcu_torture_ops rcu_bh_ops
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_bh_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
-+	.cb_barrier = rcu_barrier_bh,
- 	.stats = NULL,
- 	.name = "rcu_bh"
- };
-@@ -376,6 +380,7 @@ static struct rcu_torture_ops rcu_bh_syn
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
-+	.cb_barrier = NULL,
- 	.stats = NULL,
- 	.name = "rcu_bh_sync"
- };
-@@ -457,6 +462,7 @@ static struct rcu_torture_ops srcu_ops =
- 	.completed = srcu_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = srcu_torture_synchronize,
-+	.cb_barrier = NULL,
- 	.stats = srcu_torture_stats,
- 	.name = "srcu"
- };
-@@ -481,6 +487,11 @@ static int sched_torture_completed(void)
- 	return 0;
- }
- 
-+static void rcu_sched_torture_deferred_free(struct rcu_torture *p)
-+{
-+	call_rcu_sched(&p->rtort_rcu, rcu_torture_cb);
-+}
-+
- static void sched_torture_synchronize(void)
- {
- 	synchronize_sched();
-@@ -493,12 +504,27 @@ static struct rcu_torture_ops sched_ops 
- 	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
- 	.readunlock = sched_torture_read_unlock,
- 	.completed = sched_torture_completed,
--	.deferredfree = rcu_sync_torture_deferred_free,
-+	.deferredfree = rcu_sched_torture_deferred_free,
- 	.sync = sched_torture_synchronize,
-+	.cb_barrier = rcu_barrier_sched,
- 	.stats = NULL,
- 	.name = "sched"
- };
- 
-+static struct rcu_torture_ops sched_ops_sync = {
-+	.init = rcu_sync_torture_init,
-+	.cleanup = NULL,
-+	.readlock = sched_torture_read_lock,
-+	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
-+	.readunlock = sched_torture_read_unlock,
-+	.completed = sched_torture_completed,
-+	.deferredfree = rcu_sync_torture_deferred_free,
-+	.sync = sched_torture_synchronize,
-+	.cb_barrier = NULL,
-+	.stats = NULL,
-+	.name = "sched_sync"
-+};
-+
- /*
-  * RCU torture writer kthread.  Repeatedly substitutes a new structure
-  * for that pointed to by rcu_torture_current, freeing the old structure
-@@ -844,7 +870,9 @@ rcu_torture_cleanup(void)
- 	stats_task = NULL;
- 
- 	/* Wait for all RCU callbacks to fire.  */
--	rcu_barrier();
-+
-+	if (cur_ops->cb_barrier != NULL)
-+		cur_ops->cb_barrier();
- 
- 	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
- 
-@@ -864,7 +892,7 @@ rcu_torture_init(void)
- 	int firsterr = 0;
- 	static struct rcu_torture_ops *torture_ops[] =
- 		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
--		  &srcu_ops, &sched_ops, };
-+		  &srcu_ops, &sched_ops, &sched_ops_sync, };
- 
- 	/* Process args and tell the world that the torturer is on the job. */
- 	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
+Well, SLUB uses some per CPU data structures.  Is it possible that they get
+corrupted and which leads to the observed symptoms?
