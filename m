@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764850AbYDVTEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763002AbYDVTG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764850AbYDVTEq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbYDVTEb
+	id S1763002AbYDVTG2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYDVTGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:04:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35605 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754166AbYDVTEa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:04:30 -0400
-Date: Tue, 22 Apr 2008 12:03:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de, peterz@infradead.org, sam@ravnborg.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function
- calls
-In-Reply-To: <1208890227-24808-3-git-send-email-jens.axboe@oracle.com>
-Message-ID: <alpine.LFD.1.10.0804221157220.2779@woody.linux-foundation.org>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-3-git-send-email-jens.axboe@oracle.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 15:06:16 -0400
+Received: from ZSM1387.piap.pl ([195.187.100.11]:41779 "EHLO khc.piap.pl"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754393AbYDVTGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:06:15 -0400
+To: James Chapman <jchapman@katalix.com>
+Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <20080412115950.1cbb9cfa@core>
+	<m33apqomgf.fsf@maximus.localdomain>
+	<m33apjp32f.fsf@maximus.localdomain>
+	<20080418.153256.253949503.davem@davemloft.net>
+	<m3ve2b9qe8.fsf@maximus.localdomain> <480CEB7D.8070702@katalix.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 22 Apr 2008 21:06:12 +0200
+In-Reply-To: <480CEB7D.8070702@katalix.com> (James Chapman's message of "Mon\, 21 Apr 2008 20\:31\:09 +0100")
+Message-ID: <m33apdyajf.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Chapman <jchapman@katalix.com> writes:
 
-[ Ingo added to cc, since this is x86-specific ]
+> Generic ppp isn't specialized at all, and it isn't limited to async
+> serial devices. PPPoE, PPPoATM and L2TP use it.
 
-On Tue, 22 Apr 2008, Jens Axboe wrote:
-> +++ b/arch/x86/kernel/apic_32.c
-> @@ -1357,6 +1357,10 @@ void __init smp_intr_init(void)
->  
->  	/* IPI for generic function call */
->  	set_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
-> +
-> +	/* IPI for single call function */
-> +	set_intr_gate(CALL_FUNCTION_SINGLE_VECTOR,
-> +				call_function_single_interrupt);
+Perhaps I should write "dial-up" and other non-fixed connections.
 
-Ok, one more comment..
+It's complex, I think kernel interface to generic HDLC would mean more
+code than PPP implementation required for fixed lines.
+Additional requirement - userspace daemon with additional plugin - may
+not be the best thing for fixed lines either.
 
-Why bother with separate vectors for this?
+That would break backward compatibility, too.
 
-Why not just make the single vector do
-
-	void smp_call_function_interrupt(void)
-	{
-		ack_APIC_irq();
-		irq_enter();
-		generic_smp_call_function_single_interrupt();
-		generic_smp_call_function_interrupt();
-	#ifdef CONFIG_X86_32
-		__get_cpu_var(irq_stat).irq_call_count++;
-	#else
-		add_pda(irq_call_count, 1);
-	#endif
-		irq_exit();
-	}
-
-since they are both doing the exact same thing anyway?
-
-Do we really require us to be able to handle the "single" case _while_ a 
-"multiple" case is busy? Aren't we running all of these things with 
-interrupts disabled anyway, so that it cannot happen?
-
-Or is it just a performance optimization?  Do we expect to really have so 
-many of the multiple interrupts that it's expensive to walk the list just 
-because we also had a single interrupt to another CPU? That sounds a bit 
-unlikely, but if true, very interesting..
-
-Inquiring minds want to know..
-
-			Linus
+Personally I think it could be acceptable but it's not for me to
+decide.
+-- 
+Krzysztof Halasa
