@@ -1,117 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbYDVQeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYDVQiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbYDVQeH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYDVQdl
+	id S1756328AbYDVQiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbYDVQiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:33:41 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:41848 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbYDVQdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:33:39 -0400
-Date: Tue, 22 Apr 2008 19:38:20 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] posix timers: (BUG 10460) discard the pending signal when the timer is destroyed
-Message-ID: <20080422153820.GA19900@tv-sign.ru>
+	Tue, 22 Apr 2008 12:38:02 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:30915 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753118AbYDVQiA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:38:00 -0400
+Message-Id: <480DDC48.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 22 Apr 2008 10:38:32 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <chinang.ma@intel.com>,
+       <suresh.b.siddha@intel.com>, <arjan@linux.intel.com>,
+       <willy@linux.intel.com>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated
+	tasks have been added
+References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
+ <20080421181015.4560.7658.stgit@novell1.haskins.net>
+ <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
+In-Reply-To: <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently sigqueue_free() removes sigqueue from list, but doesn't cancel the
-pending signal. This is indeed strange, the task should either receive the
-"full" signal along with siginfo_t, or it shouldn't see the signal at all.
+Hi Dmitry,
 
-Change sigqueue_free(q) to do sigdelset() if q is queued. There is a little
-complication. Looking at "struct sigqueue*" we can't figure out where it is
-pending, in ->pending or ->shared_pending. So this patch adds a new flag,
-SIGQUEUE_SHARED_PENDING, which is set/cleared by send_sigqueue().
+(Disclaimer: I am sick with a fever today, so hopefully I'm groking your email properly and not about to say something stupid ;)
 
-Alternatively, we can add a new parameter to sigqueue_free(), and the caller
-can check SIGEV_THREAD_ID. But I think this is not as robust as a flag which
-is "automatically" correct.
+>>> On Tue, Apr 22, 2008 at 11:30 AM, in message
+<b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>, "Dmitry
+Adamushko" <dmitry.adamushko@gmail.com> wrote: 
+> Hi Gregory,
+> 
+> 
+> consider the following 2-cpu system: cpu0 and cpu1.
+> 
+> cpu0: is idle --> in such a state, it never pulls RT tasks on its own.
+> 
+> T0 and T1 are RT tasks
+> 
+> 
+> square#0:
+> 
+> cpu1:  T0 is running
+> 
+> T1 is of the same prio as T0 (shouldn't really matter but to get the
+> same result it would require altering the flow of events slightly)
+> 
+> T1's affinity allows it to be run only on cpu1.
+> T0 can run on both.
+> 
+> try_to_wake_up() is called for T1.
+> |
+> --> select_task_rq_rt() => gives cpu1
+> |
+> --> task_wake_up_rt()
+>    |
+>    ---> push_rt_tasks() -> rq->rt.pushed = 1
+> 
+> now, neither T1 (due to its affinity), nor T0 (it's running) can be
+> pushed away to cpu0.
+> 
+> [ btw., (1) I'd expect that this task_wake_up_rt() thing should be
+> redundant, logically-wise... I'll check once more and comment later
+> on.
 
-This patch should also fix the problem pointed out by Austin Clements, see
+They are both necessary, but the key is that the select_task_rq() is a best-effort route attempt, whereas the task_wake_up() routine is the authoritative router.  By doing the push after activation, it allowed us to utilize a very clever and significant optimization on the pull side that Steven came up with.  The details of the optimization escape me now, but I do remember it was substantial to the design.  Then later we put the select_task_rq() logic in (see git-id 318e0893) to further optimize the routing by finding a likely good home before the activation takes place (saving an activation/deactivation cycle), but it still needs the post-router to protect against race conditions since its just best-effort.
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=10460
+> (2) any example when (p->prio >= rq->rt.highest_prio) is not true in
+> task_wake_up_rt() ?
 
-Currently, when the task execs it could be killed by the fatal signal sent by
-the posix timer, because exec flushes the signal handlers.
+Hmm...good catch.   Looks like it should be "p->prio >= rq->curr->prio" since we only need be concerned with pushing here if the task is not going to preempt current.  Do you agree Steven, or am I missing something? 
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/include/linux/signal.h~1_PT_CLEAR_PENDING	2008-03-04 21:43:25.000000000 +0300
-+++ 25/include/linux/signal.h	2008-03-04 21:43:25.000000000 +0300
-@@ -20,6 +20,7 @@ struct sigqueue {
- 
- /* flags values. */
- #define SIGQUEUE_PREALLOC	1
-+#define SIGQUEUE_SHARED_PENDING	2	/* meaningful only if queued */
- 
- struct sigpending {
- 	struct list_head list;
---- 25/kernel/signal.c~1_PT_CLEAR_PENDING	2008-03-21 18:10:30.000000000 +0300
-+++ 25/kernel/signal.c	2008-04-22 16:40:45.000000000 +0400
-@@ -1233,6 +1233,28 @@ struct sigqueue *sigqueue_alloc(void)
- 	return(q);
- }
- 
-+static void sigqueue_cancel(struct sigqueue *q)
-+{
-+	struct sigpending *pending;
-+	int sig;
-+
-+	list_del_init(&q->list);
-+
-+	pending = (q->flags & SIGQUEUE_SHARED_PENDING)
-+		? &current->signal->shared_pending
-+		: &current->pending;
-+
-+	sig = q->info.si_signo;
-+	if (sig >= SIGRTMIN) {
-+		list_for_each_entry(q, &pending->list, list)
-+			if (q->info.si_signo == sig)
-+				return;
-+	}
-+
-+	sigdelset(&pending->signal, sig);
-+	recalc_sigpending();
-+}
-+
- void sigqueue_free(struct sigqueue *q)
- {
- 	unsigned long flags;
-@@ -1246,7 +1268,7 @@ void sigqueue_free(struct sigqueue *q)
- 	 */
- 	spin_lock_irqsave(lock, flags);
- 	if (!list_empty(&q->list))
--		list_del_init(&q->list);
-+		sigqueue_cancel(q);
- 	spin_unlock_irqrestore(lock, flags);
- 
- 	q->flags &= ~SIGQUEUE_PREALLOC;
-@@ -1282,7 +1304,13 @@ int send_sigqueue(struct sigqueue *q, st
- 	}
- 
- 	signalfd_notify(t, sig);
--	pending = group ? &t->signal->shared_pending : &t->pending;
-+	if (group) {
-+		q->flags |=  SIGQUEUE_SHARED_PENDING;
-+		pending = &t->signal->shared_pending;
-+	} else {
-+		q->flags &= ~SIGQUEUE_SHARED_PENDING;
-+		pending = &t->pending;
-+	}
- 	list_add_tail(&q->list, &pending->list);
- 	sigaddset(&pending->signal, sig);
- 	complete_signal(sig, t, group);
+> ]
+> 
+> as a result, rq->rt.pushed == 1.
+> 
+> Now, post_schedule_rt() won't call push_rt_tasks().
+> 
+> T0 and T1 are both running for some time on cpu1 (possibly
+> context-switching if they are both of SCHED_RR type).
+> 
+> Then they both block, _first_ T1 and then T0.
+> 
+> After some interval of time, they wake up (let's say they are
+> periodic) in the following order: _first_ T0 and then T1.
+> 
+> rq->rt.pushed becomes 0 and here we are back to square#0. The whole
+> story repeats again.
+> 
+> cpu0 is idle so it won't pull T0. Both T0 and T1 are competing for the
+> same cpu. Not good.
+> 
+> am I missing smth?
+
+No, I think you are indeed correct.  However, I would consider the root cause of the problem to have existed prior to the "pushed" flag, so perhaps we need to address this at a different level.  The case you present would have always been problematic for FIFO, and would have "worked" for RR eventually prior to the "pushed" patch.  But I dont know if I like relying on how it worked before to fix up the system.  At the very best, T1 would have experienced a latency equal to the remainder of T0's timeslice.
+
+Rather, I think we need to address the preemptive behavior for the case where a migratory task is on the cpu and a non-migratory task tries to wake up.  If they are equal in numerical priority, perhaps we need to treat "non-migratory" as the tie breaker.  In this case, T1 would preempt T0 from cpu1, and then we would push T0 to cpu0.  I don't quite have all the details about how this would work thought through yet.  Perhaps I should wait until my fever lifts. ;)  Thoughts?
+
+-Greg
+
+
 
