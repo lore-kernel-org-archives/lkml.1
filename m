@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764979AbYDVPC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765008AbYDVPFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764979AbYDVPC1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764874AbYDVPCM
+	id S1765008AbYDVPFS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYDVPFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:02:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35541 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764861AbYDVPCK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:02:10 -0400
-Date: Tue, 22 Apr 2008 08:01:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-In-Reply-To: <20080422145105.GJ12774@kernel.dk>
-Message-ID: <alpine.LFD.1.10.0804220759020.2779@woody.linux-foundation.org>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org> <20080422145105.GJ12774@kernel.dk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 11:05:01 -0400
+Received: from h155.mvista.com ([63.81.120.155]:30381 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752012AbYDVPFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:05:00 -0400
+Message-ID: <480DFE76.8000809@ru.mvista.com>
+Date: Tue, 22 Apr 2008 19:04:22 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mark Lord <liml@rtr.ca>
+Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca>
+In-Reply-To: <480DF9BD.1080104@rtr.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
 
+>>> SFF stands for "Small Form Factor", as in the "SFF Committee Information
+>>> Specification for Bus Master Programming Interface for IDE ATA 
+>>> Controllers Rev 1.0"
+>>> from May 16, 1994.
 
-On Tue, 22 Apr 2008, Jens Axboe wrote:
-> > 
-> > You forgot to free the "data" here? The waiter must also free the object, 
-> > since now the callee does not.
-> 
-> The ipi interrupt handler does that, see kfree() in
-> generic_smp_call_function_single_interrupt() or call_func_data_free() in
-> generic_smp_call_function_interrupt().
+>>> That document is basically a committee rubber-stamp of the earlier Intel
+>>> "PCI IDE Controller Specification Revision 1.0" dated 3/4/94.
 
-Hell no, it does *not*.
+>> Ah.. that means we have the whole naming thing wrong.  Yewwww....
 
-Doing that for the waiting case would be a *huge* bug, since the waiter 
-needs to wait until the flag is clear - and if the waitee free's the 
-allocation, that will never happen.
+> ..
 
-So the rule *must* be:
- - waiter frees
- - ipi interrupt frees non-waiting ones.
-because anything else cannot work.
+> I suppose.   If we were needlessly pedantic, then perhaps
+> the libata-bmdma.c should be renamed to libata-sff.c,
+> and the libata-sff.c should be renamed libata-tf.c
 
-And you must have known that, because the code you pointed me to does 
-*not* free the data at all. It just clears the FLAG_WAIT flag:
+    Which branch has libata-bmdma.c?
 
-	+               if (data->csd.flags & CSD_FLAG_WAIT) {
-	+                       smp_wmb();
-	+                       data->csd.flags &= ~CSD_FLAG_WAIT;
-	+               } else
-	+                       call_func_data_free(data);
+> But there's probably been a document or two since then,
+> where the SFF folks have documented the TF interfaces, too.
 
-So please think about this some more. 
+    Don't know, at least I haven't encountered such spec. Unless you mean 
+SFF-8020i (ATAPI CD-ROM spec).
 
-		Linus
+> So.. whatever.  :)
+
+MBR, Sergei
