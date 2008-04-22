@@ -1,99 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYDVPvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763799AbYDVPvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762858AbYDVPvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYDVPvG
+	id S1763799AbYDVPvr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYDVPvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:51:06 -0400
-Received: from sandeen.net ([209.173.210.139]:30802 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbYDVPvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:51:05 -0400
-Message-ID: <480E0967.8070302@sandeen.net>
-Date: Tue, 22 Apr 2008 10:51:03 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 22 Apr 2008 11:51:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37438 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753757AbYDVPvi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:51:38 -0400
+Date: Tue, 22 Apr 2008 11:51:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       suresh.b.siddha@intel.com, chinang.ma@intel.com, arjan@linux.intel.com,
+       willy@linux.intel.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated tasks
+ have been added
+In-Reply-To: <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0804221144410.21511@gandalf.stny.rr.com>
+References: <20080421180747.4560.67794.stgit@novell1.haskins.net> 
+ <20080421181015.4560.7658.stgit@novell1.haskins.net>
+ <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/4] mark sys_mount helper functions as noinline_for_stack
-References: <480E06A6.1080803@redhat.com>
-In-Reply-To: <480E06A6.1080803@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the self-documenting noinline_for_stack attribute
-in sys_mount helper functions.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+Hi Dmitry,
 
-Index: linux-2.6.25/fs/namespace.c
-===================================================================
---- linux-2.6.25.orig/fs/namespace.c	2008-04-20 22:32:50.000000000 -0500
-+++ linux-2.6.25/fs/namespace.c	2008-04-22 09:56:59.824406548 -0500
-@@ -946,9 +946,8 @@ out_unlock:
- 
- /*
-  * recursively change the type of the mountpoint.
-- * noinline this do_mount helper to save do_mount stack space.
-  */
--static noinline int do_change_type(struct nameidata *nd, int flag)
-+static noinline_for_stack int do_change_type(struct nameidata *nd, int flag)
- {
- 	struct vfsmount *m, *mnt = nd->path.mnt;
- 	int recurse = flag & MS_REC;
-@@ -971,9 +970,8 @@ static noinline int do_change_type(struc
- 
- /*
-  * do loopback mount.
-- * noinline this do_mount helper to save do_mount stack space.
-  */
--static noinline int do_loopback(struct nameidata *nd, char *old_name,
-+static noinline_for_stack int do_loopback(struct nameidata *nd, char *old_name,
- 				int recurse)
- {
- 	struct nameidata old_nd;
-@@ -1023,10 +1021,9 @@ out:
-  * change filesystem flags. dir should be a physical root of filesystem.
-  * If you've mounted a non-root directory somewhere and want to do remount
-  * on it - tough luck.
-- * noinline this do_mount helper to save do_mount stack space.
-  */
--static noinline int do_remount(struct nameidata *nd, int flags, int mnt_flags,
--		      void *data)
-+static noinline_for_stack int do_remount(struct nameidata *nd, int flags,
-+		      int mnt_flags, void *data)
- {
- 	int err;
- 	struct super_block *sb = nd->path.mnt->mnt_sb;
-@@ -1060,10 +1057,8 @@ static inline int tree_contains_unbindab
- 	return 0;
- }
- 
--/*
-- * noinline this do_mount helper to save do_mount stack space.
-- */
--static noinline int do_move_mount(struct nameidata *nd, char *old_name)
-+static noinline_for_stack int do_move_mount(struct nameidata *nd,
-+		char *old_name)
- {
- 	struct nameidata old_nd;
- 	struct path parent_path;
-@@ -1141,10 +1136,9 @@ out:
- /*
-  * create a new mount for userspace and request it to be added into the
-  * namespace's tree
-- * noinline this do_mount helper to save do_mount stack space.
-  */
--static noinline int do_new_mount(struct nameidata *nd, char *type, int flags,
--			int mnt_flags, char *name, void *data)
-+static noinline_for_stack int do_new_mount(struct nameidata *nd, char *type,
-+			int flags, int mnt_flags, char *name, void *data)
- {
- 	struct vfsmount *mnt;
- 
+Did you see this behaviour or is this an analysis of the code?
 
+On Tue, 22 Apr 2008, Dmitry Adamushko wrote:
+>
+> consider the following 2-cpu system: cpu0 and cpu1.
+>
+> cpu0: is idle --> in such a state, it never pulls RT tasks on its own.
+>
+> T0 and T1 are RT tasks
+
+This is the important part. How did cpu0 get to "is idle --> in such a
+state, it never pulls RT tasks on its own" ? And then have cpu1 have T0
+and T1 running.
+
+When ever a cpu goes to idle, it should definitely try to do a RT pull
+before going idle. When a
+
+
+>
+>
+> square#0:
+>
+> cpu1:  T0 is running
+>
+> T1 is of the same prio as T0 (shouldn't really matter but to get the
+> same result it would require altering the flow of events slightly)
+>
+> T1's affinity allows it to be run only on cpu1.
+> T0 can run on both.
+>
+> try_to_wake_up() is called for T1.
+> |
+> --> select_task_rq_rt() => gives cpu1
+> |
+> --> task_wake_up_rt()
+>    |
+>    ---> push_rt_tasks() -> rq->rt.pushed = 1
+>
+> now, neither T1 (due to its affinity), nor T0 (it's running) can be
+> pushed away to cpu0.
+
+Ah, this may be what you are talking about. T0 was running, but because
+T1 has its affinity set to cpu1 it wont cause a push. When T0 schedules
+away to give T1 its cpu time, T0 wont push away because of the pushed
+flag.
+
+Hmm, interesting. Of course my response is "Don't use SCHED_RR! It's
+evil!" ;-)
+
+Perhaps we need logic to reset the push flag when a sched RR task is
+scheduled out to give way for another SCHED_RR task. This should fix this
+scenario. Unless I'm missing something else.
+
+-- Steve
+
+> [ btw., (1) I'd expect that this task_wake_up_rt() thing should be
+> redundant, logically-wise... I'll check once more and comment later
+> on.
+> (2) any example when (p->prio >= rq->rt.highest_prio) is not true in
+> task_wake_up_rt() ?
+> ]
+>
+> as a result, rq->rt.pushed == 1.
+>
+> Now, post_schedule_rt() won't call push_rt_tasks().
+>
+> T0 and T1 are both running for some time on cpu1 (possibly
+> context-switching if they are both of SCHED_RR type).
+>
+> Then they both block, _first_ T1 and then T0.
+>
+> After some interval of time, they wake up (let's say they are
+> periodic) in the following order: _first_ T0 and then T1.
+>
+> rq->rt.pushed becomes 0 and here we are back to square#0. The whole
+> story repeats again.
+>
+> cpu0 is idle so it won't pull T0. Both T0 and T1 are competing for the
+> same cpu. Not good.
+>
+> am I missing smth?
+>
+>
+> --
+> Best regards,
+> Dmitry Adamushko
+>
