@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYDVSVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbYDVSWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbYDVSVL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYDVSU6
+	id S1761465AbYDVSWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYDVSWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:20:58 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:46980 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYDVSU5 (ORCPT
+	Tue, 22 Apr 2008 14:22:04 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:49693 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753681AbYDVSWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:20:57 -0400
-Subject: Re: x86: 4kstacks default
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200804201144.33308.dhazelton@enter.net>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	 <20080420104444.GI1595@cs181133002.pp.htv.fi>
-	 <87y778aezh.fsf@basil.nowhere.org> <200804201144.33308.dhazelton@enter.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Tue, 22 Apr 2008 20:20:54 +0200
-Message-Id: <1208888454.10279.7.camel@localhost>
+	Tue, 22 Apr 2008 14:22:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlMFAB/KDUhMROPA/2dsb2JhbACBUqth
+Date: Tue, 22 Apr 2008 14:21:50 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] Stringify support commas v2
+Message-ID: <20080422182150.GA14658@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:20:10 up 53 days, 14:31,  5 users,  load average: 0.55, 0.36,
+	0.37
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+#define MYDEF a, b, c
 
+__stringify(MYDEF) should be replaced by "a, b, c", but compilation fails
+because the __stringify macro expects only one argument. Fix it by using
+variable macro arguments in __stringify and __stringify_1.
 
-On Sun, 2008-04-20 at 11:44 -0400, Daniel Hazelton wrote:
-> Since the second-most-common reason for stack overages is ndiswrapper... Well, 
-> with there being so much more hardware now supported directly by the linux 
-> kernel... 
+Needed in my current NMI safe iret paravirt support work so I can expand
+a macro containing assembly code into a string.
 
-How would I like you being right... Atheros AR5008, AR5414 PHY, "not yet
-here". It's almost one year now since I bought this laptop, and till now
-it's the cable or ndiswrapper. But yes, it's going better. For my first
-wifi laptop I waited two and a half years, now it seems that in a bit
-more than one there will be an open source driver...
+Since some architectures still use -traditional, which does not support macros
+with variable arguments, keep the old stringify around. Test with __STDC__ to
+see if -traditional is used.
 
-I know all the trouble ndiswrapper signify. But I see also that people
-around me with a laptop and linux use more ndiswrapper than a real
-driver, so... be gentle with it. 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@osdl.org
+CC: Sam Ravnborg <sam@ravnborg.org>
+---
+ include/linux/stringify.h |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Thanks,
-	Romano 	
+Index: linux-2.6-lttng/include/linux/stringify.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/stringify.h	2008-04-22 14:16:21.000000000 -0400
++++ linux-2.6-lttng/include/linux/stringify.h	2008-04-22 14:19:26.000000000 -0400
+@@ -6,7 +6,12 @@
+  * converts to "bar".
+  */
+ 
++#ifdef __STDC__
++#define __stringify_1(x...)	#x
++#define __stringify(x...)	__stringify_1(x)
++#else	/* Support gcc -traditional, without commas. */
+ #define __stringify_1(x)	#x
+ #define __stringify(x)		__stringify_1(x)
++#endif
+ 
+ #endif	/* !__LINUX_STRINGIFY_H */
 
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
