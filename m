@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933333AbYDVXNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYDVXOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933333AbYDVXNa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 19:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYDVXNW
+	id S1759300AbYDVXOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 19:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYDVXO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 19:13:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:60679 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750999AbYDVXNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 19:13:21 -0400
-Date: Tue, 22 Apr 2008 16:13:20 -0700 (PDT)
+	Tue, 22 Apr 2008 19:14:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46501 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750804AbYDVXO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 19:14:27 -0400
+Date: Tue, 22 Apr 2008 16:14:26 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Andrea Arcangeli <andrea@qumranet.com>
@@ -22,13 +23,13 @@ cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
        Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
        Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
        Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 03 of 12] get_task_mm should not succeed if mmput() is
- running and has reduced
-In-Reply-To: <20080422223727.GQ24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804221612290.4868@schroedinger.engr.sgi.com>
-References: <a6672bdeead0d41b2ebd.1208872279@duo.random>
- <Pine.LNX.4.64.0804221323100.3640@schroedinger.engr.sgi.com>
- <20080422223727.GQ24536@duo.random>
+Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
+ lock (first and not last
+In-Reply-To: <20080422224048.GR24536@duo.random>
+Message-ID: <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com>
+References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random>
+ <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
+ <20080422224048.GR24536@duo.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,19 +38,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
 
-> On Tue, Apr 22, 2008 at 01:23:16PM -0700, Christoph Lameter wrote:
-> > Missing signoff by you.
+> On Tue, Apr 22, 2008 at 01:24:21PM -0700, Christoph Lameter wrote:
+> > Reverts a part of an earlier patch. Why isnt this merged into 1 of 12?
 > 
-> I thought I had to signoff if I conributed with anything that could
-> resemble copyright? Given I only merged that patch, I can add an
-> Acked-by if you like, but merging this in my patchset was already an
-> implicit ack ;-).
+> To give zero regression risk to 1/12 when MMU_NOTIFIER=y or =n and the
+> mmu notifiers aren't registered by GRU or KVM. Keep in mind that the
+> whole point of my proposed patch ordering from day 0, is to keep as
+> 1/N, the absolutely minimum change that fully satisfy GRU and KVM
+> requirements. 4/12 isn't required by GRU/KVM so I keep it in a later
+> patch. I now moved mmu_notifier_unregister in a later patch too for
+> the same reason.
 
-No you have to include a signoff if the patch goes through your custody 
-chain. This one did.
-
-Also add a 
-
-From: Christoph Lameter <clameter@sgi.com>
-
-somewhere if you want to signify that the patch came from me. 
+We want a full solution and this kind of patching makes the patches 
+difficuilt to review because later patches revert earlier ones.
+ 
