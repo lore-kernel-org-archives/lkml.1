@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbYDVMWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbYDVM0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbYDVMWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 08:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYDVMW3
+	id S1756381AbYDVM0O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 08:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYDVMZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 08:22:29 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55820 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752082AbYDVMW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 08:22:28 -0400
-Date: Tue, 22 Apr 2008 07:22:24 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: linux-next: Tree for April 21 (SGI XPNET)
-Message-ID: <20080422122224.GA6286@sgi.com>
-References: <20080422114639.ca3e43a7.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422114639.ca3e43a7.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 Apr 2008 08:25:59 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57782 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752328AbYDVMZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 08:25:59 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19sulURQ4Bs4qUrZEPRwb7GjPJ6rueazmvb0Ea5/2
+	rSu26aceGxcCm5
+Subject: Re: [git pull] scheduler changes for v2.6.26
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frans Pop <elendil@planet.nl>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Richard Jonsson <richie@coderworld.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20080422085905.GA9939@elte.hu>
+References: <20080419181304.GB21353@elte.hu>
+	 <200804192147.43719.elendil@planet.nl> <20080421123903.GE9554@elte.hu>
+	 <200804211831.29976.elendil@planet.nl> <20080421194359.GD8770@elte.hu>
+	 <1208854300.4695.7.camel@marge.simson.net>  <20080422085905.GA9939@elte.hu>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 14:25:54 +0200
+Message-Id: <1208867154.4873.4.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
 
-Would you please yank this patchset from linux-next?
+On Tue, 2008-04-22 at 10:59 +0200, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > > the 700-800 msecs of delays you see are very "brutal" so there must 
+> > > be something fundamentally wrong going on here.
+> > 
+> > I'm seeing latency hits with 26.git, whereas 25 is hit free.
+> 
+> ok. I think what happens is that your broken sched-clock hid the real 
+> breakage. Lets try fix the real breakage now.
+> 
+> I've uploaded a new sched-devel.git that is against very latest -git, 
+> could you try ftrace (with a sufficiently large 
+> /debug/tracing/tracing_max_entries value) - perhaps the 
+> worst-case-wakeup-latency tracer shows large latencies? If not, then 
+> maybe the sched_switch tracer gives a better insight into what's 
+> happening?
 
-I want to break it into two parts. The first of which
-would simply be to move XPC/XPNET from arch/ia64/sn/kernel
-to drivers/misc/sgi-xp where it would remain only configurable
-for ia64. The second part (which I will submit later) will
-make the changes necessary for it to run on SGI's UV which
-is both x86_64 and ia64 architectures. I will also attempt
-to ensure that this second part doesn't break the build
-(sorry about that).
+Well, looks like this is going to have to wait.  sched-devel is locking
+hard on me, both sched-devel and .git are losing my darn keyboard right
+in the middle of things, and my serial ports are (still) so screwed up I
+can't get minicom working right.  Arg.
 
-I'd like to resubmit the first part today. Should I submit
-it to you directly?
-
-Thanks,
-Dean
-
-
-On Tue, Apr 22, 2008 at 11:46:39AM +1000, Stephen Rothwell wrote:
-> Looks like Dean touched it last ...
-> 
-> Begin forwarded message:
-> 
-> Date: Mon, 21 Apr 2008 15:06:00 -0700
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> To: Stephen Rothwell <sfr@canb.auug.org.au>
-> Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-> Subject: Re: linux-next: Tree for April 21 (SGI XPNET)
-> 
-> 
-> On Mon, 21 Apr 2008 20:52:49 +1000 Stephen Rothwell wrote:
-> 
-> Uh.  Who does SGI XPNET patches/code?
-> 
-> drivers/misc/xp/ has problems both with CONFIG_NET=y: (config-rand7)
-> 
-> next-20080421/drivers/misc/xp/xpc_channel.c: In function 'xpc_setup_infrastructure':
-> next-20080421/drivers/misc/xp/xpc_channel.c:220: error: implicit declaration of function 'cpu_physical_id'
-> make[4]: *** [drivers/misc/xp/xpc_channel.o] Error 1
-> 
-> 
-> and with CONFIG_NET=n: (config-rand1)
-> 
-> xpnet.c:(.exit.text+0x6b0): undefined reference to `unregister_netdev'
-> xpnet.c:(.exit.text+0x6bc): undefined reference to `free_netdev'
-> 
-> ---
-> ~Randy
-> 
-> 
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
-
-
-
-
+	-Mike
 
