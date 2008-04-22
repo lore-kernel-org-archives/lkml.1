@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbYDVPy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763348AbYDVPzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932070AbYDVPy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbYDVPyT
+	id S1763348AbYDVPzD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbYDVPyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:54:19 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:61292 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756112AbYDVPyS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:54:18 -0400
-Message-ID: <480E0A54.9010203@linux.vnet.ibm.com>
-Date: Tue, 22 Apr 2008 17:55:00 +0200
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Organization: =?ISO-8859-1?Q?Christian_Ehrhardt=3A_IBM_Deutschland_?=
- =?ISO-8859-1?Q?Entwicklung_GmbH=2CVorsitzender_des_Aufsichtsrats=3A?=
- =?ISO-8859-1?Q?_Martin_Jetter=2CGesch=E4ftsf=FChrung=3A_Herbert_?=
- =?ISO-8859-1?Q?Kircher=2CSitz_der_Gesellschaft=3A_B=F6blingen=2CRe?=
- =?ISO-8859-1?Q?gistergericht=3A_Amtsgericht_Stuttgart=2C_HRB_243?=
- =?ISO-8859-1?Q?294?=
-User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
+	Tue, 22 Apr 2008 11:54:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60289 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753209AbYDVPyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:54:51 -0400
+Message-ID: <480E0A1C.8080408@redhat.com>
+Date: Tue, 22 Apr 2008 10:54:04 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linux-fbdev-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com, Hollis Blanchard <hollisb@us.ibm.com>,
-       Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>
-Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
-References: <20080422012723.BA9F2DE13F@ozlabs.org>
-In-Reply-To: <20080422012723.BA9F2DE13F@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 2/4] mark lockdep functions as noinline_for_stack
+References: <480E06A6.1080803@redhat.com>
+In-Reply-To: <480E06A6.1080803@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> This fixes radeonfb to not truncate 64 bits resources on 32 bits
-> platforms. Unfortunately, there are still issues with addresses
-> returned to userspace via struct fb_fix_screeninfo. This will
-> have to be dealt with separately.
+Use the self-documenting noinline_for_stack attribute
+in lockdep functions.
 
-Thanks for this patch Benjamin, I use it together with what we have discussed in the "pci issue - wrong detection of pci ressources" thread.
-Unfortunately I now hit exactly that issue with fb_fix_screeninfo you describe.
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
-For everyone the fb_fix_screeninfo has two "unsigned long" vars that need to strore a IO address.
-This fails in my case with a 32bit powerpc system (=sizeof(long)=4) which has paddr >4Gb and actually it should affect any 32bit platform with paddr>4Gb.
-You see it e.g. when you try to initialize X11, the x11 radeon driver issues a FBIOGET_FSCREENINFO ioctl and because our address is >4Gb it get's clobbered by that unsigned long in the fb_fix_screeninfo structure (the value comes from a resource_size_t variable which has the correct 64bit).
+Index: linux-2.6.25/kernel/lockdep.c
+===================================================================
+--- linux-2.6.25.orig/kernel/lockdep.c	2008-04-22 10:31:08.158469196 -0500
++++ linux-2.6.25/kernel/lockdep.c	2008-04-22 10:51:17.107410380 -0500
+@@ -878,7 +878,7 @@ static struct held_lock *check_source, *
+  * Print a dependency chain entry (this is only done when a deadlock
+  * has been detected):
+  */
+-static noinline int
++static noinline_for_stack int
+ print_circular_bug_entry(struct lock_list *target, unsigned int depth)
+ {
+ 	if (debug_locks_silent)
+@@ -895,7 +895,7 @@ print_circular_bug_entry(struct lock_lis
+  * When a circular dependency is detected, print the
+  * header first:
+  */
+-static noinline int
++static noinline_for_stack int
+ print_circular_bug_header(struct lock_list *entry, unsigned int depth)
+ {
+ 	struct task_struct *curr = current;
+@@ -920,7 +920,7 @@ print_circular_bug_header(struct lock_li
+ 	return 0;
+ }
+ 
+-static noinline int print_circular_bug_tail(void)
++static noinline_for_stack int print_circular_bug_tail(void)
+ {
+ 	struct task_struct *curr = current;
+ 	struct lock_list this;
+@@ -945,7 +945,7 @@ static noinline int print_circular_bug_t
+ 
+ #define RECURSION_LIMIT 40
+ 
+-static int noinline print_infinite_recursion_bug(void)
++static int noinline_for_stack print_infinite_recursion_bug(void)
+ {
+ 	if (!debug_locks_off_graph_unlock())
+ 		return 0;
+@@ -959,7 +959,7 @@ static int noinline print_infinite_recur
+  * Prove that the dependency graph starting at <entry> can not
+  * lead to <target>. Print an error and return 0 if it does.
+  */
+-static noinline int
++static noinline_for_stack int
+ check_noncircular(struct lock_class *source, unsigned int depth)
+ {
+ 	struct lock_list *entry;
+@@ -1001,7 +1001,7 @@ static struct lock_class *forwards_match
+  * Return 1 otherwise and keep <forwards_match> unchanged.
+  * Return 0 on error.
+  */
+-static noinline int
++static noinline_for_stack int
+ find_usage_forwards(struct lock_class *source, unsigned int depth)
+ {
+ 	struct lock_list *entry;
+@@ -1040,7 +1040,7 @@ find_usage_forwards(struct lock_class *s
+  * Return 1 otherwise and keep <backwards_match> unchanged.
+  * Return 0 on error.
+  */
+-static noinline int
++static noinline_for_stack int
+ find_usage_backwards(struct lock_class *source, unsigned int depth)
+ {
+ 	struct lock_list *entry;
 
-struct fb_fix_screeninfo {
-        char id[16];                    /* identification string eg "TT Builtin" */
-        unsigned long smem_start;     /* Start of frame buffer mem */
-[...]
-        unsigned long mmio_start;     /* Start of Memory Mapped I/O   */
-[...]
-
-I tried the stupid solution to just change the fb_fix_screeninfo structure to resource_size_t, but that changes the size ioctl transports and would require awareness in the userspace applications using that ioctl.
-The X11 & Framebuffer driver work on 64bit systems, so I think it's just an issue of not cutting that data down to 32bit when transporting it (has anyone already checked the x11 drivers, I hope they don't use unsigned long too).
-
-I wanted to ask if there are any known workarounds atm that would allow me to use my X11 for now?
-
--- 
-
-Grüsse / regards, 
-Christian Ehrhardt
-IBM Linux Technology Center, Open Virtualization
