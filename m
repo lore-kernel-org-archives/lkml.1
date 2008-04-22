@@ -1,167 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYDVMpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbYDVMtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbYDVMpj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 08:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760359AbYDVMpK
+	id S1758915AbYDVMtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 08:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYDVMtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 08:45:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44370 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760204AbYDVMpI (ORCPT
+	Tue, 22 Apr 2008 08:49:00 -0400
+Received: from hu-out-0506.google.com ([72.14.214.224]:31362 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbYDVMs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 08:45:08 -0400
-Subject: Re: Soft lockup regression from today's sched.git merge.
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <20080422.030519.259068348.davem@davemloft.net>
-References: <20080422.015931.70144614.davem@davemloft.net>
-	 <20080422091456.GC9939@elte.hu>
-	 <20080422.030519.259068348.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 14:45:04 +0200
-Message-Id: <1208868304.7115.251.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Tue, 22 Apr 2008 08:48:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ppSWG8s5z3+epkAJX0m7wm9o+YTm03sVLc45bRJhyzXhvE4QgiDKsTJ0Q4iFkR+4IR0WsP++XPhbpTnwZ5A24wuP6t0D0LED3a4vrJVKkDhOGJPhz2Ss60ywUObtmGXHKJwTreBaYP6aDfOiZZr6vxVP4H5t3BhekgiHN7jiQD4=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: x86: 4kstacks default
+Date: Tue, 22 Apr 2008 14:48:09 +0200
+User-Agent: KMail/1.8.2
+Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804212151.02241.vda.linux@googlemail.com> <20080422012819.GT108924158@sgi.com>
+In-Reply-To: <20080422012819.GT108924158@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804221448.09828.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 03:05 -0700, David Miller wrote:
+On Tuesday 22 April 2008 03:28, David Chinner wrote:
+> We've already chopped off the low hanging fruit, added noinline to
+> every function definition to prevent compiler heuristics from
+> blowing out stack usage by 25% and reduced use of temporary
+> variables as much as possible. There's very little fat left to trim,
+> and still we can't reliably fit in 4k stacks.
 
-> BTW, I'm also getting cpu's wedged in the group aggregate code:
-> 
-> [  121.338742] TSTATE: 0000009980001602 TPC: 000000000054ea20 TNPC: 0000000000456828 Y: 00000000    Not tainted
-> [  121.338778] TPC: <__first_cpu+0x4/0x28>
-> [  121.338791] g0: 0000000000000000 g1: 0000000000000002 g2: 0000000000000000 g3: 0000000000000002
-> [  121.338809] g4: fffff803fe9b24c0 g5: fffff8001587c000 g6: fffff803fe9d0000 g7: 00000000007b7260
-> [  121.338827] o0: 0000000000000002 o1: 00000000007b7258 o2: 0000000000000000 o3: 00000000007b7800
-> [  121.338845] o4: 0000000000845000 o5: 0000000000000400 sp: fffff803fe9d2ed1 ret_pc: 0000000000456820
-> [  121.338879] RPC: <aggregate_group_shares+0x10c/0x16c>
-> [  121.338893] l0: 0000000000000400 l1: 000000000000000d l2: 00000000000003ff l3: 0000000000000000
-> [  121.338911] l4: 0000000000000000 l5: 0000000000000000 l6: fffff803fe9d0000 l7: 0000000080009002
-> [  121.338928] i0: 0000000000801c20 i1: fffff800161ca508 i2: 00000000000001d8 i3: 0000000000000001
-> [  121.338946] i4: fffff800161d9c00 i5: 0000000000000001 i6: fffff803fe9d2f91 i7: 0000000000456904
-> [  121.338968] I7: <aggregate_get_down+0x84/0x13c>
-> 
-> I'm suspecting the deluge of cpumask changes that also went in today.
-> 
-> I guess I'll be bisecting all day tomorrow too :-/
+At yet, I got four screenfuls of
 
-Sadly both the cpumask changes and the group load-balancer came in the
-same batch - so its all new code. Also, it looks like the cpumask
-changes are before the load balance changes - so bisecting this will be
-'fun'.
+fs/xfs/XXXXX.c: warning: unused parameter 'foo'
 
-That said; the code in question looks like:
+when I added -Wunused_parameter to Makefile.
+Clearly there is some room for improvement.
 
-static
-void aggregate_group_shares(struct task_group *tg, struct sched_domain *sd)
-{
-        unsigned long shares = 0;
-        int i;
+> Patches are welcome - I'd be over the moon if any of the known 4k
+> stack advocates sent a stack reduction patch for XFS, but it seems
+> that actually trying to fix the problems is much harder than
+> resending a one line patch every few months....
 
-again:
-        for_each_cpu_mask(i, sd->span)
-                shares += tg->cfs_rq[i]->shares;
+Sent a few.
+I would like to ask you to ACK/NAK every individual patch
+in some reasonable period of time, say, 1-3 days. If you NAK a patch,
+please let me know what is wrong with it.
 
-        /*
-         * When the span doesn't have any shares assigned, but does have
-         * tasks to run do a machine wide rebalance (should be rare).
-         */
-        if (unlikely(!shares && aggregate(tg, sd)->rq_weight)) {
-                __aggregate_redistribute_shares(tg);
-                goto again;
-        }
+I am not eager at all to experience a repeat of aic7xxx
+patch saga, when I was not getting any meaningful reply
+for months.
 
-        aggregate(tg, sd)->shares = shares;
-}
-
-and the __first_cpu() call is from the for_each_cpu_mask() afaict. and
-sd->span should be good - that's not new. So I'm a bit puzzled.
-
-But you say they get wedged - so the above trace is a snapshot (NMI,
-sysrq-[tw] or the like) that could also mean they get wedged in this
-'again' loop we have here.
-
-I have two patches; the first will stick in a printk() to see if it is
-indeed the loop in this function. The second is an attempt at breaking
-out of it.
-
-BTW, what does the sched_domain tree look like on that 128-cpu machine?
-
----
- kernel/printk.c |    2 --
- kernel/sched.c  |    1 +
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-Index: linux-2.6-2/kernel/printk.c
-===================================================================
---- linux-2.6-2.orig/kernel/printk.c
-+++ linux-2.6-2/kernel/printk.c
-@@ -1020,8 +1020,6 @@ void release_console_sem(void)
- 	console_locked = 0;
- 	up(&console_sem);
- 	spin_unlock_irqrestore(&logbuf_lock, flags);
--	if (wake_klogd)
--		wake_up_klogd();
- }
- EXPORT_SYMBOL(release_console_sem);
- 
-Index: linux-2.6-2/kernel/sched.c
-===================================================================
---- linux-2.6-2.orig/kernel/sched.c
-+++ linux-2.6-2/kernel/sched.c
-@@ -1710,6 +1710,7 @@ again:
- 	 * tasks to run do a machine wide rebalance (should be rare).
- 	 */
- 	if (unlikely(!shares && aggregate(tg, sd)->rq_weight)) {
-+		printk(KERN_EMERG "[%d] no sd shares\n", raw_smp_processor_id());
- 		__aggregate_redistribute_shares(tg);
- 		goto again;
- 	}
-
-
----
- kernel/sched.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
-
-Index: linux-2.6-2/kernel/sched.c
-===================================================================
---- linux-2.6-2.orig/kernel/sched.c
-+++ linux-2.6-2/kernel/sched.c
-@@ -1661,9 +1661,9 @@ void aggregate_group_weight(struct task_
-  */
- static void __aggregate_redistribute_shares(struct task_group *tg)
- {
--	int i, max_cpu = smp_processor_id();
-+	int i;
- 	unsigned long rq_weight = 0;
--	unsigned long shares, max_shares = 0, shares_rem = tg->shares;
-+	unsigned long shares, shares_rem = tg->shares;
- 
- 	for_each_possible_cpu(i)
- 		rq_weight += tg->cfs_rq[i]->load.weight;
-@@ -1677,10 +1677,6 @@ static void __aggregate_redistribute_sha
- 
- 		tg->cfs_rq[i]->shares = shares;
- 
--		if (shares > max_shares) {
--			max_shares = shares;
--			max_cpu = i;
--		}
- 		shares_rem -= shares;
- 	}
- 
-@@ -1689,7 +1685,7 @@ static void __aggregate_redistribute_sha
- 	 * due to rounding down when computing the per-cpu shares.
- 	 */
- 	if (shares_rem)
--		tg->cfs_rq[max_cpu]->shares += shares_rem;
-+		tg->cfs_rq[smp_process_id()]->shares += shares_rem;
- }
- 
- /*
-
-
+Best regards, Denys.
+--
+vda
