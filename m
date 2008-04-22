@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbYDVVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbYDVVMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932815AbYDVVGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbYDVVGl
+	id S1761516AbYDVVMi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbYDVVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:06:41 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61289 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756742AbYDVVGk (ORCPT
+	Tue, 22 Apr 2008 17:12:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:36452 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755917AbYDVVM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:06:40 -0400
-Message-ID: <8411091.1208898374115.JavaMail.oracle@acsmt302.oracle.com>
-Date: Tue, 22 Apr 2008 16:06:14 -0500 (CDT)
-From: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] mfd: kconfig exposing unbuildable driver
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080422210153.GB21435@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-References: <1208895950.24124.9.camel@brick> <20080422203334.GA9809@flint.arm.linux.org.uk> <Pine.LNX.4.64.0804221337550.19817@shark.he.net> <20080422204549.GA21435@flint.arm.linux.org.uk> <Pine.LNX.4.64.0804221346470.19817@shark.he.net> <20080422210153.GB21435@flint.arm.linux.org.uk>
-X-Priority: 3
-X-Mailer: Oracle Webmail Client(UIX)
-Content-Language: en-US
-Accept-Language: en-US
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 22 Apr 2008 17:12:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=HArmZ/rXUyXCMz+/d1AfP/eL5/ngCS8ijdEC/evd9r2W4ue2slBlqD5XAjaOJKUKQ4O6IO9Uag9HPhkYZpam/BG9kF7Zf/RPMPGtdyz3mS1zhjAgHxhF9oSX4Cmxv21GS+5nNiMVjkNFWuAjCGHtPJGSPHuuVIA/hd0/M0v1Yl8=
+Date: Tue, 22 Apr 2008 23:12:27 +0200 (CEST)
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: linux-kernel@vger.kernel.org, Jesper Juhl <jesper.juhl@gmail.com>
+Subject: [PATCH] hfs: if match_strdup() fails to allocate memory in
+ parse_options(), don't blow up the kernel.
+Message-ID: <alpine.LNX.1.00.0804222309250.14359@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
---- Original Message --- (from rmk:)
-> On Tue, Apr 22, 2008 at 01:47:18PM -0700, Randy.Dunlap wrote:
-> > On Tue, 22 Apr 2008, Russell King wrote:
-> > > On Tue, Apr 22, 2008 at 01:38:28PM -0700, Randy.Dunlap wrote:
-> > > > On Tue, 22 Apr 2008, Russell King wrote:
-> > > > 
-> > > > > That was my initial approach as well, which got shot down by Andrew
-> > > > > Morton and others as being unacceptable.
-> > > > 
-> > > > where?
-> > > 
-> > > In private mail.
-> > > 
-> > > > why?
-> > > 
-> > > Well, first I need to gain the permission of Andrew to post his private
-> > > message.  I'm not being subborn here - I _do_ _not_ reproduce private
-> > > messages in public without prior permission.
-> > 
-> > Sure, understood.
-> > 
-> > > > Seems like we need to push back on that part.
-> > > 
-> > > Talk to Andrew then.
-> > 
-> > He is cc-ed (although traveling much this week IIRC).
-> 
-> In which case, since it's likely I won't get a reply in the
-> next hour
-> (which'll delay my response by 24 hours) let me paraphrase
-> what Andrew said.
-> 
-> Andrew believes that it is beneficial to have other architectures,
-> particularly x86, build other architectures drivers.
+The Coverity checker spotted that we don't check the return value of 
+match_strdup() in fs/hfs/super.c::parse_options().
+This is bad since match_strdup() does a memory allocation internally 
+which can fail. If it does fail it'll return NULL and in that case 
+we'll pass the NULL pointer on to load_nls() which will eventually 
+dereference it - Boom!
+Much better to check the return value, fail gracefully and log an 
+error message if this happens.
+This happens in two different spots. I've made the error logged in 
+each location unique so that it'll be obvious in bug reports later 
+exactely which one of the two spots got hit (always nice to have 
+grep'able error messages that point to a unique location in the 
+source).
 
-Sure.
 
-> Meanwhile, pHilipp Zabel believes this hardware not to be ARM
-> specific.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-That's the big Important missing info.  So the source file is
-incorrect, not the Kconfig.l
+ super.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-> So, the majority concensus in the three way discussion was
-> that it
-> should remain visible, and the (unnecessary) include and its
-> dependents be removed.
-> 
-> Having now had some time (read: half an hour after dinner after
-> getting
-> back home) to investigate, I can point to the patch in several
-> places:
-> 
->   http://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/arm:devel.mbox
-> 
-> and find the patch with subject line:
-> 
->   [ARM] 5010/1: htc-pasic3: remove unused defines and includes
-> 
-> or grab 5010/1 from my patch system.  If you want a patch to
-> plaster over it, merging that would be a far better solution.
+diff --git a/fs/hfs/super.c b/fs/hfs/super.c
+index 32de44e..221e314 100644
+--- a/fs/hfs/super.c
++++ b/fs/hfs/super.c
+@@ -297,6 +297,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+ 				return 0;
+ 			}
+ 			p = match_strdup(&args[0]);
++			if (!p) {
++				printk(KERN_ERR "hfs: mem alloc failed in match_strdup()\n");
++				return 0;
++			}
+ 			hsb->nls_disk = load_nls(p);
+ 			if (!hsb->nls_disk) {
+ 				printk(KERN_ERR "hfs: unable to load codepage \"%s\"\n", p);
+@@ -311,6 +315,10 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
+ 				return 0;
+ 			}
+ 			p = match_strdup(&args[0]);
++			if (!p) {
++				printk(KERN_ERR "hfs: memory allocation failed in match_strdup()\n");
++				return 0;
++			}
+ 			hsb->nls_io = load_nls(p);
+ 			if (!hsb->nls_io) {
+ 				printk(KERN_ERR "hfs: unable to load iocharset \"%s\"\n", p);
 
-OK, sounds fair.  Thanks.
-
-~Randy
 
