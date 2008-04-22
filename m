@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbYDVA1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYDVAaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759908AbYDVA1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbYDVA05
+	id S1760074AbYDVAaY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYDVAaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:26:57 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58692 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758953AbYDVA04 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:26:56 -0400
-Date: Tue, 22 Apr 2008 01:26:52 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-Message-ID: <20080422002652.GU27459@ZenIV.linux.org.uk>
-References: <alpine.LFD.1.10.0804211608570.2779@woody.linux-foundation.org> <20080421231815.GS27459@ZenIV.linux.org.uk> <20080421232534.GT27459@ZenIV.linux.org.uk> <20080421.171619.126408955.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080421.171619.126408955.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 21 Apr 2008 20:30:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60457 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759568AbYDVAaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 20:30:09 -0400
+Message-ID: <480D3186.2000307@garzik.org>
+Date: Mon, 21 Apr 2008 20:29:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, kernel@wantstofly.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, galak@kernel.crashing.org,
+       David Miller <davem@davemloft.net>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, cooloney@kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [git patches] minor irq handler cleanups
+References: <20080421013551.GA25960@havoc.gtf.org> <20080421074240.GA1938@flint.arm.linux.org.uk> <480C4DF1.2030204@garzik.org> <alpine.LFD.1.10.0804211559230.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804211559230.2779@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 05:16:19PM -0700, David Miller wrote:
+Linus Torvalds wrote:
+> I decided you knew what you were doing.
 
-> The only platforms defining a non-NOP __emul_prefix() after this
-> sparc changeset are:
-> 
-> 1) IA-64 for PER_LINUX32 --> /emul/ia32-linux/
-> 2) MIPS for riscos and IRIX compat support
-> 3) ARM for ARM_BSD_EMUL --> "usr/gnemul/bsd", yikes no leading slash
->    in that path!
-> 
-> I bet if we really tried we could get rid of these things.
+That was your first mistake!  /me hides...
 
-By killing altroot-related code in fs/namei.c, which is what I'm going to
-do _anyway_.  If somebody really needs a working replacement, I would
-very much suggest starting with figuring out the desired semantics; frankly,
-I suspect that having native wrapper for their ld.so might be much better
-idea as far as the location of libraries is concerned, with chroot and
-bindings doing the rest.
+
+> So please do send a fixup patch.
+
+Yep, on it.
+
+	Jeff
+
+
+
