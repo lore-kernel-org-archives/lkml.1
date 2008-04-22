@@ -1,73 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbYDVJc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762497AbYDVJf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762614AbYDVJc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYDVJcT
+	id S1762497AbYDVJf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 05:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbYDVJfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:32:19 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:22203 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756637AbYDVJcS (ORCPT
+	Tue, 22 Apr 2008 05:35:51 -0400
+Received: from hqemgate03.nvidia.com ([216.228.112.145]:17439 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbYDVJfu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:32:18 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-15.tower-29.messagelabs.com!1208856737!11690420!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Tue, 22 Apr 2008 11:32:13 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Ben Nizette <bn@niasdigital.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: UIO: Implement a UIO interface for the SMX Cryptengine
-Message-ID: <20080422093213.GA27126@digi.com>
-References: <20080414100848.GA19369@digi.com> <1208173181.3351.63.camel@moss.renham>
+	Tue, 22 Apr 2008 05:35:50 -0400
+X-PGP-Universal: processed;
+	by hqnvupgp02.nvidia.com on Tue, 22 Apr 2008 02:35:48 -0700
+X-MimeOLE: Produced By Microsoft Exchange V6.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1208173181.3351.63.camel@moss.renham>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 22 Apr 2008 09:32:14.0230 (UTC) FILETIME=[BF867B60:01C8A45B]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15864.006
-X-TM-AS-Result: No--16.243700-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Subject: RE: dying hdd causing MCE and panic (libata)
+Date: Tue, 22 Apr 2008 17:33:26 +0800
+Message-ID: <15F501D1A78BD343BE8F4D8DB854566B276EB565@hkemmail01.nvidia.com>
+In-Reply-To: <480B8992.4090308@shaw.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: dying hdd causing MCE and panic (libata)
+Thread-Index: AcijEwcgRYI+2W14SKeCCbSvXnEWpwBSD7IQ
+References: <fa.wEQ+jetKkQxiDyPBYbk6js8pT+0@ifi.uio.no> <480B8992.4090308@shaw.ca>
+From: "Peer Chen" <pchen@nvidia.com>
+To: "Robert Hancock" <hancockr@shaw.ca>, "Rumi Szabolcs" <rumi_ml@rtfm.hu>
+Cc: <linux-kernel@vger.kernel.org>, "Kuan Luo" <kluo@nvidia.com>,
+       "Allen Martin" <AMartin@nvidia.com>
+X-OriginalArrivalTime: 22 Apr 2008 09:33:28.0143 (UTC) FILETIME=[EB94B5F0:01C8A45B]
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+It's unresolved machine check error and don't switch to register mode
+and read the task file in the driver is the only way to avoid this
+error.
 
-Ben Nizette wrote:
-> 
-> [putting lkml back in CC]
-> 
-> On Mon, 2008-04-14 at 12:08 +0200, Uwe Kleine-König wrote:
-> 
-> > The line "depends on UIO" isn't needed (anymore) because the whole
-> > config item is located in a "if UIO"/"endif".
-> 
-> Right, just saw your patch fly by.  Given mine's been taken up by gregkh
-> already I was kinda hoping someone further up the tree would end up
-> fixing it.  If not I can of course rebase and resend.
-Your patch is in Linus' tree in the meantime and mine is not (yet).  I
-suggest to prepare a patch such that both drivers share some code after
-my driver has hit mainline.
+BRs
+Peer Chen
  
-> > The "default n" isn't necessary because that's the default anyhow.
+
+> -----Original Message-----
+> From: Robert Hancock [mailto:hancockr@shaw.ca] 
+> Sent: Monday, April 21, 2008 2:21 AM
+> To: Rumi Szabolcs
+> Cc: linux-kernel@vger.kernel.org; Peer Chen; Kuan Luo; Allen Martin
+> Subject: Re: dying hdd causing MCE and panic (libata)
 > 
-> Eh, I like to be explicit.
-I expect this to be cleaned up later by someone à la:
-
-	git log -E --grep='([Rr]emove|useless|unnecessary).*default n\>'
-
-:-)
-
-Best regards
-Uwe
-
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+> Rumi Szabolcs wrote:
+> > Hello all!
+> > 
+> > A SATA drive in one of my servers has made some final steps towards 
+> > the grave and it has put out some obvious signs of this onto the 
+> > console (ATA transactions failing) but then it has also 
+> thrown an MCE 
+> > (CPU context corrupt) and then the kernel has panicked.
+> > This server is rock stable otherwise and used to make 
+> uptimes measured 
+> > in months between planned restarts.
+> > 
+> > The machine has been removed from power completely and restarted 
+> > multiple times but during the boot process it always 
+> crashed with an 
+> > MCE or a panic or both.
+> > 
+> > Sorry but I cannot provide exact debug information right 
+> now because I 
+> > wasn't physically there at the time and I'm still 250kms away from 
+> > that server. In fact I've remotely guided two people without a clue 
+> > through the phone and they have read things from the 
+> console for me, 
+> > restarted the machine, etc.
+> > 
+> > So in the end I told them to open up the server and pull the SATA 
+> > cable from that particular drive. Suddenly all the MCEs and 
+> panics had 
+> > gone away and the machine is running fine since then.
+> > 
+> > Hardware:
+> > 
+> > - Nforce4 based motherboard (chipset integrated SATA ports)
+> > - Athlon64 single core CPU
+> > - Diamondmax 9 SATA hard drive
+> > 
+> > Kernel:
+> > 
+> > 2.6.23-gentoo-r3 (no preempt, no smp)
+> > 
+> > My questions:
+> > 
+> > - Is it normal that a simple hard disk failure (that is not 
+> even the 
+> > system disk) causes MCEs and kernel panics?
+> > 
+> > - Is this a problem that is induced completely on the 
+> hardware level 
+> > (eg. the southbridge going crazy and making the whole hardware 
+> > platform unstable) or a problem that could be fixed or handled 
+> > properly on the software (kernel) level?
+> 
+> It's known that nForce4 ADMA can in certain cases hang on 
+> error handling and cause an MCE when we attempt to switch the 
+> controller into register mode and read the  ATA registers in 
+> order to diagnose the problem. The MCE indicates the CPU 
+> timed out waiting for a register read from the chipset on the 
+> HyperTranport bus. It's not presently known why this is, or 
+> what we could do differently to avoid this problem. We're 
+> presently hampered by lack of public information from NVIDIA 
+> on this controller to fix this, so the ball is kind of in 
+> NVIDIA's court.
+> 
+> In the latest kernels sata_nv ADMA support is being disabled 
+> by default, which may prevent this from happening. However, 
+> some odd hotplug/error handling behavior was seen on these 
+> controllers before ADMA support was implemented, so it may 
+> not entirely fix the problem.
+> 
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
