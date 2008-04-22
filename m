@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbYDVPAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbYDVPAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763585AbYDVPAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPAB
+	id S1764738AbYDVPAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:00:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58293 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751462AbYDVPAA (ORCPT
+	Tue, 22 Apr 2008 11:00:38 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:52009 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762720AbYDVPAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:00:00 -0400
-Date: Tue, 22 Apr 2008 07:58:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-In-Reply-To: <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0804220749450.2779@woody.linux-foundation.org>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 11:00:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=coBHYPIUc802FlLm0uWZf0QkcdF5St0FZ84t5EHB7lcn7XkRLYCy5fdtpOSt7Mpy+0cBXk6TwUHpo3DwItLx5DYlCpwkd49Gst5+8steSyNKoEsBq+aEshODt3C2BDdjGaXz5A/DwPeUGAD2kS/au+r9LWcnviDUGtKdPJ2HBGs=
+Message-ID: <480DFD7C.2030206@gmail.com>
+Date: Wed, 23 Apr 2008 00:00:12 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mark Lord <liml@rtr.ca>
+CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca>
+In-Reply-To: <480DF9BD.1080104@rtr.ca>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Apr 2008, Linus Torvalds wrote:
+Mark Lord wrote:
+>> Ah.. that means we have the whole naming thing wrong.  Yewwww....
+> ..
 > 
-> You forgot to free the "data" here? The waiter must also free the object, 
-> since now the callee does not.
+> I suppose.   If we were needlessly pedantic, then perhaps
+> the libata-bmdma.c should be renamed to libata-sff.c,
+> and the libata-sff.c should be renamed libata-tf.c
+> 
+> But there's probably been a document or two since then,
+> where the SFF folks have documented the TF interfaces, too.
 
-Ahh. For the single case, the caller will have it on the stack.
+Fingers and toes and whatever else crossed.
 
-But the smp_call_function_mask() case seems to leak these things.
+> So.. whatever.  :)
 
-How about just always doing the "wait" case on the stack? Also, I'd 
-suggest you get rid of the static allocation, and just turn it into a wait 
-case, so that you don't need *three* different allocation cases, just two.
+Yeah, that's the spirit.  :-)
 
-Or am I missing something?
-
-		Linus
+-- 
+tejun
