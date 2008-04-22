@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYDVFp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYDVFqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYDVFp7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 01:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYDVFpt
+	id S1758746AbYDVFqc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 01:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYDVFqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 01:45:49 -0400
-Received: from namei.org ([69.55.235.186]:41429 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752728AbYDVFps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 01:45:48 -0400
-Date: Tue, 22 Apr 2008 15:42:47 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       dwalker@mvista.com, sdietrich@novell.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com, Eric Paris <eparis@redhat.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH] SELinux fixups needed for preemptable RCU from -rt
-In-Reply-To: <20080422011233.GG9153@linux.vnet.ibm.com>
-Message-ID: <Xine.LNX.4.64.0804221537550.23645@us.intercode.com.au>
-References: <20080422003412.GA9983@linux.vnet.ibm.com>
- <Pine.LNX.4.58.0804212053530.25185@gandalf.stny.rr.com>
- <20080422011233.GG9153@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Apr 2008 01:46:17 -0400
+Received: from mga01.intel.com ([192.55.52.88]:6503 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757258AbYDVFqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 01:46:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,692,1199692800"; 
+   d="scan'208";a="555492923"
+Subject: Re: [PATCH 2.6.25-rc7 001/001] ACPI: workaround for buggy BIOS to
+	ignore error LINK CRS method
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: NoWhereMan <uncommonnonsense@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
+In-Reply-To: <f7430a760804210613h69e4b560q774301a1152ef77d@mail.gmail.com>
+References: <f7430a760804090842s44ece7bh216d5d28e347955@mail.gmail.com>
+	 <20080409161251.0c0e73e9.akpm@linux-foundation.org>
+	 <1207824057.8704.12.camel@yakui_zhao.sh.intel.com>
+	 <f7430a760804100523t6483dc0cn144429ee7024a7f2@mail.gmail.com>
+	 <1208267385.12372.11.camel@yakui_zhao.sh.intel.com>
+	 <f7430a760804150121ndfaf065j332ebf1cee3c572@mail.gmail.com>
+	 <f7430a760804151538v410f7c64m21d90cb9da8e9baa@mail.gmail.com>
+	 <f7430a760804161154o77dd7fc5g622d3bbe4fa1183b@mail.gmail.com>
+	 <f7430a760804210613h69e4b560q774301a1152ef77d@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 21:37:47 +0800
+Message-Id: <1208871467.14474.57.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, applied to
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-linus
-
-
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com> (comment change)
-> ---
->  security/selinux/avc.c   |    9 +++++++++
->  security/selinux/netif.c |    2 ++
->  2 files changed, 11 insertions(+)
+On Mon, 2008-04-21 at 15:13 +0200, NoWhereMan wrote:
+> patch is working; cc'ing to ML
 > 
-> Index: linux-2.6.24.4-rt4/security/selinux/avc.c
-> ===================================================================
-> --- linux-2.6.24.4-rt4.orig/security/selinux/avc.c	2008-03-24 19:05:09.000000000 -0400
-> +++ linux-2.6.24.4-rt4/security/selinux/avc.c	2008-03-24 19:06:41.000000000 -0400
-> @@ -312,6 +312,7 @@ static inline int avc_reclaim_node(void)
->  		if (!spin_trylock_irqsave(&avc_cache.slots_lock[hvalue], flags))
->  			continue;
->  
-> +		rcu_read_lock();
->  		list_for_each_entry(node, &avc_cache.slots[hvalue], list) {
->  			if (atomic_dec_and_test(&node->ae.used)) {
->  				/* Recently Unused */
-> @@ -319,11 +320,13 @@ static inline int avc_reclaim_node(void)
->  				avc_cache_stats_incr(reclaims);
->  				ecx++;
->  				if (ecx >= AVC_CACHE_RECLAIM) {
-> +					rcu_read_unlock();
->  					spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
->  					goto out;
->  				}
->  			}
->  		}
-> +		rcu_read_unlock();
->  		spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
->  	}
->  out:
-> @@ -807,8 +810,14 @@ int avc_ss_reset(u32 seqno)
->  
->  	for (i = 0; i < AVC_CACHE_SLOTS; i++) {
->  		spin_lock_irqsave(&avc_cache.slots_lock[i], flag);
-> +		/*
-> +		 * With preemptable RCU, the outer spinlock does not
-> +		 * prevent RCU grace periods from ending.
-> +		 */
-> +		rcu_read_lock();
->  		list_for_each_entry(node, &avc_cache.slots[i], list)
->  			avc_node_delete(node);
-> +		rcu_read_unlock();
->  		spin_unlock_irqrestore(&avc_cache.slots_lock[i], flag);
->  	}
->  
-> Index: linux-2.6.24.4-rt4/security/selinux/netif.c
-> ===================================================================
-> --- linux-2.6.24.4-rt4.orig/security/selinux/netif.c	2008-03-24 19:05:09.000000000 -0400
-> +++ linux-2.6.24.4-rt4/security/selinux/netif.c	2008-03-24 19:06:41.000000000 -0400
-> @@ -210,6 +210,7 @@ static void sel_netif_flush(void)
->  {
->  	int idx;
->  
-> +	rcu_read_lock();
->  	spin_lock_bh(&sel_netif_lock);
->  	for (idx = 0; idx < SEL_NETIF_HASH_SIZE; idx++) {
->  		struct sel_netif *netif;
-> @@ -218,6 +219,7 @@ static void sel_netif_flush(void)
->  			sel_netif_destroy(netif);
->  	}
->  	spin_unlock_bh(&sel_netif_lock);
-> +	rcu_read_unlock();
->  }
->  
->  static int sel_netif_avc_callback(u32 event, u32 ssid, u32 tsid,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Thanks for the test.
+I will try to push Len to merge this patch.
+> On Wed, Apr 16, 2008 at 8:54 PM, NoWhereMan <uncommonnonsense@gmail.com> wrote:
+> > FYI it wasn't latest git but still rc7; I've fast-forwarded now to
+> >  rc9, but if no significant changes were made on that part of acpi I'm
+> >  sure it will work anyway
+> >
+> >
+> >
+> >  On Wed, Apr 16, 2008 at 12:38 AM, NoWhereMan <uncommonnonsense@gmail.com> wrote:
+> >  > hi Zhao,
+> >  >
+> >  >  I've applied the patch to latest linus git, boot went flawlessly
+> >  >  (except the usual error messages about _CRS method) and both wireless
+> >  >  and USB work, so I'm assuming it worked.
+> >  >
+> >  >  I'm attaching my dmesg just for reference. I've enabled ACPI debugging
+> >  >  in my kernel config.
+> >  >
+> >  >  thank you a lot for your efforts with this bug
+> >  >
+> >  >
+> >  >
+> >  >  On Tue, Apr 15, 2008 at 10:21 AM, NoWhereMan <uncommonnonsense@gmail.com> wrote:
+> >  >  > On Tue, Apr 15, 2008 at 3:49 PM, Zhao Yakui <yakui.zhao@intel.com> wrote:
+> >  >  >
+> >  >  >  >  Will you please try the workaround patch and see whether the problem can
+> >  >  >  >  be fixed?
+> >  >  >  >  Thanks.
+> >  >  >
+> >  >  >  I will as soon as possible, thank you for your efforts!
+> >  >  >
+> >  >
+> >
 
--- 
-James Morris
-<jmorris@namei.org>
