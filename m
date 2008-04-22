@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbYDVArA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760974AbYDVAr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbYDVArA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760111AbYDVAqv
+	id S1760974AbYDVAr4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYDVArs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:46:51 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:56193 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755376AbYDVAqu (ORCPT
+	Mon, 21 Apr 2008 20:47:48 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50120 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753350AbYDVArr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:46:50 -0400
-Date: Mon, 21 Apr 2008 17:46:45 -0700
+	Mon, 21 Apr 2008 20:47:47 -0400
+Date: Mon, 21 Apr 2008 17:47:43 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
@@ -19,8 +19,8 @@ Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, akpm@linux-foundation.org,
        a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
        dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
        oleg@tv-sign.ru, jamesclhuang@yahoo.com
-Subject: [PATCH 2/5] Add memory barriers and comments to rcu_check_callbacks()
-Message-ID: <20080422004645.GB3693@linux.vnet.ibm.com>
+Subject: [PATCH 3/5] Add rcu_barrier_sched() and rcu_barrier_bh()
+Message-ID: <20080422004743.GC3693@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 References: <20080422004454.GA3517@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -32,59 +32,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add comments to the logic that infers quiescent states when interrupting
-from either user mode or the idle loop.  Also add a memory barrier: it
-appears that James Huang was in fact onto something, as the scheduler
-is much less synchronization-happy than it once was, so we can no longer
-rely on its memory barriers in all cases.
+Add rcu_barrier_sched() and rcu_barrier_bh().  With these in place,
+rcutorture no longer gives the occasional oops when repeatedly starting
+and stopping torturing rcu_bh.  Also adds the API needed to flush out
+pre-existing call_rcu_sched() callbacks.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reported-by: James Huang <jamesclhuang@yahoo.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
 
- rcuclassic.c |   30 +++++++++++++++++++++++++++++-
- 1 file changed, 29 insertions(+), 1 deletion(-)
+ include/linux/rcupdate.h |    2 +
+ kernel/rcupdate.c        |   55 +++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 51 insertions(+), 6 deletions(-)
 
-diff -urpNa -X dontdiff linux-2.6.25-C1-call_rcu_sched/kernel/rcuclassic.c linux-2.6.25-C2-rcuclassic-fixes/kernel/rcuclassic.c
---- linux-2.6.25-C1-call_rcu_sched/kernel/rcuclassic.c	2008-04-16 19:49:44.000000000 -0700
-+++ linux-2.6.25-C2-rcuclassic-fixes/kernel/rcuclassic.c	2008-04-21 10:50:12.000000000 -0700
-@@ -502,10 +502,38 @@ void rcu_check_callbacks(int cpu, int us
- 	if (user ||
- 	    (idle_cpu(cpu) && !in_softirq() &&
- 				hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h
+--- linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h	2008-04-17 08:10:33.000000000 -0700
++++ linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h	2008-04-21 11:33:07.000000000 -0700
+@@ -260,6 +260,8 @@ extern void call_rcu_bh(struct rcu_head 
+ /* Exported common interfaces */
+ extern void synchronize_rcu(void);
+ extern void rcu_barrier(void);
++extern void rcu_barrier_bh(void);
++extern void rcu_barrier_sched(void);
+ extern long rcu_batches_completed(void);
+ extern long rcu_batches_completed_bh(void);
+ 
+diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c
+--- linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c	2008-04-17 08:10:33.000000000 -0700
++++ linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c	2008-04-21 11:33:08.000000000 -0700
+@@ -45,6 +45,12 @@
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+ 
++enum rcu_barrier {
++	RCU_BARRIER_STD,
++	RCU_BARRIER_BH,
++	RCU_BARRIER_SCHED,
++};
 +
-+		/*
-+		 * Get here if this CPU took its interrupt from user
-+		 * mode or from the idle loop, and if this is not a
-+		 * nested interrupt.  In this case, the CPU is in
-+		 * a quiescent state, so count it.
-+		 *
-+		 * Also do a memory barrier.  This is needed to handle
-+		 * the case where writes from a preempt-disable section
-+		 * of code get reordered into schedule() by this CPU's
-+		 * write buffer.  The memory barrier makes sure that
-+		 * the rcu_qsctr_inc() and rcu_bh_qsctr_inc() are see
-+		 * by other CPUs to happen after any such write.
-+		 */
-+
-+		smp_mb();  /* See above block comment. */
- 		rcu_qsctr_inc(cpu);
- 		rcu_bh_qsctr_inc(cpu);
--	} else if (!in_softirq())
-+
-+	} else if (!in_softirq()) {
-+
-+		/*
-+		 * Get here if this CPU did not take its interrupt from
-+		 * softirq, in other words, if it is not interrupting
-+		 * a rcu_bh read-side critical section.  This is an _bh
-+		 * critical section, so count it.  The memory barrier
-+		 * is needed for the same reason as is the above one.
-+		 */
-+
-+		smp_mb();  /* See above block comment. */
- 		rcu_bh_qsctr_inc(cpu);
+ static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+ static atomic_t rcu_barrier_cpu_count;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+@@ -83,19 +89,30 @@ static void rcu_barrier_callback(struct 
+ /*
+  * Called with preemption disabled, and from cross-cpu IRQ context.
+  */
+-static void rcu_barrier_func(void *notused)
++static void rcu_barrier_func(void *type)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct rcu_head *head = &per_cpu(rcu_barrier_head, cpu);
+ 
+ 	atomic_inc(&rcu_barrier_cpu_count);
+-	call_rcu(head, rcu_barrier_callback);
++	switch ((enum rcu_barrier)type) {
++	case RCU_BARRIER_STD:
++		call_rcu(head, rcu_barrier_callback);
++		break;
++	case RCU_BARRIER_BH:
++		call_rcu_bh(head, rcu_barrier_callback);
++		break;
++	case RCU_BARRIER_SCHED:
++		call_rcu_sched(head, rcu_barrier_callback);
++		break;
 +	}
- 	raise_rcu_softirq();
  }
  
+-/**
+- * rcu_barrier - Wait until all the in-flight RCUs are complete.
++/*
++ * Orchestrate the specified type of RCU barrier, waiting for all
++ * RCU callbacks of the specified type to complete.
+  */
+-void rcu_barrier(void)
++static void _rcu_barrier(enum rcu_barrier type)
+ {
+ 	BUG_ON(in_interrupt());
+ 	/* Take cpucontrol mutex to protect against CPU hotplug */
+@@ -111,13 +128,39 @@ void rcu_barrier(void)
+ 	 * until all the callbacks are queued.
+ 	 */
+ 	rcu_read_lock();
+-	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
++	on_each_cpu(rcu_barrier_func, (void *)type, 0, 1);
+ 	rcu_read_unlock();
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
+ }
++
++/**
++ * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
++ */
++void rcu_barrier(void)
++{
++	_rcu_barrier(RCU_BARRIER_STD);
++}
+ EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
++/**
++ * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
++ */
++void rcu_barrier_bh(void)
++{
++	_rcu_barrier(RCU_BARRIER_BH);
++}
++EXPORT_SYMBOL_GPL(rcu_barrier_bh);
++
++/**
++ * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
++ */
++void rcu_barrier_sched(void)
++{
++	_rcu_barrier(RCU_BARRIER_SCHED);
++}
++EXPORT_SYMBOL_GPL(rcu_barrier_sched);
++
+ void __init rcu_init(void)
+ {
+ 	__rcu_init();
