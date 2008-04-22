@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYDVMky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbYDVMnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757702AbYDVMky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 08:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYDVMkp
+	id S1759600AbYDVMnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 08:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYDVMnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 08:40:45 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:57720 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbYDVMkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 08:40:45 -0400
-Message-ID: <480DDCCA.4010709@de.ibm.com>
-Date: Tue, 22 Apr 2008 14:40:42 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 22 Apr 2008 08:43:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:48658 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753097AbYDVMnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 08:43:21 -0400
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: ltp-list@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>,
-       ltp-coverage@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Ltp-coverage] [RFC PATCH 5/8] module: add function to map	address
- to containing module
-References: <480C89DF.9090905@de.ibm.com> <200804220140.58784.rusty@rustcorp.com.au>
-In-Reply-To: <200804220140.58784.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18445.56653.957832.720681@cargo.ozlabs.ibm.com>
+Date: Tue, 22 Apr 2008 22:42:53 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, anton@samba.org
+Subject: Re: [PATCH 3/11] powerpc: convert to generic helpers for IPI function calls
+In-Reply-To: <20080422121315.GE12774@kernel.dk>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
+	<1208851058-8500-4-git-send-email-jens.axboe@oracle.com>
+	<18445.54284.194023.553595@cargo.ozlabs.ibm.com>
+	<20080422121315.GE12774@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Monday 21 April 2008 22:34:39 Peter Oberparleiter wrote:
->> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
->>
->> module_address() maps an address to the module containing it in either
->> text or data section. Required by the gcov profiling infrastructure to
->> associate profiling data structures with modules.
-> 
-> Locking problem; this isn't safe.  Note that we block preemption to traverse 
-> the module list.  You could grab a reference, and fix up all the callers to 
-> put it once they're done?
+Jens Axboe writes:
 
-Hm, problem: in this patchset, module_address() is called when the module is going (mod->state = MODULE_STATE_GOING) and try_module_get() would most likely fail and/or make no sense since we're already past reference counting with this module anyway.
+> I touched on both of these points in the initial mail, but perhaps you
+> missed it as I didn't CC everyone for the 0/11 part. I'll add the full
+> explanation to the 1/11 patch as well.
 
-On the other hand, what I actually need is a way to find out if a given module contains a certain address so I could replace this function with something like module_contains(mod, addr). 
-I'll go that route if there are no objections.
+OK, that would be fine.  I didn't read right to the end of the 0/11
+mail in detail, I admit. :)
 
+Now that I have, I don't see anything about smp_send_stop trying to
+get the interrupt sent off in a panic situation when some other cpu
+might be stuck holding the lock (unless that's the "ipi_lock is a
+little muddy" part, but that only talks about cpu onlining).  That bit
+looks to be powerpc-specific, added in commit e057d985 in December
+2007, so perhaps a mention that that has gone away now in the
+description for 3/11 would be good.
 
 Regards,
-  Peter
+Paul.
