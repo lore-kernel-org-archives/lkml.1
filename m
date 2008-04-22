@@ -1,42 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYDVFFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYDVFGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYDVFFG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 01:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYDVFEy
+	id S1756814AbYDVFGk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 01:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYDVFGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 01:04:54 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41008 "EHLO mx1.suse.de"
+	Tue, 22 Apr 2008 01:06:32 -0400
+Received: from ozlabs.org ([203.10.76.45]:49863 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbYDVFEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 01:04:53 -0400
-Date: Mon, 21 Apr 2008 14:44:26 -0700
-From: Greg KH <gregkh@suse.de>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.25-mm1 -- WARNING: at fs/sysfs/dir.c:427
-	sysfs_add_one+0x33/0x9a()
-Message-ID: <20080421214426.GA9847@suse.de>
-References: <a44ae5cd0804181124s772fa61bp22035c2b758471b1@mail.gmail.com> <a44ae5cd0804211156n40e2a71cw25c3114db2f58d17@mail.gmail.com>
+	id S1751413AbYDVFGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 01:06:31 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related operation to happen
+Date: Tue, 22 Apr 2008 15:06:24 +1000
+User-Agent: KMail/1.9.9
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>
+References: <ec6d8f91b299cf26cce5.1207669444@duo.random>
+In-Reply-To: <ec6d8f91b299cf26cce5.1207669444@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <a44ae5cd0804211156n40e2a71cw25c3114db2f58d17@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200804221506.26226.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 02:56:52PM -0400, Miles Lane wrote:
-> Is anyone interesting in following up on this?
+On Wednesday 09 April 2008 01:44:04 Andrea Arcangeli wrote:
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1050,6 +1050,15 @@
+>  				   unsigned long addr, unsigned long len,
+>  				   unsigned long flags, struct page **pages);
+>
+> +struct mm_lock_data {
+> +	spinlock_t **i_mmap_locks;
+> +	spinlock_t **anon_vma_locks;
+> +	unsigned long nr_i_mmap_locks;
+> +	unsigned long nr_anon_vma_locks;
+> +};
+> +extern struct mm_lock_data *mm_lock(struct mm_struct * mm);
+> +extern void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data);
 
-Did you follow what the kernel told you to do to resolve this:
+As far as I can tell you don't actually need to expose this struct at all?
 
-> >  [    5.097978] disabling CONFIG_USB_DEVICE_CLASS might fix this
+> +		data->i_mmap_locks = vmalloc(nr_i_mmap_locks *
+> +					     sizeof(spinlock_t));
 
-Anyway, this was removed already from the -mm tree, so it will not show
-up again, hopefully.
+This is why non-typesafe allocators suck.  You want 'sizeof(spinlock_t *)' 
+here.
 
-thanks,
+> +		data->anon_vma_locks = vmalloc(nr_anon_vma_locks *
+> +					       sizeof(spinlock_t));
 
-greg k-h
+and here.
+
+> +	err = -EINTR;
+> +	i_mmap_lock_last = NULL;
+> +	nr_i_mmap_locks = 0;
+> +	for (;;) {
+> +		spinlock_t *i_mmap_lock = (spinlock_t *) -1UL;
+> +		for (vma = mm->mmap; vma; vma = vma->vm_next) {
+...
+> +		data->i_mmap_locks[nr_i_mmap_locks++] = i_mmap_lock;
+> +	}
+> +	data->nr_i_mmap_locks = nr_i_mmap_locks;
+
+How about you track your running counter in data->nr_i_mmap_locks, leave 
+nr_i_mmap_locks alone, and BUG_ON(data->nr_i_mmap_locks != nr_i_mmap_locks)?
+
+Even nicer would be to wrap this in a "get_sorted_mmap_locks()" function.
+
+Similarly for anon_vma locks.
+
+Unfortunately, I just don't think we can fail locking like this.  In your next 
+patch unregistering a notifier can fail because of it: that not usable.
+
+I think it means you need to add a linked list element to the vma for the 
+CONFIG_MMU_NOTIFIER case.  Or track the max number of vmas for any mm, and 
+keep a pool to handle mm_lock for this number (ie. if you can't enlarge the 
+pool, fail the vma allocation).  
+
+Both have their problems though...
+Rusty.
