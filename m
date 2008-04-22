@@ -1,101 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbYDVKRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762773AbYDVKUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762756AbYDVKRS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 06:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYDVKRH
+	id S1762773AbYDVKUt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 06:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbYDVKUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 06:17:07 -0400
-Received: from hu-out-0506.google.com ([72.14.214.239]:25674 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYDVKRE (ORCPT
+	Tue, 22 Apr 2008 06:20:41 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47035 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757616AbYDVKUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 06:17:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
-        b=d4eI2R80gxtW0f0dsbwMSnA7RNEw98UKgdnis3JwmzoRmDnAFGsz1sRgDWcPZxTWCdP8kAxDDX7hIbXzOrLEgj8mBir7caHON4kbaIgMjHD7Y5EgshGmjTMTgsYYqrKf2YzV2OruOw+sJ8UEoT/NgGB97xZVw4WcpEWPnGSNi1Q=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Chinner <dgc@sgi.com>
-Subject: [PATCH] xfs: remove unused parameter of xfs_iomap_write_allocate
-Date: Tue, 22 Apr 2008 12:16:25 +0200
-User-Agent: KMail/1.8.2
-Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804220514.45191.vda.linux@googlemail.com> <200804221142.00914.vda.linux@googlemail.com>
-In-Reply-To: <200804221142.00914.vda.linux@googlemail.com>
+	Tue, 22 Apr 2008 06:20:40 -0400
+Date: Tue, 22 Apr 2008 11:12:59 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: akpm@linux-foundation.org, Mel Gorman <mel@csn.ul.ie>,
+       Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v2
+In-Reply-To: <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0804221106250.12316@blonde.site>
+References: <20080418161522.GB9147@csn.ul.ie> <48080706.50305@cn.fujitsu.com>
+ <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com>
+ <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
+ <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
+ <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0804211250000.16476@blonde.site>
+ <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_5rbDIdg/x1aYHDd"
-Message-Id: <200804221216.25905.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_5rbDIdg/x1aYHDd
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 22 Apr 2008, KAMEZAWA Hiroyuki wrote:
+> Tested on ia64/2.6.25
+>    DISCONTIGMEM + 16KB/64KB pages
+>    SPARSEMEM    + 16KB/64KB pages
+> seems no troubles.
+> 
+> Thanks,
+> -Kame
 
-Hi David,
+Looks good to me, if Mel and Shi approve.  (Well, there are two typos,
+"creted" should be "created" and "migratetpye" should be "migratetype".)
 
-xfs_iomap_write_allocate() does not use count parameter.
-This patch removes it.
+Thanks a lot for all your effort on this!
 
-Code size difference on 32-bit x86:
+Hugh
 
-# size */fs/xfs/xfs.o
- 393457    2904    2952  399313   617d1 linux-2.6-xfs4-TEST/fs/xfs/xfs.o
- 393441    2904    2952  399297   617c1 linux-2.6-xfs5-TEST/fs/xfs/xfs.o
-
-Compile tested only.
-
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
-
---Boundary-00=_5rbDIdg/x1aYHDd
-Content-Type: text/x-diff;
-  charset="koi8-r";
-  name="xfs4-xfs_iomap_write_allocate-remove_unused_params.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="xfs4-xfs_iomap_write_allocate-remove_unused_params.patch"
-
---- linux-2.6-xfs4/fs/xfs/xfs_iomap.c	Tue Apr 22 04:06:44 2008
-+++ linux-2.6-xfs5/fs/xfs/xfs_iomap.c	Tue Apr 22 11:59:32 2008
-@@ -267,7 +267,7 @@
- 			break;
- 		}
- 
--		error = xfs_iomap_write_allocate(ip, offset, count,
-+		error = xfs_iomap_write_allocate(ip, offset,
- 						 &imap, &nimaps);
- 		break;
- 	}
-@@ -710,7 +710,6 @@
- xfs_iomap_write_allocate(
- 	xfs_inode_t	*ip,
- 	xfs_off_t	offset,
--	size_t		count,
- 	xfs_bmbt_irec_t *map,
- 	int		*retmap)
- {
---- linux-2.6-xfs4/fs/xfs/xfs_iomap.h	Tue Apr 22 04:06:44 2008
-+++ linux-2.6-xfs5/fs/xfs/xfs_iomap.h	Tue Apr 22 11:59:16 2008
-@@ -80,7 +80,7 @@
- 				  int, struct xfs_bmbt_irec *, int *, int);
- extern int xfs_iomap_write_delay(struct xfs_inode *, xfs_off_t, size_t, int,
- 				 struct xfs_bmbt_irec *, int *);
--extern int xfs_iomap_write_allocate(struct xfs_inode *, xfs_off_t, size_t,
-+extern int xfs_iomap_write_allocate(struct xfs_inode *, xfs_off_t,
- 				struct xfs_bmbt_irec *, int *);
- extern int xfs_iomap_write_unwritten(struct xfs_inode *, xfs_off_t, size_t);
- 
-
---Boundary-00=_5rbDIdg/x1aYHDd--
+> 
+> =
+> usemap must be initialized only when pfn is within zone.
+> If not, it corrupts memory.
+> 
+> And this patch also reduces the number of calls to set_pageblock_migratetype()
+> from
+> 	(pfn & (pageblock_nr_pages -1)
+> to
+> 	!(pfn & (pageblock_nr_pages-1)
+> it should be called once per pageblock.
+> 
+> Changelog v1->v2
+>  - Fixed boundary check.
+>  - Move calculation of pointer for zone to out of loop.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  mm/page_alloc.c |   14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.25/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.25.orig/mm/page_alloc.c
+> +++ linux-2.6.25/mm/page_alloc.c
+> @@ -2518,7 +2518,9 @@ void __meminit memmap_init_zone(unsigned
+>  	struct page *page;
+>  	unsigned long end_pfn = start_pfn + size;
+>  	unsigned long pfn;
+> +	struct zone *z;
+>  
+> +	z = &NODE_DATA(nid)->node_zones[zid];
+>  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+>  		/*
+>  		 * There can be holes in boot-time mem_map[]s
+> @@ -2536,7 +2538,6 @@ void __meminit memmap_init_zone(unsigned
+>  		init_page_count(page);
+>  		reset_page_mapcount(page);
+>  		SetPageReserved(page);
+> -
+>  		/*
+>  		 * Mark the block movable so that blocks are reserved for
+>  		 * movable at startup. This will force kernel allocations
+> @@ -2545,8 +2546,15 @@ void __meminit memmap_init_zone(unsigned
+>  		 * kernel allocations are made. Later some blocks near
+>  		 * the start are marked MIGRATE_RESERVE by
+>  		 * setup_zone_migrate_reserve()
+> +		 *
+> +		 * bitmap is creted for zone's valid pfn range. but memmap
+> +		 * can be created for invalid pages (for alignment)
+> +		 * check here not to call set_pageblock_migratetpye() against
+> +		 * pfn out of zone.
+>  		 */
+> -		if ((pfn & (pageblock_nr_pages-1)))
+> +		if ((z->zone_start_pfn <= pfn)
+> +		    && (pfn < z->zone_start_pfn + z->spanned_pages)
+> +		    && !(pfn & (pageblock_nr_pages - 1)))
+>  			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
+>  
+>  		INIT_LIST_HEAD(&page->lru);
+> @@ -4460,6 +4468,8 @@ void set_pageblock_flags_group(struct pa
+>  	pfn = page_to_pfn(page);
+>  	bitmap = get_pageblock_bitmap(zone, pfn);
+>  	bitidx = pfn_to_bitidx(zone, pfn);
+> +	VM_BUG_ON(pfn < zone->zone_start_pfn);
+> +	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
+>  
+>  	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
+>  		if (flags & value)
