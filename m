@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763772AbYDVTKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763682AbYDVTMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763772AbYDVTKs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761583AbYDVTKK
+	id S1763682AbYDVTMt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYDVTMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:10:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34453 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764023AbYDVTKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:10:08 -0400
-Date: Tue, 22 Apr 2008 21:09:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
-	ffffffffffffffff
-Message-ID: <20080422190901.GA1104@elte.hu>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> <200804220254.45251.rjw@sisk.pl> <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org> <480DB493.6080004@gmail.com> <20080422095315.GA28014@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080422095315.GA28014@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 Apr 2008 15:12:39 -0400
+Received: from mx1.hqhost.net ([88.214.192.192]:38792 "EHLO mail.hqhost.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754211AbYDVTMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:12:38 -0400
+X-Greylist: delayed 428 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 15:12:38 EDT
+Date: Tue, 22 Apr 2008 22:05:13 +0300
+From: Sergey Kononenko <sergk@sergk.org.ua>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] BSD acct: disk I/O accounting
+Message-ID: <20080422220513.1e5f2736@vingilot.sergknet>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This patch make acct use I/O statistics gathered when
+TASK_IO_ACCOUNTING is enabled. getrusage() already uses that statistics,
+but also will be helpful to get access to disk I/O statistics through
+traditional BSD accounting interface, because many userspace scripts
+that process such information not yet adapted to new taskstats API.
+Patch against 2.6.25.
 
-> > Yesterday I did 2 suspend/resumes after 1 hour of uptime and ran 
-> > git-status for a fraction of a second until it was killed. So I can 
-> > perfectly reproduce it when I suspend, resume and produce some io 
-> > load. I guess it's time to bisect 2.6.25-rc8-mm2 as I'm able to 
-> > reproduce it the best and haven't seen that bug in -rc8-mm1 for over 
-> > week of suspending and working.
-> 
-> the most dangerous x86 change we added was the PAT stuff. Does it 
-> influence the crashes in any way if you boot with 'nopat' or if you 
-> disable CONFIG_X86_PAT=y into the .config?
+Signed-off-by: Sergey Kononenko <sergk@sergk.org.ua>
+---
 
-note that full PAT (where in essence Linux takes over control of the 
-cache attributes via PTEs, instead of relying on the BIOS initialized 
-MTRRs alone) you should only get with -mm or with x86.git applied.
-
-I.e. x86 PAT might explain any -mm issue but not the upstream -git 
-issue.
-
-In upstream -git we dont have the second wave of the PAT changes applied 
-yet (the /dev/mem bits) so CONFIG_X86_PAT is not yet activated. (it's 
-only safe to enable if we have all the changes together and perfectly 
-control all cache attributes in the system)
-
-i.e. PAT complications here would not happen in form of real cache 
-attribute conflicts [i.e. the lockups and corruptions cannot be due to 
-that] - but as side-effects to other code it changes.
-
-and most of the PAT failures we ever saw had different patterns anyway: 
-the leading failure was API rejections and hence non-working Xorg or 
-non-working ioremap() in certain drivers. The worst-case scenario, early 
-in the PAT code's cycle, was a spontaneous triple fault - months ago.
-
-the basis for the PAT changes was the hardening of the CPA code and its 
-general use for everything (such as DEBUG_PAGEALLOC). And much of that 
-happened and was finished in v2.6.25. Nothing conceptually new really 
-happened there - and even where we touched the code in .26 it happened 
-long ago and would have surfaced by now.
-
-... but ... nothing can be excluded.
-
-	Ingo
+diff -uprN a/include/linux/task_io_accounting_ops.h b/include/linux/task_io_accounting_ops.h
+--- a/include/linux/task_io_accounting_ops.h	2008-04-17 02:49:44.000000000 +0000
++++ b/include/linux/task_io_accounting_ops.h	2008-04-22 16:42:17.000000000 +0000
+@@ -21,6 +21,11 @@ static inline unsigned long task_io_get_
+ 	return p->ioac.read_bytes >> 9;
+ }
+ 
++static inline unsigned long task_io_get_inbytes(const struct task_struct *p)
++{
++	return p->ioac.read_bytes;
++}
++
+ static inline void task_io_account_write(size_t bytes)
+ {
+ 	current->ioac.write_bytes += bytes;
+@@ -35,6 +40,11 @@ static inline unsigned long task_io_get_
+ 	return p->ioac.write_bytes >> 9;
+ }
+ 
++static inline unsigned long task_io_get_oubytes(const struct task_struct *p)
++{
++	return p->ioac.write_bytes;
++}
++
+ static inline void task_io_account_cancelled_write(size_t bytes)
+ {
+ 	current->ioac.cancelled_write_bytes += bytes;
+@@ -56,6 +66,11 @@ static inline unsigned long task_io_get_
+ 	return 0;
+ }
+ 
++static inline unsigned long task_io_get_inbytes(const struct task_struct *p)
++{
++	return 0;
++}
++
+ static inline void task_io_account_write(size_t bytes)
+ {
+ }
+@@ -65,6 +80,11 @@ static inline unsigned long task_io_get_
+ 	return 0;
+ }
+ 
++static inline unsigned long task_io_get_oubytes(const struct task_struct *p)
++{
++	return 0;
++}
++
+ static inline void task_io_account_cancelled_write(size_t bytes)
+ {
+ }
+diff -uprN a/kernel/acct.c b/kernel/acct.c
+--- a/kernel/acct.c	2008-04-17 02:49:44.000000000 +0000
++++ b/kernel/acct.c	2008-04-22 16:42:17.000000000 +0000
+@@ -55,6 +55,7 @@
+ #include <linux/times.h>
+ #include <linux/syscalls.h>
+ #include <linux/mount.h>
++#include <linux/task_io_accounting_ops.h>
+ #include <asm/uaccess.h>
+ #include <asm/div64.h>
+ #include <linux/blkdev.h> /* sector_div */
+@@ -504,8 +505,8 @@ static void do_acct_process(struct pid_n
+ 	ac.ac_majflt = encode_comp_t(pacct->ac_majflt);
+ 	ac.ac_exitcode = pacct->ac_exitcode;
+ 	spin_unlock_irq(&current->sighand->siglock);
+-	ac.ac_io = encode_comp_t(0 /* current->io_usage */);	/* %% */
+-	ac.ac_rw = encode_comp_t(ac.ac_io / 1024);
++	ac.ac_io = encode_comp_t(task_io_get_inbytes(current) + task_io_get_oubytes(current));
++	ac.ac_rw = encode_comp_t(task_io_get_inblock(current) + task_io_get_oublock(current));
+ 	ac.ac_swaps = encode_comp_t(0);
+ 
+ 	/*
