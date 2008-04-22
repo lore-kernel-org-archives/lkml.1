@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbYDVPh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbYDVPii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762780AbYDVPh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbYDVPht
+	id S1764142AbYDVPii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbYDVPi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:37:49 -0400
-Received: from smtp28.orange.fr ([80.12.242.99]:54527 "EHLO smtp28.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbYDVPhs convert rfc822-to-8bit (ORCPT
+	Tue, 22 Apr 2008 11:38:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:57391 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758096AbYDVPi0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:37:48 -0400
-X-ME-UUID: 20080422153745890.D96E7800004D@mwinf2803.orange.fr
-Message-ID: <480E0642.6080109@cosmosbay.com>
-Date: Tue, 22 Apr 2008 17:37:38 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Tue, 22 Apr 2008 11:38:26 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
+Date: Tue, 22 Apr 2008 17:38:19 +0200
+User-Agent: KMail/1.9.9
+Cc: Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <20080422152122.GF19802@phobos.i.cabal.ca>
+In-Reply-To: <20080422152122.GF19802@phobos.i.cabal.ca>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-References: <ea87c15371b1bd49380c.1208872277@duo.random> <480DFC8A.8040105@cosmosbay.com> <20080422151529.GE24536@duo.random>
-In-Reply-To: <20080422151529.GE24536@duo.random>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804221738.19635.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19XG/oviSbnfXcw9HaG2onwJqu9paORrDgctF9
+ OUvoVcuHVXS5CG+gYfrkHEsKRtxqwreDJYUUI23pwi6jAJmFpw
+ 4BU0IaXX59RY56MxJRsuA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli a écrit :
-> On Tue, Apr 22, 2008 at 04:56:10PM +0200, Eric Dumazet wrote:
->   
->> Andrea Arcangeli a écrit :
->>     
->>> +
->>> +static int mm_lock_cmp(const void *a, const void *b)
->>> +{
->>> +	cond_resched();
->>> +	if ((unsigned long)*(spinlock_t **)a <
->>> +	    (unsigned long)*(spinlock_t **)b)
->>> +		return -1;
->>> +	else if (a == b)
->>> +		return 0;
->>> +	else
->>> +		return 1;
->>> +}
->>> +
->>>       
->> This compare function looks unusual...
->> It should work, but sort() could be faster if the
->> if (a == b) test had a chance to be true eventually...
->>     
->
-> Hmm, are you saying my mm_lock_cmp won't return 0 if a==b?
->   
-I am saying your intent was probably to test
+On Tuesday 22 April 2008, Kyle McMartin wrote:
+> 
+> This should (imnsho, at least),
+>         1 - Add a cond_syscall for sys_sysfs to sys_ni.c
+>         2 - Use a CONFIG_EMBEDDED dependent option that defaults on,
+>             possibly depend on BLACKFIN if you really want to.
+> 
+> Adding this junk to every arch header is, in my opinion, completely
+> unacceptable just because blackfin wants to be different.
 
-else if ((unsigned long)*(spinlock_t **)a ==
-	    (unsigned long)*(spinlock_t **)b)
-		return 0;
+It's not that they want to be different, but rather that I (among others)
+requested that they don't implement obsolete syscalls, so they removed it
+from their syscall table.
 
-
-Because a and b are pointers to the data you want to compare. You need 
-to dereference them.
-
-
->> static int mm_lock_cmp(const void *a, const void *b)
->> {
->> 	unsigned long la = (unsigned long)*(spinlock_t **)a;
->> 	unsigned long lb = (unsigned long)*(spinlock_t **)b;
->>
->> 	cond_resched();
->> 	if (la < lb)
->> 		return -1;
->> 	if (la > lb)
->> 		return 1;
->> 	return 0;
->> }
->>     
->
-> If your intent is to use the assumption that there are going to be few
-> equal entries, you should have used likely(la > lb) to signal it's
-> rarely going to return zero or gcc is likely free to do whatever it
-> wants with the above. Overall that function is such a slow path that
-> this is going to be lost in the noise. My suggestion would be to defer
-> microoptimizations like this after 1/12 will be applied to mainline.
->
-> Thanks!
->
->   
-Hum, it's not a micro-optimization, but a bug fix. :)
-
-Sorry if it was not clear
-
-
-
-
+	Arnd <><
