@@ -1,97 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbYDVNvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765677AbYDVNv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765588AbYDVNvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYDVNvb
+	id S1765677AbYDVNv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762741AbYDVNve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:51:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42170 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751907AbYDVNva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:51:30 -0400
-Subject: Re: BIOS bug, APIC version if 0 for CPU#0
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Jacek Luczak <difrost.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <dd18b0c30804212310h29938c02r86aaab49b327b550@mail.gmail.com>
-References: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com>
-	 <480D75EF.9040902@gmail.com>
-	 <dd18b0c30804212310h29938c02r86aaab49b327b550@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 15:49:05 +0200
-Message-Id: <1208872145.14146.103.camel@localhost>
+	Tue, 22 Apr 2008 09:51:34 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:48664 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761129AbYDVNvc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:51:32 -0400
+Date: Tue, 22 Apr 2008 22:51:31 +0900 (JST)
+Message-Id: <20080422.225131.66125511.taka@valinux.co.jp>
+To: jens.axboe@oracle.com, agk@sourceware.org
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 1/10] I/O context inheritance
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
+References: <20080422.224935.00673711.taka@valinux.co.jp>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 06:10 +0000, Justin Mattock wrote:
-> On Tue, Apr 22, 2008 at 5:21 AM, Jacek Luczak <difrost.kernel@gmail.com> wrote:
-> > Hi,
-> >
-> >
-> >  > Hello;
-> >  > with the latest git on a macbook the system can barely boot without
-> >  > freezing, a work around for me at leat is either disable smp, or once
-> >  > booted  turn on glxgears,or compiling the kernel i.g. when using the
-> >  > processors I'm not receiving a freeze, only when everything starts
-> >  > lowering down. in dmesg I'm noticing BIOS bug, APIC version is 0 for
-> >  > CPU#0! fixing up to 0x10. (tell you're hw vendor) could this be the
-> >  > reason for the system freezes?,
-> >
-> >  I don't think so. On my machine there's no freezes with latest git and:
-> >  ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-> >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-> >  ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-> >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-> >
-> >  I've got exactly the same messages.
-> 
-> Are you using a macbook aswell?
-> 
-> >
-> >
-> >  > also I didnt have a camera handy on me
-> >  > but the screen spit out = Bug spinlock lockup on CPU#0
-> >  > swapper/0. c17fa7c0 PID 0, comm: swapper not tainted.
-> >
-> >  Can you try to write down more of those bug messages?
-> 
-> Yeah,
-> 
-> >
-> >
-> >  > I dont have a problem disabling smp, except when I cat /proc/cpuinfo I
-> >  > don't see anything about my cores.
-> >
-> >  What exactly you expect to see in /proc/cpuinfp while smp is disabled?
-> 
-> under smp I see cpu cores. disabling smp I dont see cpu cores, under
-> cat /proc/cpuinfo.
 
-well.. SMP is kindof support for multiple processors, be it in one
-socket, or multiple sockets.. without SMP you will only be able to use 1
-of your X cores.
-> 
-> 
-> >
-> >
-> >  > I know this is a stupid question
-> >  > but will it hurt the system if smp is disabled
-> >  > for the macbook pro ati chipset.?
-> >
-> >  No it won't.
-> >
-> >  -Jacek
-> >
-> 
-> Cool as long as the system Is o.k. disabling smp.
-It is.. but with the limitations outlined above.
->   What about x86: PAT
-> support is disabled. how do I enable this option?
-> regards;
-> 
+Make every bio points the iocontext of the process which originally
+generated an I/O request. 
+ - Assign the iocontext of the current process to a bio when it is
+   newly allocated.
+ - Assign the iocontext which the source bio has to a newly allocated
+   bio when it is duplicated.
 
+
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+
+
+--- linux-2.6.25.bio0/include/linux/bio.h	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/include/linux/bio.h	2008-04-22 15:49:42.000000000 +0900
+@@ -114,6 +114,8 @@ struct bio {
+ 	void			*bi_private;
+ 
+ 	bio_destructor_t	*bi_destructor;	/* destructor */
++
++	struct io_context       *bi_io_context;
+ };
+ 
+ /*
+--- linux-2.6.25.bio0/include/linux/iocontext.h	2008-04-22 15:48:36.000000000 +0900
++++ linux-2.6.25/include/linux/iocontext.h	2008-04-22 15:49:42.000000000 +0900
+@@ -85,7 +85,7 @@ struct io_context {
+ 	void *ioc_data;
+ };
+ 
+-static inline struct io_context *ioc_task_link(struct io_context *ioc)
++static inline struct io_context *ioc_object_link(struct io_context *ioc)
+ {
+ 	/*
+ 	 * if ref count is zero, don't allow sharing (ioc is going away, it's
+@@ -99,4 +99,6 @@ static inline struct io_context *ioc_tas
+ 	return NULL;
+ }
+ 
++#define ioc_task_link(ioc)	ioc_object_link(ioc)
++
+ #endif
+--- linux-2.6.25.bio0/fs/bio.c	2008-04-22 15:48:31.000000000 +0900
++++ linux-2.6.25/fs/bio.c	2008-04-22 15:49:42.000000000 +0900
+@@ -107,8 +107,16 @@ static inline struct bio_vec *bvec_alloc
+ 	return bvl;
+ }
+ 
++static inline void put_bio_context(struct bio *bio)
++{
++	if (bio->bi_io_context)
++		put_io_context(bio->bi_io_context);
++}
++
+ void bio_free(struct bio *bio, struct bio_set *bio_set)
+ {
++	put_bio_context(bio);
++
+ 	if (bio->bi_io_vec) {
+ 		const int pool_idx = BIO_POOL_IDX(bio);
+ 
+@@ -177,10 +185,29 @@ out:
+ 
+ struct bio *bio_alloc(gfp_t gfp_mask, int nr_iovecs)
+ {
+-	struct bio *bio = bio_alloc_bioset(gfp_mask, nr_iovecs, fs_bio_set);
++	struct bio *bio;
++	struct io_context *ioc;
+ 
+-	if (bio)
++	/*
++	 * Set the io_context of the current process here since this newly
++	 * created bio may be passed to a I/O scheduler through another
++	 * kernel thread in half of the process that originate this bio.
++	 * get_io_context function should called here so it can be blocked
++	 * in it.
++	 * Todo: when the current is an aio kernel thread, the io_context
++	 *       of the original process should be set instead of that of
++	 *       the thread.
++	 */
++	ioc = get_io_context(gfp_mask, -1);
++	if (!ioc)
++		return NULL;
++
++	bio = bio_alloc_bioset(gfp_mask, nr_iovecs, fs_bio_set);
++	if (bio) {
+ 		bio->bi_destructor = bio_fs_destructor;
++		bio->bi_io_context = ioc;
++	} else
++		put_io_context(ioc);
+ 
+ 	return bio;
+ }
+@@ -262,6 +289,7 @@ void __bio_clone(struct bio *bio, struct
+ 	bio->bi_vcnt = bio_src->bi_vcnt;
+ 	bio->bi_size = bio_src->bi_size;
+ 	bio->bi_idx = bio_src->bi_idx;
++	bio->bi_io_context = ioc_object_link(bio_src->bi_io_context);
+ }
+ 
+ /**
