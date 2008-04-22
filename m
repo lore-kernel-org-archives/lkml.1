@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYDVQlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbYDVQmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbYDVQlt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYDVQlj
+	id S1760266AbYDVQmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYDVQmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:41:39 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:36561 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753044AbYDVQli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:41:38 -0400
-Date: Tue, 22 Apr 2008 12:41:10 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Question re the disk driver for /dev/sr0
-To: linux-kernel@vger.kernel.org
-Message-id: <200804221241.10260.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.9
+	Tue, 22 Apr 2008 12:42:24 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:57144 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753907AbYDVQmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:42:23 -0400
+Message-ID: <480E156D.4090100@sgi.com>
+Date: Tue, 22 Apr 2008 09:42:21 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Tony Luck <tony.luck@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/12] sched: Remove fixed NR_CPUS sized arrays in kernel_sched_c
+ v2
+References: <20080405011100.720014000@polaris-admin.engr.sgi.com>	 <20080405011101.534396000@polaris-admin.engr.sgi.com> <12c511ca0804220916i5c181202pecf8fee7153e54fc@mail.gmail.com>
+In-Reply-To: <12c511ca0804220916i5c181202pecf8fee7153e54fc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+Tony Luck wrote:
+> On Fri, Apr 4, 2008 at 6:11 PM, Mike Travis <travis@sgi.com> wrote:
+>>  @@ -7297,6 +7287,11 @@ void __init sched_init_smp(void)
+>>   #else
+>>   void __init sched_init_smp(void)
+>>   {
+>>  +#if defined(CONFIG_NUMA)
+>>  +       sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
+>>  +                                                               GFP_KERNEL);
+>>  +       BUG_ON(sched_group_nodes_bycpu == NULL);
+>>  +#endif
+>>         sched_init_granularity();
+>>   }
+>>   #endif /* CONFIG_SMP */
+> 
+> This hunk is causing problems with one of my builds (generic,
+> uniprocessor). Note
+> that the #else at the start of this hunk is from a #ifdef CONFIG_SMP ... so I'm
+> wondering why we need #if defined(CONFIG_NUMA) inside uniprocessor code :-)
+> How can you have NUMA issues with only one cpu!!!
+> 
+> [I'm also wondering why the config that has the compile problem has CONFIG_SMP=n
+> and CONFIG_NUMA=y ... but that weirdness exposed this silliness, so
+> perhaps it isn't
+> all bad]
+> 
+> Error message is:
+> kernel/sched.c: In function `sched_init_smp':
+> kernel/sched.c:7994: error: `sched_group_nodes_bycpu' undeclared
+> (first use in this function)
+> kernel/sched.c:7994: error: (Each undeclared identifier is reported only once
+> kernel/sched.c:7994: error: for each function it appears in.)
+> 
+> -Tony
 
-Has something been done to that code that is preventing /dev/sr0 from 
-correctly reporting a busy or not ready status to k3b in the last year or so?
+Hi Tony,
 
-K3B used to dutifully wait till the drive, on reloading the disc after burning 
-it, was ready to service its verify request.  Now, and for several months or 
-more, k3b attempts to read the drive immediately on the disc's being pulled 
-back in, and of course fails, causing k3b to bail out of the verify phase 
-completely.
+Hmm, yes, good point.  I guess you might have it when there's a single
+processor under a guest OS that's not on node 0, but I suspect there's
+plenty of other problems with that scenario.
 
-So we are left doing it by hand, a 2 stage process, by first dividing the size 
-of the iso file being burnt by 2048 to get the number of blocks to read, and 
-then feeding dd's output for that many size 2048 blocks to sha1sum.  This 
-works fine but requires the user to understand what it is he is doing. :)
+We could make CONFIG_NUMA dependent on CONFIG_SMP?  Or define
+sched_group_nodes_bycpu for the non-SMP case?
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Life exists for no known purpose.
+[I'll have to go back to that patch and research why I added this.]
+
+Thanks,
+Mike
