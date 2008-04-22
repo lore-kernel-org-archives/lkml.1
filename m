@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764571AbYDVNgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764681AbYDVNgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764571AbYDVNgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYDVNgH
+	id S1764681AbYDVNgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761855AbYDVNgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:36:07 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:46743 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754437AbYDVNgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:36:06 -0400
-Date: Tue, 22 Apr 2008 08:36:04 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       akpm@linux-foundation.org, Nick Piggin <npiggin@suse.de>,
-       Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 0 of 9] mmu notifier #v12
-Message-ID: <20080422133604.GN30298@sgi.com>
-References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random> <20080409185500.GT11364@sgi.com> <20080422072026.GM12709@duo.random> <20080422120056.GR12709@duo.random> <20080422130120.GR22493@sgi.com> <20080422132143.GS12709@duo.random>
+	Tue, 22 Apr 2008 09:36:40 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:41097 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761845AbYDVNgj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:36:39 -0400
+Date: Tue, 22 Apr 2008 06:36:31 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Message-ID: <20080422133631.GA28594@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200804191522.54334.rjw@sisk.pl> <200804202104.24037.rjw@sisk.pl> <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <20080421011855.GA6243@gondor.apana.org.au> <20080421020806.GL20138@linux.vnet.ibm.com> <alpine.LFD.1.10.0804210810180.2779@woody.linux-foundation.org> <20080422010304.GA14994@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422132143.GS12709@duo.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080422010304.GA14994@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 03:21:43PM +0200, Andrea Arcangeli wrote:
-> On Tue, Apr 22, 2008 at 08:01:20AM -0500, Robin Holt wrote:
-> > On Tue, Apr 22, 2008 at 02:00:56PM +0200, Andrea Arcangeli wrote:
-> > > On Tue, Apr 22, 2008 at 09:20:26AM +0200, Andrea Arcangeli wrote:
-> > > >     invalidate_range_start {
-> > > > 	spin_lock(&kvm->mmu_lock);
-> > > > 
-> > > > 	kvm->invalidate_range_count++;
-> > > > 	rmap-invalidate of sptes in range
-> > > > 
-> > > 
-> > > 	write_seqlock; write_sequnlock;
+On Tue, Apr 22, 2008 at 09:03:04AM +0800, Herbert Xu wrote:
+> On Mon, Apr 21, 2008 at 08:49:58AM -0700, Linus Torvalds wrote:
+> >
+> > That is *not* the main problem.
 > > 
-> > I don't think you need it here since invalidate_range_count is already
-> > elevated which will accomplish the same effect.
+> > If you use "rcu_dereference()" on the wrong access, it not only loses the 
+> > "smp_read_barrier_depends()" (which is a no-op on all sane architectures 
+> > anyway), but it loses the ACCESS_ONCE() thing *entirely*.
 > 
-> Agreed, seqlock only in range_end should be enough. BTW, the fact
+> Actually rcu_dereference didn't have ACCESS_ONCE when I did this.
+> That only appearaed later with the preemptible RCU work.
 
-I am a little confused about the value of the seq_lock versus a simple
-atomic, but I assumed there is a reason and left it at that.
+Yep, ACCESS_ONCE() is quite recent -- within the last year.  So I should
+have modified the list_for_each.*rcu() macros when I made that change.
 
-> seqlock is needed regardless of invalidate_page existing or not,
-> really makes invalidate_page a no brainer not just from the core VM
-> point of view, but from the driver point of view too. The
-> kvm_page_fault logic would be the same even if I remove
-> invalidate_page from the mmu notifier patch but it'd run slower both
-> when armed and disarmed.
+> The original purpose of rcu_dereference was exactly to replace the
+> explicit barriers that people were using for RCU, nothing more,
+> nothing less.
+> 
+> Oh and I totally agree that the compiler is going to generate insane
+> code whenever ACCESS_ONCE is used.  In this case we may have avoided
+> it by rearranging the code, but in general the introduction of ACCESS_ONCE
+> in rcu_dereference is likely to have a negative impact on the code
+> generated.
+> 
+> Remember that "volatile" discussion? I think this is where it all came
+> from.
 
-I don't know what you mean by "it'd" run slower and what you mean by
-"armed and disarmed".
+And I still have the bug in to gcc:
 
-For the sake of this discussion, I will assume "it'd" means the kernel in
-general and not KVM.  With the two call sites for range_begin/range_end,
-I would agree we have more call sites, but the second is extremely likely
-to be cache hot.
+	http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33102
 
-By disarmed, I will assume you mean no notifiers registered for a
-particular mm.  In that case, the cache will make the second call
-effectively free.  So, for the disarmed case, I see no measurable
-difference.
+Interesting, currently in status "unconfirmed"...  I guess I should
+supply a test case.
 
-For the case where there is a notifier registered, I certainly can see
-a difference.  I am not certain how to quantify the difference as it
-depends on the callee.  In the case of xpmem, our callout is always very
-expensive for the _start case.  Our _end case is very light, but it is
-essentially the exact same steps we would perform for the _page callout.
-
-When I was discussing this difference with Jack, he reminded me that
-the GRU, due to its hardware, does not have any race issues with the
-invalidate_page callout simply doing the tlb shootdown and not modifying
-any of its internal structures.  He then put a caveat on the discussion
-that _either_ method was acceptable as far as he was concerned.  The real
-issue is getting a patch in that satisfies all needs and not whether
-there is a seperate invalidate_page callout.
-
-Thanks,
-Robin
+							Thanx, Paul
