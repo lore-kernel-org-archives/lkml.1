@@ -1,76 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbYDVN7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933769AbYDVN7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933663AbYDVN7Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDVN7J
+	id S933769AbYDVN7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933670AbYDVN7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:59:09 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:57297 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760655AbYDVN7I (ORCPT
+	Tue, 22 Apr 2008 09:59:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33726 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933663AbYDVN7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:59:08 -0400
-Date: Tue, 22 Apr 2008 22:59:07 +0900 (JST)
-Message-Id: <20080422.225907.116124009.taka@valinux.co.jp>
-To: jens.axboe@oracle.com, agk@sourceware.org
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 9/10] I/O context inheritance
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080422.224935.00673711.taka@valinux.co.jp>
-References: <20080422.224935.00673711.taka@valinux.co.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 22 Apr 2008 09:59:22 -0400
+Date: Tue, 22 Apr 2008 06:58:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: sfr@canb.auug.org.au, philipp.zabel@gmail.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: linux-next: Linus' tree build breakage
+Message-Id: <20080422065849.d0b248e8.akpm@linux-foundation.org>
+In-Reply-To: <20080422073622.GB22955@flint.arm.linux.org.uk>
+References: <20080422103111.e1d38371.sfr@canb.auug.org.au>
+	<20080422073622.GB22955@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Tue, 22 Apr 2008 08:36:22 +0100 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> linux-next will not give me anything which -mm isn't giving me.  As I
+> said in the discussion, linux-next value is _very_ small for me.
 
-The packet writing module creates a bio in its own way, so its iocontext
-should be set here.
+Putting arm into linux-next means that Stephen (and git) handle the merges
+rather than having me (and not-git) do it.  Which helps me.
 
-This code hasn't been tested yet.
-
-
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-
-
---- linux-2.6.25.bio0/drivers/block/pktcdvd.c	2008-04-22 15:48:36.000000000 +0900
-+++ linux-2.6.25/drivers/block/pktcdvd.c	2008-04-22 15:53:41.000000000 +0900
-@@ -514,6 +514,7 @@ static void pkt_bio_finished(struct pktc
- 
- static void pkt_bio_destructor(struct bio *bio)
- {
-+	put_io_context(bio->bi_io_context);
- 	kfree(bio->bi_io_vec);
- 	kfree(bio);
- }
-@@ -522,6 +523,11 @@ static struct bio *pkt_bio_alloc(int nr_
- {
- 	struct bio_vec *bvl = NULL;
- 	struct bio *bio;
-+	struct io_context *ioc;
-+
-+	ioc = get_io_context(GFP_KERNEL, -1);
-+	if (!ioc)
-+		goto no_ioc;
- 
- 	bio = kmalloc(sizeof(struct bio), GFP_KERNEL);
- 	if (!bio)
-@@ -535,12 +541,15 @@ static struct bio *pkt_bio_alloc(int nr_
- 	bio->bi_max_vecs = nr_iovecs;
- 	bio->bi_io_vec = bvl;
- 	bio->bi_destructor = pkt_bio_destructor;
-+	bio->bi_io_context = ioc;
- 
- 	return bio;
- 
-  no_bvl:
- 	kfree(bio);
-  no_bio:
-+	put_io_context(ioc);
-+ no_ioc:
- 	return NULL;
- }
- 
+I expect that linux-next will get a lot more cross-compilation testing than
+-mm.  Which helps you.
