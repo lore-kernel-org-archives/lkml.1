@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764136AbYDVOvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYDVOvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764136AbYDVOvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbYDVOvN
+	id S1760286AbYDVOvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbYDVOvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:51:13 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25437 "EHLO kernel.dk"
+	Tue, 22 Apr 2008 10:51:40 -0400
+Received: from rtr.ca ([76.10.145.34]:4600 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755587AbYDVOvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:51:12 -0400
-Date: Tue, 22 Apr 2008 16:51:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-Message-ID: <20080422145105.GJ12774@kernel.dk>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
+	id S1753477AbYDVOvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:51:38 -0400
+Message-ID: <480DFB7B.5000605@rtr.ca>
+Date: Tue, 22 Apr 2008 10:51:39 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF97A.2040907@ru.mvista.com>
+In-Reply-To: <480DF97A.2040907@ru.mvista.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22 2008, Linus Torvalds wrote:
+Sergei Shtylyov wrote:
+> Hello.
 > 
+> Mark Lord wrote:
 > 
-> On Tue, 22 Apr 2008, Jens Axboe wrote:
-> > +
-> > +static inline void csd_flag_wait(struct call_single_data *data)
-> > +{
-> > +	/* Wait for response */
-> > +	do {
-> > +		/*
-> > +		 * We need to see the flags store in the IPI handler
-> > +		 */
-> > +		smp_mb();
-> > +		if (!(data->flags & CSD_FLAG_WAIT))
-> > +			break;
-> > +		cpu_relax();
-> > +	} while (1);
-> > +}
+>> SFF stands for "Small Form Factor", as in the "SFF Committee Information
+>> Specification for Bus Master Programming Interface for IDE ATA 
+>> Controllers Rev 1.0"
+>> from May 16, 1994.
 > 
-> You forgot to free the "data" here? The waiter must also free the object, 
-> since now the callee does not.
+>> That document is basically a committee rubber-stamp of the earlier Intel
+>> "PCI IDE Controller Specification Revision 1.0" dated 3/4/94.
+> 
+>> Would anyone like copies ?
+> 
+> http://ata.wiki.kernel.org/index.php/Developer_Resources
+> 
+> asks for a link to this spec. Me, I have it of course. :-)
+...
 
-The ipi interrupt handler does that, see kfree() in
-generic_smp_call_function_single_interrupt() or call_func_data_free() in
-generic_smp_call_function_interrupt().
+Google seems to have no problems finding the second one:
 
--- 
-Jens Axboe
-
+http://suif.stanford.edu/~csapuntz/specs/pciide.ps
