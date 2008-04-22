@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYDVVZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYDVV2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbYDVVZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 17:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYDVVZT
+	id S1760904AbYDVV2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 17:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYDVV2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 17:25:19 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46112 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbYDVVZS (ORCPT
+	Tue, 22 Apr 2008 17:28:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:64830 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbYDVV2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 17:25:18 -0400
-Date: Tue, 22 Apr 2008 23:25:48 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jean Delvare <jdelvare@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: PCI MSI breaks when booting with nosmp
-Message-ID: <20080422212548.GC6004@elf.ucw.cz>
-References: <200804172140.02311.jdelvare@suse.de> <200804171308.37328.jbarnes@virtuousgeek.org> <200804172225.14373.jdelvare@suse.de> <200804211043.10410.jbarnes@virtuousgeek.org> <87d4oj6o9a.fsf@basil.nowhere.org> <20080421194336.GC32278@elf.ucw.cz> <480CEEA2.1040106@firstfloor.org>
+	Tue, 22 Apr 2008 17:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=j1dFR9eZTO/1WEdGKtfEUJ2JeiAMo/9zyIANrOshl/Xlw6091XGAPlJQLjzd9y6vP2AV6SBfQ6n9NQcYHWY1JWaoOS0GKDc88DXQwczbzXkAlujdlcRN5wHkneQ8lPPSdRkbAtagV9h1BcvZeTD3J73j+Pkpqzf0exQe+kD9y34=
+Date: Tue, 22 Apr 2008 23:28:12 +0200 (CEST)
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: linux-kernel@vger.kernel.org, Ardis Technologies <roman@ardistech.com>,
+       Brad Boyer <flar@allandria.com>, Jesper Juhl <jesper.juhl@gmail.com>
+Subject: [PATCH] hfsplus: in case match_strdup() fails to alloc mem in
+ hfsplus_parse_options(), don't blow up.
+Message-ID: <alpine.LNX.1.00.0804222325350.14359@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480CEEA2.1040106@firstfloor.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-04-21 21:44:34, Andi Kleen wrote:
-> Pavel Machek wrote:
-> > On Mon 2008-04-21 20:45:05, Andi Kleen wrote:
-> >> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
-> >>> Ok, I see this too on my desktop machine.  It looks like we're not getting 
-> >>> interrupts setup correctly in the nosmp case.  Still digging through to see 
-> >>> why though...
-> >> NoSMP disables the io-apic and a lot of modern systems don't work
-> >> without APIC.
-> > 
-> > Are you sure? I still boot DOS on very recent boxes, and they seem to
-> > work. How can PC-compatible machine require an APIC?
-> 
-> The machine doesn't, but the drivers do. DOS likely doesn't use all
-> hardware.
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-Should we be fixing drivers?
+The Coverity checker spotted that we do not check the return value of
+match_strdup() in fs/hfsplus/options.c::hfsplus_parse_options().
+This is bad since match_strdup() does a memory allocation internally
+which can fail. If it does fail it will return NULL and in that case
+we will pass the NULL pointer on to load_nls() which will eventually
+dereference it --> BOOM!
+Much better to check the return value, fail gracefully and log an
+error message in case this happens.
 
-Do drivers even know? I'd expect core code in arch/x86 to shield
-details of interrupt routing from them..
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ options.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/fs/hfsplus/options.c b/fs/hfsplus/options.c
+index dc64fac..c9c2f86 100644
+--- a/fs/hfsplus/options.c
++++ b/fs/hfsplus/options.c
+@@ -132,6 +132,10 @@ int hfsplus_parse_options(char *input, struct hfsplus_sb_info *sbi)
+ 				return 0;
+ 			}
+ 			p = match_strdup(&args[0]);
++			if (!p) {
++				printk(KERN_ERR "hfs: match_strdup() memory allocation failed\n");
++				return 0;
++			}
+ 			sbi->nls = load_nls(p);
+ 			if (!sbi->nls) {
+ 				printk(KERN_ERR "hfs: unable to load nls mapping \"%s\"\n", p);
+
+
