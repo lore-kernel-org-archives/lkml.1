@@ -1,105 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYDVAeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbYDVAka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760332AbYDVAeZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYDVAeR
+	id S1760426AbYDVAka (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759978AbYDVAkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:34:17 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36892 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbYDVAeQ (ORCPT
+	Mon, 21 Apr 2008 20:40:17 -0400
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.144]:34840 "EHLO
+	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759971AbYDVAkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:34:16 -0400
-Date: Mon, 21 Apr 2008 17:34:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, rostedt@goodmis.org,
-       dwalker@mvista.com, sdietrich@novell.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com
-Subject: [PATCH] SELinux fixups needed for preemptable RCU from -rt
-Message-ID: <20080422003412.GA9983@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Mon, 21 Apr 2008 20:40:16 -0400
+X-Authenticated-Name: js.dnsmadeeasy
+X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
+Message-ID: <480D33EB.30808@avtrex.com>
+Date: Mon, 21 Apr 2008 17:40:11 -0700
+From: David Daney <ddaney@avtrex.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 6/6] Ptrace support for HARDWARE_WATCHPOINTS.
+References: <480D2151.2020701@avtrex.com>
+In-Reply-To: <480D2151.2020701@avtrex.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2008 00:40:12.0792 (UTC) FILETIME=[6CDD9780:01C8A411]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+This is the final part of the patch.  Here we add ptrace support so that
+gdb can read and set the watch register values.
 
-The attached patch needs to move from -rt to mainline given preemptable
-RCU.  This patch fixes SELinux code that implicitly assumes that
-disabling preemption prevents an RCU grace period from completing,
-an assumption that is valid for Classic RCU, but not necessarily for
-preemptable RCU.  Explicit rcu_read_lock() calls are thus added.
+We add two new ptrace requests PTRACE_GET_WATCH_REGS, and
+PTRACE_SET_WATCH_REGS to access the watch registers.  Since MIPS has more
+than one format for watch registers, the data structure is a union, the
+first structure member is an enum that tells us which layout is in use.
+For this first cut at the patch, I only support mips32 style registers.
 
-Pointed-out-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: David Daney <ddaney@avtrex.com>
 ---
+ arch/mips/kernel/ptrace.c |   81 +++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-mips/ptrace.h |   23 +++++++++++++
+ 2 files changed, 104 insertions(+), 0 deletions(-)
 
- security/selinux/avc.c   |    9 +++++++++
- security/selinux/netif.c |    2 ++
- 2 files changed, 11 insertions(+)
-
-Index: linux-2.6.24.4-rt4/security/selinux/avc.c
-===================================================================
---- linux-2.6.24.4-rt4.orig/security/selinux/avc.c	2008-03-24 19:05:09.000000000 -0400
-+++ linux-2.6.24.4-rt4/security/selinux/avc.c	2008-03-24 19:06:41.000000000 -0400
-@@ -312,6 +312,7 @@ static inline int avc_reclaim_node(void)
- 		if (!spin_trylock_irqsave(&avc_cache.slots_lock[hvalue], flags))
- 			continue;
- 
-+		rcu_read_lock();
- 		list_for_each_entry(node, &avc_cache.slots[hvalue], list) {
- 			if (atomic_dec_and_test(&node->ae.used)) {
- 				/* Recently Unused */
-@@ -319,11 +320,13 @@ static inline int avc_reclaim_node(void)
- 				avc_cache_stats_incr(reclaims);
- 				ecx++;
- 				if (ecx >= AVC_CACHE_RECLAIM) {
-+					rcu_read_unlock();
- 					spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
- 					goto out;
- 				}
- 			}
- 		}
-+		rcu_read_unlock();
- 		spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
- 	}
- out:
-@@ -807,8 +810,14 @@ int avc_ss_reset(u32 seqno)
- 
- 	for (i = 0; i < AVC_CACHE_SLOTS; i++) {
- 		spin_lock_irqsave(&avc_cache.slots_lock[i], flag);
-+		/*
-+		 * On -rt the outer spinlock does not prevent RCU
-+		 * from being performed:
-+		 */
-+		rcu_read_lock();
- 		list_for_each_entry(node, &avc_cache.slots[i], list)
- 			avc_node_delete(node);
-+		rcu_read_unlock();
- 		spin_unlock_irqrestore(&avc_cache.slots_lock[i], flag);
- 	}
- 
-Index: linux-2.6.24.4-rt4/security/selinux/netif.c
-===================================================================
---- linux-2.6.24.4-rt4.orig/security/selinux/netif.c	2008-03-24 19:05:09.000000000 -0400
-+++ linux-2.6.24.4-rt4/security/selinux/netif.c	2008-03-24 19:06:41.000000000 -0400
-@@ -210,6 +210,7 @@ static void sel_netif_flush(void)
+diff --git a/arch/mips/kernel/ptrace.c b/arch/mips/kernel/ptrace.c
+index 35234b9..d6dece8 100644
+--- a/arch/mips/kernel/ptrace.c
++++ b/arch/mips/kernel/ptrace.c
+@@ -46,7 +46,12 @@
+  */
+ void ptrace_disable(struct task_struct *child)
  {
- 	int idx;
- 
-+	rcu_read_lock();
- 	spin_lock_bh(&sel_netif_lock);
- 	for (idx = 0; idx < SEL_NETIF_HASH_SIZE; idx++) {
- 		struct sel_netif *netif;
-@@ -218,6 +219,7 @@ static void sel_netif_flush(void)
- 			sel_netif_destroy(netif);
- 	}
- 	spin_unlock_bh(&sel_netif_lock);
-+	rcu_read_unlock();
++#ifdef CONFIG_HARDWARE_WATCHPOINTS
++	/* Don't load the watchpoint registers for the ex-child. */
++	clear_tsk_thread_flag(child, TIF_LOAD_WATCH);
++#else
+ 	/* Nothing to do.. */
++#endif
  }
  
- static int sel_netif_avc_callback(u32 event, u32 ssid, u32 tsid,
+ /*
+@@ -167,6 +172,72 @@ int ptrace_setfpregs(struct task_struct *child, __u32 __user *data)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HARDWARE_WATCHPOINTS
++int ptrace_get_watch_regs(struct task_struct *child,
++			  struct pt_watch_regs __user *addr)
++{
++	int i;
++
++	if (!cpu_has_watch)
++		return -EIO;
++	if (!access_ok(VERIFY_WRITE, addr, sizeof(struct pt_watch_regs)))
++		return -EIO;
++
++	__put_user (pt_watch_style_mips32, &addr->style);
++	__put_user (current_cpu_data.watch_reg_count, &addr->mips32.num_valid);
++	__put_user (current_cpu_data.watch_reg_mask, &addr->mips32.reg_mask);
++	__put_user (current_cpu_data.watch_reg_irw, &addr->mips32.irw_mask);
++	for (i = 0; i < current_cpu_data.watch_reg_count; i++) {
++		__put_user (child->thread.watch.mips32.watchlo[i],
++			    &addr->mips32.watchlo[i]);
++		__put_user (child->thread.watch.mips32.watchhi[i] & 0xfff,
++			    &addr->mips32.watchhi[i]);
++	}
++
++	return 0;
++}
++
++int ptrace_set_watch_regs(struct task_struct *child,
++			  struct pt_watch_regs __user *addr)
++{
++	int i;
++	int watch_active = 0;
++	unsigned long lt[NUM_WATCH_REGS];
++	unsigned int ht[NUM_WATCH_REGS];
++
++	if (!cpu_has_watch)
++		return -EIO;
++	if (!access_ok(VERIFY_READ, addr, sizeof(struct pt_watch_regs)))
++		return -EIO;
++	/* Check the values. */
++	for (i = 0; i < NUM_WATCH_REGS; i++) {
++		__get_user(lt[i], &addr->mips32.watchlo[i]);
++		if (lt[i] & __UA_LIMIT)
++			return -EINVAL;
++
++		__get_user(ht[i], &addr->mips32.watchhi[i]);
++		if (ht[i] & ~0xff8)
++			return -EINVAL;
++	}
++	/* Install them. */
++	for (i = 0; i < NUM_WATCH_REGS; i++) {
++		if (lt[i] & 7)
++			watch_active = 1;
++		child->thread.watch.mips32.watchlo[i] = lt[i];
++		/* Set the G bit. */
++		child->thread.watch.mips32.watchhi[i] = ht[i] | 0x40000000;
++	}
++
++	if (watch_active)
++		set_tsk_thread_flag(child, TIF_LOAD_WATCH);
++	else
++		clear_tsk_thread_flag(child, TIF_LOAD_WATCH);
++
++	return 0;
++}
++
++#endif
++
+ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ {
+ 	int ret;
+@@ -439,7 +510,17 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		ret = put_user(task_thread_info(child)->tp_value,
+ 				(unsigned long __user *) data);
+ 		break;
++#ifdef CONFIG_HARDWARE_WATCHPOINTS
++	case PTRACE_GET_WATCH_REGS:
++		ret = ptrace_get_watch_regs(child,
++					(struct pt_watch_regs __user *) addr);
++		break;
+ 
++	case PTRACE_SET_WATCH_REGS:
++		ret = ptrace_set_watch_regs(child,
++					(struct pt_watch_regs __user *) addr);
++		break;
++#endif
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+ 		break;
+diff --git a/include/asm-mips/ptrace.h b/include/asm-mips/ptrace.h
+index 786f7e3..8fb1bcc 100644
+--- a/include/asm-mips/ptrace.h
++++ b/include/asm-mips/ptrace.h
+@@ -71,6 +71,29 @@ struct pt_regs {
+ #define PTRACE_POKEDATA_3264	0xc3
+ #define PTRACE_GET_THREAD_AREA_3264	0xc4
+ 
++/* Read and write watchpoint registers.  */
++enum pt_watch_style {
++	pt_watch_style_mips32,
++	pt_watch_style_mips64
++};
++struct mips32_watch_regs {
++	unsigned int num_valid;
++	unsigned int reg_mask;
++	unsigned int irw_mask;
++	unsigned long watchlo[8];
++	unsigned int watchhi[8];
++};
++
++struct pt_watch_regs {
++	enum pt_watch_style style;
++	union {
++		struct mips32_watch_regs mips32;
++	};
++};
++
++#define PTRACE_GET_WATCH_REGS	0xd0
++#define PTRACE_SET_WATCH_REGS	0xd1
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/linkage.h>
+-- 
+1.5.5
+
