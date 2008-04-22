@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYDVG4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbYDVG7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbYDVG4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 02:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYDVG4H
+	id S1758477AbYDVG7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 02:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYDVG72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 02:56:07 -0400
-Received: from aksay.ru ([80.254.111.40]:59892 "EHLO aksay.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754781AbYDVG4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 02:56:05 -0400
-X-Greylist: delayed 1763 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 02:56:05 EDT
-Date: Tue, 22 Apr 2008 10:19:04 +0400
-From: Andrey Panin <pazke@pazke.donpac.ru>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
-Subject: Re: Status of SGI 320/540 (Visual Workstation) support?
-Message-ID: <20080422061904.GA6423@pazke.donpac.ru>
-Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
-	James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <480C8EC8.3080705@zytor.com> <20080421141058.GH6011@cs181133002.pp.htv.fi>
+	Tue, 22 Apr 2008 02:59:28 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:43051 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754896AbYDVG72 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 02:59:28 -0400
+Date: Tue, 22 Apr 2008 08:59:26 +0200
+Message-Id: <248793158@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-Content-Disposition: inline
-In-Reply-To: <20080421141058.GH6011@cs181133002.pp.htv.fi>
-X-Uname: Linux 2.6.23-rc3 x86_64
-User-Agent: Mutt/1.5.17 (2007-11-01)
+From: devzero@web.de
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [2.6 patch] remove the v850 port
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX185rjjwnYLvO2+PtQ8D24hWCANvkUbdEsLG62DS2/xdEJ1PD
+ r/2V7HXNbEPPiJC2PQZdpuRz2Kyhib4N4lwpOww5yUyLslZAN8=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+sounds reasonable, thanks for explaining.
+indeed this is an exceptional case and when there was a timeslot for adding to feature-removal-schedule.txt, then that was 3 months (or even more) ago.
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+thanks
+roland
 
-On 112, 04 21, 2008 at 05:10:58PM +0300, Adrian Bunk wrote:
-> On Mon, Apr 21, 2008 at 08:55:36AM -0400, H. Peter Anvin wrote:
-> >...
-> > VISWS is another matter.  It's entirely possible I have the only =20
-> > remaining VISWS in my garage; we have at least not been able to locate =
-=20
-> > another.  Not that we have tried all that hard.
-> >
-> > If there are no VISWS' left, we should just unload the code.
->=20
-> Googling a bit around 320/540 hardware does not seem to have completely=
-=20
-> vanished from the earth, and there are still people who'd like to=20
-> install Linux on them.
->=20
-> Looking through the archives of the mailing list in MAINTAINERS there=20
-> seem to be some older 2.6 kernels that worked on some Visual=20
-> Workstations, but no indication that recent kernels work.
->=20
-> Andrey, what is the status of recent 2.6 kernels on the SGI 320/540?
+> -----Ursprüngliche Nachricht-----
+> Von: "Adrian Bunk" <bunk@kernel.org>
+> Gesendet: 22.04.08 02:01:20
+> An: devzero@web.de
+> CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+> Betreff: Re: [2.6 patch] remove the v850 port
 
-Right now it doesn't work, but there is a hope. I recovered my SGI 320
-recently and I plan to start hacking kernel on it Real Soon Now.
 
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+> On Tue, Apr 22, 2008 at 01:38:49AM +0200, devzero@web.de wrote:
+> > I can't afford to be critical here, but let me give a comment.
+> > 
+> > i think putting this in feature-removal-schedule.txt just good practice.
+> > you give people the chance to catch up - sort of a last reminder to the devs "fix it or we need to drop it".
+> > some chance for the users to see it will go away and make early decision based on that.
+> > 
+> > i like those cleanup efforts, but even if it was announced on lkml, or elsewhere - that file is the official place for such announcements and if you want people take care of that file, there should be reliable information inside. 
+> > 
+> > it often takes much effort and hard work to get code into the kernel, so some "nah, this is broken, doesn`t compile for long - put that to trash" seems a little bit harsh for me.
+> > 
+> > the reason why it`s broken is probably not the v850 people`s fault. 
+> > ok, they just didn`t catch up with that "kernel progress" - but most probably some other person broke their code.
+> > 
+> > i don`t like bureaucracy, but a little bit of bureaucracy at the right place is not that bad at all.....
+> 
+> As the patch description says it does not even compile since at
+> least kernel 2.6.19 (which was released in 2006).
+> 
+> I've sent this removal patch 7 times during 3 months to linux-kernel.
+> 
+> Before that I sent 2 emails to linux-kernel asking about the status of 
+> the port.
+> 
+> All emails also got to Miles, the maintainer of the port.
+> 
+> Without the slightest sign of anyone claiming he might work on fixing 
+> this port.
+> 
+> Greg (one of the uClinux core maintainers) said the only one he knows 
+> who can maintain the port is Miles.
+> 
+> If there's not a single person on linux-kernel who is either interested 
+> in this port or at least knows someone who is, then requiring to put it 
+> into some file in the kernel sources is actually quite high on the scale 
+> of pointless bureaucracy.
+> 
+> > roland
+> 
+> cu
+> Adrian
+> 
+> -- 
+> 
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+> 
+> 
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+_______________________________________________________________
+Schon gehört? Der neue WEB.DE MultiMessenger kann`s mit allen: 
+http://www.produkte.web.de/messenger/?did=3016
 
-iD8DBQFIDYNYIWZCBzwS8mkRAq83AKC1S14PtytEeSf08jpqnenfhp7y4wCfUeff
-yd8Uc2wg4P3EaaKlkaUc4Fk=
-=NfGK
------END PGP SIGNATURE-----
-
---X1bOJ3K7DJ5YkBrT--
