@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933994AbYDVOBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751074AbYDVOCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933994AbYDVOBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762105AbYDVOBZ
+	id S1751074AbYDVOCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYDVOCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:01:25 -0400
-Received: from el-out-1112.google.com ([209.85.162.177]:17835 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758915AbYDVOBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:01:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=d+HMA+MxavBifnGPeM/nOjzqd1VL7XQLFrR+VrULJE/nTiCAExlmNQnAdVScIOq4AByLFWOMGl/1N7nr7/9NdvO3qJIlgSpMQ9yRGxQ8LOR9jhH7DfZsVBM7VL8c51v0bkZGLdYvyWFkAQJQcdBbzLJvJzc/JHskc1d2YY5KMMo=
-Date: Tue, 22 Apr 2008 10:01:16 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Stas Sergeev <stsp@aknet.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-Message-ID: <20080422084401.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org> <20080419021343.GA3503@nineveh.local> <20080418200237.b5a9e805.akpm@linux-foundation.org> <20080419041429.GA8508@anvil.corenet.prv> <20080418212934.bbe84ee2.akpm@linux-foundation.org> <s5h8wz7cng7.wl%tiwai@suse.de> <480CD50F.20706@aknet.ru> <s5hbq42b3j7.wl%tiwai@suse.de>
+	Tue, 22 Apr 2008 10:02:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44483 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753903AbYDVOCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:02:23 -0400
+Date: Tue, 22 Apr 2008 16:02:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] x86: random clean-ups
+Message-ID: <20080422140203.GB24966@elte.hu>
+References: <1208660074-7324-1-git-send-email-dmitri.vorobiev@gmail.com> <20080421122504.GF6788@elte.hu> <90edad820804210541h26c8e66dh70895f32e4b4038d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5hbq42b3j7.wl%tiwai@suse.de>
+In-Reply-To: <90edad820804210541h26c8e66dh70895f32e4b4038d@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0298]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Takashi, Stas,
 
-On Tue, Apr 22, 2008 at 12:13:48PM +0200, Takashi Iwai wrote:
+* Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+
+> > thanks Dmitri, applied #1/#2/#4, as per the discussion.
 > 
-> It's no big problem but I just find the phrase "you have to
-> disable..." too strict.  It's just a sound-quality problem as you
-> mentioned in the above.
+> Hi Ingo,
 > 
+> This should be #1, #3 and #4. The NexGen patch, which was #2 in the 
+> original series, have been replaced by a bigger patch that kills 
+> NexGen altogether. Plese check, if you have time for that.
 
-Just out of curiosity, what is the sound quality with the PC speaker?
-Not to belittle Stas's effort, but how relevant is this driver for
-mainline given that it os pretty much impossible nowadays to find a
-motherboard without on-board sound?
+yeah, i did the right thing and described the wrong selection :) You can 
+check the end result via:
 
--- 
-Dmitry
+  http://people.redhat.com/mingo/x86.git/README
+
+	Ingo
