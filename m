@@ -1,152 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYDVJxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbYDVJyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYDVJxu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758650AbYDVJxG
+	id S1762851AbYDVJyc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 05:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757661AbYDVJyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:53:06 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:56954 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755549AbYDVJxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:53:04 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-7.tower-29.messagelabs.com!1208857983!11707822!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] provide a dummy implementation of the clk API
-Date: Tue, 22 Apr 2008 11:52:56 +0200
-Message-ID: <1208857977-29493-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.5
-In-Reply-To: <1208857977-29493-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-References: <20080422094708.GB27126@digi.com>
- <1208857977-29493-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Tue, 22 Apr 2008 05:54:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49656 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755549AbYDVJyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 05:54:19 -0400
+Date: Tue, 22 Apr 2008 11:53:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+	ffffffffffffffff
+Message-ID: <20080422095315.GA28014@elte.hu>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> <200804220254.45251.rjw@sisk.pl> <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org> <480DB493.6080004@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 22 Apr 2008 09:52:58.0089 (UTC) FILETIME=[A4EC4D90:01C8A45E]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15864.006
-X-TM-AS-Result: No--0.160000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480DB493.6080004@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this implementation clk_get and clk_enable always succeed.  The
-counterparts clk_put and clk_disable only do some minor error checking.
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
- lib/Kconfig    |    6 ++++++
- lib/Makefile   |    2 ++
- lib/dummyclk.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 62 insertions(+), 0 deletions(-)
- create mode 100644 lib/dummyclk.c
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Hello,
+>> What do you do to trigger this? Any particular load? Is it still just 
+>> doing suspend/resume, or do you have something else that you are 
+>> playing with?
+>
+> Yesterday I did 2 suspend/resumes after 1 hour of uptime and ran 
+> git-status for a fraction of a second until it was killed. So I can 
+> perfectly reproduce it when I suspend, resume and produce some io 
+> load. I guess it's time to bisect 2.6.25-rc8-mm2 as I'm able to 
+> reproduce it the best and haven't seen that bug in -rc8-mm1 for over 
+> week of suspending and working.
 
-this patch isn't really UIO related, but as my platform driver uses the
-clk API and that's not implemented on X86 here comes a dummy
-implementation.
+the most dangerous x86 change we added was the PAT stuff. Does it 
+influence the crashes in any way if you boot with 'nopat' or if you 
+disable CONFIG_X86_PAT=y into the .config?
 
-This patch was already sent but up to now I got no feedback for it.
+the other area was the DMA ops change - that should be rather trivial on 
+64-bit though.
 
-Best regards
-Uwe
-
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 2d53dc0..098830d 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -144,4 +144,10 @@ config CHECK_SIGNATURE
- config HAVE_LMB
- 	boolean
- 
-+config DUMMY_CLK
-+	def_bool y if X86
-+	help
-+	  This provides a dummy implementation for the API defined in
-+	  linux/clk.h for platforms that don't implement it theirselves.
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index bf8000f..e355c69 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -70,6 +70,8 @@ lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
- obj-$(CONFIG_HAVE_LMB) += lmb.o
- 
-+obj-$(CONFIG_DUMMY_CLK) += dummyclk.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
- 
-diff --git a/lib/dummyclk.c b/lib/dummyclk.c
-new file mode 100644
-index 0000000..bf364df
---- /dev/null
-+++ b/lib/dummyclk.c
-@@ -0,0 +1,54 @@
-+/*
-+ * lib/dummyclk.c
-+ *
-+ * Copyright (C) 2008 by Digi International Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+#include <linux/device.h>
-+#include <linux/err.h>
-+
-+struct clk {
-+	unsigned int enablecnt;
-+};
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	struct clk *ret = kzalloc(sizeof(*ret), GFP_KERNEL);
-+
-+	if (ret)
-+		return ret;
-+	else
-+		return ERR_PTR(-ENOMEM);
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+void clk_put(struct clk *clk)
-+{
-+	WARN_ON(clk->enablecnt);
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_enable(struct clk *clk)
-+{
-+	++clk->enablecnt;
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+	BUG_ON(!clk->enablecnt);
-+	--clk->enablecnt;
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	BUG_ON(!clk->enablecnt);
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
--- 
-1.5.5
-
+	Ingo
