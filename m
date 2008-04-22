@@ -1,94 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762228AbYDVDft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYDVDpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762228AbYDVDft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 23:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbYDVDfk
+	id S1760601AbYDVDpg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 23:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYDVDp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 23:35:40 -0400
-Received: from sandeen.net ([209.173.210.139]:27654 "EHLO sandeen.net"
+	Mon, 21 Apr 2008 23:45:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39065 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757709AbYDVDfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 23:35:40 -0400
-Message-ID: <480D5D0B.6030507@sandeen.net>
-Date: Mon, 21 Apr 2008 22:35:39 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
+	id S1752637AbYDVDp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 23:45:26 -0400
+Message-ID: <480D5F27.1030101@redhat.com>
+Date: Mon, 21 Apr 2008 22:44:39 -0500
+From: Eric Sandeen <sandeen@redhat.com>
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-To: Denys Vlasenko <vda.linux@googlemail.com>
-CC: David Chinner <dgc@sgi.com>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] xfs: do not pass size into kmem_free, it's unused
-References: <20080419142329.GA5339@elte.hu> <200804212151.02241.vda.linux@googlemail.com> <20080422012819.GT108924158@sgi.com> <200804220433.04030.vda.linux@googlemail.com> <480D5702.2060107@sandeen.net>
-In-Reply-To: <480D5702.2060107@sandeen.net>
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] use canary at end of stack to indicate overruns at oops time
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Denys Vlasenko wrote:
->> Hi David,
->>
->>> Patches are welcome - I'd be over the moon if any of the known 4k
->>> stack advocates sent a stack reduction patch for XFS, but it seems
->>> that actually trying to fix the problems is much harder than
->>> resending a one line patch every few months....
->> kmem_free() function takes (ptr, size) arguments but doesn't
->> actually use second one.
->>
->> This patch removes size argument from all callsites.
-> 
-> I didn't expect it to but this does reduce a few things slightly.
-> 
-> On x86_64:
-> 
-> -xfs_attr_leaf_list_int 200
-> +xfs_attr_leaf_list_int 184
-> 
-> -xfs_dir2_sf_to_block 136
-> +xfs_dir2_sf_to_block 120
-> 
-> -xfs_ifree_cluster 136
-> +xfs_ifree_cluster 120
-> 
-> -xfs_inumbers 184
-> +xfs_inumbers 168
-> 
-> -xfs_mount_free 24
+Use a canary at the end of the stack to clearly indicate
+at oops time whether the stack has ever overflowed.
 
-And on x86, just for the record (fedora 9 config in both cases...)
+This is a very simple implementation with a couple of
+drawbacks:
 
--xfs_attr_leaf_inactive 36
-+xfs_attr_leaf_inactive 32
+1) a thread may legitimately use exactly up to the last 
+   word on the stack
 
--xfs_attr_shortform_list 40
-+xfs_attr_shortform_list 36
+ -- but the chances of doing this and then oopsing later seem slim
 
--xfs_da_grow_inode 96
-+xfs_da_grow_inode 92
+2) it's possible that the stack usage isn't dense enough
+   that the canary location could get skipped over
 
--xfs_dir2_grow_inode 116
-+xfs_dir2_grow_inode 104
+ -- but the worst that happens is that we don't flag the overrun
 
--xfs_dir2_leaf_getdents 176
-+xfs_dir2_leaf_getdents 172
+With the code in place, an intentionally-bloated stack oops does:
 
--xfs_dir2_sf_to_block 92
-+xfs_dir2_sf_to_block 88
+BUG: unable to handle kernel paging request at ffff8103f84cc680
+IP: [<ffffffff810253df>] update_curr+0x9a/0xa8
+PGD 8063 PUD 0 
+Thread overran stack or stack corrupted
+Oops: 0000 [1] SMP 
+CPU 0 
+...
 
--xfs_ifree_cluster 108
-+xfs_ifree_cluster 104
 
--xfs_inumbers 88
-+xfs_inumbers 84
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
--xfs_lock_inodes 24
-+xfs_lock_inodes 28
 
--Eric
+Index: linux-2.6.25/arch/x86/mm/fault.c
+===================================================================
+--- linux-2.6.25.orig/arch/x86/mm/fault.c	2008-04-20 22:30:36.000000000 -0500
++++ linux-2.6.25/arch/x86/mm/fault.c	2008-04-21 16:58:18.913885442 -0500
+@@ -25,6 +25,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/magic.h>
+ 
+ #include <asm/system.h>
+ #include <asm/desc.h>
+@@ -581,6 +582,8 @@ void __kprobes do_page_fault(struct pt_r
+ 	unsigned long address;
+ 	int write, si_code;
+ 	int fault;
++	unsigned long *stackend;
++
+ #ifdef CONFIG_X86_64
+ 	unsigned long flags;
+ #endif
+@@ -850,6 +853,10 @@ no_context:
+ 
+ 	show_fault_oops(regs, error_code, address);
+ 
++	stackend = end_of_stack(tsk);
++	if (*stackend != STACK_END_MAGIC)
++		printk(KERN_ALERT "Thread overran stack or stack corrupted\n");
++
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+Index: linux-2.6.25/include/linux/magic.h
+===================================================================
+--- linux-2.6.25.orig/include/linux/magic.h	2008-01-24 16:58:37.000000000 -0600
++++ linux-2.6.25/include/linux/magic.h	2008-04-21 16:53:47.838406992 -0500
+@@ -42,4 +42,5 @@
+ #define FUTEXFS_SUPER_MAGIC	0xBAD1DEA
+ #define INOTIFYFS_SUPER_MAGIC	0x2BAD1DEA
+ 
++#define STACK_END_MAGIC		0x57AC6E9D
+ #endif /* __LINUX_MAGIC_H__ */
+Index: linux-2.6.25/kernel/fork.c
+===================================================================
+--- linux-2.6.25.orig/kernel/fork.c	2008-04-21 16:49:49.000000000 -0500
++++ linux-2.6.25/kernel/fork.c	2008-04-21 16:54:22.039406916 -0500
+@@ -53,6 +53,7 @@
+ #include <linux/tty.h>
+ #include <linux/proc_fs.h>
+ #include <linux/blkdev.h>
++#include <linux/magic.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -167,6 +168,8 @@ static struct task_struct *dup_task_stru
+ {
+ 	struct task_struct *tsk;
+ 	struct thread_info *ti;
++	unsigned long *stackend;
++
+ 	int err;
+ 
+ 	prepare_to_copy(orig);
+@@ -192,6 +195,8 @@ static struct task_struct *dup_task_stru
+ 	}
+ 
+ 	setup_thread_stack(tsk, orig);
++	stackend = end_of_stack(tsk);
++	*stackend = STACK_END_MAGIC;	/* for overflow detection */
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	tsk->stack_canary = get_random_int();
+
+
+
