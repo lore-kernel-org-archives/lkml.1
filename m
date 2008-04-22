@@ -1,123 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbYDVQYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYDVQYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbYDVQYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYDVQYN
+	id S1760205AbYDVQYo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYDVQYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:24:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56327 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753380AbYDVQYM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:24:12 -0400
-Message-ID: <480E1129.1020705@sgi.com>
-Date: Tue, 22 Apr 2008 09:24:09 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 22 Apr 2008 12:24:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43469 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754065AbYDVQYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:24:33 -0400
+Message-ID: <480E10FA.3050401@redhat.com>
+Date: Tue, 22 Apr 2008 12:23:22 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>
-Subject: Re: [PATCH 1/4] x86: cleanup early per cpu variables/accesses	v3-folded
-References: <20080422013415.955439000@polaris-admin.engr.sgi.com> <20080422013416.483730000@polaris-admin.engr.sgi.com> <20080422135944.GA24966@elte.hu>
-In-Reply-To: <20080422135944.GA24966@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Adrian Bunk <bunk@kernel.org>, ananth@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       bugme-daemon@bugzilla.kernel.org,
+       jean-marc LACROIX <jeanmarc.lacroix@free.Fr>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Bug 10489] Kprobe smoke test lockdep warning
+References: <20080421150656.GJ6011@cs181133002.pp.htv.fi>	 <480D1B14.7070806@redhat.com>  <1208869770.7115.265.camel@twins>	 <1208870791.7115.269.camel@twins>  <480E034F.5@redhat.com> <1208880358.7115.285.camel@twins>
+In-Reply-To: <1208880358.7115.285.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+Peter Zijlstra wrote:
+> On Tue, 2008-04-22 at 11:25 -0400, Masami Hiramatsu wrote:
+>> Peter Zijlstra wrote:
+>>> On Tue, 2008-04-22 at 15:09 +0200, Peter Zijlstra wrote:
+>>>> On Mon, 2008-04-21 at 18:54 -0400, Masami Hiramatsu wrote:
+>>>>> Thank you for reporting.
+>>>>>
+>>>>> Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
+>>>>> (which is called from kprobe_exceptions_notify) by
+>>>>> trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
+>>>>> is set in pt_regs->flags, true hardirq is still off until returning
+>>>>> from do_debug. Thus, lockdep assumes that hardirq is off without annotation.
+>>> Ah, can you clarrify? pt_regs->flags will only be set when returning to
+>>> the original trap site? in that case we should not need a lockdep
+>>> annotation I guess, unless its allowed and exptected for the int3 site
+>>> to change IRQ state.
+>> As far as I took a look at the lockdep, your suggestion is correct.
+>> post_kprobe_handler should not set a lockdep annotation, because
+>> processor's IF is not changed yet in that time.
 > 
->>   * Introduce a new PER_CPU macro called "EARLY_PER_CPU".  This is
->>     used by some per_cpu variables that are initialized and accessed
->>     before there are per_cpu areas allocated.
-> 
-> build fails with:
-> 
-> arch/x86/kernel/built-in.o: In function `flat_apic_id_registered':
-> genapic_flat_64.c:(.text+0x13e1d): undefined reference to `phys_cpu_present_map'
-> genapic_flat_64.c:(.text+0x13e24): undefined reference to `phys_cpu_present_map'
-> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
-> : undefined reference to `phys_cpu_present_map'
-> [...]
-> 
-> with this config:
-> 
->   http://redhat.com/~mingo/misc/config-Tue_Apr_22_15_40_10_CEST_2008.bad
-> 
-> 	Ingo
+> That much was clear; but when _will_ it be changed?
 
-Hi Ingo,
-
-Which tree are you using?  I don't get that error at all.  I'm on sched-latest:
-
-#> cat .git/config
-[core]
-        repositoryformatversion = 0
-        filemode = true
-        bare = false
-        logallrefupdates = true
-[remote "linus"]
-        url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-        fetch = +refs/heads/*:refs/remotes/linus/*
-[remote "sched-devel"]
-        url = git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
-        fetch = +refs/heads/*:refs/remotes/sched-devel/*
-[branch "sched-latest"]
-        remote = sched-devel
-        merge = refs/heads/latest
+processor's IF bit is changed when an iret(q) is issued.
+In other words, when returning from a debug/int3 exception.
 
 
-Here's the change I made to arch/x86/kernel/setup.c.
+-- 
+Masami Hiramatsu
 
-From:
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-    physid_mask_t phys_cpu_present_map;
-
-    DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
-    EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
-
-    /* Bitmask of physically existing CPUs */
-    physid_mask_t phys_cpu_present_map;
-
-To:
-
-    /* Bitmask of physically existing CPUs */
-    physid_mask_t phys_cpu_present_map;
-
-
-(Actually, I don't understand why it didn't generate a multiple
-define error before?)
-
-Here's the symbol in Bss space:
-
-#> nm -Bo arch/x86/kernel/built-in.o | grep phys_cpu_present_map
-arch/x86/kernel/built-in.o:00000000000009a0 B phys_cpu_present_map
-
-#> grep phys_cpu_present_map System.map
-ffffffff809792c0 B phys_cpu_present_map
-
-
-Building using your config file I do get this error (with or without
-my patches):
-
-  CC [M]  net/netfilter/nf_conntrack_sip.o
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c: In function 'set_expected_rtp_rtcp':
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c:786: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c:787: error: 'struct nf_conntrack_expect' has no member named 'saved_proto'
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c:789: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c:790: error: 'struct nf_conntrack_expect' has no member named 'saved_ip'
-.../linux-2.6.sched/net/netfilter/nf_conntrack_sip.c:791: error: 'struct nf_conntrack_expect' has no member named 'saved_proto'
-
-Turning off CONFIG_NF_CONNTRACK_SIP gets around the error and it builds ok.
-
-Should I try x86/latest or the merge of sched/latest + x86/latest?
-
-Or...?
-
-Thanks,
-Mike
+e-mail: mhiramat@redhat.com
 
