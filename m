@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbYDVJEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbYDVJE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbYDVJEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 05:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYDVJEb
+	id S932268AbYDVJE7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 05:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762598AbYDVJEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 05:04:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50741 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754392AbYDVJE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 05:04:29 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/IhHM49kDIMKLDPLQ5FzklDrXw+xiGbysjDAGl+l
-	jBmp8VUUfYH1Yr
-Subject: Re: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x7a
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080422075357.GA15651@elte.hu>
-References: <20080422075357.GA15651@elte.hu>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 11:04:26 +0200
-Message-Id: <1208855066.4695.17.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 22 Apr 2008 05:04:42 -0400
+Received: from po-out-1718.google.com ([72.14.252.154]:45843 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762586AbYDVJEl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 05:04:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=W8UdwFH06PVk1BnLZ79za4Aa9GzCoWq96GaYJj574GMBuxLyChqjtlQPWO/zSB/4vZtW+q98LiuNxig0+SwA3OvYAmjm0OR/B6JgAKETN7kDM9SSxLJy0LI3osgoF9dD6De+qxPVG5qCADfBP9Q3S0aQT2IoB9RRZT0LQVZuTtE=
+Message-ID: <c4e36d110804220204h3043e526xee3966876355cde0@mail.gmail.com>
+Date: Tue, 22 Apr 2008 11:04:38 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: WARNING: at arch/x86/kernel/genapic_64.c:86
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello
 
-On Tue, 2008-04-22 at 09:53 +0200, Ingo Molnar wrote:
-> hi Len,
-> 
-> randconfig boot testing found this new debug warning message in the 
-> syslog:
+I've update to the current commit 2.6.25
+8a81f2738f10ca817c975cec893aa58497e873b2
 
-Ditto with Q6600 and v2.6.25-3410-g8075014.
+I get this boot WARNING:
 
-[   28.360968] sysdev: class cpu: driver (ffffffff80542a70) has already been registered to a class, something is wrong, but will forge on!
-[   28.379718] ------------[ cut here ]------------
-[   28.387748] WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12c()
-[   28.398816] Modules linked in: acpi_cpufreq(+) snd_pcm_oss snd_mixer_oss snd_seq microcode snd_seq_device nls_iso8859_1 nls_cp437 vfat fat fuse loop dm_mod tda1004x saa7134_dvb videobuf_dvb dvb_core tuner tea5767 tda8290 tda827x tuner_xc2028 tda9887 tuner_simple mt20xx tea5761 snd_hda_intel saa7134 firewire_ohci snd_pcm firewire_core compat_ioctl32 crc_itu_t videodev snd_timer v4l1_compat snd_page_alloc snd_hwdep v4l2_common snd videobuf_dma_sg ohci1394 videobuf_core usbhid usb_storage e1000e rtc_cmos ieee1394 rtc_core ir_kbd_i2c hid iTCO_wdt sr_mod soundcore ir_common rtc_lib tveeprom button i2c_i801 serio_raw cdrom intel_agp ff_memless sg i2c_core iTCO_vendor_support ehci_hcd uhci_hcd sd_mod usbcore edd ext3 mbcache jbd fan ahci libata scsi_mod dock thermal processor
-[   28.514728] Pid: 2910, comm: modprobe Not tainted 2.6.26-smp #4
-[   28.525112] 
-[   28.525113] Call Trace:
-[   28.537784]  [<ffffffff802327b3>] warn_on_slowpath+0x58/0x6b
-[   28.547864]  [<ffffffff80233595>] ? printk+0x67/0x69
-[   28.557169]  [<ffffffffa000387a>] ? :processor:acpi_processor_preregister_performance+0x40f/0x421
-[   28.570438]  [<ffffffff803701ff>] sysdev_driver_register+0x75/0x12c
-[   28.581048]  [<ffffffff80392ab0>] cpufreq_register_driver+0x95/0x12c
-[   28.591770]  [<ffffffffa00ea03f>] :acpi_cpufreq:acpi_cpufreq_init+0x3f/0x41
-[   28.603226]  [<ffffffff802543a0>] sys_init_module+0x19db/0x1b08
-[   28.614176]  [<ffffffff8028dec3>] ? vfs_read+0xab/0x154
-[   28.624319]  [<ffffffff8020c01b>] system_call_after_swapgs+0x7b/0x80
-[   28.624326] 
-[   28.624328] ---[ end trace a40285f696d317dc ]---
+ tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquired
+evxfevnt-0091 [00] enable                : Transition to ACPI mode successful
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.25 #57
+
+Call Trace:
+ [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
+ [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
+ [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
+ [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
+ [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
+ [<ffffffff810233f1>] read_apic_id+0x81/0x90
+ [<ffffffff814bdcde>] verify_local_APIC+0xc4/0x186
+ [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
+ [<ffffffff814b139b>] kernel_init+0x5a/0x31b
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
+ [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff8100d548>] child_rip+0xa/0x12
+ [<ffffffff8100cc33>] ? restore_args+0x0/0x30
+ [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
+ [<ffffffff8100d53e>] ? child_rip+0x0/0x12
+
+---[ end trace ca143223eefdc828 ]---
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.25 #57
+
+Call Trace:
+ [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
+ [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
+ [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
+ [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
+ [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
+ [<ffffffff810233f1>] read_apic_id+0x81/0x90
+ [<ffffffff814bdd00>] verify_local_APIC+0xe6/0x186
+ [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
+ [<ffffffff814b139b>] kernel_init+0x5a/0x31b
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
+ [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+ [<ffffffff8100d548>] child_rip+0xa/0x12
+ [<ffffffff8100cc33>] ? restore_args+0x0/0x30
+ [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
+ [<ffffffff8100d53e>] ? child_rip+0x0/0x12
+
+---[ end trace ca143223eefdc828 ]---
+CPU0: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
+Using local APIC timer interrupts.
 
 
+
+Zdenek
