@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbYDVNPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYDVNQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762830AbYDVNPs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYDVNPj
+	id S1756803AbYDVNQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYDVNPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:15:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:14765 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546AbYDVNPi (ORCPT
+	Tue, 22 Apr 2008 09:15:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:49726 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756381AbYDVNPl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
-        b=aqj0eW8u5TxwgTIKUf9nSy0HFZkckmQLaR1/eysNE/h+FIAqfu5w5XNWlQwBI3RA47K+jQSXrUXrwA5tjxMuQSYCJEwggLOdPoVcICPHr+i7PnOYQLghhhBovjIPU2jX2NOXFamJqQ0znLB1ARNwN2k3jxuVEFMiUYZsQHoEb4E=
-Message-ID: <480DE523.6030304@gmail.com>
-Date: Tue, 22 Apr 2008 15:16:19 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 22 Apr 2008 09:15:41 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Will Newton" <will.newton@gmail.com>
+Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
+Date: Tue, 22 Apr 2008 15:15:26 +0200
+User-Agent: KMail/1.9.9
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, monstr@seznam.cz, git@xilinx.com,
+       microblaze-uclinux@itee.uq.edu.au
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
+In-Reply-To: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
-Subject: MAP_POPULATE behavior change?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Disposition: inline
+Message-Id: <200804221515.28075.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18z/Gyi7qzTAHF41shpe5l/c+/pijN2c4CF1RO
+ 2UYK47v8OJfVEM7ii/Ft0tzbaf27NB8pdSiuODAN1vWr4a5C1j
+ RWsN2vnsasKKgemN6DJRg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+On Tuesday 22 April 2008, Will Newton wrote:
+> This patch introduces a __ARCH_WANT_SYS_SYSFS #define for
+> architectures that support the sysfs(2) system call. At the moment
+> that's everybody but blackfin, but future architectures may want to
+> save the (admittedly small) code size that it adds to the kernel as
+> well.
 
-In 2.6.23, you had the commit below, which seems to have changed the
-kernel-userland API.
+Yes, good thing to have. Since we'll be getting a new architecture
+(microblaze) soon, I think we should extend this mechanism (even though
+it's ugly) to all syscalls that we don't want to have in new architectures
+and make sure that microblaze doesn't have to set any of them.
 
-Am I right to understand that with this patch MAP_POPULATE now also works with
-MAP_PRIVATE mappings?  (Formerly it only worked with MAP_SHARED mappings, but
-some very quick testing suggests that MAP_POPULATE now also has an affect for
-MAP_PRIVATE.)
-
-Also, can you summarize the status of MAP_NONBLOCK?  Is it now a no-op?
-
-Cheers,
-
-Michael
-
-==
-
-commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7
-Author: Nick Piggin <npiggin@suse.de>
-Date:   Thu Jul 19 01:46:59 2007 -0700
-
-    mm: merge populate and nopage into fault (fixes nonlinear)
-
-    Nonlinear mappings are (AFAIKS) simply a virtual memory concept that encodes
-    the virtual address -> file offset differently from linear mappings.
-
-    ->populate is a layering violation because the filesystem/pagecache code
-    should need to know anything about the virtual memory mapping.  The hitch here
-    is that the ->nopage handler didn't pass down enough information (ie.  pgoff).
-     But it is more logical to pass pgoff rather than have the ->nopage function
-    calculate it itself anyway (because that's a similar layering violation).
-
-    Having the populate handler install the pte itself is likewise a nasty thing
-    to be doing.
-
-    This patch introduces a new fault handler that replaces ->nopage and
-    ->populate and (later) ->nopfn.  Most of the old mechanism is still in place
-    so there is a lot of duplication and nice cleanups that can be removed if
-    everyone switches over.
-
-    The rationale for doing this in the first place is that nonlinear mappings are
-    subject to the pagefault vs invalidate/truncate race too, and it seemed stupid
-    to duplicate the synchronisation logic rather than just consolidate the two.
-
-    After this patch, MAP_NONBLOCK no longer sets up ptes for pages present in
-    pagecache.  Seems like a fringe functionality anyway.
-
-    NOPAGE_REFAULT is removed.  This should be implemented with ->fault, and no
-    users have hit mainline yet.
-
-
+	Arnd <><
