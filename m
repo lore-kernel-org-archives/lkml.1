@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764852AbYDVNka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764945AbYDVNkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764852AbYDVNka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYDVNkI
+	id S1764945AbYDVNkp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759083AbYDVNkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:40:08 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59997 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754234AbYDVNkG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:40:06 -0400
-Subject: Re: [bug] SCSI/SLUB - latest -git: WARNING: at mm/slub.c:2443
-	kmem_cache_destroy, scsi_put_host_cmd_pool()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080422131020.GB7311@elte.hu>
-References: <20080419085758.GA18612@elte.hu>
-	 <1208611357.3280.5.camel@localhost.localdomain>
-	 <20080421134925.GK9554@elte.hu>
-	 <1208793440.3640.22.camel@localhost.localdomain>
-	 <20080422131020.GB7311@elte.hu>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 08:39:59 -0500
-Message-Id: <1208871600.3105.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Apr 2008 09:40:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:39052 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764284AbYDVNkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:40:23 -0400
+Date: Tue, 22 Apr 2008 15:39:58 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] UIO: cleanup and platform driver
+Message-ID: <20080422133952.GB2279@local>
+References: <1207831023-8583-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080422094708.GB27126@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080422094708.GB27126@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 15:10 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Tue, Apr 22, 2008 at 11:47:08AM +0200, Uwe Kleine-K?nig wrote:
+> Hello,
 > 
-> > Thanks ... it looks like we may have trouble from devices that alter 
-> > the unchecked isa dma flag after scsi_host_alloc.  The guilty parties 
-> > appear to be gdth, eata, u14-34f, ultrastor, BusLogic and advansys.
-> > 
-> > The trouble is that if you alloc the host with it one way and free it 
-> > with it the other, the wrong freelist is used and the ref counts are 
-> > invalid.
-> > 
-> > Try this pseudo fix: it avoids allocating the freelist until add time 
-> > (by which time they should all have fixed the flag).  It still doesn't 
-> > change the fact that the host is allocated in the wrong region, but 
-> > that shouldn't matter too much.
+> there are three patches left in my uio queue that didn't made it into
+> mainline up to now.
 > 
-> ok - do you intend to push this pseudo-fix upstream? If yes then please 
-> consider it fixed as far as i'm concerned - i'll re-reply if the warning 
-> resurfaces (it wasnt lethal to the bootup otherwise). Or if you've got 
-> some other approach/fix then i can test that too.
+> You can find the patches in my uio branch at 
+> 
+> 	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git uio
+> 
+> and I will resend the patches as a reply to this mail.
 
-It's certainly the line of least resistance.  The more correct fix would
-be to haul unchecked_isa_dma out of the host and make everything use the
-template, so it becomes immutable (as it should be).  However, that's a
-lot of work and given that Andi's gunning for unchecked_isa_dma anyway,
-probably not worth it.
+Hi Uwe,
+thanks for your work. Greg and I are at the Hannover trade fair ATM.
+I'll be back home on Thursday and will have a look at your patches then.
 
-So, unless I think of something better in the next few days, this is the
-way I'll fix it.
-
-James
-
+Thanks,
+Hans
 
