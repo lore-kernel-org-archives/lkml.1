@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934485AbYDVOPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbYDVOQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934485AbYDVOPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764083AbYDVOKq
+	id S965185AbYDVOQF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbYDVOLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:10:46 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41260
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763647AbYDVOKm (ORCPT
+	Tue, 22 Apr 2008 10:11:22 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:29284 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932880AbYDVOLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:10:42 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 22 Apr 2008 10:11:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=DqRDfFeNQ3VHt0bIe7z1sgb+Rwtv9lIid7G7EXaUjFH15dA5F3zvyoi1PdL+5U9lX/nky+w7Gk+SPEkt5+MYq73+Kbw1zeaQs1K0E9ksGQt7DZDPUqAyTDiXFkwHazgytIYGIkL+kDL6PuTOHYr60oIpg7dOMwamy3yi/7Pe25k=
+Message-ID: <480DF1F5.3060208@gmail.com>
+Date: Tue, 22 Apr 2008 23:11:01 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 12 of 12] This patch adds a lock ordering rule to avoid a
-	potential deadlock when
-X-Mercurial-Node: e847039ee2e815088661933b7195584847dc7540
-Message-Id: <e847039ee2e815088661.1208872288@duo.random>
-In-Reply-To: <patchbomb.1208872276@duo.random>
-Date: Tue, 22 Apr 2008 15:51:28 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+CC: Peer Chen <pchen@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804191548.04013.volker.armin.hemmann@tu-clausthal.de> <15F501D1A78BD343BE8F4D8DB854566B277C048A@hkemmail01.nvidia.com> <200804221444.55483.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200804221444.55483.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------000100040206050302060401"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# HG changeset patch
-# User Andrea Arcangeli <andrea@qumranet.com>
-# Date 1208872187 -7200
-# Node ID e847039ee2e815088661933b7195584847dc7540
-# Parent  128d705f38c8a774ac11559db445787ce6e91c77
-This patch adds a lock ordering rule to avoid a potential deadlock when
-multiple mmap_sems need to be locked.
+This is a multi-part message in MIME format.
+--------------000100040206050302060401
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+Volker Armin Hemmann wrote:
+> On Dienstag, 22. April 2008, Peer Chen wrote:
+>> Looks like the BIOS trap had been applied, GHC.AE suppose should be set
+>> correctly. Volker, could you try to set the AE twice in the driver or using
+>> mmapper to set the AE manually to check if AE will be set correctly or not?
+> 
+> emm, I am totally out of my depth here. I don't even know what you are talking 
+> about. If you explain me in nice, little word or even better, with examples, 
+> what I shall try, I will happily do so.
 
-diff --git a/mm/filemap.c b/mm/filemap.c
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -79,6 +79,9 @@
-  *
-  *  ->i_mutex			(generic_file_buffered_write)
-  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
-+ *
-+ *    When taking multiple mmap_sems, one should lock the lowest-addressed
-+ *    one first proceeding on up to the highest-addressed one.
-  *
-  *  ->i_mutex
-  *    ->i_alloc_sem             (various)
+This patch should do the trick.
+
+-- 
+tejun
+
+--------------000100040206050302060401
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 3efa990..dbbf6cf 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -562,15 +562,23 @@ static inline void __iomem *ahci_port_base(struct ata_port *ap)
+ 
+ static void ahci_enable_ahci(void __iomem *mmio)
+ {
++	int i;
+ 	u32 tmp;
+ 
+-	/* turn on AHCI_EN */
+ 	tmp = readl(mmio + HOST_CTL);
+-	if (!(tmp & HOST_AHCI_EN)) {
++	if (tmp & HOST_AHCI_EN)
++		return;
++
++	for (i = 0; i < 10; i++) {
++		msleep(100);
+ 		tmp |= HOST_AHCI_EN;
+ 		writel(tmp, mmio + HOST_CTL);
+ 		tmp = readl(mmio + HOST_CTL);	/* flush && sanity check */
+-		WARN_ON(!(tmp & HOST_AHCI_EN));
++
++		/* turn on AHCI_EN */
++		if (tmp & HOST_AHCI_EN)
++			break;
++		printk("AHCI_EN failed i=%d\n", i);
+ 	}
+ }
+ 
+
+--------------000100040206050302060401--
