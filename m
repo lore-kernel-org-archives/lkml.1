@@ -1,93 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYDVFGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbYDVFIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbYDVFGk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 01:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYDVFGc
+	id S1757652AbYDVFIE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 01:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYDVFHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 01:06:32 -0400
-Received: from ozlabs.org ([203.10.76.45]:49863 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbYDVFGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 01:06:31 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related operation to happen
-Date: Tue, 22 Apr 2008 15:06:24 +1000
-User-Agent: KMail/1.9.9
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
-References: <ec6d8f91b299cf26cce5.1207669444@duo.random>
-In-Reply-To: <ec6d8f91b299cf26cce5.1207669444@duo.random>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Apr 2008 01:07:51 -0400
+Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:60492 "EHLO
+	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751786AbYDVFHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 01:07:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=ImCGculZPcb2DhQACwaAAI+0je7OgeCHis3f6FKoD0U2dPnsA3Rxq8f0ySy+Ym+f;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Tue, 22 Apr 2008 01:07:35 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anton Titov <a.titov@host.bg>, Chris Snook <csnook@redhat.com>,
+       "H. Willstrand" <h.willstrand@gmail.com>, netdev@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Bad network performance over 2Gbps
+Message-Id: <20080422010735.8f01efc9.billfink@mindspring.com>
+In-Reply-To: <48078AF6.2020003@intel.com>
+References: <1208282804.23631.27.camel@localhost>
+	<175f5a0f0804151315x1e192fc7p7dac1e84fd154211@mail.gmail.com>
+	<48051173.5030802@intel.com>
+	<48051734.1000107@redhat.com>
+	<1208426550.6049.10.camel@localhost>
+	<48078AF6.2020003@intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804221506.26226.rusty@rustcorp.com.au>
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d0bff88ce9cb31e5a831bd00faccdda5e350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.48.212.104
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 April 2008 01:44:04 Andrea Arcangeli wrote:
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1050,6 +1050,15 @@
->  				   unsigned long addr, unsigned long len,
->  				   unsigned long flags, struct page **pages);
->
-> +struct mm_lock_data {
-> +	spinlock_t **i_mmap_locks;
-> +	spinlock_t **anon_vma_locks;
-> +	unsigned long nr_i_mmap_locks;
-> +	unsigned long nr_anon_vma_locks;
-> +};
-> +extern struct mm_lock_data *mm_lock(struct mm_struct * mm);
-> +extern void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data);
+On Thu, 17 Apr 2008, Kok, Auke wrote:
 
-As far as I can tell you don't actually need to expose this struct at all?
+> [X86] IRQBALANCE: Mark as BROKEN and disable by default
+> 
+> The IRQBALANCE option causes interrupts to bounce all around on SMP systems
+> quickly burying the CPU in migration cost and cache misses. Mainly affected are
+> network interrupts and this results in one CPU pegged in softirqd completely.
+> 
+> Disable this option and provide documentation to a better solution (userspace
+> irqbalance daemon does overall the best job to begin with and only manual setting
+> of smp_affinity will beat it).
+> 
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> 
+> ---
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 6c70fed..956aa22 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1026,13 +1026,17 @@ config EFI
+>    	platforms.
+> 
+>  config IRQBALANCE
+> -	def_bool y
+> +	def_bool n
+>  	prompt "Enable kernel irq balancing"
+> -	depends on X86_32 && SMP && X86_IO_APIC
+> +	depends on X86_32 && SMP && X86_IO_APIC && BROKEN
+>  	help
+>  	  The default yes will allow the kernel to do irq load balancing.
+>  	  Saying no will keep the kernel from doing irq load balancing.
 
-> +		data->i_mmap_locks = vmalloc(nr_i_mmap_locks *
-> +					     sizeof(spinlock_t));
+Since you're changing the default setting, shouldn't the above be
+changed to:
 
-This is why non-typesafe allocators suck.  You want 'sizeof(spinlock_t *)' 
-here.
+ 	  Saying yes will allow the kernel to do irq load balancing.
+ 	  The default no will keep the kernel from doing irq load balancing.
 
-> +		data->anon_vma_locks = vmalloc(nr_anon_vma_locks *
-> +					       sizeof(spinlock_t));
+> +	  This option is known to cause performance issues on SMP
+> +	  systems. The preferred method is to use the userspace
+> +	  'irqbalance' daemon instead. See http://irqbalance.org/.
+> +
+>  config SECCOMP
+>  	def_bool y
+>  	prompt "Enable seccomp to safely compute untrusted bytecode"
 
-and here.
-
-> +	err = -EINTR;
-> +	i_mmap_lock_last = NULL;
-> +	nr_i_mmap_locks = 0;
-> +	for (;;) {
-> +		spinlock_t *i_mmap_lock = (spinlock_t *) -1UL;
-> +		for (vma = mm->mmap; vma; vma = vma->vm_next) {
-...
-> +		data->i_mmap_locks[nr_i_mmap_locks++] = i_mmap_lock;
-> +	}
-> +	data->nr_i_mmap_locks = nr_i_mmap_locks;
-
-How about you track your running counter in data->nr_i_mmap_locks, leave 
-nr_i_mmap_locks alone, and BUG_ON(data->nr_i_mmap_locks != nr_i_mmap_locks)?
-
-Even nicer would be to wrap this in a "get_sorted_mmap_locks()" function.
-
-Similarly for anon_vma locks.
-
-Unfortunately, I just don't think we can fail locking like this.  In your next 
-patch unregistering a notifier can fail because of it: that not usable.
-
-I think it means you need to add a linked list element to the vma for the 
-CONFIG_MMU_NOTIFIER case.  Or track the max number of vmas for any mm, and 
-keep a pool to handle mm_lock for this number (ie. if you can't enlarge the 
-pool, fail the vma allocation).  
-
-Both have their problems though...
-Rusty.
+						-Bill
