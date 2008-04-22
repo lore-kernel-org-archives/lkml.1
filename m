@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbYDVCXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbYDVC0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762332AbYDVCXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 22:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbYDVCXJ
+	id S1762216AbYDVC0y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 22:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYDVC0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 22:23:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:18613 "EHLO mga09.intel.com"
+	Mon, 21 Apr 2008 22:26:46 -0400
+Received: from mga14.intel.com ([143.182.124.37]:39855 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756527AbYDVCXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 22:23:07 -0400
+	id S1754057AbYDVC0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 22:26:45 -0400
+X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Apr 2008 22:26:45 EDT
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,691,1199692800"; 
-   d="scan'208";a="273114618"
-Date: Tue, 22 Apr 2008 10:16:15 +0800
+   d="scan'208";a="235767203"
+Date: Tue, 22 Apr 2008 10:04:20 +0800
 From: alek du <alek.du@intel.com>
 To: <linux-kernel@vger.kernel.org>
 Cc: khali@linux-fr.org
 Subject: [PATCH 2/3] i2c: Add Intel SCH I2C SMBus support
-Message-ID: <20080422101615.6b00a641@dxy.sh.intel.com>
+Message-ID: <20080422100420.3ee5f150@dxy.sh.intel.com>
 Organization: Intel
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 02:22:57.0815 (UTC) FILETIME=[C7817270:01C8A41F]
+X-OriginalArrivalTime: 22 Apr 2008 02:17:03.0922 (UTC) FILETIME=[F491A920:01C8A41E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
