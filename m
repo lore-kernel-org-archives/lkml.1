@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYDVXOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbYDVXPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYDVXOj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 19:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYDVXO2
+	id S932860AbYDVXPX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 19:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYDVXPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 19:14:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46501 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750804AbYDVXO1 (ORCPT
+	Tue, 22 Apr 2008 19:15:09 -0400
+Received: from vwp1316.webpack.hosteurope.de ([87.230.105.72]:57075 "EHLO
+	vwp1316.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751530AbYDVXPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 19:14:27 -0400
-Date: Tue, 22 Apr 2008 16:14:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
- lock (first and not last
-In-Reply-To: <20080422224048.GR24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com>
-References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random>
- <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
- <20080422224048.GR24536@duo.random>
+	Tue, 22 Apr 2008 19:15:06 -0400
+Date: Wed, 23 Apr 2008 01:14:59 +0200
+From: speedy <speedy@3d-io.com>
+X-Mailer: The Bat! (v4.0.18) Home
+Reply-To: speedy <speedy@3d-io.com>
+X-Priority: 3 (Normal)
+Message-ID: <396712385.20080423011459@3d-io.com>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG REPORT, 2.6.22] sata controler failure on nforce 2 chipset
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-bounce-key: webpack.hosteurope.de;speedy@3d-io.com;1208906106;e41c847e;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
+Hello Linux kernel crew,
 
-> On Tue, Apr 22, 2008 at 01:24:21PM -0700, Christoph Lameter wrote:
-> > Reverts a part of an earlier patch. Why isnt this merged into 1 of 12?
-> 
-> To give zero regression risk to 1/12 when MMU_NOTIFIER=y or =n and the
-> mmu notifiers aren't registered by GRU or KVM. Keep in mind that the
-> whole point of my proposed patch ordering from day 0, is to keep as
-> 1/N, the absolutely minimum change that fully satisfy GRU and KVM
-> requirements. 4/12 isn't required by GRU/KVM so I keep it in a later
-> patch. I now moved mmu_notifier_unregister in a later patch too for
-> the same reason.
+       [Consider this more as a datapoint then a bug report, as after
+       one network and one sata/southbridge issues showing up
+       interminnently, the ASRock motherboard involved will be
+       scrapped for a different one]
 
-We want a full solution and this kind of patching makes the patches 
-difficuilt to review because later patches revert earlier ones.
- 
+       The integrated NVidia sata controller and/or the hard-drive has failed
+       during operation with the following output:
+
+Apr 22 23:36:54 backupserver kernel: [91202.294632]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Apr 22 23:36:59 backupserver kernel: [91207.657630] ata2: port is slow to respond, please be patient (Status 0xd0)
+Apr 22 23:37:04 backupserver kernel: [91212.331576] ata2: device not ready (errno=-16), forcing hardreset
+Apr 22 23:37:04 backupserver kernel: [91212.331583] ata2: hard resetting port
+Apr 22 23:37:09 backupserver kernel: [91217.874396] ata2: port is slow to respond, please be patient (Status 0x80)
+Apr 22 23:37:14 backupserver kernel: [91222.368598] ata2: hard resetting port
+Apr 22 23:37:19 backupserver kernel: [91227.911395] ata2: port is slow to respond, please be patient (Status 0x80)
+Apr 22 23:37:24 backupserver kernel: [91232.405597] ata2: hard resetting port
+Apr 22 23:37:29 backupserver kernel: [91237.948395] ata2: port is slow to respond, please be patient (Status 0x80)
+Apr 22 23:37:59 backupserver kernel: [91267.370311] ata2: hard resetting port
+Apr 22 23:38:04 backupserver kernel: [91272.373843] ata2.00: disabled
+Apr 22 23:38:04 backupserver kernel: [91272.373858] ata2: EH complete
+Apr 22 23:38:04 backupserver kernel: [91272.374653] sd 1:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Apr 22 23:38:04 backupserver kernel: [91272.374659] end_request: I/O error, dev sdb, sector 35277535
+Apr 22 23:38:04 backupserver kernel: [91272.374682] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374706] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374726] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374745] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374765] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374785] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374805] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374825] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374844] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.374864] lost page write due to I/O error on md0
+Apr 22 23:38:04 backupserver kernel: [91272.375058] sd 1:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Apr 22 23:38:04 backupserver kernel: [91272.375062] end_request: I/O error, dev sdb, sector 35278559
+Apr 22 23:38:04 backupserver kernel: [91272.375096] sd 1:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Apr 22 23:38:04 backupserver kernel: [91272.375099] end_request: I/O error, dev sdb, sector 407240943
+.
+.
+.
+
+       Full /var/log/messages can be found on: http://87.230.23.147/messages_sata_crash.txt
+
+       The two 500GB Samsung HD501LJ hard-drives were making resetting
+       sounds in regular intervals, trying to recover from the error,
+       unsucessfuly. The system was accessed via network/SSH and was
+       shutdown "gracefully" via shutdown -h now.
+
+       After restarting, the system seemingly continued to operate
+       normaly without any apparent data loss.
+
+       One thing of note is that the south-bridge was alarmingly hot
+       to the touch (you could "burn your finger" on it) so I would
+       attribute the problems to improper cooling of hardware.
+       Previously the system had uptimes of 100+ days as a render farm
+       master using Windows 2000 (mostly CPU/memory load, though).
+
+       I won't be able to test the same system further as it's
+       motherboard will be (promptly:p) exchanged.
+
+       ps. Keep me in CC:, not following the list.
+
+
+-- 
+Best regards,
+ speedy                          mailto:speedy@3d-io.com
+
