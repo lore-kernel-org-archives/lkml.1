@@ -1,66 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbYDVAdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYDVAeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760252AbYDVAdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759775AbYDVAdL
+	id S1760332AbYDVAeZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYDVAeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:33:11 -0400
-Received: from smtp1.dnsmadeeasy.com ([205.234.170.144]:60693 "EHLO
-	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758321AbYDVAdK (ORCPT
+	Mon, 21 Apr 2008 20:34:17 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36892 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbYDVAeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:33:10 -0400
-X-Authenticated-Name: js.dnsmadeeasy
-X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
-Message-ID: <480D3240.5050106@avtrex.com>
-Date: Mon, 21 Apr 2008 17:33:04 -0700
-From: David Daney <ddaney@avtrex.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 21 Apr 2008 20:34:16 -0400
+Date: Mon, 21 Apr 2008 17:34:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org, rostedt@goodmis.org,
+       dwalker@mvista.com, sdietrich@novell.com, dvhltc@us.ibm.com,
+       niv@us.ibm.com
+Subject: [PATCH] SELinux fixups needed for preemptable RCU from -rt
+Message-ID: <20080422003412.GA9983@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 5/6] Scheduler support for HARDWARE_WATCHPOINTS.
-References: <480D2151.2020701@avtrex.com>
-In-Reply-To: <480D2151.2020701@avtrex.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 00:33:05.0654 (UTC) FILETIME=[6E458160:01C8A410]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the meat of the patch.  Here we install the watch register values when we
-schedule a new thread.
+Hello!
 
-The implemtation of __restore_watch() is in asm/watch.h.  In the case where there
-are no watch registers to install (the normal case) the overhead is 5 machine
-instructions with gcc-3.4.3.
+The attached patch needs to move from -rt to mainline given preemptable
+RCU.  This patch fixes SELinux code that implicitly assumes that
+disabling preemption prevents an RCU grace period from completing,
+an assumption that is valid for Classic RCU, but not necessarily for
+preemptable RCU.  Explicit rcu_read_lock() calls are thus added.
 
-Signed-off-by: David Daney <ddaney@avtrex.com>
+Pointed-out-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/asm-mips/system.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-mips/system.h b/include/asm-mips/system.h
-index a944eda..cd30f83 100644
---- a/include/asm-mips/system.h
-+++ b/include/asm-mips/system.h
-@@ -20,6 +20,7 @@
- #include <asm/cmpxchg.h>
- #include <asm/cpu-features.h>
- #include <asm/dsp.h>
-+#include <asm/watch.h>
- #include <asm/war.h>
- 
- 
-@@ -76,6 +77,7 @@ do {									\
- 		__restore_dsp(current);					\
- 	if (cpu_has_userlocal)						\
- 		write_c0_userlocal(current_thread_info()->tp_value);	\
-+	__restore_watch();						\
- } while (0)
- 
- static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
--- 
-1.5.5
+ security/selinux/avc.c   |    9 +++++++++
+ security/selinux/netif.c |    2 ++
+ 2 files changed, 11 insertions(+)
 
+Index: linux-2.6.24.4-rt4/security/selinux/avc.c
+===================================================================
+--- linux-2.6.24.4-rt4.orig/security/selinux/avc.c	2008-03-24 19:05:09.000000000 -0400
++++ linux-2.6.24.4-rt4/security/selinux/avc.c	2008-03-24 19:06:41.000000000 -0400
+@@ -312,6 +312,7 @@ static inline int avc_reclaim_node(void)
+ 		if (!spin_trylock_irqsave(&avc_cache.slots_lock[hvalue], flags))
+ 			continue;
+ 
++		rcu_read_lock();
+ 		list_for_each_entry(node, &avc_cache.slots[hvalue], list) {
+ 			if (atomic_dec_and_test(&node->ae.used)) {
+ 				/* Recently Unused */
+@@ -319,11 +320,13 @@ static inline int avc_reclaim_node(void)
+ 				avc_cache_stats_incr(reclaims);
+ 				ecx++;
+ 				if (ecx >= AVC_CACHE_RECLAIM) {
++					rcu_read_unlock();
+ 					spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
+ 					goto out;
+ 				}
+ 			}
+ 		}
++		rcu_read_unlock();
+ 		spin_unlock_irqrestore(&avc_cache.slots_lock[hvalue], flags);
+ 	}
+ out:
+@@ -807,8 +810,14 @@ int avc_ss_reset(u32 seqno)
+ 
+ 	for (i = 0; i < AVC_CACHE_SLOTS; i++) {
+ 		spin_lock_irqsave(&avc_cache.slots_lock[i], flag);
++		/*
++		 * On -rt the outer spinlock does not prevent RCU
++		 * from being performed:
++		 */
++		rcu_read_lock();
+ 		list_for_each_entry(node, &avc_cache.slots[i], list)
+ 			avc_node_delete(node);
++		rcu_read_unlock();
+ 		spin_unlock_irqrestore(&avc_cache.slots_lock[i], flag);
+ 	}
+ 
+Index: linux-2.6.24.4-rt4/security/selinux/netif.c
+===================================================================
+--- linux-2.6.24.4-rt4.orig/security/selinux/netif.c	2008-03-24 19:05:09.000000000 -0400
++++ linux-2.6.24.4-rt4/security/selinux/netif.c	2008-03-24 19:06:41.000000000 -0400
+@@ -210,6 +210,7 @@ static void sel_netif_flush(void)
+ {
+ 	int idx;
+ 
++	rcu_read_lock();
+ 	spin_lock_bh(&sel_netif_lock);
+ 	for (idx = 0; idx < SEL_NETIF_HASH_SIZE; idx++) {
+ 		struct sel_netif *netif;
+@@ -218,6 +219,7 @@ static void sel_netif_flush(void)
+ 			sel_netif_destroy(netif);
+ 	}
+ 	spin_unlock_bh(&sel_netif_lock);
++	rcu_read_unlock();
+ }
+ 
+ static int sel_netif_avc_callback(u32 event, u32 ssid, u32 tsid,
