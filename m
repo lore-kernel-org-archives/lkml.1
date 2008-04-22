@@ -1,99 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbYDVBZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbYDVB0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761836AbYDVBZz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 21:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbYDVBZo
+	id S932336AbYDVB0Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 21:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761906AbYDVB0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 21:25:44 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:48363 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761610AbYDVBZn (ORCPT
+	Mon, 21 Apr 2008 21:26:04 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39207 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761905AbYDVB0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 21:25:43 -0400
-Date: Mon, 21 Apr 2008 19:27:40 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PCI MAINTAINER change
-In-reply-to: <fa.JwWRxW97po7bp7uP8gASvgGakFc@ifi.uio.no>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <480D3F0C.9090606@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.TS+5+HinmGrscLiHGCM7C9dFSbk@ifi.uio.no>
- <fa.EEEat9giRPyWOGUiYHgSIStt6vw@ifi.uio.no>
- <fa.zR5oiQ1hgiLPwoqLOEK2ySOHKLA@ifi.uio.no>
- <fa.vh1MNsau5uBs7WyWWCN0Huvxe98@ifi.uio.no>
- <fa.JwWRxW97po7bp7uP8gASvgGakFc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Mon, 21 Apr 2008 21:26:03 -0400
+Date: Mon, 21 Apr 2008 18:25:58 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: [ProbableSpam]Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Message-ID: <20080422012558.GI9153@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D147C.90602@gmail.com> <20080421225452.GF9153@linux.vnet.ibm.com> <200804220315.02147.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804220315.02147.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Tue, Apr 22, 2008 at 03:15:00AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 22 of April 2008, Paul E. McKenney wrote:
+> > On Tue, Apr 22, 2008 at 12:26:04AM +0200, Jiri Slaby wrote:
+> > > On 04/21/2008 11:58 PM, Jiri Slaby wrote:
+> > > >Leaving untouched.
+> > > >
+> > > >On 04/21/2008 11:18 PM, Jiri Slaby wrote:
+> > > >>On 04/21/2008 10:39 PM, David Miller wrote:
+> > > >>>From: Linus Torvalds <torvalds@linux-foundation.org>
+> > > >>>Date: Mon, 21 Apr 2008 09:54:07 -0700 (PDT)
+> > > >>>
+> > > >>>>What I find interesting is that at least for me, I have the SLAB 
+> > > >>>>bucket size for nf_conntrack_expect being 208 bytes. And the 
+> > > >>>>*biggest* merge by far after 2.6.25 so far has been networking (and 
+> > > >>>>conntrack in particular)
+> > > >>>>
+> > > >>>>Is that a smoking gun? Not necessarily. But it *is* intriguing. But 
+> > > >>>>there are other possible clashes (the 192-byte bucket has several 
+> > > >>>>different suspects, and not all of them are in networking).1
+> > > >>>
+> > > >>>I think you might be onto something here.
+> > > >>>
+> > > >>>The "mask" member of struct nf_conntrack_expect could be reasonably
+> > > >>>all 1's like the value reported in the crash that begins this
+> > > >>>thread.
+> > > >>>
+> > > >>>Do we know the offset within the object at which this all 1's
+> > > >>>value is found?
+> > > >>>
+> > > >>>My rough calculations show that on 32-bit that expect->mask member is
+> > > >>>at offset 56 and on 64-bit it should be at offset 72.  Does that
+> > > >>>match up to the offset of the filp or whatever bit being corrupted?
+> > > >>
+> > > >>dentry.d_name.name is 56 on 64-bit (my memcmp crashes)
+> > > >>dentry.d_hash.next is 24 (crashed at least 3 times here, rafael's one)
+> > > >>dentry.d_op is 136 (crash below)
+> > > >
+> > > >file.f_mapping is 176 (the another one from -rc8-mm2)
+> > > >
+> > > >the one at:
+> > > >http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/9008289.html 
+> > > >
+> > > >
+> > > >Having slub_debug enabled, tomorrow will be results, I guess...
+> > > 
+> > > Sorry, one more entry:
+> > > 
+> > > 00000000000000f0 dentry.d_op (Zdenek, offset ? around 136)
+> > > 00f0000000000000 dentry.d_hash.next (me, offset 24)
+> > > ffff81f02003f16c dentry.d_name.name (me, offset 56)
+> > >         memory ORed by 000000f000000000
+> > > fffff0002004c1b0 file.f_mapping (me, offset 176)
+> > >         memory hole, it was something like
+> > >         (ffff81002004c1b0 & ~00000f0000000000) | 0000f00000000000?
+> > > ffffffffffffffff dentry.d_hash.next (Rafael, offset ? around 24)
+> > >         -1, ~0ULL
+> > 
+> > Are these running with CONFIG_PREEMPT_RCU?  Grasping at straws, but
+> > there are a couple of patches that need to move from -rt to mainline,
+> > but mostly related to SELinux.  So if both PREEMPT_RCU and SELinux
+> > were in use, we might be missing "rcu-various-fixups.patch" from:
+> > 
+> > http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.24.4-rt4-broken-out.tar.bz2
 > 
->> On Mon, 21 Apr 2008, Jesse Barnes wrote:
->>> And now I get to figure out just how much trouble I've gotten myself into...
->> Mwhahahaaa! Sucker. You'll find out.
->>
->> The good news is that most of the time, the PCI code works fine. The 
->> bad news is that when it doesn't work, it's usually due to something 
->> *really* odd, like some magic motherboard device that has magic 
->> resources that aren't part of the standard PCI resource set and that 
->> clash with some of our resource allocation.
->>
->> And they don't show up in the PnP lists because Windows never put 
->> anything that could clash with them, so there was no reason for the 
->> BIOS engineers to bother.
->>
->> IOW, it's usually almost totally undebuggable crud like "driver X 
->> doesn't work on my machine", and then it turns out that it only 
->> happens on that particular motherboard that is totally identical to 
->> all other motherboards _except_ for that BIOS table not having the 
->> right reserved IO regions.
->>
->> .. and then there's the pluggable PCI stuff, of course. I'm not sure 
->> whether you took that over too. That's a whole different set of 
->> issues.
+> My kernel is only voluntarily preemptible (ie. CONFIG_PREEMPT_VOLUNTARY=y).
 > 
-> that reminds me of the observations about differences between Linux's 
-> and Windows's PCI resource allocation stategies, see the bugzilla entry 
-> from today below.
-> 
-> 	Ingo
-> 
-> ----------------->
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10461
-> 
-> ------- Comment #6 from linux@tjworld.net  2008-04-18 11:03 -------
-> After a few debug printk() runs watching the allocation strategy I wondered why
-> the PCI resources region doesn't start at the beginning of the largest gap:
-> 
-> [    0.000000] Allocating PCI resources starting at c2000000 (gap:
-> c0000000:20000000)
-> 
-> since, when 3GB RAM is installed, the gap starts at 0xC0000000 but the
-> allocation region begins at 0xC2000000.
-> 
-> The other issue is that only the largest gap seems to be used for allocations,
-> which explains why smaller allocations for other devices effectively choke off
-> use of the range in 32-bit address space.
-> 
-> In contrast, from looking at the addresses in the allocation comparison with
-> Windows, it looks as if Windows uses *all* gaps for allocation rather than just
-> the largest. It is noticeable that Windows allocates smaller regions in the
-> gaps between the various 'high' e820 reservations.
+> It is an SMP one, however.
 
-I think the reason for this being needed in the first place was in the 
-old days we didn't honor the ACPI reserved motherboard resources, or did 
-only for certain resource types (and we still have problems with this, 
-like the hard-coded limit on max number of PnPACPI resources that's hit 
-by many boards and which results in us ignoring some of the BIOS 
-reservations). Once that junk is fixed, hopefully we won't have to worry 
-about such problems.
+Then this patch won't help you.  :-/  I submitted separately anyway.
+
+							Thanx, Paul
