@@ -1,97 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934375AbYDVPbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbYDVPeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934375AbYDVPbS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763084AbYDVPaj
+	id S1757618AbYDVPeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYDVPeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:30:39 -0400
-Received: from rn-out-0910.google.com ([64.233.170.186]:64965 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760252AbYDVPah (ORCPT
+	Tue, 22 Apr 2008 11:34:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23684 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbYDVPeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n6i8b1GOcGL4KziJzVU3n7jV+X/XR+PuBa0PFnERsFgOkj5ZFf+Iul9hGN7Cp7ec9sYz01q0B0B9yZkOkvzNjDFYeHSI9BaEzXhlrmnZ9RR7WA080eoOxSGuSlHFIKoPtO7qI8HxaDiGSbQfqKfoCxUnZgi8RID/9Q70mTobPhs=
-Message-ID: <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
-Date: Tue, 22 Apr 2008 17:30:35 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated tasks have been added
-Cc: mingo@elte.hu, suresh.b.siddha@intel.com, rostedt@goodmis.org,
-       chinang.ma@intel.com, arjan@linux.intel.com, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20080421181015.4560.7658.stgit@novell1.haskins.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 22 Apr 2008 11:34:03 -0400
+Date: Tue, 22 Apr 2008 08:32:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Kara <jack@suse.cz>, linux-usb@vger.kernel.org
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ./fs/partitions/check.c: off-by-one error ?
+Message-Id: <20080422083214.cbfa3786.randy.dunlap@oracle.com>
+In-Reply-To: <20080422103829.GC21922@atrey.karlin.mff.cuni.cz>
+References: <200804201235.46552.toralf.foerster@gmx.de>
+	<20080422103829.GC21922@atrey.karlin.mff.cuni.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
-	 <20080421181015.4560.7658.stgit@novell1.haskins.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gregory,
+On Tue, 22 Apr 2008 12:38:29 +0200 Jan Kara wrote:
+
+> > Inserting an 2 GB SD Card into my digikam and mounting it as an USB drive I've
+> > in my system log :
+> > 
+> > Apr 20 12:27:54 n22 usb 2-2: new full speed USB device using uhci_hcd and address 4
+> > Apr 20 12:27:54 n22 usb 2-2: configuration #1 chosen from 1 choice
+> > Apr 20 12:27:54 n22 SCSI subsystem initialized
+> > Apr 20 12:27:54 n22 Initializing USB Mass Storage driver...
+> > Apr 20 12:27:54 n22 scsi0 : SCSI emulation for USB Mass Storage devices
+> > Apr 20 12:27:54 n22 usbcore: registered new interface driver usb-storage
+> > Apr 20 12:27:54 n22 USB Mass Storage support registered.
+> > Apr 20 12:27:54 n22 usb-storage: device found at 4
+> > Apr 20 12:27:54 n22 usb-storage: waiting for device to settle before scanning
+> > Apr 20 12:27:59 n22 scsi 0:0:0:0: Direct-Access     MATSHITA DMC-TZ3          0100 PQ: 0 ANSI: 2
+> > Apr 20 12:27:59 n22 usb-storage: device scan complete
+> > Apr 20 12:27:59 n22 Driver 'sd' needs updating - please use bus_type methods
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] 3902463 512-byte hardware sectors (1998 MB)
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Write Protect is off
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Mode Sense: 04 00 00 00
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Assuming drive cache: write through
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] 3902463 512-byte hardware sectors (1998 MB)
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Write Protect is off
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Mode Sense: 04 00 00 00
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Assuming drive cache: write through
+> > Apr 20 12:27:59 n22 sda: sda1
+> > Apr 20 12:27:59 n22 sda: p1 exceeds device capacity
+> > Apr 20 12:27:59 n22 sd 0:0:0:0: [sda] Attached SCSI removable disk
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > Apr 20 12:27:59 n22 attempt to access beyond end of device
+> > Apr 20 12:27:59 n22 sda: rw=0, want=3902464, limit=3902463
+> > Apr 20 12:27:59 n22 Buffer I/O error on device sda1, logical block 3902334
+> > 
+> > My system is a :
+> > 
+> > tfoerste@n22 ~/devel/linux-2.6/fs/partitions $ uname -a
+> > Linux n22 2.6.24-gentoo-r4 #4 Sun Apr 20 12:16:18 CEST 2008 i686 Intel(R)
+> > Pentium(R) M processor 1700MHz GenuineIntel GNU/Linux
+> > 
+> > I already re-formatted the card under Linux as well as under Windows XP and got
+> > always the same behaviour.
+>   This looks more like a strange interaction of your device size (it
+> claims to have 3902463 sectors) and your partitioning programs which
+> create partition ending at sector 3902464. Can you send the partition
+> table you have on the device? E.g:
+>   fdisk /dev/sda
+>   x
+>   p
+> 
+>   will print detailed information about the partition table.
+
+Is this something that using US_FL_FIX_CAPACITY will fix?
+
+US_FL_FIX_CAPACITY -> sets ->fix_capacity, then:
+
+	/* Some devices return the total number of sectors, not the
+	 * highest sector number.  Make the necessary adjustment. */
+	if (sdp->fix_capacity) {
+		--sdkp->capacity;
 
 
-consider the following 2-cpu system: cpu0 and cpu1.
-
-cpu0: is idle --> in such a state, it never pulls RT tasks on its own.
-
-T0 and T1 are RT tasks
-
-
-square#0:
-
-cpu1:  T0 is running
-
-T1 is of the same prio as T0 (shouldn't really matter but to get the
-same result it would require altering the flow of events slightly)
-
-T1's affinity allows it to be run only on cpu1.
-T0 can run on both.
-
-try_to_wake_up() is called for T1.
-|
---> select_task_rq_rt() => gives cpu1
-|
---> task_wake_up_rt()
-   |
-   ---> push_rt_tasks() -> rq->rt.pushed = 1
-
-now, neither T1 (due to its affinity), nor T0 (it's running) can be
-pushed away to cpu0.
-
-[ btw., (1) I'd expect that this task_wake_up_rt() thing should be
-redundant, logically-wise... I'll check once more and comment later
-on.
-(2) any example when (p->prio >= rq->rt.highest_prio) is not true in
-task_wake_up_rt() ?
-]
-
-as a result, rq->rt.pushed == 1.
-
-Now, post_schedule_rt() won't call push_rt_tasks().
-
-T0 and T1 are both running for some time on cpu1 (possibly
-context-switching if they are both of SCHED_RR type).
-
-Then they both block, _first_ T1 and then T0.
-
-After some interval of time, they wake up (let's say they are
-periodic) in the following order: _first_ T0 and then T1.
-
-rq->rt.pushed becomes 0 and here we are back to square#0. The whole
-story repeats again.
-
-cpu0 is idle so it won't pull T0. Both T0 and T1 are competing for the
-same cpu. Not good.
-
-am I missing smth?
-
-
--- 
-Best regards,
-Dmitry Adamushko
+---
+~Randy
