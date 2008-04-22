@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYDVAPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbYDVAQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbYDVAPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 20:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbYDVAPj
+	id S1759743AbYDVAQb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 20:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758451AbYDVAQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 20:15:39 -0400
-Received: from smtp1.dnsmadeeasy.com ([205.234.170.144]:52920 "EHLO
-	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756432AbYDVAPi (ORCPT
+	Mon, 21 Apr 2008 20:16:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55058
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758132AbYDVAQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 20:15:38 -0400
-X-Authenticated-Name: js.dnsmadeeasy
-X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
-Message-ID: <480D2E27.1000309@avtrex.com>
-Date: Mon, 21 Apr 2008 17:15:35 -0700
-From: David Daney <ddaney@avtrex.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 3/6] Probe watch registers and report configuration.
-References: <480D2151.2020701@avtrex.com>
-In-Reply-To: <480D2151.2020701@avtrex.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 Apr 2008 20:16:17 -0400
+Date: Mon, 21 Apr 2008 17:16:19 -0700 (PDT)
+Message-Id: <20080421.171619.126408955.davem@davemloft.net>
+To: viro@ZenIV.linux.org.uk
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080421232534.GT27459@ZenIV.linux.org.uk>
+References: <alpine.LFD.1.10.0804211608570.2779@woody.linux-foundation.org>
+	<20080421231815.GS27459@ZenIV.linux.org.uk>
+	<20080421232534.GT27459@ZenIV.linux.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 00:15:36.0192 (UTC) FILETIME=[FCBE5000:01C8A40D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This portion of the patch add probing for the watch registers.  The probing
-code is in watch.c, here we add a call to that code.
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Tue, 22 Apr 2008 00:25:34 +0100
 
-Also /proc/cpu info is modified to print out the watch register information.
+> On Tue, Apr 22, 2008 at 12:18:15AM +0100, Al Viro wrote:
+> 
+> > FWIW, two things I _really_ want dead and gone are
+> > 	* timod (or full rewrite of that animal; current one is badly racy
+> > and plays fast and loose with way too many place in VFS guts)
+> > 	* altroot (use chroot, damnit, and bind whatever you need in there)
+> 
+> BTW, the part about altroot goes for other architectures too; it's badly
+> broken and it's one hell of an obstacle to fs/namei.c work of any kind.
+> 
+> As absolute minimum we _must_ lose the "if we hadn't found what we wanted
+> in that subtree, repeat lookup starting at real root"; that's causing
+> nightmares in pathname resolution and there's no excuse whatsoever for
+> that since we have bindings.
 
-Signed-off-by: David Daney <ddaney@avtrex.com>
----
- arch/mips/kernel/cpu-probe.c |    3 +++
- arch/mips/kernel/proc.c      |   10 ++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+The only platforms defining a non-NOP __emul_prefix() after this
+sparc changeset are:
 
-diff --git a/arch/mips/kernel/cpu-probe.c b/arch/mips/kernel/cpu-probe.c
-index 89c3304..c3308d3 100644
---- a/arch/mips/kernel/cpu-probe.c
-+++ b/arch/mips/kernel/cpu-probe.c
-@@ -678,6 +678,9 @@ static void __cpuinit decode_configs(struct cpuinfo_mips *c)
- static inline void cpu_probe_mips(struct cpuinfo_mips *c)
- {
- 	decode_configs(c);
-+#if defined(CONFIG_HARDWARE_WATCHPOINTS)
-+	mips_probe_watch_registers(c);
-+#endif
- 	switch (c->processor_id & 0xff00) {
- 	case PRID_IMP_4KC:
- 		c->cputype = CPU_4KC;
-diff --git a/arch/mips/kernel/proc.c b/arch/mips/kernel/proc.c
-index 36f0653..e2f716c 100644
---- a/arch/mips/kernel/proc.c
-+++ b/arch/mips/kernel/proc.c
-@@ -50,8 +50,18 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	seq_printf(m, "tlb_entries\t\t: %d\n", cpu_data[n].tlbsize);
- 	seq_printf(m, "extra interrupt vector\t: %s\n",
- 	              cpu_has_divec ? "yes" : "no");
-+#ifdef CONFIG_HARDWARE_WATCHPOINTS
-+	seq_printf(m, "hardware watchpoint\t: %s",
-+		   cpu_has_watch ? "yes" : "no\n");
-+	if (cpu_has_watch)
-+		seq_printf(m, ", count: %d, address mask: 0x%04x, irw mask 0x%02x\n",
-+			   cpu_data[n].watch_reg_count,
-+			   cpu_data[n].watch_reg_mask,
-+			   cpu_data[n].watch_reg_irw);
-+#else
- 	seq_printf(m, "hardware watchpoint\t: %s\n",
- 	              cpu_has_watch ? "yes" : "no");
-+#endif
- 	seq_printf(m, "ASEs implemented\t:%s%s%s%s%s%s\n",
- 		      cpu_has_mips16 ? " mips16" : "",
- 		      cpu_has_mdmx ? " mdmx" : "",
--- 
-1.5.5
+1) IA-64 for PER_LINUX32 --> /emul/ia32-linux/
+2) MIPS for riscos and IRIX compat support
+3) ARM for ARM_BSD_EMUL --> "usr/gnemul/bsd", yikes no leading slash
+   in that path!
 
+I bet if we really tried we could get rid of these things.
