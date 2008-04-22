@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYDVPCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764979AbYDVPC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764853AbYDVPCJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPBx
+	id S1764979AbYDVPC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764874AbYDVPCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:01:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25610 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbYDVPBx (ORCPT
+	Tue, 22 Apr 2008 11:02:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35541 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764861AbYDVPCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:01:53 -0400
-Message-ID: <480DFBED.8020304@oracle.com>
-Date: Tue, 22 Apr 2008 07:53:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 22 Apr 2008 11:02:10 -0400
+Date: Tue, 22 Apr 2008 08:01:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+In-Reply-To: <20080422145105.GJ12774@kernel.dk>
+Message-ID: <alpine.LFD.1.10.0804220759020.2779@woody.linux-foundation.org>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org> <20080422145105.GJ12774@kernel.dk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: prasad@linux.vnet.ibm.com
-CC: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, hunt@redhat.com, michaele@au1.ibm.com,
-       dave@linux.vnet.ibm.com
-Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
-References: <20080415111459.GB5295@in.ibm.com> <20080415112603.GA5770@in.ibm.com> <48066EBE.3040608@us.ibm.com> <20080421124329.GA14118@in.ibm.com> <20080421101403.cecf4d7b.randy.dunlap@oracle.com> <20080422052222.GA6623@in.ibm.com>
-In-Reply-To: <20080422052222.GA6623@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K. Prasad wrote:
 
-> This patch introduces two new interfaces called debugfs_printk and 
-> debugfs_dump which can be used to print to the debugfs mount directly.
-> It uses the 'trace' infrastructure underneath and is a patch over it.
-> A sample file is also created to demonstrate its ease of use.
+
+On Tue, 22 Apr 2008, Jens Axboe wrote:
+> > 
+> > You forgot to free the "data" here? The waiter must also free the object, 
+> > since now the callee does not.
 > 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  Documentation/trace.txt        |   21 ++++
->  include/linux/trace.h          |   55 +++++++++++
->  lib/trace.c                    |  193 +++++++++++++++++++++++++++++++++++++++--
->  samples/trace/Makefile         |    2 
->  samples/trace/fork_new_trace.c |   97 ++++++++++++++++++++
->  5 files changed, 362 insertions(+), 6 deletions(-)
+> The ipi interrupt handler does that, see kfree() in
+> generic_smp_call_function_single_interrupt() or call_func_data_free() in
+> generic_smp_call_function_interrupt().
 
-> +
-> +/**
-> + * debugfs_printk - Output binary into debugfs mount 'directly' using 'trace'
+Hell no, it does *not*.
 
-Oops. This is the debugfs_dump() function.
+Doing that for the waiting case would be a *huge* bug, since the waiter 
+needs to wait until the flag is clear - and if the waitee free's the 
+allocation, that will never happen.
 
-Otherwise it looks good.  Thanks.
+So the rule *must* be:
+ - waiter frees
+ - ipi interrupt frees non-waiting ones.
+because anything else cannot work.
 
-> + * @dpk: Structure containing info such as parent_dir and directory
-> + * @output: Data that needs to be output
-> + * @output_len: Length of the output data
-> + */
-> +int debugfs_dump(struct debugfs_printk_data *dpk, const void *output,
-> +							const int output_len)
-> +{
+And you must have known that, because the code you pointed me to does 
+*not* free the data at all. It just clears the FLAG_WAIT flag:
 
+	+               if (data->csd.flags & CSD_FLAG_WAIT) {
+	+                       smp_wmb();
+	+                       data->csd.flags &= ~CSD_FLAG_WAIT;
+	+               } else
+	+                       call_func_data_free(data);
 
--- 
-~Randy
+So please think about this some more. 
+
+		Linus
