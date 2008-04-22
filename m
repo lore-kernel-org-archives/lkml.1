@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYDVEVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYDVE07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbYDVEVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 00:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYDVEVJ
+	id S1755877AbYDVE07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 00:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYDVE0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 00:21:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45179 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYDVEVI (ORCPT
+	Tue, 22 Apr 2008 00:26:49 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:65416 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYDVE0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 00:21:08 -0400
-Date: Mon, 21 Apr 2008 21:20:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] use canary at end of stack to indicate overruns at oops
- time
-Message-ID: <20080421212058.0c51db01@laptopd505.fenrus.org>
-In-Reply-To: <480D5F27.1030101@redhat.com>
-References: <480D5F27.1030101@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Apr 2008 00:26:48 -0400
+X-Greylist: delayed 3624 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 00:26:48 EDT
+Message-Id: <200804220325.m3M3Pqkx002242@www262.sakura.ne.jp>
+Subject: [PATCH] serial: access-after-NULL-check-at-uart_flush_buffer
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Tue, 22 Apr 2008 12:25:52 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 22:44:39 -0500
-Eric Sandeen <sandeen@redhat.com> wrote:
+I noticed that
 
-> Use a canary at the end of the stack to clearly indicate
-> at oops time whether the stack has ever overflowed.
-> 
-> This is a very simple implementation with a couple of
-> drawbacks:
-> 
-> 1) a thread may legitimately use exactly up to the last 
->    word on the stack
-> 
->  -- but the chances of doing this and then oopsing later seem slim
-> 
-> 2) it's possible that the stack usage isn't dense enough
->    that the canary location could get skipped over
-> 
->  -- but the worst that happens is that we don't flag the overrun
-> 
-> With the code in place, an intentionally-bloated stack oops does:
-> 
-> BUG: unable to handle kernel paging request at ffff8103f84cc680
-> IP: [<ffffffff810253df>] update_curr+0x9a/0xa8
-> PGD 8063 PUD 0 
-> Thread overran stack or stack corrupted
-> Oops: 0000 [1] SMP 
-> CPU 0 
+  static void uart_flush_buffer(struct tty_struct *tty)
+  {
+  	struct uart_state *state = tty->driver_data;
+  	struct uart_port *port = state->port;
+  	unsigned long flags;
+  	
+  	/*
+  	 * This means you called this function _after_ the port was
+  	 * closed.  No cookie for you.
+  	 */
+  	if (!state || !state->info) {
+  		WARN_ON(1);
+  		return;
+  	}
 
-I like this but I wonder if it's useful to do this for the irq stacks too;
+is too late for checking state != NULL.
+This change applies to kernels from 2.6.16 till 2.6.25.
 
-either way
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ drivers/serial/serial_core.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-
-(I'll also add detection of your printk to the kerneloops.org website)
+--- linux-2.6.25.orig/drivers/serial/serial_core.c
++++ linux-2.6.25/drivers/serial/serial_core.c
+@@ -535,7 +535,7 @@ static int uart_chars_in_buffer(struct t
+ static void uart_flush_buffer(struct tty_struct *tty)
+ {
+ 	struct uart_state *state = tty->driver_data;
+-	struct uart_port *port = state->port;
++	struct uart_port *port;
+ 	unsigned long flags;
+ 
+ 	/*
+@@ -547,6 +547,7 @@ static void uart_flush_buffer(struct tty
+ 		return;
+ 	}
+ 
++	port = state->port;
+ 	pr_debug("uart_flush_buffer(%d) called\n", tty->index);
+ 
+ 	spin_lock_irqsave(&port->lock, flags);
