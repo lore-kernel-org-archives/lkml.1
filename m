@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYDVUmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbYDVUms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760121AbYDVUmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 16:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYDVUmV
+	id S932181AbYDVUms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 16:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbYDVUmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 22 Apr 2008 16:42:22 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37996 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754881AbYDVUmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Apr 2008 16:42:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40299 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754790AbYDVUmV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 16:42:21 -0400
-Message-Id: <20080422204220.179144000@polaris-admin.engr.sgi.com>
-References: <20080422204219.994283000@polaris-admin.engr.sgi.com>
+Message-Id: <20080422204219.994283000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 22 Apr 2008 13:42:20 -0700
+Date: Tue, 22 Apr 2008 13:42:19 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] x86: Modify Kconfig to allow up to 4096 cpus
-Content-Disposition: inline; filename=MAXSMP-Kconfig
+Subject: [PATCH 0/5] x86: cleanup early per cpu variables/accesses v4-folded
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
   * Increase the limit of NR_CPUS to 4096 and introduce a boolean
     called "MAXSMP" which when set (e.g. "allyesconfig"), will set
-    NR_CPUS = 4096 and NODES_SHIFT = 9 (512).
-    
-  * Changed max setting for NODES_SHIFT from 15 to 9 to accurately
-    reflect the real limit.
+    NR_CPUS = 4096 and NODES_SHIFT = 9 (512).  Changed max setting
+    for NODES_SHIFT from 15 to 9 to accurately reflect the real limit.
+
+  * Introduce a new PER_CPU macro called "EARLY_PER_CPU".  This is
+    used by some per_cpu variables that are initialized and accessed
+    before there are per_cpu areas allocated.
+
+  * Add a flag "arch_provides_topology_pointers" that indicates pointers
+    to topology cpumask_t maps are available.  Otherwise, use the function
+    returning the cpumask_t value.  This is useful if cpumask_t set size
+    is very large to avoid copying data on to/off of the stack.
+
+  * Consolidate node_to_cpumask operations and remove the 256k
+    byte node_to_cpumask_map.  This is done by allocating the
+    node_to_cpumask_map array after the number of possible
+    nodes (nr_node_ids) is known.
+
+  * Restore the nodenumber field in the x86_64 pda.  This field is slightly
+    different than the x86_cpu_to_node_map mainly because it's a static
+    indication of which node the cpu is on while the cpu to node map is a
+    dyanamic mapping that may get reset if the cpu goes offline.  This also
+    simplifies the numa_node_id() macro.
+
+  * Replace usages of MAX_NUMNODES with nr_node_ids in kernel/sched.c,
+    where appropriate.  This saves some allocated space as well as many
+    wasted cycles going through node entries that are non-existent.
 
 For inclusion into sched-devel/latest tree.
 
@@ -38,79 +58,20 @@ Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/Kconfig |   37 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 32 insertions(+), 5 deletions(-)
+v4-folded:
+    Folded in Kconfig changes to increase NR_CPU limit to 4096 and add new
+    config option MAXSMP.
 
---- linux-2.6.x86.for-akpm.orig/arch/x86/Kconfig
-+++ linux-2.6.x86.for-akpm/arch/x86/Kconfig
-@@ -518,20 +518,35 @@ config SWIOTLB
- 	  access 32-bits of memory can be used on systems with more than
- 	  3 GB of memory. If unsure, say Y.
- 
-+config MAXSMP
-+	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
-+	depends on X86_64 && SMP
-+	default n
-+	help
-+	  Configure maximum number of CPUS and NUMA Nodes for this architecture.
-+	  If unsure, say N.
-+
-+if MAXSMP
-+config NR_CPUS
-+	int
-+	default "4096"
-+endif
- 
-+if !MAXSMP
- config NR_CPUS
--	int "Maximum number of CPUs (2-255)"
--	range 2 255
-+	int "Maximum number of CPUs (2-4096)"
-+	range 2 4096
- 	depends on SMP
- 	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
- 	default "8"
- 	help
- 	  This allows you to specify the maximum number of CPUs which this
--	  kernel will support.  The maximum supported value is 255 and the
-+	  kernel will support.  The maximum supported value is 4096 and the
- 	  minimum value which makes sense is 2.
- 
- 	  This is purely to save memory - each supported CPU adds
- 	  approximately eight kilobytes to the kernel image.
-+endif
- 
- config SCHED_SMT
- 	bool "SMT (Hyperthreading) scheduler support"
-@@ -913,13 +928,25 @@ config NUMA_EMU
- 	  into virtual nodes when booted with "numa=fake=N", where N is the
- 	  number of nodes. This is only useful for debugging.
- 
-+if MAXSMP
-+
- config NODES_SHIFT
--	int "Max num nodes shift(1-15)"
--	range 1 15  if X86_64
-+	int
-+	default "9"
-+endif
-+
-+if !MAXSMP
-+config NODES_SHIFT
-+	int "Maximum NUMA Nodes (as a power of 2)"
-+	range 1 9   if X86_64
- 	default "6" if X86_64
- 	default "4" if X86_NUMAQ
- 	default "3"
- 	depends on NEED_MULTIPLE_NODES
-+	help
-+	  Specify the maximum number of NUMA Nodes available on the target
-+	  system.  Increases memory reserved to accomodate various tables.
-+endif
- 
- config HAVE_ARCH_BOOTMEM_NODE
- 	def_bool y
+v3-folded:
+    Folded in follow on "fix" patches to consolidate changes into one place.
+    Includes change to drivers/base/topology.c to fix s390 build error.
+    Includes change to fix preemption warning when numa_node_id is used.
+    checkpatch.pl errors/warnings checked and fixed where possible.
+
+v2: remerged PATCH 2/2 with latest x86.git/latest and sched-devel/latest,
+    rebuilt and retested 4k-akpm2, 4k-defconfig, nonuma, & nosmp configs.
 
 -- 
