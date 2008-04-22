@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763215AbYDVXxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYDVXyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763215AbYDVXxz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 19:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763277AbYDVXxj
+	id S1760254AbYDVXyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 19:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761293AbYDVXyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 19:53:39 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34404
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702AbYDVXxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 19:53:38 -0400
-Message-ID: <480E7A59.6050802@microgate.com>
-Date: Tue, 22 Apr 2008 18:52:57 -0500
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Tue, 22 Apr 2008 19:54:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59227 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933637AbYDVXyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 19:54:06 -0400
+Date: Wed, 23 Apr 2008 02:53:27 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Eric Sandeen <sandeen@sandeen.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xfs: #define out unused parameters
+	of?xfs_bmap_add_free and xfs_btree_read_bufl
+Message-ID: <20080422235327.GF28933@cs181133002.pp.htv.fi>
+References: <20080419142329.GA5339@elte.hu> <200804221950.54827.vda.linux@googlemail.com> <20080422182830.GD28933@cs181133002.pp.htv.fi> <200804222132.38169.vda.linux@googlemail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: khc@pm.waw.pl, jchapman@katalix.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <480CEB7D.8070702@katalix.com>	<m33apdyajf.fsf@maximus.localdomain>	<480E5CB3.2080003@microgate.com> <20080422.150259.205494753.davem@davemloft.net>
-In-Reply-To: <20080422.150259.205494753.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200804222132.38169.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
- > Users say this to strong-hand developers, it's not something you
- > should ever take very seriously.  And even if Linux may simply not be
- > for them, well that's fine too, and implementing something as obscure
- > as HDLC PPP one way or the other is not going to change that.
+On Tue, Apr 22, 2008 at 09:32:38PM +0200, Denys Vlasenko wrote:
+> On Tuesday 22 April 2008 20:28, Adrian Bunk wrote:
+> > > Eh... I meant "no warnings about unused parameters" for fs/xfs/* only,
+> > > not for the entire kernel. I filter out other warnings.
+> > > 
+> > > I want to do it not as an excercise in perfectionism,
+> > > but as means of making sure we do not waste stack
+> > > passing useless parameters, which is important for xfs.
+> > 
+> > That's not really maintainable,
+> 
+> Why? Adding -Wunused -Wunused-parameter in fs/xfs/Makefile:
+> 
+> EXTRA_CFLAGS += -I$(src) -I$(src)/linux-2.6 -funsigned-char
+> #EXTRA_CFLAGS += -Wunused -Wunused-parameter
+> 
+> and making a test build with it uncommented once in a while
+> will reveal a bit of fallout, which is then fixed.
+>...
 
-Certainly not a big deal for Linux, but more
-significant for vendors of HDLC hardware :-)
+The problem isn't in the Makefile, the problem are the ugly #ifdef's in 
+the code.
 
-David Miller wrote:
- > I would have been more than happy if syncppp was retained and fixed
- > properly, instead of being abandoned and duplicated in one fell swoop.
+And for getting the stack problems fixed the effect is anyway by two 
+orders of magnitude too small, so there's no real gain in exchange.
 
-I'd be happy with that also. I was responding to the
-suggestion of merging generic HDLC PPP with the pppd implementation.
-It's been suggested before, but doing so looks messy.
+> vda
 
-James Chapman wrote:
- > Paul Fulghum wrote:
- >> Many customers who choose to use generic HDLC PPP are *dead*
- >> set against the added complexity and (user space)
- >> components of using pppd even though it has more features.
- >
- > Are there technical reasons or is the complexity just a lack of
- > familiarity?
+cu
+Adrian
 
- From what I can tell it was an existing investment in scripts,
-training, tools, naming conventions, etc. Even when
-provided with new tools and scripts that do the same thing (as
-far as I could tell) the response was suprisingly vehement against
-change.
+-- 
 
---
-Paul
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
