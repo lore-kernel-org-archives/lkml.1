@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbYDVQzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbYDVQ7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbYDVQzE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 12:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYDVQyv
+	id S1759659AbYDVQ7H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 12:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYDVQ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 12:54:51 -0400
-Received: from NaN.false.org ([208.75.86.248]:44261 "EHLO nan.false.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755583AbYDVQyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 12:54:50 -0400
-X-Greylist: delayed 1864 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 12:54:50 EDT
-Date: Tue, 22 Apr 2008 12:23:43 -0400
-From: Daniel Jacobowitz <dan@debian.org>
-To: David Daney <ddaney@avtrex.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [Patch 6/6] Ptrace support for HARDWARE_WATCHPOINTS.
-Message-ID: <20080422162343.GA14790@caradoc.them.org>
-Mail-Followup-To: David Daney <ddaney@avtrex.com>,
-	linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-References: <480D2151.2020701@avtrex.com> <480D33EB.30808@avtrex.com>
+	Tue, 22 Apr 2008 12:58:56 -0400
+Received: from xenotime.net ([66.160.160.81]:33874 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754740AbYDVQ6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 12:58:55 -0400
+Date: Tue, 22 Apr 2008 09:58:44 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Sanjeev Aditya Naga <sanjeev.kernel@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: config file part of kernel!
+In-Reply-To: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0804220956390.4897@shark.he.net>
+References: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480D33EB.30808@avtrex.com>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 05:40:11PM -0700, David Daney wrote:
-> +struct mips32_watch_regs {
-> +	unsigned int num_valid;
-> +	unsigned int reg_mask;
-> +	unsigned int irw_mask;
-> +	unsigned long watchlo[8];
-> +	unsigned int watchhi[8];
-> +};
+On Tue, 22 Apr 2008, Sanjeev Aditya Naga wrote:
 
-Please do not use long in new ptrace interfaces.  Use either
-uint32_t or uint64_t as appropriate so that it doesn't depend
-on how the kernel or debugger was built.
+> Hi,
+> 
+> Will it be good, if we make the `config` file (used to
+> build a kernel) part of the built kernel. So that one in
+> need, can extract it from the kernel using some
+> userspace tool!?
+> 
+> During the configuration of kernel, we usually set
+> the required functionality. However, if we delete the
+> sources/config file or loose the config file, but later
+> we wanted to add up some module(s) to the same
+> kernel, it'd be great if we will be able to extract some
+> info from the kernel along with the config params!??
+
+This is already possible.
+
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+
+The former includes the config file in the kernel image.
+The latter one puts it into /proc/config.gz as well.
 
 -- 
-Daniel Jacobowitz
-CodeSourcery
+~Randy
