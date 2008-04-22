@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbYDVPii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbYDVPjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764142AbYDVPii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbYDVPi2
+	id S1764719AbYDVPjK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbYDVPiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:38:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57391 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758096AbYDVPi0 convert rfc822-to-8bit (ORCPT
+	Tue, 22 Apr 2008 11:38:51 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:33597 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756331AbYDVPiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:38:26 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
-Date: Tue, 22 Apr 2008 17:38:19 +0200
-User-Agent: KMail/1.9.9
-Cc: Will Newton <will.newton@gmail.com>,
+	Tue, 22 Apr 2008 11:38:50 -0400
+Date: Tue, 22 Apr 2008 11:38:49 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Will Newton <will.newton@gmail.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, Randy Dunlap <randy.dunlap@oracle.com>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
        linux-arch@vger.kernel.org
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <20080422152122.GF19802@phobos.i.cabal.ca>
-In-Reply-To: <20080422152122.GF19802@phobos.i.cabal.ca>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
+Message-ID: <20080422153849.GH19802@phobos.i.cabal.ca>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <20080422081211.e85989ec.randy.dunlap@oracle.com> <87a5b0800804220816y72a7f4f9gec2111df08a1a57f@mail.gmail.com> <20080422152426.GG19802@phobos.i.cabal.ca> <87a5b0800804220834q4d6daec1x4146d211115ab5c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804221738.19635.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19XG/oviSbnfXcw9HaG2onwJqu9paORrDgctF9
- OUvoVcuHVXS5CG+gYfrkHEsKRtxqwreDJYUUI23pwi6jAJmFpw
- 4BU0IaXX59RY56MxJRsuA==
+In-Reply-To: <87a5b0800804220834q4d6daec1x4146d211115ab5c@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008, Kyle McMartin wrote:
+On Tue, Apr 22, 2008 at 04:34:03PM +0100, Will Newton wrote:
+> On Tue, Apr 22, 2008 at 4:24 PM, Kyle McMartin <kyle@mcmartin.ca> wrote:
+> > On Tue, Apr 22, 2008 at 04:16:17PM +0100, Will Newton wrote:
+> >  > It can be done with Kconfig. Whether it should be or not depends on
+> >  > your point of view, hence RFC. Currently __ARCH_WANT macros is the way
+> >  > syscalls are enabled and disabled across architectures. If there's
+> >  > consensus that it should be done via Kconfig that could certainly be
+> >  > implmented, but that's a different patch.
+> >  >
+> >
+> >  It's currently done in unistd.h for hysterical raisins. All new
+> >  conditional syscalls have been done in Kconfig.
 > 
-> This should (imnsho, at least),
->         1 - Add a cond_syscall for sys_sysfs to sys_ni.c
->         2 - Use a CONFIG_EMBEDDED dependent option that defaults on,
->             possibly depend on BLACKFIN if you really want to.
+> Do you have a syscall in mind that does this in the correct way?
 > 
-> Adding this junk to every arch header is, in my opinion, completely
-> unacceptable just because blackfin wants to be different.
 
-It's not that they want to be different, but rather that I (among others)
-requested that they don't implement obsolete syscalls, so they removed it
-from their syscall table.
+epoll is the most immediate example at hand, since it touches
+fs/compat.c similarly to how you would be touching fs/filesystem.c, and
+touches kernel/sys_ni.c and init/Kconfig in much the same way.
 
-	Arnd <><
+> BTW, don't blame the blackfin guys for this, I'm thinking about future
+> architectures that may be added rather than any existing ones. ;-)
+> 
+
+Meh. :)
+
+cheers, Kyle
