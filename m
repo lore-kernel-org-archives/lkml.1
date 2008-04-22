@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbYDVTvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYDVTwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932137AbYDVTvs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764967AbYDVTvR
+	id S1756266AbYDVTwP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765176AbYDVTvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:51:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35535 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764822AbYDVTvP (ORCPT
+	Tue, 22 Apr 2008 15:51:45 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36742 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765156AbYDVTvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:51:15 -0400
-Date: Tue, 22 Apr 2008 12:50:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de, peterz@infradead.org, sam@ravnborg.org
-Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function
- calls
-In-Reply-To: <20080422192601.GB12588@elte.hu>
-Message-ID: <alpine.LFD.1.10.0804221244350.2779@woody.linux-foundation.org>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-3-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804221157220.2779@woody.linux-foundation.org> <20080422191213.GA6370@elte.hu> <alpine.LFD.1.10.0804221218410.2779@woody.linux-foundation.org>
- <20080422192601.GB12588@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 15:51:44 -0400
+Date: Tue, 22 Apr 2008 14:51:42 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       containers@lists.linux-foundation.org, nick@nick-andrew.net,
+       Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object
+	creation with a specified id)
+Message-ID: <20080422195142.GA22145@sergelap.austin.ibm.com>
+References: <20080418054459.891481000@bull.net> <20080422193612.GA15835@martell.zuzino.mipt.ru> <1208890580.17117.14.camel@nimitz.home.sr71.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208890580.17117.14.camel@nimitz.home.sr71.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Apr 2008, Ingo Molnar wrote:
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Tue, 2008-04-22 at 23:36 +0400, Alexey Dobriyan wrote:
+> > On Fri, Apr 18, 2008 at 07:44:59AM +0200, Nadia.Derbey@bull.net wrote:
+> > >    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
+> > >      next object to be created will have an id set to XX
+> > >    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
+> > >      next object to be created will have its ids set to XX0, ... X<n-1>
+> > >      This is particularly useful for processes that may have several ids if
+> > >      they belong to nested namespaces.
+> > 
+> > Can we answer the following questions before merging this patch:
+> > 
+> > a) should mainline kernel have checkpoint/restart feature at all
+> > b) if yes, should it be done from kernel- or userspace?
+> > 
+> > Until agreement will be "yes/from userspace" such patches don't make
+> > sense in mainline.
 > 
-> ok. In which case the reschedule vector could be consolidated into that 
-> as well (it's just a special single-CPU call). Then there would be no 
-> new vector allocations needed at all, just the renaming of 
-> RESCHEDULE_VECTOR to something more generic.
+> What do you mean by "from kernel" or "from userspace"?  Userspace has to
+> be involved somewhere, right?  It at least need to open() the checkpoint
+> file and pass it into the kernel.  		
 
-Yes.
+Well let's start by answering a) :
 
-Btw, don't get me wrong - I'm not against multiple vectors per se. I just 
-wonder if there is any real reason for the code duplication. 
+	I vote yes  :-)
 
-And there certainly *can* be tons of valid reasons for it. For example, 
-some of the LAPIC can only have something like two pending interrupts per 
-vector, and after that IPI's would get lost.
+As for b), good question.  Except as Dave points out I think it's pretty
+unlikely that we'll end up with "sys_checkpoint(checkpoint_dirnam)"
+and "sys_restart(checkpointed_dirnam)".  Anything more user-space
+driven will likely require userspace to set ids on resources, right?
 
-However, since the queuing is actually done with the data structures, I 
-don't think it matters for the IPI's - they don't need any hardware 
-queuing at all, afaik, since even if two IPI's would be merged into one 
-(due to lack of hw queueing) the IPI handling code still has its list of 
-events, so it doesn't matter.
+But yes, we have to completely answer b) before this patch goes in, no
+doubt about that.
 
-And performance can be a valid reason ("too expensive to check the shared 
-queue if we only have per-cpu events"), although I$ issues can cause that 
-argument to go both ways.
+Alexey, are you advocating for a completely kernel-driven approach, or
+just making sure we come to a decision?
 
-I was also wondering whether there are deadlock issues (ie one type of IPI 
-has to complete even if a lock is held for the other type). 
-
-So I don't dislike the patch per se, I just wanted to understand _why_ the 
-IPI's wanted separate vectors.
-
-		Linus
+thanks,
+-serge
