@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYDVLVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763126AbYDVLWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYDVLVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 07:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDVLVg
+	id S1763126AbYDVLWL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 07:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYDVLVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 07:21:36 -0400
-Received: from hu-out-0506.google.com ([72.14.214.234]:51575 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751606AbYDVLVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 07:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
-        b=qnxw3k3Hbk/9g1qkTEYLmp6RSNXc7Zur8ifknbHQxV3XxSu+LbNhekccq62ee9ojSHyBv0ZN0Gyloo+osQmPo6vikvSYwqWYOPjgB7BsinF7WPLDgeXDhw3feF64MNlRdzF7LMO7YHg5ypsRdbWprmshDimXydlsXrz9KXzvcWA=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH] xfs: #define out unused parameters of xfs_bmap_add_free and xfs_btree_read_bufl
-Date: Tue, 22 Apr 2008 13:20:54 +0200
-User-Agent: KMail/1.8.2
-Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080419142329.GA5339@elte.hu> <200804221142.00914.vda.linux@googlemail.com> <200804221216.25905.vda.linux@googlemail.com>
-In-Reply-To: <200804221216.25905.vda.linux@googlemail.com>
+	Tue, 22 Apr 2008 07:21:55 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45753 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761940AbYDVLVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 07:21:54 -0400
+Date: Tue, 22 Apr 2008 12:21:52 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Add a basic debugging framework for memory initialisation
+Message-ID: <20080422112151.GB30798@csn.ul.ie>
+References: <20080417000624.18399.35041.sendpatchset@skynet.skynet.ie> <20080417000644.18399.66175.sendpatchset@skynet.skynet.ie> <20080421151405.GI5474@elte.hu>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_WocDI9o7ShYH5Qd"
-Message-Id: <200804221320.54147.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080421151405.GI5474@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_WocDI9o7ShYH5Qd
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On (21/04/08 17:14), Ingo Molnar didst pronounce:
+> 
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > +config DEBUG_MEMORY_INIT
+> > +	bool "Debug memory initialisation"
+> > +	depends on DEBUG_KERNEL
+> > +	help
+> > +	  Enable this to turn on debug checks during memory initialisation. By
+> > +	  default, sanity checks will be made on the memory model and
+> > +	  information provided by the architecture. What level of checking
+> > +	  made and verbosity during boot can be set with the
+> > +	  mminit_debug_level= command-line option.
+> > +
+> > +	  If unsure, say N
+> 
+> should be "default y" - and perhaps only disable-able on 
+> CONFIG_EMBEDDED.
 
-Hi David,
+Ok, that would be something like the following?
 
-xfs_bmap_add_free and xfs_btree_read_bufl functions
-use some of their parameters only in some cases
-(e.g. if DEBUG is defined, or on non-Linux OS :)
+       bool "Debug memory initialisation" if DEBUG_KERNEL && EMBEDDED
+       depends on DEBUG_KERNEL
+       default !EMBEDDED
 
-This patch removes these parameters using #define hack
-which makes them "disappear" without the need of uglifying
-every callsite with #ifdefs.
+This will slow up boot slightly on debug kernels as the additional checks
+are made. It'll remain to be seen as to whether this is a problem for people
+or not. I doubt it'll be noticed.
 
-Code size difference on 32-bit x86:
- 393457    2904    2952  399313   617d1 linux-2.6-xfs6-TEST/fs/xfs/xfs.o
- 393441    2904    2952  399297   617c1 linux-2.6-xfs7-TEST/fs/xfs/xfs.o
+> We generally want such bugs to pop up as soon as 
+> possible, and the sanity checks should only go away if someone 
+> specifically aims for lowest system footprint.
+> 
 
-Compile tested only.
+Seems fair and it's the second time this has been suggested (off-list reviewer
+again). The only potential gotcha is if a sanity check is introduced that is
+itself broken. It should be very obvious when this type of bug occurs though.
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+> the default loglevel for debug printouts might deserve another debug 
+> option - but the core checks should always be included, and _errors_ 
+> should always be printed out.
+> 
 
---Boundary-00=_WocDI9o7ShYH5Qd
-Content-Type: text/x-diff;
-  charset="koi8-r";
-  name="xfs5-xfs_bmap_add_free_xfs_btree_read_bufl-remove_unused_params.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="xfs5-xfs_bmap_add_free_xfs_btree_read_bufl-remove_unused_params.patch"
+I'll replace mminit_debug_level with mminit_loglevel that determines whether
+information is printed at KERN_DEBUG or not. This matches what other similar
+debug-frameworks are doing. I'll make sure errors always get printed.
 
-diff -urpN linux-2.6-xfs6/fs/xfs/xfs_bmap.h linux-2.6-xfs7/fs/xfs/xfs_bmap.h
---- linux-2.6-xfs6/fs/xfs/xfs_bmap.h	2008-04-22 04:06:43.000000000 +0200
-+++ linux-2.6-xfs7/fs/xfs/xfs_bmap.h	2008-04-22 13:10:36.000000000 +0200
-@@ -170,6 +170,10 @@ xfs_bmap_add_attrfork(
-  * Add the extent to the list of extents to be free at transaction end.
-  * The list is maintained sorted (by block number).
-  */
-+#ifndef DEBUG
-+/* "mp" is used only for debugging */
-+#define xfs_bmap_add_free(bno, len, flist, mp) xfs_bmap_add_free(bno, len, flist)
-+#endif
- void
- xfs_bmap_add_free(
- 	xfs_fsblock_t		bno,		/* fs block number of extent */
-diff -urpN linux-2.6-xfs6/fs/xfs/xfs_btree.h linux-2.6-xfs7/fs/xfs/xfs_btree.h
---- linux-2.6-xfs6/fs/xfs/xfs_btree.h	2008-04-22 04:06:43.000000000 +0200
-+++ linux-2.6-xfs7/fs/xfs/xfs_btree.h	2008-04-22 13:10:36.000000000 +0200
-@@ -363,6 +363,9 @@ xfs_btree_offsets(
-  * Get a buffer for the block, return it read in.
-  * Long-form addressing.
-  */
-+/* In Linux, "refval" is not used */
-+#define xfs_btree_read_bufl(mp, tp, fsbno, lock, bpp, refval) \
-+	xfs_btree_read_bufl(mp, tp, fsbno, lock, bpp)
- int					/* error */
- xfs_btree_read_bufl(
- 	struct xfs_mount	*mp,	/* file system mount point */
+Thanks
 
---Boundary-00=_WocDI9o7ShYH5Qd--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
