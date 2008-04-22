@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYDVSJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYDVSK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbYDVSJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 14:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbYDVSJT
+	id S1759018AbYDVSK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 14:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbYDVSKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 14:09:19 -0400
-Received: from sandeen.net ([209.173.210.139]:31639 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbYDVSJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 14:09:19 -0400
-Message-ID: <480E29CD.1010203@sandeen.net>
-Date: Tue, 22 Apr 2008 13:09:17 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Tue, 22 Apr 2008 14:10:48 -0400
+Received: from gv-out-0910.google.com ([216.239.58.189]:23734 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYDVSKr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 14:10:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=clDm6vT+kmKINl2+MJAlcKCR1wRglZ9Ji/BQx4nGkLzOZQ2vdVvmSBJZzZrKBn2TpQ4GUQwJrTESOsADZBRFvmBMga3+np+S78/UhIwsHN481eZTSqr7FhMbjsqT7yWSGZpDmemVtMKDQIfuOt2c7Btza9mdchn50HcS0DGZaYU=
+Message-ID: <e9c3a7c20804221110y1968dfb3q27b86c9a7480ad1@mail.gmail.com>
+Date: Tue, 22 Apr 2008 11:10:41 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "device-mapper development" <dm-devel@redhat.com>
+Subject: Re: [dm-devel] Re: [RFC][PATCH 0/10] I/O context inheritance
+Cc: "Hirokazu Takahashi" <taka@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       agk@sourceware.org
+In-Reply-To: <20080422145418.GL12774@kernel.dk>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix  max-stack calculators to skip canary
-References: <480D5F27.1030101@redhat.com> <20080422084404.GA2388@elte.hu>	 <480E15DC.5040301@sandeen.net>  <480E1DED.9040104@sandeen.net> <1208885594.8636.23.camel@localhost>
-In-Reply-To: <1208885594.8636.23.camel@localhost>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080422.224935.00673711.taka@valinux.co.jp>
+	 <20080422.230318.112756414.taka@valinux.co.jp>
+	 <20080422145418.GL12774@kernel.dk>
+X-Google-Sender-Auth: a69a274854575302
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
+On Tue, Apr 22, 2008 at 7:54 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Tue, Apr 22 2008, Hirokazu Takahashi wrote:
+>  > Hi,
+>  >
+>  > Sorry, these patches are for linux-2.6.25.
+>  >
+>  > > This series of patches make the block I/O layer and the I/O schedulers
+>  > > be able to determine the right io_context of every I/O.
+>  > >
+>  > > The current implementation of the block I/O layer and the I/O schedulers
+>  > > assume that the current process is the one which issued the given I/O,
+>  > > then use the io_context of this process to control the I/O.
+>  > > But this assumption isn't quite right because several kernel threads
+>  > > will handle I/O requests on behalf of the processes which originated them.
+>  > > This often happens when you want to use device mapper modules.
+>  > >
+>  > > The patches make every bio has a pointer to an io_context, which will
+>  > > be set when it is allocated or cloned. So it makes it possible to find
+>  > > the right io_context from any bio at any place.
+>  > >
+>  > > I'm waiting for your comments.
+>
+>  Can you give a brief summary of what you need this stuff for?
+>
 
-> Wouldn't it be better to have exactly the same code?
-> How about using a statement expression macro?
-> 
-> #define DEBUG_STACK_FREE(process) \
-> ({ \
-> 	unsigned long *n = end_of_stack(process); \
-> 	do { 	/* Skip over canary */\
-> 		n++; \
-> 	} while (!*n); \
-> 	(unsigned long)n - (unsigned long)end_of_stack(process); \
-> })
-> 
+I am not sure if this the intended application, but I have been
+looking at supporting ionice over software-raid and this series seems
+like a necessary first step.
 
-That'd probably be good although I don't think we like macros anymore :)
-
--Eric
+--
+Dan
