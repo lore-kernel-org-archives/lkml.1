@@ -1,83 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbYDVHHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbYDVHUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760235AbYDVHHz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 03:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbYDVHHK
+	id S1758536AbYDVHUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 03:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYDVHUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 03:07:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51946 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756694AbYDVHHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 03:07:08 -0400
-Date: Tue, 22 Apr 2008 09:06:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       Junio C Hamano <junio@pobox.com>
-Subject: Re: sched tree bisectability
-Message-ID: <20080422070644.GA7068@elte.hu>
-References: <20080421.203212.262634448.davem@davemloft.net>
+	Tue, 22 Apr 2008 03:20:30 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56740
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752814AbYDVHU3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 03:20:29 -0400
+Date: Tue, 22 Apr 2008 09:20:26 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080422072026.GM12709@duo.random>
+References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random> <20080409185500.GT11364@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080421.203212.262634448.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080409185500.GT11364@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a followup of the locking of the mmu-notifier methods against
+the secondary-mmu page fault, each driver can implement differently
+but this is to show an example of what I planned for KVM, others may
+follow closely if they find this useful. I post this as pseudocode to
+hide 99% of kvm internal complexities and to focus only on the
+locking. The KVM locking scheme should be something on these lines:
 
-* David Miller <davem@davemloft.net> wrote:
+    invalidate_range_start {
+	spin_lock(&kvm->mmu_lock);
 
-> While trying to bisect a regression added by the sched tree merges 
-> today, I found the following gem that broke compilation mid-bisect:
-[...]
+	kvm->invalidate_range_count++;
+	rmap-invalidate of sptes in range
 
-> rt_bandwidth does not have a rt_runtime_lock member, so the compile 
-> fails.  The very next changeset adds it:
+	spin_unlock(&kvm->mmu_lock)
+    }
 
-sorry, i broke that bisection point and i should have noticed this and 
-should have backmerged that chunk.
+    invalidate_range_end {
+	spin_lock(&kvm->mmu_lock);
 
-i've just added some scripting to avoid this in the future - the 
-scheduler tree gets built on every commit point before it's pushed out. 
-I just ran it through the outstanding scheduler patches (there's a 
-hundred more pending) and they all pass this test.
+	kvm->invalidate_range_count--;
 
-I'm wondering whether there are any other maintenance practices others 
-use to keep things like this slip through.
+	spin_unlock(&kvm->mmu_lock)
+    }
 
-It could be caught on the testing side via a new git-checkout feature:
+   invalidate_page {
+	spin_lock(&kvm->mmu_lock);
 
-   git-checkout --random base..head
+	write_seqlock()
+	rmap-invalidate of sptes of page
+	write_sequnlock()
 
-which would pick a random commit from a git tree (from the range of 
-commits given), which could be combined with make randconfig? This could 
-be used in pre-push testing.
+	spin_unlock(&kvm->mmu_lock)
+   }
 
-Another thing we might think about is when neither care from the 
-maintainer nor any testing caught an unusable commit - then we could 
-perhaps, as a last-ditch effort teach git-bisect to avoid known "100% 
-unusable" commit points.
+   kvm_page_fault {
+      seq = read_seqlock()
+      get_user_pages() (aka gfn_to_pfn() in kvm terms)
 
-Something like a (append-only, constantly growing, but not too huge) 
-repository of known-unusable commits via a special exceptions file like 
-.gitignore - say .git/git-bisect-unusable. [Plus perhaps a git-bisect 
---ignore-bad option so that if someone wants to run a pristine bisection 
-it can be done too.]
+      spin_lock(&kvm->mmu_lock)
+      if (seq_trylock(seq) || kvm->invalidate_range_count)
+      	 goto out; /* reply page fault */
+      map sptes and build rmap
+ out:
+      spin_unlock(&kvm->mmu_lock)
+   }
 
-The semantics would be to pass along this information across a pull as 
-well, so that the known-unusable commit points would.
+This will allow to remove the page pinning from KVM. I'd appreciate if
+you Robin and Christoph can have a second look and pinpoint any
+potential issue in my plan.
 
-The downside of such an approach would be that the file would grow 
-indefinitely, and would never shrink. That does not feel too good.
+invalidate_page as you can notice, allows to decrease the fixed cost
+overhead from all VM code that works with a single page and where
+freeing the page _after_ calling invalidate_page is zero runtime/tlb
+cost. We need invalidate_range_begin/end because when we work on
+multiple pages, we can reduce cpu utilization and avoid many tlb
+flushes by holding off the kvm page fault when we work on the range.
 
-	Ingo
+invalidate_page also allows to decrease the window where the kvm page
+fault could possibly need to be replied (the ptep_clear_flush <->
+invalidate_page window is shorter than a
+invalidate_range_begin(PAGE_SIZE) <->
+invalidate_range_end(PAGE_SIZE)).
+
+So even if only as a microoptimization it worth it to decrease the
+impact on the common VM code. The cost of having both a seqlock and a
+range_count is irrlevant in kvm terms as they'll be in the same
+cacheline and checked at the same time by the page fault and it won't
+require any additional blocking (or writing) lock.
+
+Note that the kvm page fault can't happen unless the cpu switches to
+guest mode, and it can't switch to guest mode if we're in the
+begin/end critical section, so in theory I could loop inside the page
+fault too without risking deadlocking, but replying it by restarting
+guest mode sounds nicer in sigkill/scheduling terms.
+
+Soon I'll release a new mmu notifier patchset with patch 1 being the
+mmu-notifier-core self-included and ready to go in -mm and mainline in
+time for 2.6.26. Then I'll be glad to help merging any further patch
+in the patchset to allow methods to sleep so XPMEM can run on mainline
+2.6.27 the same way GRU/KVM/Quadrics will run fine on 2.6.26, in a
+fully backwards compatible way with 2.6.26 (and of course it doesn't
+really need to be backwards compatible because this is a kernel
+internal API only, ask Greg etc... ;). But that will likely require a
+new config option to avoid hurting AIM performance in fork because the
+anon_vma critical sections are so short in the fast path.
