@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbYDVR0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYDVR1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762948AbYDVR0g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 13:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbYDVR0M
+	id S1756783AbYDVR1f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 13:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbYDVR1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 13:26:12 -0400
-Received: from sandeen.net ([209.173.210.139]:31388 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762792AbYDVR0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 13:26:07 -0400
-Message-ID: <480E1FAE.20509@sandeen.net>
-Date: Tue, 22 Apr 2008 12:26:06 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Denys Vlasenko <vda.linux@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xfs: #define out unused parameters of	xfs_bmap_add_free
- and xfs_btree_read_bufl
-References: <20080419142329.GA5339@elte.hu> <200804221320.54147.vda.linux@googlemail.com> <20080422142807.GD16895@cs181133002.pp.htv.fi> <200804221817.03945.vda.linux@googlemail.com> <20080422172156.GB28933@cs181133002.pp.htv.fi>
-In-Reply-To: <20080422172156.GB28933@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 22 Apr 2008 13:27:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36475 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756566AbYDVR1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 13:27:21 -0400
+Date: Tue, 22 Apr 2008 20:27:19 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Pete Zaitcev <zaitcev@redhat.com>, linux-usb@vger.kernel.org,
+       gregkh@suse.de, clameter@sgi.com
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+In-Reply-To: <20080422134034.GF7311@elte.hu>
+Message-ID: <Pine.LNX.4.64.0804222022530.17337@sbz-30.cs.Helsinki.FI>
+References: <200804212310.41729.elendil@planet.nl> <20080422134034.GF7311@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Apr 22, 2008 at 06:17:03PM +0200, Denys Vlasenko wrote:
-
-
->>> Elimination of completely unused parameters makes sense, but IMHO using 
->>> such #define hacks for minuscule code size and stack usage advantages is 
->>> not worth it.
->> In busybox this trick is used extensively.
+On Tue, 22 Apr 2008, Ingo Molnar wrote:
+> * Frans Pop <elendil@planet.nl> wrote:
 > 
-> Busybox does not have more than one million lines changed in
-> one release.
+> > I got the following warning while running sched-devel/latest.
+> > 
+> > I was not doing any tracing at that point (for the glibc compilation 
+> > issue). I suspect it was while I was using a KDE application (amarok) 
+> > as the desktop froze for a few seconds at one point.
 > 
-> In the Linux kernel maintainability is much more important than in 
-> smaller projects.
+> i think this message is harmless to system stability.
 > 
->> I don't know how to eliminate these unused parameters with less
->> intervention, but I also don't want to leave it unfixed.
->>
->> I want to eventually reach the state with no warnings
->> about unused parameters.
+> Cc:-ing USB folks as the kmem_cache_destroy() comes from 
+> drivers/usb/mon/mon_text.c.
 > 
-> The standard kernel pattern in using empty static inline functions (that 
-> allow type checking).
+> Context: SLUB recently started warning about caches that get destroyed 
+> with still outstanding allocations.
 > 
-> And I'm not sure whether the number of functions you'd have to change 
-> for reaching your goal has four, five or six digits.
+> Pekka, it might make sense to turn this SLUB warning into something more 
+> specific? It does seem to trigger in practice.
 
-It would be a huge undertaking.
+Oh absolutely. Something like this?
 
-Just building xfs w/ the warning in place exposes tons of unused
-parameter warnings from outside xfs as well.
+[PATCH] slub: improve kmem_cache_destroy() error message
 
-But, if it was deemed important enough, you could go annotate them as
-unused, I suppose, and hack away at it...  Does marking as unused just
-shut up the warning or does it let gcc do further optimizations?
+As pointed out by Ingo, the SLUB warning of calling kmem_cache_destroy() 
+with cache that still has objects triggers in practice. So turn this 
+WARN_ON() into a nice SLUB specific error message to avoid people 
+confusing it to a SLUB bug.
 
--Eric
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 7f8aaa2..c372e88 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2426,8 +2426,11 @@ void kmem_cache_destroy(struct kmem_cache *s)
+ 	if (!s->refcount) {
+ 		list_del(&s->list);
+ 		up_write(&slub_lock);
+-		if (kmem_cache_close(s))
+-			WARN_ON(1);
++		if (kmem_cache_close(s)) {
++			printk(KERN_ERR "SLUB %s: %s called for cache that "
++				"still has objects.\n", s->name, __func__);
++			dump_stack();
++		}
+ 		sysfs_slab_remove(s);
+ 	} else
+ 		up_write(&slub_lock);
