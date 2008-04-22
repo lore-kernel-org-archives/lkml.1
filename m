@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbYDVNKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763604AbYDVNKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763439AbYDVNKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763265AbYDVNJk
+	id S1763604AbYDVNKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763465AbYDVNKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:09:40 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48349 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763229AbYDVNJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:09:37 -0400
-Date: Tue, 22 Apr 2008 15:09:35 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] HID patches for 2.6.26 merge window
-Message-ID: <Pine.LNX.4.64.0804221159580.12972@jikos.suse.cz>
+	Tue, 22 Apr 2008 09:10:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:18189 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760307AbYDVNKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:10:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=im5fp9lhSOfK2qNGCjNWZUs6UbIHOXs8xLpuwRB4SiQxvu7l6c7xZUPOhn23soPIcvUDHcUCr9kt4PX+9nErHrpWL32+KDi/5YCEoCJRfUO5r6BPgxWjoEFylENRIajkiS9SSUySL1Jooafe0JeRMnR56rXAdKL7Xh+Q5uoDxgc=
+Message-ID: <480DE3B3.6050702@gmail.com>
+Date: Tue, 22 Apr 2008 22:10:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       oliver@neukum.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       zaitcev@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH 1/2] klist: implement KLIST_INIT() and DEFINE_KLIST()
+References: <480DB6A4.20101@gmail.com> <1208869049.7115.254.camel@twins>	 <480DE215.2070803@gmail.com> <1208869591.7115.263.camel@twins>
+In-Reply-To: <1208869591.7115.263.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Peter Zijlstra wrote:
+>> These locks don't nest so being in the same class should be okay and I 
+>> was following what (at least some of) other __SPIN_LOCK_UNLOCKED users 
+>> are doing.  If putting these locks into separate classes is the RTTD, sure.
+> 
+> Ah, they'll actually be in seprate classes all of the same name. So I
+> think it is cleaner to cause them to have separate names too.
+> 
+> see look_up_lock_class() in kernel/lockdep.c:
+> 
+>         /*
+>          * Static locks do not have their class-keys yet - for them the key
+>          * is the lock object itself:
+>          */
+>         if (unlikely(!lock->key))
+>                 lock->key = (void *)lock;
 
-could you please pull from 'for-linus' branch of
+Ah.. I'll put change it to name.  Thanks.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
-
-to receive patches for HID code that are intended for 2.6.26 merge window.
-They have been in -mm and linux-next for some time.
-
- drivers/hid/hid-core.c          |   19 ++-
- drivers/hid/hid-debug.c         |    2 +-
- drivers/hid/hid-input-quirks.c  |   24 +++-
- drivers/hid/usbhid/Kconfig      |   12 ++-
- drivers/hid/usbhid/Makefile     |    3 +
- drivers/hid/usbhid/hid-core.c   |   69 ++++++----
- drivers/hid/usbhid/hid-ff.c     |    3 +
- drivers/hid/usbhid/hid-lg2ff.c  |  114 ++++++++++++++++
- drivers/hid/usbhid/hid-quirks.c |   85 ++++++++----
- drivers/hid/usbhid/hiddev.c     |  286 ++++++++++++++++++++-------------------
- drivers/hid/usbhid/usbhid.h     |    3 +-
- include/linux/Kbuild            |    2 +
- include/linux/hid.h             |   17 ++-
- include/linux/hidraw.h          |    1 +
- 14 files changed, 431 insertions(+), 209 deletions(-)
-
-Adrian Bunk (1):
-      HID: make hid_input_field and usbhid_modify_dquirk static
-
-Anssi Hannula (2):
-      HID: only dump report traffic with debug level 2
-      HID: force feedback driver for Logitech Rumblepad 2
-
-Jean Delvare (1):
-      HID: fix build failure in hiddev_ioctl with gcc 3.2
-
-Jim Duchek (1):
-      HID: quirk for MS Wireless Desktop Receiver (model 1028)
-
-Jiri Kosina (7):
-      HID: Sunplus Wireless Desktop needs report descriptor fixup
-      HID: fix misplaced rdesc quirk
-      HID: pass numbered reports properly to hidraw
-      HID: Logitech diNovo Mini pad support
-      HID: ThrustMaster FF driver is no longer experimental
-      HID: WiseGroup 866 Dual Joypad needs output reports quirk
-      HID: remove 60x GTCO devices from blacklist
-
-Jiri Slaby (3):
-      HID: fix sparse warnings
-      HID: make function from dbg_hid
-      HID: move wait from hid to usbhid
-
-Mike Frysinger (1):
-      HID: export headers properly
-
-Oliver Neukum (1):
-      HID: fix race between open() and disconnect() in usbhid
-
-Pekka Sarnila (1):
-      HID: fixup fullspeed interval on highspeed Afatech DVB-T IR kbd
-
-Pete Zaitcev (1):
-      HID: patch to add NOGET for DMI/Acomdata
-
-Robert Schedel (1):
-      HID: Suppress hidinput for Samsung IR control
-
+-- 
+tejun
