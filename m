@@ -1,81 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYDVHyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYDVH53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759181AbYDVHyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 03:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYDVHyK
+	id S1757628AbYDVH53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 03:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbYDVH5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 03:54:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40368 "EHLO mx2.mail.elte.hu"
+	Tue, 22 Apr 2008 03:57:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26294 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435AbYDVHyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 03:54:09 -0400
-Date: Tue, 22 Apr 2008 09:53:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x7a
-Message-ID: <20080422075357.GA15651@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752958AbYDVH5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 03:57:06 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: npiggin@suse.de, torvalds@linux-foundation.org
+Subject: [PATCH 0/11] Generic smp_call_function() and friends
+Date: Tue, 22 Apr 2008 09:57:26 +0200
+Message-Id: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.5.1.57.g5909c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-hi Len,
+While working on the more scalable and faster
+smp_call_function_single(), the amount of arch duplicated code in there
+botherered me. So I started adding a generic kernel/smp.c helper that
+the archs could use instead.
 
-randconfig boot testing found this new debug warning message in the 
-syslog:
+Arch code exports two helper functions:
 
-[   78.736920] Calling initcall 0xffffffff814792c5: powernowk8_init+0x0/0x9d()
-[   78.744921] powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ processors (1 cpu cores) (version 2.20.00)
-[   78.752921] powernow-k8: BIOS error - no PSB or ACPI _PSS objects
-[   78.756922] initcall 0xffffffff814792c5: powernowk8_init+0x0/0x9d() returned -19.
-[   78.764922] initcall 0xffffffff814792c5 ran for 11 msecs: powernowk8_init+0x0/0x9d()
-[   78.772923] Calling initcall 0xffffffff820ed639: acpi_cpufreq_init+0x0/0x94()
-[   78.780923] sysdev: class cpu: driver (ffffffff81f96da0) has already been registered to a class, something is wrong, but will forge on!
-[   78.784923] ------------[ cut here ]------------
-[   78.788924] WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x7a/0x12b()
-[   78.792924] Modules linked in:
-[   78.796924] Pid: 1, comm: swapper Not tainted 2.6.25-sched-devel.git-x86-latest.git #4
-[   78.800924] 
-[   78.800924] Call Trace:
-[   78.804925]  [<ffffffff80259cc2>] warn_on_slowpath+0x5d/0x70
-[   78.808925]  [<ffffffff8025ad26>] ? printk+0x6c/0x6e
-[   78.812925]  [<ffffffff80279ed9>] ? trace_hardirqs_off+0xd/0xf
-[   78.816925]  [<ffffffff8148135a>] ? _spin_unlock_irqrestore+0x4c/0x5c
-[   78.820926]  [<ffffffff8027b29f>] ? trace_hardirqs_on+0xd/0xf
-[   78.824926]  [<ffffffff802ad2ea>] ? time_hardirqs_on+0x21/0x26
-[   78.828926]  [<ffffffff808085f9>] sysdev_driver_register+0x7a/0x12b
-[   78.832926]  [<ffffffff80f6c5f1>] cpufreq_register_driver+0xc7/0x1a3
-[   78.836927]  [<ffffffff820ed6cb>] acpi_cpufreq_init+0x92/0x94
-[   78.840927]  [<ffffffff820e39f3>] kernel_init+0x180/0x302
-[   78.844927]  [<ffffffff81480a0e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-[   78.848927]  [<ffffffff8027b267>] ? trace_hardirqs_on_caller+0x117/0x142
-[   78.852928]  [<ffffffff80221768>] child_rip+0xa/0x12
-[   78.856928]  [<ffffffff80220cfc>] ? restore_args+0x0/0x30
-[   78.860928]  [<ffffffff820e3873>] ? kernel_init+0x0/0x302
-[   78.864928]  [<ffffffff8022175e>] ? child_rip+0x0/0x12
-[   78.868929] 
-[   78.868929] ---[ end trace e4117b3214f66ad9 ]---
-[   78.872929] initcall 0xffffffff820ed639: acpi_cpufreq_init+0x0/0x94() returned -19.
-[   78.880929] initcall 0xffffffff820ed639 ran for 87 msecs: acpi_cpufreq_init+0x0/0x94()
-[   78.888930] Calling initcall 0xffffffff820ed6cd: centrino_init+0x0/0x44()
-[   78.896930] initcall 0xffffffff820ed6cd: centrino_init+0x0/0x44() returned -19.
+arch_send_call_function_single_ipi(cpu)
+	Send call function single ipi to given cpu
+arch_send_call_function_ipi(cpumask)
+	Send call function ipi to cpus in cpumask
 
-full log and config at:
+and then use the generic ipi interrupt helpers to execute the code. I
+converted most of the archs capable of SMP, I think only sparc and
+sparc64 are still missing. Archs set CONFIG_GENERIC_SMP_HELPERS if they
+wish to use the generic helpers for this.
 
-  http://redhat.com/~mingo/misc/log-Tue_Apr_22_09_33_16_CEST_2008.bad
-  http://redhat.com/~mingo/misc/config-Tue_Apr_22_09_33_16_CEST_2008.bad
+The end result is that we have unified code for handling ipi for
+function calls. Even with adding special handling for the single cpu
+function call, the diffstat is pretty nice (see below.
 
-	Ingo
+There are a couple of changes that affect all archs, and changes that
+affect some archs:
+
+- smp_call_function() and friends used to wait for all other CPUs to see
+  the individual structure before returning, even if 'wait' wasn't set.
+  Not sure what the reasoning behind this was, the new code does not
+  wait for other CPUs to start up before returning. If 'wait' is 1,
+  it'll wait for completion as before of course. This affects all archs.
+  It's easy enough to add if there's a good reason, it'll slow it down a
+  little and add an atomic_t to the call_single_data structure.
+
+- A few archs had timeout code, most did not. I removed the timeout
+  code, we can add it back if requested.
+
+- The ipi_lock is a little muddy, which may or may not break cpu
+  onlining.
+
+In general the new code should be easier to maintain, and it is much
+faster than before. The code works fine on x86, x86-64, ia64, and
+powerpc. Other archs have been compiled whenever possible, some have
+not. Each arch patch should contain a note saying what the status of it
+is.
+
+ arch/alpha/Kconfig                         |    5 
+ arch/alpha/kernel/core_marvel.c            |    6 
+ arch/alpha/kernel/smp.c                    |  170 ---------
+ arch/arm/Kconfig                           |    5 
+ arch/arm/kernel/smp.c                      |  148 --------
+ arch/ia64/Kconfig                          |    5 
+ arch/ia64/kernel/smp.c                     |  239 -------------
+ arch/m32r/Kconfig                          |    5 
+ arch/m32r/kernel/smp.c                     |  128 -------
+ arch/m32r/kernel/traps.c                   |    3 
+ arch/mips/Kconfig                          |    5 
+ arch/mips/kernel/smp-mt.c                  |   27 +
+ arch/mips/kernel/smp.c                     |  133 -------
+ arch/mips/kernel/smtc.c                    |    7 
+ arch/mips/sibyte/bcm1480/smp.c             |    3 
+ arch/mips/sibyte/sb1250/smp.c              |    2 
+ arch/parisc/Kconfig                        |    5 
+ arch/parisc/kernel/smp.c                   |  134 +------
+ arch/powerpc/Kconfig                       |    5 
+ arch/powerpc/kernel/smp.c                  |  220 ------------
+ arch/powerpc/platforms/cell/interrupt.c    |    1 
+ arch/powerpc/platforms/ps3/smp.c           |    7 
+ arch/powerpc/platforms/pseries/xics.c      |    6 
+ arch/powerpc/sysdev/mpic.c                 |    2 
+ arch/s390/Kconfig                          |    5 
+ arch/s390/kernel/smp.c                     |  160 ---------
+ arch/sh/Kconfig                            |    5 
+ arch/sh/kernel/smp.c                       |   48 --
+ arch/sparc64/kernel/sparc64_ksyms.c        |    1 
+ arch/x86/Kconfig                           |    5 
+ arch/x86/kernel/apic_32.c                  |    4 
+ arch/x86/kernel/entry_64.S                 |    3 
+ arch/x86/kernel/i8259_64.c                 |    4 
+ arch/x86/kernel/smp.c                      |  148 +-------
+ arch/x86/kernel/smpcommon.c                |   56 ---
+ arch/x86/mach-voyager/voyager_smp.c        |   91 -----
+ arch/x86/xen/enlighten.c                   |    1 
+ arch/x86/xen/mmu.c                         |    2 
+ arch/x86/xen/smp.c                         |  108 +-----
+ include/asm-alpha/smp.h                    |    2 
+ include/asm-ia64/smp.h                     |    3 
+ include/asm-m32r/smp.h                     |    1 
+ include/asm-mips/smp.h                     |   12 
+ include/asm-powerpc/smp.h                  |    5 
+ include/asm-s390/sigp.h                    |    1 
+ include/asm-s390/smp.h                     |    2 
+ include/asm-sh/smp.h                       |   12 
+ include/asm-x86/hw_irq_32.h                |    1 
+ include/asm-x86/hw_irq_64.h                |    2 
+ include/asm-x86/mach-default/entry_arch.h  |    1 
+ include/asm-x86/mach-default/irq_vectors.h |    1 
+ include/asm-x86/mach-voyager/entry_arch.h  |    2 
+ include/asm-x86/mach-voyager/irq_vectors.h |    4 
+ include/asm-x86/smp.h                      |   10 
+ include/linux/smp.h                        |   27 +
+ init/main.c                                |    3 
+ kernel/Makefile                            |    1 
+ kernel/smp.c                               |  366 +++++++++++++++++++++
+ 58 files changed, 694 insertions(+), 1674 deletions(-)
+
+-- 
+Jens Axboe
+
+
