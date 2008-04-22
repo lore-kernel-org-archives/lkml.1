@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933782AbYDVXUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764050AbYDVXV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933782AbYDVXUs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 19:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761202AbYDVXUg
+	id S1764050AbYDVXV1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 19:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYDVXVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 19:20:36 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52536 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760918AbYDVXUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 19:20:35 -0400
-Date: Tue, 22 Apr 2008 16:20:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-In-Reply-To: <20080422223545.GP24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com>
-References: <ea87c15371b1bd49380c.1208872277@duo.random>
- <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com>
- <20080422223545.GP24536@duo.random>
+	Tue, 22 Apr 2008 19:21:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46304 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751638AbYDVXVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 19:21:08 -0400
+Date: Tue, 22 Apr 2008 16:20:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk
+Subject: Re: [git patch] free_irq() fixes
+In-Reply-To: <480E6DE5.6010103@garzik.org>
+Message-ID: <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
+References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
 
-> I'll send an update in any case to Andrew way before Saturday so
-> hopefully we'll finally get mmu-notifiers-core merged before next
-> week. Also I'm not updating my mmu-notifier-core patch anymore except
-> for strict bugfixes so don't worry about any more cosmetical bugs
-> being introduced while optimizing the code like it happened this time.
 
-I guess I have to prepare another patchset then?
+On Tue, 22 Apr 2008, Jeff Garzik wrote:
+> 
+> (note, for mwave I couldn't use pSettings, since that might fail the ambiguity
+> test)
 
+Ok, so using the pointer to inside a specific pSettings field is fine.
+
+But can you also explain to me why that insane driver does this:
+
+	 static irqreturn_t UartInterrupt(int irq, void *dev_id)
+	 {
+	-       int irqno = (int)(unsigned long) dev_id;
+	+       unsigned short *irqno = dev_id;
+		...
+		*irqno, dev_id);
+
+instead of just ignoring "dev_id" entirely, and then just using that "irq" 
+argument directly?
+
+		Linus
