@@ -1,123 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763799AbYDVPvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbYDVPy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763799AbYDVPvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYDVPvj
+	id S932070AbYDVPy1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbYDVPyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:51:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37438 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbYDVPvi (ORCPT
+	Tue, 22 Apr 2008 11:54:19 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:61292 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756112AbYDVPyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:51:38 -0400
-Date: Tue, 22 Apr 2008 11:51:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
-       suresh.b.siddha@intel.com, chinang.ma@intel.com, arjan@linux.intel.com,
-       willy@linux.intel.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated tasks
- have been added
-In-Reply-To: <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0804221144410.21511@gandalf.stny.rr.com>
-References: <20080421180747.4560.67794.stgit@novell1.haskins.net> 
- <20080421181015.4560.7658.stgit@novell1.haskins.net>
- <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
+	Tue, 22 Apr 2008 11:54:18 -0400
+Message-ID: <480E0A54.9010203@linux.vnet.ibm.com>
+Date: Tue, 22 Apr 2008 17:55:00 +0200
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Organization: =?ISO-8859-1?Q?Christian_Ehrhardt=3A_IBM_Deutschland_?=
+ =?ISO-8859-1?Q?Entwicklung_GmbH=2CVorsitzender_des_Aufsichtsrats=3A?=
+ =?ISO-8859-1?Q?_Martin_Jetter=2CGesch=E4ftsf=FChrung=3A_Herbert_?=
+ =?ISO-8859-1?Q?Kircher=2CSitz_der_Gesellschaft=3A_B=F6blingen=2CRe?=
+ =?ISO-8859-1?Q?gistergericht=3A_Amtsgericht_Stuttgart=2C_HRB_243?=
+ =?ISO-8859-1?Q?294?=
+User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linux-fbdev-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       adaplas@gmail.com, Hollis Blanchard <hollisb@us.ibm.com>,
+       Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>
+Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
+References: <20080422012723.BA9F2DE13F@ozlabs.org>
+In-Reply-To: <20080422012723.BA9F2DE13F@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Herrenschmidt wrote:
+> This fixes radeonfb to not truncate 64 bits resources on 32 bits
+> platforms. Unfortunately, there are still issues with addresses
+> returned to userspace via struct fb_fix_screeninfo. This will
+> have to be dealt with separately.
 
-Hi Dmitry,
+Thanks for this patch Benjamin, I use it together with what we have discussed in the "pci issue - wrong detection of pci ressources" thread.
+Unfortunately I now hit exactly that issue with fb_fix_screeninfo you describe.
 
-Did you see this behaviour or is this an analysis of the code?
+For everyone the fb_fix_screeninfo has two "unsigned long" vars that need to strore a IO address.
+This fails in my case with a 32bit powerpc system (=sizeof(long)=4) which has paddr >4Gb and actually it should affect any 32bit platform with paddr>4Gb.
+You see it e.g. when you try to initialize X11, the x11 radeon driver issues a FBIOGET_FSCREENINFO ioctl and because our address is >4Gb it get's clobbered by that unsigned long in the fb_fix_screeninfo structure (the value comes from a resource_size_t variable which has the correct 64bit).
 
-On Tue, 22 Apr 2008, Dmitry Adamushko wrote:
->
-> consider the following 2-cpu system: cpu0 and cpu1.
->
-> cpu0: is idle --> in such a state, it never pulls RT tasks on its own.
->
-> T0 and T1 are RT tasks
+struct fb_fix_screeninfo {
+        char id[16];                    /* identification string eg "TT Builtin" */
+        unsigned long smem_start;     /* Start of frame buffer mem */
+[...]
+        unsigned long mmio_start;     /* Start of Memory Mapped I/O   */
+[...]
 
-This is the important part. How did cpu0 get to "is idle --> in such a
-state, it never pulls RT tasks on its own" ? And then have cpu1 have T0
-and T1 running.
+I tried the stupid solution to just change the fb_fix_screeninfo structure to resource_size_t, but that changes the size ioctl transports and would require awareness in the userspace applications using that ioctl.
+The X11 & Framebuffer driver work on 64bit systems, so I think it's just an issue of not cutting that data down to 32bit when transporting it (has anyone already checked the x11 drivers, I hope they don't use unsigned long too).
 
-When ever a cpu goes to idle, it should definitely try to do a RT pull
-before going idle. When a
+I wanted to ask if there are any known workarounds atm that would allow me to use my X11 for now?
 
+-- 
 
->
->
-> square#0:
->
-> cpu1:  T0 is running
->
-> T1 is of the same prio as T0 (shouldn't really matter but to get the
-> same result it would require altering the flow of events slightly)
->
-> T1's affinity allows it to be run only on cpu1.
-> T0 can run on both.
->
-> try_to_wake_up() is called for T1.
-> |
-> --> select_task_rq_rt() => gives cpu1
-> |
-> --> task_wake_up_rt()
->    |
->    ---> push_rt_tasks() -> rq->rt.pushed = 1
->
-> now, neither T1 (due to its affinity), nor T0 (it's running) can be
-> pushed away to cpu0.
-
-Ah, this may be what you are talking about. T0 was running, but because
-T1 has its affinity set to cpu1 it wont cause a push. When T0 schedules
-away to give T1 its cpu time, T0 wont push away because of the pushed
-flag.
-
-Hmm, interesting. Of course my response is "Don't use SCHED_RR! It's
-evil!" ;-)
-
-Perhaps we need logic to reset the push flag when a sched RR task is
-scheduled out to give way for another SCHED_RR task. This should fix this
-scenario. Unless I'm missing something else.
-
--- Steve
-
-> [ btw., (1) I'd expect that this task_wake_up_rt() thing should be
-> redundant, logically-wise... I'll check once more and comment later
-> on.
-> (2) any example when (p->prio >= rq->rt.highest_prio) is not true in
-> task_wake_up_rt() ?
-> ]
->
-> as a result, rq->rt.pushed == 1.
->
-> Now, post_schedule_rt() won't call push_rt_tasks().
->
-> T0 and T1 are both running for some time on cpu1 (possibly
-> context-switching if they are both of SCHED_RR type).
->
-> Then they both block, _first_ T1 and then T0.
->
-> After some interval of time, they wake up (let's say they are
-> periodic) in the following order: _first_ T0 and then T1.
->
-> rq->rt.pushed becomes 0 and here we are back to square#0. The whole
-> story repeats again.
->
-> cpu0 is idle so it won't pull T0. Both T0 and T1 are competing for the
-> same cpu. Not good.
->
-> am I missing smth?
->
->
-> --
-> Best regards,
-> Dmitry Adamushko
->
+Grüsse / regards, 
+Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization
