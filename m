@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbYDVPAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYDVPCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764738AbYDVPAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPAi
+	id S1764853AbYDVPCJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:00:38 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:52009 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762720AbYDVPAg (ORCPT
+	Tue, 22 Apr 2008 11:01:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25610 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984AbYDVPBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:00:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=coBHYPIUc802FlLm0uWZf0QkcdF5St0FZ84t5EHB7lcn7XkRLYCy5fdtpOSt7Mpy+0cBXk6TwUHpo3DwItLx5DYlCpwkd49Gst5+8steSyNKoEsBq+aEshODt3C2BDdjGaXz5A/DwPeUGAD2kS/au+r9LWcnviDUGtKdPJ2HBGs=
-Message-ID: <480DFD7C.2030206@gmail.com>
-Date: Wed, 23 Apr 2008 00:00:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 22 Apr 2008 11:01:53 -0400
+Message-ID: <480DFBED.8020304@oracle.com>
+Date: Tue, 22 Apr 2008 07:53:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca>
-In-Reply-To: <480DF9BD.1080104@rtr.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: prasad@linux.vnet.ibm.com
+CC: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, hunt@redhat.com, michaele@au1.ibm.com,
+       dave@linux.vnet.ibm.com
+Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
+References: <20080415111459.GB5295@in.ibm.com> <20080415112603.GA5770@in.ibm.com> <48066EBE.3040608@us.ibm.com> <20080421124329.GA14118@in.ibm.com> <20080421101403.cecf4d7b.randy.dunlap@oracle.com> <20080422052222.GA6623@in.ibm.com>
+In-Reply-To: <20080422052222.GA6623@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
->> Ah.. that means we have the whole naming thing wrong.  Yewwww....
-> ..
+K. Prasad wrote:
+
+> This patch introduces two new interfaces called debugfs_printk and 
+> debugfs_dump which can be used to print to the debugfs mount directly.
+> It uses the 'trace' infrastructure underneath and is a patch over it.
+> A sample file is also created to demonstrate its ease of use.
 > 
-> I suppose.   If we were needlessly pedantic, then perhaps
-> the libata-bmdma.c should be renamed to libata-sff.c,
-> and the libata-sff.c should be renamed libata-tf.c
-> 
-> But there's probably been a document or two since then,
-> where the SFF folks have documented the TF interfaces, too.
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  Documentation/trace.txt        |   21 ++++
+>  include/linux/trace.h          |   55 +++++++++++
+>  lib/trace.c                    |  193 +++++++++++++++++++++++++++++++++++++++--
+>  samples/trace/Makefile         |    2 
+>  samples/trace/fork_new_trace.c |   97 ++++++++++++++++++++
+>  5 files changed, 362 insertions(+), 6 deletions(-)
 
-Fingers and toes and whatever else crossed.
+> +
+> +/**
+> + * debugfs_printk - Output binary into debugfs mount 'directly' using 'trace'
 
-> So.. whatever.  :)
+Oops. This is the debugfs_dump() function.
 
-Yeah, that's the spirit.  :-)
+Otherwise it looks good.  Thanks.
+
+> + * @dpk: Structure containing info such as parent_dir and directory
+> + * @output: Data that needs to be output
+> + * @output_len: Length of the output data
+> + */
+> +int debugfs_dump(struct debugfs_printk_data *dpk, const void *output,
+> +							const int output_len)
+> +{
+
 
 -- 
-tejun
+~Randy
