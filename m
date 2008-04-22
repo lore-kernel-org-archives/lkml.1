@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbYDVOz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYDVO4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbYDVOz2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYDVOzT
+	id S1760186AbYDVO4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYDVO4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:55:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33934 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750726AbYDVOzS (ORCPT
+	Tue, 22 Apr 2008 10:56:39 -0400
+Received: from smtp2a.orange.fr ([80.12.242.139]:25302 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbYDVO4i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:55:18 -0400
-Date: Tue, 22 Apr 2008 10:55:17 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: False positive in checkpatch (2.6.25)
-In-Reply-To: <20080422080547.GC26446@shadowen.org>
-Message-ID: <Pine.LNX.4.44L0.0804221054310.8058-100000@iolanthe.rowland.org>
+	Tue, 22 Apr 2008 10:56:38 -0400
+X-ME-UUID: 20080422145636729.B21B9700005C@mwinf2a14.orange.fr
+Message-ID: <480DFC8A.8040105@cosmosbay.com>
+Date: Tue, 22 Apr 2008 16:56:10 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+References: <ea87c15371b1bd49380c.1208872277@duo.random>
+In-Reply-To: <ea87c15371b1bd49380c.1208872277@duo.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008, Andy Whitcroft wrote:
+Andrea Arcangeli a écrit :
+> +
+> +static int mm_lock_cmp(const void *a, const void *b)
+> +{
+> +	cond_resched();
+> +	if ((unsigned long)*(spinlock_t **)a <
+> +	    (unsigned long)*(spinlock_t **)b)
+> +		return -1;
+> +	else if (a == b)
+> +		return 0;
+> +	else
+> +		return 1;
+> +}
+> +
+This compare function looks unusual...
+It should work, but sort() could be faster if the
+if (a == b) test had a chance to be true eventually...
 
-> On Thu, Apr 17, 2008 at 03:33:48PM -0400, Alan Stern wrote:
-> 
-> > ERROR: space prohibited after that '*' (ctx:ExW)
-> > #15: FILE: drivers/usb/core/driver.c:1544:
-> > +        * when the system suspend started, so we don't want to resume it
-> >          ^
-> > 
-> > ERROR: Missing Signed-off-by: line(s)
-> 
-> Yes, pretty sure that was triggered by a bug in comment tracking when
-> it moved into quote tracking.  From my testing here it should have been
-> fixed in v0.17, you have v0.16.  Andrew has the change queued up so it
-> should be on its way to mainline.  You can get the latest from the url
-> below to confirm:
-> 
-> 	http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/
-> 
-> Thanks for the report.
+static int mm_lock_cmp(const void *a, const void *b)
+{
+	unsigned long la = (unsigned long)*(spinlock_t **)a;
+	unsigned long lb = (unsigned long)*(spinlock_t **)b;
 
-Confirmed: checkpatch.pl-next doesn't have this problem.
+	cond_resched();
+	if (la < lb)
+		return -1;
+	if (la > lb)
+		return 1;
+	return 0;
+}
 
-Alan Stern
+
+
+
 
