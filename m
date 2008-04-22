@@ -1,37 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763241AbYDVUnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763408AbYDVUoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763241AbYDVUnr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 16:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbYDVUmZ
+	id S1763408AbYDVUoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 16:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbYDVUmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 22 Apr 2008 16:42:25 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:38003 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:38011 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755034AbYDVUmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755116AbYDVUmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Apr 2008 16:42:21 -0400
-Message-Id: <20080422204220.600633000@polaris-admin.engr.sgi.com>
+Message-Id: <20080422204220.732703000@polaris-admin.engr.sgi.com>
 References: <20080422204219.994283000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 22 Apr 2008 13:42:23 -0700
+Date: Tue, 22 Apr 2008 13:42:24 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] x86: remove the 256k node_to_cpumask_map after init
-Content-Disposition: inline; filename=node_to_cpumask
+Subject: [PATCH 5/5] sched: replace MAX_NUMNODES with nr_node_ids in kernel/sched.c
+Content-Disposition: inline; filename=mod_kernel_sched
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Consolidate node_to_cpumask operations and remove the 256k
-    byte node_to_cpumask_map.  This is done by allocating the
-    node_to_cpumask_map array after the number of possible nodes
-    (nr_node_ids) is known.
-
-  * Debug printouts when CONFIG_DEBUG_PER_CPU_MAPS is active have
-    been increased.  It now shows faults when calling node_to_cpumask()
-    and node_to_cpumask_ptr().
+  * Replace usages of MAX_NUMNODES with nr_node_ids in kernel/sched.c,
+    where appropriate.  This saves some allocated space as well as many
+    wasted cycles going through node entries that are non-existent.
 
 For inclusion into sched-devel/latest tree.
 
@@ -39,292 +34,82 @@ Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/setup.c    |  137 +++++++++++++++++++++++++++++++++++++++++++--
- arch/x86/mm/numa_64.c      |    6 -
- include/asm-x86/topology.h |   25 +++++---
- 3 files changed, 149 insertions(+), 19 deletions(-)
+ kernel/sched.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
---- linux-2.6.sched.orig/arch/x86/kernel/setup.c
-+++ linux-2.6.sched/arch/x86/kernel/setup.c
-@@ -28,12 +28,27 @@ DEFINE_EARLY_PER_CPU(u16, x86_bios_cpu_a
- EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- EXPORT_EARLY_PER_CPU_SYMBOL(x86_bios_cpu_apicid);
+--- linux-2.6.sched.orig/kernel/sched.c
++++ linux-2.6.sched/kernel/sched.c
+@@ -7046,9 +7046,9 @@ static int find_next_best_node(int node,
  
-+#ifdef CONFIG_DEBUG_PER_CPU_MAPS
-+#undef Dprintk
-+#define Dprintk printk
-+#endif
-+
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
- #define	X86_64_NUMA	1
+ 	min_val = INT_MAX;
  
- /* map cpu index to node index */
- DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
- EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
-+
-+/* which logical CPUs are on which nodes */
-+cpumask_t *node_to_cpumask_map;
-+EXPORT_SYMBOL(node_to_cpumask_map);
-+
-+/* setup node_to_cpumask_map */
-+static void __init setup_node_to_cpumask_map(void);
-+
-+#else
-+static inline void setup_node_to_cpumask_map(void) { }
+-	for (i = 0; i < MAX_NUMNODES; i++) {
++	for (i = 0; i < nr_node_ids; i++) {
+ 		/* Start at @node */
+-		n = (node + i) % MAX_NUMNODES;
++		n = (node + i) % nr_node_ids;
+ 
+ 		if (!nr_cpus_node(n))
+ 			continue;
+@@ -7241,7 +7241,7 @@ static void free_sched_groups(const cpum
+ 		if (!sched_group_nodes)
+ 			continue;
+ 
+-		for (i = 0; i < MAX_NUMNODES; i++) {
++		for (i = 0; i < nr_node_ids; i++) {
+ 			struct sched_group *oldsg, *sg = sched_group_nodes[i];
+ 
+ 			*nodemask = node_to_cpumask(i);
+@@ -7429,7 +7429,7 @@ static int __build_sched_domains(const c
+ 	/*
+ 	 * Allocate the per-node list of sched groups
+ 	 */
+-	sched_group_nodes = kcalloc(MAX_NUMNODES, sizeof(struct sched_group *),
++	sched_group_nodes = kcalloc(nr_node_ids, sizeof(struct sched_group *),
+ 				    GFP_KERNEL);
+ 	if (!sched_group_nodes) {
+ 		printk(KERN_WARNING "Can not alloc sched group node list\n");
+@@ -7573,7 +7573,7 @@ static int __build_sched_domains(const c
  #endif
  
- #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
-@@ -139,11 +154,15 @@ void __init setup_per_cpu_areas(void)
+ 	/* Set up physical groups */
+-	for (i = 0; i < MAX_NUMNODES; i++) {
++	for (i = 0; i < nr_node_ids; i++) {
+ 		SCHED_CPUMASK_VAR(nodemask, allmasks);
+ 		SCHED_CPUMASK_VAR(send_covered, allmasks);
+ 
+@@ -7597,7 +7597,7 @@ static int __build_sched_domains(const c
+ 					send_covered, tmpmask);
  	}
  
- 	nr_cpu_ids = highest_cpu + 1;
--	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d\n", NR_CPUS, nr_cpu_ids);
-+	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids %d\n",
-+		NR_CPUS, nr_cpu_ids, nr_node_ids);
+-	for (i = 0; i < MAX_NUMNODES; i++) {
++	for (i = 0; i < nr_node_ids; i++) {
+ 		/* Set up node groups */
+ 		struct sched_group *sg, *prev;
+ 		SCHED_CPUMASK_VAR(nodemask, allmasks);
+@@ -7636,9 +7636,9 @@ static int __build_sched_domains(const c
+ 		cpus_or(*covered, *covered, *nodemask);
+ 		prev = sg;
  
- 	/* Setup percpu data maps */
- 	setup_per_cpu_maps();
+-		for (j = 0; j < MAX_NUMNODES; j++) {
++		for (j = 0; j < nr_node_ids; j++) {
+ 			SCHED_CPUMASK_VAR(notcovered, allmasks);
+-			int n = (i + j) % MAX_NUMNODES;
++			int n = (i + j) % nr_node_ids;
+ 			node_to_cpumask_ptr(pnodemask, n);
  
-+	/* Setup node to cpumask map */
-+	setup_node_to_cpumask_map();
-+
- 	/* Setup cpumask_of_cpu map */
- 	setup_cpumask_of_cpu();
- }
-@@ -151,6 +170,35 @@ void __init setup_per_cpu_areas(void)
- #endif
- 
- #ifdef X86_64_NUMA
-+
-+/*
-+ * Allocate node_to_cpumask_map based on number of available nodes
-+ * Requires node_possible_map to be valid.
-+ *
-+ * Note: node_to_cpumask() is not valid until after this is done.
-+ */
-+static void __init setup_node_to_cpumask_map(void)
-+{
-+	unsigned int node, num = 0;
-+	cpumask_t *map;
-+
-+	/* setup nr_node_ids if not done yet */
-+	if (nr_node_ids == MAX_NUMNODES) {
-+		for_each_node_mask(node, node_possible_map)
-+			num = node;
-+		nr_node_ids = num + 1;
-+	}
-+
-+	/* allocate the map */
-+	map = alloc_bootmem_low(nr_node_ids * sizeof(cpumask_t));
-+
-+	Dprintk(KERN_DEBUG "== setup_node_to_cpumask_map %p (%d)\n",
-+		map, nr_node_ids);
-+
-+	/* node_to_cpumask() will now work */
-+	node_to_cpumask_map = map;
-+}
-+
- void __cpuinit numa_set_node(int cpu, int node)
- {
- 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
-@@ -173,6 +221,8 @@ void __cpuinit numa_clear_node(int cpu)
- 	numa_set_node(cpu, NUMA_NO_NODE);
- }
- 
-+#ifndef CONFIG_DEBUG_PER_CPU_MAPS
-+
- void __cpuinit numa_add_cpu(int cpu)
- {
- 	cpu_set(cpu, node_to_cpumask_map[early_cpu_to_node(cpu)]);
-@@ -182,9 +232,44 @@ void __cpuinit numa_remove_cpu(int cpu)
- {
- 	cpu_clear(cpu, node_to_cpumask_map[cpu_to_node(cpu)]);
- }
--#endif /* CONFIG_NUMA */
- 
--#if defined(CONFIG_DEBUG_PER_CPU_MAPS) && defined(CONFIG_X86_64)
-+#else /* CONFIG_DEBUG_PER_CPU_MAPS */
-+
-+/*
-+ * --------- debug versions of the numa functions ---------
-+ */
-+static void __cpuinit numa_set_cpumask(int cpu, int enable)
-+{
-+	int node = cpu_to_node(cpu);
-+	cpumask_t *mask;
-+	char buf[32];
-+
-+	if (node_to_cpumask_map == NULL) {
-+		printk(KERN_DEBUG "== node_to_cpumask_map NULL!\n");
-+		dump_stack();
-+		return;
-+	}
-+
-+	mask = &node_to_cpumask_map[node];
-+	if (enable)
-+		cpu_set(cpu, *mask);
-+	else
-+		cpu_clear(cpu, *mask);
-+
-+	cpulist_scnprintf(buf, sizeof(buf), *mask);
-+	printk(KERN_DEBUG "== %s cpu %d node %d: mask now %s\n",
-+		enable? "numa_add_cpu":"numa_remove_cpu", cpu, node, buf);
-+ }
-+
-+void __cpuinit numa_add_cpu(int cpu)
-+{
-+	numa_set_cpumask(cpu, 1);
-+}
-+
-+void __cpuinit numa_remove_cpu(int cpu)
-+{
-+	numa_set_cpumask(cpu, 0);
-+}
- 
- int cpu_to_node(int cpu)
- {
-@@ -198,6 +283,10 @@ int cpu_to_node(int cpu)
- }
- EXPORT_SYMBOL(cpu_to_node);
- 
-+/*
-+ * Same function as cpu_to_node() but used if called before the
-+ * per_cpu areas are setup.
-+ */
- int early_cpu_to_node(int cpu)
- {
- 	if (early_per_cpu_ptr(x86_cpu_to_node_map))
-@@ -206,9 +295,47 @@ int early_cpu_to_node(int cpu)
- 	if (!per_cpu_offset(cpu)) {
- 		printk(KERN_WARNING
- 			"early_cpu_to_node(%d): no per_cpu area!\n", cpu);
--			dump_stack();
-+		dump_stack();
- 		return NUMA_NO_NODE;
+ 			cpus_complement(*notcovered, *covered);
+@@ -7691,7 +7691,7 @@ static int __build_sched_domains(const c
  	}
- 	return per_cpu(x86_cpu_to_node_map, cpu);
- }
--#endif
-+
-+/*
-+ * Returns a pointer to the bitmask of CPUs on Node 'node'.
-+ */
-+cpumask_t *_node_to_cpumask_ptr(int node)
-+{
-+	if (node_to_cpumask_map == NULL) {
-+		printk(KERN_WARNING
-+			"_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
-+			node);
-+		dump_stack();
-+		return &cpu_online_map;
-+	}
-+	return &node_to_cpumask_map[node];
-+}
-+EXPORT_SYMBOL(_node_to_cpumask_ptr);
-+
-+/*
-+ * Returns a bitmask of CPUs on Node 'node'.
-+ */
-+cpumask_t node_to_cpumask(int node)
-+{
-+	if (node_to_cpumask_map == NULL) {
-+		printk(KERN_WARNING
-+			"node_to_cpumask(%d): no node_to_cpumask_map!\n", node);
-+		dump_stack();
-+		return cpu_online_map;
-+	}
-+	return node_to_cpumask_map[node];
-+}
-+EXPORT_SYMBOL(node_to_cpumask);
-+
-+/*
-+ * --------- end of debug versions of the numa functions ---------
-+ */
-+
-+#endif /* CONFIG_DEBUG_PER_CPU_MAPS */
-+
-+#endif /* X86_64_NUMA */
---- linux-2.6.sched.orig/arch/x86/mm/numa_64.c
-+++ linux-2.6.sched/arch/x86/mm/numa_64.c
-@@ -35,9 +35,6 @@ s16 apicid_to_node[MAX_LOCAL_APIC] __cpu
- 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
- };
  
--cpumask_t node_to_cpumask_map[MAX_NUMNODES] __read_mostly;
--EXPORT_SYMBOL(node_to_cpumask_map);
--
- int numa_off __initdata;
- unsigned long __initdata nodemap_addr;
- unsigned long __initdata nodemap_size;
-@@ -561,9 +558,6 @@ void __init numa_initmem_init(unsigned l
- 	node_set(0, node_possible_map);
- 	for (i = 0; i < NR_CPUS; i++)
- 		numa_set_node(i, 0);
--	/* cpumask_of_cpu() may not be available during early startup */
--	memset(&node_to_cpumask_map[0], 0, sizeof(node_to_cpumask_map[0]));
--	cpu_set(0, node_to_cpumask_map[0]);
- 	e820_register_active_regions(0, start_pfn, end_pfn);
- 	setup_node_bootmem(0, start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
- }
---- linux-2.6.sched.orig/include/asm-x86/topology.h
-+++ linux-2.6.sched/include/asm-x86/topology.h
-@@ -47,10 +47,16 @@ static inline int cpu_to_node(int cpu)
- }
- #define early_cpu_to_node(cpu)	cpu_to_node(cpu)
+ #ifdef CONFIG_NUMA
+-	for (i = 0; i < MAX_NUMNODES; i++)
++	for (i = 0; i < nr_node_ids; i++)
+ 		init_numa_sched_groups_power(sched_group_nodes[i]);
  
-+/* Returns a bitmask of CPUs on Node 'node'. */
-+static inline cpumask_t node_to_cpumask(int node)
-+{
-+	return node_to_cpumask_map[node];
-+}
-+
- #else /* CONFIG_X86_64 */
- 
- /* Mappings between node number and cpus on that node. */
--extern cpumask_t node_to_cpumask_map[];
-+extern cpumask_t *node_to_cpumask_map;
- 
- /* Mappings between logical cpu number and node number */
- DECLARE_EARLY_PER_CPU(int, x86_cpu_to_node_map);
-@@ -94,7 +100,6 @@ static inline cpumask_t node_to_cpumask(
- }
- 
- #endif /* !CONFIG_DEBUG_PER_CPU_MAPS */
--#endif /* CONFIG_X86_64 */
- 
- /* Replace default node_to_cpumask_ptr with optimized version */
- #define node_to_cpumask_ptr(v, node)		\
-@@ -103,12 +108,7 @@ static inline cpumask_t node_to_cpumask(
- #define node_to_cpumask_ptr_next(v, node)	\
- 			   v = _node_to_cpumask_ptr(node)
- 
--/* Returns the number of the first CPU on Node 'node'. */
--static inline int node_to_first_cpu(int node)
--{
--	node_to_cpumask_ptr(mask, node);
--	return first_cpu(*mask);
--}
-+#endif /* CONFIG_X86_64 */
- 
- /*
-  * Returns the number of the node containing Node 'node'. This
-@@ -195,6 +195,15 @@ static inline int node_to_first_cpu(int 
- 
- #include <asm-generic/topology.h>
- 
-+#ifdef CONFIG_NUMA
-+/* Returns the number of the first CPU on Node 'node'. */
-+static inline int node_to_first_cpu(int node)
-+{
-+	node_to_cpumask_ptr(mask, node);
-+	return first_cpu(*mask);
-+}
-+#endif
-+
- extern cpumask_t cpu_coregroup_map(int cpu);
- 
- #ifdef ENABLE_TOPO_DEFINES
+ 	if (sd_allnodes) {
 
 -- 
