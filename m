@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763141AbYDVWDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbYDVWGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763141AbYDVWDa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 18:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757796AbYDVWC6
+	id S1762632AbYDVWGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 18:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbYDVWF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 18:02:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56643
+	Tue, 22 Apr 2008 18:05:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56652
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757460AbYDVWC5 (ORCPT
+	by vger.kernel.org with ESMTP id S1757086AbYDVWF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 18:02:57 -0400
-Date: Tue, 22 Apr 2008 15:02:59 -0700 (PDT)
-Message-Id: <20080422.150259.205494753.davem@davemloft.net>
-To: paulkf@microgate.com
-Cc: khc@pm.waw.pl, jchapman@katalix.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, jeff@garzik.org,
+	Tue, 22 Apr 2008 18:05:57 -0400
+Date: Tue, 22 Apr 2008 15:05:59 -0700 (PDT)
+Message-Id: <20080422.150559.115368150.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: paulkf@microgate.com, khc@pm.waw.pl, jchapman@katalix.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <480E5CB3.2080003@microgate.com>
-References: <480CEB7D.8070702@katalix.com>
-	<m33apdyajf.fsf@maximus.localdomain>
+In-Reply-To: <480E4FA1.5020508@garzik.org>
+References: <m33apdyajf.fsf@maximus.localdomain>
 	<480E5CB3.2080003@microgate.com>
+	<480E4FA1.5020508@garzik.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,19 +30,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Fulghum <paulkf@microgate.com>
-Date: Tue, 22 Apr 2008 15:46:27 -0600
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 22 Apr 2008 16:50:41 -0400
 
-> The response is usually "support the simpler generic
-> HDLC PPP way of doing things or we will go elsewhere".
+> The fact that Krzysztof's solution was _small_ and _clean_ and easily 
+> maintainable was the reason I merged it [into my tree].
+> 
+> IMO sometimes "one size fits all" is not the best solution.
 
-Users say this to strong-hand developers, it's not something you
-should ever take very seriously.  And even if Linux may simply not be
-for them, well that's fine too, and implementing something as obscure
-as HDLC PPP one way or the other is not going to change that.
+This is besides the point.  We are discussing two things here:
 
-I mean, be realistic here.
+1) How to "correctly" fix the syncppp private area bug.
 
-Are we going to have three copies of code implementing the same
-thing because some HDLC PPP users threatened to defect?  That's
-simply rediculious.
+2) How to, long term, support PPP properly in the kernel for
+   various users.
+
+The fact that non-HDLC users of syncppp got left broken is why I
+objected to the change you merged in Jeff.  It simply duplicated the
+majority of syncppp into the HDLC PPP code, which is just rediculious.
+
+That had nothing to do with whether we should, in the long term, use
+the generic PPP infrastructure we have now.
+
+I would have been more than happy if syncppp was retained and fixed
+properly, instead of being abandoned and duplicated in one fell swoop.
+We don't do things like that Jeff.
