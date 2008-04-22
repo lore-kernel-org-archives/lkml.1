@@ -1,52 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYDVDed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762228AbYDVDft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbYDVDed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 23:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbYDVDeZ
+	id S1762228AbYDVDft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 23:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbYDVDfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 23:34:25 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53088 "EHLO mx1.suse.de"
+	Mon, 21 Apr 2008 23:35:40 -0400
+Received: from sandeen.net ([209.173.210.139]:27654 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756740AbYDVDeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 23:34:24 -0400
-Date: Tue, 22 Apr 2008 05:34:23 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Petr Tesarik <ptesarik@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix brd allocation flags
-Message-ID: <20080422033423.GD21993@wotan.suse.de>
-References: <1208466847.8398.4.camel@elijah.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1208466847.8398.4.camel@elijah.suse.cz>
-User-Agent: Mutt/1.5.9i
+	id S1757709AbYDVDfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Apr 2008 23:35:40 -0400
+Message-ID: <480D5D0B.6030507@sandeen.net>
+Date: Mon, 21 Apr 2008 22:35:39 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+MIME-Version: 1.0
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: David Chinner <dgc@sgi.com>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] xfs: do not pass size into kmem_free, it's unused
+References: <20080419142329.GA5339@elte.hu> <200804212151.02241.vda.linux@googlemail.com> <20080422012819.GT108924158@sgi.com> <200804220433.04030.vda.linux@googlemail.com> <480D5702.2060107@sandeen.net>
+In-Reply-To: <480D5702.2060107@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 17, 2008 at 11:14:07PM +0200, Petr Tesarik wrote:
-> Hello,
+Eric Sandeen wrote:
+> Denys Vlasenko wrote:
+>> Hi David,
+>>
+>>> Patches are welcome - I'd be over the moon if any of the known 4k
+>>> stack advocates sent a stack reduction patch for XFS, but it seems
+>>> that actually trying to fix the problems is much harder than
+>>> resending a one line patch every few months....
+>> kmem_free() function takes (ptr, size) arguments but doesn't
+>> actually use second one.
+>>
+>> This patch removes size argument from all callsites.
 > 
-> while looking at the implementation of the Ram backed block device
-> driver, I stumbled across a write-only local variable, which makes
-> little sense, so I assume it should actually work like this:
+> I didn't expect it to but this does reduce a few things slightly.
+> 
+> On x86_64:
+> 
+> -xfs_attr_leaf_list_int 200
+> +xfs_attr_leaf_list_int 184
+> 
+> -xfs_dir2_sf_to_block 136
+> +xfs_dir2_sf_to_block 120
+> 
+> -xfs_ifree_cluster 136
+> +xfs_ifree_cluster 120
+> 
+> -xfs_inumbers 184
+> +xfs_inumbers 168
+> 
+> -xfs_mount_free 24
 
-Right you are. Good catch, thanks Petr.
+And on x86, just for the record (fedora 9 config in both cases...)
 
-> 
-> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-> 
-> diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-> index 8536480..7bd7663 100644
-> --- a/drivers/block/brd.c
-> +++ b/drivers/block/brd.c
-> @@ -108,7 +108,7 @@ static struct page *brd_insert_page(struct brd_device *brd, sector_t sector)
->  #ifndef CONFIG_BLK_DEV_XIP
->  	gfp_flags |= __GFP_HIGHMEM;
->  #endif
-> -	page = alloc_page(GFP_NOIO | __GFP_HIGHMEM | __GFP_ZERO);
-> +	page = alloc_page(gfp_flags);
->  	if (!page)
->  		return NULL;
->  
+-xfs_attr_leaf_inactive 36
++xfs_attr_leaf_inactive 32
+
+-xfs_attr_shortform_list 40
++xfs_attr_shortform_list 36
+
+-xfs_da_grow_inode 96
++xfs_da_grow_inode 92
+
+-xfs_dir2_grow_inode 116
++xfs_dir2_grow_inode 104
+
+-xfs_dir2_leaf_getdents 176
++xfs_dir2_leaf_getdents 172
+
+-xfs_dir2_sf_to_block 92
++xfs_dir2_sf_to_block 88
+
+-xfs_ifree_cluster 108
++xfs_ifree_cluster 104
+
+-xfs_inumbers 88
++xfs_inumbers 84
+
+-xfs_lock_inodes 24
++xfs_lock_inodes 28
+
+-Eric
