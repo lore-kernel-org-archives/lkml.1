@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbYDVTJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbYDVTKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762253AbYDVTJa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYDVTJW
+	id S1764176AbYDVTKM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762823AbYDVTJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:09:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54776 "EHLO mx1.redhat.com"
+	Tue, 22 Apr 2008 15:09:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34408 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbYDVTJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:09:21 -0400
+	id S1753243AbYDVTJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:09:57 -0400
+Date: Tue, 22 Apr 2008 21:09:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [repost PATCH] Fix SMP alternatives : use mutex instead of
+	spinlock, text_poke is sleepable
+Message-ID: <20080422190939.GA30045@elte.hu>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080414065713.GB16163@elte.hu> <20080419184137.79957a07@daedalus.pq.iki.fi> <20080419161956.GA24685@Krystal> <20080422214240.33e79a94@daedalus.pq.iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 2/2] posix timers: don't discard the signal if the timer was explicitly destroyed
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 22 April 2008 19:38:21 +0400 <20080422153821.GA19903@tv-sign.ru>
-References: <20080422153821.GA19903@tv-sign.ru>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080422190849.6443E270381@magilla.localdomain>
-Date: Tue, 22 Apr 2008 12:08:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20080422214240.33e79a94@daedalus.pq.iki.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0234]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I am not sure this patch is really needed, please review.
 
-I don't think this is worth doing.
+* Pekka Paalanen <pq@iki.fi> wrote:
 
-> The previous patch adds the user-visible change. It is not clear to me why
-> should we cancel the pending signal sent by the timer after timer_delete().
-> Suppose the signal is blocked, pending, the user checks sys_rt_sigpending(),
-> destroys the timer and then doesn't see the signal.
+> Ingo,
+> 
+> I see you applied the NX fix. This patch is the other one needed to 
+> make CPU hotplug working. Could you apply this, unless Mathieu has 
+> something against it?
 
-So?  POSIX says it's unspecified what happens to such a signal, so an
-application can't rely on it one way or the other.  I don't see any reason
-to complicate it further.
+sure, patch looks sane - applied it and pushed it out. Thanks,
 
-
-Thanks,
-Roland
+	Ingo
