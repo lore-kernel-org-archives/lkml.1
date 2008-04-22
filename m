@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbYDVP4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbYDVP57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764703AbYDVP4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763147AbYDVP4D
+	id S1764981AbYDVP57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbYDVP5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:56:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60368 "EHLO mx1.redhat.com"
+	Tue, 22 Apr 2008 11:57:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60466 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763457AbYDVP4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:56:02 -0400
-Message-ID: <480E0A7C.2060907@redhat.com>
-Date: Tue, 22 Apr 2008 10:55:40 -0500
+	id S1753555AbYDVP5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:57:51 -0400
+Message-ID: <480E0AE7.2010709@redhat.com>
+Date: Tue, 22 Apr 2008 10:57:27 -0500
 From: Eric Sandeen <sandeen@redhat.com>
 User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
 To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
 CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/4] mark loop functions as noinline_for_stack
+Subject: [PATCH 4/4] mark inflate functions as noinline_for_stack
 References: <480E06A6.1080803@redhat.com>
 In-Reply-To: <480E06A6.1080803@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -26,35 +26,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Use the self-documenting noinline_for_stack attribute
-in loop functions.
+in inflate functions.
 
 Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 ---
 
-Index: linux-2.6.25/drivers/block/loop.c
+Index: linux-2.6.25/lib/inflate.c
 ===================================================================
---- linux-2.6.25.orig/drivers/block/loop.c	2008-04-22 10:31:05.015471118 -0500
-+++ linux-2.6.25/drivers/block/loop.c	2008-04-22 10:51:18.070407735 -0500
-@@ -1182,9 +1182,8 @@ struct compat_loop_info {
+--- linux-2.6.25.orig/lib/inflate.c	2008-04-22 10:31:00.923406674 -0500
++++ linux-2.6.25/lib/inflate.c	2008-04-22 10:51:19.219407765 -0500
+@@ -716,10 +716,7 @@ DEBG("<stor");
+ }
  
- /*
-  * Transfer 32-bit compatibility structure in userspace to 64-bit loop info
-- * - noinlined to reduce stack space usage in main part of driver
-  */
--static noinline int
-+static noinline_for_stack int
- loop_info64_from_compat(const struct compat_loop_info __user *arg,
- 			struct loop_info64 *info64)
- {
-@@ -1215,9 +1214,8 @@ loop_info64_from_compat(const struct com
  
- /*
-  * Transfer 64-bit loop info to 32-bit compatibility structure in userspace
-- * - noinlined to reduce stack space usage in main part of driver
-  */
--static noinline int
-+static noinline_for_stack int
- loop_info64_to_compat(const struct loop_info64 *info64,
- 		      struct compat_loop_info __user *arg)
+-/*
+- * We use `noinline' here to prevent gcc-3.5 from using too much stack space
+- */
+-STATIC int noinline INIT inflate_fixed(void)
++STATIC int noinline_for_stack INIT inflate_fixed(void)
+ /* decompress an inflated type 1 (fixed Huffman codes) block.  We should
+    either replace this with a custom decoder, or at least precompute the
+    Huffman tables. */
+@@ -780,10 +777,7 @@ DEBG("<fix");
+ }
+ 
+ 
+-/*
+- * We use `noinline' here to prevent gcc-3.5 from using too much stack space
+- */
+-STATIC int noinline INIT inflate_dynamic(void)
++STATIC int noinline_for_stack INIT inflate_dynamic(void)
+ /* decompress an inflated type 2 (dynamic Huffman codes) block. */
  {
+   int i;                /* temporary variables */
 
