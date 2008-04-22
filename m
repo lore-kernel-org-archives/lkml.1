@@ -1,122 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762773AbYDVKUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbYDVKXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762773AbYDVKUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 06:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbYDVKUl
+	id S1762771AbYDVKXk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 06:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757966AbYDVKXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 06:20:41 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47035 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757616AbYDVKUk (ORCPT
+	Tue, 22 Apr 2008 06:23:33 -0400
+Received: from simq2-qfe0.srvr.bell.ca ([206.47.199.152]:60992 "EHLO
+	simq2-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757616AbYDVKXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 06:20:40 -0400
-Date: Tue, 22 Apr 2008 11:12:59 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: akpm@linux-foundation.org, Mel Gorman <mel@csn.ul.ie>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v2
-In-Reply-To: <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0804221106250.12316@blonde.site>
-References: <20080418161522.GB9147@csn.ul.ie> <48080706.50305@cn.fujitsu.com>
- <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com>
- <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
- <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
- <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
- <Pine.LNX.4.64.0804211250000.16476@blonde.site>
- <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 22 Apr 2008 06:23:32 -0400
+X-Greylist: delayed 2503 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 06:23:32 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUBAGVPDUicIs88/2dsb2JhbAAIimihIA
+Message-ID: <480DB2DB.9040908@gmail.com>
+Date: Tue, 22 Apr 2008 06:41:47 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frans Pop <elendil@planet.nl>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Richard Jonsson <richie@coderworld.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [git pull] scheduler changes for v2.6.26
+References: <20080419181304.GB21353@elte.hu> <200804192147.43719.elendil@planet.nl> <20080421123903.GE9554@elte.hu> <200804211831.29976.elendil@planet.nl> <20080421194359.GD8770@elte.hu>
+In-Reply-To: <20080421194359.GD8770@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008, KAMEZAWA Hiroyuki wrote:
-> Tested on ia64/2.6.25
->    DISCONTIGMEM + 16KB/64KB pages
->    SPARSEMEM    + 16KB/64KB pages
-> seems no troubles.
+Ingo Molnar wrote:
+> * Frans Pop <elendil@planet.nl> wrote:
 > 
-> Thanks,
-> -Kame
+>>> It would be nice if you could try sched-devel/latest because it has 
+>>> an improved ftrace "sched_switch" tracer where you can generate much 
+>>> longer traces of this incident. Try the new /debug/trace_entries 
+>>> runtime tunable.
+>> I'll try to get the trace and will reply on the private thread we had. 
+>> I may need additional instructions though.
+> 
+> you could also reply to this thread if you dont mind, so that others can 
+> chime in too.
+> 
+> the 700-800 msecs of delays you see are very "brutal" so there must be 
+> something fundamentally wrong going on here.
+> 
+> Could you first check (under sched-devel/latest) the quality of your 
+> sched-clock, via running this script:
+> 
+>    http://people.redhat.com/mingo/cfs-scheduler/tools/watch-rq-clock.sh
+> 
+> if you run it, it should output ~1000 msecs periods every second:
+> 
+>  europe:~> watch-rq-clock.sh
+>  1002.115042
+>  1005.509851
+>  1004.187275
+>  1004.409980
+>  1004.430264
+>  1004.445508
+> 
+> if it's way too 'slow', say it only 100 msecs per second, then the 
+> scheduler clock is mis-measuring time and what the scheduler thinks to 
+> be a 40 msecs delay might become a 400 msecs delay.
+> 
 
-Looks good to me, if Mel and Shi approve.  (Well, there are two typos,
-"creted" should be "created" and "migratetpye" should be "migratetype".)
+Is this supposed to be true for everyone?
 
-Thanks a lot for all your effort on this!
+kevin@alekhine:~/linux$ uname -a
+Linux alekhine 2.6.25-02519-g3925e6f #10 PREEMPT Sat Apr 19 12:36:49 ADT 2008 x86_64 GNU/Linux
 
-Hugh
+kevin@alekhine:~/linux$ ./watch-rq-clock.sh
+89.986517
+81.033471
+76.942776
+90.986318
+75.988551
+85.987089
+74.988696
+85.987078
+73.988858
+88.986641
+68.989600
 
-> 
-> =
-> usemap must be initialized only when pfn is within zone.
-> If not, it corrupts memory.
-> 
-> And this patch also reduces the number of calls to set_pageblock_migratetype()
-> from
-> 	(pfn & (pageblock_nr_pages -1)
-> to
-> 	!(pfn & (pageblock_nr_pages-1)
-> it should be called once per pageblock.
-> 
-> Changelog v1->v2
->  - Fixed boundary check.
->  - Move calculation of pointer for zone to out of loop.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  mm/page_alloc.c |   14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.25/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.25.orig/mm/page_alloc.c
-> +++ linux-2.6.25/mm/page_alloc.c
-> @@ -2518,7 +2518,9 @@ void __meminit memmap_init_zone(unsigned
->  	struct page *page;
->  	unsigned long end_pfn = start_pfn + size;
->  	unsigned long pfn;
-> +	struct zone *z;
->  
-> +	z = &NODE_DATA(nid)->node_zones[zid];
->  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
->  		/*
->  		 * There can be holes in boot-time mem_map[]s
-> @@ -2536,7 +2538,6 @@ void __meminit memmap_init_zone(unsigned
->  		init_page_count(page);
->  		reset_page_mapcount(page);
->  		SetPageReserved(page);
-> -
->  		/*
->  		 * Mark the block movable so that blocks are reserved for
->  		 * movable at startup. This will force kernel allocations
-> @@ -2545,8 +2546,15 @@ void __meminit memmap_init_zone(unsigned
->  		 * kernel allocations are made. Later some blocks near
->  		 * the start are marked MIGRATE_RESERVE by
->  		 * setup_zone_migrate_reserve()
-> +		 *
-> +		 * bitmap is creted for zone's valid pfn range. but memmap
-> +		 * can be created for invalid pages (for alignment)
-> +		 * check here not to call set_pageblock_migratetpye() against
-> +		 * pfn out of zone.
->  		 */
-> -		if ((pfn & (pageblock_nr_pages-1)))
-> +		if ((z->zone_start_pfn <= pfn)
-> +		    && (pfn < z->zone_start_pfn + z->spanned_pages)
-> +		    && !(pfn & (pageblock_nr_pages - 1)))
->  			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
->  
->  		INIT_LIST_HEAD(&page->lru);
-> @@ -4460,6 +4468,8 @@ void set_pageblock_flags_group(struct pa
->  	pfn = page_to_pfn(page);
->  	bitmap = get_pageblock_bitmap(zone, pfn);
->  	bitidx = pfn_to_bitidx(zone, pfn);
-> +	VM_BUG_ON(pfn < zone->zone_start_pfn);
-> +	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
->  
->  	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
->  		if (flags & value)
+kevin@alekhine:~/linux$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 31
+model name      : AMD Athlon(tm) 64 Processor 3000+
+stepping        : 0
+cpu MHz         : 1000.000
+cache size      : 512 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm 3dnowext 3dnow
+rep_good lahf_lm
+bogomips        : 2006.79
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
+
+Does that mean anything?  Is there any other testing I should perform?
+
+-- 
+Kevin Winchester
