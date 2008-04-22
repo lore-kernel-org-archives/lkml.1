@@ -1,160 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbYDVTVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764012AbYDVTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760713AbYDVTVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYDVTV3
+	id S1764012AbYDVTWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbYDVTWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:21:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34998 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbYDVTV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:21:27 -0400
+	Tue, 22 Apr 2008 15:22:04 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:32949 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756683AbYDVTWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:22:01 -0400
+Date: Tue, 22 Apr 2008 12:22:00 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, Pete Zaitcev <zaitcev@redhat.com>,
+       linux-usb@vger.kernel.org, gregkh@suse.de
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+In-Reply-To: <Pine.LNX.4.64.0804222022530.17337@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0804221221430.3173@schroedinger.engr.sgi.com>
+References: <200804212310.41729.elendil@planet.nl> <20080422134034.GF7311@elte.hu>
+ <Pine.LNX.4.64.0804222022530.17337@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2  x86/latest] x86_64 ia32 ptrace: convert to compat_arch_ptrace
-In-Reply-To: Roland McGrath's message of  Tuesday, 22 April 2008 12:20:20 -0700 <20080422192020.C5DDF270381@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-References: <20080422192020.C5DDF270381@magilla.localdomain>
-X-Windows: all the problems and twice the bugs.
-Message-Id: <20080422192125.874E2270381@magilla.localdomain>
-Date: Tue, 22 Apr 2008 12:21:25 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that there are no more special cases in sys32_ptrace, we
-can convert to using the generic compat_sys_ptrace entry point.
-The sys32_ptrace function gets simpler and becomes compat_arch_ptrace.
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/ia32/ia32entry.S |    2 +-
- arch/x86/kernel/ptrace.c  |   67 +++++---------------------------------------
- include/asm-x86/ptrace.h  |    2 +
- 3 files changed, 11 insertions(+), 60 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index ae7158b..b5e329d 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -430,7 +430,7 @@ ia32_sys_call_table:
- 	.quad sys_setuid16
- 	.quad sys_getuid16
- 	.quad compat_sys_stime	/* stime */		/* 25 */
--	.quad sys32_ptrace	/* ptrace */
-+	.quad compat_sys_ptrace	/* ptrace */
- 	.quad sys_alarm
- 	.quad sys_fstat	/* (old)fstat */
- 	.quad sys_pause
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index b564116..b7ff783 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1301,69 +1301,16 @@ static int genregs32_set(struct task_struct *target,
- 	return ret;
- }
- 
--asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
-+long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
-+			compat_ulong_t caddr, compat_ulong_t cdata)
- {
--	struct task_struct *child;
--	struct pt_regs *childregs;
-+	unsigned long addr = caddr;
-+	unsigned long data = cdata;
- 	void __user *datap = compat_ptr(data);
- 	int ret;
- 	__u32 val;
- 
- 	switch (request) {
--	case PTRACE_TRACEME:
--	case PTRACE_ATTACH:
--	case PTRACE_KILL:
--	case PTRACE_CONT:
--	case PTRACE_SINGLESTEP:
--	case PTRACE_SINGLEBLOCK:
--	case PTRACE_DETACH:
--	case PTRACE_SYSCALL:
--	case PTRACE_OLDSETOPTIONS:
--	case PTRACE_SETOPTIONS:
--	case PTRACE_SET_THREAD_AREA:
--	case PTRACE_GET_THREAD_AREA:
--#ifdef CONFIG_X86_PTRACE_BTS
--	case PTRACE_BTS_CONFIG:
--	case PTRACE_BTS_STATUS:
--	case PTRACE_BTS_SIZE:
--	case PTRACE_BTS_GET:
--	case PTRACE_BTS_CLEAR:
--	case PTRACE_BTS_DRAIN:
--#endif /* CONFIG_X86_PTRACE_BTS */
--		return sys_ptrace(request, pid, addr, data);
--
--	default:
--		return -EINVAL;
--
--	case PTRACE_PEEKTEXT:
--	case PTRACE_PEEKDATA:
--	case PTRACE_POKEDATA:
--	case PTRACE_POKETEXT:
--	case PTRACE_POKEUSR:
--	case PTRACE_PEEKUSR:
--	case PTRACE_GETREGS:
--	case PTRACE_SETREGS:
--	case PTRACE_SETFPREGS:
--	case PTRACE_GETFPREGS:
--	case PTRACE_SETFPXREGS:
--	case PTRACE_GETFPXREGS:
--	case PTRACE_GETEVENTMSG:
--	case PTRACE_SETSIGINFO:
--	case PTRACE_GETSIGINFO:
--		break;
--	}
--
--	child = ptrace_get_task_struct(pid);
--	if (IS_ERR(child))
--		return PTR_ERR(child);
--
--	ret = ptrace_check_attach(child, request == PTRACE_KILL);
--	if (ret < 0)
--		goto out;
--
--	childregs = task_pt_regs(child);
--
--	switch (request) {
- 	case PTRACE_PEEKUSR:
- 		ret = getreg32(child, addr, &val);
- 		if (ret == 0)
-@@ -1409,12 +1356,14 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
- 					     sizeof(struct user32_fxsr_struct),
- 					     datap);
- 
-+	case PTRACE_GET_THREAD_AREA:
-+	case PTRACE_SET_THREAD_AREA:
-+		return arch_ptrace(child, request, addr, data);
-+
- 	default:
- 		return compat_ptrace_request(child, request, addr, data);
- 	}
- 
-- out:
--	put_task_struct(child);
- 	return ret;
- }
- 
-diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
-index f78dafc..6303701 100644
---- a/include/asm-x86/ptrace.h
-+++ b/include/asm-x86/ptrace.h
-@@ -265,6 +265,8 @@ extern int do_get_thread_area(struct task_struct *p, int idx,
- extern int do_set_thread_area(struct task_struct *p, int idx,
- 			      struct user_desc __user *info, int can_allocate);
- 
-+#define __ARCH_WANT_COMPAT_SYS_PTRACE
-+
- #endif /* __KERNEL__ */
- 
- #endif /* !__ASSEMBLY__ */
