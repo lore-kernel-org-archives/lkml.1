@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbYDVOo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbYDVOoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763950AbYDVOo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762455AbYDVOoP
+	id S1764248AbYDVOoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 10:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763934AbYDVOoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:44:15 -0400
-Received: from rtr.ca ([76.10.145.34]:1693 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759110AbYDVOoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:44:13 -0400
-Message-ID: <480DF9BD.1080104@rtr.ca>
-Date: Tue, 22 Apr 2008 10:44:13 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 22 Apr 2008 10:44:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36578 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763611AbYDVOoV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 10:44:21 -0400
+Date: Tue, 22 Apr 2008 07:43:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+In-Reply-To: <1208851058-8500-2-git-send-email-jens.axboe@oracle.com>
+Message-ID: <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com>
-In-Reply-To: <480DF876.7070800@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Mark Lord wrote:
->> Tejun Heo wrote:
->>> Sergei Shtylyov wrote:
->>>>>>    Jeff, Tejun, what "sff" in the file name actually means? Isn't 
->>>>>> it strange that the drivers lacking DMA support or not really 
->>>>>> compliant with SFF-8038i have to link with this file?
->>>>
->>>>> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
->>>>> and bmdma is acceptable, hopefully, right?
->>>>
->>>>    What's sff sans bmdma?
->>>
->>> Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
->>> although it's entirely possible that I misunderstood it and used it 
->>> in the wrong way.  Alan, can you please clear up the confusion?
->> ..
->>
->> SFF stands for "Small Form Factor", as in the "SFF Committee Information
->> Specification for Bus Master Programming Interface for IDE ATA 
->> Controllers Rev 1.0"
->> from May 16, 1994.
->>
->> That document is basically a committee rubber-stamp of the earlier Intel
->> "PCI IDE Controller Specification Revision 1.0" dated 3/4/94.
-> 
-> Ah.. that means we have the whole naming thing wrong.  Yewwww....
-..
 
-I suppose.   If we were needlessly pedantic, then perhaps
-the libata-bmdma.c should be renamed to libata-sff.c,
-and the libata-sff.c should be renamed libata-tf.c
 
-But there's probably been a document or two since then,
-where the SFF folks have documented the TF interfaces, too.
+On Tue, 22 Apr 2008, Jens Axboe wrote:
+> +
+> +static inline void csd_flag_wait(struct call_single_data *data)
+> +{
+> +	/* Wait for response */
+> +	do {
+> +		/*
+> +		 * We need to see the flags store in the IPI handler
+> +		 */
+> +		smp_mb();
+> +		if (!(data->flags & CSD_FLAG_WAIT))
+> +			break;
+> +		cpu_relax();
+> +	} while (1);
+> +}
 
-So.. whatever.  :)
+You forgot to free the "data" here? The waiter must also free the object, 
+since now the callee does not.
+
+		Linus
 
