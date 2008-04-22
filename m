@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762934AbYDVNI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763168AbYDVNJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762934AbYDVNI7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 09:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYDVNIv
+	id S1763168AbYDVNJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 09:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761589AbYDVNJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 09:08:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3656 "EHLO spitz.ucw.cz"
+	Tue, 22 Apr 2008 09:09:24 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48338 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753363AbYDVNIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 09:08:50 -0400
-Date: Tue, 22 Apr 2008 15:00:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: APM lockups since 2.6.25
-Message-ID: <20080422130013.GB5621@ucw.cz>
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162239560.25729@artax.karlin.mff.cuni.cz> <Pine.LNX.4.64.0804162243550.25729@artax.karlin.mff.cuni.cz> <200804170214.26368.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804170214.26368.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+	id S1754345AbYDVNJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 09:09:23 -0400
+From: David Sterba <dsterba@suse.cz>
+Subject: [PATCH] fs: use loff_t type instead of long long
+To: torvalds@linux-foundation.org
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       David Sterba <dsterba@suse.cz>
+Date: Tue, 22 Apr 2008 15:09:22 +0200
+Message-ID: <20080422130922.11665.24128.stgit@ds.suse.cz>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Use offset type consistently.
 
+Signed-off-by: David Sterba <dsterba@suse.cz>
+---
 
-On Thu 2008-04-17 02:14:25, Rafael J. Wysocki wrote:
-> On Wednesday, 16 of April 2008, Mikulas Patocka wrote:
-> > > So it didn't help, I just got this (2.6.25-rc8):
-> > > 
-> > > (I have turned lockdep on few days ago, and it seems to try to release a 
-> > > lock that's not held ... and then reacquire that lock again and deadlock)
-> > 
-> > BTW. the first one message happened immediatelly after APM resume, the 
-> > second message 2 minutes later.
-> > 
-> > APMD didn't set time after resume, it's completely locked up.
-> 
-> Well, unfortunately, APM uses the generic code for suspending and resuming
-> devices, but it doesn't use the freezing of tasks, so it's not very reliable in
-> its present form.
+ fs/read_write.c |    6 +++---
+ fs/seq_file.c   |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-In theory, BIOS is reponsible for saving/restoring device state in APM
-case... maybe we could just remove those calls?
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 49a9871..f0d1240 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -33,7 +33,7 @@ EXPORT_SYMBOL(generic_ro_fops);
+ 
+ loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
+ {
+-	long long retval;
++	loff_t retval;
+ 	struct inode *inode = file->f_mapping->host;
+ 
+ 	mutex_lock(&inode->i_mutex);
+@@ -60,7 +60,7 @@ EXPORT_SYMBOL(generic_file_llseek);
+ 
+ loff_t remote_llseek(struct file *file, loff_t offset, int origin)
+ {
+-	long long retval;
++	loff_t retval;
+ 
+ 	lock_kernel();
+ 	switch (origin) {
+@@ -91,7 +91,7 @@ EXPORT_SYMBOL(no_llseek);
+ 
+ loff_t default_llseek(struct file *file, loff_t offset, int origin)
+ {
+-	long long retval;
++	loff_t retval;
+ 
+ 	lock_kernel();
+ 	switch (origin) {
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index 8537702..9943408 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -239,7 +239,7 @@ Eoverflow:
+ loff_t seq_lseek(struct file *file, loff_t offset, int origin)
+ {
+ 	struct seq_file *m = (struct seq_file *)file->private_data;
+-	long long retval = -EINVAL;
++	loff_t retval = -EINVAL;
+ 
+ 	mutex_lock(&m->lock);
+ 	m->version = file->f_version;
 
-If that works for mikulas, that already handles 50% of people using
-apm ;-).
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
