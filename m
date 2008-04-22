@@ -1,37 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764673AbYDVTAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763482AbYDVTDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764673AbYDVTAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYDVTAL
+	id S1763482AbYDVTDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYDVTDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:00:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754783AbYDVTAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:00:10 -0400
+	Tue, 22 Apr 2008 15:03:41 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:60809 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754678AbYDVTDk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:03:40 -0400
+Date: Tue, 22 Apr 2008 21:03:39 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sanjeev Aditya Naga <sanjeev.kernel@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: config file part of kernel!
+In-Reply-To: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0804222103240.13697@fbirervta.pbzchgretzou.qr>
+References: <5681ec900804220953g187b792eib424c7af4cd3df4f@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] posix timers: (BUG 10460) discard the pending signal when the timer is destroyed
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 22 April 2008 19:38:20 +0400 <20080422153820.GA19900@tv-sign.ru>
-References: <20080422153820.GA19900@tv-sign.ru>
-X-Zippy-Says: I'm totally DESPONDENT over the LIBYAN situation and the price of CHICKEN..
-Message-Id: <20080422185932.24D14270381@magilla.localdomain>
-Date: Tue, 22 Apr 2008 11:59:32 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change looks reasonable to me.
 
+On Tuesday 2008-04-22 18:53, Sanjeev Aditya Naga wrote:
+>
+>Will it be good, if we make the `config` file (used to
+>build a kernel) part of the built kernel. So that one in
+>need, can extract it from the kernel using some
+>userspace tool!?
 
-Thanks,
-Roland
+Surprise, what do you think /proc/config.gz is for? :-)
