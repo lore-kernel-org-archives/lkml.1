@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbYDVUO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDVUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbYDVUO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 16:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYDVUOs
+	id S1760718AbYDVUQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 16:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYDVUQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 16:14:48 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46175 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbYDVUOr (ORCPT
+	Tue, 22 Apr 2008 16:16:04 -0400
+Received: from rv-out-0708.google.com ([209.85.198.247]:13008 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751383AbYDVUQC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 16:14:47 -0400
-Date: Tue, 22 Apr 2008 21:14:23 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>, linux-kernel@vger.kernel.org,
-       philipp.zabel@gmail.com
-Subject: Re: pasic3 allmod/yesconfig build error
-Message-ID: <20080422201423.GE9911@flint.arm.linux.org.uk>
-References: <28221442.1208881240429.JavaMail.oracle@acsmt302.oracle.com> <20080422194933.GB9911@flint.arm.linux.org.uk> <1208894601.24124.7.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 22 Apr 2008 16:16:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d1BX/Fl2PFLKLBKyGqnYpoVyTimW9fc8N9RGV1XyEWH2kKcar9xwdpPE5x1iEwhVk/UZ3GBzqm6Myv4Otlojz+tsQQUbDHo4TYxQJeuVvZUFEx5sdI2q9XtwarIfqK8vRIxcvDnTF9rC9ycXCYu7F9EFpwwtrQfgogNbH51M4cc=
+Message-ID: <38b2ab8a0804221316o7cab5641q16814849a1099b9a@mail.gmail.com>
+Date: Tue, 22 Apr 2008 22:16:01 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: Disk geometry from /sys
+Cc: "Seewer Philippe" <philippe.seewer@bfh.ch>, linux-kernel@vger.kernel.org
+In-Reply-To: <4808A09B.6090106@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208894601.24124.7.camel@brick>
-User-Agent: Mutt/1.4.2.1i
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>
+	 <480354C9.1050600@bfh.ch>
+	 <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>
+	 <4805AF93.90209@bfh.ch>
+	 <38b2ab8a0804170709m58830adagcba46f059ed10809@mail.gmail.com>
+	 <4807635E.9060101@bfh.ch> <4808A09B.6090106@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 01:03:21PM -0700, Harvey Harrison wrote:
-> On Tue, 2008-04-22 at 20:49 +0100, Russell King - ARM Linux wrote:
-> > On Tue, Apr 22, 2008 at 11:20:40AM -0500, Randy Dunlap wrote:
-> > > allmodconfig and allyesconfig on $ARCH try to build the htc-pasic3 driver,
-> > > but it fails due to wanting <asm/arch/pxa-regs.h>.
-> > > 
-> > > Should the Kconfig file be modified to build this driver only for $ARCH=arm ?
-> > 
-> > Known problem.  You're about the 4th person in the last 24 hours to
-> > report this.
-> > 
-> > It's been known about since Sunday.  Unfortunately, Linus not responding
-> > to emails until midnight (my time) on Monday meant that I've not been able
-> > to do anything about it, despite having a fix (along with others) already
-> > merged but not properly queued up (because I didn't know what Linus was
-> > going to do.)
-> > 
-> > So... I'm not going to be able to properly sort my tree until Thursday.
-> > Please ignore it until Friday.  Thanks.
-> 
-> People make mistakes, it happens.  For people who have hit this, do you
-> have a tree they can pull from to get the fixes?
+Hello Mark
 
-Not yet.
+On Fri, Apr 18, 2008 at 3:22 PM, Mark Lord <lkml@rtr.ca> wrote:
+>  That can sound a bit misleading.  The complete story, for ATA/SATA drives,
+>  is that the disk has two geometries:  an internal physical one, with a
+> fixed number of heads and cylinders, but variable sectors/track
+>  (which normally varies by cylinder zone).
+>
+>  Software *never* sees or knows about that geometry, so ignore it.
+>
+>  The second geometry, is the one that the drive reports to software
+>  as its "native" geometry.  This is what you see from "hdparm -I"
+>  and friends, and this geometry is what has to be used by software
+>  when using cylinder/head/sector (CHS) addressing for I/O operations.
+>  The hardware interface has a limit of 4-bits for the head value,
+>  so the maximum number of heads can never be more than 16.
+>
+>  Nobody uses CHS addressing for I/O operations, at least not on
+>  any hardware newer than at least ten years old, so this geometry
+>  is also unimportant for most uses.
+>
 
-> > (Please note that these reports are stressing me because I have the fix,
-> > I've known about it for ages, but because of factors out of my control -
-> > and community policy, in so far as "you do not change the tree you've asked
-> > to be pulled from" I'd have been unable to resolve it and all the other
-> > stupid breakage in that pull before anyone saw it.  I suppose what I
-> > should've done was deleted the tree of kernel.org so Linus _couldn't_
-> > pull it.)
-> 
-> Couldn't you just send Linus another pull request with further fixes?
+Is it because IDE drives support several IO operation modes ?
 
-So... no.  And the reason I'm saying Thursday is because I do not work
-on the kernel every day of the week - in fact, I'm not in front of a
-computer for three days of the working week.
-
-So... Thursday.  Not earlier.  Be patient.
-
-Bear in mind that I waited patiently on Monday - _all_ _day_ Monday - to
-know how to fix these issues.  So the least everyone can do _for_ _me_
-is to be patient over it and just plain wait until I can sort it.
-
-Just like Linus is entitled to time off, I'm entitled to time off.  My
-time off is just at a different time to normal folk.
-
-Patience.
+thanks
+-- 
+Francis
