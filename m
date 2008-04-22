@@ -1,54 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762024AbYDVPZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934093AbYDVP00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762024AbYDVPZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762993AbYDVPZ3
+	id S934093AbYDVP00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbYDVP0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:25:29 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1928 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933950AbYDVPZ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:25:27 -0400
-Date: Tue, 22 Apr 2008 16:25:09 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, bunk@kernel.org,
-       astarikovskiy@suse.de, tglx@linutronix.de,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
-Subject: Re: Voyager phys_cpu_present_map compile error
-Message-ID: <20080422152509.GE26446@shadowen.org>
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <480C8EC8.3080705@zytor.com> <20080422062927.bb360a36.akpm@linux-foundation.org>
+	Tue, 22 Apr 2008 11:26:09 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39626 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759733AbYDVP0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 11:26:05 -0400
+Date: Tue, 22 Apr 2008 10:26:00 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org
+Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 0 of 9] mmu notifier #v12
+Message-ID: <20080422152600.GP30298@sgi.com>
+References: <patchbomb.1207669443@duo.random> <20080409131709.GR11364@sgi.com> <20080409144401.GT10133@duo.random> <20080409185500.GT11364@sgi.com> <20080422072026.GM12709@duo.random> <20080422120056.GR12709@duo.random> <20080422130120.GR22493@sgi.com> <20080422132143.GS12709@duo.random> <20080422133604.GN30298@sgi.com> <20080422134847.GT12709@duo.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422062927.bb360a36.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080422134847.GT12709@duo.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 06:29:27AM -0700, Andrew Morton wrote:
-> > On Mon, 21 Apr 2008 08:55:36 -0400 "H. Peter Anvin" <hpa@zytor.com> wrote:
-> >
-> > If there are no VISWS' left, we should just unload the code.
+Andrew, Could we get direction/guidance from you as regards
+the invalidate_page() callout of Andrea's patch set versus the
+invalidate_range_start/invalidate_range_end callout pairs of Christoph's
+patchset?  This is only in the context of the __xip_unmap, do_wp_page,
+page_mkclean_one, and try_to_unmap_one call sites.
+
+On Tue, Apr 22, 2008 at 03:48:47PM +0200, Andrea Arcangeli wrote:
+> On Tue, Apr 22, 2008 at 08:36:04AM -0500, Robin Holt wrote:
+> > I am a little confused about the value of the seq_lock versus a simple
+> > atomic, but I assumed there is a reason and left it at that.
 > 
-> yup, it's a desirable objective.
+> There's no value for anything but get_user_pages (get_user_pages takes
+> its own lock internally though). I preferred to explain it as a
+> seqlock because it was simpler for reading, but I totally agree in the
+> final implementation it shouldn't be a seqlock. My code was meant to
+> be pseudo-code only. It doesn't even need to be atomic ;).
+
+Unless there is additional locking in your fault path, I think it does
+need to be atomic.
+
+> > I don't know what you mean by "it'd" run slower and what you mean by
+> > "armed and disarmed".
 > 
-> I have a suspicion that there are no NUMAQs left either.  Andy, would it be
-> missed?
+> 1) when armed the time-window where the kvm-page-fault would be
+> blocked would be a bit larger without invalidate_page for no good
+> reason
 
-Cirtainly these boxes are getting near end-of-life.  I am not sure how
-many are out there beyond our the ones we have in the lab.  We do
-maintain regular testing on them, even reporting them to TKO.
+But that is a distinction without a difference.  In the _start/_end
+case, kvm's fault handler will not have any _DIRECT_ blocking, but
+get_user_pages() had certainly better block waiting for some other lock
+to prevent the process's pages being refaulted.
 
-The main reason we bother keeping them working is that they have a large
-numa ratio and tend to show up issues with other things, like the numa
-scheduler issues when we got that latest re-write.
+I am no VM expert, but that seems like it is critical to having a
+consistent virtual address space.  Effectively, you have a delay on the
+kvm fault handler beginning when either invalidate_page() is entered
+or invalidate_range_start() is entered until when the _CALLER_ of the
+invalidate* method has unlocked.  That time will remain essentailly
+identical for either case.  I would argue you would be hard pressed to
+even measure the difference.
 
-I has always been a shame that support wasn't included in generic, and
-as a result we have ended up with this three way split "generic, voyager,
-and numaq".  It made sense at the time for developers, but never did for
-those down the food chain; particularly for distros.
+> 2) if you were to remove invalidate_page when disarmed the VM could
+> would need two branches instead of one in various places
 
--apw
+Those branches are conditional upon there being list entries.  That check
+should be extremely cheap.  The vast majority of cases will have no
+registered notifiers.  The second check for the _end callout will be
+from cpu cache.
+
+> I don't want to waste cycles if not wasting them improves performance
+> both when armed and disarmed.
+
+In summary, I think we have narrowed down the case of no registered
+notifiers to being infinitesimal.  The case of registered notifiers
+being a distinction without a difference.
+
+> > When I was discussing this difference with Jack, he reminded me that
+> > the GRU, due to its hardware, does not have any race issues with the
+> > invalidate_page callout simply doing the tlb shootdown and not modifying
+> > any of its internal structures.  He then put a caveat on the discussion
+> > that _either_ method was acceptable as far as he was concerned.  The real
+> > issue is getting a patch in that satisfies all needs and not whether
+> > there is a seperate invalidate_page callout.
+> 
+> Sure, we have that patch now, I'll send it out in a minute, I was just
+> trying to explain why it makes sense to have an invalidate_page too
+> (which remains the only difference by now), removing it would be a
+> regression on all sides, even if a minor one.
+
+I think GRU is the only compelling case I have heard for having the
+invalidate_page seperate.  In the case of the GRU, the hardware enforces a
+lifetime of the invalidate which covers all in-progress faults including
+ones where the hardware is informed after the flush of a PTE.  in all
+cases, once the GRU invalidate instruction is issued, all active requests
+are invalidated.  Future faults will be blocked in get_user_pages().
+Without that special feature of the hardware, I don't think any code
+simplification exists.  I, of course, reserve the right to be wrong.
+
+I believe the argument against a seperate invalidate_page() callout was
+Christoph's interpretation of Andrew's comments.  I am not certain Andrew
+was aware of this special aspects of the GRU hardware and whether that
+had been factored into the discussion at that point in time.
+
+
+Thanks,
+Robin
