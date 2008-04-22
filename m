@@ -1,235 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763187AbYDVLSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYDVLVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763187AbYDVLSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 07:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbYDVLSn
+	id S1756862AbYDVLVr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 07:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYDVLVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 07:18:43 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35175 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYDVLSm (ORCPT
+	Tue, 22 Apr 2008 07:21:36 -0400
+Received: from hu-out-0506.google.com ([72.14.214.234]:51575 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbYDVLVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 07:18:42 -0400
-Message-ID: <480DC968.9010304@ak.jp.nec.com>
-Date: Tue, 22 Apr 2008 20:18:00 +0900
-From: KaiGai Kohei <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 22 Apr 2008 07:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=qnxw3k3Hbk/9g1qkTEYLmp6RSNXc7Zur8ifknbHQxV3XxSu+LbNhekccq62ee9ojSHyBv0ZN0Gyloo+osQmPo6vikvSYwqWYOPjgB7BsinF7WPLDgeXDhw3feF64MNlRdzF7LMO7YHg5ypsRdbWprmshDimXydlsXrz9KXzvcWA=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH] xfs: #define out unused parameters of xfs_bmap_add_free and xfs_btree_read_bufl
+Date: Tue, 22 Apr 2008 13:20:54 +0200
+User-Agent: KMail/1.8.2
+Cc: Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804221142.00914.vda.linux@googlemail.com> <200804221216.25905.vda.linux@googlemail.com>
+In-Reply-To: <200804221216.25905.vda.linux@googlemail.com>
 MIME-Version: 1.0
-To: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com, chrisw@sous-sol.org
-CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] exporting capability name/code pairs
-References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com>
-In-Reply-To: <480DC80F.3060403@ak.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_WocDI9o7ShYH5Qd"
+Message-Id: <200804221320.54147.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/3] exporting capability name/code pairs
+--Boundary-00=_WocDI9o7ShYH5Qd
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This patch enables to export code/name pairs of capabilities the running
-kernel supported.
+Hi David,
 
-A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
-at 2.6.25. However, we have no interface to disclose what capabilities
-are supported on the running kernel. Thus, we have to maintain libcap
-version in appropriate one synchronously.
+xfs_bmap_add_free and xfs_btree_read_bufl functions
+use some of their parameters only in some cases
+(e.g. if DEBUG is defined, or on non-Linux OS :)
 
-This patch enables libcap to collect the list of capabilities at run time,
-and provide them for users. It helps to improve portability of library.
+This patch removes these parameters using #define hack
+which makes them "disappear" without the need of uglifying
+every callsite with #ifdefs.
 
-It exports these information as regular files under /sys/kernel/capability.
-The numeric node exports its name, the symbolic node exports its code.
+Code size difference on 32-bit x86:
+ 393457    2904    2952  399313   617d1 linux-2.6-xfs6-TEST/fs/xfs/xfs.o
+ 393441    2904    2952  399297   617c1 linux-2.6-xfs7-TEST/fs/xfs/xfs.o
 
-Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+Compile tested only.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 --
- scripts/mkcapnames.sh |   44 ++++++++++++++++++++++
- security/Makefile     |    9 ++++
- security/commoncap.c  |   99 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 152 insertions(+), 0 deletions(-)
+vda
 
-diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
-index e69de29..5d36d52 100644
---- a/scripts/mkcapnames.sh
-+++ b/scripts/mkcapnames.sh
-@@ -0,0 +1,44 @@
-+#!/bin/sh
-+
-+#
-+# generate a cap_names.h file from include/linux/capability.h
-+#
-+
-+CAPHEAD="`dirname $0`/../include/linux/capability.h"
-+REGEXP='^#define CAP_[A-Z_]+[ 	]+[0-9]+$'
-+NUMCAP=`cat "$CAPHEAD" | egrep -c "$REGEXP"`
-+
-+echo '#ifndef CAP_NAMES_H'
-+echo '#define CAP_NAMES_H'
-+echo
-+echo '/*'
-+echo ' * Do NOT edit this file directly.'
-+echo ' * This file is generated from include/linux/capability.h automatically'
-+echo ' */'
-+echo
-+echo '#if !defined(SYSFS_CAP_NAME_ENTRY) || !defined(SYSFS_CAP_CODE_ENTRY)'
-+echo '#error cap_names.h should be included from security/capability.c'
-+echo '#else'
-+echo "#if $NUMCAP != CAP_LAST_CAP + 1"
-+echo '#error mkcapnames.sh cannot collect capabilities correctly'
-+echo '#else'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("SYSFS_CAP_NAME_ENTRY(%s,%s);\n", tolower($2), $2); }'
-+echo
-+echo 'static struct attribute *capability_name_attrs[] = {'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("\t&%s_name_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
-+echo '};'
-+
-+echo
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("SYSFS_CAP_CODE_ENTRY(%s,%s);\n", tolower($2), $2); }'
-+echo
-+echo 'static struct attribute *capability_code_attrs[] = {'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("\t&%s_code_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
-+echo '};'
-+
-+echo '#endif'
-+echo '#endif'
-+echo '#endif'
-diff --git a/security/Makefile b/security/Makefile
-index 9e8b025..4093e3e 100644
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -18,3 +18,12 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
- obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
- obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
-+
-+# cap_names.h contains the code/name pair of capabilities.
-+# It is generated using include/linux/capability.h automatically.
-+$(obj)/commoncap.o: $(obj)/cap_names.h
-+quiet_cmd_cap_names  = CAPS    $@
-+	cmd_cap_names  = /bin/sh $(srctree)/scripts/mkcapnames.sh > $@
-+targets += cap_names.h
-+$(obj)/cap_names.h: $(srctree)/scripts/mkcapnames.sh $(srctree)/include/linux/capability.h FORCE
-+	$(call if_changed,cap_names)
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 8529057..d2f8d40 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -24,6 +24,8 @@
- #include <linux/hugetlb.h>
- #include <linux/mount.h>
- #include <linux/sched.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
+--Boundary-00=_WocDI9o7ShYH5Qd
+Content-Type: text/x-diff;
+  charset="koi8-r";
+  name="xfs5-xfs_bmap_add_free_xfs_btree_read_bufl-remove_unused_params.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="xfs5-xfs_bmap_add_free_xfs_btree_read_bufl-remove_unused_params.patch"
 
- /* Global security state */
+diff -urpN linux-2.6-xfs6/fs/xfs/xfs_bmap.h linux-2.6-xfs7/fs/xfs/xfs_bmap.h
+--- linux-2.6-xfs6/fs/xfs/xfs_bmap.h	2008-04-22 04:06:43.000000000 +0200
++++ linux-2.6-xfs7/fs/xfs/xfs_bmap.h	2008-04-22 13:10:36.000000000 +0200
+@@ -170,6 +170,10 @@ xfs_bmap_add_attrfork(
+  * Add the extent to the list of extents to be free at transaction end.
+  * The list is maintained sorted (by block number).
+  */
++#ifndef DEBUG
++/* "mp" is used only for debugging */
++#define xfs_bmap_add_free(bno, len, flist, mp) xfs_bmap_add_free(bno, len, flist)
++#endif
+ void
+ xfs_bmap_add_free(
+ 	xfs_fsblock_t		bno,		/* fs block number of extent */
+diff -urpN linux-2.6-xfs6/fs/xfs/xfs_btree.h linux-2.6-xfs7/fs/xfs/xfs_btree.h
+--- linux-2.6-xfs6/fs/xfs/xfs_btree.h	2008-04-22 04:06:43.000000000 +0200
++++ linux-2.6-xfs7/fs/xfs/xfs_btree.h	2008-04-22 13:10:36.000000000 +0200
+@@ -363,6 +363,9 @@ xfs_btree_offsets(
+  * Get a buffer for the block, return it read in.
+  * Long-form addressing.
+  */
++/* In Linux, "refval" is not used */
++#define xfs_btree_read_bufl(mp, tp, fsbno, lock, bpp, refval) \
++	xfs_btree_read_bufl(mp, tp, fsbno, lock, bpp)
+ int					/* error */
+ xfs_btree_read_bufl(
+ 	struct xfs_mount	*mp,	/* file system mount point */
 
-@@ -597,3 +599,100 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
- 	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
-
-+/*
-+ * Export the list of capabilities on /sys/kernel/capability
-+ */
-+static struct kobject *capability_kobj;
-+
-+static ssize_t capability_name_show(struct kobject *kobj,
-+				    struct kobj_attribute *attr,
-+				    char *buffer)
-+{
-+	/* It returns numerical representation of capability. */
-+	return scnprintf(buffer, PAGE_SIZE, "%ld\n", (long) attr->data);
-+}
-+
-+static ssize_t capability_code_show(struct kobject *kobj,
-+				    struct kobj_attribute *attr,
-+				    char *buffer)
-+{
-+	/* It returns symbolic representation of capability. */
-+	return scnprintf(buffer, PAGE_SIZE, "%s\n", (char *) attr->data);
-+}
-+
-+static ssize_t capability_version_show(struct kobject *kobj,
-+				       struct kobj_attribute *attr,
-+				       char *buffer)
-+{
-+	return scnprintf(buffer, PAGE_SIZE, "0x%08x\n",
-+			 _LINUX_CAPABILITY_VERSION);
-+}
-+
-+#define SYSFS_CAP_NAME_ENTRY(_name,_code)				\
-+	static struct kobj_attribute _name##_name_attr =		\
-+		__ATTR_DATA(_name, 0444, capability_name_show, NULL, (long)(_code))
-+
-+#define SYSFS_CAP_CODE_ENTRY(_name,_code)				\
-+	static struct kobj_attribute _name##_code_attr =		\
-+		__ATTR_DATA(_code, 0444, capability_code_show, NULL, __stringify(_name))
-+
-+/*
-+ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
-+ * This script parses include/linux/capability.h
-+ */
-+#include "cap_names.h"
-+
-+static struct attribute_group capability_name_attr_group = {
-+	.name = "names",
-+	.attrs = capability_name_attrs,
-+};
-+
-+static struct attribute_group capability_code_attr_group = {
-+	.name = "codes",
-+	.attrs = capability_code_attrs,
-+};
-+
-+static struct kobj_attribute cap_version_attr =
-+	__ATTR(version, 0444, capability_version_show, NULL);
-+
-+static int __init capability_export_names(void)
-+{
-+	int rc = -ENOMEM;
-+
-+	/* make /sys/kernel/capability */
-+	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
-+	if (!capability_kobj)
-+		goto error0;
-+
-+	/* make /sys/kernel/capability/names */
-+	rc = sysfs_create_group(capability_kobj,
-+				&capability_name_attr_group);
-+	if (rc)
-+		goto error1;
-+
-+	/* make /sys/kernel/capability/codes */
-+	rc = sysfs_create_group(capability_kobj,
-+				&capability_code_attr_group);
-+	if (rc)
-+		goto error2;
-+
-+	/* make /sys/kernel/capability/version */
-+	rc = sysfs_create_file(capability_kobj,
-+			       &cap_version_attr.attr);
-+	if (rc)
-+		goto error3;
-+
-+	return 0;
-+
-+error3:
-+	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
-+error2:
-+	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
-+error1:
-+	kobject_put(capability_kobj);
-+error0:
-+	printk(KERN_ERR "Unable to export capabilities\n");
-+
-+	return rc;
-+}
-+__initcall(capability_export_names);
-
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+--Boundary-00=_WocDI9o7ShYH5Qd--
