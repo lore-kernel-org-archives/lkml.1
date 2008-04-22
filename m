@@ -1,68 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYDVUii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYDVUmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbYDVUii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 16:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYDVUia
+	id S1760121AbYDVUmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 16:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYDVUmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 16:38:30 -0400
-Received: from xenotime.net ([66.160.160.81]:59039 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753962AbYDVUi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 16:38:29 -0400
-Date: Tue, 22 Apr 2008 13:38:28 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] mfd: kconfig exposing unbuildable driver
-In-Reply-To: <20080422203334.GA9809@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0804221337550.19817@shark.he.net>
-References: <1208895950.24124.9.camel@brick> <20080422203334.GA9809@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Apr 2008 16:42:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40299 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754790AbYDVUmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 16:42:21 -0400
+Message-Id: <20080422204220.179144000@polaris-admin.engr.sgi.com>
+References: <20080422204219.994283000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 22 Apr 2008 13:42:20 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/5] x86: Modify Kconfig to allow up to 4096 cpus
+Content-Disposition: inline; filename=MAXSMP-Kconfig
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008, Russell King wrote:
+  * Increase the limit of NR_CPUS to 4096 and introduce a boolean
+    called "MAXSMP" which when set (e.g. "allyesconfig"), will set
+    NR_CPUS = 4096 and NODES_SHIFT = 9 (512).
+    
+  * Changed max setting for NODES_SHIFT from 15 to 9 to accurately
+    reflect the real limit.
 
-> That was my initial approach as well, which got shot down by Andrew
-> Morton and others as being unacceptable.
+For inclusion into sched-devel/latest tree.
 
-where?  why?
+Based on:
+	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+    +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
-Seems like we need to push back on that part.
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/Kconfig |   37 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 32 insertions(+), 5 deletions(-)
 
-> On Tue, Apr 22, 2008 at 01:25:50PM -0700, Harvey Harrison wrote:
-> > Limit this driver to ARCH_PXA, noticed by breakage on allyesconfig
-> > builds on 32-bit x86.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> > Linus, please apply and Russell can fix it up however he likes later
-> > in the week.  Many people are hitting this.
-> > 
-> >  drivers/mfd/Kconfig |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> > index 2566479..bd29c61 100644
-> > --- a/drivers/mfd/Kconfig
-> > +++ b/drivers/mfd/Kconfig
-> > @@ -32,6 +32,7 @@ config HTC_EGPIO
-> >  
-> >  config HTC_PASIC3
-> >  	tristate "HTC PASIC3 LED/DS1WM chip support"
-> > +	depends on ARCH_PXA
-> >  	help
-> >  	  This core driver provides register access for the LED/DS1WM
-> >  	  chips labeled "AIC2" and "AIC3", found on HTC Blueangel and
-> > -- 
-> > 1.5.5.144.g3e42
+--- linux-2.6.x86.for-akpm.orig/arch/x86/Kconfig
++++ linux-2.6.x86.for-akpm/arch/x86/Kconfig
+@@ -518,20 +518,35 @@ config SWIOTLB
+ 	  access 32-bits of memory can be used on systems with more than
+ 	  3 GB of memory. If unsure, say Y.
+ 
++config MAXSMP
++	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
++	depends on X86_64 && SMP
++	default n
++	help
++	  Configure maximum number of CPUS and NUMA Nodes for this architecture.
++	  If unsure, say N.
++
++if MAXSMP
++config NR_CPUS
++	int
++	default "4096"
++endif
+ 
++if !MAXSMP
+ config NR_CPUS
+-	int "Maximum number of CPUs (2-255)"
+-	range 2 255
++	int "Maximum number of CPUs (2-4096)"
++	range 2 4096
+ 	depends on SMP
+ 	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
+ 	default "8"
+ 	help
+ 	  This allows you to specify the maximum number of CPUs which this
+-	  kernel will support.  The maximum supported value is 255 and the
++	  kernel will support.  The maximum supported value is 4096 and the
+ 	  minimum value which makes sense is 2.
+ 
+ 	  This is purely to save memory - each supported CPU adds
+ 	  approximately eight kilobytes to the kernel image.
++endif
+ 
+ config SCHED_SMT
+ 	bool "SMT (Hyperthreading) scheduler support"
+@@ -913,13 +928,25 @@ config NUMA_EMU
+ 	  into virtual nodes when booted with "numa=fake=N", where N is the
+ 	  number of nodes. This is only useful for debugging.
+ 
++if MAXSMP
++
+ config NODES_SHIFT
+-	int "Max num nodes shift(1-15)"
+-	range 1 15  if X86_64
++	int
++	default "9"
++endif
++
++if !MAXSMP
++config NODES_SHIFT
++	int "Maximum NUMA Nodes (as a power of 2)"
++	range 1 9   if X86_64
+ 	default "6" if X86_64
+ 	default "4" if X86_NUMAQ
+ 	default "3"
+ 	depends on NEED_MULTIPLE_NODES
++	help
++	  Specify the maximum number of NUMA Nodes available on the target
++	  system.  Increases memory reserved to accomodate various tables.
++endif
+ 
+ config HAVE_ARCH_BOOTMEM_NODE
+ 	def_bool y
 
 -- 
-~Randy
