@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbYDVO56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbYDVPAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762902AbYDVO56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 10:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVO5v
+	id S1763585AbYDVPAP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYDVPAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 10:57:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59092 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbYDVO5u (ORCPT
+	Tue, 22 Apr 2008 11:00:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58293 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751462AbYDVPAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 10:57:50 -0400
-Subject: Re: [2.6 patch] mtd: make onenand_scan_bbt() static
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080414142036.GU6695@cs181133002.pp.htv.fi>
-References: <20080414142036.GU6695@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 15:57:46 +0100
-Message-Id: <1208876266.9212.606.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 22 Apr 2008 11:00:00 -0400
+Date: Tue, 22 Apr 2008 07:58:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+In-Reply-To: <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0804220749450.2779@woody.linux-foundation.org>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804220735350.2779@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-14 at 17:20 +0300, Adrian Bunk wrote:
-> This patch makes the needlessly global onenand_scan_bbt() static.
 
-Nak. It's not unlikely that a board driver will need this. It just
-introduces a gratuitous difference between NAND and OneNAND.
 
--- 
-dwmw2
+On Tue, 22 Apr 2008, Linus Torvalds wrote:
+> 
+> You forgot to free the "data" here? The waiter must also free the object, 
+> since now the callee does not.
 
+Ahh. For the single case, the caller will have it on the stack.
+
+But the smp_call_function_mask() case seems to leak these things.
+
+How about just always doing the "wait" case on the stack? Also, I'd 
+suggest you get rid of the static allocation, and just turn it into a wait 
+case, so that you don't need *three* different allocation cases, just two.
+
+Or am I missing something?
+
+		Linus
