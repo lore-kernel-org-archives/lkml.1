@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbYDVTuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbYDVTuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758411AbYDVTuH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 15:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbYDVTty
+	id S1762560AbYDVTuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 15:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763386AbYDVTt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 15:49:54 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:34265 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755620AbYDVTtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 15:49:53 -0400
-Date: Tue, 22 Apr 2008 22:48:31 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 2/2] posix timers: don't discard the signal if the timer was explicitly destroyed
-Message-ID: <20080422184831.GA105@tv-sign.ru>
-References: <20080422153821.GA19903@tv-sign.ru> <20080422190849.6443E270381@magilla.localdomain>
+	Tue, 22 Apr 2008 15:49:57 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60047 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762848AbYDVTtz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 15:49:55 -0400
+Date: Tue, 22 Apr 2008 20:49:33 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
+Cc: linux-kernel@vger.kernel.org, philipp.zabel@gmail.com
+Subject: Re: pasic3 allmod/yesconfig build error
+Message-ID: <20080422194933.GB9911@flint.arm.linux.org.uk>
+References: <28221442.1208881240429.JavaMail.oracle@acsmt302.oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422190849.6443E270381@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <28221442.1208881240429.JavaMail.oracle@acsmt302.oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22, Roland McGrath wrote:
->
-> > I am not sure this patch is really needed, please review.
+On Tue, Apr 22, 2008 at 11:20:40AM -0500, Randy Dunlap wrote:
+> allmodconfig and allyesconfig on $ARCH try to build the htc-pasic3 driver,
+> but it fails due to wanting <asm/arch/pxa-regs.h>.
 > 
-> I don't think this is worth doing.
-> 
-> > The previous patch adds the user-visible change. It is not clear to me why
-> > should we cancel the pending signal sent by the timer after timer_delete().
-> > Suppose the signal is blocked, pending, the user checks sys_rt_sigpending(),
-> > destroys the timer and then doesn't see the signal.
-> 
-> So?  POSIX says it's unspecified what happens to such a signal,
+> Should the Kconfig file be modified to build this driver only for $ARCH=arm ?
 
-Ah, good!
+Known problem.  You're about the 4th person in the last 24 hours to
+report this.
 
-> so an
-> application can't rely on it one way or the other.  I don't see any reason
-> to complicate it further.
+It's been known about since Sunday.  Unfortunately, Linus not responding
+to emails until midnight (my time) on Monday meant that I've not been able
+to do anything about it, despite having a fix (along with others) already
+merged but not properly queued up (because I didn't know what Linus was
+going to do.)
 
-Agreed, please ignore this patch.
+So... I'm not going to be able to properly sort my tree until Thursday.
+Please ignore it until Friday.  Thanks.
 
-Thanks! I really hoped you will nack this, I hate the additional complications
-too.
-
-Oleg.
-
+(Please note that these reports are stressing me because I have the fix,
+I've known about it for ages, but because of factors out of my control -
+and community policy, in so far as "you do not change the tree you've asked
+to be pulled from" I'd have been unable to resolve it and all the other
+stupid breakage in that pull before anyone saw it.  I suppose what I
+should've done was deleted the tree of kernel.org so Linus _couldn't_
+pull it.)
