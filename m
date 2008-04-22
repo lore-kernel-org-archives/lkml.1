@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbYDVPXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbYDVPYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933853AbYDVPXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 11:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933748AbYDVPWv
+	id S1763703AbYDVPYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 11:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbYDVPYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 11:22:51 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45036 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933744AbYDVPWt (ORCPT
+	Tue, 22 Apr 2008 11:24:24 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:44967
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbYDVPYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 11:22:49 -0400
-X-Greylist: delayed 1305 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Apr 2008 11:22:49 EDT
-Subject: Re: [PATCH 6/11] arm: convert to generic helpers for IPI function
-	calls
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
-In-Reply-To: <1208851058-8500-7-git-send-email-jens.axboe@oracle.com>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com>
-	 <1208851058-8500-7-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 22 Apr 2008 16:00:47 +0100
-Message-Id: <1208876447.31997.30.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2008 14:59:29.0015 (UTC) FILETIME=[76C4E870:01C8A489]
+	Tue, 22 Apr 2008 11:24:23 -0400
+Message-ID: <480E0324.6050006@qumranet.com>
+Date: Tue, 22 Apr 2008 18:24:20 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+References: <ea87c15371b1bd49380c.1208872277@duo.random> <480DFC8A.8040105@cosmosbay.com> <20080422151529.GE24536@duo.random>
+In-Reply-To: <20080422151529.GE24536@duo.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 09:57 +0200, Jens Axboe wrote:
-> This converts arm to use the new helpers for smp_call_function() and
-> friends, and adds support for smp_call_function_single(). Not tested
-> at all, not even compiled.
+Andrea Arcangeli wrote:
+> On Tue, Apr 22, 2008 at 04:56:10PM +0200, Eric Dumazet wrote:
+>   
+>> Andrea Arcangeli a écrit :
+>>     
+>>> +
+>>> +static int mm_lock_cmp(const void *a, const void *b)
+>>> +{
+>>> +	cond_resched();
+>>> +	if ((unsigned long)*(spinlock_t **)a <
+>>> +	    (unsigned long)*(spinlock_t **)b)
+>>> +		return -1;
+>>> +	else if (a == b)
+>>> +		return 0;
+>>> +	else
+>>> +		return 1;
+>>> +}
+>>> +
+>>>       
+>> This compare function looks unusual...
+>> It should work, but sort() could be faster if the
+>> if (a == b) test had a chance to be true eventually...
+>>     
+>
+> Hmm, are you saying my mm_lock_cmp won't return 0 if a==b?
+>
+>   
 
-With the minor fixes below, it compiles and seems to run OK on RealView
-EB + ARM11MPCore (4 CPUs):
-
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index 9c85329..6344466 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -484,7 +484,7 @@ asmlinkage void __exception do_IPI(struct pt_regs *regs)
- 				generic_smp_call_function_interrupt();
- 				break;
- 
--			case IPI_CALL_FUNC:
-+			case IPI_CALL_FUNC_SINGLE:
- 				generic_smp_call_function_single_interrupt();
- 				break;
- 
-@@ -536,14 +536,13 @@ int setup_profiling_timer(unsigned int multiplier)
- }
- 
- static int
--on_each_cpu_mask(void (*func)(void *), void *info, int retry, int wait,
--		 cpumask_t mask)
-+on_each_cpu_mask(void (*func)(void *), void *info, int wait, cpumask_t mask)
- {
- 	int ret = 0;
- 
- 	preempt_disable();
- 
--	ret = smp_call_function_mask(mask, func, info, retry, wait);
-+	ret = smp_call_function_mask(mask, func, info, wait);
- 	if (cpu_isset(smp_processor_id(), mask))
- 		func(info);
- 
-@@ -612,7 +611,7 @@ void flush_tlb_mm(struct mm_struct *mm)
- {
- 	cpumask_t mask = mm->cpu_vm_mask;
- 
--	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, 1, mask);
-+	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, mask);
- }
- 
- void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
-@@ -623,7 +622,7 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
- 	ta.ta_vma = vma;
- 	ta.ta_start = uaddr;
- 
--	on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, 1, mask);
-+	on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, mask);
- }
- 
- void flush_tlb_kernel_page(unsigned long kaddr)
-@@ -645,7 +644,7 @@ void flush_tlb_range(struct vm_area_struct *vma,
- 	ta.ta_start = start;
- 	ta.ta_end = end;
- 
--	on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, 1, mask);
-+	on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, mask);
- }
- 
- void flush_tlb_kernel_range(unsigned long start, unsigned long end)
-
+You need to compare *a to *b (at least, that's what you're doing for the 
+< case).
 
 -- 
-Catalin
+error compiling committee.c: too many arguments to function
 
