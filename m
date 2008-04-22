@@ -1,98 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYDVD1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbYDVDcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbYDVD1R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 23:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbYDVD1G
+	id S1761236AbYDVDcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 23:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbYDVDcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 23:27:06 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:30900 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756473AbYDVD1D (ORCPT
+	Mon, 21 Apr 2008 23:32:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52686
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752951AbYDVDcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 23:27:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=O7xk//PshJURehRID17w/Ri++RXn1rX6RG/4+oJBOyXiqZiPlRXX6KX6DZlJ6lPQoKMhSh9Nua0UYQHxKwaL6w0V2lk4mVzDt989g0erU1B26Jqx9fEkNzSaNTKcNDp8wWL/4w6tTnymdT4jX0AFbAGM/UICpDFS/fFSWSgs4uQ=
-Message-ID: <386072610804212027i58895642n5320b96376c2732@mail.gmail.com>
-Date: Tue, 22 Apr 2008 11:27:00 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH 03/15] [BLACKFIN] minor irq handler cleanups
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <0fc974582553292880b65973b4095297056eec03.1208559659.git.jgarzik@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Apr 2008 23:32:11 -0400
+Date: Mon, 21 Apr 2008 20:32:12 -0700 (PDT)
+Message-Id: <20080421.203212.262634448.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl
+Subject: sched tree bisectability
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-	 <0fc974582553292880b65973b4095297056eec03.1208559659.git.jgarzik@redhat.com>
-X-Google-Sender-Auth: 9672e756a0db0c00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 19, 2008 at 7:22 AM, Jeff Garzik <jeff@garzik.org> wrote:
-> - time_sched_init() should use standard irq_handler_t
->
->  - sys_timer0_int_handler() should not take 'regs' third argument
->
->  - remove pointless cast from void*
->
->  This change's main purpose is to prepare for the patchset in
->  jgarzik/misc-2.6.git#irq-remove, that explores removal of the
->  never-used 'irq' argument in each interrupt handler.
->
->  Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->  ---
->   arch/blackfin/kernel/time.c        |    5 ++---
->   arch/blackfin/oprofile/timer_int.c |    5 ++---
->   2 files changed, 4 insertions(+), 6 deletions(-)
->
->  diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
->  index 9bdc8f9..715b394 100644
->  --- a/arch/blackfin/kernel/time.c
->  +++ b/arch/blackfin/kernel/time.c
->  @@ -39,8 +39,7 @@
->   /* This is an NTP setting */
->   #define        TICK_SIZE (tick_nsec / 1000)
->
->  -static void time_sched_init(irqreturn_t(*timer_routine)
->  -                       (int, void *));
->  +static void time_sched_init(irq_handler_t timer_routine);
->   static unsigned long gettimeoffset(void);
->
->   static struct irqaction bfin_timer_irq = {
->  @@ -64,7 +63,7 @@ static struct irqaction bfin_timer_irq = {
->   #define TIME_SCALE 1
->
->   static void
->  -time_sched_init(irqreturn_t(*timer_routine) (int, void *))
->  +time_sched_init(irq_handler_t timer_routine)
->   {
->         u32 tcount;
->
->  diff --git a/arch/blackfin/oprofile/timer_int.c b/arch/blackfin/oprofile/timer_int.c
->  index 6c6f860..e2c825a 100644
->  --- a/arch/blackfin/oprofile/timer_int.c
->  +++ b/arch/blackfin/oprofile/timer_int.c
->  @@ -40,10 +40,9 @@ static void disable_sys_timer0()
->   {
->   }
->
->  -static irqreturn_t sys_timer0_int_handler(int irq, void *dev_id,
->  -                                         struct pt_regs *regs)
->  +static irqreturn_t sys_timer0_int_handler(int irq, void *dev_id)
->   {
->  -       oprofile_add_sample(regs, 0);
->  +       oprofile_add_sample(get_irq_regs(), 0);
->         return IRQ_HANDLED;
->   }
->
 
-Sorry for the delay, it is pretty good for Blackfin.
+While trying to bisect a regression added by the sched tree merges
+today, I found the following gem that broke compilation mid-bisect:
 
-Acked-by: Bryan Wu <cooloney@kernel.org>
+commit d0b27fa77854b149ad4af08b0fe47fe712a47ade
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Sat Apr 19 19:44:57 2008 +0200
 
--Bryan
+    sched: rt-group: synchonised bandwidth period
+    
+    Various SMP balancing algorithms require that the bandwidth period
+    run in sync.
+    
+    Possible improvements are moving the rt_bandwidth thing into root_domain
+    and keeping a span per rt_bandwidth which marks throttled cpus.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+That change adds:
+
+@@ -156,6 +161,80 @@ struct rt_prio_array {
+ 	struct list_head queue[MAX_RT_PRIO];
+ };
+ 
++struct rt_bandwidth {
++	ktime_t rt_period;
++	u64 rt_runtime;
++	struct hrtimer rt_period_timer;
++};
++
+
+and then things like:
+
++static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
++{
++	ktime_t now;
++
++	if (rt_b->rt_runtime == RUNTIME_INF)
++		return;
++
++	if (hrtimer_active(&rt_b->rt_period_timer))
++		return;
++
++	spin_lock(&rt_b->rt_runtime_lock);
+
+rt_bandwidth does not have a rt_runtime_lock member, so the compile
+fails.  The very next changeset adds it:
+
+commit ac086bc22997a2be24fc40fc8d46522fe7e03d11
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Sat Apr 19 19:44:58 2008 +0200
+
+    sched: rt-group: smp balancing
+    
+    Currently the rt group scheduling does a per cpu runtime limit, however
+    the rt load balancer makes no guarantees about an equal spread of real-
+    time tasks, just that at any one time, the highest priority tasks run.
+    
+    Solve this by making the runtime limit a global property by borrowing
+    excessive runtime from the other cpus once the local limit runs out.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index bb20323..313cd4f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -164,6 +164,7 @@ struct rt_prio_array {
+ struct rt_bandwidth {
+ 	ktime_t rt_period;
+ 	u64 rt_runtime;
++	spinlock_t rt_runtime_lock;
+ 	struct hrtimer rt_period_timer;
+ };
+ 
