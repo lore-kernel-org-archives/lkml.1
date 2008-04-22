@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761440AbYDVBOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761805AbYDVBPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761440AbYDVBOq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Apr 2008 21:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932450AbYDVBOY
+	id S1761805AbYDVBPs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Apr 2008 21:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYDVBPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Apr 2008 21:14:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33906 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932434AbYDVBOX (ORCPT
+	Mon, 21 Apr 2008 21:15:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761462AbYDVBPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Apr 2008 21:14:23 -0400
-Date: Mon, 21 Apr 2008 21:14:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dwalker@mvista.com, sdietrich@novell.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com
-Subject: Re: [PATCH] SELinux fixups needed for preemptable RCU from -rt
-In-Reply-To: <20080422011233.GG9153@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.58.0804212113590.27460@gandalf.stny.rr.com>
-References: <20080422003412.GA9983@linux.vnet.ibm.com>
- <Pine.LNX.4.58.0804212053530.25185@gandalf.stny.rr.com>
- <20080422011233.GG9153@linux.vnet.ibm.com>
+	Mon, 21 Apr 2008 21:15:34 -0400
+Date: Mon, 21 Apr 2008 18:14:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jiri Slaby <jirislaby@gmail.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <200804220254.45251.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> <200804220254.45251.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,25 +31,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Mon, 21 Apr 2008, Paul E. McKenney wrote:
+On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
+> > 
+> > The same place, dentry.d_hash.next is 1. No slub debug clues... I think, I'll 
+> > give slab a try. Any other clues?
+> 
+> Well, SLUB uses some per CPU data structures.  Is it possible that they get
+> corrupted and which leads to the observed symptoms?
 
-> On Mon, Apr 21, 2008 at 08:54:51PM -0400, Steven Rostedt wrote:
-> >
-> > On Mon, 21 Apr 2008, Paul E. McKenney wrote:
-> > > @@ -807,8 +810,14 @@ int avc_ss_reset(u32 seqno)
-> > >
-> > >  	for (i = 0; i < AVC_CACHE_SLOTS; i++) {
-> > >  		spin_lock_irqsave(&avc_cache.slots_lock[i], flag);
-> > > +		/*
-> > > +		 * On -rt the outer spinlock does not prevent RCU
-> > > +		 * from being performed:
-> >
-> > I would suggest to change this comment to "With preemptible RCU" from
-> > "On -rt".
->
-> Good point...  How about the following?
+It really doesn't look like the slub allocations themselves would be 
+corrupted. It very much looks like wild pointers corrupting allocations 
+that themselves were fine.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+The nybble pattern looked intriguing (especially as it apparently also hit 
+a normal page cache page!) but obviously not everything matches that 
+pattern (eg your value of 1).
 
--- Steve
+What do you do to trigger this? Any particular load? Is it still just 
+doing suspend/resume, or do you have something else that you are playing 
+with?
 
+Also, have you tried CONFIG_DEBUG_PAGEALLOC? That can also be a very 
+powerful way to find memory corruption.
+
+Does anybody see any other patterns? Looking at the modules linked in in 
+the oopses from Zdenek, Rafael and Jiri, I don't see anything odd. You 
+both all have 80211 support, maybe the corruption comes from the wireless 
+layer?
+
+Or maybe it's the x86 code changes themselves, and it really is about the 
+suspend/resume sequence itself. Are all the people who see this doing 
+suspends? 
+
+		Linus
