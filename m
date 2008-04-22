@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYDVGdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbYDVGpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbYDVGdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 02:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYDVGdi
+	id S1757204AbYDVGpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 02:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYDVGpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 02:33:38 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15227 "EHLO kernel.dk"
+	Tue, 22 Apr 2008 02:45:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45489 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754556AbYDVGdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 02:33:37 -0400
-Date: Tue, 22 Apr 2008 08:33:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: cdrom: use kmalloced buffers instead of buffers on stack
-Message-ID: <20080422063332.GQ12774@kernel.dk>
-References: <200804220100.m3M10sva024025@hera.kernel.org> <480D46F6.3080305@garzik.org> <20080422054857.GA5940@alpha.franken.de>
-MIME-Version: 1.0
+	id S1754764AbYDVGpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 02:45:20 -0400
+Date: Tue, 22 Apr 2008 08:45:16 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com,
+       andi@firstfloor.org
+Subject: Re: [patch 01/17] hugetlb: modular state
+Message-ID: <20080422064516.GA23770@wotan.suse.de>
+References: <20080410170232.015351000@nick.local0.net> <20080410171100.425293000@nick.local0.net> <1208811084.11866.10.camel@skynet>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080422054857.GA5940@alpha.franken.de>
+In-Reply-To: <1208811084.11866.10.camel@skynet>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22 2008, Thomas Bogendoerfer wrote:
-> On Mon, Apr 21, 2008 at 10:01:26PM -0400, Jeff Garzik wrote:
-> > >    cdrom: use kmalloced buffers instead of buffers on stack
-> > >    
-> > >    If cdrom commands are issued to a scsi drive in most cases the buffer 
-> > >    will be
-> > >    filled via dma.  This leads to bad stack corruption on non coherent 
-> > >    platforms,
-> > >    because the buffers are neither cache line aligned nor is the size a 
-> > >    multiple
-> > >    of the cache line size.  Using kmalloced buffers avoids this.
-> > >    
-> > >    Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> > >    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > >---
-> > > drivers/cdrom/cdrom.c |  274 
-> > > ++++++++++++++++++++++++++++++++-----------------
-> > > 1 files changed, 181 insertions(+), 93 deletions(-)
-> > 
-> > Eh... AFAICS this is only really useful in two of the cases converted.
-> > 
-> > For all the other cases (<= 32 bytes), it is _far_ less complex, far 
-> > less code to simply communicate the additional alignment requirements to 
-> > the compiler.
-> > 
-> > What about __attribute__ __aligned__?  Was that tried?
+On Mon, Apr 21, 2008 at 03:51:24PM -0500, Jon Tollefson wrote:
 > 
-> I used that while narrowing down the bug. But not only the alignment is
-> important, but also size needs to be a multiple of the cache line size.
-> Which means it needs to be 128 bytes for most SGI machines. That
-> and the following in DMA-mapping.txt
+> On Fri, 2008-04-11 at 03:02 +1000, npiggin@suse.de wrote:
 > 
-> "This rule also means that you may use neither kernel image addresses
-> (items in data/text/bss segments), nor module image addresses, nor
-> stack addresses for DMA."
+> <snip>
 > 
-> let me choose the kmalloc() solution.
+> > Index: linux-2.6/include/linux/hugetlb.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/hugetlb.h
+> > +++ linux-2.6/include/linux/hugetlb.h
+> > @@ -40,7 +40,7 @@ extern int sysctl_hugetlb_shm_group;
+> > 
+> >  /* arch callbacks */
+> > 
+> > -pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr);
+> > +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, int sz);
+> 
+> <snip>
+> 
+> The sz here needs to be a long to handle sizes such as 16G on powerpc.
+> 
+> There are other places in hugetlb.c where the size also needs to be a
+> long, but this one affects the arch code too since it is public.
 
-Which is good, the patch has been due for years :-)
+Thanks, I've fixed that and found (hopefully) the rest of the ones
+in the hugetlb.c code.
 
--- 
-Jens Axboe
+Thanks,
+Nick
 
