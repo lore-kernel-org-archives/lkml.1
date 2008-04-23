@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbYDWGsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbYDWGsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbYDWGsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYDWGsK
+	id S1752533AbYDWGsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYDWGsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:48:10 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:49705 "EHLO mr1.bfh.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbYDWGsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:48:08 -0400
-Message-ID: <480EDBA2.5000506@bfh.ch>
-Date: Wed, 23 Apr 2008 08:48:02 +0200
-From: Seewer Philippe <philippe.seewer@bfh.ch>
-Organization: BFH
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 23 Apr 2008 02:48:42 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:57934 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbYDWGsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:48:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=LPFJ5xLBHP3vM2q4gvT0s+P0/MJYWGL9M9adC60mmfaoTB3jEG5Fgh29G5qo+ZYyH
+	csLqQ0YXM+LJrqchTkKUQ==
+Message-ID: <6599ad830804222348u2b3b6e8coc753fd798c750e26@mail.gmail.com>
+Date: Tue, 22 Apr 2008 23:48:28 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroup: use read lock to guard find_existing_css_set()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <480EA744.2050300@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>	 <480354C9.1050600@bfh.ch>	 <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>	 <4805AF93.90209@bfh.ch>	 <38b2ab8a0804170709m58830adagcba46f059ed10809@mail.gmail.com>	 <4807635E.9060101@bfh.ch> <38b2ab8a0804221310h6fdb9346q280f75ca2b85ff18@mail.gmail.com>
-In-Reply-To: <38b2ab8a0804221310h6fdb9346q280f75ca2b85ff18@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Apr 2008 06:47:43.0720 (UTC) FILETIME=[EEA7EE80:01C8A50D]
+Content-Disposition: inline
+References: <480EA744.2050300@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau wrote:
-[snip]
-> Just out of curiosity, what does scsi use for addressing IO operations ?
-I'm quoting from http://www.mossywell.com/boot-sequence/
-[quote]
-LBA has been around since around 1981. It is the method used to access 
-SCSI drives. However, in the mid-1990s IDE disks finally caught up with 
-SCSI and started to use LBA as well.
-[/quote]
+On Tue, Apr 22, 2008 at 8:04 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> The function does not modify anything (except the temporary
+>  css template), so it's sufficient to hold read lock.
+>
+>  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Further Information is provided by wikipedia as well:
-http://en.wikipedia.org/wiki/SCSI
-http://en.wikipedia.org/wiki/Logical_block_addressing
+Acked-by: Paul Menage <menage@google.com>
 
-Have fun!
-Philippe Seewer
+Thanks.
+
+>  ---
+>   kernel/cgroup.c |    4 ++--
+>   1 files changed, 2 insertions(+), 2 deletions(-)
+>
+>  diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+>  index 2727f92..e9eb5da 100644
+>  --- a/kernel/cgroup.c
+>  +++ b/kernel/cgroup.c
+>  @@ -406,11 +406,11 @@ static struct css_set *find_css_set(
+>
+>         /* First see if we already have a cgroup group that matches
+>          * the desired set */
+>  -       write_lock(&css_set_lock);
+>  +       read_lock(&css_set_lock);
+>         res = find_existing_css_set(oldcg, cgrp, template);
+>         if (res)
+>                 get_css_set(res);
+>  -       write_unlock(&css_set_lock);
+>  +       read_unlock(&css_set_lock);
+>
+>         if (res)
+>                 return res;
+>  -- 1.5.4.rc3
+>
+>
