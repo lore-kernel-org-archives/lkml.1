@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYDWOhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYDWOrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbYDWOhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 10:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYDWOhq
+	id S1755324AbYDWOrA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 10:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYDWOqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 10:37:46 -0400
-Received: from ns.suse.de ([195.135.220.2]:45284 "EHLO mx1.suse.de"
+	Wed, 23 Apr 2008 10:46:49 -0400
+Received: from rtr.ca ([76.10.145.34]:1445 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbYDWOhp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 10:37:45 -0400
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: PCI MSI breaks when booting with nosmp
-Date: Wed, 23 Apr 2008 16:38:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andi Kleen <andi@firstfloor.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200804172140.02311.jdelvare@suse.de> <20080421210909.GC21028@one.firstfloor.org> <200804211414.45629.jbarnes@virtuousgeek.org>
-In-Reply-To: <200804211414.45629.jbarnes@virtuousgeek.org>
+	id S1751067AbYDWOqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 10:46:49 -0400
+Message-ID: <480F4BD9.8090003@rtr.ca>
+Date: Wed, 23 Apr 2008 10:46:49 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804231638.01479.jdelvare@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480E70ED.3030701@rtr.ca> <20080423072432.GX12774@kernel.dk> <480F3CBC.60305@rtr.ca> <20080423135110.GO12774@kernel.dk>
+In-Reply-To: <20080423135110.GO12774@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
-
-Le lundi 21 avril 2008, Jesse Barnes a écrit :
-> On Monday, April 21, 2008 2:09 pm Andi Kleen wrote:
-> > > Both call disable_ioapic_setup(), so how can they not be the same?
-> >
-> > See Jesse's explanation. Basically there is special code in the smp
-> > boot up to handle 0 CPUs and it disables all APICs.
-> >
-> > This is very old and crufty and somewhat obsolete logic,
-> > but it is like that.
+Jens Axboe wrote:
+> On Wed, Apr 23 2008, Mark Lord wrote:
+>..
+>> The second bug, is that for the halt case at least,
+>> nobody waits for the other CPU to actually halt
+>> before continuing.. so we sometimes enter the shutdown
+>> code while other CPUs are still active.
+>>
+>> This causes some machines to hang at shutdown,
+>> unless CPU_HOTPLUG is configured and takes them offline
+>> before we get here.
 > 
-> This might be closer to a real fix.  Can you confirm that this works for you 
-> Jean?
-> 
-> Thanks,
-> Jesse
-> 
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index e6abe8a..7cdf930 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -1138,14 +1138,10 @@ static int __init smp_sanity_check(unsigned max_cpus)
->  				 "forcing use of dummy APIC emulation.\n");
->  		smpboot_clear_io_apic();
->  #ifdef CONFIG_X86_32
-> -		if (nmi_watchdog == NMI_LOCAL_APIC) {
-> -			printk(KERN_INFO "activating minimal APIC for"
-> -					 "NMI watchdog use.\n");
-> -			connect_bsp_APIC();
-> -			setup_local_APIC();
-> -			end_local_APIC_setup();
-> -		}
-> +		connect_bsp_APIC();
->  #endif
-> +		setup_local_APIC();
-> +		end_local_APIC_setup();
->  		return -1;
->  	}
->  
-> 
+> I'm guessing there's a reason it doesn't pass '1' as the last argument,
+> because that would fix that issue?
+..
 
-Sorry for the late reply. I tested the patch above on top of 2.6.25-git4
-and yes, it fixes my problem: booting with "nosmp" works now. Thanks!
+Undoubtedly -- perhaps the called CPU halts, and therefore cannot reply.  :)
 
-Is this patch good enough to go upstream, and if so, through whose
-tree? Adding Thomas Gleixner to Cc.
+But some kind of pre-halt ack, perhaps plus a short delay by the caller
+after receipt of the ack, would probably suffice to kill that bug.
 
--- 
-Jean Delvare
-Suse L3
+But I really haven't studied this code enough to know,
+other than that it historically has been a sticky area
+to poke around in.
+
+Cheers
+ 
+
