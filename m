@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYDWQDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbYDWQEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbYDWQDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 12:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYDWQD1
+	id S1757312AbYDWQEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 12:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYDWQDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 12:03:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37981 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbYDWQD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 12:03:27 -0400
-Date: Wed, 23 Apr 2008 17:01:13 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: wli@holomorphy.com, agl@us.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
-Message-ID: <20080423160112.GC15834@csn.ul.ie>
-References: <20080421183621.GA13100@csn.ul.ie> <87hcdsznep.fsf@basil.nowhere.org> <20080423151428.GA15834@csn.ul.ie> <20080423154323.GA29087@one.firstfloor.org>
+	Wed, 23 Apr 2008 12:03:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47594 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbYDWQDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 12:03:52 -0400
+Date: Wed, 23 Apr 2008 10:03:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: Pull request for semaphore include changes
+Message-ID: <20080423160348.GA29796@parisc-linux.org>
+References: <20080419184029.GO20637@parisc-linux.org> <adawsmobm3f.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080423154323.GA29087@one.firstfloor.org>
+In-Reply-To: <adawsmobm3f.fsf@cisco.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/04/08 17:43), Andi Kleen didst pronounce:
-> > If the large pages exist to satisfy the mapping, the application will not
-> > even notice this change. They will only break if the are creating larger
-> > mappings than large pages exist for (or can be allocated for in the event
-> > they have enabled dynamic resizing with nr_overcommit_hugepages). If they
-> > are doing that, they are running a big risk as they may get arbitrarily
-> > killed later. 
+On Wed, Apr 23, 2008 at 08:57:24AM -0700, Roland Dreier wrote:
+>  >  drivers/infiniband/core/user_mad.c            |    2 +-
 > 
-> The point is it is pretty common (especially when you have enough 
-> address space) just create a huge mapping and only use the begining.
+> Let me say up front I have no problem with this change, which moved from
+> <asm/semaphore.h> to <linux/semaphore.h>.  So take this email as an
+> honest question and not any form of complaint or criticism.  But looking
+> at that user_mad.c file in particular, I don't see any use of anything
+> that looks like it would come from semaphore.h.
 
-Clearly these applications are assuming that overcommit is always allowed
-because otherwise they would be failing. Also, the behaviour with reservations
-is currently inconsistent as MAP_SHARED always tries to reserve the pages.
-Maybe large shared mappings are rarer than large private mappings, but
-this inconsistency is still shoddy.
+You've missed this hunk:
 
-> This avoids costly resize operations later and is a quite useful
-> strategy on 64bit (but even on 32bit).  Now the upper size will
-> likely be incredibly huge (far beyond available physical memory), but it's 
-> obviously impossible really uses all of it.
-> 
-> It's also common in languages who don't support dynamic allocation well (like 
-> older fortran dialects). Given these won't use hugetlbfs directly either, 
-> but I couldn't rule out that someone wrote a special fortran run time library 
-> which transparently allocates large arrays from hugetlbfs. 
-> 
-> In fact i would be surprised if a number of such beasts don't exist -- it is 
-> really an obvious simple tuning option for old HPC fortran applications.
-> 
+        if (filp->f_flags & O_NONBLOCK) {
+                if (down_trylock(&port->sm_sem)) {
+                        ret = -EAGAIN;
+                        goto fail;
+                }
+        } else {
+                if (down_interruptible(&port->sm_sem)) {
+                        ret = -ERESTARTSYS;
+                        goto fail;
+                }
+        }
 
-I don't know if such a run-time library exists but libhugetlbfs is occasionally
-used in situations like this to back the data segment backed by huge pages. It
-first copies the data MAP_SHARED to fake the reservation before remapping
-private and kinda hopes for the best.
-
-> > Sometimes their app will run, other times it dies. If more
-> > than one application is running on the system that is behaving like this,
-> > they are really playing with fire.
-> 
-> With your change such an application will not run at all. Doesn't
-> seem like an improvement to me.
-> 
-
-I disagree. mmap() failing is something an application should be able to
-take care of and at least it possible as opposed to SIGKILL where it's
-"game over". Even if they are using run-time helpers like libhugetlbfs,
-it should be able to detect when a large-page-backed is flaky and use small
-pages instead. As it is, it's very difficult to detect in advance if future
-faults will succeed, particularly when more than one application is running.
-
-If the application is unable to handle mmap() failing, then yes, it'll
-exit. But at least it'll exit consistently and not get SIGKILLed
-randomly which to me is a far worse situation.
-
-> > With this change, a mmap() failure is a clear indication that the mapping
-> > would have been unsafe to use and they should try mmap()ing with small pages
-> > instead. 
-> 
-> I don't have a problem with having an optional strict overcommit checking 
-> mode (similar to what standard VM has), but it should be configurable
-> and off by default.
-> 
-
-There already is partial strict overcommit checking for MAP_SHARED. I
-think it should be consistent and done for MAP_PRIVATE.
-
-For disabling, I could look into adding MAP_NORESERVE support and
-something like the current overcommit_memory tunable for hugetlbfs.
-However with yet another proc tunable, I would push for enabling strict
-checking by default for safe behaviour than disabled by default for
-random SIGKILLs.
+which is still in Linus' tree as of last night.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
