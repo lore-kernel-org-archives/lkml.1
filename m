@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933977AbYDWA62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbYDWBC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933977AbYDWA62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 20:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYDWA6U
+	id S964844AbYDWBC3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbYDWBCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 20:58:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60693 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbYDWA6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 20:58:19 -0400
-Date: Tue, 22 Apr 2008 20:58:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pekka Paalanen <pq@iki.fi>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, akpm@osdl.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>
-Subject: Re: [PATCH 0/3] ftrace: overrun accounting and trace_pipe headers
-In-Reply-To: <20080422203602.488bb8f9@daedalus.pq.iki.fi>
-Message-ID: <Pine.LNX.4.58.0804222056190.22504@gandalf.stny.rr.com>
-References: <20080421210935.460817943@goodmis.org> <20080422203602.488bb8f9@daedalus.pq.iki.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Apr 2008 21:02:19 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54538 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758547AbYDWBCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 21:02:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,696,1199692800"; 
+   d="scan'208";a="555885179"
+Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
+From: Shaohua Li <shaohua.li@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <200804221712.45972.jbarnes@virtuousgeek.org>
+References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
+	 <200804221712.45972.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 09:05:21 +0800
+Message-Id: <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 22 Apr 2008, Pekka Paalanen wrote:
-
-> Excellent!
-
-Thanks ;-)
-
->
-> On Mon, 21 Apr 2008 17:09:35 -0400
-> Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> > The first patch in this series adds accounting to record overruns. That is
-> > where the writing catches up to the reading of the buffer. This really
-> > only matters for trace_pipe since that's a consumer / producer output file.
->
-> This takes me some thinking how to make the best of it, but looks like it
-> allows me to relay the overrun events into the trace log. Very good.
->
-> > The next patch adds new methods for the plugins to hook into the
-> > open_pipe and open_read, to let a plugin produce a header.
-> > The open_read method can also be used to do something when overruns
-> > are detected.
->
-> You mean pipe_open() and read()? :-)
-> And read() is pipe specific?
-
-Yeah the read API is pipe specific (for now). I'll have to think about
-whether or not we should have a generic "read" and a "pipe_read"
-
-> Ah, now I see what you mean by read() can be used to notice overruns:
-> it is called for every read syscall, not just in the beginning.
-
-Right!
-
->
-> > The last patch is a test patch AND SHOULD NOT BE APPLIED. It is just an
-> > example in how to use the new methods to produce a header. It simply
-> > makes the ftrace tracer produce a simple "Test header" before any
-> > output.
->
-> In function_read(), shouldn't I be doing something with filp and/or ppos?
-
-Probably, that's why I said not to apply it ;-)
+On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
+> On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
+> > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
+> > 'y' in Kconfig even though the feature is both experimental and the
+> > help text recommends that if you are unsure you say 'n'.
+> > It seems to me that this really should default to 'n', not 'y' at the
+> > moment.
+> > The following patch makes that change. Please consider applying.
+> 
+> Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
+> though...
+Ok, I'm fine with the patch. Though by default, the policy is to use
+BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
 
 Thanks,
-
--- Steve
+Shaohua
 
