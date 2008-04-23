@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYDWJ7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYDWJ7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbYDWJ7X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYDWJwz
+	id S1757478AbYDWJ7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbYDWJxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:52:55 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:46246 "EHLO smtp4.pp.htv.fi"
+	Wed, 23 Apr 2008 05:53:01 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36963 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756150AbYDWJwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:52:54 -0400
-Date: Wed, 23 Apr 2008 12:52:15 +0300
+	id S1756218AbYDWJxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:53:00 -0400
+Date: Wed, 23 Apr 2008 12:52:21 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: "David S. Miller" <davem@sunset.davemloft.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] unexport uts_sem
-Message-ID: <20080423095215.GG28933@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] make sched_feat_{names,open} static
+Message-ID: <20080423095221.GH28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,22 +23,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the removal of the Solaris binary emulation the export of 
-uts_sem became unused.
+This patch makes the following needlessly global code in kernel/sched.c  
+static:
+- sched_feat_names[]
+- sched_feat_open()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-e15db7b262fd8c3d9000e7d5e7a2b1d720fba8de diff --git a/kernel/sys.c b/kernel/sys.c
-index 6a0cc71..773d4a5 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1331,8 +1331,6 @@ EXPORT_SYMBOL(in_egroup_p);
+
+ kernel/sched.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+2a1e54c660bb9c574133bda95468b1ea28239e95 diff --git a/kernel/sched.c b/kernel/sched.c
+index 57ba7ea..19df986 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -757,14 +757,14 @@ const_debug unsigned int sysctl_sched_features =
+ #define SCHED_FEAT(name, enabled)	\
+ 	#name ,
  
- DECLARE_RWSEM(uts_sem);
+-__read_mostly char *sched_feat_names[] = {
++static __read_mostly char *sched_feat_names[] = {
+ #include "sched_features.h"
+ 	NULL
+ };
  
--EXPORT_SYMBOL(uts_sem);
--
- asmlinkage long sys_newuname(struct new_utsname __user * name)
+ #undef SCHED_FEAT
+ 
+-int sched_feat_open(struct inode *inode, struct file *filp)
++static int sched_feat_open(struct inode *inode, struct file *filp)
  {
- 	int errno = 0;
+ 	filp->private_data = inode->i_private;
+ 	return 0;
+
