@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYDWMOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYDWMPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbYDWMOi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYDWMOa
+	id S1755920AbYDWMPS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYDWMPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:14:30 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:34585 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbYDWMO3 (ORCPT
+	Wed, 23 Apr 2008 08:15:05 -0400
+Received: from ic0245.upco.es ([130.206.70.245]:59812 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbYDWMPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:14:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj8FAIfFDkhMROPA/2dsb2JhbACBUqwA
-Date: Wed, 23 Apr 2008 08:14:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Kyle McMartin <kyle@mcmartin.ca>, Paul Mackerras <paulus@samba.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [RFC patch 6/9] POWERPC remove -traditional
-Message-ID: <20080423121426.GA25947@Krystal>
-References: <20080422172404.502954084@polymtl.ca> <20080422172842.427209743@polymtl.ca> <18446.48624.515912.541936@cargo.ozlabs.ibm.com>
+	Wed, 23 Apr 2008 08:15:04 -0400
+Subject: Re: x86: 4kstacks default
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Daniel Hazelton <dhazelton@enter.net>, david@lang.hm,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <480F1C60.4030305@s5r6.in-berlin.de>
+References: <200804181737.m3IHbabI010051@hera.kernel.org>
+	 <200804230121.11004.dhazelton@enter.net>
+	 <alpine.DEB.1.10.0804222222490.23325@asgard>
+	 <200804230141.09523.dhazelton@enter.net>
+	 <1208936787.13905.14.camel@localhost>  <480F1C60.4030305@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Wed, 23 Apr 2008 14:15:01 +0200
+Message-Id: <1208952901.11823.13.camel@pern>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <18446.48624.515912.541936@cargo.ozlabs.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:11:38 up 54 days,  8:22,  4 users,  load average: 0.50, 0.38,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Mackerras (paulus@samba.org) wrote:
-> Mathieu Desnoyers writes:
-> > Subject: [RFC patch 6/9] Re: [PATCH] Stringify support commas
-> >  > This is a no-no for those archs that still use -traditional.
-> >  > > I dunno if this is a problem for you at the moment and the
-> >  > > right fix is anyway to nuke -traditional.
-> >  > > 
-> >  > >     Sam
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > CC: Sam Ravnborg <sam@ravnborg.org>
-> > CC: paulus@samba.org
-> > CC: linuxppc-dev@ozlabs.org
-> > ---
-> >  arch/powerpc/boot/Makefile |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+On Wed, 2008-04-23 at 13:24 +0200, Stefan Richter wrote:
+> Romano Giannetti wrote:
+> [stack size requirements -> ndiswrapper -> hardware support status -> ?]
+> > a nice page with "_this_ laptop will fully work with linux" would be
+> > nice. Linux on laptop or similar is too complex to be a real help when
+> > you have to buy a laptop in 2 days. 
 > 
-> Looks OK.  I'll put it in my tree.
-> 
-> Paul.
+> If sites like tuxmobil.org, hardware4linux.info, and the hardware
+> compatibility databases of Linux distributors don't work for you, then
+> just ask the notebook vendors directly.
 
-OK, although it won't be needed with v2 of the stringify with commas.
-There seems to be some important details which differ between
--traditional and stdc gcc operation which makes it non-trivial to remove
-the -traditional, at least on sparc. Maybe Kyle could tell us a bit more
-about the nature of these limitations ?
+Unfortunately, it is quite a complex thing to check. Mind you, I've
+bought this laptop after looking all over there, but:
 
-I would wait a bit before merging until we at least identify what those
-limitations are.
+- tuxmobil & Co are very user-driven, and you have to swim among tenth
+of "similar" computer;
 
-Mathieu
+- it's not so easy to know what exactly is bundled with a laptop[1];
+
+- vendor say "works" (and often is listed as works in the aforementioned
+sites too) independently if it works with an open source driver or not.
+As an example, all the nvidia-based graphics are marked "works".
+
+Romano 
+
+[1] In my case, I selected this toshiba over for example a HP or an Acer
+because it had "atheros wifi" (but guess that the PHY version is too new
+to be supported...), "intel hda sound" (but guess that the specific
+codec didn't work at all, and continues to have a lot of problems), 
+"intel graphics" (and that at least was a good decision!). 
+
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
