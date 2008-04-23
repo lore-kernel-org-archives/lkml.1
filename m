@@ -1,105 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYDWS6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYDWS7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbYDWS6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYDWS63
+	id S1757720AbYDWS7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYDWS7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:58:29 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:45086 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbYDWS62 (ORCPT
+	Wed, 23 Apr 2008 14:59:12 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48635 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753313AbYDWS7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:58:28 -0400
-X-IronPort-AV: E=Sophos;i="4.25,700,1199682000"; 
-   d="scan'208";a="66993446"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH] mm/nommu.c - return 0 from kobjsize with invalid objects
-Date: Wed, 23 Apr 2008 14:58:53 -0400
-User-Agent: KMail/1.9.5
-Cc: "Greg Ungerer" <gerg@snapgear.com>, linux-kernel@vger.kernel.org,
-       "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>
-References: <200804221356.15748.rgetz@blackfin.uclinux.org> <8682.1208900110@redhat.com>
-In-Reply-To: <8682.1208900110@redhat.com>
+	Wed, 23 Apr 2008 14:59:11 -0400
+Date: Wed, 23 Apr 2008 14:59:05 -0400 (EDT)
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: linux-kernel@vger.kernel.org
+Subject: A system for rebootless kernel security updates
+Message-ID: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804231458.53282.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 23 Apr 2008 18:58:27.0048 (UTC) FILETIME=[0350DE80:01C8A574]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <Michael.Hennerich@analog.com>
+Hello,
 
-Don't perform kobjsize operations on objects the kernel doesn't manage.
+I've put together an automatic system for applying kernel security patches 
+to the Linux kernel without rebooting it, and I wanted to share this 
+system with the community in case others find it useful or interesting.
 
-Signed-off-by: Michael Hennerich <Michael.Hennerich@analog.com>
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Here's the summary:  The system takes as input a kernel security patch 
+(which can be a unified diff taken directly from Linus' GIT tree) and the 
+source code corresponding to the running kernel, and it automatically 
+creates a set of kernel modules to perform the update.  The running kernel 
+does not need to have been customized in advance in any way.  To be fully 
+automatic, the system cannot be used to apply patches that introduce 
+semantic changes to data structures, but most Linux kernel security 
+patches don't make these kinds of changes.  I've evaluated the system 
+against various kernel versions and security vulnerabilities, and the 
+system can automatically apply 84% of the significant kernel security 
+patches from May 2005 through December 2007.
 
----
-On Blackfin, drivers can get dma coherent memory by calling a function
-dma_alloc_coherent(). We do this in nommu by configuring a chunk of uncached
-memory at the top of memory.
+I've been pursuing this project because I don't like dealing with reboots 
+whenever a new local kernel security vulnerability is discovered.  The 
+rebootless update practices/systems that are already out there require 
+manually constructing an update (through a process that can be tricky and 
+error-prone), and they tend to have other disadvantages as well (such as 
+requiring a custom kernel, not handling inline functions properly, etc). 
+This new system works on existing kernels, and it simply takes a unified 
+diff as input and does the rest on its own.
 
-Since we don't want the kernel to use the uncached memory, we lie to the
-kernel, and tell it that it's max memory is between 0, and the start of the
-uncached dma coherent section.
+The system's website is http://web.mit.edu/ksplice.
 
-this all works well, until this memory gets exposed into userspace (with a
-frame buffer), when you look at the process's maps, it shows the framebuf:
+The GIT repository, code tarball, and binary tarballs are available here:
+http://web.mit.edu/ksplice/ksplice.git
+http://web.mit.edu/ksplice/dist/ksplice-src.tar.gz
+http://web.mit.edu/ksplice/dist/ksplice-bin-i386.tar.gz
+http://web.mit.edu/ksplice/dist/ksplice-bin-x86_64.tar.gz
 
-root:/proc> cat maps
-[snip]
-03f0ef00-03f34700 rw-p 00000000 1f:00 192        /dev/fb0
-root:/proc>
+A document describing how the system works is available here: 
+http://web.mit.edu/ksplice/doc/ksplice.pdf
 
-This is outside the "normal" range for the kernel. When the kernel tries to
-find the size of this object (when you run ps), it dies in nommu.c in
-kobjsize.
+Any feedback would be appreciated.
 
-BUG_ON(page->index >= MAX_ORDER);
-
-since the page we are referring to is outside what the kernel thinks is it's
-max valid memory.
-
-root:~> while [ 1 ]; ps > /dev/null; done
-kernel BUG at mm/nommu.c:119!
-Kernel panic - not syncing: BUG!
-
-We fixed this by adding a check to reject out of range object pointers as it
-already does that for NULL pointers.
-
-As pointed out by David Howells on Tue 22 Apr 2008 17:35, the first
-version I sent could still have a problem:
-> Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> 
-> > +	if (!objp || !((page = virt_to_page(objp))) || (unsigned long)objp >= memory_end)
-> 
-> You should probably do the additional test before calling
-> virt_to_page(), just in case the illegal value you've 
-> rejected would otherwise break virt_to_page()
-
-True enough... try that one again.
-
-----
---- linux/mm/nommu.c	2008-04-16 21:00:20.000000000 -0400
-+++ linux/mm/nommu.c	2008-04-22 13:39:04.000000000 -0400
-@@ -105,7 +106,11 @@
- {
- 	struct page *page;
- 
--	if (!objp || !((page = virt_to_page(objp))))
-+	/*
-+	 * If the object we have should not have ksize performed on it,
-+	 * return size of 0
-+	 */
-+	if (!objp || (unsigned long)objp >= memory_end || !((page = virt_to_page(objp))))
- 		return 0;
- 
- 	if (PageSlab(page))
+Jeff Arnold
+jbarnold@mit.edu
