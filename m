@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYDWJva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYDWJvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbYDWJva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbYDWJvA
+	id S1755642AbYDWJvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYDWJvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:51:00 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36836 "EHLO smtp5.pp.htv.fi"
+	Wed, 23 Apr 2008 05:51:06 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:45999 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbYDWJu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:50:59 -0400
-Date: Wed, 23 Apr 2008 12:50:20 +0300
+	id S1753070AbYDWJvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:51:05 -0400
+Date: Wed, 23 Apr 2008 12:50:25 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86: make smp_b_stepping static
-Message-ID: <20080423095020.GI28933@cs181133002.pp.htv.fi>
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] proper prototype for
+	acpi_processor_tstate_has_changed()
+Message-ID: <20080423095025.GJ28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,22 +24,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-smp_b_stepping needlessly became global.
+This patch adds a proper prototype for acpi_processor_tstate_has_changed()
+in include/acpi/processor.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-9a408bf30cc7e5197f8d61f25139184edefd890d diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 3000fff..7d9b441 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -147,7 +147,7 @@ unsigned char *trampoline_base = __va(TRAMPOLINE_BASE);
- static cpumask_t cpu_sibling_setup_map;
+
+This patch has been sent on:
+- 14 Apr 2008
+- 31 Mar 2008
+- 1 Mar 2008
+
+ drivers/acpi/processor_core.c |    1 -
+ include/acpi/processor.h      |    1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+fcdb74ac24c943bc290e85e2d757f82dbb065955 foobar
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index a3cc8a9..d88f21e 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -86,7 +86,6 @@ static int acpi_processor_info_open_fs(struct inode *inode, struct file *file);
+ static void acpi_processor_notify(acpi_handle handle, u32 event, void *data);
+ static acpi_status acpi_processor_hotadd_init(acpi_handle handle, int *p_cpu);
+ static int acpi_processor_handle_eject(struct acpi_processor *pr);
+-extern int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
  
- /* Set if we find a B stepping CPU */
--int __cpuinitdata smp_b_stepping;
-+static int __cpuinitdata smp_b_stepping;
  
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_32)
+ static const struct acpi_device_id processor_device_ids[] = {
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 06480bc..06ebb6e 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -319,6 +319,7 @@ static inline int acpi_processor_ppc_has_changed(struct acpi_processor *pr)
+ #endif				/* CONFIG_CPU_FREQ */
  
+ /* in processor_throttling.c */
++int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
+ int acpi_processor_get_throttling_info(struct acpi_processor *pr);
+ extern int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
+ extern struct file_operations acpi_processor_throttling_fops;
 
