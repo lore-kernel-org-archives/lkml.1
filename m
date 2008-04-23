@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYDWJ45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYDWJ6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbYDWJ45 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYDWJwJ
+	id S1758734AbYDWJ6A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYDWJw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:52:09 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36898 "EHLO smtp5.pp.htv.fi"
+	Wed, 23 Apr 2008 05:52:29 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59474 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbYDWJwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:52:07 -0400
-Date: Wed, 23 Apr 2008 12:51:28 +0300
+	id S1755951AbYDWJw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:52:27 -0400
+Date: Wed, 23 Apr 2008 12:51:48 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] net/mac80211/rx.c: fix off-by-one
-Message-ID: <20080423095128.GY28933@cs181133002.pp.htv.fi>
+To: wli@holomorphy.com, "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sparc: cleanup after SunOS binary emulation removal
+Message-ID: <20080423095148.GC28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,27 +23,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes an off-by-one in net/mac80211/rx.c introduced by
-commit 8318d78a44d49ac1edf2bdec7299de3617c4232e
-(cfg80211 API for channels/bitrates, mac80211 and driver conversion)
-and spotted by the Coverity checker.
+The following cleanups are now possible:
+- arch/sparc/kernel/entry.S:ret_sys_call no longer has to be global
+- arch/sparc/kernel/signal.c:sys_sigpause() can be removed
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6/net/mac80211/rx.c.old	2008-04-22 02:23:40.000000000 +0300
-+++ linux-2.6/net/mac80211/rx.c	2008-04-22 02:24:23.000000000 +0300
-@@ -2168,11 +2168,11 @@ void __ieee80211_rx(struct ieee80211_hw 
- 	u32 pkt_load;
- 	struct ieee80211_rate *rate = NULL;
- 	struct ieee80211_supported_band *sband;
+
+ arch/sparc/kernel/entry.S  |    1 -
+ arch/sparc/kernel/signal.c |    5 -----
+ 2 files changed, 6 deletions(-)
+
+7548ea102f0db3c04f47a3c60242327b02916a5a diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index 135644f..484c83d 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -1409,7 +1409,6 @@ syscall_is_too_hard:
  
- 	if (status->band < 0 ||
--	    status->band > IEEE80211_NUM_BANDS) {
-+	    status->band >= IEEE80211_NUM_BANDS) {
- 		WARN_ON(1);
- 		return;
- 	}
+ 	st	%o0, [%sp + STACKFRAME_SZ + PT_I0]
  
- 	sband = local->hw.wiphy->bands[status->band];
+-	.globl	ret_sys_call
+ ret_sys_call:
+ 	ld	[%curptr + TI_FLAGS], %l6
+ 	cmp	%o0, -ERESTART_RESTARTBLOCK
+diff --git a/arch/sparc/kernel/signal.c b/arch/sparc/kernel/signal.c
+index 1f73061..3e849e8 100644
+--- a/arch/sparc/kernel/signal.c
++++ b/arch/sparc/kernel/signal.c
+@@ -105,11 +105,6 @@ static int _sigpause_common(old_sigset_t set)
+ 	return -ERESTARTNOHAND;
+ }
+ 
+-asmlinkage int sys_sigpause(unsigned int set)
+-{
+-	return _sigpause_common(set);
+-}
+-
+ asmlinkage int sys_sigsuspend(old_sigset_t set)
+ {
+ 	return _sigpause_common(set);
 
