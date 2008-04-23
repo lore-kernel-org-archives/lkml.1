@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759866AbYDWFYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761252AbYDWFZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759866AbYDWFYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 01:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYDWFYk
+	id S1761252AbYDWFZT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 01:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWFZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 01:24:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:53916 "EHLO ozlabs.org"
+	Wed, 23 Apr 2008 01:25:01 -0400
+Received: from mail.lang.hm ([64.81.33.126]:49107 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbYDWFYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 01:24:39 -0400
-Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: yhlu.kernel@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>,
-       David Miller <davem@davemloft.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Sathya Prakash <sathya.prakash@lsi.com>
-In-Reply-To: <200804222148.17530.yhlu.kernel@gmail.com>
-References: <200804222148.17530.yhlu.kernel@gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vV7QKVQ7awnl7Q/3cZK1"
-Date: Wed, 23 Apr 2008 15:24:37 +1000
-Message-Id: <1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	id S1751391AbYDWFZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 01:25:00 -0400
+Date: Tue, 22 Apr 2008 22:25:27 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Daniel Hazelton <dhazelton@enter.net>
+cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: x86: 4kstacks default
+In-Reply-To: <200804230121.11004.dhazelton@enter.net>
+Message-ID: <alpine.DEB.1.10.0804222222490.23325@asgard>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <1208888454.10279.7.camel@localhost> <200804230703.11816.vda.linux@googlemail.com> <200804230121.11004.dhazelton@enter.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 Apr 2008, Daniel Hazelton wrote:
 
---=-vV7QKVQ7awnl7Q/3cZK1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Wednesday 23 April 2008 01:03:11 Denys Vlasenko wrote:
+>> On Tuesday 22 April 2008 20:20, Romano Giannetti wrote:
+>>> On Sun, 2008-04-20 at 11:44 -0400, Daniel Hazelton wrote:
+>>>> Since the second-most-common reason for stack overages is
+>>>> ndiswrapper... Well, with there being so much more hardware now
+>>>> supported directly by the linux kernel...
+>>>
+>>> How would I like you being right... Atheros AR5008, AR5414 PHY, "not yet
+>>> here". It's almost one year now since I bought this laptop, and till now
+>>> it's the cable or ndiswrapper. But yes, it's going better. For my first
+>>> wifi laptop I waited two and a half years, now it seems that in a bit
+>>> more than one there will be an open source driver...
+>>>
+>>> I know all the trouble ndiswrapper signify. But I see also that people
+>>> around me with a laptop and linux use more ndiswrapper than a real
+>>> driver, so... be gentle with it.
+>>
+>> Nobody knows how much potential development is not done because
+>> "you can make your wifi work with ndiswrapper".
+>
+> I've got to agree with that sentiment. Once a working solution is found, no
+> matter how crappy, it seems that almost all development stops.
 
-On Tue, 2008-04-22 at 21:48 -0700, Yinghai Lu wrote:
-> this change
->=20
-> | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
-> | Author: Prakash, Sathya <sathya.prakash@lsi.com>
-> | Date:   Fri Mar 7 15:53:21 2008 +0530
-> |
-> |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
-> |
-> |     This patch modifies the driver to enable MSI by default for all SAS=
- chips.
-> |
-> |     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
-> |     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.c=
-om>
-> |
-> cause kexec RHEL 5.1 kernel fail.
->=20
-> root casue: the rhel 5.1 kernel still use INTx emulation.
-> and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on ke=
-xec path
->=20
-> so try to call pci_disable_msi in shutdown patch
+and nobody knows how many people are running linux instead of windows 
+becouse they were able to use ndiswrapper to get things running. most of 
+those people contributed nothing to the kernel, but they all contributed 
+to Linux, if nothing else as examples that Linux is a reasonable option 
+(and some percentage of those users have contrinbuted to other opensource 
+projects that they would probably never have bumped into if they were 
+running windows instead)
 
-How is kdump going to work? Your shutdown routine won't be called and
-you'll have the same problem in the 2nd kernel, won't you?
+I know we will never convince each other, but we do need to recognise that 
+there is another valid point of view.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-vV7QKVQ7awnl7Q/3cZK1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIDsgVdSjSd0sB4dIRAhnrAJ9kPazinr8YkXwL+41myB4t+sB7RQCgkfSL
-BudHkfcVGHFdlFS8itgb/24=
-=KJPn
------END PGP SIGNATURE-----
-
---=-vV7QKVQ7awnl7Q/3cZK1--
-
+David Lang
