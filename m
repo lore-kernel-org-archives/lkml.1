@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYDWKOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYDWKOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbYDWKOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYDWKOZ
+	id S1756264AbYDWKOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbYDWKOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 06:14:25 -0400
+	Wed, 23 Apr 2008 06:14:43 -0400
 Received: from fg-out-1718.google.com ([72.14.220.156]:30919 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbYDWKOY (ORCPT
+	with ESMTP id S1753046AbYDWKOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 06:14:24 -0400
+	Wed, 23 Apr 2008 06:14:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:sender;
-        b=OxOoVa8+oQG61buqTrVGSeSDJtK43b2lo56KS2KzMo6+Zi9dCfij/wXBhHet8uWSN38ZtiNE2hew4ESgWgx6YWKjqMWs/8cNc8mLIlOu6wIMKvvvqCQBvHq5aTaI8B3Y0MecOCTru5oAsyJxwgKrNbvPey1LbrYELRKoovZA0aw=
-Date: Wed, 23 Apr 2008 12:14:16 +0200
+        b=hgvMOSnLwmWU1x6jpYDD109T44QQQqaSiMiq+X+aCLKXsW1TJzUmbvn8ysyqPmnHoetm+zA9n2Km+36lEIhYYhvgmYDkVRsmC9HflE+FEi8Xg4ti1xbBvIwCT52RoabEHa+JMg7Xr5x+D2CJ08apX+BME0EzAwIjbblPuVAOVvs=
+Date: Wed, 23 Apr 2008 12:14:34 +0200
 From: Rodney Lorrimar <rodney@rodney.id.au>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Pavel Machek <pavel@suse.cz>, jikos@suse.cz,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Andrew McNabb <amcnabb@mcnabbs.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] Input: adbhid - restore_capslock_events fixes
-Message-ID: <20080423101416.GA4735@solaria.local>
+Subject: [PATCH 1/2] Input: adbhid - fix capslock key state after suspend
+Message-ID: <20080423101434.GB4735@solaria.local>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
 Content-Disposition: inline
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,42 +32,108 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---9jxsPFA5p3P2qPhR
+--SkvwRMAIpAhPCcCJ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Dmitry,
+If the adbhid module parameter restore_capslock_events is used,
+sometimes capslock will get stuck down after resuming.
 
-Would you consider these for review and inclusion in the input tree?
+My fix is to remember the capslock state before suspend and then
+ignore the first 'caps lock key down' message after resume if the
+capslock LED was on before suspending.
 
-They fix 2 out of 3 problems I know of in the simulation of capslock
-up/down key events on Apple laptop keyboards. The third problem - that
-sometimes the capslock key gets stuck down - I haven't looked at
-properly yet, but I know that the "capslock key up" packet is never
-received by adbhid_keyboard_input so the problem is in adb.c or
-via-pmu.c, or possibly the hardware never sends the event at all.
+Signed-off-by: Rodney Lorrimar <rodney@rodney.id.au>
+---
+ drivers/macintosh/adbhid.c |   43 +++++++++++++++++++++++++++++++++++++---=
+---
+ 1 files changed, 37 insertions(+), 6 deletions(-)
 
-Pavel Machek suggested removing the parameter, and I would do this
-after fixing the third problem. This would probably happen after the
-once-or-twice-a-day event of stuck capslock annoys me enough to have a
-deeper look.
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index ef4c117..19d0984 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -219,11 +219,12 @@ struct adbhid {
+ 	int flags;
+ };
+=20
+-#define FLAG_FN_KEY_PRESSED	0x00000001
+-#define FLAG_POWER_FROM_FN	0x00000002
+-#define FLAG_EMU_FWDEL_DOWN	0x00000004
+-#define FLAG_CAPSLOCK_TRANSLATE	0x00000008
+-#define FLAG_CAPSLOCK_DOWN	0x00000010
++#define FLAG_FN_KEY_PRESSED		0x00000001
++#define FLAG_POWER_FROM_FN		0x00000002
++#define FLAG_EMU_FWDEL_DOWN		0x00000004
++#define FLAG_CAPSLOCK_TRANSLATE		0x00000008
++#define FLAG_CAPSLOCK_DOWN		0x00000010
++#define FLAG_CAPSLOCK_IGNORE_NEXT	0x00000020
+=20
+ static struct adbhid *adbhid[16];
+=20
+@@ -291,8 +292,15 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+ 		if (keycode =3D=3D ADB_KEY_CAPSLOCK && !up_flag) {
+ 			/* Key pressed, turning on the CapsLock LED.
+ 			 * The next 0xff will be interpreted as a release. */
+-			ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
++			if (ahid->flags & FLAG_CAPSLOCK_IGNORE_NEXT) {
++				/* Throw away this key event if it happens
++				 * just after resume. */
++				ahid->flags &=3D ~FLAG_CAPSLOCK_IGNORE_NEXT;
++				return;
++			} else {
++				ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
+ 					| FLAG_CAPSLOCK_DOWN;
++			}
+ 		} else if (scancode =3D=3D 0xff) {
+ 			/* Scancode 0xff usually signifies that the capslock
+ 			 * key was either pressed or released. */
+@@ -681,6 +689,20 @@ static int adbhid_kbd_event(struct input_dev *dev, uns=
+igned int type, unsigned i
+ 	return -1;
+ }
+=20
++static void
++adbhid_kbd_capslock_remember(void)
++{
++	struct adbhid *ahid;
++	int i;
++	for (i =3D 1; i < 16; i++) {
++		ahid =3D adbhid[i];
++
++		if (ahid && ahid->id =3D=3D ADB_KEYBOARD)
++			if (ahid->flags & FLAG_CAPSLOCK_TRANSLATE)
++				ahid->flags |=3D FLAG_CAPSLOCK_IGNORE_NEXT;
++	}
++}
++
+ static int
+ adb_message_handler(struct notifier_block *this, unsigned long code, void =
+*x)
+ {
+@@ -699,6 +721,15 @@ adb_message_handler(struct notifier_block *this, unsig=
+ned long code, void *x)
+ 		/* Stop pending led requests */
+ 		while(leds_req_pending)
+ 			adb_poll();
++
++		/* After resume, and if the capslock LED is on, the PMU will
++		 * send a "capslock down" key event. This confuses the
++		 * restore_capslock_events logic. Remember if the capslock
++		 * LED was on before suspend so the unwanted key event can
++		 * be ignored after resume. */
++		if (restore_capslock_events)
++			adbhid_kbd_capslock_remember();
++
+ 		break;
+=20
+ 	case ADB_MSG_POST_RESET:
+--=20
+1.5.5.1
 
 
-Thanks,
-
-Rodney
-
-
-
-Rodney Lorrimar (2):
-  Input: adbhid - fix capslock key state after suspend
-  Input: adbhid - capslock and power button fix
-
- drivers/macintosh/adbhid.c |   58 +++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 49 insertions(+), 9 deletions(-)
-
-
---9jxsPFA5p3P2qPhR
+--SkvwRMAIpAhPCcCJ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -75,9 +141,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIDwv3bBchLr+YxKcRAmGGAKCP8cVCUMrzXcLlc2DXW4DtSK7Z/wCdEJxO
-WLe0JxlHc+iKvKTdO70xcE4=
-=Oea7
+iD8DBQFIDwwKbBchLr+YxKcRAgY3AJ0SycNbp8TDWstCpnLqVOsaz/DLTgCfVTx3
+9w7FR4OR28Q34URldDp/pF4=
+=8OHL
 -----END PGP SIGNATURE-----
 
---9jxsPFA5p3P2qPhR--
+--SkvwRMAIpAhPCcCJ--
