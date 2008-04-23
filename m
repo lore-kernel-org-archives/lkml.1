@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYDWQXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbYDWQ0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbYDWQXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 12:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYDWQXS
+	id S1753654AbYDWQ0j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 12:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYDWQ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 12:23:18 -0400
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:18070 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751199AbYDWQXS (ORCPT
+	Wed, 23 Apr 2008 12:26:31 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:42470
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbYDWQ0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 12:23:18 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] scheduler changes for v2.6.26
-Date: Wed, 23 Apr 2008 18:23:14 +0200
-User-Agent: KMail/1.9.9
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Richard Jonsson <richie@coderworld.net>
-References: <20080419181304.GB21353@elte.hu> <200804231136.50639.elendil@planet.nl> <20080423094644.GB23293@elte.hu>
-In-Reply-To: <20080423094644.GB23293@elte.hu>
+	Wed, 23 Apr 2008 12:26:30 -0400
+Date: Wed, 23 Apr 2008 18:26:29 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080423162629.GB24536@duo.random>
+References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804231823.15746.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Apr 2008 16:23:16.0107 (UTC) FILETIME=[559005B0:01C8A55E]
+In-Reply-To: <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008, Ingo Molnar wrote:
-> another thing - Peter observed skipping on NOHZ. Does your skipping go
-> away if you boot with 'nohz' and/or with CONFIG_NOHZ=y disabled in the
-> .config?
+On Tue, Apr 22, 2008 at 04:20:35PM -0700, Christoph Lameter wrote:
+> I guess I have to prepare another patchset then?
 
-Just realized that I forgot to reply to this...
-
-Already tried that with .24 (<200804111718.56958.elendil@planet.nl>):
-
-! On Friday 11 April 2008, Peter Zijlstra wrote:
-! > I'm having some issue on my own desktop - I get occasional latencies of
-! > up to 1 second! It seems to be related to NO_HZ, because when I run a
-! > simple while loop to keep the cpu busy, or boot with nohz=off it
-! > doesn't seem to happen.
-! >
-! > Could you try that, just to see if we're seeing the same thing?
-!
-! Booted with nohz=off, but it does not seem to make any difference for me.
-! I still get the music skips and chew still gives the high latencies.
-!
-! $ ./chew2
-! pid 31568 preempted 4022 us after 1376 us
-! pid 31568 preempted 6303 us after 6177 us
-! pid 31568 preempted 8836 us after 7963 us
-! pid 31568 preempted 13134 us after 7903 us
-! pid 31568 preempted 20533 us after 9496 us
-! pid 31568 preempted 22957 us after 8556 us
-! pid 31568 preempted 28693 us after 9518 us
-! pid 31568 preempted 251718 us after 8485 us
+If you want to embarrass yourself three time in a row go ahead ;). I
+thought two failed takeovers was enough.
