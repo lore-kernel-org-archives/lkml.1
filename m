@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYDWSdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbYDWSeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYDWSdg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYDWSdX
+	id S1757092AbYDWSeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbYDWSeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:33:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:59922 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYDWSdV (ORCPT
+	Wed, 23 Apr 2008 14:34:24 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38580
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753233AbYDWSeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:33:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=nd7gmYoooT6++mbMTM79jbQoHRxYSjToG+Ck3V0kxGsnC5QB5QfIvhdAhxsdqIZxw4r2yh5odsmWhJneVNYbjOCDtr8w1JIt5//NuoPfYcW/lXtT25TggXA4jBrpJv/gDUyuvD+V0++S4mNt+jkMEL6ZbNhYLvrRCS/9qPOc6CI=
-Date: Wed, 23 Apr 2008 22:26:15 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
-Message-ID: <20080423182615.GA7713@cvg>
-References: <200804181856.m3IIuKd4007403@hera.kernel.org> <1208917076.9212.721.camel@pmac.infradead.org> <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com> <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com> <480F7C11.8040302@zytor.com>
+	Wed, 23 Apr 2008 14:34:23 -0400
+Date: Wed, 23 Apr 2008 20:34:18 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080423183418.GK24536@duo.random>
+References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com> <20080423162629.GB24536@duo.random> <20080423172432.GE24536@duo.random> <Pine.LNX.4.64.0804231120180.12373@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <480F7C11.8040302@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0804231120180.12373@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Wed, Apr 23, 2008 at 11:12:33AM -0700]
-> Cyrill Gorcunov wrote:
->> Hi David,
->> actually, this CONFIG_VM86 was there even before the renaming was done.
->> The main questions (imo) - is there any user space application who uses
->> these flags? If they are - then even the idea of this patch was a bit 
->> bogus,
->> and I should *not* remove all these VM86 specific flags but better define 
->> them
->> as aliases on flags from processor-flags.h.
->
-> Hard to know.  VM86 is only used by a handful of applications (DOSEMU, 
-> X.org, others?) but it's hard to know what exactly they are.
->
-> The fact that noone hollered when that CONFIG_VM86 went in is probably a 
-> good hint that they don't matter, but it's hard to say for sure.
->
-> 	-hpa
->
+On Wed, Apr 23, 2008 at 11:21:49AM -0700, Christoph Lameter wrote:
+> No I really want you to do this. I have no interest in a takeover in the 
 
-Actually, being google a bit I found that most of emulators
-redefine their own equvalence of these flags. So I think
-we could remain all as is. But if we wanna be sure I could
-make a patch like this
-
-...
-#define CF_MASK X86_EFLAGS_CF
-...
-
-		- Cyrill -
-
+Ok if you want me to do this, I definitely prefer the core to go in
+now. It's so much easier to concentrate on two problems at different
+times then to attack both problems at the same time given they're
+mostly completely orthogonal problems. Given we already solved one
+problem, I'd like to close it before concentrating on the second
+problem. I already told you it was my interest to support XPMEM
+too. For example it was me to notice we couldn't possibly remove
+can_sleep parameter from invalidate_range without altering the locking
+as vmas were unstable outside of one of the three core vm locks. That
+finding resulted in much bigger patches than we hoped (like Andrew
+previously sort of predicted) and you did all great work to develop
+those. From my part, once the converged part is in, it'll be a lot
+easier to fully concentrate on the rest. My main focus right now is to
+produce a mmu-notifier-core that is entirely bug free for .26.
