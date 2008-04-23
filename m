@@ -1,182 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYDWP7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYDWQDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYDWP7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 11:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYDWP7o
+	id S1755419AbYDWQDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 12:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYDWQD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 11:59:44 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55928
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbYDWP7n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 11:59:43 -0400
-Date: Wed, 23 Apr 2008 17:59:40 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080423155940.GY24536@duo.random>
-References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com> <20080423133619.GV24536@duo.random> <20080423144747.GU30298@sgi.com>
+	Wed, 23 Apr 2008 12:03:27 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37981 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751743AbYDWQD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 12:03:27 -0400
+Date: Wed, 23 Apr 2008 17:01:13 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: wli@holomorphy.com, agl@us.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
+Message-ID: <20080423160112.GC15834@csn.ul.ie>
+References: <20080421183621.GA13100@csn.ul.ie> <87hcdsznep.fsf@basil.nowhere.org> <20080423151428.GA15834@csn.ul.ie> <20080423154323.GA29087@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20080423144747.GU30298@sgi.com>
+In-Reply-To: <20080423154323.GA29087@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 09:47:47AM -0500, Robin Holt wrote:
-> It also makes the API consistent.  What you are proposing is equivalent
-> to having a file you can open but never close.
+On (23/04/08 17:43), Andi Kleen didst pronounce:
+> > If the large pages exist to satisfy the mapping, the application will not
+> > even notice this change. They will only break if the are creating larger
+> > mappings than large pages exist for (or can be allocated for in the event
+> > they have enabled dynamic resizing with nr_overcommit_hugepages). If they
+> > are doing that, they are running a big risk as they may get arbitrarily
+> > killed later. 
+> 
+> The point is it is pretty common (especially when you have enough 
+> address space) just create a huge mapping and only use the begining.
 
-That's not entirely true, you can close the file just fine it by
-killing the tasks leading to an mmput. From an user prospective in KVM
-terms, it won't make a difference as /dev/kvm will remain open and
-it'll pin the module count until the kvm task is killed anyway, I
-assume for GRU it's similar.
+Clearly these applications are assuming that overcommit is always allowed
+because otherwise they would be failing. Also, the behaviour with reservations
+is currently inconsistent as MAP_SHARED always tries to reserve the pages.
+Maybe large shared mappings are rarer than large private mappings, but
+this inconsistency is still shoddy.
 
-Until I had the idea of how to implement an mm_lock to ensure the
-mmu_notifier_register could miss a running invalidate_range_begin, it
-wasn't even possible to implement a mmu_notifier_unregister (see EMM
-patches) and it looked like you were ok with that API that missed
-_unregister...
+> This avoids costly resize operations later and is a quite useful
+> strategy on 64bit (but even on 32bit).  Now the upper size will
+> likely be incredibly huge (far beyond available physical memory), but it's 
+> obviously impossible really uses all of it.
+> 
+> It's also common in languages who don't support dynamic allocation well (like 
+> older fortran dialects). Given these won't use hugetlbfs directly either, 
+> but I couldn't rule out that someone wrote a special fortran run time library 
+> which transparently allocates large arrays from hugetlbfs. 
+> 
+> In fact i would be surprised if a number of such beasts don't exist -- it is 
+> really an obvious simple tuning option for old HPC fortran applications.
+> 
 
-> This whole discussion seems ludicrous.  You could refactor the code to get
-> the sorted list of locks, pass that list into mm_lock to do the locking,
-> do the register/unregister, then pass the same list into mm_unlock.
+I don't know if such a run-time library exists but libhugetlbfs is occasionally
+used in situations like this to back the data segment backed by huge pages. It
+first copies the data MAP_SHARED to fake the reservation before remapping
+private and kinda hopes for the best.
 
-Correct, but it will keep the vmalloc ram pinned during the
-runtime. There's no reason to keep that ram allocated per-VM while the
-VM runs. We only need it during the startup and teardown.
+> > Sometimes their app will run, other times it dies. If more
+> > than one application is running on the system that is behaving like this,
+> > they are really playing with fire.
+> 
+> With your change such an application will not run at all. Doesn't
+> seem like an improvement to me.
+> 
 
-> If the allocation fails, you could fall back to the older slower method
-> of repeatedly scanning the lists and acquiring locks in ascending order.
+I disagree. mmap() failing is something an application should be able to
+take care of and at least it possible as opposed to SIGKILL where it's
+"game over". Even if they are using run-time helpers like libhugetlbfs,
+it should be able to detect when a large-page-backed is flaky and use small
+pages instead. As it is, it's very difficult to detect in advance if future
+faults will succeed, particularly when more than one application is running.
 
-Correct, I already thought about that. This is exactly why I'm
-deferring this for later! Or those perfectionism not needed for
-KVM/GRU will keep delaying indefinitely the part that is already
-converged and that's enough for KVM and GRU (and for this specific
-bit, actually enough for XPMEM as well).
+If the application is unable to handle mmap() failing, then yes, it'll
+exit. But at least it'll exit consistently and not get SIGKILLed
+randomly which to me is a far worse situation.
 
-We can make a second version of mm_lock_slow to use if mm_lock fails,
-in mmu_notifier_unregister, with N^2 complexity later, after the
-mmu-notifier-core is merged into mainline.
+> > With this change, a mmap() failure is a clear indication that the mapping
+> > would have been unsafe to use and they should try mmap()ing with small pages
+> > instead. 
+> 
+> I don't have a problem with having an optional strict overcommit checking 
+> mode (similar to what standard VM has), but it should be configurable
+> and off by default.
+> 
 
-> If you are not going to provide the _unregister callout you need to change
-> the API so I can scan the list of notifiers to see if my structures are
-> already registered.
+There already is partial strict overcommit checking for MAP_SHARED. I
+think it should be consistent and done for MAP_PRIVATE.
 
-As said 1/N isn't enough for XPMEM anyway. 1/N has to only include the
-absolute minimum and zero risk stuff, that is enough for both KVM and
-GRU.
+For disabling, I could look into adding MAP_NORESERVE support and
+something like the current overcommit_memory tunable for hugetlbfs.
+However with yet another proc tunable, I would push for enabling strict
+checking by default for safe behaviour than disabled by default for
+random SIGKILLs.
 
-> We register our notifier structure at device open time.  If we receive a
-> _release callout, we mark our structure as unregistered.  At device close
-> time, if we have not been unregistered, we call _unregister.  If you
-> take away _unregister, I have an xpmem kernel structure in use _AFTER_
-> the device is closed with no indication that the process is using it.
-> In that case, I need to get an extra reference to the module in my device
-> open method and hold that reference until the _release callout.
-
-Yes exactly, but you've to do that anyway, if mmu_notifier_unregister
-fails because some driver already allocated all vmalloc space (even
-x86-64 hasn't indefinite amount of vmalloc because of the vmalloc
-being in the end of the address space) unless we've a N^2 fallback,
-but the N^2 fallback will make the code more easily dosable and
-unkillable, so if I would be an admin I'd prefer having to quickly
-kill -9 a task in O(N) than having to wait some syscall that runs in
-O(N^2) to complete before the task quits. So the fallback to a slower
-algorithm isn't necessarily what will really happen after 2.6.26 is
-released, we'll see. Relaying on ->release for the module unpin sounds
-preferable, and it's certainly the only reliable way to unregister
-that we'll provide in 2.6.26.
-
-> Additionally, if the users program reopens the device, I need to scan the
-> mmu_notifiers list to see if this tasks notifier is already registered.
-
-But you don't need any browse the list for this, keep a flag in your
-structure after the mmu_notifier struct, set the bitflag after
-mmu_notifier_register returns, and clear the bitflag after ->release
-runs or after mmu_notifier_unregister returns success. What's the big
-deal to track if you've to call mmu_notifier_register a second time or
-not? Or you can create a new structure every time somebody asks to
-reattach.
-
-> I view _unregister as essential.  Did I miss something?
-
-We can add it later, and we can keep discussing on what's the best
-model to implement it as long as you want after 2.6.26 is released
-with mmu-notifier-core so GRU/KVM are done. It's unlikely KVM will use
-mmu_notifier_unregister anyway as we need it attached for the whole
-lifetime of the task, and only for the lifetime of the task.
-
-This is the patch to add it, as you can see it's entirely orthogonal,
-backwards compatible with previous API and it doesn't duplicate or
-rewrite any code.
-
-Don't worry, any kernel after 2.6.26 will have unregister, but we can't
-focus on this for 2.6.26. We can also consider making
-mmu_notifier_register safe against double calls on the same structure
-but again that's not something we should be doing in 1/N and it can be
-done later in a backwards compatible way (plus we're perfectly fine
-with the API having not backwards compatible changes as long as 2.6.26
-can work for us).
-
----------------------------------
-Implement unregister but it's not reliable, only ->release is reliable.
-
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-
-diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
---- a/include/linux/mmu_notifier.h
-+++ b/include/linux/mmu_notifier.h
-@@ -119,6 +119,8 @@
- 
- extern int mmu_notifier_register(struct mmu_notifier *mn,
- 				 struct mm_struct *mm);
-+extern int mmu_notifier_unregister(struct mmu_notifier *mn,
-+				   struct mm_struct *mm);
- extern void __mmu_notifier_release(struct mm_struct *mm);
- extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
- 					  unsigned long address);
-diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
---- a/mm/mmu_notifier.c
-+++ b/mm/mmu_notifier.c
-@@ -106,3 +106,29 @@
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(mmu_notifier_register);
-+
-+/*
-+ * mm_users can't go down to zero while mmu_notifier_unregister()
-+ * runs or it can race with ->release. So a mm_users pin must
-+ * be taken by the caller (if mm can be different from current->mm).
-+ *
-+ * This function can fail (for example during out of memory conditions
-+ * or after vmalloc virtual range shortage), so the only reliable way
-+ * to unregister is to wait release() to be called.
-+ */
-+int mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	struct mm_lock_data data;
-+	int ret;
-+
-+	BUG_ON(!atomic_read(&mm->mm_users));
-+
-+	ret = mm_lock(mm, &data);
-+	if (unlikely(ret))
-+		goto out;
-+	hlist_del(&mn->hlist);
-+	mm_unlock(mm, &data);
-+out:
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
