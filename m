@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYDWMLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYDWMOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbYDWMLx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYDWMLm
+	id S1755170AbYDWMOi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYDWMOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:11:42 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:42961 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbYDWMLl (ORCPT
+	Wed, 23 Apr 2008 08:14:30 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:34585 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbYDWMO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:11:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kdb@oss.sgi.com, vgoyal@redhat.com, kexec@lists.infradead.org,
-       Keith Owens <kaos@ocs.com.au>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Randy Dunlap <rdunlap@xenotime.net>, greg@kroah.com, bwalle@suse.de,
-       k-miyoshi@cb.jp.nec.com
-References: <480DD85C.7060200@ah.jp.nec.com> <480F1987.9010501@ah.jp.nec.com>
-Date: Wed, 23 Apr 2008 05:11:26 -0700
-In-Reply-To: <480F1987.9010501@ah.jp.nec.com> (Takenori Nagano's message of
-	"Wed, 23 Apr 2008 20:12:07 +0900")
-Message-ID: <m18wz4srdd.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 23 Apr 2008 08:14:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj8FAIfFDkhMROPA/2dsb2JhbACBUqwA
+Date: Wed, 23 Apr 2008 08:14:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Kyle McMartin <kyle@mcmartin.ca>, Paul Mackerras <paulus@samba.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [RFC patch 6/9] POWERPC remove -traditional
+Message-ID: <20080423121426.GA25947@Krystal>
+References: <20080422172404.502954084@polymtl.ca> <20080422172842.427209743@polymtl.ca> <18446.48624.515912.541936@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0056]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 3/3] Move crash_kexec() into panic_notifier, take4
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <18446.48624.515912.541936@cargo.ozlabs.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:11:38 up 54 days,  8:22,  4 users,  load average: 0.50, 0.38,
+	0.41
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takenori Nagano <t-nagano@ah.jp.nec.com> writes:
+* Paul Mackerras (paulus@samba.org) wrote:
+> Mathieu Desnoyers writes:
+> > Subject: [RFC patch 6/9] Re: [PATCH] Stringify support commas
+> >  > This is a no-no for those archs that still use -traditional.
+> >  > > I dunno if this is a problem for you at the moment and the
+> >  > > right fix is anyway to nuke -traditional.
+> >  > > 
+> >  > >     Sam
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Sam Ravnborg <sam@ravnborg.org>
+> > CC: paulus@samba.org
+> > CC: linuxppc-dev@ozlabs.org
+> > ---
+> >  arch/powerpc/boot/Makefile |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Looks OK.  I'll put it in my tree.
+> 
+> Paul.
 
-> This patch moves crash_kexec() into panic_notifier. If you want to use it,
-> you have to set config option DUMP_ON_PANIC_NOTIFIER to Y. Its default value
-> is N. If you set DUMP_ON_PANIC_NOTIFIER to N, kdump has no difference before.
+OK, although it won't be needed with v2 of the stringify with commas.
+There seems to be some important details which differ between
+-traditional and stdc gcc operation which makes it non-trivial to remove
+the -traditional, at least on sparc. Maybe Kyle could tell us a bit more
+about the nature of these limitations ?
 
-NAK.  This patch is broken and does not accomplish what it
-sets out to accomplish.
+I would wait a bit before merging until we at least identify what those
+limitations are.
 
-Eric
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
