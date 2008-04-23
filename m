@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYDWXJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYDWXW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbYDWXJJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 19:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYDWXI4
+	id S1754556AbYDWXW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 19:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYDWXWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 19:08:56 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:24947 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752643AbYDWXIz (ORCPT
+	Wed, 23 Apr 2008 19:22:17 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:17032 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbYDWXWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 19:08:55 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
-Date: Wed, 23 Apr 2008 17:08:53 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080418204955.342963315@ldl.fc.hp.com> <200804211710.38660.bjorn.helgaas@hp.com> <480E5246.5000804@keyaccess.nl>
-In-Reply-To: <480E5246.5000804@keyaccess.nl>
+	Wed, 23 Apr 2008 19:22:16 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
+       linux-wireless@vger.kernel.org, linville@tuxdriver.com
+Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+       Tomas Winkler <tomas.winkler@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] iwlwifi: Don't unlock priv->mutex if it isn't locked
+References: <c4e36d110804231600l4b540a3ka637dedca0d7687b@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 23 Apr 2008 16:22:13 -0700
+In-Reply-To: <c4e36d110804231600l4b540a3ka637dedca0d7687b@mail.gmail.com>
+	(Zdenek Kabelac's message of "Thu, 24 Apr 2008 01:00:34 +0200")
+Message-ID: <adazlrk88d6.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804231708.53572.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Apr 2008 23:22:13.0410 (UTC) FILETIME=[DC901020:01C8A598]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 April 2008 03:01:58 pm Rene Herman wrote:
-> It seems you designed the list to be basically in any order, judging by 
-> things such as pnp_new_resource which'll happily reuse resources of the 
-> correct type at any position in the list. Yet, pnp_assign_foo() and friends 
-> retrieve resources (through pnp_get_resource) by position in the list and 
-> not by the index. I'm not overly sure of failure scenarios but isn't this 
-> mixing up position and index in a bad way?
+Commit b716bb91 ("iwlwifi: Cancel scanning upon association") moved the
+test of priv->vif in iwl{3945,4964}_mac_config_interface() outside of
+where priv->mutex is held, but still tries to do mutex_unlock() on
+return.  This is clearly wrong and triggers a nasty lockdep warning when
+this codepath is triggered.  Fix this by removing the mutex_unlock().
 
-Yes, I think you're right.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Assuming the original b716bb91 commit is correct, this is probably the
+right fix.  But I'm not sure if it's correct to look at priv->vif
+without holding priv->mutex, so maybe the fix is more complicated.
 
-My idea is that the list should end up in the same order as the
-resource list from the BIOS, e.g., the _CRS and _PRS lists for
-ACPI.  In the case of ISAPNP, it'll be in the order that we read
-things from the hardware registers.
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 -
+ drivers/net/wireless/iwlwifi/iwl4965-base.c |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-I think I should probably make pnp_new_resource() always allocate
-a new resource and get rid of the idea of reusing something already
-in the list.
-
-> >> (do note that pnp_assign_foo are the only callers of pnp_check_foo and they 
-> >> could be either merged together or at least not communicate via "idx" but 
-> >> simply by passing the res/pnp_res).
-> > 
-> > Yes, I'd like to do that.  But I think I'd better wait or I'll never
-> > get anything finished :-)
-> 
-> Well, the idea here was that getting rid of one "idx" here so that things 
-> communicate directly removes at least one possible ordering artifact...
-
-Yup.  I ended up doing this after all.
-
-I updated the patches and my ACPI box with the inactive devices now
-boots (it failed with the v3 patches).  I'll work on the
-pnp_new_resource() thing tomorrow, but I'll send you the current
-patches now in case you have a chance to try them on your ISA box.
-
-Bjorn
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 1a5678f..a1a0b3c 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -6907,7 +6907,6 @@ static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
+ 
+ 	if (priv->vif != vif) {
+ 		IWL_DEBUG_MAC80211("leave - priv->vif != vif\n");
+-		mutex_unlock(&priv->mutex);
+ 		return 0;
+ 	}
+ 
+diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+index d7e2358..d0bbcaa 100644
+--- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+@@ -6473,7 +6473,6 @@ static int iwl4965_mac_config_interface(struct ieee80211_hw *hw,
+ 
+ 	if (priv->vif != vif) {
+ 		IWL_DEBUG_MAC80211("leave - priv->vif != vif\n");
+-		mutex_unlock(&priv->mutex);
+ 		return 0;
+ 	}
+ 
