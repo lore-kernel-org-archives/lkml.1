@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbYDWMdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYDWMf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbYDWMdH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYDWMcx
+	id S1756018AbYDWMf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYDWMfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:32:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34256 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYDWMcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:32:52 -0400
-Date: Wed, 23 Apr 2008 08:32:33 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kdb@oss.sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kexec@lists.infradead.org, Keith Owens <kaos@ocs.com.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Randy Dunlap <rdunlap@xenotime.net>, greg@kroah.com, bwalle@suse.de,
-       k-miyoshi@cb.jp.nec.com
-Subject: Re: [PATCH 0/3] add new notifier function ,take4
-Message-ID: <20080423123233.GA23066@redhat.com>
-References: <480F1957.2070609@ah.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480F1957.2070609@ah.jp.nec.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 23 Apr 2008 08:35:11 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:33170 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbYDWMfJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 08:35:09 -0400
+Subject: Re: [PATCH 11/11] s390: convert to generic helpers for IPI
+	function calls
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org,
+       rusty@rustcorp.com.au
+In-Reply-To: <20080423114744.GA29422@osiris.boeblingen.de.ibm.com>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com>
+	 <1208890227-24808-12-git-send-email-jens.axboe@oracle.com>
+	 <20080423075831.GB15850@osiris.boeblingen.de.ibm.com>
+	 <20080423081147.GC12774@kernel.dk> <20080423112124.GJ12774@kernel.dk>
+	 <20080423114744.GA29422@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 23 Apr 2008 14:42:53 +0200
+Message-Id: <1208954573.5090.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 08:11:19PM +0900, Takenori Nagano wrote:
-> Hi,
+On Wed, 2008-04-23 at 13:47 +0200, Heiko Carstens wrote:
+> I don't think that works: the old code also relied on the fact that there
+> could be only one cpu sending an smp_call_* IPI (serialized by call_lock).
+> The current etr code exploits that to serialize all cpus:
 > 
-> changelog take3 -> take4
+> Do smp_call_function() to force all other cpus into clock_sync_cpu_start()
+> where they sort of busy wait(!). Then the master cpu is syncing the clock
+> and when it finished the other cpus may continue again and finally leave
+> the smp_call_function interrupt handler.
 > 
-> - Rebased 2.6.25-mm1
-> - Add a document
-> - Add kdump on panic_notifier
-> 
-> These patches add new notifier function and implement it to panic_notifier_list.
-> We used the hardcoded notifier chain so far, but it was not flexible. New
-> notifier is very flexible, because user can change a list of order by control files.
-> 
-> And, third patch moves crash_kexec() to panic_notifier. It helps us to do
-> something before taking a crash dump. It's useful for some RAS tools developer.
+> Your patch series however doesn't make sure anymore that there is only
+> one cpu doing an smp_call_function*, so we may deadlock as soon as two
+> cpus are trying to synchronize all cpus this way.
+> After all I think the etr code should be converted to use stop_machine_run
+> instead. However that doesn't allow for master/slave cpus.
 
-Hi Takenori,
+Changing the etr code to stop_machine_run() will require a common code
+change. We can use the fn() parameter of stop_machine_run() for the cpu
+that does the clock synchronization but all the other cpus are not just
+disabled. They need to do something before going back to normal
+operation,  namely waiting for the clock to get back into sync and then
+reprogram the clock comparator before we can allow interrupts again.
 
-What's the "something" which you want to do after panic and before kdump.
-Can you please give a concrete example. We have talked about this quite
-a few times but nothing concrete has come out so far, except a generic
-statement that it helps "RAS tool developers".
+Looking at the stop_machine() code it doesn't seem to be to hard to get
+this implemented. stop_machine_run() would get a second function
+argument that replaces the call to cpu_relax() in stopmachine().
+The default if the additional function argument is NULL would be
+cpu_relax(). For the etr sync code it would be etr_sync_cpu_start().
 
-The only thing we could think of was debuggers (kdb and kgdb) and one easy
-solution is that debuggers/users can put a break point at panic() instead
-of introducing this infrastructure.
+-- 
+blue skies,
+  Martin.
 
-Thanks
-Vivek
+"Reality continues to ruin my life." - Calvin.
+
+
