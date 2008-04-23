@@ -1,118 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYDWKPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYDWKTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbYDWKPS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbYDWKO6
+	id S1754269AbYDWKTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYDWKTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 06:14:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:30919 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756379AbYDWKO5 (ORCPT
+	Wed, 23 Apr 2008 06:19:16 -0400
+Received: from smtprelay07.ispgateway.de ([80.67.29.7]:44576 "EHLO
+	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYDWKTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 06:14:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:sender;
-        b=CT7h4kzsTK5QfcndX1DF5qgNFu6Kw+KI+t3jSPr6StRnRTzsZrbWkIZ3LP5uqGWZCbDdixYN/SteMXVeb3GZaULh4lyQNgQ5tTyuO0L7kRyYrKlPV/HtzP4DKKr4fwCWtuXafFPYJeUXzLo9Ix0yugxRZzVH/r1a4pIe537IyB0=
-Date: Wed, 23 Apr 2008 12:14:51 +0200
-From: Rodney Lorrimar <rodney@rodney.id.au>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, jikos@suse.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew McNabb <amcnabb@mcnabbs.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Input: adbhid - capslock and power button fix
-Message-ID: <20080423101451.GC4735@solaria.local>
+	Wed, 23 Apr 2008 06:19:15 -0400
+X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Apr 2008 06:19:15 EDT
+Message-ID: <480F0B93.2040208@selhorst.net>
+Date: Wed, 23 Apr 2008 12:12:35 +0200
+From: Marcel Selhorst <tpm@selhorst.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080229)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KDt/GgjP6HVcx58l"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Adrian Bunk <bunk@kernel.org>
+CC: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [tpmdd-devel] [2.6 patch] tpm_bios.c: make 2 structs static
+References: <20080423095036.GN28933@cs181133002.pp.htv.fi>
+In-Reply-To: <20080423095036.GN28933@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.8.0.8; VDF: 7.0.3.201; host: mail)
+X-Df-Sender: 174499
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: Marcel Selhorst <tpm@selhorst.net>
 
---KDt/GgjP6HVcx58l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Adrian Bunk schrieb:
+> This patch makes two needlessly global structs static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+> This patch has been sent on:
+> - 14 Apr 2008
+> - 31 Mar 2008
+> 
+>  drivers/char/tpm/tpm_bios.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> 030a8d37553ae500a00cd0005c763863452b7cbc diff --git a/drivers/char/tpm/tpm_bios.c b/drivers/char/tpm/tpm_bios.c
+> index 60a2d26..68f052b 100644
+> --- a/drivers/char/tpm/tpm_bios.c
+> +++ b/drivers/char/tpm/tpm_bios.c
+> @@ -448,7 +448,7 @@ out_free:
+>  	goto out;
+>  }
+>  
+> -const struct file_operations tpm_ascii_bios_measurements_ops = {
+> +static const struct file_operations tpm_ascii_bios_measurements_ops = {
+>  	.open = tpm_ascii_bios_measurements_open,
+>  	.read = seq_read,
+>  	.llseek = seq_lseek,
+> @@ -486,7 +486,7 @@ out_free:
+>  	goto out;
+>  }
+>  
+> -const struct file_operations tpm_binary_bios_measurements_ops = {
+> +static const struct file_operations tpm_binary_bios_measurements_ops = {
+>  	.open = tpm_binary_bios_measurements_open,
+>  	.read = seq_read,
+>  	.llseek = seq_lseek,
 
-If the adbhid module parameter restore_capslock_events is used,
-pressing the power button may confuse the capslock state. This is
-because the power button release scancode (0xff) is sometimes the same
-as the capslock press/release scancode.
-
-This fix adds yet another flag to track the state of the power button
-so that it works independently of capslock.
-
-Signed-off-by: Rodney Lorrimar <rodney@rodney.id.au>
----
- drivers/macintosh/adbhid.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index 19d0984..2f28444 100644
---- a/drivers/macintosh/adbhid.c
-+++ b/drivers/macintosh/adbhid.c
-@@ -225,6 +225,7 @@ struct adbhid {
- #define FLAG_CAPSLOCK_TRANSLATE		0x00000008
- #define FLAG_CAPSLOCK_DOWN		0x00000010
- #define FLAG_CAPSLOCK_IGNORE_NEXT	0x00000020
-+#define FLAG_POWER_KEY_PRESSED		0x00000040
-=20
- static struct adbhid *adbhid[16];
-=20
-@@ -301,9 +302,11 @@ adbhid_input_keycode(int id, int scancode, int repeat)
- 				ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
- 					| FLAG_CAPSLOCK_DOWN;
- 			}
--		} else if (scancode =3D=3D 0xff) {
-+		} else if (scancode =3D=3D 0xff &&
-+			   !(ahid->flags & FLAG_POWER_KEY_PRESSED)) {
- 			/* Scancode 0xff usually signifies that the capslock
--			 * key was either pressed or released. */
-+			 * key was either pressed or released, or that the
-+			 * power button was released. */
- 			if (ahid->flags & FLAG_CAPSLOCK_TRANSLATE) {
- 				keycode =3D ADB_KEY_CAPSLOCK;
- 				if (ahid->flags & FLAG_CAPSLOCK_DOWN) {
-@@ -317,7 +320,7 @@ adbhid_input_keycode(int id, int scancode, int repeat)
- 				}
- 			} else {
- 				printk(KERN_INFO "Spurious caps lock event "
--						"(scancode 0xff).");
-+						 "(scancode 0xff).\n");
- 			}
- 		}
- 	}
-@@ -344,6 +347,12 @@ adbhid_input_keycode(int id, int scancode, int repeat)
- 		}
- 		break;
- 	case ADB_KEY_POWER:
-+		/* Keep track of the power key state */
-+		if (up_flag)
-+			ahid->flags &=3D ~FLAG_POWER_KEY_PRESSED;
-+		else
-+			ahid->flags |=3D FLAG_POWER_KEY_PRESSED;
-+
- 		/* Fn + Command will produce a bogus "power" keycode */
- 		if (ahid->flags & FLAG_FN_KEY_PRESSED) {
- 			keycode =3D ADB_KEY_CMD;
---=20
-1.5.5.1
-
-
---KDt/GgjP6HVcx58l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIDwwbbBchLr+YxKcRAibdAKCF/GKGG5e1Ypt+hd942iQ6oTnBpgCfST/y
-Lj23Zz3foVYyI2YRp2x8s0k=
-=ONkJ
------END PGP SIGNATURE-----
-
---KDt/GgjP6HVcx58l--
