@@ -1,65 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYDWIMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYDWIRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbYDWIMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 04:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYDWILz
+	id S1754097AbYDWIRI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 04:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYDWIQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 04:11:55 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25406 "EHLO kernel.dk"
+	Wed, 23 Apr 2008 04:16:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:39419 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965AbYDWILw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 04:11:52 -0400
-Date: Wed, 23 Apr 2008 10:11:48 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 11/11] s390: convert to generic helpers for IPI  function calls
-Message-ID: <20080423081147.GC12774@kernel.dk>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-12-git-send-email-jens.axboe@oracle.com> <20080423075831.GB15850@osiris.boeblingen.de.ibm.com>
+	id S1752068AbYDWIQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 04:16:50 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423075831.GB15850@osiris.boeblingen.de.ibm.com>
+Content-Transfer-Encoding: 7bit
+Message-ID: <18446.61538.620549.715043@cargo.ozlabs.ibm.com>
+Date: Wed, 23 Apr 2008 18:16:34 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, nacc@us.ibm.com
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
+ kernbench and tbench on powerpc
+In-Reply-To: <48035C03.10104@linux.vnet.ibm.com>
+References: <47BC40BC.3040405@linux.vnet.ibm.com>
+	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
+	<47FB5C5A.5020104@linux.vnet.ibm.com>
+	<18427.65299.403151.344959@cargo.ozlabs.ibm.com>
+	<47FC5227.3030501@linux.vnet.ibm.com>
+	<18435.11286.201115.396713@cargo.ozlabs.ibm.com>
+	<48035C03.10104@linux.vnet.ibm.com>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23 2008, Heiko Carstens wrote:
-> On Tue, Apr 22, 2008 at 08:50:27PM +0200, Jens Axboe wrote:
-> > This converts s390 to use the new helpers for smp_call_function() and
-> > friends, and adds support for smp_call_function_single(). Not tested,
-> > but it compiles.
-> > 
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> 
-> Your generic patch changes semantics of smp_call_function(). At least the
-> s390 version of smp_call_function() mask used to not return unless all IPIs
-> where received on the target cpus.
-> Your patch changes that. It will already return as soon as all IPIs have
-> been sent. Unfortunately Martin's etr code in arch/s390/kernel/time.c
+Kamalesh Babulal writes:
 
-Yep, this is what I mentioned in the intro mail.
+> After applying the patch above and the patch posted on
+> http://lkml.org/lkml/2008/4/8/42
+> the bug had the following information,
 
-> relies on exactly the old semantics.
+Thanks.  The patch below, against Linus' current git tree, fixes one
+bug that might be the cause of the problem, and also attempts to
+detect the erroneous situation earlier and fix it up, and also print
+some debug information.  Please try to reproduce the problem with this
+patch applied, and if there are any console log messages starting with
+SLB: or FWNMI:, please send me the console log.
 
-OK, I could not see anything which relied on that and I did think that
-it was a somewhat odd interface. By the time that smp_call_function()
-stops waiting for startups, we could easily be in the condition that the
-N-1 CPUs executed the function part a long time ago. I just didn't see
-much usefulness in that, you may as well just set wait == 1 in that
-case.
+Paul.
 
-> Since this seems to be an s390 only issue, could you just drop the s390
-> conversion patch? We'll have to think about how to change the err code
-> and convert later I guess.
-
-I'll drop the s390 bits. I can easily add something like
-smp_call_function_foo() that has this behaviour.
-
--- 
-Jens Axboe
-
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index c0db5b7..f7f0962 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -439,6 +439,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
+ 	mr	r1,r8		/* start using new stack pointer */
+ 	std	r7,PACAKSAVE(r13)
+ 
++	/* check that SLB entry 2 contains the right thing */
++	clrrdi	r6,r1,28
++	clrldi.	r0,r6,2
++	beq	3f
++	li	r0,2
++	slbmfee	r7,r0
++	oris	r6,r6,SLB_ESID_V@h
++	cmpd	r6,r7
++	beq	3f
++	bl	bad_slb_switch
++	ld	r3,PACACURRENT(r13)
++	addi	r3,r3,THREAD
++3:
+ 	ld	r6,_CCR(r1)
+ 	mtcrf	0xFF,r6
+ 
+@@ -540,6 +553,19 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ 	ld	r4,_XER(r1)
+ 	mtspr	SPRN_XER,r4
+ 
++	/* check that SLB entry 2 contains the right thing */
++	clrrdi	r6,r1,28	/* stack ESID */
++	clrldi.	r0,r6,2
++	beq	57f
++	li	r0,2
++	slbmfee	r7,r0
++	oris	r6,r6,SLB_ESID_V@h
++	cmpd	r6,r7
++	beq	57f
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	bad_slb_exc
++	ld	r3,_MSR(r1)
++57:
+ 	REST_8GPRS(5, r1)
+ 
+ 	andi.	r0,r3,MSR_RI
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index be35ffa..c938134 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -45,6 +45,7 @@
+ #include <asm/system.h>
+ #include <asm/mpic.h>
+ #include <asm/vdso_datapage.h>
++#include <asm/mmu.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #endif
+@@ -580,6 +581,10 @@ int __devinit start_secondary(void *unused)
+ 	atomic_inc(&init_mm.mm_count);
+ 	current->active_mm = &init_mm;
+ 
++	/* Bolt in the entry for the kernel stack now */
++	if (cpu_has_feature(CPU_FTR_SLB))
++		slb_flush_and_rebolt();
++
+ 	smp_store_cpu_info(cpu);
+ 	set_dec(tb_ticks_per_jiffy);
+ 	preempt_disable();
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 906daed..bb7765b 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -309,3 +309,34 @@ void slb_initialize(void)
+ 	 * one. */
+ 	asm volatile("isync":::"memory");
+ }
++
++static void dump_slb(void)
++{
++	long entry;
++	unsigned long esid, vsid;
++
++	printk(KERN_EMERG "SLB contents now:\n");
++	for (entry = 0; entry < 64; ++entry) {
++		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (entry));
++		if (esid == 0)
++			/* valid bit is clear along with everything else */
++			continue;
++		asm volatile("slbmfev  %0,%1" : "=r" (vsid) : "r" (entry));
++		printk(KERN_EMERG "%d: %.16lx %.16lx\n", entry, esid, vsid);
++	}
++}
++
++void bad_slb_exc(struct pt_regs *regs)
++{
++	printk(KERN_EMERG "SLB: stack not bolted on exception return\n");
++	dump_slb();
++	slb_flush_and_rebolt();
++	show_regs(regs);
++}
++
++void bad_slb_switch(void)
++{
++	printk(KERN_EMERG "SLB: stack not bolted on context switch\n");
++	dump_slb();
++	slb_flush_and_rebolt();
++}
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index a1ab25c..ed68083 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -325,6 +325,8 @@ static int recover_mce(struct pt_regs *regs, struct rtas_error_log * err)
+ 
+ 	if (err->disposition == RTAS_DISP_FULLY_RECOVERED) {
+ 		/* Platform corrected itself */
++		printk(KERN_ALERT "FWNMI: platform corrected error %.16lx\n",
++		       *(unsigned long *)err);
+ 		nonfatal = 1;
+ 	} else if ((regs->msr & MSR_RI) &&
+ 		   user_mode(regs) &&
