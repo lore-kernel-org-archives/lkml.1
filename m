@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761252AbYDWFZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbYDWF1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761252AbYDWFZT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 01:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWFZB
+	id S1760814AbYDWF1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 01:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWF1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 01:25:01 -0400
-Received: from mail.lang.hm ([64.81.33.126]:49107 "EHLO bifrost.lang.hm"
+	Wed, 23 Apr 2008 01:27:40 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54432 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751391AbYDWFZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 01:25:00 -0400
-Date: Tue, 22 Apr 2008 22:25:27 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Daniel Hazelton <dhazelton@enter.net>
-cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	id S1751479AbYDWF1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 01:27:39 -0400
 Subject: Re: x86: 4kstacks default
-In-Reply-To: <200804230121.11004.dhazelton@enter.net>
-Message-ID: <alpine.DEB.1.10.0804222222490.23325@asgard>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <1208888454.10279.7.camel@localhost> <200804230703.11816.vda.linux@googlemail.com> <200804230121.11004.dhazelton@enter.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080419142329.GA5339@elte.hu>
+References: <200804181737.m3IHbabI010051@hera.kernel.org>
+	 <20080418142934.38ce6bf4.akpm@linux-foundation.org>
+	 <20080419142329.GA5339@elte.hu>
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 15:27:01 +1000
+Message-Id: <1208928421.9060.22.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Daniel Hazelton wrote:
 
-> On Wednesday 23 April 2008 01:03:11 Denys Vlasenko wrote:
->> On Tuesday 22 April 2008 20:20, Romano Giannetti wrote:
->>> On Sun, 2008-04-20 at 11:44 -0400, Daniel Hazelton wrote:
->>>> Since the second-most-common reason for stack overages is
->>>> ndiswrapper... Well, with there being so much more hardware now
->>>> supported directly by the linux kernel...
->>>
->>> How would I like you being right... Atheros AR5008, AR5414 PHY, "not yet
->>> here". It's almost one year now since I bought this laptop, and till now
->>> it's the cable or ndiswrapper. But yes, it's going better. For my first
->>> wifi laptop I waited two and a half years, now it seems that in a bit
->>> more than one there will be an open source driver...
->>>
->>> I know all the trouble ndiswrapper signify. But I see also that people
->>> around me with a laptop and linux use more ndiswrapper than a real
->>> driver, so... be gentle with it.
->>
->> Nobody knows how much potential development is not done because
->> "you can make your wifi work with ndiswrapper".
->
-> I've got to agree with that sentiment. Once a working solution is found, no
-> matter how crappy, it seems that almost all development stops.
+On Sat, 2008-04-19 at 16:23 +0200, Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > >  config 4KSTACKS
+> > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
+> > > -	depends on DEBUG_KERNEL
+> > >  	depends on X86_32
+> > > +	default y
+> > 
+> > This patch will cause kernels to crash.
+> 
+> what mainline kernels crash and how will they crash? Fedora and other 
+> distros have had 4K stacks enabled for years:
+> 
+>   $ grep 4K /boot/config-2.6.24-9.fc9
+>   CONFIG_4KSTACKS=y
+> 
+> and we've conducted tens of thousands of bootup tests with all sorts of 
+> drivers and kernel options enabled and have yet to see a single crash 
+> due to 4K stacks. So basically the kernel default just follows the 
+> common distro default now. (distros and users can still disable it)
 
-and nobody knows how many people are running linux instead of windows 
-becouse they were able to use ndiswrapper to get things running. most of 
-those people contributed nothing to the kernel, but they all contributed 
-to Linux, if nothing else as examples that Linux is a reasonable option 
-(and some percentage of those users have contrinbuted to other opensource 
-projects that they would probably never have bumped into if they were 
-running windows instead)
+Do we routinely test nasty scenarii such as a GFP_KERNEL allocation deep
+in a call stack trying to swap something out to NFS ?
 
-I know we will never convince each other, but we do need to recognise that 
-there is another valid point of view.
+Ben.
 
-David Lang
+
