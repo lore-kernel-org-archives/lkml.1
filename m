@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964851AbYDWBXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964892AbYDWBZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964851AbYDWBXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYDWBXA
+	id S964892AbYDWBZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYDWBZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:23:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41283 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753421AbYDWBXA (ORCPT
+	Tue, 22 Apr 2008 21:25:36 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:46977 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990AbYDWBZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:23:00 -0400
-Date: Tue, 22 Apr 2008 18:22:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       peterz@infradead.org, sam@ravnborg.org
-Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function
- calls
-In-Reply-To: <20080423011153.GB17572@wotan.suse.de>
-Message-ID: <alpine.LFD.1.10.0804221817050.2779@woody.linux-foundation.org>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-3-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804221157220.2779@woody.linux-foundation.org> <20080422191213.GA6370@elte.hu> <alpine.LFD.1.10.0804221218410.2779@woody.linux-foundation.org>
- <20080422192601.GB12588@elte.hu> <alpine.LFD.1.10.0804221244350.2779@woody.linux-foundation.org> <20080423011153.GB17572@wotan.suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 21:25:36 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bisected] Latest git not seeing HD with sata_nv
+References: <adazlrlcw9f.fsf@cisco.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 22 Apr 2008 18:25:34 -0700
+In-Reply-To: <adazlrlcw9f.fsf@cisco.com> (Roland Dreier's message of "Tue, 22
+	Apr 2008 16:20:12 -0700")
+Message-ID: <adave29cqgh.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Apr 2008 01:25:34.0853 (UTC) FILETIME=[EDC0E350:01C8A4E0]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > It seems that commit 305d2a1a ("libata: unify mechanism to request
+ > follow-up SRST") causes sata_nv not to see the HD on a system I have
+ > here; with current git (80750147), I get this in my bootlog:
 
+I wonder if this is related to the code
 
-On Wed, 23 Apr 2008, Nick Piggin wrote:
-> 
-> The "too expensive to check the shared queue" is one aspect of it. The
-> shared queue need not have events *for us* (at least, unless Jens has
-> changed the implementation a bit) but it can still have events that we
-> would need to check through.
-> 
-> I don't think deadlock is a problem (any more than with multiple vectors).
+static int nv_hardreset(struct ata_link *link, unsigned int *class,
+			unsigned long deadline)
+{
+	unsigned int dummy;
 
-I'm happy with it either way, but as pointed out by Ralf, for the MIPS 
-version of the patch there aren't even other vectors available.
+	/* SATA hardreset fails to retrieve proper device signature on
+	 * some controllers.  Don't classify on hardreset.  For more
+	 * info, see http://bugzilla.kernel.org/show_bug.cgi?id=3352
+	 */
+	return sata_sff_hardreset(link, &dummy, deadline);
+}
 
-So sharing the vector is going to be a requirement on other architectures, 
-maybe we should look at whether we can make it generic and peform well 
-regardless?
+It seems especially suspicious given that 305d2a1a touches
+sata_sff_hardreset...
 
-			Linus
+ - R.
