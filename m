@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYDWSGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYDWSJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbYDWSGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYDWSGN
+	id S1754919AbYDWSJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYDWSJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:06:13 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:16234 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbYDWSGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:06:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Q1qa/ZQAFZw7XFNGv0ez4sY2P+HJ5GE0wW3J6qHRYcB0XgfaIGsr1EVkHpHnad/pmNo6/KF+Hi5OK2zgUkz3zyWguTV1COyFxK39z+b9zAknPpsVkgKg2S3SX52xOnLy5dJA45GMBNgtfKXXv1hiQQmZmWMDa7gOm14269LbPoA=
-Message-ID: <dd18b0c30804231106i4fddd518k3c81df0f267c9ab2@mail.gmail.com>
-Date: Wed, 23 Apr 2008 18:06:07 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: BIOS bug, APIC version is 0 for CPU#0!
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <480F2842.4010505@googlemail.com>
+	Wed, 23 Apr 2008 14:09:38 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55512 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752810AbYDWSJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:09:37 -0400
+Date: Wed, 23 Apr 2008 11:09:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+In-Reply-To: <20080423155940.GY24536@duo.random>
+Message-ID: <Pine.LNX.4.64.0804231105090.12373@schroedinger.engr.sgi.com>
+References: <ea87c15371b1bd49380c.1208872277@duo.random>
+ <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com>
+ <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com>
+ <20080423133619.GV24536@duo.random> <20080423144747.GU30298@sgi.com>
+ <20080423155940.GY24536@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <480F2842.4010505@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 12:14 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
-> Hi,
->
->  I've just compiled latest linus git tree and getting now on an Q9300 Core2Quad , ASUS P5E-VM DO motherboard with BIOS Ver. 0606 , BIOS Rev. 8.12
->  the BIOS bug for CPU#0 message for each processor ?!? That seems somewhat buggy ?:)
->
->  That BIOS version is beta and may be really buggy but I never got such a message on 2.6.24* nor on 2.6.25.
->
->
->  --($:~)-- uname -a
->  Linux thor 2.6.25-03530-g94bc891 #773 SMP PREEMPT Wed Apr 23 13:55:10 CEST 2008 i686 GNU/Linux
->
->
->  ..
->
->  [    0.000000] ACPI: PM-Timer IO Port: 0x808
->  [    0.000000] ACPI: Local APIC address 0xfee00000
->  [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
->  [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
->  [    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
->  [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
->  [    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
->  [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
->  [    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
->  [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
->  [    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
->  [    0.000000] IOAPIC[0]: apic_id 4, version 32, address 0xfec00000, GSI 0-23
->  [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
->  [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
->  [    0.000000] ACPI: IRQ0 used by override.
->  [    0.000000] ACPI: IRQ2 used by override.
->  [    0.000000] ACPI: IRQ9 used by override.
->  [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
->  [    0.000000] ACPI: HPET id: 0xffffffff base: 0xfed00000
->  [    0.000000] Using ACPI (MADT) for SMP configuration information
->
->  ...
->
->  Please let me know if you need more infos , dmesg , config etc .
->
->
->  Regards,
->
->  Gabriel C
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
 
-Hello; I'm receiving the same thing, I received a response and it
-seems that isn't a problem? "I dont know"
-But if you're like me  "maticulous"; things like that will bug me all day long.
-besides that, are you receiving any freezes at all?, I'm unable to use
-that kernel due to the freezes that it's giving me.?
-regards;
+> Implement unregister but it's not reliable, only ->release is reliable.
 
--- 
-Justin P. Mattock
+Why is there still the hlist stuff being used for the mmu notifier list? 
+And why is this still unsafe?
+
+There are cases in which you do not take the reverse map locks or mmap_sem
+while traversing the notifier list?
+
+This hope for inclusion without proper review (first for .25 now for .26) 
+seems to interfere with the patch cleanup work and cause delay after delay 
+for getting the patch ready. On what basis do you think that there is a 
+chance of any of these patches making it into 2.6.26 given that this 
+patchset has never been vetted in Andrew's tree?
+
+
+
