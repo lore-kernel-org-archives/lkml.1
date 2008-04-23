@@ -1,95 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYDWHjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYDWHpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbYDWHjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 03:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYDWHjk
+	id S1753097AbYDWHpe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 03:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYDWHpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 03:39:40 -0400
-Received: from fmmailgate04.web.de ([217.72.192.242]:33736 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbYDWHjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 03:39:39 -0400
-Date: Wed, 23 Apr 2008 09:39:36 +0200
-Message-Id: <250404281@web.de>
+	Wed, 23 Apr 2008 03:45:24 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26302 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751274AbYDWHpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 03:45:22 -0400
+Date: Wed, 23 Apr 2008 09:45:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
+       linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org, wilder@us.ibm.com
+Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
+Message-ID: <20080423074518.GA12774@kernel.dk>
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <1207628587.7535.8.camel@charm-linux>
 MIME-Version: 1.0
-From: devzero@web.de
-To: werner@copaya.yi.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: EDD problem -- regression -- crash on booting by probing EDD
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/9ceXbF3b3cAOdbudGR3LQhABVqeEyCbOOx1yljwsiiGPqn
- 0rM9qLBKQBQco7hpjnJagn1Dtn+a5MrQ3fRG0NWQm5UDsaC4FQ=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1207628587.7535.8.camel@charm-linux>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi !
+On Mon, Apr 07 2008, Tom Zanussi wrote:
+> 
+> On Fri, 2008-03-14 at 14:22 +0100, Christof Schmitt wrote:
+> > plain text document attachment (Re: blktrace/relay/s390: Oops in
+> > subbuf_splice_actor.eml)
+> > On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
+> > > On Fri, Mar 14 2008, Christof Schmitt wrote:
+> > > > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+> > > > > That is indeed a bug, does this work for you?
+> > > > > 
+> > > > > diff --git a/kernel/relay.c b/kernel/relay.c
+> > > > > index d080b9d..39d1fa8 100644
+> > > > > --- a/kernel/relay.c
+> > > > > +++ b/kernel/relay.c
+> > > > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+> > > > >  			       unsigned int flags,
+> > > > >  			       int *nonpad_ret)
+> > > > >  {
+> > > > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+> > > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> > > > >  	struct rchan_buf *rbuf = in->private_data;
+> > > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> > > > >  	uint64_t pos = (uint64_t) *ppos;
+> > > > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+> > > > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+> > > > >  	poff = read_start & ~PAGE_MASK;
+> > > > > 
+> > > > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+> > > > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+> > > > > +
+> > > > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+> > > > >  		unsigned int this_len, this_end, private;
+> > > > >  		unsigned int cur_pos = read_start + total_len;
+> > > > 
+> > > > With the patch, i can run dd and 'blktrace -h traceserver' without the
+> > > > oops. But the output from blktrace only contains only zeros and no
+> > > > usable data for blkparse. Using blktrace to write the data directly to
+> > > > disk, without using the blktrace server works. Is there anything i
+> > > > should look for to help debugging the problem?
+> > > 
+> > > We should probably get Tom in the loop, as he is the relay expert. I'll
+> > > make sure the above patch gets into 2.6.25, as it is definitely a bug
+> > > that needs fixing.
+> > 
+> > http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
+> > his email address seems to be no longer valid. I copy Dave Wilder
+> > here, since he is mentioned as relay maintainer on the web page.
+> > 
+> 
+> Hi,
+> 
+> Yeah, I no longer work for IBM - I need to update the relayfs site to
+> reflect that.
+> 
+> > Dave, can you have a look at this? I can easily reproduce the problem
+> > on s390 Linux for testing and getting more debug information.
+> > 
+> 
+> Not sure anyone's still looking into this, but it doesn't look like an
+> s390 problem specifically.  Apparently what happened was that some
+> internal changes to splice seem to have broken the relay splice_read
+> implementation.  The above patch fixes part of the problem; the patch
+> below should fix the rest, and AFAICT it doesn't break anything else.
+> 
+> Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+> 
+> diff --git a/fs/splice.c b/fs/splice.c
+> index a861bb3..068b210 100644
+> --- a/fs/splice.c
+> +++ b/fs/splice.c
+> @@ -1094,7 +1094,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+>  
+>  	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
+>  	if (ret > 0)
+> -		*ppos += ret;
+> +		*ppos = sd.pos;
 
->As I tested yesterday extensively, the problem wasn't present at 2.6.24-rc5-git6 (SYS \
->Linux 0.17 install DVD) nor at 2.6.24-rc6-git2 (SYS 0.19) ,  but at 2.6.24-rc6-git8 \
->(SYS 0.20-rc1 and 0.20-rc2) and 2.6.25 (0.21-r3).
+Tom, did you verify that sd.pos is always updated?
 
-any chance to git-bisect that further, to find the single commit which broke your kernel?
-
-regards
-roland
-
-
-
-List:       linux-kernel
-Subject:    Re: EDD problem -- regression -- crash on booting by probing EDD
-From:       "werner" <werner () copaya ! yi ! org>
-Date:       2008-04-23 0:20:44
-Message-ID: 1208910044.20701 () copaya ! yi ! org
-[Download message RAW]
-
-As I tested yesterday extensively, the problem wasn't present at 2.6.24-rc5-git6 (SYS \
-Linux 0.17 install DVD) nor at 2.6.24-rc6-git2 (SYS 0.19) ,  but at 2.6.24-rc6-git8 \
-(SYS 0.20-rc1 and 0.20-rc2) and 2.6.25 (0.21-r3).
-
-The whole compiled packages of these kernels still are at copaya.yi.org/tgz , but I \
-extracted  the important parts, see enclosed here.    The .tar.bz2 file contains  the \
-config  and the protocoll of the compilation (inclusive warning / error messages). 
-
-As you can see, the diff between the config of 2.6.24-rc6-git2 and -git8 is nothing.  \
-That means: THE ERROR ENTERED INTO THE KERNEL BETWEEN THESE TWO GITs !!      
-
-You may also analyze the error/warning messages. Please observe that the error \
-message just at the beginning was already subject of another reclamation mine \
-together with another person, and seems to have be corrected.
-
-I inform still about the following:    As I make many experients and also install \
-Linux often for firnds and neighbours, I see steady-steady some kernel errors, but \
-have normally no time to track them, in the house of the persons.  That error here, I \
-saw already several times, and never it helped the edd=off option.    Yesterday it \
-happened that a friend brought a laptop (ACER Aspire 7004WSMi) to me, after he was \
-unsuccessfull to install  SYS 0.21-r3 dvd with 2.6.25-rc7 . Then I tracked that \
-problem during about 5 hours, inclusively trying a lot of different kernel options.  \
-edd=off don't work at all, with no of the affected kernels.  With 2.6.24-rc6-git2 and \
-earlier kernels the problem didnt appear, even without edd=off option, and with the \
-later kernels it appears, even with edd=off .    With pci=off , also the recent \
-kernels boots -- but this is useless because the system don't find any hard disk.  \
-acpi=off or hwprobe=off have no influence on that problem.
-
-Pls search that error and repair it !
-**********  YOU SHOULD MAKE AN EXTRA KERNEL OPTION, WHAT IGNORES THE HARDWARE AND \
-CONTINUES TO BOOT, like pci=off,  BUT WHAT DETECTS CD ROMS, HARD DISKS SATA / IDE / \
-RAID , AND WHAT PERMITS TO USE THE COMPUTER NORMALLY AT LEAST IN VESA-FB OR FBDEV \
-MODE !!!!! *************
-
-As there has no other solution, I released last night SYS 0.21-r4 DVD , what contains \
-both, the 2.6.25 , and alternatively 2.6.24-rc6-git2 , so that people can use them \
-computer anyway / anyhow :    ftp://ftp5.gwdg.de/pub/linux/install/sys/  
-
-I can put the suggested debug, generally, in the kernel command line of my SYS \
-install DVD. However, the person gone with his laptop so that at the moment I cannot \
-test it; I have to wait if the same problem occurs on another computer.  
-
-
-_________________________________________________________________________
-In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
-Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
+-- 
+Jens Axboe
 
