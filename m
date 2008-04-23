@@ -1,65 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYDWI5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbYDWJDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYDWI5h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 04:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYDWI53
+	id S1754117AbYDWJDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYDWJC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 04:57:29 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:35109 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYDWI52 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 04:57:28 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-6.tower-164.messagelabs.com!1208941041!5729879!2
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Wed, 23 Apr 2008 10:56:29 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] UIO: generic platform driver
-Message-ID: <20080423085629.GA16776@digi.com>
-References: <20080422094708.GB27126@digi.com> <1208857977-29493-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1208857977-29493-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1208857977-29493-3-git-send-email-Uwe.Kleine-Koenig@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1208857977-29493-3-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 23 Apr 2008 08:56:30.0672 (UTC) FILETIME=[EC473D00:01C8A51F]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15866.005
-X-TM-AS-Result: No--11.427700-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Wed, 23 Apr 2008 05:02:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52917 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752120AbYDWJCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:02:54 -0400
+Date: Wed, 23 Apr 2008 19:02:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 23
+Message-Id: <20080423190248.2f21b33f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__23_Apr_2008_19_02_48_+1000_UqKKnv9FXvlx.9sj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--Signature=_Wed__23_Apr_2008_19_02_48_+1000_UqKKnv9FXvlx.9sj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Uwe Kleine-König wrote:
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> ---
-> Hello,
-> 
-> This is the former patch 4/4 after some discussion.
-> 
-> Open issues:
->   - clock name "uio" isn't considered good by Russell King
->     I don't have a better suggestion
-I added another branch[1] on my repo that doesn't have the dummy clk
-patch and variant of this one that doesn't use the clk API.
+Hi all,
 
-This way the clk API isn't needed anymore for my patch and the issue
-about the clock name disappeard, too.
+I am not sure how useful these trees are during the merge window, but I
+shall persist for a while.
 
-Best regards
-Uwe
+Changes since next-20080422:
 
-[1] git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git uio2
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+The build bug in infiniband has gone.
+
+One of the drivers merged into Linus' tree from the Arm tree won't build
+on x86_64 (at least).  Instead of reverting it, I have just added a
+dependency on CONFIG_ARM.
+
+Conflicts continue to disappear due to code being merged upstream and
+a few more trivial ones have appeared for the same reason.
+
+The xfs has a bug has gone.  As has the kvm build bug in powerpc's
+asm-offsets.
+
+A new build bug in mtd (for which there is a fix, I am told).
+
+I have reverted part of the stack protector patches from x86-latest since
+I don't have a new enough compiler.  Ingo is going to change the #error
+to #warning for now.
+
+The firesat driver still fails to build and so is still reverted.
+
+I am still carrying the PNP fixup patches.
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x/ebony_defconfig and allyesconfig.
+
+There were a few merge conflicts (fairly trivial and/or notified) and
+couple of build failures (notified).  Below is a summary of the state of
+the merge.
+
+We are up to 58 trees, more are welcome (even if they are currently
+empty).  Thanks to those who have contributed, and to those who haven't,
+please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/, the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+Merging origin/master
+Applying The-HTC-PASIC3-LED-DS1WM-chip-support-is-ARM-only
+Merging x86-fixes/for-linus
+Merging sched-fixes/for-linus
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/base/power/main.c
+CONFLICT (content): Merge conflict in include/linux/pm.h
+Merging quilt/pci
+CONFLICT (content): Merge conflict in drivers/pci/quirks.c
+Merging quilt/usb
+Merging x86/for-akpm
+Merging sched/for-akpm
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/DocBook/kernel-locking.=
+tmpl
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+CONFLICT (content): Merge conflict in drivers/ide/ide-cd.c
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in arch/x86/kernel/apm_32.c
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/jbd2/journal.c
+CONFLICT (content): Merge conflict in fs/jbd2/revoke.c
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+Merging galak/powerpc-next
+Merging mtd/master
+Created commit c93feba: Revert "[MTD] AR7 mtd partition map"
+Merging wireless/master
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging semaphore/semaphore
+Merging x86-latest/latest
+Applying x86-latest-kvm-fix-1
+Created commit e52dc54: Revert "stackprotector: turn not having the right g=
+cc into an #error"
+Merging sched-latest/latest
+Merging quilt/ldp
+CONFLICT (content): Merge conflict in drivers/misc/Kconfig
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Created commit 7738b77: Revert "DVB: add firesat driver"
+Applying parport_pc: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying nsc-ircc: wrap PNP probe code in #ifdef CONFIG_PNP
+Applying smsc-ircc2: wrap PNP probe code in #ifdef CONFIG_PNP
+
+--Signature=_Wed__23_Apr_2008_19_02_48_+1000_UqKKnv9FXvlx.9sj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIDvs8TgG2atn1QN8RAhwdAJ9yp91e+z/18htM5KRweQZ5Ry+UjQCgh0iI
+8JAnndNBRK6j7LmQxz3DD4I=
+=lGKq
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Apr_2008_19_02_48_+1000_UqKKnv9FXvlx.9sj--
