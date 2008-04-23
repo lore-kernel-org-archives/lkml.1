@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYDWWml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYDWWoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYDWWml (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYDWWmd
+	id S1755503AbYDWWoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYDWWnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:42:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59737 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbYDWWmc (ORCPT
+	Wed, 23 Apr 2008 18:43:53 -0400
+Received: from el-out-1112.google.com ([209.85.162.181]:23501 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbYDWWnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:42:32 -0400
-Message-ID: <480FBA73.2090209@zytor.com>
-Date: Wed, 23 Apr 2008 15:38:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 23 Apr 2008 18:43:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gCB81SKMVTVEJmNhmzPfO3ACkI3bShoIfqjrEN3hRRdXUuXcGDkpQVv5MwfV/JB8jxSZ3tdt2AkgzHYbqnYP0ujFykYKys7R8Y85F44/MFcRqBkXlojgFocOrJOBUIltOQqloiqd8XZa6bXECgUN4PIiQspTEOWQonq5zmXUL4M=
+Message-ID: <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
+Date: Thu, 24 Apr 2008 00:43:51 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "devzero@web.de" <devzero@web.de>
+Subject: Re: make cloneconfig ?
+Cc: linux-kernel@vger.kernel.org, agruen@suse.de
+In-Reply-To: <251459002@web.de>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
-References: <200804181856.m3IIuKd4007403@hera.kernel.org> <1208917076.9212.721.camel@pmac.infradead.org> <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com> <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com> <480F7C11.8040302@zytor.com> <20080423185859.GB7713@cvg>
-In-Reply-To: <20080423185859.GB7713@cvg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <251459002@web.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> 
-> Peter, Ingo,
-> 
-> any objections on the patch like that?
-> 
+On 24/04/2008, devzero@web.de <devzero@web.de> wrote:
+> any reason why "make cloneconfig" never made it into mainline?
+>
+>  many people are quite used to it and every time i build vanilla kernel i step into that trap  "oh - that`s a suse`ism"
+>
+>  make cloneconfig exists since /proc/config.gz - but while that one went into mainline, cloneconfig never did.
+>
+>  anyone know the reason for that ?
+>
+>  i wished, distros kernels were more similar to vanilla kernels - so what about making them more similar ?
+>
+>
 
-Well, I would prefer to try to get rid of them; as you said, most 
-userland don't rely on these, and if they aren't used they are just 
-namespace pollution, and rather bad such.
+Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
+make oldconfig" ???   If so, why do we need yet another "make
+<some_target>" Makefile rule? What would actually be gained?
 
-	-hpa
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
