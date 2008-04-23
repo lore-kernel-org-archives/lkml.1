@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYDWWKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYDWWMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbYDWWKT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYDWWKG
+	id S1755266AbYDWWMo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYDWWMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:10:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39997 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbYDWWKF (ORCPT
+	Wed, 23 Apr 2008 18:12:35 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20118 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbYDWWMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:10:05 -0400
-Subject: [RFC][PATCH 2/2] sched: aggregate_group_shares no loop
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1208988476.2849.8.camel@lappy>
-References: <1208988476.2849.8.camel@lappy>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 00:09:31 +0200
-Message-Id: <1208988571.2849.10.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Wed, 23 Apr 2008 18:12:34 -0400
+Date: Wed, 23 Apr 2008 15:11:23 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: iwl4965 regression since 2.6.24
+Message-ID: <20080423221123.GC17022@mail.oracle.com>
+Mail-Followup-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <20080423124105.GA4783@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080423124105.GA4783@ics.muni.cz>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: sched: aggregate_group_shares no loop
+On Wed, Apr 23, 2008 at 02:41:06PM +0200, Lukas Hejtmanek wrote:
+> as of 2.6.25 kernel, the intel driver iwl4965 has serious troubles to
+> associate with AP. I must many times set essid till the association is done.
+> 
+> Moreover, it seems that it is unable to associate with different AP (using the
+> same SSID). I must remove the module completly to be able to associate to the
+> different AP. I think it is big regression.
 
-Remove the chance of getting trapped in the loop.
+	I am experiencing the same problems on 2.6.24.  I have also
+noticed that it cannot recover association after waking from sleep.  I
+must set the essid before it will talk to the AP.  I always see this in
+dmesg at the time:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+  ADDRCONF(NETDEV_UP): wlan0: link is not ready
 
-Index: linux-2.6-2/kernel/sched.c
-===================================================================
---- linux-2.6-2.orig/kernel/sched.c
-+++ linux-2.6-2/kernel/sched.c
-@@ -1713,7 +1713,6 @@ void aggregate_group_shares(struct task_
- 	unsigned long shares = 0;
- 	int i;
- 
--again:
- 	for_each_cpu_mask(i, sd->span)
- 		shares += tg->cfs_rq[i]->shares;
- 
-@@ -1723,7 +1722,9 @@ again:
- 	 */
- 	if (unlikely(!shares && aggregate(tg, sd)->rq_weight)) {
- 		__aggregate_redistribute_shares(tg);
--		goto again;
-+
-+		for_each_cpu_mask(i, sd->span)
-+			shares += tg->cfs_rq[i]->shares;
- 	}
- 
- 	aggregate(tg, sd)->shares = shares;
+After I explicitly re-specify the ssid, I see this in dmesg:
+
+  ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+
+	To clarify: when the interface comes up after boot or wake, it
+associates but will not actually send data (Destination Host
+Unreachable).  I must run "iwconfig wlan0 essid <ssid>".  After that, it
+works.  When I move to a new network with a different access point, I
+must unload and reload the module.
+	Hopefully, I'll get a chance to run with debugging and send
+along some logs.
+
+Thinkpad x61s,
+03:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN Network Connection (rev 61)
 
 
+Joel
+
+-- 
+
+"One of the symptoms of an approaching nervous breakdown is the
+ belief that one's work is terribly important."
+         - Bertrand Russell 
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
