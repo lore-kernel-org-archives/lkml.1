@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYDWXFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYDWXJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYDWXFr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 19:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYDWXFj
+	id S1754868AbYDWXJJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 19:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYDWXI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 19:05:39 -0400
-Received: from uki.us.mooball.net ([66.98.178.13]:35917 "EHLO
-	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922AbYDWXFi (ORCPT
+	Wed, 23 Apr 2008 19:08:56 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:24947 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752643AbYDWXIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 19:05:38 -0400
-X-Greylist: delayed 770 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Apr 2008 19:05:38 EDT
-X-ClientAddr: 220.233.82.121
-Subject: Re: Microblaze Linux release
-From: John Williams <john.williams@petalogix.com>
-To: monstr@seznam.cz
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
-       benh@kernel.crashing.org,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       jwboyer@linux.vnet.ibm.com, John Linn <John.Linn@xilinx.com>,
-       git-dev@xilinx.com, Grant Likely <grant.likely@secretlab.ca>,
-       git@xilinx.com, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <480FA8A4.7020207@seznam.cz>
-References: <48020A21.4000404@seznam.cz> <200804161733.04714.arnd@arndb.de>
-	 <480FA235.8000203@seznam.cz>
-	 <200804232257.04060.florian.fainelli@telecomint.eu>
-	 <480FA8A4.7020207@seznam.cz>
-Content-Type: text/plain
-Organization: PetaLogix
-Date: Thu, 24 Apr 2008 08:51:17 +1000
-Message-Id: <1208991077.3050.141.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Wed, 23 Apr 2008 19:08:55 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 22/53] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
+Date: Wed, 23 Apr 2008 17:08:53 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080418204955.342963315@ldl.fc.hp.com> <200804211710.38660.bjorn.helgaas@hp.com> <480E5246.5000804@keyaccess.nl>
+In-Reply-To: <480E5246.5000804@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
-X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MailScanner-From: john.williams@petalogix.com
+Content-Disposition: inline
+Message-Id: <200804231708.53572.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday 22 April 2008 03:01:58 pm Rene Herman wrote:
+> It seems you designed the list to be basically in any order, judging by 
+> things such as pnp_new_resource which'll happily reuse resources of the 
+> correct type at any position in the list. Yet, pnp_assign_foo() and friends 
+> retrieve resources (through pnp_get_resource) by position in the list and 
+> not by the index. I'm not overly sure of failure scenarios but isn't this 
+> mixing up position and index in a bad way?
 
-On Wed, 2008-04-23 at 23:22 +0200, Michal Simek wrote:
-> > Hi Michal
+Yes, I think you're right.
+
+My idea is that the list should end up in the same order as the
+resource list from the BIOS, e.g., the _CRS and _PRS lists for
+ACPI.  In the case of ISAPNP, it'll be in the order that we read
+things from the hardware registers.
+
+I think I should probably make pnp_new_resource() always allocate
+a new resource and get rid of the idea of reusing something already
+in the list.
+
+> >> (do note that pnp_assign_foo are the only callers of pnp_check_foo and they 
+> >> could be either merged together or at least not communicate via "idx" but 
+> >> simply by passing the res/pnp_res).
 > > 
-> >> Hi all,
-> >>
-> >> I update Microblaze kernel to latest Linus tree. I fixed some problems
-> >> which come with it.
-> > 
-> > While reading the previous discussion, I wondered that keeping PCI would be a 
-> > good idea. I am personnaly using it for a custom design and would be glad 
-> > being able to continue using it.
+> > Yes, I'd like to do that.  But I think I'd better wait or I'll never
+> > get anything finished :-)
 > 
-> I'll add PCI parts as I will have a reason to do it. I have no PCI devices
-> connected to MB now.
-> 
-> > If this represents too much work for you, we can probably add it later.
-> 
-> yes. This is lot of work for me unfortunately without any commercial support.
-> 
-> > Great work !
+> Well, the idea here was that getting rid of one "idx" here so that things 
+> communicate directly removes at least one possible ordering artifact...
 
-I have a working PCI implementation that I will submit once Michal's
-patches are finalised.
+Yup.  I ended up doing this after all.
 
-Unsurprisingly it is heavily derived from the PPC implementation, but
-reworked a little bit.
+I updated the patches and my ACPI box with the inactive devices now
+boots (it failed with the v3 patches).  I'll work on the
+pnp_new_resource() thing tomorrow, but I'll send you the current
+patches now in case you have a chance to try them on your ISA box.
 
-Regards,
-
-John
-
-> 
-> Have a good day,
-> Michal Simek
--- 
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
-
-
+Bjorn
