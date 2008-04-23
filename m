@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbYDWTqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYDWTzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbYDWTqO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 15:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbYDWTp6
+	id S1754985AbYDWTzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 15:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYDWTzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 15:45:58 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:63284 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbYDWTp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 15:45:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MxgWg0F8XlSmWj0PEjExhJwWWSpHIDKwNxWGiDMds9dvEXsZLMn08+3WbeUq4Q42FHaxmvUieOdcRM1OqXl1eW+Fj947uPqt5on6shP+tHEUnNDLY0kuERdHwrbiTWsHc4sVGS6WQtRNulklz7w79GJHa1aybsR+NNLlBo5AuN4=
-Message-ID: <74d0deb30804231245q9326f0bq20bc52f62d5c437@mail.gmail.com>
-Date: Wed, 23 Apr 2008 21:45:54 +0200
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: "Stephen Hemminger" <shemminger@vyatta.com>
-Subject: Re: [PATCH] mfd: pasic3 driver build error
-Cc: "Russell King" <rmk+kernel@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20080423112223.4df31c56@extreme>
+	Wed, 23 Apr 2008 15:55:05 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:49191 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751630AbYDWTzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 15:55:03 -0400
+Date: Wed, 23 Apr 2008 14:55:00 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
+	lock (first and not last
+Message-ID: <20080423195500.GW30298@sgi.com>
+References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random> <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com> <20080422224048.GR24536@duo.random> <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com> <20080423134427.GW24536@duo.random> <20080423154536.GV30298@sgi.com> <20080423161544.GZ24536@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080423112223.4df31c56@extreme>
+In-Reply-To: <20080423161544.GZ24536@duo.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 8:22 PM, Stephen Hemminger
-<shemminger@vyatta.com> wrote:
-> Fix build failure on other platforms because this driver includes
->  registers that do not exist on other platforms.
+On Wed, Apr 23, 2008 at 06:15:45PM +0200, Andrea Arcangeli wrote:
+> Once I get confirmation that everyone is ok with #v13 I'll push a #v14
+> before Saturday with that cosmetical error cleaned up and
+> mmu_notifier_unregister moved at the end (XPMEM will have unregister
+> don't worry). I expect the 1/13 of #v14 to go in -mm and then 2.6.26.
 
-Yeah, people[1] already[2] noticed[3]. That #include statement was
-left there accidentally, sorry about that. The fix[4] is in the ARM
-tree.
+I think GRU needs _unregister as well.
 
-[1] http://lkml.org/lkml/2008/4/22/40
-[2] http://lkml.org/lkml/2008/4/22/323
-[3] http://lkml.org/lkml/2008/4/21/593
-[4] http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=5010/1
-
->  Signed-off-by: Stephen Hemminger <stephen.hemminger@vyatta.com>
->
->  --- a/drivers/mfd/Kconfig       2008-04-23 11:16:06.000000000 -0700
->  +++ b/drivers/mfd/Kconfig       2008-04-23 11:16:52.000000000 -0700
->  @@ -32,6 +32,7 @@ config HTC_EGPIO
->
->   config HTC_PASIC3
->         tristate "HTC PASIC3 LED/DS1WM chip support"
->  +       depends on ARCH_PXA
->         help
->           This core driver provides register access for the LED/DS1WM
->           chips labeled "AIC2" and "AIC3", found on HTC Blueangel and
->
+Thanks,
+Robin
