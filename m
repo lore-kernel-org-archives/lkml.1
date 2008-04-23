@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYDWJZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbYDWJce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbYDWJZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYDWJZu
+	id S1753349AbYDWJce (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYDWJcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:25:50 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:35427 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYDWJZt (ORCPT
+	Wed, 23 Apr 2008 05:32:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:1563 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbYDWJcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:25:49 -0400
-Message-ID: <480EFDD3.4020707@aitel.hist.no>
-Date: Wed, 23 Apr 2008 11:13:55 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Willy Tarreau <w@1wt.eu>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86: 4kstacks default
-References: <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <20080420132113.GA1899@cs181133002.pp.htv.fi>
-In-Reply-To: <20080420132113.GA1899@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Apr 2008 05:32:25 -0400
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/3] radeonfb: Fix 64 bits
+	resources on 32 bits archs
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: benh@kernel.crashing.org
+Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>,
+       Wolfgang Denk <wd@denx.de>
+In-Reply-To: <1208902903.9640.138.camel@pasglop>
+References: <20080422012723.BA9F2DE13F@ozlabs.org>
+	 <480E0A54.9010203@linux.vnet.ibm.com>  <1208902903.9640.138.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Organization: Tungsten Graphics
+Date: Wed, 23 Apr 2008 11:32:07 +0200
+Message-Id: <1208943127.5632.324.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> What actually brings bad reputation is shipping a 4k option that is 
-> known to break under some circumstances.
->   
-How about making 4k stacks incompatible with those circumstances then?
-I.e. is you select 4k stacks, then you can't select XFS because we know
-that _may_ fail. Similiar for ndiswrapper networking, and other
-stuff where problems have been noticed.
+On Wed, 2008-04-23 at 08:21 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-04-22 at 17:55 +0200, Christian Ehrhardt wrote:
+> > I wanted to ask if there are any known workarounds atm that would
+> > allow me to use my X11 for now?
+> 
+> X is doing a mmap of /dev/mem instead of /dev/fb ?
+> 
+> You can normally map the fb mapping /dev/fb and then map the registers
+> using /dev/fb at an offset beyond the framebuffer (fix->smem_len).
+> 
+> If X is using /dev/mem instead, then it's being stupid and needs to be
+> fixed...
 
-Some people don't need any of these, and can then use
-safe 4k stacks. Well, at least as safe as the 8k stacks are, there is no
-mathematical proof for their safety in all cases either.
+It's up to the driver, and again, the current radeon driver doesn't use
+radeonfb at all anymore...
 
-Helge Hafting
+
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
+
