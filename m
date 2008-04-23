@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYDWNoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYDWNoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYDWNoj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 09:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYDWNo3
+	id S1757596AbYDWNoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 09:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYDWNoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 09:44:29 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:35646
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbYDWNo3 (ORCPT
+	Wed, 23 Apr 2008 09:44:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:49575 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbYDWNob convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 09:44:29 -0400
-Date: Wed, 23 Apr 2008 15:44:27 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
-	lock (first and not last
-Message-ID: <20080423134427.GW24536@duo.random>
-References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random> <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com> <20080422224048.GR24536@duo.random> <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com>
+	Wed, 23 Apr 2008 09:44:31 -0400
+Date: Wed, 23 Apr 2008 15:44:26 +0200 (CEST)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: LKML <linux-kernel@vger.kernel.org>
+cc: linux-ide@vger.kernel.org
+Subject: ide: failed opcode was: 0xea
+Message-ID: <alpine.DEB.1.10.0804231533280.4028@sheep.housecafe.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com>
+Content-Type: TEXT/PLAIN; format=flowed; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX19yqhhbfK5T6ohCKH0cTYrur7SokkXLlVYLLXf
+ 6wsAqLOj9+aNVgFDgacadt3H/YNi3kgpkgJ3OfQO/3eTRKWQcX
+ CUoAMpNtKcDYHsS/vMtqg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 04:14:26PM -0700, Christoph Lameter wrote:
-> We want a full solution and this kind of patching makes the patches 
-> difficuilt to review because later patches revert earlier ones.
+Hi,
 
-I know you rather want to see KVM development stalled for more months
-than to get a partial solution now that already covers KVM and GRU
-with the same API that XPMEM will also use later. It's very unfair on
-your side to pretend to stall other people development if what you
-need has stronger requirements and can't be merged immediately. This
-is especially true given it was publically stated that XPMEM never
-passed all regression tests anyway, so you can't possibly be in such
-an hurry like we are, we can't progress without this. Infact we can
-but it would be an huge effort and it would run _slower_ and it would
-all need to be deleted once mmu notifiers are in.
+during the last days the following messages showed up in my logs:
 
-Note that the only patch that you can avoid with your approach is
-mm_lock-rwsem, given that's software developed and not human developed
-I don't see a big deal of wasted effort. The main difference is the
-ordering. Most of the code is orthogonal so there's not much to
-revert.
+hdc: task_no_data_intr: status=0xd0 { Busy }
+ide: failed opcode was: 0xea
+
+It's often hdc, sometimes hdd and I have to admit that at least hdd
+is pretty "warm":
+
+/dev/hdc: SAMSUNG HD400LD: 40°C
+/dev/hdd: ST3160023A: 48°C
+
+That being said, the disks are working OK and have been on that 
+temperature for some time now. The regular SMART checks report no errors 
+either.
+
+The errors showed up in the past a few times but now with 2.6.25 (and 
+early -rc) they seem to appear more often. From /var/log/messages:
+
+       5 Aug 19 failed opcode was: 0xea           (2007)
+       4 Mar 10 failed opcode was: 0xea           (2008)
+       2 Mar 11 failed opcode was: 0xea
+       7 Mar 12 failed opcode was: 0xea
+       3 Apr 17 ide: failed opcode was: 0xea
+      11 Apr 21 ide: failed opcode was: 0xea
+       1 Apr 23 ide: failed opcode was: 0xea
+
+Q: What do these messages mean? Should I be worried?
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #442:
+
+Trojan horse ran out of hay
