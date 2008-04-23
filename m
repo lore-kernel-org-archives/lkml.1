@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbYDWO77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYDWPAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbYDWO77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 10:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYDWO7t
+	id S1755342AbYDWPAi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 11:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYDWPA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 10:59:49 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3207 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbYDWO7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 10:59:48 -0400
-Date: Wed, 23 Apr 2008 10:59:33 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-man@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Petr Gajdos <pgajdos@suse.cz>, michael.kerrisk@gmail.com
-Subject: Re: core_pattern pipe documentation
-Message-ID: <20080423145933.GA26228@hmsendeavour.rdu.redhat.com>
-References: <cfd18e0f0804151409q178addf4t4c6cba683bd0bff4@mail.gmail.com> <cfd18e0f0804151411x62080f10y833493db7f1b8cfd@mail.gmail.com> <48051FBA.60503@firstfloor.org> <4808D1F4.7050705@gmail.com> <cfd18e0f0804230509g4e7456ecgd40c0bfee874a82c@mail.gmail.com>
+	Wed, 23 Apr 2008 11:00:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:60478 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYDWPA1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 11:00:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Will Newton" <will.newton@gmail.com>
+Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
+Date: Wed, 23 Apr 2008 16:59:24 +0200
+User-Agent: KMail/1.9.9
+Cc: "Kyle McMartin" <kyle@mcmartin.ca>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <20080422153849.GH19802@phobos.i.cabal.ca> <87a5b0800804230736k340e7fe9mffbd72b5b8164015@mail.gmail.com>
+In-Reply-To: <87a5b0800804230736k340e7fe9mffbd72b5b8164015@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <cfd18e0f0804230509g4e7456ecgd40c0bfee874a82c@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200804231659.24463.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+jfl3i1cv/0BBZCUcUVytz1jwzQpUAbRM9Geq
+ N9p6d6IOzkWc1RQjMtKFMQWlbRAKjDypJBPhRQ9f+ztT2/S+ZT
+ 19zplSW/7ubQ6G5O1BYBg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 02:09:14PM +0200, Michael Kerrisk wrote:
-> Andi -- ping!
+On Wednesday 23 April 2008, Will Newton wrote:
+> I implemented the approach you suggested - Kconfig symbol and
+> cond_syscall definition. I think I actually like the previous approach
+> better:
 > 
-> Adding Neil to CC, since it looks like he also did some work here, and
-> so can perhaps comment.
+> 1. The arch Kconfig files are quite non-uniform compared to unistd.h
+> so the definitions wind up at different places in the file which is a
+> bit messy.
+> 2. Changes to Kconfig may cause churn in defconfigs perhaps?
+> 3. There is more churn in arch Kconfig than unistd.h so getting a
+> cross arch patch applied is likely to be more difficult.
+> 4. The patch is about 4 times as many lines.
 > 
-> On Fri, Apr 18, 2008 at 6:53 PM, Michael Kerrisk
-> <mtk.manpages@googlemail.com> wrote:
-> > Andi,
-> >
-> > I wrote the following description of the core_pattern pipe feature.  Does this
-> > seem okay?
-> >
-> >   Piping core dumps to a program
-> >       Since kernel 2.6.19, Linux supports an  alternate  syntax
-> >       for the /proc/sys/kernel/core_pattern file.  If the first
-> >       character of this file is a pipe  symbol  (|),  then  the
-> >       remainder  of  the line is interpreted as a program to be
-> >       executed.  Instead of being written to a disk  file,  the
-> >       core  dump  is  given  as  standard input to the program.
-> >       Note the following points:
-> >
-> >       *  The program must be specified using an absolute  path-
-> >          name  (or  a  pathname relative to the root directory,
-> >          /), and must immediately follow the '|' character.
-> >
-> >       *  The process created to run the program  runs  as  user
-> >          and group root.
-> >
-> >       *  Arguments can be supplied to the program, delimited by
-> >          white space (up to a total line length of 128  bytes).
-> >
-> > Cheers,
-> >
-> > Michael
-> >
-Thanks for CC'ing me.  The above all looks good.  I would add documentation
-however, about the available macros that can be used when core_pattern is
-specified as a pipe.  Adding something like the following would be good:
+> What do you think?
 
-	* Arguments can be statically declared or implied via the use of macros,
-	  denoted by the use of the %sign.  The following macros are supported:
-		* %% - output a literal % sign on the command line
-		* %p - the pid of the crashing process
-		* %u - the uid of the crashing process
-		* %g - the gid of the crashing process
-		* %s - the signal that caused the crashing process to crash
-		* %t - the time the crashing process dumped
-		* %h - the hostname of the system
-		* %e - the executable name of the crashing process
-		* %c - the core limit size of the crashing process
+I still feel that the original patch was more helpful and consistent
+with how we do it for the existing obsolete syscalls.
 
-	  Note that the core limit size macro may be a different value than what
-	  is returned by getrlimit(RLIMIT_CORE,...).  This is due to the fact
-	  that the core_pattern specified executible will be run as the same uid
-	  as the crashing process, and to facilitate reception of the entire
-	  core, the kernel will temporarily set RLIMIT_CORE to unlimited while
-	  the dump is in progress.  Note also %u and %g may be different values
-	  than getuid/getgid in the event that the core_pattern executable is
-	  set[u|g]id root
+Note that there is a much simpler solution if you just use an
+"#ifdef __NR_sys_sysfs" around the definition of the syscall, but
+that has another disadvantage in that it is harder to spot when
+new architectures get it wrong.
 
-
-Thanks & Regards
-Neil
-
-
--- 
-/***************************************************
- *Neil Horman
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+	Arnd <><
