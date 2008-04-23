@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbYDWFlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYDWFmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbYDWFlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 01:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYDWFlN
+	id S1759566AbYDWFmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 01:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYDWFmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 01:41:13 -0400
-Received: from smtp.enter.net ([216.193.128.24]:3764 "EHLO smtp.enter.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbYDWFlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 01:41:12 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: david@lang.hm
-Subject: Re: x86: 4kstacks default
-Date: Wed, 23 Apr 2008 01:41:09 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <200804230121.11004.dhazelton@enter.net> <alpine.DEB.1.10.0804222222490.23325@asgard>
-In-Reply-To: <alpine.DEB.1.10.0804222222490.23325@asgard>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 23 Apr 2008 01:42:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35671
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751513AbYDWFmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 01:42:11 -0400
+Date: Tue, 22 Apr 2008 22:42:12 -0700 (PDT)
+Message-Id: <20080422.224212.32058127.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: Soft lockup regression from today's sched.git merge.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080422091456.GC9939@elte.hu>
+References: <20080422.015931.70144614.davem@davemloft.net>
+	<20080422091456.GC9939@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804230141.09523.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008 01:25:27 david@lang.hm wrote:
-> On Wed, 23 Apr 2008, Daniel Hazelton wrote:
-> > On Wednesday 23 April 2008 01:03:11 Denys Vlasenko wrote:
-> >> On Tuesday 22 April 2008 20:20, Romano Giannetti wrote:
-> >>> On Sun, 2008-04-20 at 11:44 -0400, Daniel Hazelton wrote:
-> >>>> Since the second-most-common reason for stack overages is
-> >>>> ndiswrapper... Well, with there being so much more hardware now
-> >>>> supported directly by the linux kernel...
-> >>>
-> >>> How would I like you being right... Atheros AR5008, AR5414 PHY, "not
-> >>> yet here". It's almost one year now since I bought this laptop, and
-> >>> till now it's the cable or ndiswrapper. But yes, it's going better. For
-> >>> my first wifi laptop I waited two and a half years, now it seems that
-> >>> in a bit more than one there will be an open source driver...
-> >>>
-> >>> I know all the trouble ndiswrapper signify. But I see also that people
-> >>> around me with a laptop and linux use more ndiswrapper than a real
-> >>> driver, so... be gentle with it.
-> >>
-> >> Nobody knows how much potential development is not done because
-> >> "you can make your wifi work with ndiswrapper".
-> >
-> > I've got to agree with that sentiment. Once a working solution is found,
-> > no matter how crappy, it seems that almost all development stops.
->
-> and nobody knows how many people are running linux instead of windows
-> becouse they were able to use ndiswrapper to get things running. most of
-> those people contributed nothing to the kernel, but they all contributed
-> to Linux, if nothing else as examples that Linux is a reasonable option
-> (and some percentage of those users have contrinbuted to other opensource
-> projects that they would probably never have bumped into if they were
-> running windows instead)
->
-> I know we will never convince each other, but we do need to recognise that
-> there is another valid point of view.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 22 Apr 2008 11:14:56 +0200
 
-And who knows how many more people would be running Linux if they didn't need 
-ndiswrapper at all?
+> thanks for reporting it. I havent seen this false positive happen in a 
+> long time - but then again, PC CPUs are a lot less idle than a 128-CPU 
+> Niagara2 :-/ I'm wondering what the best method would be to provoke a 
+> CPU to stay idle that long - to make sure this bug is fixed.
 
-And how much better would it be if the drivers were native linux code and were 
-fully supportable because of that?
+I looked more closely at this.
 
-There are many, many reasons why it'd be better if ndiswrapper didn't exist as 
-a solution or if development on native solutions continued on at the level it 
-would without ndiswrapper. 
+There is no way the patch in question can work properly.
 
-DRH
+The algorithm is, essentialy "if time - prev_cpu_time is large enough,
+call __sync_cpu_clock()" which if fine, except that nothing ever sets
+prev_cpu_time.
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+The code is fatally flawed, once __sync_cpu_clock() calls start
+happening, they will happen on every cpu_clock() call.
+
+So like my bisect showed from the get-go, these cpu_clock() changes
+have major problems, so it was quite a mind boggling stretch to stick
+a touch_softlockup_watchdog() call somewhere to try and fix this
+when the guilty change in question didn't touch that area at all.
+:-(
+
+Furthermore, this is an extremely expensive way to ensure monotonic
+per-rq timestamps.  A global spinlock taken every 100000 ns on every
+cpu?!?!  :-/
+
+At least move any implication of "high speed" from the comments above
+cpu_clock() if we're going to need something like this.  I have 128
+cpus, that's 128 grabs of that spinlock every quantum.  My next system
+I'm getting will have 256 cpus.  The expense of your solution
+increases linearly with the number of cpus, which doesn't scale.
+
+Anyways, I'll work on the group sched lockup bug next.  As if I have
+nothing better to do during the merge window than fix sched tree
+regressions :-(
