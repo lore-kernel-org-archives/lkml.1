@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbYDWDGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934097AbYDWDHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933120AbYDWDGF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 23:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYDWDFy
+	id S934097AbYDWDHK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 23:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYDWDG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 23:05:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59061 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755169AbYDWDFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 23:05:53 -0400
-Message-ID: <480EA744.2050300@cn.fujitsu.com>
-Date: Wed, 23 Apr 2008 11:04:36 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 22 Apr 2008 23:06:58 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:41136 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756423AbYDWDG5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 23:06:57 -0400
+Message-ID: <480EA6DE.8060307@linux.vnet.ibm.com>
+Date: Wed, 23 Apr 2008 08:32:54 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroup: use read lock to guard find_existing_css_set()
-Content-Type: text/plain; charset=UTF-8
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: remove redundant initialization in mem_cgroup_create()
+References: <480E9E52.4080905@cn.fujitsu.com> <20080423115041.c918091d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080423115041.c918091d.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function does not modify anything (except the temporary
-css template), so it's sufficient to hold read lock.
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 23 Apr 2008 10:26:26 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> *mem has been zeroed, that means mem->info has already
+>> been filled with 0.
+>>
+> maybe my mistake :(
+> 
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/cgroup.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 2727f92..e9eb5da 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -406,11 +406,11 @@ static struct css_set *find_css_set(
- 
- 	/* First see if we already have a cgroup group that matches
- 	 * the desired set */
--	write_lock(&css_set_lock);
-+	read_lock(&css_set_lock);
- 	res = find_existing_css_set(oldcg, cgrp, template);
- 	if (res)
- 		get_css_set(res);
--	write_unlock(&css_set_lock);
-+	read_unlock(&css_set_lock);
- 
- 	if (res)
- 		return res;
--- 1.5.4.rc3
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
