@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYDWRJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbYDWRMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbYDWRJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYDWRJ1
+	id S1755145AbYDWRMK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYDWRL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:09:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52543 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751848AbYDWRJ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:09:26 -0400
-Date: Wed, 23 Apr 2008 12:09:09 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080423170909.GA1459@sgi.com>
-References: <patchbomb.1208872276@duo.random> <ea87c15371b1bd49380c.1208872277@duo.random>
+	Wed, 23 Apr 2008 13:11:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55989 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbYDWRLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:11:55 -0400
+Date: Wed, 23 Apr 2008 10:11:23 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
+       zaitcev@redhat.com
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+Message-Id: <20080423101123.a69e4945.zaitcev@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0804231038210.26134@sbz-30.cs.Helsinki.FI>
+References: <200804212310.41729.elendil@planet.nl>
+	<20080422134034.GF7311@elte.hu>
+	<20080422235148.c49dc6b7.zaitcev@redhat.com>
+	<Pine.LNX.4.64.0804231038210.26134@sbz-30.cs.Helsinki.FI>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ea87c15371b1bd49380c.1208872277@duo.random>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 Apr 2008 10:38:45 +0300 (EEST), Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
 
-You may have spotted this already. If so, just ignore this.
+> > The code analysis for usbmon shows nothing. Anyone wants to have
+> > a look?
 
-It looks like there is a bug in copy_page_range() around line 667.
-It's possible to do a mmu_notifier_invalidate_range_start(), then
-return -ENOMEM w/o doing a corresponding mmu_notifier_invalidate_range_end().
+Thanks for taking this little challenge, let's have a look...
 
---- jack
+> --- a/drivers/usb/mon/mon_text.c
+> +++ b/drivers/usb/mon/mon_text.c
+> @@ -449,6 +449,7 @@ static struct mon_event_text *mon_text_read_wait(struct mon_reader_text *rp,
+>  		if (file->f_flags & O_NONBLOCK) {
+>  			set_current_state(TASK_RUNNING);
+>  			remove_wait_queue(&rp->wait, &waita);
+> +			kmem_cache_free(rp->e_slab, ep);
+>  			return ERR_PTR(-EWOULDBLOCK);
 
+The code looks like this:
 
+	while ((ep = mon_text_fetch(rp, mbus)) == NULL) {
+		if (file->f_flags & O_NONBLOCK) {
+			set_current_state(TASK_RUNNING);
+			remove_wait_queue(&rp->wait, &waita);
+			return ERR_PTR(-EWOULDBLOCK);
+
+It's impossible to get inside the while() with non-null ep,
+so your patch doesn't fix anything (even if kmem_cache_free
+can survive a NULL object).
+
+Any other ideas?
+
+-- Pete
