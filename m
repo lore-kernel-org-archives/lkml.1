@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbYDWOYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbYDWO3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbYDWOYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 10:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYDWOYH
+	id S1757140AbYDWO3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 10:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYDWO30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 10:24:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2606 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753605AbYDWOYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 10:24:04 -0400
-Date: Wed, 23 Apr 2008 16:23:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       orenl@cs.columbia.edu, nick@nick-andrew.net
-Subject: Re: [PATCH 0/4] - v2 -  Object creation with a specified id
-Message-ID: <20080423142350.GA9228@ucw.cz>
-References: <20080418054459.891481000@bull.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Apr 2008 10:29:26 -0400
+Received: from el-out-1112.google.com ([209.85.162.181]:31523 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825AbYDWO30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 10:29:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mQ1xia2/LyjHTxOB1yn7GtckkBPyzj+4jtJ/7tOBJVVOU40nU6NVtDds52+ucv3NgCYfW0FEV0gpOY7p8WkYagmrqi743iaY5XSBz3WqBjgsMeIHrv62DqjcjEoXYjpJNjF4vZNNzd30VFKWHgdh8GfsRq/uwDghn/EehHX70Jk=
+Message-ID: <b647ffbd0804230729x70966c0ak91b8f6638282a443@mail.gmail.com>
+Date: Wed, 23 Apr 2008 16:29:23 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH 1/2] sched: fix RT task-wakeup logic
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20080423111329.4981.88455.stgit@novell1.haskins.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080418054459.891481000@bull.net>
-User-Agent: Mutt/1.5.9i
+References: <20080423111313.4981.37345.stgit@novell1.haskins.net>
+	 <20080423111329.4981.88455.stgit@novell1.haskins.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+2008/4/23 Gregory Haskins <ghaskins@novell.com>:
+> Dmitry Adamushko pointed out a logic error in task_wake_up_rt() where we
+>  will always evaluate to "true".  You can find the thread here:
+>
+>  http://lkml.org/lkml/2008/4/22/296
+>
+>  In reality, we only want to try to push tasks away when a wake up request is
+>  not going to preempt the current task.  So lets fix it.
+>
+>  Note: We introduce test_tsk_need_resched() instead of open-coding the flag
+>  check so that the merge-conflict with -rt should help remind us that we
+>  may need to support NEEDS_RESCHED_DELAYED in the future, too.
+>
+>  Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>  CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-> When restarting a process that has been previously checkpointed, that process
-> should keep on using some of its ids (such as its process id, or sysV ipc ids).
-> 
-> This patch provides a feature that can help ensuring this saved state reuse:
-> it makes it possible to create an object with a pre-defined id.
-> 
-> A first implementation had been proposed 2 months ago. It consisted in
-> changing an object's id after it had been created.
-> 
-> Here is a second implementation based on Oren Ladaan's idea: Oren's suggestion
-> was to force an object's id during its creation, rather than 1. create it,
-> 2. change its id.
-> 
-> A new file is created in procfs: /proc/self/task/<my_tid>/next_id.
-> This makes it possible to avoid races between several threads belonging to
-> the same process.
+Acked-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-Ugly...
 
-> When this file is filled with an id value, a structure pointed to by the
-> calling task_struct is filled with that id.
-> 
-> Then, when an object supporting this feature is created, the id present in
-> that new structure is used, instead of the default one.
-> 
-> The syntax is one of:
->    . echo "LONG XX" > /proc/self/task/<my_tid>/next_id
->      next object to be created will have an id set to XX
->    . echo "LONG<n> X0 ... X<n-1>" > /proc/self/task/<my_tid>/next_id
->      next object to be created will have its ids set to XX0, ... X<n-1>
->      This is particularly useful for processes that may have several ids if
->      they belong to nested namespaces.
+I have to look at the second patch more thoroughly... but I guess,
+we'd be better off opting for something more simple/less complex (it
+looks a bit heavy at the first glance).
 
-So ugly it is not even funny.
+This patch already fixes an 'obvious' problem in task_wake_up_rt() and
+narrows down the scope of the original problem.
 
-Create fork_with_pid(int pid) and corresponding ipc primitives, if
-you have to...
+For the original scenario (as well as for its variants with SCHED_FIFO
+and != priorities) push_rt_tasks() is 'delayed' untill a reschedule
+(which is already pending and should take place shortly... provided
+'bounded/short' latencies :-)
+
+For T0,T1 having equal prios + SCHED_RR, T1 (which can't be migrated
+due to its affinity) will wait till T0's timeslice expires
+and for SCHED_FIFO -- till T0 releases a CPU.
+
+The 'optimal' way would be moving T0 immediatelly off this cpu.
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Best regards,
+Dmitry Adamushko
