@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbYDWOOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYDWOSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbYDWOOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 10:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYDWOOb
+	id S1757281AbYDWOSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 10:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYDWOSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 10:14:31 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40816 "EHLO mx2.suse.de"
+	Wed, 23 Apr 2008 10:18:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40400 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbYDWOOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 10:14:30 -0400
-Date: Wed, 23 Apr 2008 16:14:29 +0200
-Message-ID: <s5hiqy8d5fe.wl%tiwai@suse.de>
+	id S1753522AbYDWOSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 10:18:08 -0400
+Date: Wed, 23 Apr 2008 16:18:06 +0200
+Message-ID: <s5hhcdsd59d.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Stas Sergeev <stsp@aknet.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp causes driver conflict)
-In-Reply-To: <s5hhcdtdk7n.wl%tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
+In-Reply-To: <s5hiqy9dkhv.wl%tiwai@suse.de>
 References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
 	<20080419021343.GA3503@nineveh.local>
 	<20080418200237.b5a9e805.akpm@linux-foundation.org>
 	<20080419041429.GA8508@anvil.corenet.prv>
 	<20080418212934.bbe84ee2.akpm@linux-foundation.org>
-	<s5hwsmrcvow.wl%tiwai@suse.de>
-	<480CD281.6050902@aknet.ru>
-	<s5hd4oib3qt.wl%tiwai@suse.de>
-	<480E2666.9080609@aknet.ru>
-	<s5hhcdtdk7n.wl%tiwai@suse.de>
+	<s5h8wz7cng7.wl%tiwai@suse.de>
+	<480CD50F.20706@aknet.ru>
+	<s5hbq42b3j7.wl%tiwai@suse.de>
+	<480E2EE5.5040208@aknet.ru>
+	<s5hiqy9dkhv.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -35,42 +35,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 23 Apr 2008 10:55:08 +0200,
+At Wed, 23 Apr 2008 10:49:00 +0200,
 I wrote:
 > 
-> At Tue, 22 Apr 2008 21:54:46 +0400,
+> At Tue, 22 Apr 2008 22:31:01 +0400,
 > Stas Sergeev wrote:
 > > 
-> > Hello.
-> > 
-> > Takashi Iwai wrote:
-> > > Err, no, this wasn't merged to sound git tree because apparently the
-> > > patch is to 2.6.22 and you didn't resubmit it...
-> > That's simply because the old one
-> > applies fine. :)
-> > 
-> > > No, I gave no ACK yet.
-> > OK, sorry.
-> > 
-> > > I'd rather add a new line with a single "depends on SND_PCSP=n".
-> > > You see a clear difference in the art of dependencies, one for
-> > > architectures and one for driver-specific.
-> > Done.
-> > 
-> > ---
-> > - Update CREDITS with the pc-speaker
-> > driver authors.
-> > - Prevent pcspkr from being built together
-> > with snd-pcsp.
+> > # HG changeset patch
+> > # User Stas Sergeev <stsp@users.sourceforge.net>
+> > # Date 1208888978 -14400
+> > # Node ID 00c36aa3903d861198e8f57c46e75194f3e172d6
+> > # Parent  f8fbce7ba45922a73a9679d68c4a4b07ebef42de
+> > pcsp: fix wording in DEBUG_PAGEALLOC warning.
 > > 
 > > Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+> > 
+> > diff -r f8fbce7ba459 -r 00c36aa3903d drivers/pcsp/pcsp.c
+> > --- a/drivers/pcsp/pcsp.c	Tue Apr 22 18:39:49 2008 +0200
+> > +++ b/drivers/pcsp/pcsp.c	Tue Apr 22 22:29:38 2008 +0400
+> > @@ -147,12 +147,8 @@ static int __devinit alsa_card_pcsp_init
+> >  
+> >  #ifdef CONFIG_DEBUG_PAGEALLOC
+> >  	/* Well, CONFIG_DEBUG_PAGEALLOC makes the sound horrible. Lets alert */
+> > -	printk(KERN_WARNING
+> > -	       "PCSP: Warning, CONFIG_DEBUG_PAGEALLOC is enabled!\n"
+> > -	       "You have to disable it if you want to use the PC-Speaker "
+> > -	       "driver.\n"
+> > -	       "Unless it is disabled, enjoy the horrible, distorted "
+> > -	       "and crackling noise.\n");
+> > +	printk(KERN_WARNING "PCSP: CONFIG_DEBUG_PAGEALLOC is enabled, "
+> > +		KERN_WARNING "which may make the sound noisy.\n");
 > 
-> Thanks, applied to my git tree.
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-> 
-> Meanwhile, we need to add a similar depenency to snd-pcsp as well, no?
+> Missing \n in the first line?
 
-Fixed on ALSA tree now.
+Fixed on ALSA tree now, too.
 
 
 Takashi
