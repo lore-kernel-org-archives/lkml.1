@@ -1,109 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYDWHpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbYDWHtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbYDWHpe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 03:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYDWHpY
+	id S1753351AbYDWHtr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 03:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYDWHtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 03:45:24 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:26302 "EHLO kernel.dk"
+	Wed, 23 Apr 2008 03:49:39 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8535 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYDWHpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 03:45:22 -0400
-Date: Wed, 23 Apr 2008 09:45:18 +0200
+	id S1751530AbYDWHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 03:49:38 -0400
+Date: Wed, 23 Apr 2008 09:49:33 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080423074518.GA12774@kernel.dk>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <1207628587.7535.8.camel@charm-linux>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, sam@ravnborg.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+Message-ID: <20080423074933.GB12774@kernel.dk>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-2-git-send-email-jens.axboe@oracle.com> <1208895423.7115.290.camel@twins> <20080423060725.GT12774@kernel.dk> <1208932320.7115.319.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1207628587.7535.8.camel@charm-linux>
+In-Reply-To: <1208932320.7115.319.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 07 2008, Tom Zanussi wrote:
-> 
-> On Fri, 2008-03-14 at 14:22 +0100, Christof Schmitt wrote:
-> > plain text document attachment (Re: blktrace/relay/s390: Oops in
-> > subbuf_splice_actor.eml)
-> > On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > > On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > > > That is indeed a bug, does this work for you?
-> > > > > 
-> > > > > diff --git a/kernel/relay.c b/kernel/relay.c
-> > > > > index d080b9d..39d1fa8 100644
-> > > > > --- a/kernel/relay.c
-> > > > > +++ b/kernel/relay.c
-> > > > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > > > >  			       unsigned int flags,
-> > > > >  			       int *nonpad_ret)
-> > > > >  {
-> > > > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > > >  	struct rchan_buf *rbuf = in->private_data;
-> > > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > > >  	uint64_t pos = (uint64_t) *ppos;
-> > > > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > > > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > > > >  	poff = read_start & ~PAGE_MASK;
-> > > > > 
-> > > > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > > > +
-> > > > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > > > >  		unsigned int this_len, this_end, private;
-> > > > >  		unsigned int cur_pos = read_start + total_len;
-> > > > 
-> > > > With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > > > oops. But the output from blktrace only contains only zeros and no
-> > > > usable data for blkparse. Using blktrace to write the data directly to
-> > > > disk, without using the blktrace server works. Is there anything i
-> > > > should look for to help debugging the problem?
+On Wed, Apr 23 2008, Peter Zijlstra wrote:
+> On Wed, 2008-04-23 at 08:07 +0200, Jens Axboe wrote:
+> > On Tue, Apr 22 2008, Peter Zijlstra wrote:
+> > > On Tue, 2008-04-22 at 20:50 +0200, Jens Axboe wrote:
 > > > 
-> > > We should probably get Tom in the loop, as he is the relay expert. I'll
-> > > make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > > that needs fixing.
+> > > > +int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+> > > > +			     int retry, int wait)
+> > > > +{
+> > > > +	unsigned long flags;
+> > > > +	/* prevent preemption and reschedule on another processor */
+> > > > +	int me = get_cpu();
+> > > > +
+> > > > +	/* Can deadlock when called with interrupts disabled */
+> > > > +	WARN_ON(wait && irqs_disabled());
+> > > 
+> > > With this fallback to wait the above condition isn't sufficient.
 > > 
-> > http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > his email address seems to be no longer valid. I copy Dave Wilder
-> > here, since he is mentioned as relay maintainer on the web page.
-> > 
+> > What deadlock are you concerned with here? Would making cfd_fallback
+> > per-cpu make you feel better?
 > 
-> Hi,
+>   CPU0					  CPU1
 > 
-> Yeah, I no longer work for IBM - I need to update the relayfs site to
-> reflect that.
+> local_irq_disable()			local_irq_disable()
 > 
-> > Dave, can you have a look at this? I can easily reproduce the problem
-> > on s390 Linux for testing and getting more debug information.
-> > 
+> 					smp_call_function_single(0,..,0)
+> 					  test_and_set_bit_lock()
+> 					  send IPI
+> smp_call_function_single(1,..,0)
+>   while(test_and_set_bit_lock())
+>     cpu_relax();
 > 
-> Not sure anyone's still looking into this, but it doesn't look like an
-> s390 problem specifically.  Apparently what happened was that some
-> internal changes to splice seem to have broken the relay splice_read
-> implementation.  The above patch fixes part of the problem; the patch
-> below should fix the rest, and AFAICT it doesn't break anything else.
 > 
-> Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+> This will spin forever, because it needs to handle the IPI in order to
+> free the cfd_fallback thingy, but can't for its waiting for it.
 > 
-> diff --git a/fs/splice.c b/fs/splice.c
-> index a861bb3..068b210 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -1094,7 +1094,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
->  
->  	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
->  	if (ret > 0)
-> -		*ppos += ret;
-> +		*ppos = sd.pos;
+> That particular deadlock can indeed be solved by making cfd_fallback
+> per-cpu.
 
-Tom, did you verify that sd.pos is always updated?
+Right, that is the case I was thinking of. I added per-cpu fallbacks to
+cover that case.
+
+> But if you were to use multiple smp_call_function*() calls under a
+> single IRQ disabled, then that would not be sufficient. Now I can't
+> directly come up with a good reason to need to do that, but still.
+> 
+> You'd need somethine like:
+> 
+> local_irq_disable()
+> 
+> smp_call_function_single(n, func_a,..,0)
+> smp_call_function_single(m, func_b,..,0)
+> 
+> local_irq_enable()
+> 
+> And invite 3 cpus to the party while under memory pressure and you get
+> deadlock potential.
+> 
+> [ if it were both the same function, you'd want to use
+>   smp_call_function() and provide a mask; if it were the same cpu you'd
+>   want to call a function doing both ]
+
+I think that is plenty far off into theoretical country that we can get
+by with just documenting this limitation. Nobody is doing that currently
+in the kernel, and I see no practical use case for it.
 
 -- 
 Jens Axboe
