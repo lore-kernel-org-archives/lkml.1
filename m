@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYDWSP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYDWSQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbYDWSP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbYDWSPU
+	id S1753481AbYDWSQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYDWSPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:15:20 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54075 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755434AbYDWSPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:15:18 -0400
-Date: Wed, 23 Apr 2008 11:15:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-In-Reply-To: <20080423162629.GB24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804231110030.12373@schroedinger.engr.sgi.com>
-References: <ea87c15371b1bd49380c.1208872277@duo.random>
- <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com>
- <20080422223545.GP24536@duo.random> <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com>
- <20080423162629.GB24536@duo.random>
+	Wed, 23 Apr 2008 14:15:32 -0400
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:11362 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753630AbYDWSP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:15:29 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+Date: Wed, 23 Apr 2008 20:15:26 +0200
+User-Agent: KMail/1.9.9
+Cc: "Pete Zaitcev" <zaitcev@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
+       "Christoph Lameter" <clameter@sgi.com>
+References: <200804212310.41729.elendil@planet.nl> <20080423101123.a69e4945.zaitcev@redhat.com> <84144f020804231035w3fdb10aax4b90dc4e0bc1957d@mail.gmail.com>
+In-Reply-To: <84144f020804231035w3fdb10aax4b90dc4e0bc1957d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804232015.27257.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Apr 2008 18:15:27.0754 (UTC) FILETIME=[01EFD6A0:01C8A56E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
+On Wednesday 23 April 2008, Pekka Enberg wrote:
+> Well, a race in mon_text_release() after the kmem_cache_free() loop
+> and the call to kmem_cache_destroy() but looks like that can't happen
+> either. Frans, is this easily triggerable? If so, can you try with
+> CONFIG_SLAB and CONFIG_DEBUG_SLAB enabled instead?
 
-> On Tue, Apr 22, 2008 at 04:20:35PM -0700, Christoph Lameter wrote:
-> > I guess I have to prepare another patchset then?
-> 
-> If you want to embarrass yourself three time in a row go ahead ;). I
-> thought two failed takeovers was enough.
+Not really. I've only seen it once two days ago and not at all today while I 
+was doing the traces for the scheduling issue.
 
-Takeover? I'd be happy if I would not have to deal with this issue.
-
-These  patches were necessary because you were not listening to 
-feedback plus there is the issue that your patchsets were not easy to 
-review or diff against. I had to merge several patches to get to a useful 
-patch. You have always picked up lots of stuff from my patchsets. Lots of 
-work that could have been avoided by proper patchsets in the first place.
+I can give it a go, but I'm not yet ready to switch to current git on this 
+box for longer periods (although so far I've actually had less issues than 
+with .24-rc1; fingers crossed). If I get anything I'll follow up.
