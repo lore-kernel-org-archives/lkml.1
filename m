@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYDWSPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYDWSPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbYDWSPO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYDWSO6
+	id S1756209AbYDWSPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYDWSPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:14:58 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:43246 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbYDWSO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:14:57 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: "Grant Grundler" <grundler@google.com>
-Subject: Re: [PATCH] pci_try_set_mwi() in sata_promise
-Date: Wed, 23 Apr 2008 21:15:32 +0300
-User-Agent: KMail/1.9.7
-Cc: "Mikael Pettersson" <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       "Jeff Garzik" <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-References: <200804222126.56321.mitov@issp.bas.bg> <200804231633.24603.mitov@issp.bas.bg> <da824cf30804230746o74e8de0bxbcb31d4b13e98b6@mail.gmail.com>
-In-Reply-To: <da824cf30804230746o74e8de0bxbcb31d4b13e98b6@mail.gmail.com>
+	Wed, 23 Apr 2008 14:15:07 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61878 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753654AbYDWSPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:15:05 -0400
+Date: Wed, 23 Apr 2008 19:13:07 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Jean Delvare <jdelvare@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Tejun Heo <htejun@gmail.com>,
+       Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PCI MSI breaks when booting with nosmp
+In-Reply-To: <200804230812.49548.jbarnes@virtuousgeek.org>
+Message-ID: <Pine.LNX.4.55.0804231855510.31934@cliff.in.clinika.pl>
+References: <200804172140.02311.jdelvare@suse.de> <200804211414.45629.jbarnes@virtuousgeek.org>
+ <200804231638.01479.jdelvare@suse.de> <200804230812.49548.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804232115.33080.mitov@issp.bas.bg>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008 05:46:49 pm Grant Grundler wrote:
-> On Wed, Apr 23, 2008 at 6:33 AM, Marin Mitov <mitov@issp.bas.bg> wrote:
-> ...
-> >  > 2. What improvement does that pci_try_set_mwi() cause? Speed? Fewer errors?
-> >
-> >  May be speed, but practically hardly observable.
-> 
-> I expect the difference to be in available memory BW.
-> MWI (Memory Write Invalidate) allows the IO controller to write
-> partial cachlines without having to do a read/modify/write sequence.
+On Wed, 23 Apr 2008, Jesse Barnes wrote:
 
-My understanding of MWI is different. It concerns full cache line writes.
-In that case the CPU can invalidate the cache line (without flushing it to 
-RAM). While in case of partial cache line writes, the processor should 
-flush the cache line before the controller writes to corresponding cached 
-address and then the controller finishes its partial cache line write to RAM.
-In case MWI is NOT enables the CPU should flushe every cache line  touched
-by the controller's DMA machine, nevertheless it will be overwritten latter.
+> Yeah I think the patch is reasonable, would be good to get feedback from 
+> Thomas/Andi/Ingo though...
 
-But, as usual, I could be wrong :-)
+ FWIW, the original idea behind "nosmp" or "maxcpus=0" (just as an
+implementation detail) vs "maxcpus=1" was that the two formers would
+disable the APIC circuitry altogether (including resisting from switching
+from the PIC compatibility mode on systems supporting it), while the
+latter would still boot UP, but with interrupts routed through the APICs.  
+Essentially SMP implied all the MP circuitry/provisions in this context,
+the APICs being an inherent part of which.  Therefore I think the original
+idea of implying "pci=nomsi" with "nosmp" certainly looks more in the
+spirit of the original setup to me.
 
-> R/W/M means the cacheline has to cross the memory bus twice.
-> The difference in performance will depend on how often the
-> Promise SATA controller was doing partial cachline
-> transactions with the wrong cacheline size.
-> 
-> This should be measurable if you run a memory test at the same time
-> as you stress the SATA controller with fio. Re-read the same 128KB block
-> repeatedly from the Promise controller (I'm expecting that to be cached)
-> and measure the available memory BW (e.g. see lmbench for a memtest).
-> Repeat with MWI enabled.
-> 
-> 
-> >  > 3. Why call pci_try_set_mwi()? Can't you set the cache line size directly?
-> >
-> >  pci_set_cacheline_size() is NOT exported, while pci_try_set_mwi() IS and
-> > sets (as a side effect) the cache line size.
-> 
-> Setting the cachline size only makes sense if MWI is enabled.
+ However we have "nolapic" these days as well and with this new proposal
+this option could effectively take over the old meaning of "nosmp" (you
+cannot do SMP without the local APIC, so "nolapic nosmp" is redundant).  
+I am not entirely convinced it is the right way though...
 
-Agreed.
-
-> Drivers should not longer directly set the cacheline size since it might
-> not be what they think it is.
-
-That is the reason why pci_set_mwi() and pci_try_set_mwi() exist.
-
-Marin Mitov
-
-> 
-> hth,
-> grant
-> 
-
-
+  Maciej
