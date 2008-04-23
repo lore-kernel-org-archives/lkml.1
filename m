@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYDWJ6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYDWJ7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbYDWJ6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYDWJwi
+	id S1759353AbYDWJ7X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYDWJwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:52:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40259 "EHLO mx3.mail.elte.hu"
+	Wed, 23 Apr 2008 05:52:55 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46246 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756015AbYDWJwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:52:37 -0400
-Date: Wed, 23 Apr 2008 11:52:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       akpm@goodmis.org, Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Pekka Paalanen <pq@iki.fi>
-Subject: Re: [PATCH] ftrace: fix setting of pos in read_pipe
-Message-ID: <20080423095220.GA23908@elte.hu>
-References: <Pine.LNX.4.58.0804222205110.32718@gandalf.stny.rr.com>
+	id S1756150AbYDWJwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:52:54 -0400
+Date: Wed, 23 Apr 2008 12:52:15 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "David S. Miller" <davem@sunset.davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] unexport uts_sem
+Message-ID: <20080423095215.GG28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0804222205110.32718@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With the removal of the Solaris binary emulation the export of 
+uts_sem became unused.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> In resetting the iterator in read_pipe, the reset of pos was 
-> postitioned in the wrong location with respect to the memset 
-> operation. The current code sets pos, incorrectly, to zero.
-
-applied - but what is missing from your changelog is effects of this 
-bug. When testers check lkml they might be interested in that 
-information. Is the result of this bug an incorrect trace_pipe output? 
-(double entries, or missed entries?)
-
-	Ingo
+---
+e15db7b262fd8c3d9000e7d5e7a2b1d720fba8de diff --git a/kernel/sys.c b/kernel/sys.c
+index 6a0cc71..773d4a5 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1331,8 +1331,6 @@ EXPORT_SYMBOL(in_egroup_p);
+ 
+ DECLARE_RWSEM(uts_sem);
+ 
+-EXPORT_SYMBOL(uts_sem);
+-
+ asmlinkage long sys_newuname(struct new_utsname __user * name)
+ {
+ 	int errno = 0;
