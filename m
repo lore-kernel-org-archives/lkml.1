@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbYDWBC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbYDWBFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964844AbYDWBC3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbYDWBCT
+	id S933998AbYDWBFu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbYDWBFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:02:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:54538 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758547AbYDWBCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:02:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,696,1199692800"; 
-   d="scan'208";a="555885179"
-Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
-From: Shaohua Li <shaohua.li@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <200804221712.45972.jbarnes@virtuousgeek.org>
-References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
-	 <200804221712.45972.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 09:05:21 +0800
-Message-Id: <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 22 Apr 2008 21:05:42 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:23244 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756198AbYDWBFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 21:05:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=stif1V5m2DE4fXma6bZMscBV5nhD9OaSJ7eLGViLdjMUA/Hl1H6vZmWnw3sA4pH3lm+tew5Qr7k3mx7QDz476VCm5547cR+FdogU5wWXNO9iQOREH2wFsbHuku7zBbKixdr3+TnbrG3h5Jwof8ozO9KBu3xbHdD9bGJsRwHut2A=
+Message-ID: <b6a2187b0804221805j38905128h74b6db258301f10f@mail.gmail.com>
+Date: Wed, 23 Apr 2008 09:05:39 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [Broken] PCI: clean up resource alignment management
+Cc: "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Greg KH" <gregkh@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0804221451270.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b6a2187b0804220943l26f7b441sb5a7309dff0e84dc@mail.gmail.com>
+	 <alpine.LFD.1.10.0804221020470.2779@woody.linux-foundation.org>
+	 <20080422214050.GA1166@jurassic.park.msu.ru>
+	 <alpine.LFD.1.10.0804221451270.2779@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 23, 2008 at 5:59 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>  On Wed, 23 Apr 2008, Ivan Kokshaysky wrote:
+>  > Yes, exactly. My fault - I somehow missed the cardbus stuff...
+>  Ok, this patch looks sane, but ..
+>  Patch entirely UNTESTED!
 
-On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
-> On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
-> > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
-> > 'y' in Kconfig even though the feature is both experimental and the
-> > help text recommends that if you are unsure you say 'n'.
-> > It seems to me that this really should default to 'n', not 'y' at the
-> > moment.
-> > The following patch makes that change. Please consider applying.
-> 
-> Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
-> though...
-Ok, I'm fine with the patch. Though by default, the policy is to use
-BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
+I just tested Linus's patch and it works.
 
 Thanks,
-Shaohua
-
+Jeff.
