@@ -1,175 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbYDWKDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYDWKM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbYDWKDj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbYDWKCq
+	id S1754907AbYDWKM1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYDWKMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 06:02:46 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:46368 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760906AbYDWKCp convert rfc822-to-8bit (ORCPT
+	Wed, 23 Apr 2008 06:12:16 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:5974 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750776AbYDWKMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 06:02:45 -0400
-Message-Id: <480ED122.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Wed, 23 Apr 2008 04:03:14 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-Cc: <mingo@elte.hu>, <chinang.ma@intel.com>, <suresh.b.siddha@intel.com>,
-       <arjan@linux.intel.com>, <willy@linux.intel.com>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated
-	tasks have been added
-References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
- <20080421181015.4560.7658.stgit@novell1.haskins.net>
- <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
- <Pine.LNX.4.58.0804221144410.21511@gandalf.stny.rr.com>
- <b647ffbd0804230105u7966ed06wd4ed248f59132849@mail.gmail.com>
- <b647ffbd0804230253i32f48fcgb5dc7cf5b55607ac@mail.gmail.com>
-In-Reply-To: <b647ffbd0804230253i32f48fcgb5dc7cf5b55607ac@mail.gmail.com>
+	Wed, 23 Apr 2008 06:12:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZkhPihST6fbTXsn95baf5RozwlilEIymUZ6IXqNsrI0QYPqWpy09aZ45WnV/sJ/CNQcqBWXYeT8NdXgmXw8+c1xO5qwOOY2crrgFFtEctja071eIHKakO4ypCIGiiABEsucw0LQRYKMJsVaJg+x2COw72MB53OK0tPzO61jFRlA=
+Subject: [PATCH] [Trivial] Update contact information
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 12:10:33 +0200
+Message-Id: <1208945433.4298.12.camel@debian>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Apr 23, 2008 at  5:53 AM, in message
-<b647ffbd0804230253i32f48fcgb5dc7cf5b55607ac@mail.gmail.com>, "Dmitry
-Adamushko" <dmitry.adamushko@gmail.com> wrote: 
-> 2008/4/23 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
->> Hi Steven,
->>
->>  > [ ... ]
->>
->> >  > square#0:
->>  >  >
->>  >  > cpu1:  T0 is running
->>  >  >
->>  >  > T1 is of the same prio as T0 (shouldn't really matter but to get the
->>  >  > same result it would require altering the flow of events slightly)
->>  >  >
->>  >  > T1's affinity allows it to be run only on cpu1.
->>  >  > T0 can run on both.
->>  >  >
->>  >  > try_to_wake_up() is called for T1.
->>  >  > |
->>  >  > --> select_task_rq_rt() => gives cpu1
->>  >  > |
->>  >  > --> task_wake_up_rt()
->>  >  >    |
->>  >  >    ---> push_rt_tasks() -> rq->rt.pushed = 1
->>  >  >
->>  >  > now, neither T1 (due to its affinity), nor T0 (it's running) can be
->>  >  > pushed away to cpu0.
->>  >
->>  >  Ah, this may be what you are talking about. T0 was running, but because
->>  >  T1 has its affinity set to cpu1 it wont cause a push. When T0 schedules
->>  >  away to give T1 its cpu time, T0 wont push away because of the pushed
->>  >  flag.
->>  >
->>  >  Hmm, interesting. Of course my response is "Don't use SCHED_RR! It's
->>  >  evil!" ;-)
->>
->>  It's not just SCHED_RR ;-) They both can be of SCHED_FIFO.
->>
->>  T1 _preempts_ T0 and again
->>
->>
->>   --> task_wake_up_rt()
->>   |
->>   ---> push_rt_tasks() -> rq->rt.pushed = 1
->>
->>  and T0 won't be pushed away to cpu0 by post_schedule_rt().
->>
->>  As Gregory has pointed out, at the very least it's a test in
->>  task_wake_up_rt() which is wrong.
->>
->>  push_rt_tasks() should not be called when 'p' (a newly woken up task)
->>  is the next one to run.
->>
->>  IOW, it should be (p->prio < rq->curr->prio) instead of (p->prio >=
->>  rq->rt.highest_prio).
-> 
-> No, this argument is wrong indeed.
-> 
-> Something like this:
-> (white-spaces are broken)
-> 
-> --- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
-> +++ sched_rt.c  2008-04-23 11:36:20.000000000 +0200
-> @@ -1121,9 +1121,13 @@ static void post_schedule_rt(struct rq *
-> 
->  static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
->  {
-> -       if (!task_running(rq, p) &&
-> -           (p->prio >= rq->rt.highest_prio) &&
-> -           rq->rt.overloaded)
-> +       /*
-> +        * Consider pushing 'p' off to other CPUS only
-> +        * if it's not the next task to run on this CPU.
-> +        */
-> +       if (rq->rt.overloaded &&
-> +           p->prio > rq->rt.highest_prio &&
-> +           pick_rt_task(rq, p, -1))
->                 push_rt_tasks(rq);
->  }
-> 
-> 
-> or even this (although, it's a bit heavier)
-> 
-> --- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
-> +++ sched_rt.c  2008-04-23 11:49:03.000000000 +0200
-> @@ -1118,12 +1118,22 @@ static void post_schedule_rt(struct rq *
->         }
->  }
-> 
->  static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
->  {
-> -       if (!task_running(rq, p) &&
-> -           (p->prio >= rq->rt.highest_prio) &&
-> -           rq->rt.overloaded)
-> +       if (!rq->rt.overloaded)
-> +               return;
-> +
-> +       /*
-> +        * Consider pushing 'p' off to other CPUS only
-> +        * if it's not the next task to run on this CPU.
-> +        * i.e. it's not a single task with the highest prio
-> +        * on the queue.
-> +        */
-> +       if (p->prio == rq->rt.highest_prio &&
-> +           p->rt.run_list.prev == p->rt.run_list.next)
-> +               return;
-> +
-> +       if (pick_rt_task(rq, p, -1))
->                 push_rt_tasks(rq);
->  }
-> 
+Andrew,
 
+I have changed my email address as well as the drivers/auxdisplay webpage, so this patch updates the contact information.
 
-I think we can simplify this further.  We really only need to push here if we are not going to reschedule anytime soon (probably white-space damaged):
+PS: If anyone has emailed me last weeks at maxextreme@gmail.com, please send again your message, I may have lost it. Sorry for the inconvenience.
 
+Signed-off-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1058,11 +1058,14 @@ static void post_schedule_rt(struct rq *rq)
-        }
- }
+---
+diff -uprN linux-2.6.25-o/CREDITS linux-2.6.25/CREDITS
+--- linux-2.6.25-o/CREDITS	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/CREDITS	2008-04-21 17:54:39.000000000 +0200
+@@ -2609,8 +2609,8 @@ S: Perth, Western Australia
+ S: Australia
+ 
+ N: Miguel Ojeda Sandonis
+-E: maxextreme@gmail.com
+-W: http://maxextreme.googlepages.com/
++E: miguel.ojeda.sandonis@gmail.com
++W: http://jair.lab.fi.uva.es/~migojed/
+ D: Author of the ks0108, cfag12864b and cfag12864bfb auxiliary display drivers.
+ D: Maintainer of the auxiliary display drivers tree (drivers/auxdisplay/*)
+ S: C/ Mieses 20, 9-B
+diff -uprN linux-2.6.25-o/Documentation/auxdisplay/cfag12864b linux-2.6.25/Documentation/auxdisplay/cfag12864b
+--- linux-2.6.25-o/Documentation/auxdisplay/cfag12864b	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/Documentation/auxdisplay/cfag12864b	2008-04-21 18:09:14.000000000 +0200
+@@ -2,9 +2,9 @@
+ 	cfag12864b LCD Driver Documentation
+ 	===================================
+ 
+-License:		GPLv2
+-Author & Maintainer:	Miguel Ojeda Sandonis <maxextreme@gmail.com>
+-Date:			2006-10-27
++ License: GPLv2
++  Author: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
++    Date: 2006-10-27
+ 
+ 
+ 
+diff -uprN linux-2.6.25-o/Documentation/auxdisplay/cfag12864b-example.c linux-2.6.25/Documentation/auxdisplay/cfag12864b-example.c
+--- linux-2.6.25-o/Documentation/auxdisplay/cfag12864b-example.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/Documentation/auxdisplay/cfag12864b-example.c	2008-04-21 18:08:45.000000000 +0200
+@@ -4,7 +4,8 @@
+  * Description: cfag12864b LCD userspace example program
+  *     License: GPLv2
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-31
+  *
+  *  This program is free software; you can redistribute it and/or modify
+diff -uprN linux-2.6.25-o/Documentation/auxdisplay/ks0108 linux-2.6.25/Documentation/auxdisplay/ks0108
+--- linux-2.6.25-o/Documentation/auxdisplay/ks0108	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/Documentation/auxdisplay/ks0108	2008-04-21 18:09:53.000000000 +0200
+@@ -2,9 +2,9 @@
+ 	ks0108 LCD Controller Driver Documentation
+ 	==========================================
+ 
+-License:		GPLv2
+-Author & Maintainer:	Miguel Ojeda Sandonis <maxextreme@gmail.com>
+-Date:			2006-10-27
++ License: GPLv2
++  Author: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
++    Date: 2006-10-27
+ 
+ 
+ 
+diff -uprN linux-2.6.25-o/drivers/auxdisplay/cfag12864b.c linux-2.6.25/drivers/auxdisplay/cfag12864b.c
+--- linux-2.6.25-o/drivers/auxdisplay/cfag12864b.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/drivers/auxdisplay/cfag12864b.c	2008-04-21 18:16:08.000000000 +0200
+@@ -5,7 +5,8 @@
+  *     License: GPLv2
+  *     Depends: ks0108
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-31
+  *
+  *  This program is free software; you can redistribute it and/or modify
+@@ -398,5 +399,5 @@ module_init(cfag12864b_init);
+ module_exit(cfag12864b_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Miguel Ojeda Sandonis <maxextreme@gmail.com>");
++MODULE_AUTHOR("Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>");
+ MODULE_DESCRIPTION("cfag12864b LCD driver");
+diff -uprN linux-2.6.25-o/drivers/auxdisplay/cfag12864bfb.c linux-2.6.25/drivers/auxdisplay/cfag12864bfb.c
+--- linux-2.6.25-o/drivers/auxdisplay/cfag12864bfb.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/drivers/auxdisplay/cfag12864bfb.c	2008-04-21 18:16:18.000000000 +0200
+@@ -5,7 +5,8 @@
+  *     License: GPLv2
+  *     Depends: cfag12864b
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-31
+  *
+  *  This program is free software; you can redistribute it and/or modify
+@@ -186,5 +187,5 @@ module_init(cfag12864bfb_init);
+ module_exit(cfag12864bfb_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Miguel Ojeda Sandonis <maxextreme@gmail.com>");
++MODULE_AUTHOR("Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>");
+ MODULE_DESCRIPTION("cfag12864b LCD framebuffer driver");
+diff -uprN linux-2.6.25-o/drivers/auxdisplay/ks0108.c linux-2.6.25/drivers/auxdisplay/ks0108.c
+--- linux-2.6.25-o/drivers/auxdisplay/ks0108.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/drivers/auxdisplay/ks0108.c	2008-04-21 18:16:26.000000000 +0200
+@@ -5,7 +5,8 @@
+  *     License: GPLv2
+  *     Depends: parport
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-31
+  *
+  *  This program is free software; you can redistribute it and/or modify
+@@ -173,6 +174,6 @@ module_init(ks0108_init);
+ module_exit(ks0108_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Miguel Ojeda Sandonis <maxextreme@gmail.com>");
++MODULE_AUTHOR("Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>");
+ MODULE_DESCRIPTION("ks0108 LCD Controller driver");
+ 
+diff -uprN linux-2.6.25-o/include/linux/cfag12864b.h linux-2.6.25/include/linux/cfag12864b.h
+--- linux-2.6.25-o/include/linux/cfag12864b.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/include/linux/cfag12864b.h	2008-04-21 18:16:57.000000000 +0200
+@@ -4,7 +4,8 @@
+  * Description: cfag12864b LCD driver header
+  *     License: GPLv2
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-12
+  *
+  *  This program is free software; you can redistribute it and/or modify
+diff -uprN linux-2.6.25-o/include/linux/ks0108.h linux-2.6.25/include/linux/ks0108.h
+--- linux-2.6.25-o/include/linux/ks0108.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/include/linux/ks0108.h	2008-04-21 18:16:44.000000000 +0200
+@@ -4,7 +4,8 @@
+  * Description: ks0108 LCD Controller driver header
+  *     License: GPLv2
+  *
+- *      Author: Copyright (C) Miguel Ojeda Sandonis <maxextreme@gmail.com>
++ *      Author: Copyright (C) Miguel Ojeda Sandonis
++ *              <miguel.ojeda.sandonis@gmail.com>
+  *        Date: 2006-10-31
+  *
+  *  This program is free software; you can redistribute it and/or modify
+diff -uprN linux-2.6.25-o/MAINTAINERS linux-2.6.25/MAINTAINERS
+--- linux-2.6.25-o/MAINTAINERS	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.25/MAINTAINERS	2008-04-21 17:53:47.000000000 +0200
+@@ -750,9 +750,9 @@ S:	Maintained
+ 
+ AUXILIARY DISPLAY DRIVERS
+ P:	Miguel Ojeda Sandonis
+-M:	maxextreme@gmail.com
++M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+-W:	http://auxdisplay.googlepages.com/
++W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
+ 
+ AVR32 ARCHITECTURE
+@@ -1050,16 +1050,16 @@ S:	Maintained
+ 
+ CFAG12864B LCD DRIVER
+ P:	Miguel Ojeda Sandonis
+-M:	maxextreme@gmail.com
++M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+-W:	http://auxdisplay.googlepages.com/
++W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
+ 
+ CFAG12864BFB LCD FRAMEBUFFER DRIVER
+ P:	Miguel Ojeda Sandonis
+-M:	maxextreme@gmail.com
++M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+-W:	http://auxdisplay.googlepages.com/
++W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
+ 
+ CFG80211 and NL80211
+@@ -2333,9 +2333,9 @@ S:	Maintained
+ 
+ KS0108 LCD CONTROLLER DRIVER
+ P:	Miguel Ojeda Sandonis
+-M:	maxextreme@gmail.com
++M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+-W:	http://auxdisplay.googlepages.com/
++W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
+ 
+ LAPB module
 
--
-+/*
-+ * If we are not running and we are not going to reschedule soon, we should
-+ * try to push tasks away now
-+ */
- static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
- {
-        if (!task_running(rq, p) &&
--           (p->prio >= rq->rt.highest_prio) &&
-+           !test_tsk_thread_flag(rq->curr, TIF_NEED_RESCHED) &&
-            rq->rt.overloaded)
-                push_rt_tasks(rq);
- }
 
