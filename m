@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbYDWGxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbYDWGx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbYDWGxP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYDWGw7
+	id S1752849AbYDWGx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYDWGxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:52:59 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:51409 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYDWGw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:52:58 -0400
-Message-ID: <480EDBD2.2060709@linux.vnet.ibm.com>
-Date: Wed, 23 Apr 2008 12:18:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 23 Apr 2008 02:53:48 -0400
+Received: from mr1.bfh.ch ([147.87.250.50]:33418 "EHLO mr1.bfh.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbYDWGxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:53:47 -0400
+Message-ID: <480EDCF5.5000306@bfh.ch>
+Date: Wed, 23 Apr 2008 08:53:41 +0200
+From: Seewer Philippe <philippe.seewer@bfh.ch>
+Organization: BFH
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroup: use read lock to guard find_existing_css_set()
-References: <480EA744.2050300@cn.fujitsu.com>
-In-Reply-To: <480EA744.2050300@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mark Lord <lkml@rtr.ca>
+CC: Francis Moreau <francis.moro@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Disk geometry from /sys
+References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>	 <480354C9.1050600@bfh.ch>	 <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>	 <4805AF93.90209@bfh.ch>	 <38b2ab8a0804170709m58830adagcba46f059ed10809@mail.gmail.com>	 <4807635E.9060101@bfh.ch> <4808A09B.6090106@rtr.ca> <38b2ab8a0804221316o7cab5641q16814849a1099b9a@mail.gmail.com> <480E6A35.4040108@rtr.ca>
+In-Reply-To: <480E6A35.4040108@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Apr 2008 06:53:21.0620 (UTC) FILETIME=[B80F6140:01C8A50E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> The function does not modify anything (except the temporary
-> css template), so it's sufficient to hold read lock.
+Mark Lord wrote:
+[snip]
+> The earliest IDE drives for Compaq used only CHS sector addressing mode.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/cgroup.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Within four years, though, all new drives had support for the more 
+> sensible linear block addressing (LBA) mode, as well.
 > 
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 2727f92..e9eb5da 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -406,11 +406,11 @@ static struct css_set *find_css_set(
-> 
->  	/* First see if we already have a cgroup group that matches
->  	 * the desired set */
-> -	write_lock(&css_set_lock);
-> +	read_lock(&css_set_lock);
->  	res = find_existing_css_set(oldcg, cgrp, template);
->  	if (res)
->  		get_css_set(res);
-> -	write_unlock(&css_set_lock);
-> +	read_unlock(&css_set_lock);
-> 
->  	if (res)
->  		return res;
+> LBA has been mandatory in new drives since the early 1990s,
+> so there's really no point to CHS addressing any more,
+> except when fiddling with MS-DOS style partition tables
+> (which have both CHS and LBA values stored inside).
 
-Looks good to me. Did you run lockdep?
+Sorry, can't resist that quip here... Many of the well known x86-based 
+OS', OS-installers and even bootloaders from this millenium trusted the 
+partition tables c/h/s values to match the bios... causing havoc say 
+with PATA drives atached to SATA connectors.
 
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+If that weren't the case I guess Linux could have get rid of c/h/s a 
+looong time ago. Hmmm... maybe its time?
