@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYDWESm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYDWEV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYDWESm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 00:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYDWESb
+	id S1754855AbYDWEV1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 00:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYDWEVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 00:18:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:25617 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750766AbYDWESb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 00:18:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XZ409ksgggQigB/MO02JP+5OhdpbS3WD+CAgst2JnzhXuZH3n7zFIRjMLsVby3RZ167bQANZ0+2N+kbGPfmpCUo8hZoS05MiI4C/KOZya/loOxY2sjhxsxFNJWL2cHXI9GoVXSU1sl65PLlKH836UBti6UwSPm2oHjbBkU75ckc=
-Message-ID: <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com>
-Date: Wed, 23 Apr 2008 08:18:30 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1208917076.9212.721.camel@pmac.infradead.org>
+	Wed, 23 Apr 2008 00:21:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50618 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbYDWEVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 00:21:16 -0400
+Message-ID: <480EB930.1040308@garzik.org>
+Date: Wed, 23 Apr 2008 00:21:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tejun Heo <htejun@gmail.com>
+CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Mark Lord <liml@rtr.ca>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca> <480DFE76.8000809@ru.mvista.com> <480E345D.9090406@ru.mvista.com> <480E9C15.6080103@gmail.com>
+In-Reply-To: <480E9C15.6080103@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804181856.m3IIuKd4007403@hera.kernel.org>
-	 <1208917076.9212.721.camel@pmac.infradead.org>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 6:17 AM, David Woodhouse <dwmw2@infradead.org> wrote:
-> On Fri, 2008-04-18 at 18:56 +0000, Linux Kernel Mailing List wrote:
->  > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6b6891f9c545ccd45d6d8ddfd33ce27c22c271a7
->  > Commit:     6b6891f9c545ccd45d6d8ddfd33ce27c22c271a7
->  > Parent:     6093015db2bd9e70cf20cdd23be1a50733baafdd
->  > Author:     gorcunov@gmail.com <gorcunov@gmail.com>
->  > AuthorDate: Fri Mar 28 17:56:57 2008 +0300
->  > Committer:  Ingo Molnar <mingo@elte.hu>
->  > CommitDate: Thu Apr 17 17:41:33 2008 +0200
->  >
->  >     x86: cleanup - rename VM_MASK to X86_VM_MASK
->  >
->  >     This patch renames VM_MASK to X86_VM_MASK (which
->  >     in turn defined as alias to X86_EFLAGS_VM) to better
->  >     distinguish from virtual memory flags. We can't just
->  >     use X86_EFLAGS_VM instead because it is also used
->  >     for conditional compilation
->  >
->  >     Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->  >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
->
->  > --- a/include/asm-x86/vm86.h
->  > +++ b/include/asm-x86/vm86.h
->  > @@ -17,9 +17,9 @@
->  >  #define IOPL_MASK    0x00003000
->  >  #define NT_MASK              0x00004000
->  >  #ifdef CONFIG_VM86
->  > -#define VM_MASK              0x00020000
->  > +#define X86_VM_MASK  X86_EFLAGS_VM
->  >  #else
->  > -#define VM_MASK              0 /* ignored */
->  > +#define X86_VM_MASK  0 /* No VM86 support */
->  >  #endif
->  >  #define AC_MASK              0x00040000
->  >  #define VIF_MASK     0x00080000      /* virtual interrupt flag */
->
->  This is user-visible. Yet we're changing the name and also making it
->  depend on #ifdef CONFIG_VM86, which is not going to be set in userspace.
->  Perhaps it should be within #ifdef __KERNEL__?
->
->  --
->  dwmw2
->
->
+Tejun Heo wrote:
+> Aik... We can do s/sff/tf/ and leave bmdma alone to avoid even more 
+> confusion but sff has meant tf base interface for quite some time now in 
+> libata and I think it'll be better to remember that sff is the new tf. 
+> Sorry about the mess.
 
-Thanks David, will check it today evening (i'm in office now)
+
+This renaming was discussed at the time on lkml and linux-ide, the 
+patches and git pushes were CC'd, and I do not recall these complaints 
+being raised at the time.
+
+At this point, it's too ingrained in libata.  Another rename would IMO 
+just cause more needless churn.
+
+	Jeff
+
+
