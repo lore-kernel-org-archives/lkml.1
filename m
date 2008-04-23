@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbYDWJnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbYDWJrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751726AbYDWJnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYDWJm7
+	id S1754626AbYDWJrQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYDWJrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:42:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42213 "EHLO gate.crashing.org"
+	Wed, 23 Apr 2008 05:47:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44378 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbYDWJm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:42:58 -0400
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/3] radeonfb: Fix 64 bits
-	resources on 32 bits archs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>,
-       Wolfgang Denk <wd@denx.de>
-In-Reply-To: <1208943127.5632.324.camel@thor.sulgenrain.local>
-References: <20080422012723.BA9F2DE13F@ozlabs.org>
-	 <480E0A54.9010203@linux.vnet.ibm.com>  <1208902903.9640.138.camel@pasglop>
-	 <1208943127.5632.324.camel@thor.sulgenrain.local>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 23 Apr 2008 19:40:33 +1000
-Message-Id: <1208943633.9060.26.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	id S1751063AbYDWJrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:47:02 -0400
+Date: Wed, 23 Apr 2008 11:46:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frans Pop <elendil@planet.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Richard Jonsson <richie@coderworld.net>
+Subject: Re: [git pull] scheduler changes for v2.6.26
+Message-ID: <20080423094644.GB23293@elte.hu>
+References: <20080419181304.GB21353@elte.hu> <200804211831.29976.elendil@planet.nl> <20080421194359.GD8770@elte.hu> <200804231136.50639.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804231136.50639.elendil@planet.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-04-23 at 11:32 +0200, Michel Dänzer wrote:
-> > X is doing a mmap of /dev/mem instead of /dev/fb ?
-> > 
-> > You can normally map the fb mapping /dev/fb and then map the
-> registers
-> > using /dev/fb at an offset beyond the framebuffer (fix->smem_len).
-> > 
-> > If X is using /dev/mem instead, then it's being stupid and needs to
-> be
-> > fixed...
+* Frans Pop <elendil@planet.nl> wrote:
+
+> If I enable tracing with these settings, I get data in both trace 
+> *and* in latency_trace. Is the last correct? From 
+> http://lkml.org/lkml/2008/2/10/43 I got the impression that file 
+> should only be used if the "wakeup" tracer is active.
+
+yeah, that's the intended behavior. 'trace' and 'latency_trace' are two 
+kinds of 'views' on the same set of tracer data (with a different output 
+format). They are both non-destructive - i.e. they dont deplete the 
+trace buffers.
+
+there's even a third view: 'trace_pipe' - which depletes the trace 
+buffers and can be used to pipe trace data into a larger file:
+
+    cat trace_pipe > /tmp/large-trace.txt
+
+i guess it would be less confusing if 'trace' and 'latency_trace' was 
+just a single 'view' and its behavior depended on iter_ctl settings. (In 
+fact, we could probably just get rid of latency_trace - it is a leftover 
+from -rt.)
+
+> From the last run I've got three traces with 50000 entries (about a 
+> minute worth each). Traces 1 and 2 should each have two skips and 
+> trace 3 should have four. I've saved both the trace and latency_trace 
+> (ltrace) files.
 > 
-> It's up to the driver, and again, the current radeon driver doesn't
-> use
-> radeonfb at all anymore...
+> They are available at: 
+> http://people.debian.org/~fjp/tmp/kernel/sched/.
 
-Right. And I'm happy to go fix what remains, don't get me wrong here :-)
-We all know how stupid legacy code can be !
+thanks, we'll have a look.
 
-I'll try to get some patches to expose a new version of the structure
-sometimes in the upcoming week or two (we'll see what time permits) and
-then see about fixing X drivers that need fixing, though hopefully with
-pci-rework being upstream now, that shouldn't be many.
+> BTW, did either of you actually look at the traces I sent for .24? I 
+> never got any feedback on those.
 
-The main issue is directfb. I hope they'll catch up with the new ioctls.
+hm, i looked at them - i thought i mailed you about that but indeed i 
+didnt (sorry about that) - the traces were too short in scope - they 
+just covered a few dozen milliseconds in scope, while your description 
+said that the problem occured seconds into the trace.
 
-Ben.
+> P.S. I've got group scheduling active in this config as my tests with 
+> .24 showed that did not make any difference. Can rerun without if 
+> needed.
 
+no need to rerun - but if you do the next test it might make sense to 
+disable it, just to reduce the number of variables.
 
+another thing - Peter observed skipping on NOHZ. Does your skipping go 
+away if you boot with 'nohz' and/or with CONFIG_NOHZ=y disabled in the 
+.config?
+
+	Ingo
