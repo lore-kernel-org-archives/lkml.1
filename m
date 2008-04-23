@@ -1,121 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYDWXgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYDWXhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbYDWXgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 19:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYDWXg2
+	id S1753685AbYDWXhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 19:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYDWXhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 19:36:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:54952 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbYDWXg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 19:36:27 -0400
-Subject: Re: [PATCH 2/2 v2] mpic_u3msi: mpic_u3msi: failed allocation
-	unnoticed
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <480FB766.1040405@tiscali.nl>
-References: <480F6905.3070808@tiscali.nl> <480F8754.7000200@tiscali.nl>
-	 <df21920e067e73985f73047e2d8bcbda@kernel.crashing.org>
-	 <480FB766.1040405@tiscali.nl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8GpWhTeuSTtojLzOKg5B"
-Date: Thu, 24 Apr 2008 09:36:23 +1000
-Message-Id: <1208993783.9245.10.camel@concordia.ozlabs.ibm.com>
+	Wed, 23 Apr 2008 19:37:09 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35260 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752393AbYDWXhI (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 19:37:08 -0400
+Date: Thu, 24 Apr 2008 09:36:52 +1000
+From: David Chinner <dgc@sgi.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+Message-ID: <20080423233652.GT103491721@sgi.com>
+References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <1208928421.9060.22.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1208928421.9060.22.camel@pasglop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 23, 2008 at 03:27:01PM +1000, Benjamin Herrenschmidt wrote:
+> On Sat, 2008-04-19 at 16:23 +0200, Ingo Molnar wrote:
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > >  config 4KSTACKS
+> > > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
+> > > > -	depends on DEBUG_KERNEL
+> > > >  	depends on X86_32
+> > > > +	default y
+> > > 
+> > > This patch will cause kernels to crash.
+> > 
+> > what mainline kernels crash and how will they crash? Fedora and other 
+> > distros have had 4K stacks enabled for years:
+> > 
+> >   $ grep 4K /boot/config-2.6.24-9.fc9
+> >   CONFIG_4KSTACKS=y
+> > 
+> > and we've conducted tens of thousands of bootup tests with all sorts of 
+> > drivers and kernel options enabled and have yet to see a single crash 
+> > due to 4K stacks. So basically the kernel default just follows the 
+> > common distro default now. (distros and users can still disable it)
+> 
+> Do we routinely test nasty scenarii such as a GFP_KERNEL allocation deep
+> in a call stack trying to swap something out to NFS ?
 
---=-8GpWhTeuSTtojLzOKg5B
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+I doubt it, because this is the place that a local XFS filesystem
+typically blows a 4k stack (direct memory reclaim triggering
+->writepage). Boot testing does nothing to exercise the potential
+paths for stack overflows....
 
-On Thu, 2008-04-24 at 00:25 +0200, Roel Kluin wrote:
-> Segher Boessenkool wrote:
-> >> bitmap_find_free_region(), called by mpic_msi_alloc_hwirqs() may
-> >> return -ENOMEM, but hwirq of type irq_hw_number_t which is unsigned.
-> >=20
-> >>      list_for_each_entry(entry, &pdev->msi_list, list) {
-> >>          hwirq =3D mpic_msi_alloc_hwirqs(msi_mpic, 1);
-> >> -        if (hwirq < 0) {
-> >> +        if (hwirq =3D=3D -ENOMEM) {
->=20
-> >=20
-> > Please test for _all_ error values, instead.
-> >
-> > Segher
->=20
-> In this case -ENOMEM was _all_ error values, but I get your point.
-> ---
-> bitmap_find_free_region(), called by mpic_msi_alloc_hwirqs() may return
-> signed, but hwirq is unsigned. A failed allocation remains unnoticed.
->=20
-> diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_=
-u3msi.c
-> index 1d5a408..e790f39 100644
-> --- a/arch/powerpc/sysdev/mpic_u3msi.c
-> +++ b/arch/powerpc/sysdev/mpic_u3msi.c
-> @@ -115,14 +115,16 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pde=
-v, int nvec, int type)
->  	struct msi_desc *entry;
->  	struct msi_msg msg;
->  	u64 addr;
-> +	int ret;
-> =20
->  	addr =3D find_ht_magic_addr(pdev);
->  	msg.address_lo =3D addr & 0xFFFFFFFF;
->  	msg.address_hi =3D addr >> 32;
-> =20
->  	list_for_each_entry(entry, &pdev->msi_list, list) {
-> -		hwirq =3D mpic_msi_alloc_hwirqs(msi_mpic, 1);
-> -		if (hwirq < 0) {
-> +		ret =3D mpic_msi_alloc_hwirqs(msi_mpic, 1);
-> +		hwirq =3D ret;
-> +		if (ret < 0) {
->  			pr_debug("u3msi: failed allocating hwirq\n");
->  			return hwirq;
->  		}
+Cheers,
 
-I'm not sure I like this.
-
-I think the real bug is that we're using irq_hw_number_t to represent
-something which isn't. At the end of the day we have to stash the hwirq
-into the MSI message data, which is a u32.
-
-I guess we could imagine a driver that does something magic to allow it
-to put something bigger than a u32 in the MSI message, but I doubt it.
-
-So I think =EF=BB=BFmpic_msi_alloc_hwirqs() should return a long, which all=
-ows
-it to return a full u32 plus the negative error values.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-8GpWhTeuSTtojLzOKg5B
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBID8f3dSjSd0sB4dIRAjyQAKCRALbHHHRocgOH5Gk6zGli1vVb6ACgxl0R
-zE48ZsRm2bkyrU0O2Sf1Kq8=
-=SliZ
------END PGP SIGNATURE-----
-
---=-8GpWhTeuSTtojLzOKg5B--
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
