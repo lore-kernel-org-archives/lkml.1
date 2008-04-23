@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751166AbYDWGcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751765AbYDWGgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751166AbYDWGcN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbYDWGcF
+	id S1751765AbYDWGgP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYDWGf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:32:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60171 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbYDWGcE (ORCPT
+	Wed, 23 Apr 2008 02:35:57 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:42125 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbYDWGfz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:32:04 -0400
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, sam@ravnborg.org
-In-Reply-To: <20080423060725.GT12774@kernel.dk>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com>
-	 <1208890227-24808-2-git-send-email-jens.axboe@oracle.com>
-	 <1208895423.7115.290.camel@twins>  <20080423060725.GT12774@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 08:32:00 +0200
-Message-Id: <1208932320.7115.319.camel@twins>
+	Wed, 23 Apr 2008 02:35:55 -0400
+Message-Id: <480EF4F6.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Wed, 23 Apr 2008 07:36:06 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] move BUG_TABLE into RODATA
+References: <480E1BEE.76E4.0078.0@novell.com>
+ <20080422180732.GA27222@uranus.ravnborg.org>
+In-Reply-To: <20080422180732.GA27222@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-23 at 08:07 +0200, Jens Axboe wrote:
-> On Tue, Apr 22 2008, Peter Zijlstra wrote:
-> > On Tue, 2008-04-22 at 20:50 +0200, Jens Axboe wrote:
-> > 
-> > > +int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
-> > > +			     int retry, int wait)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	/* prevent preemption and reschedule on another processor */
-> > > +	int me = get_cpu();
-> > > +
-> > > +	/* Can deadlock when called with interrupts disabled */
-> > > +	WARN_ON(wait && irqs_disabled());
-> > 
-> > With this fallback to wait the above condition isn't sufficient.
-> 
-> What deadlock are you concerned with here? Would making cfd_fallback
-> per-cpu make you feel better?
+>>> Sam Ravnborg <sam@ravnborg.org> 22.04.08 20:07 >>>
+>Hi Jan.
+>
+>> --- linux-2.6.25/arch/x86/kernel/vmlinux_64.lds.S	2008-04-17 04:49:44.000000000 +0200
+>> +++ 2.6.25-bug-table-rodata/arch/x86/kernel/vmlinux_64.lds.S	2008-03-04 11:14:13.000000000 +0100
+>> @@ -19,7 +19,7 @@ PHDRS {
+>>  	data PT_LOAD FLAGS(7);	/* RWE */
+>>  	user PT_LOAD FLAGS(7);	/* RWE */
+>>  	data.init PT_LOAD FLAGS(7);	/* RWE */
+>> -	note PT_NOTE FLAGS(4);	/* R__ */
+>> +	note PT_NOTE FLAGS(0);	/* ___ */
+>>  }
+>
+>Is this intentional in this patch?
 
-  CPU0					  CPU1
+Yes. While it may be possible to do this separately, it seemed safer to
+me to keep it together since I only tested it this way.
 
-local_irq_disable()			local_irq_disable()
+>>  SECTIONS
+>>  {
+>> @@ -40,16 +40,14 @@ SECTIONS
+>>  	_etext = .;		/* End of text section */
+>>    } :text = 0x9090
+>>  
+>> +  NOTES :text :note
+>> +
+>>    . = ALIGN(16);		/* Exception table */
+>>    __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+>>    	__start___ex_table = .;
+>>  	 *(__ex_table)
+>>    	__stop___ex_table = .;
+>> -  }
+>> -
+>> -  NOTES :text :note
+>> -
+>> -  BUG_TABLE :text
+>> +  } :text = 0x9090
+>
+>And I do not see the 0x9090 justified.
+>Is this something to do with the fact that 0x90 equals NOP on x86?
 
-					smp_call_function_single(0,..,0)
-					  test_and_set_bit_lock()
-					  send IPI
-smp_call_function_single(1,..,0)
-  while(test_and_set_bit_lock())
-    cpu_relax();
+Yes, for consistency I think this ought to be repeated here - while
+not strictly necessary (__ex_table is data, hence padding with
+zeroes rather than NOPs would be fine), it seems more safe to have
+it here so that we don't catch occasional linker bugs. Ultimately I
+would think __ex_table should go into RODATA, too, which would
+eliminate the question.
 
-
-This will spin forever, because it needs to handle the IPI in order to
-free the cfd_fallback thingy, but can't for its waiting for it.
-
-That particular deadlock can indeed be solved by making cfd_fallback
-per-cpu.
-
-But if you were to use multiple smp_call_function*() calls under a
-single IRQ disabled, then that would not be sufficient. Now I can't
-directly come up with a good reason to need to do that, but still.
-
-You'd need somethine like:
-
-local_irq_disable()
-
-smp_call_function_single(n, func_a,..,0)
-smp_call_function_single(m, func_b,..,0)
-
-local_irq_enable()
-
-And invite 3 cpus to the party while under memory pressure and you get
-deadlock potential.
-
-[ if it were both the same function, you'd want to use
-  smp_call_function() and provide a mask; if it were the same cpu you'd
-  want to call a function doing both ]
-
-
+Jan
 
