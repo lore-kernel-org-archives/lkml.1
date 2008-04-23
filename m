@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933598AbYDWAWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964816AbYDWAXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933598AbYDWAWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 20:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbYDWAWW
+	id S964816AbYDWAXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 20:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYDWAXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 20:22:22 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57334 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754344AbYDWAWV (ORCPT
+	Tue, 22 Apr 2008 20:23:25 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:43031 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758156AbYDWAXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 20:22:21 -0400
-Date: Wed, 23 Apr 2008 01:22:19 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [git pull] VFS patches (second series)
-Message-ID: <20080423002219.GW27459@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Tue, 22 Apr 2008 20:23:24 -0400
+Date: Tue, 22 Apr 2008 18:25:06 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Question re the disk driver for /dev/sr0
+In-reply-to: <fa.f1U3hfeZvuA6MOX98ADDtqwI20k@ifi.uio.no>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <480E81E2.70704@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.f1U3hfeZvuA6MOX98ADDtqwI20k@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	More namespace.c sanitizing (saner locking rules, further trimming
-of stack footprint).  Preparation for mountinfo merge (allowing seq_file
-->show() to tell seq_file that output for this entry is to be discarded).
-A couple of fixes - one for long-standing race in /proc/*/fd readdir,
-another for breakage introduced on pipe() failure exit in ro-bind series
-(this one is probably the most urgent in the entire pile).  And misc
-cleanups...
+Gene Heskett wrote:
+> Greetings;
+> 
+> Has something been done to that code that is preventing /dev/sr0 from 
+> correctly reporting a busy or not ready status to k3b in the last year or so?
+> 
+> K3B used to dutifully wait till the drive, on reloading the disc after burning 
+> it, was ready to service its verify request.  Now, and for several months or 
+> more, k3b attempts to read the drive immediately on the disc's being pulled 
+> back in, and of course fails, causing k3b to bail out of the verify phase 
+> completely.
+> 
+> So we are left doing it by hand, a 2 stage process, by first dividing the size 
+> of the iso file being burnt by 2048 to get the number of blocks to read, and 
+> then feeding dd's output for that many size 2048 blocks to sha1sum.  This 
+> works fine but requires the user to understand what it is he is doing. :)
 
-	There will be probably 3 or 4 more series in this cycle - this
-is not the last one...
-
-Please pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
-
-Shortlog:
-Al Viro (9):
-      move a bunch of declarations to fs/internal.h
-      lock exclusively in collect_mounts() and drop_collected_mounts()
-      switch a bunch of LSM hooks from nameidata to path
-      get rid of more nameidata passing in namespace.c
-      umount_tree() will unhash everything itself
-      teach seq_file to discard entries
-      double-free of inode on alloc_file() failure exit in create_write_pipe()
-      proc_readfd_common() race fix
-      get rid of __exit_files(), __exit_fs() and __put_fs_struct()
-
-Diffstat:
- fs/internal.h              |   11 +++++++
- fs/namespace.c             |   66 +++++++++++++++++++++----------------------
- fs/pipe.c                  |    3 ++
- fs/pnode.c                 |    4 +-
- fs/pnode.h                 |    1 +
- fs/proc/base.c             |    4 +--
- fs/seq_file.c              |   16 ++++++++--
- fs/super.c                 |    1 +
- include/linux/dcache.h     |    1 -
- include/linux/fs.h         |    6 ----
- include/linux/mount.h      |    2 -
- include/linux/security.h   |   52 +++++++++++++++++-----------------
- include/linux/seq_file.h   |    2 +
- kernel/exit.c              |   27 ++++--------------
- security/dummy.c           |   10 +++---
- security/security.c        |   20 ++++++------
- security/selinux/hooks.c   |    8 ++--
- security/smack/smack_lsm.c |    4 +-
- 18 files changed, 118 insertions(+), 120 deletions(-)
+You'll need to provide more details on your setup (like what kind of 
+drive and full dmesg). I haven't seen this problem.
