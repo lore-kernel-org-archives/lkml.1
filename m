@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbYDWGvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbYDWGwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbYDWGvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYDWGvo
+	id S1751944AbYDWGwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYDWGwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:51:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42343 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbYDWGvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:51:43 -0400
-Subject: Re: Second soft lockup regression in yesterday's sched.git merge
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       guichaz@yahoo.fr
-In-Reply-To: <20080422.233935.37053549.davem@davemloft.net>
-References: <20080422.233935.37053549.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 08:51:39 +0200
-Message-Id: <1208933499.7115.324.camel@twins>
+	Wed, 23 Apr 2008 02:52:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53773 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765AbYDWGwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:52:23 -0400
+Date: Tue, 22 Apr 2008 23:51:48 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, gregkh@suse.de, penberg@cs.helsinki.fi,
+       zaitcev@redhat.com
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+Message-Id: <20080422235148.c49dc6b7.zaitcev@redhat.com>
+In-Reply-To: <20080422134034.GF7311@elte.hu>
+References: <200804212310.41729.elendil@planet.nl>
+	<20080422134034.GF7311@elte.hu>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-22 at 23:39 -0700, David Miller wrote:
-> Two changets after the buggy cpu_clock() changes, we have:
-> 
-> commit 15934a37324f32e0fda633dc7984a671ea81cd75
-> Author: Guillaume Chazarain <guichaz@yahoo.fr>
-> Date:   Sat Apr 19 19:44:57 2008 +0200
-> 
->     sched: fix rq->clock overflows detection with CONFIG_NO_HZ
->     
->     When using CONFIG_NO_HZ, rq->tick_timestamp is not updated every TICK_NSEC.
->     We check that the number of skipped ticks matches the clock jump seen in
->     __update_rq_clock().
->     
->     Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Which also causes softlockup warnings on my Niagara systems.
-> 
-> Note this is with the cpu_clock() change reverted, and the
-> usual test case kernel build after a delay:
-> 
-> 	sleep 10m; time make -j64 >build.log 2>&1; make -j64 image
+On Tue, 22 Apr 2008 15:40:34 +0200, Ingo Molnar <mingo@elte.hu> wrote:
 
-The effect of this one is that it should properly account idle time in
-rq->clock when waking from nohz.
+> > I got the following warning while running sched-devel/latest.
+> > WARNING: at mm/slub.c:2443 kmem_cache_destroy+0x168/0x1a9()
 
-This 'extra' idle time would then propagate through cpu_clock() into the
-softlockup code.
+> >  [<ffffffff80293c5d>] kmem_cache_destroy+0x168/0x1a9
+> >  [<ffffffff803974d8>] mon_text_release+0x89/0xae
+> >  [<ffffffff80299254>] __fput+0xb9/0x161
+> >  [<ffffffff8029957b>] fput+0x14/0x16
+> >  [<ffffffff80296892>] filp_close+0x66/0x71
+> >  [<ffffffff80239eea>] put_files_struct+0x77/0xcb
+> >  [<ffffffff80239f72>] __exit_files+0x34/0x39
 
-Could it be we touch the soft watchdog before we correct all these idle
-times?
+> Cc:-ing USB folks as the kmem_cache_destroy() comes from 
+> drivers/usb/mon/mon_text.c.
 
+I looked at this whole day today, but found nothing.
+
+The code analysis for usbmon shows nothing. Anyone wants to have
+a look?
+
+Reproduction does not work either. I tried various loads, loops
+of opening/closing while pushing events from USB, nothing.
+
+BTW, I tried to create memory pressure with mem=300MB, result:
+
+top: page allocation failure. order:4, mode:0xc0d0
+Pid: 2337, comm: top Not tainted 2.6.25-ub #33
+
+Call Trace:
+ [<ffffffff8027450d>] __alloc_pages+0x32f/0x352
+ [<ffffffff80272252>] rmqueue_bulk+0x8a/0x9b
+ [<ffffffff80273a3d>] __get_free_pages+0xe/0x4d
+ [<ffffffff802ddd14>] show_stat+0x25/0x4f1
+ [<ffffffff80252f6f>] __lock_acquire+0xd95/0xda4
+ [<ffffffff80252f6f>] __lock_acquire+0xd95/0xda4
+ [<ffffffff802b349c>] seq_read+0x37/0x2a7
+ [<ffffffff80251a2a>] mark_held_locks+0x57/0x73
+ [<ffffffff802b349c>] seq_read+0x37/0x2a7
+ [<ffffffff80470fff>] mutex_lock_nested+0x23a/0x256
+ [<ffffffff80251bd4>] trace_hardirqs_on+0xf9/0x123
+ [<ffffffff8047100c>] mutex_lock_nested+0x247/0x256
+ [<ffffffff80470fff>] mutex_lock_nested+0x23a/0x256
+ [<ffffffff8047100c>] mutex_lock_nested+0x247/0x256
+ [<ffffffff802b3579>] seq_read+0x114/0x2a7
+ [<ffffffff802b3465>] seq_read+0x0/0x2a7
+ [<ffffffff802d74a7>] proc_reg_read+0x80/0x9b
+
+The error is not just advisory, the application (top) dies because
+/proc/stat cannot be read. I'm surprised that you people managed
+to get the warning at 2443, because things start unravel way earlier
+for me.
+
+-- Pete
