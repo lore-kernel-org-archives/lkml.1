@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbYDWS1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbYDWSch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbYDWS1b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYDWS1X
+	id S1755434AbYDWSch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYDWSc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:27:23 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38083 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753207AbYDWS1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:27:22 -0400
-Date: Wed, 23 Apr 2008 11:27:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-In-Reply-To: <20080423181928.GI24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804231122410.12373@schroedinger.engr.sgi.com>
-References: <ea87c15371b1bd49380c.1208872277@duo.random>
- <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com>
- <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com>
- <20080423133619.GV24536@duo.random> <20080423144747.GU30298@sgi.com>
- <20080423155940.GY24536@duo.random> <Pine.LNX.4.64.0804231105090.12373@schroedinger.engr.sgi.com>
- <20080423181928.GI24536@duo.random>
+	Wed, 23 Apr 2008 14:32:29 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51404 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbYDWSc2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:32:28 -0400
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: PCI MSI breaks when booting with nosmp
+Date: Wed, 23 Apr 2008 20:32:39 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200804172140.02311.jdelvare@suse.de> <Pine.LNX.4.55.0804231855510.31934@cliff.in.clinika.pl> <200804231123.46506.jbarnes@virtuousgeek.org>
+In-Reply-To: <200804231123.46506.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804232032.39550.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
-
-> On Wed, Apr 23, 2008 at 11:09:35AM -0700, Christoph Lameter wrote:
-> > Why is there still the hlist stuff being used for the mmu notifier list? 
-> > And why is this still unsafe?
+Le mercredi 23 avril 2008, Jesse Barnes a écrit :
+> On Wednesday, April 23, 2008 11:13 am Maciej W. Rozycki wrote:
+> > On Wed, 23 Apr 2008, Jesse Barnes wrote:
+> > > Yeah I think the patch is reasonable, would be good to get feedback from
+> > > Thomas/Andi/Ingo though...
+> >
+> >  FWIW, the original idea behind "nosmp" or "maxcpus=0" (just as an
+> > implementation detail) vs "maxcpus=1" was that the two formers would
+> > disable the APIC circuitry altogether (including resisting from switching
+> > from the PIC compatibility mode on systems supporting it), while the
+> > latter would still boot UP, but with interrupts routed through the APICs.
+> > Essentially SMP implied all the MP circuitry/provisions in this context,
+> > the APICs being an inherent part of which.  Therefore I think the original
+> > idea of implying "pci=nomsi" with "nosmp" certainly looks more in the
+> > spirit of the original setup to me.
+> >
+> >  However we have "nolapic" these days as well and with this new proposal
+> > this option could effectively take over the old meaning of "nosmp" (you
+> > cannot do SMP without the local APIC, so "nolapic nosmp" is redundant).
+> > I am not entirely convinced it is the right way though...
 > 
-> What's the problem with hlist, it saves 8 bytes for each mm_struct,
-> you should be using it too instead of list.
-
-list heads in mm_struct and in the mmu_notifier struct seemed to 
-be more consistent. We have no hash list after all.
-
+> Yeah, I'm not particularly attached to either meaning.  It looks like we'll 
+> setup the local apic on 32 bit if the NMI vector is a local apic one, so in 
+> that case at least the behavior will be the same.
 > 
-> > There are cases in which you do not take the reverse map locks or mmap_sem
-> > while traversing the notifier list?
-> 
-> There aren't.
+> Anyway, we have two options:
+>   1) make nosmp/maxcpus=1 imply nolapic (and therefore disable MSI too)
+>   2) make nosmp enable the lapic (so MSI will work)
 
-There is a potential issue in move_ptes where you call 
-invalidate_range_end after dropping i_mmap_sem whereas my patches did the 
-opposite. Mmap_sem saves you there?
+No opinion. As long as I can boot with "nosmp" and things work, I'm
+happy.
+
+-- 
+Jean Delvare
+Suse L3
