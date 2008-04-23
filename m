@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbYDWGsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbYDWGvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbYDWGsv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYDWGsm
+	id S1752029AbYDWGvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYDWGvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:48:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57934 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbYDWGsl (ORCPT
+	Wed, 23 Apr 2008 02:51:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42343 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbYDWGvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:48:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=LPFJ5xLBHP3vM2q4gvT0s+P0/MJYWGL9M9adC60mmfaoTB3jEG5Fgh29G5qo+ZYyH
-	csLqQ0YXM+LJrqchTkKUQ==
-Message-ID: <6599ad830804222348u2b3b6e8coc753fd798c750e26@mail.gmail.com>
-Date: Tue, 22 Apr 2008 23:48:28 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup: use read lock to guard find_existing_css_set()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>
-In-Reply-To: <480EA744.2050300@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Apr 2008 02:51:43 -0400
+Subject: Re: Second soft lockup regression in yesterday's sched.git merge
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       guichaz@yahoo.fr
+In-Reply-To: <20080422.233935.37053549.davem@davemloft.net>
+References: <20080422.233935.37053549.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 08:51:39 +0200
+Message-Id: <1208933499.7115.324.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <480EA744.2050300@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 8:04 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> The function does not modify anything (except the temporary
->  css template), so it's sufficient to hold read lock.
->
->  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Tue, 2008-04-22 at 23:39 -0700, David Miller wrote:
+> Two changets after the buggy cpu_clock() changes, we have:
+> 
+> commit 15934a37324f32e0fda633dc7984a671ea81cd75
+> Author: Guillaume Chazarain <guichaz@yahoo.fr>
+> Date:   Sat Apr 19 19:44:57 2008 +0200
+> 
+>     sched: fix rq->clock overflows detection with CONFIG_NO_HZ
+>     
+>     When using CONFIG_NO_HZ, rq->tick_timestamp is not updated every TICK_NSEC.
+>     We check that the number of skipped ticks matches the clock jump seen in
+>     __update_rq_clock().
+>     
+>     Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Which also causes softlockup warnings on my Niagara systems.
+> 
+> Note this is with the cpu_clock() change reverted, and the
+> usual test case kernel build after a delay:
+> 
+> 	sleep 10m; time make -j64 >build.log 2>&1; make -j64 image
 
-Acked-by: Paul Menage <menage@google.com>
+The effect of this one is that it should properly account idle time in
+rq->clock when waking from nohz.
 
-Thanks.
+This 'extra' idle time would then propagate through cpu_clock() into the
+softlockup code.
 
->  ---
->   kernel/cgroup.c |    4 ++--
->   1 files changed, 2 insertions(+), 2 deletions(-)
->
->  diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->  index 2727f92..e9eb5da 100644
->  --- a/kernel/cgroup.c
->  +++ b/kernel/cgroup.c
->  @@ -406,11 +406,11 @@ static struct css_set *find_css_set(
->
->         /* First see if we already have a cgroup group that matches
->          * the desired set */
->  -       write_lock(&css_set_lock);
->  +       read_lock(&css_set_lock);
->         res = find_existing_css_set(oldcg, cgrp, template);
->         if (res)
->                 get_css_set(res);
->  -       write_unlock(&css_set_lock);
->  +       read_unlock(&css_set_lock);
->
->         if (res)
->                 return res;
->  -- 1.5.4.rc3
->
->
+Could it be we touch the soft watchdog before we correct all these idle
+times?
+
