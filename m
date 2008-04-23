@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYDWTUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbYDWTZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYDWTUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 15:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYDWTTt
+	id S1755539AbYDWTZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 15:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYDWTZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 15:19:49 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49505 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbYDWTTs (ORCPT
+	Wed, 23 Apr 2008 15:25:03 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:39124 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbYDWTZC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 15:19:48 -0400
-Date: Wed, 23 Apr 2008 22:19:22 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-In-Reply-To: <Pine.LNX.4.64.0804231202250.15173@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0804232217290.5444@sbz-30.cs.Helsinki.FI>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
-  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com> 
- <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>
-  <480DB493.6080004@gmail.com> <20080422095315.GA28014@elte.hu> 
- <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com> 
- <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org>
- <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com>
- <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
- <480F857A.3090503@cs.helsinki.fi> <Pine.LNX.4.64.0804231202250.15173@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Apr 2008 15:25:02 -0400
+Message-ID: <480F8D0A.8080808@tiscali.nl>
+Date: Wed, 23 Apr 2008 21:24:58 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>
+Subject: [PATCH v2] aty128fb: test below 0 on unsigned pll->post_divider
+References: <480F81DC.5010505@tiscali.nl>
+In-Reply-To: <480F81DC.5010505@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Christoph Lameter wrote:
-> We should have returned from the function and not printed this message. If 
-> we somehow skipped the test for !fault then end could have wrapped around 
-> which gets us to 4GB.
+Joe Perches wrote:
+> 
+> In both uses, sizeof(post_dividers) should be ARRAY_SIZE(post_dividers)
+> Yes, it's an unsigned char array, it works, but it's unsightly.
+> 
+> cheers, Joe
 
-Aah, looks like it's just a silly bug in slab_fix(). If this looks ok to 
-Christoph, can you re-test with this patch applied Zdenek? That way we'll 
-actually know where SLUB expected to see POISON_INUSE.
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Thanks Joe, updated patch below
 ---
+pll->post_divider is unsigned, so the test fails
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 7f8aaa2..dac50e3 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -456,6 +456,15 @@ static void print_page_info(struct page *page)
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index cbd3308..5049228 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1339,10 +1339,8 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 	if (vclk * 12 < c.ppll_min)
+ 		vclk = c.ppll_min/12;
  
- }
+-	pll->post_divider = -1;
+-
+ 	/* now, find an acceptable divider */
+-	for (i = 0; i < sizeof(post_dividers); i++) {
++	for (i = 0; i < ARRAY_SIZE(post_dividers); i++) {
+ 		output_freq = post_dividers[i] * vclk;
+ 		if (output_freq >= c.ppll_min && output_freq <= c.ppll_max) {
+ 			pll->post_divider = post_dividers[i];
+@@ -1350,7 +1348,7 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 		}
+ 	}
  
-+static void __slab_bug(struct kmem_cache *s, char *buf)
-+{
-+	printk(KERN_ERR "========================================"
-+			"=====================================\n");
-+	printk(KERN_ERR "BUG %s: %s\n", s->name, buf);
-+	printk(KERN_ERR "----------------------------------------"
-+			"-------------------------------------\n\n");
-+}
-+
- static void slab_bug(struct kmem_cache *s, char *fmt, ...)
- {
- 	va_list args;
-@@ -464,11 +473,7 @@ static void slab_bug(struct kmem_cache *s, char *fmt, ...)
- 	va_start(args, fmt);
- 	vsnprintf(buf, sizeof(buf), fmt, args);
- 	va_end(args);
--	printk(KERN_ERR "========================================"
--			"=====================================\n");
--	printk(KERN_ERR "BUG %s: %s\n", s->name, buf);
--	printk(KERN_ERR "----------------------------------------"
--			"-------------------------------------\n\n");
-+	__slab_bug(s, buf);
- }
+-	if (pll->post_divider < 0)
++	if (i == ARRAY_SIZE(post_dividers))
+ 		return -EINVAL;
  
- static void slab_fix(struct kmem_cache *s, char *fmt, ...)
-@@ -533,7 +538,7 @@ static void slab_err(struct kmem_cache *s, struct page *page, char *fmt, ...)
- 	va_start(args, fmt);
- 	vsnprintf(buf, sizeof(buf), fmt, args);
- 	va_end(args);
--	slab_bug(s, fmt);
-+	__slab_bug(s, buf);
- 	print_page_info(page);
- 	dump_stack();
- }
+ 	/* calculate feedback divider */
+
+
