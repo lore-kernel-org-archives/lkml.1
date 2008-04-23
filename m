@@ -1,34 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYDWR4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYDWR6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbYDWR4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYDWR4I
+	id S1755787AbYDWR6D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYDWR5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:56:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46557 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYDWR4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:56:07 -0400
-Date: Wed, 23 Apr 2008 18:55:55 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [git pull] VFS patches (third series, mountinfo merge)
-Message-ID: <20080423175555.GA15214@ZenIV.linux.org.uk>
-References: <20080423002219.GW27459@ZenIV.linux.org.uk> <20080423163509.GZ27459@ZenIV.linux.org.uk> <ada7ieobh85.fsf@cisco.com>
+	Wed, 23 Apr 2008 13:57:54 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45636 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbYDWR5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:57:52 -0400
+Date: Wed, 23 Apr 2008 12:57:49 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080423175749.GA17618@sergelap.austin.ibm.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org> <20080422142539.GA12623@sergelap.austin.ibm.com> <m1hcdtsovg.fsf@frodo.ebiederm.org> <20080423143610.GA13718@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ada7ieobh85.fsf@cisco.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080423143610.GA13718@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 10:42:34AM -0700, Roland Dreier wrote:
-> Just curious... do you plan to merge your changes to anon_inodes for
-> 2.6.26?
+Quoting Serge E. Hallyn (serue@us.ibm.com):
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+> > "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> > >> 
+> > >> I'm hoping to be able to get back at this in the week or so as things
+> > >> settle down from my move.  My last patches should be in my proof of
+> > >> concept network namespace tree, if they don't show up elsewhere.
+> > >
+> > > Is that the tree I'd get from
+> > >
+> > > git-fetch
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-netns.git
+> > > master:ebieder.master
+> > 
+> > Yes.
+> > 
+> > > ?  So I'd add a user_ns to the struct sysfs_tag_info?
+> > >
+> > > If so I'll give it a whirl.
+> > 
+> > Sounds good.  My apologies I keep being almost on the verge
+> > of getting someplace.
+> 
+> Ok I've got the sysfs relevant patches ported to 2.6.25, and am looking
+> at how to extend it to handle /sys/kernel/uids.  You have tagging tied
+> intimately to struct class.  So the question is should I generalize the
+> taggint to deal with kobjects instead, or create a struct class user
+> and make /sys/kernel/uids a symlink to /sys/class/user/uids?
 
-As soon as kvm.git gets merged...
+Heh, never mind, I was thinking class was a kobject class, not a device
+class  :)  So I'll just have to generalize tagging.
+
+thanks,
+-serge
+
+> Opinions?
+> 
+> thanks,
+> -serge
+> 
+> PS: If you want me to post the patchset before handling userns I can do
+> that, otherwise I was just going to wait until I'm done with userns.
