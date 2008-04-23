@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbYDWUCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYDWUKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbYDWUCf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 16:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbYDWUCW
+	id S1756161AbYDWUKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 16:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYDWUKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 16:02:22 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:50597 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755667AbYDWUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 16:02:20 -0400
-Message-ID: <480F95BE.60109@aknet.ru>
-Date: Thu, 24 Apr 2008 00:02:06 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 23 Apr 2008 16:10:33 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:58327 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbYDWUKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 16:10:32 -0400
+Message-ID: <480F97B5.9030009@tiscali.nl>
+Date: Wed, 23 Apr 2008 22:10:29 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5h8wz7cng7.wl%tiwai@suse.de>	<480CD50F.20706@aknet.ru>	<s5hbq42b3j7.wl%tiwai@suse.de>	<480E2EE5.5040208@aknet.ru> <s5hiqy9dkhv.wl%tiwai@suse.de>
-In-Reply-To: <s5hiqy9dkhv.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
+To: jussi.kivilinna@mbnet.fi, linux-wireless@vger.kernel.org
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] wireless: rndis_wlan: modparam_workaround_interval is never
+ below 0.
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+priv->param_workaround_interval is unsigned, modparam_workaround_interval not.
+the former is never < 0.
 
-Takashi Iwai wrote:
->> +	printk(KERN_WARNING "PCSP: CONFIG_DEBUG_PAGEALLOC is enabled, "
->> +		KERN_WARNING "which may make the sound noisy.\n");
-> Missing \n in the first line?
-This was intentional - wanted it to
-print in a single line. You see a space
-there for that reason.
-Should the second KERN_WARNING be removed
-then, or what is the problem exactly?
-
->> - Prevent pcspkr from being built together
->> > with snd-pcsp.
->> >
->> > Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-> Thanks, applied to my git tree.
-> git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-> Meanwhile, we need to add a similar depenency to snd-pcsp as well, no?
-I personally don't think so.
-snd-pcsp has the excact copy of the pcspkr
-code built-in, so I thought pcspkr can be
-obsoleted in the future. From that point of
-view, having snd-pcsp enabled and not even
-seeing pcspkr in a menuconfig is fine.
-While otherwise (you ocasionally enable
-pcspkr and don't even see snd-pcsp then)
-is not fine.
-You mentioned earlier that you would like
-to be able to swap those drivers dynamically,
-but... what's the use? With such a dependancy
-added, many people will not even know about
-snd-pcsp as they already have pcspkr enabled.
-
-> Fixed on ALSA tree now.
-Oh...
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/net/wireless/rndis_wlan.c b/drivers/net/wireless/rndis_wlan.c
+index 977751f..d0b1fb1 100644
+--- a/drivers/net/wireless/rndis_wlan.c
++++ b/drivers/net/wireless/rndis_wlan.c
+@@ -2402,7 +2402,6 @@ static int bcm4320_early_init(struct usbnet *dev)
+ 	priv->param_power_output = modparam_power_output;
+ 	priv->param_roamtrigger  = modparam_roamtrigger;
+ 	priv->param_roamdelta    = modparam_roamdelta;
+-	priv->param_workaround_interval = modparam_workaround_interval;
+ 
+ 	priv->param_country[0] = toupper(priv->param_country[0]);
+ 	priv->param_country[1] = toupper(priv->param_country[1]);
+@@ -2425,8 +2424,10 @@ static int bcm4320_early_init(struct usbnet *dev)
+ 	else if (priv->param_roamdelta > 2)
+ 		priv->param_roamdelta = 2;
+ 
+-	if (priv->param_workaround_interval < 0)
++	if (modparam_workaround_interval < 0)
+ 		priv->param_workaround_interval = 500;
++	else
++		priv->param_workaround_interval = modparam_workaround_interval;
+ 
+ 	rndis_set_config_parameter_str(dev, "Country", priv->param_country);
+ 	rndis_set_config_parameter_str(dev, "FrameBursting",
