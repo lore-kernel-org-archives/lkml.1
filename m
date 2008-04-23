@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYDWIUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYDWIUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYDWIUI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 04:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYDWITu
+	id S1754644AbYDWIUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 04:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYDWITy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 04:19:50 -0400
-Received: from ag-out-0708.google.com ([72.14.246.248]:64669 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbYDWITr (ORCPT
+	Wed, 23 Apr 2008 04:19:54 -0400
+Received: from ic0245.upco.es ([130.206.70.245]:54157 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752313AbYDWITu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 04:19:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cgNA6rvDSCq5Eo5WOHdGtysoU6CetxzIO5AlyfFp2nAmDZGBDgV70SN8DVhSY/K1WzHr+yfnzixL51UdbSCOdupx3KSMXhqf2pNQXJgUemb3VRKAVd3Er/GJlFzAb+DFXBqnjetuB1ccWZIOiSRxboWZuYxkYFG7d6KG29Avrqw=
-Message-ID: <e1d5030b0804230119g7d784168q42191e869f9b9149@mail.gmail.com>
-Date: Wed, 23 Apr 2008 13:49:46 +0530
-From: "Midhun A" <midhunagni@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: Userspace - Kernel Space "Connector" test
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080421104301.GA2061@2ka.mipt.ru>
-MIME-Version: 1.0
+	Wed, 23 Apr 2008 04:19:50 -0400
+Subject: Re: x86: 4kstacks default
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: david@lang.hm, Denys Vlasenko <vda.linux@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200804230141.09523.dhazelton@enter.net>
+References: <200804181737.m3IHbabI010051@hera.kernel.org>
+	 <200804230121.11004.dhazelton@enter.net>
+	 <alpine.DEB.1.10.0804222222490.23325@asgard>
+	 <200804230141.09523.dhazelton@enter.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e1d5030b0803260311j25831caeyd9fc111a06e572e2@mail.gmail.com>
-	 <20080327143823.GA20443@2ka.mipt.ru>
-	 <e1d5030b0804040001t2a2b2fd3j75c656ec2318a932@mail.gmail.com>
-	 <e1d5030b0804210329j38d3bb8cge62e833088c1e0c@mail.gmail.com>
-	 <20080421104301.GA2061@2ka.mipt.ru>
+Date: Wed, 23 Apr 2008 09:46:27 +0200
+Message-Id: <1208936787.13905.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
 
-I had changed the group number. It worked ! Thanks a lot for the help
-and also also the code !
 
-Regards,
-Midhun
+[Trimmed, I hope I got the authors right...]
 
-On Mon, Apr 21, 2008 at 4:13 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> Hi.
->
->
->
->  On Mon, Apr 21, 2008 at 03:59:32PM +0530, Midhun A (midhunagni@gmail.com) wrote:
->  > static void imxmci_check_status(unsigned long data)
->  > {
->  >       struct imxmci_host *host = (struct imxmci_host *)data;
->  >
->  >       /*Netlink*/
->  >       struct cn_msg *m;
->  >       char cn_data[32] = "SD/MMC Card Status";
->  >       /*Netlink*/
->  >
->  >       if( host->pdata->card_present() != host->present ) {
->  >               host->present ^= 1;
->  >               dev_info(mmc_dev(host->mmc), "card %s\n",
->  >                     host->present ? "inserted" : "removed");
->  >
->  >       /*Netlink*/
->  >
->  >       m = kmalloc(sizeof(*m) + sizeof(cn_data), GFP_ATOMIC);
->  >
->  >       if (m) {
->  >               printk("Inside if\n");
->  >               memset(m, 0, sizeof(*m) + sizeof(cn_data));
->  >               memcpy(&m->id, &cn_test_id, sizeof(m->id));
->  >               m->seq = cn_test_timer_counter;
->  >               m->len = sizeof(cn_data);
->  >
->  >               m->len =
->  >                   scnprintf(cn_data, sizeof(cn_data), "counter = %u",
->  >                             cn_test_timer_counter) + 1;
->  >
->  >               memcpy(m + 1, data, m->len);
->  >               printk("Copied Message\n");
->  >               cn_netlink_send(m, 0, gfp_any());
->  >               printk("Sent Message\n");
->  >               kfree(m);
->
->  What is return value here?
->  Also, do you register this driver as connector user? If not, you can not
->  use 0 group number, since it will search only for registered kernel
->  side, and if there was no registration, it can not obtain address of the
->  userspace side. You can specify group (7 in your cae) as a parameter
->  instead.
->
->  I suppose userspace was bound to (1<<7) group number or was subscribed
->  using socket option to 7'th group.
->
->  --
->         Evgeniy Polyakov
->
+On Wed, 2008-04-23 at 01:41 -0400, Daniel Hazelton wrote:
+> > On Wed, 23 Apr 2008, Daniel Hazelton wrote:
+> > > On Wednesday 23 April 2008 01:03:11 Denys Vlasenko wrote:
+> > >> On Tuesday 22 April 2008 20:20, Romano Giannetti wrote:
+
+> > >>> I know all the trouble ndiswrapper signify. But I see also that people
+> > >>> around me with a laptop and linux use more ndiswrapper than a real
+> > >>> driver, so... be gentle with it.
+> > >>
+> > >> Nobody knows how much potential development is not done because
+> > >> "you can make your wifi work with ndiswrapper".
+> > >
+
+> And how much better would it be if the drivers were native linux code and were 
+> fully supportable because of that?
+
+I understand your position, but let me give my example. I have this
+laptop that is one year old. I'm helping in all what I can to the
+development of ath5k --- IOW, offering testing, I am not an expert on
+this. 
+
+But the mere fact that ndiswrapper exists enabled me to use this laptop
+on a daily basis, and so I could test new kernel (and if you look at the
+logs you'll see I had at least helped to fix a nasty MMC bug, and to
+make sound work in this laptop) and help in other areas, like
+suspend/resume testing and bug chasing. 
+
+There is not only wireless development. Without ndiswrapper, I wouldn't
+have been in any position to help other areas. I would have had a
+crippled laptop[1], a much higher Vista uptime (which now is 0), and a
+far bitter Linux experience.  
+
+And this is the point of view of someone that is using Linux since
+0.99pl9, so I have quite a bit of experience. 99% of normal users would
+simply say "don't work"[2].
+
+		Romano
+
+[1] yes, there's a madwifi version locked to a specific kernel that
+works with my card. But I do not think that this would be so much
+different. 
+
+[2] a nice page with "_this_ laptop will fully work with linux" would be
+nice. Linux on laptop or similar is too complex to be a real help when
+you have to buy a laptop in 2 days. 
+
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
