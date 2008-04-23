@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYDWWuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbYDWWvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYDWWuE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYDWWtw
+	id S1756282AbYDWWvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYDWWvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:49:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41452
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbYDWWtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:49:51 -0400
-Date: Wed, 23 Apr 2008 15:49:53 -0700 (PDT)
-Message-Id: <20080423.154953.161012169.davem@davemloft.net>
-To: khc@pm.waw.pl
-Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m34p9smrmp.fsf@maximus.localdomain>
-References: <480E4FA1.5020508@garzik.org>
-	<20080422.150559.115368150.davem@davemloft.net>
-	<m34p9smrmp.fsf@maximus.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 23 Apr 2008 18:51:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:16739 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbYDWWvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 18:51:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,701,1199692800"; 
+   d="scan'208";a="320603721"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: alek du <alek.du@intel.com>
+Subject: Re: [PATCH 1/3] pci: Add Intel SCH PCI IDs
+Date: Wed, 23 Apr 2008 15:51:04 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+References: <20080422100140.71f947ca@dxy.sh.intel.com>
+In-Reply-To: <20080422100140.71f947ca@dxy.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804231551.05220.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 23 Apr 2008 19:02:22 +0200
+On Monday, April 21, 2008 7:01 pm alek du wrote:
+> This patch adds Intel SCH chipsets (US15W, US15L, UL11L) PCI IDs, these IDs
+> will be used by following SCH driver patches.
+>
+> Signed-off-by: Alek Du <alek.du@intel.com>
+> ---
+>  include/linux/pci_ids.h |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+), 0 deletions(-)
 
-> netdev_priv() was introduced at some point in time to allow
-> alloc_netdev() to optionally allocate additional memory for internal
-> use by the driver. It had nothing to do with dev->priv except "priv"
-> name. The drivers don't use it passing size 0.
+Alex, can any of these IDs be trimmed?  We only want to bloat pci_ids.h with 
+the stuff that's actually used in several drivers.  Other IDs can just be 
+defined directly in the driver in question...
 
-No, it was added as an optimization since the private
-area was allocated together with the struct netdev, and
-thus at a constant offset computable a compile time.
-
-It was never meant to provide a facility to have two private areas
-associated with a device, but unfortunately some broken stuff decided
-to use it that way.
+Thanks,
+Jesse
