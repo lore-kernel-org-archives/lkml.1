@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYDWIVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYDWI2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbYDWIVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 04:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYDWIV2
+	id S1754420AbYDWI2E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 04:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYDWI1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 04:21:28 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50664 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752338AbYDWIV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 04:21:26 -0400
-X-Authenticated: #2025681
-X-Provags-ID: V01U2FsdGVkX1/jxB1d6JbjAESAcPfI+Gy5wzilH9OoBioOBpraft
-	b4op3EJOWFPKTV
-Message-ID: <480EF183.8020700@gmx.de>
-Date: Wed, 23 Apr 2008 10:21:23 +0200
-From: Stefan Sassenberg <stefan.sassenberg@gmx.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 23 Apr 2008 04:27:48 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:4911 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYDWI1q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 04:27:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pWC4u7wA2Sxsy/SvW7qKNPY7RwibLaV5csmyPkzbu2b/vejo5XA7WBewwG3+XYSzPBV70eo1x7seoipobtirJjdkhCV5ocbhUMq3dBTbfYxfaHI/EEYhdsahBzTN8b0p+BT2WCQqO4UFl51VkGng3jncUaPRBvCmhoiL1621K80=
+Message-ID: <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com>
+Date: Wed, 23 Apr 2008 10:27:46 +0200
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "Tom May" <tom@tommay.com>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: touchscreen/event concept question
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
+	 <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Tom
 
-I'm trying to use a usb touchscreen (urtc1000) but I don't get the 
-concept of the drivers and the event stuff.
+On 4/17/08, Tom May <tom@tommay.com> wrote:
+>
+>  Here is the start and end of the output from the test program.  At
+>  each /dev/mem_notify notification Cached decreases, then eventually
+>  Mapped decreases as well, which means the amount of time the program
+>  has to free memory gets smaller and smaller.  Finally the oom killer
+>  is invoked because the program can't react quickly enough to free
+>  memory, even though it can free at a faster rate than it can use
+>  memory.  My test is slow to free because it calls nanosleep, but this
+>  is just a simulation of my actual program that has to perform garbage
+>  collection before it can free memory.
 
-I downloaded the 2-6-25 kernel because of the newly integrated driver 
-for the very model I want to use, usbtouchscreen. In the XF86Config file 
-I additionally need to specify a driver, but I don't have an idea which 
-one. I read about people using evtouch, but I don't know why and I don't 
-know which /dev/... node to use. I think it has to do with event nodes 
-and evdev is loaded, too.
+I have also seen this behaviour in my static tests with low mem
+notification on swapless systems. It is a problem with small programs
+(typically static test programs) where the text segment is only a few
+pages. I have not seen this behaviour in larger programs which use a
+larger working set. As long as the system working set is bigger than
+the amount of memory that needs to be allocated, between every
+notification reaction opportunity, it seems to be ok.
 
-Furthermore, I don't know how to suppress a mouse driver that processes 
-events without suppressing my real hardware mouse.
-
-I hope, my questions are making enough sense to you to see my problem. 
-Is there someone to explain some of those things?
-
-Stefan
+/Daniel
