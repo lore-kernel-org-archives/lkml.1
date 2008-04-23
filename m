@@ -1,94 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYDWSEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYDWSFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbYDWSEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYDWSE1
+	id S1757174AbYDWSFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYDWSEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:04:27 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:2646 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbYDWSE0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:04:26 -0400
-Message-ID: <480F7A0E.2080202@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: mchehab@infradead.org
-Cc: hverkuil@xs4all.nl, video4linux-list@redhat.com, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, ivtv-devel@ivtvdriver.org,
-       biercenator@gmail.com
-Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
-Date: Wed, 23 Apr 2008 14:03:58 -0400
-MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-in-reply-to: <20080423143454.0d50b209@gaivota>
-x-originalarrivaltime: 23 Apr 2008 18:01:05.0481 (UTC) FILETIME=[FFFB6B90:01C8A56B]
-user-agent: Thunderbird 2.0.0.12 (Windows/20080213)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Wed, 23 Apr 2008 14:04:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47742 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753412AbYDWSEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:04:50 -0400
+From: eparis@redhat.com
+To: linux-kernel@vger.kernel.org
+Cc: jmorris@namei.org, serue@us.ibm.com, Eric Paris <eparis@redhat.com>
+Subject: [PATCH 1/4] capability: capability.h whitespace, syntax, and other cleanups
+Date: Wed, 23 Apr 2008 13:52:31 -0400
+Message-Id: <12089731541206-git-send-email-eparis@redhat.com>
+X-Mailer: git-send-email 1.5.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> On Sun, 20 Apr 2008 12:10:00 -0400
-> Michael Krufky <mkrufky@linuxtv.org> wrote:
->
->   
->> Hans Verkuil wrote:
->>     
->>> On Sunday 20 April 2008 13:27:36 Alan Cox wrote:
->>>   
->>>       
->>>> Frank Bennett reported that ivtv was causing skype to crash. With
->>>> help from one of their developers he showed it was a kernel problem.
->>>> VIDIOCGCAP copies a name into a fixed length buffer - ivtv uses names
->>>> that are too long and does not truncate them so corrupts a few bytes
->>>> of the app data area.
->>>>
->>>> Possibly the names also want trimming but for now this should fix the
->>>> corruption case.
->>>>     
->>>>         
->>> Ouch, nasty one.
->>>
->>> Mauro, can you apply this patch to the v4l-dvb master?
->>>
->>> Mike, this one should obviously go into a 2.6.25 dot-release, and I 
->>> think also to a 2.6.24 dot-release.
->>>
->>> Frank, thank you for reporting this!
->>>
->>> 	Hans
->>>
->>> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
->>>   
->>>       
->> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
->>     
->
-> In this case, it should be reviewed-by.
->
-> I should be sending this soon to Linus.
+From: Eric Paris <eparis@redhat.com>
 
+This patch changes capability.h to fix whitespace and syntax issues.  Things that
+are fixed may include (does not not have to include)
 
-Mauro,
+whitespace at end of lines
+spaces followed by tabs
+spaces used instead of tabs
+spacing around parenthesis
+location of { around structs and else clauses
+location of * in pointer declarations
+removal of initialization of static data to keep it in the right section
+useless {} in if statemetns
+useless checking for NULL before kfree
+fixing of the indentation depth of switch statements
+no assignments in if statements
+include spaces around , in function calls
+and any number of other things I forgot to mention
 
-I think it's wrong that you alter signatures.  You did this:
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+ include/linux/capability.h |  142 ++++++++++++++++++++++----------------------
+ 1 files changed, 71 insertions(+), 71 deletions(-)
 
-Reviewed-by: <mkrufky@linuxtv.org <mailto:mkrufky@linuxtv.org>>
-
-But I provided this:
-
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
-
-I sign the patch, because I have handled it in my -stable queue.
-
-
-You put my email address without my name!
-
-A signature is sacred and nobody should fudge it.
-
-Please fix it before you send to -git.
-
--Mike
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 7d50ff6..63aeeea 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -28,14 +28,14 @@ struct task_struct;
+    library since the draft standard requires the use of malloc/free
+    etc.. */
+ 
+-#define _LINUX_CAPABILITY_VERSION_1  0x19980330
+-#define _LINUX_CAPABILITY_U32S_1     1
++#define _LINUX_CAPABILITY_VERSION_1	0x19980330
++#define _LINUX_CAPABILITY_U32S_1	1
+ 
+-#define _LINUX_CAPABILITY_VERSION_2  0x20071026
+-#define _LINUX_CAPABILITY_U32S_2     2
++#define _LINUX_CAPABILITY_VERSION_2	0x20071026
++#define _LINUX_CAPABILITY_U32S_2	2
+ 
+-#define _LINUX_CAPABILITY_VERSION    _LINUX_CAPABILITY_VERSION_2
+-#define _LINUX_CAPABILITY_U32S       _LINUX_CAPABILITY_U32S_2
++#define _LINUX_CAPABILITY_VERSION	_LINUX_CAPABILITY_VERSION_2
++#define _LINUX_CAPABILITY_U32S		_LINUX_CAPABILITY_U32S_2
+ 
+ typedef struct __user_cap_header_struct {
+ 	__u32 version;
+@@ -43,9 +43,9 @@ typedef struct __user_cap_header_struct {
+ } __user *cap_user_header_t;
+ 
+ typedef struct __user_cap_data_struct {
+-        __u32 effective;
+-        __u32 permitted;
+-        __u32 inheritable;
++	__u32 effective;
++	__u32 permitted;
++	__u32 inheritable;
+ } __user *cap_user_data_t;
+ 
+ 
+@@ -57,23 +57,23 @@ typedef struct __user_cap_data_struct {
+ #define VFS_CAP_FLAGS_EFFECTIVE	0x000001
+ 
+ #define VFS_CAP_REVISION_1	0x01000000
+-#define VFS_CAP_U32_1           1
+-#define XATTR_CAPS_SZ_1         (sizeof(__le32)*(1 + 2*VFS_CAP_U32_1))
++#define VFS_CAP_U32_1		1
++#define XATTR_CAPS_SZ_1		(sizeof(__le32)*(1 + 2*VFS_CAP_U32_1))
+ 
+ #define VFS_CAP_REVISION_2	0x02000000
+-#define VFS_CAP_U32_2           2
+-#define XATTR_CAPS_SZ_2         (sizeof(__le32)*(1 + 2*VFS_CAP_U32_2))
++#define VFS_CAP_U32_2		2
++#define XATTR_CAPS_SZ_2		(sizeof(__le32)*(1 + 2*VFS_CAP_U32_2))
+ 
+-#define XATTR_CAPS_SZ           XATTR_CAPS_SZ_2
+-#define VFS_CAP_U32             VFS_CAP_U32_2
++#define XATTR_CAPS_SZ		XATTR_CAPS_SZ_2
++#define VFS_CAP_U32		VFS_CAP_U32_2
+ #define VFS_CAP_REVISION	VFS_CAP_REVISION_2
+ 
+ 
+ struct vfs_cap_data {
+-	__le32 magic_etc;            /* Little endian */
++	__le32 magic_etc;		/* Little endian */
+ 	struct {
+-		__le32 permitted;    /* Little endian */
+-		__le32 inheritable;  /* Little endian */
++		__le32 permitted;	/* Little endian */
++		__le32 inheritable;	/* Little endian */
+ 	} data[VFS_CAP_U32];
+ };
+ 
+@@ -83,8 +83,8 @@ typedef struct kernel_cap_struct {
+ 	__u32 cap[_LINUX_CAPABILITY_U32S];
+ } kernel_cap_t;
+ 
+-#define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
+-#define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))
++#define _USER_CAP_HEADER_SIZE	(sizeof(struct __user_cap_header_struct))
++#define _KERNEL_CAP_T_SIZE	(sizeof(kernel_cap_t))
+ 
+ #endif
+ 
+@@ -97,25 +97,25 @@ typedef struct kernel_cap_struct {
+    overrides the restriction of changing file ownership and group
+    ownership. */
+ 
+-#define CAP_CHOWN            0
++#define CAP_CHOWN		0
+ 
+ /* Override all DAC access, including ACL execute access if
+    [_POSIX_ACL] is defined. Excluding DAC access covered by
+    CAP_LINUX_IMMUTABLE. */
+ 
+-#define CAP_DAC_OVERRIDE     1
++#define CAP_DAC_OVERRIDE	1
+ 
+ /* Overrides all DAC restrictions regarding read and search on files
+    and directories, including ACL restrictions if [_POSIX_ACL] is
+    defined. Excluding DAC access covered by CAP_LINUX_IMMUTABLE. */
+ 
+-#define CAP_DAC_READ_SEARCH  2
++#define CAP_DAC_READ_SEARCH	2
+ 
+ /* Overrides all restrictions about allowed operations on files, where
+    file owner ID must be equal to the user ID, except where CAP_FSETID
+    is applicable. It doesn't override MAC and DAC restrictions. */
+ 
+-#define CAP_FOWNER           3
++#define CAP_FOWNER		3
+ 
+ /* Overrides the following restrictions that the effective user ID
+    shall match the file owner ID when setting the S_ISUID and S_ISGID
+@@ -124,24 +124,24 @@ typedef struct kernel_cap_struct {
+    the S_ISGID bit on that file; that the S_ISUID and S_ISGID bits are
+    cleared on successful return from chown(2) (not implemented). */
+ 
+-#define CAP_FSETID           4
++#define CAP_FSETID		4
+ 
+ /* Overrides the restriction that the real or effective user ID of a
+    process sending a signal must match the real or effective user ID
+    of the process receiving the signal. */
+ 
+-#define CAP_KILL             5
++#define CAP_KILL		5
+ 
+ /* Allows setgid(2) manipulation */
+ /* Allows setgroups(2) */
+ /* Allows forged gids on socket credentials passing. */
+ 
+-#define CAP_SETGID           6
++#define CAP_SETGID		6
+ 
+ /* Allows set*uid(2) manipulation (including fsuid). */
+ /* Allows forged pids on socket credentials passing. */
+ 
+-#define CAP_SETUID           7
++#define CAP_SETUID		7
+ 
+ 
+ /**
+@@ -153,24 +153,24 @@ typedef struct kernel_cap_struct {
+  *   remove any capability in your permitted set from any pid
+  * With VFS support for capabilities (neither of above, but)
+  *   Add any capability from current's capability bounding set
+- *       to the current process' inheritable set
++ *	to the current process' inheritable set
+  *   Allow taking bits out of capability bounding set
+  */
+ 
+-#define CAP_SETPCAP          8
++#define CAP_SETPCAP		8
+ 
+ /* Allow modification of S_IMMUTABLE and S_APPEND file attributes */
+ 
+-#define CAP_LINUX_IMMUTABLE  9
++#define CAP_LINUX_IMMUTABLE	9
+ 
+ /* Allows binding to TCP/UDP sockets below 1024 */
+ /* Allows binding to ATM VCIs below 32 */
+ 
+-#define CAP_NET_BIND_SERVICE 10
++#define CAP_NET_BIND_SERVICE	10
+ 
+ /* Allow broadcasting, listen to multicast */
+ 
+-#define CAP_NET_BROADCAST    11
++#define CAP_NET_BROADCAST	11
+ 
+ /* Allow interface configuration */
+ /* Allow administration of IP firewall, masquerading and accounting */
+@@ -186,42 +186,42 @@ typedef struct kernel_cap_struct {
+ /* Allow read/write of device-specific registers */
+ /* Allow activation of ATM control sockets */
+ 
+-#define CAP_NET_ADMIN        12
++#define CAP_NET_ADMIN		12
+ 
+ /* Allow use of RAW sockets */
+ /* Allow use of PACKET sockets */
+ 
+-#define CAP_NET_RAW          13
++#define CAP_NET_RAW		13
+ 
+ /* Allow locking of shared memory segments */
+ /* Allow mlock and mlockall (which doesn't really have anything to do
+    with IPC) */
+ 
+-#define CAP_IPC_LOCK         14
++#define CAP_IPC_LOCK		14
+ 
+ /* Override IPC ownership checks */
+ 
+-#define CAP_IPC_OWNER        15
++#define CAP_IPC_OWNER		15
+ 
+ /* Insert and remove kernel modules - modify kernel without limit */
+-#define CAP_SYS_MODULE       16
++#define CAP_SYS_MODULE		16
+ 
+ /* Allow ioperm/iopl access */
+ /* Allow sending USB messages to any device via /proc/bus/usb */
+ 
+-#define CAP_SYS_RAWIO        17
++#define CAP_SYS_RAWIO		17
+ 
+ /* Allow use of chroot() */
+ 
+-#define CAP_SYS_CHROOT       18
++#define CAP_SYS_CHROOT		18
+ 
+ /* Allow ptrace() of any process */
+ 
+-#define CAP_SYS_PTRACE       19
++#define CAP_SYS_PTRACE		19
+ 
+ /* Allow configuration of process accounting */
+ 
+-#define CAP_SYS_PACCT        20
++#define CAP_SYS_PACCT		20
+ 
+ /* Allow configuration of the secure attention key */
+ /* Allow administration of the random device */
+@@ -261,11 +261,11 @@ typedef struct kernel_cap_struct {
+ /* Allow setting encryption key on loopback filesystem */
+ /* Allow setting zone reclaim policy */
+ 
+-#define CAP_SYS_ADMIN        21
++#define CAP_SYS_ADMIN		21
+ 
+ /* Allow use of reboot() */
+ 
+-#define CAP_SYS_BOOT         22
++#define CAP_SYS_BOOT		22
+ 
+ /* Allow raising priority and setting priority on other (different
+    UID) processes */
+@@ -274,7 +274,7 @@ typedef struct kernel_cap_struct {
+    process. */
+ /* Allow setting cpu affinity on other processes */
+ 
+-#define CAP_SYS_NICE         23
++#define CAP_SYS_NICE		23
+ 
+ /* Override resource limits. Set resource limits. */
+ /* Override quota limits. */
+@@ -288,32 +288,32 @@ typedef struct kernel_cap_struct {
+ /* Override max number of consoles on console allocation */
+ /* Override max number of keymaps */
+ 
+-#define CAP_SYS_RESOURCE     24
++#define CAP_SYS_RESOURCE	24
+ 
+ /* Allow manipulation of system clock */
+ /* Allow irix_stime on mips */
+ /* Allow setting the real-time clock */
+ 
+-#define CAP_SYS_TIME         25
++#define CAP_SYS_TIME		25
+ 
+ /* Allow configuration of tty devices */
+ /* Allow vhangup() of tty */
+ 
+-#define CAP_SYS_TTY_CONFIG   26
++#define CAP_SYS_TTY_CONFIG	26
+ 
+ /* Allow the privileged aspects of mknod() */
+ 
+-#define CAP_MKNOD            27
++#define CAP_MKNOD		27
+ 
+ /* Allow taking of leases on files */
+ 
+-#define CAP_LEASE            28
++#define CAP_LEASE		28
+ 
+-#define CAP_AUDIT_WRITE      29
++#define CAP_AUDIT_WRITE		29
+ 
+-#define CAP_AUDIT_CONTROL    30
++#define CAP_AUDIT_CONTROL	30
+ 
+-#define CAP_SETFCAP	     31
++#define CAP_SETFCAP		31
+ 
+ /* Override MAC access.
+    The base kernel enforces no MAC policy.
+@@ -321,7 +321,7 @@ typedef struct kernel_cap_struct {
+    to implement capability based overrides of that policy, this is
+    the capability it should use to do so. */
+ 
+-#define CAP_MAC_OVERRIDE     32
++#define CAP_MAC_OVERRIDE	32
+ 
+ /* Allow MAC configuration or state changes.
+    The base kernel requires no MAC configuration.
+@@ -330,9 +330,9 @@ typedef struct kernel_cap_struct {
+    policy or the data required to maintain it, this is the
+    capability it should use to do so. */
+ 
+-#define CAP_MAC_ADMIN        33
++#define CAP_MAC_ADMIN		33
+ 
+-#define CAP_LAST_CAP         CAP_MAC_ADMIN
++#define CAP_LAST_CAP		CAP_MAC_ADMIN
+ 
+ #define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
+ 
+@@ -340,8 +340,8 @@ typedef struct kernel_cap_struct {
+  * Bit location of each capability (used by user-space library and kernel)
+  */
+ 
+-#define CAP_TO_INDEX(x)     ((x) >> 5)        /* 1 << 5 == bits in __u32 */
+-#define CAP_TO_MASK(x)      (1 << ((x) & 31)) /* mask for indexed __u32 */
++#define CAP_TO_INDEX(x)     ((x) >> 5)		/* 1 << 5 == bits in __u32 */
++#define CAP_TO_MASK(x)      (1 << ((x) & 31))	/* mask for indexed __u32 */
+ 
+ #ifdef __KERNEL__
+ 
+@@ -375,7 +375,7 @@ typedef struct kernel_cap_struct {
+ 
+ #define CAP_INIT_INH_SET    CAP_EMPTY_SET
+ 
+-# define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)
++# define cap_clear(c)	      do { (c) = __cap_empty_set; } while (0)
+ # define cap_set_full(c)      do { (c) = __cap_full_set; } while (0)
+ # define cap_set_init_eff(c)  do { (c) = __cap_init_eff_set; } while (0)
+ 
+@@ -383,20 +383,20 @@ typedef struct kernel_cap_struct {
+ #define cap_lower(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] &= ~CAP_TO_MASK(flag))
+ #define cap_raised(c, flag) ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
+ 
+-#define CAP_BOP_ALL(c, a, b, OP)                                    \
+-do {                                                                \
+-	unsigned __capi;                                            \
+-	CAP_FOR_EACH_U32(__capi) {                                  \
+-		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     \
+-	}                                                           \
++#define CAP_BOP_ALL(c, a, b, OP)				\
++do {								\
++	unsigned __capi;					\
++	CAP_FOR_EACH_U32(__capi) {				\
++		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];	\
++	}							\
+ } while (0)
+ 
+-#define CAP_UOP_ALL(c, a, OP)                                       \
+-do {                                                                \
+-	unsigned __capi;                                            \
+-	CAP_FOR_EACH_U32(__capi) {                                  \
+-		c.cap[__capi] = OP a.cap[__capi];                   \
+-	}                                                           \
++#define CAP_UOP_ALL(c, a, OP)					\
++do {								\
++	unsigned __capi;					\
++	CAP_FOR_EACH_U32(__capi) {				\
++		c.cap[__capi] = OP a.cap[__capi];		\
++	}							\
+ } while (0)
+ 
+ static inline kernel_cap_t cap_combine(const kernel_cap_t a,
+-- 
+1.5.2.1
 
