@@ -1,170 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYDWVdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYDWVek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbYDWVdv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 17:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDWVdn
+	id S1756229AbYDWVek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 17:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYDWVed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 17:33:43 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:46695 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbYDWVdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 17:33:41 -0400
-Date: Wed, 23 Apr 2008 17:33:37 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: nfsd changes for 2.6.26
-Message-ID: <20080423213337.GG8302@fieldses.org>
+	Wed, 23 Apr 2008 17:34:33 -0400
+Received: from service2.sh.cvut.cz ([147.32.127.218]:57368 "EHLO
+	service2.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYDWVeb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 17:34:31 -0400
+Message-ID: <480FABB6.10000@seznam.cz>
+Date: Wed, 23 Apr 2008 23:35:50 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: benh@kernel.crashing.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
+       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
+       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       paulus@samba.org
+Subject: Re: Microblaze Linux release
+References: <48020A21.4000404@seznam.cz> <200804140801.57464.arnd@arndb.de>	 <4804A59B.5040909@seznam.cz>  <200804151532.11619.arnd@arndb.de> <1208296358.6958.237.camel@pasglop>
+In-Reply-To: <1208296358.6958.237.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following nfsd-related changes are available from the for-linus
-branch of the git repository at:
+Hi,
 
-  git://linux-nfs.org/~bfields/linux.git for-linus
 
-Nothing earth-shattering; mostly miscellaneous bugfixes and cleanup, for
-lockd and nfsd.
+>> I'd recommend splitting prom.c into code that can be shared between powerpc
+>> and microblaze and architecture specific code. Anything that deals with
+>> LMB should go into powerpc, and you can simply use the alloc_bootmem
+>> mechanism for your architecture.
+> 
+> That is non trivial... the unflatten DT code among others relies heavily
+> on the LMB's to allocate the objects.
+> 
+> We could split the early accessors, unflatten code, and kernel-side
+> accessors at one point, though we already did most of it no ?
+> 
+> Ben.
 
-Jeff Layton's conversion of lockd and the NFSv4 callback server to
-kthreads is one of the larger pieces, Chuck did a bunch of kconfig
-cleanup, etc.
+I look at latest LMB version currenty in lib folder. There is some changes which
+I think go against version.
 
---b.
+I would like to ask some question about.
 
-Adrian Bunk (1):
-      make nfsd_create_setattr() static
+in include/asm-powerpc/lmb.h is written LMB_REAL_LIMIT.
 
-Andrew Morton (1):
-      net/sunrpc/svc.c: suppress unintialized var warning
+Is this real limit memory limit? Why I ask. I think powerpc start with main
+memory from zero address and you can set your high limit from zero. In this case
+is high limit equal to size of memory.
 
-Aurélien Charbon (1):
-      IPv6 support for NFS server export caches
+In Microblaze systems we don't have main memory from zero. Starting point can be
+everywhere in 2^32.
 
-Chuck Lever (12):
-      NFSD: Remove NFSD_TCP kernel build option
-      NFSD: Update help text for CONFIG_NFSD
-      NFSD: Move "select FS_POSIX_ACL if NFSD_V4"
-      NFSD: Move "select NFSD_V2_ACL if NFSD_V3_ACL"
-      NFSD: Remove redundant "select" clauses in fs/Kconfig
-      NFSD: Use "depends on" for PROC_FS dependency
-      SUNRPC: Remove PROC_FS dependency
-      NFSD: Remove NFSv4 dependency on NFSv3
-      SUNRPC: RPC server still uses 2.4 method for disabling TCP Nagle
-      SUNRPC: Update RPC server's TCP record marker decoder
-      SUNRPC: Use unsigned index when looping over arrays
-      SUNRPC: Use unsigned loop and array index in svc_init_buffer()
+I hope I can avoid in this constant in MB system and only direct start and size
+mem with DTS description. Am I right?
 
-Felix Blyakher (1):
-      nfsd: initialize lease type in nfs4_open_delegation()
+The similar code was added to of files which are in arch/powerpc/kernel/ folder.
+I would like to fix LMB and OF together.
 
-Harshula Jayasuriya (1):
-      sunrpc: GSS integrity and decryption failures should return GARBAGE_ARGS
+I have some fixed around coding style violation. I'll send them ASAP.
 
-Harvey Harrison (3):
-      lockd: fix sparse warning in svcshare.c
-      nfsd: fix sparse warnings
-      nfsd: fix sparse warning in vfs.c
+I don't have any idea what files use Sparc. Can you inform me about? I don't
+want to break something with MB port.
 
-J. Bruce Fields (12):
-      nfs: remove unnecessary NFS_NEED_* defines
-      nfsd4: remove unnecessary CHECK_FH check in preprocess_seqid_op
-      nfsd4: simplify stateid sequencing checks
-      nfsd4: kill unnecessary check in preprocess_stateid_op
-      svcrpc: move unused field from cache_deferred_req
-      nfsd: clarify readdir/mountpoint-crossing code
-      lockd: fix race in nlm_release()
-      lockd: clean up __nsm_find()
-      lockd: convert nsm_mutex to a spinlock
-      nfsd: move most of fh_verify to separate function
-      lockd: Fix stale nlmsvc_unlink_block comment
-      nfsd: fix comment
+Thanks for info.
 
-James Lentini (1):
-      Documentation: NFS/RDMA instructions for 2.6.25-rc1
-
-Jeff Layton (10):
-      SUNRPC: export svc_sock_update_bufs
-      SUNRPC: have svc_recv() check kthread_should_stop()
-      NLM: Convert lockd to use kthreads
-      SUNRPC: allow svc_recv to break out of 500ms sleep when alloc_page fails
-      NFS: convert nfs4 callback thread to kthread API
-      SUNRPC: remove svc_create_thread()
-      NFS: don't let nfs_callback_svc exit on unexpected svc_recv errors (try #2)
-      NLM: don't let lockd exit on unexpected svc_recv errors (try #2)
-      knfsd: get rid of imode variable in nfsd_setattr
-      knfsd: clear both setuid and setgid whenever a chown is done
-
-Kevin Coffman (4):
-      Correct grammer/typos in dprintks
-      Remove define for KRB5_CKSUM_LENGTH, which will become enctype-dependent
-      gss_krb5: consistently use unsigned for seqnum
-      sunrpc: make token header values less confusing
-
-NeilBrown (1):
-      knfsd: Remove NLM_HOST_MAX and associated logic.
-
-Olga Kornievskaia (1):
-      nfsd: use static memory for callback program and stats
-
-Robert P. J. Day (1):
-      NFSD: Strip __KERNEL__ testing from unexported header files.
-
-Steven Whitehouse (1):
-      Use a zero sized array for raw field in struct fid
-
-Tom Tucker (1):
-      SVCRDMA: Add check for XPT_CLOSE in svc_rdma_send
-
- Documentation/filesystems/nfs-rdma.txt   |  252 ++++++++++++++++++++++++++++++
- fs/Kconfig                               |  109 +++++++------
- fs/lockd/host.c                          |   73 +++++-----
- fs/lockd/svc.c                           |  150 ++++++++----------
- fs/lockd/svclock.c                       |    6 +-
- fs/lockd/svcshare.c                      |    3 +-
- fs/nfs/callback.c                        |   93 ++++++------
- fs/nfs/symlink.c                         |    1 -
- fs/nfsd/auth.c                           |    1 +
- fs/nfsd/export.c                         |    9 +-
- fs/nfsd/nfs4callback.c                   |   28 ++--
- fs/nfsd/nfs4idmap.c                      |    2 +-
- fs/nfsd/nfs4state.c                      |   71 +++++----
- fs/nfsd/nfs4xdr.c                        |   13 ++-
- fs/nfsd/nfsctl.c                         |   22 ++-
- fs/nfsd/nfsfh.c                          |  228 +++++++++++++++-------------
- fs/nfsd/nfssvc.c                         |    2 -
- fs/nfsd/vfs.c                            |   35 ++--
- include/linux/exportfs.h                 |    2 +-
- include/linux/nfs3.h                     |    2 +-
- include/linux/nfsd/Kbuild                |    4 +-
- include/linux/nfsd/cache.h               |    2 -
- include/linux/nfsd/nfsd.h                |   11 +-
- include/linux/sunrpc/cache.h             |    1 -
- include/linux/sunrpc/gss_krb5.h          |    6 +-
- include/linux/sunrpc/svc.h               |    1 -
- include/linux/sunrpc/svcauth.h           |    5 +-
- include/linux/sunrpc/svcsock.h           |    4 +-
- include/net/ipv6.h                       |    9 +
- net/sunrpc/auth_gss/gss_generic_token.c  |    4 +-
- net/sunrpc/auth_gss/gss_krb5_crypto.c    |    6 +-
- net/sunrpc/auth_gss/gss_krb5_seal.c      |    9 +-
- net/sunrpc/auth_gss/gss_krb5_seqnum.c    |    4 +-
- net/sunrpc/auth_gss/gss_krb5_unseal.c    |    2 +-
- net/sunrpc/auth_gss/gss_krb5_wrap.c      |    8 +-
- net/sunrpc/auth_gss/gss_spkm3_seal.c     |    4 +-
- net/sunrpc/auth_gss/svcauth_gss.c        |    9 +-
- net/sunrpc/cache.c                       |    1 -
- net/sunrpc/svc.c                         |   25 +--
- net/sunrpc/svc_xprt.c                    |   30 +++-
- net/sunrpc/svcauth_unix.c                |  118 ++++++++++-----
- net/sunrpc/svcsock.c                     |   29 ++--
- net/sunrpc/xprtrdma/svc_rdma_transport.c |    2 +
- 43 files changed, 879 insertions(+), 517 deletions(-)
- create mode 100644 Documentation/filesystems/nfs-rdma.txt
+Regards,
+Michal Simek
