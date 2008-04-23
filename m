@@ -1,73 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYDWTJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYDWTM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYDWTJF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 15:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYDWTIz
+	id S1756873AbYDWTM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 15:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYDWTMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 15:08:55 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:4209 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753514AbYDWTIy (ORCPT
+	Wed, 23 Apr 2008 15:12:19 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:1646 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbYDWTMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 15:08:54 -0400
-Message-ID: <480F8936.5030406@hp.com>
-Date: Wed, 23 Apr 2008 15:08:38 -0400
+	Wed, 23 Apr 2008 15:12:18 -0400
+Message-ID: <480F8A0E.8070206@hp.com>
+Date: Wed, 23 Apr 2008 15:12:14 -0400
 From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: [RFC][PATCH 0/3] Skip I/O merges when disabled
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH 1/3] Add flag and sysfs interfaces
+References: <480F8936.5030406@hp.com>
+In-Reply-To: <480F8936.5030406@hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------090103020303000008050705"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The block I/O + elevator + I/O scheduler code spends a lot of time
-trying to merge I/Os -- rightfully so under "normal" circumstances.
-However, if one were to know that the incoming I/O stream was /very/
-random in nature, the cycles are wasted. (This can be the case, for
-example, during OLTP-type runs.)
+This is a multi-part message in MIME format.
+--------------090103020303000008050705
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-This patch stream adds a per-request_queue tunable that (when set)
-disables merge attempts, thus freeing up a non-trivial amount of CPU cycles.
 
-I'll be doing some more benchmarking, but this is a representative set
-of data on a two-way Opteron box w/ 4 SATA drives. 'fio' was used to
-generate random 4k asynchronous direct I/Os over the 128GiB of each SATA
-drive.  Oprofile was used to collect the results, and we collected
-CPU_CLK_UNHALTED (CPU) and DATA_CACHE_MISSES (DCM) events. The data
-extracted below shows both the percentage for all samples (including
-non-kernel) as well as just those from the block I/O layer + elevator +
-deadline I/O scheduler + SATA modules.
 
-v2.6.25 (not patched):  CPU: 5.8330% (total)  7.5644% (I/O code only)
-v2.6.25 + nomerges = 0: CPU: 5.8008% (total)  7.5806% (I/O code only)
-v2.6.25 + nomerges = 1: CPU: 4.5404% (total)  5.9416% (I/O code only)
+--------------090103020303000008050705
+Content-Type: text/x-patch;
+ name="0001-Added-QUEUE_FLAG_NOMERGES-and-sysfs-interfaces.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Added-QUEUE_FLAG_NOMERGES-and-sysfs-interfaces.patch"
 
-v2.6.25 (not patched):  DCM: 8.1967% (total) 10.5188% (I/O code only)
-v2.6.25 + nomerges = 0: DCM: 7.2291% (total)  9.4087% (I/O code only)
-v2.6.25 + nomerges = 1: DCM: 6.1989% (total)  8.0155% (I/O code only)
 
-I've typically been seeing a good 20-25% reduction in CPU samples, and
-10-15% in DCM samples for the random load w/ nomerges set to 1 compared
-to set to 0 (looking at just the block code).
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ block/blk-sysfs.c      |   27 +++++++++++++++++++++++++++
+ include/linux/blkdev.h |    2 ++
+ 2 files changed, 29 insertions(+), 0 deletions(-)
 
-[BTW: The I/O performance doesn't change much between the 3 sets of data
-- the seek + I/O times themselves dominate things to such a large
-extent.  There is a very small improvement seen w/ nomerges=1, but <<1%.]
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index 54d0db1..32d917c 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -135,6 +135,26 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
+ 	return queue_var_show(max_hw_sectors_kb, (page));
+ }
+ 
++static ssize_t queue_nomerges_show(struct request_queue *q, char *page)
++{
++	int nm = test_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++	return queue_var_show(nm, page);
++}
++
++static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
++				    size_t count)
++{
++	unsigned long nm;
++	ssize_t ret = queue_var_store(&nm, page, count);
++
++	if (nm)
++	       set_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++	else
++	       clear_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++
++	return ret;
++}
++
+ 
+ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
+@@ -170,6 +190,12 @@ static struct queue_sysfs_entry queue_hw_sector_size_entry = {
+ 	.show = queue_hw_sector_size_show,
+ };
+ 
++static struct queue_sysfs_entry queue_nomerges_entry = {
++	.attr = {.name = "nomerges", .mode = S_IRUGO | S_IWUSR },
++	.show = queue_nomerges_show,
++	.store = queue_nomerges_store,
++};
++
+ static struct attribute *default_attrs[] = {
+ 	&queue_requests_entry.attr,
+ 	&queue_ra_entry.attr,
+@@ -177,6 +203,7 @@ static struct attribute *default_attrs[] = {
+ 	&queue_max_sectors_entry.attr,
+ 	&queue_iosched_entry.attr,
+ 	&queue_hw_sector_size_entry.attr,
++	&queue_nomerges_entry.attr,
+ 	NULL,
+ };
+ 
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 6f79d40..ee577f9 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -405,6 +405,7 @@ struct request_queue
+ #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
+ #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
+ #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
++#define QUEUE_FLAG_NOMERGES    10	/* disable merge attempts */
+ 
+ enum {
+ 	/*
+@@ -449,6 +450,7 @@ enum {
+ #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
+ #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+ #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
++#define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
+ #define blk_queue_flushing(q)	((q)->ordseq)
+ 
+ #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
+-- 
+1.5.2.5
 
-It's not clear to me why 2.6.25 (not patched) requires /more/ cycles
-than does the patched kernel w/ nomerges=0 -- it's been consistent in
-the handful of runs I've done. I'm going to do a large set of runs for
-each condition (not patched, nomerges=0 & nomerges=1) to verify that
-this holds over multiple runs. I'm also going to check out sequential
-loads to see what (if any) penalty the extra couple of checks incurs on
-those (probably not noticeable).
 
-The first patch in the series adds the tunable; The second adds in the
-check to skip the merge code; and the third adds in the check to skip
-adding requests to hash lists for merging.
-
-Alan D. Brunelle
-Hewlett-Packard
+--------------090103020303000008050705--
