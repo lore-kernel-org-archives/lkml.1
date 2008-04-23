@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYDWVHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYDWVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbYDWVHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 17:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYDWVHh
+	id S1757511AbYDWVIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYDWVIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 17:07:37 -0400
-Received: from service2.sh.cvut.cz ([147.32.127.218]:36438 "EHLO
-	service2.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYDWVHg (ORCPT
+	Wed, 23 Apr 2008 17:08:06 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:58432 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbYDWVIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 17:07:36 -0400
-Message-ID: <480FA565.2000608@seznam.cz>
-Date: Wed, 23 Apr 2008 23:08:53 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 23 Apr 2008 17:08:05 -0400
+Message-ID: <480FA529.2030800@tiscali.nl>
+Date: Wed, 23 Apr 2008 23:07:53 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
-       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
-       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
-Subject: Re: Microblaze Linux release
-References: <48020A21.4000404@seznam.cz> <480FA235.8000203@seznam.cz> <200804232257.04060.florian.fainelli@telecomint.eu> <200804232301.46764.arnd@arndb.de>
-In-Reply-To: <200804232301.46764.arnd@arndb.de>
+To: hnguyen@de.ibm.com, raisch@de.ibm.com
+CC: general@lists.openfabrics.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ehca: ret is unsigned, ibmebus_request_irq() negative return
+ ignored in hca_create_eq()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-I am decided to remove content pci.h and pci-bridge.h. It is easier for me now.
-This step comes soon. I gonna change consistent.c file with use it.
-
-The files will be in asm folder because OF point to them but the files will be
-empty or almost empty.
-
-Regards,
-Michal Simek
-
-
-
->> While reading the previous discussion, I wondered that keeping PCI would be a 
->> good idea. I am personnaly using it for a custom design and would be glad 
->> being able to continue using it.
->>
->> If this represents too much work for you, we can probably add it later.
->>
-> 
-> The problem as far as I can see is that the existing header files
-> just don't work without a platform implementation.
-> 
-> I think it would be less confusing to leave them out. If you 
-> need PCI, it's probably easier to add new files for these
-> and get them working at the same time.
-> 
-> 	Arnd <><
-> 
-> 
+diff --git a/drivers/infiniband/hw/ehca/ehca_eq.c b/drivers/infiniband/hw/ehca/ehca_eq.c
+index b4ac617..9727235 100644
+--- a/drivers/infiniband/hw/ehca/ehca_eq.c
++++ b/drivers/infiniband/hw/ehca/ehca_eq.c
+@@ -59,6 +59,7 @@ int ehca_create_eq(struct ehca_shca *shca,
+ 	u32 i;
+ 	void *vpage;
+ 	struct ib_device *ib_dev = &shca->ib_device;
++	int ret2;
+ 
+ 	spin_lock_init(&eq->spinlock);
+ 	spin_lock_init(&eq->irq_spinlock);
+@@ -123,18 +124,18 @@ int ehca_create_eq(struct ehca_shca *shca,
+ 
+ 	/* register interrupt handlers and initialize work queues */
+ 	if (type == EHCA_EQ) {
+-		ret = ibmebus_request_irq(eq->ist, ehca_interrupt_eq,
++		ret2 = ibmebus_request_irq(eq->ist, ehca_interrupt_eq,
+ 					  IRQF_DISABLED, "ehca_eq",
+ 					  (void *)shca);
+-		if (ret < 0)
++		if (ret2 < 0)
+ 			ehca_err(ib_dev, "Can't map interrupt handler.");
+ 
+ 		tasklet_init(&eq->interrupt_task, ehca_tasklet_eq, (long)shca);
+ 	} else if (type == EHCA_NEQ) {
+-		ret = ibmebus_request_irq(eq->ist, ehca_interrupt_neq,
++		ret2 = ibmebus_request_irq(eq->ist, ehca_interrupt_neq,
+ 					  IRQF_DISABLED, "ehca_neq",
+ 					  (void *)shca);
+-		if (ret < 0)
++		if (ret2 < 0)
+ 			ehca_err(ib_dev, "Can't map interrupt handler.");
+ 
+ 		tasklet_init(&eq->interrupt_task, ehca_tasklet_neq, (long)shca);
