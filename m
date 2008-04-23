@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYDWPN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYDWPOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbYDWPN0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 11:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYDWPNQ
+	id S1754556AbYDWPOl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 11:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYDWPOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 11:13:16 -0400
-Received: from outbound-mail-159.bluehost.com ([67.222.39.39]:53076 "HELO
-	outbound-mail-159.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751267AbYDWPNQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 11:13:16 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jean Delvare <jdelvare@suse.de>
-Subject: Re: PCI MSI breaks when booting with nosmp
-Date: Wed, 23 Apr 2008 08:12:49 -0700
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Tejun Heo <htejun@gmail.com>, Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jeff Garzik <jgarzik@pobox.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200804172140.02311.jdelvare@suse.de> <200804211414.45629.jbarnes@virtuousgeek.org> <200804231638.01479.jdelvare@suse.de>
-In-Reply-To: <200804231638.01479.jdelvare@suse.de>
+	Wed, 23 Apr 2008 11:14:32 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54940 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752177AbYDWPOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 11:14:31 -0400
+Date: Wed, 23 Apr 2008 16:14:29 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: wli@holomorphy.com, agl@us.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
+Message-ID: <20080423151428.GA15834@csn.ul.ie>
+References: <20080421183621.GA13100@csn.ul.ie> <87hcdsznep.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200804230812.49548.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <87hcdsznep.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, April 23, 2008 7:38 am Jean Delvare wrote:
-> > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> > index e6abe8a..7cdf930 100644
-> > --- a/arch/x86/kernel/smpboot.c
-> > +++ b/arch/x86/kernel/smpboot.c
-> > @@ -1138,14 +1138,10 @@ static int __init smp_sanity_check(unsigned
-> > max_cpus) "forcing use of dummy APIC emulation.\n");
-> >  		smpboot_clear_io_apic();
-> >  #ifdef CONFIG_X86_32
-> > -		if (nmi_watchdog == NMI_LOCAL_APIC) {
-> > -			printk(KERN_INFO "activating minimal APIC for"
-> > -					 "NMI watchdog use.\n");
-> > -			connect_bsp_APIC();
-> > -			setup_local_APIC();
-> > -			end_local_APIC_setup();
-> > -		}
-> > +		connect_bsp_APIC();
-> >  #endif
-> > +		setup_local_APIC();
-> > +		end_local_APIC_setup();
-> >  		return -1;
-> >  	}
->
-> Sorry for the late reply. I tested the patch above on top of 2.6.25-git4
-> and yes, it fixes my problem: booting with "nosmp" works now. Thanks!
->
-> Is this patch good enough to go upstream, and if so, through whose
-> tree? Adding Thomas Gleixner to Cc.
+On (23/04/08 15:55), Andi Kleen didst pronounce:
+> Mel Gorman <mel@csn.ul.ie> writes:
+> 
+> > MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time. This is
+> > so that all future faults will be guaranteed to succeed. Applications are not
+> > expected to use mlock() as this can result in poor NUMA placement.
+> >
+> > MAP_PRIVATE mappings do not reserve pages. This can result in an application
+> > being SIGKILLed later if a large page is not available at fault time. This
+> > makes huge pages usage very ill-advised in some cases as the unexpected
+> > application failure is intolerable. Forcing potential poor placement with
+> > mlock() is not a great solution either.
+> >
+> > This patch reserves huge pages at mmap() time for MAP_PRIVATE mappings similar
+> > to what happens for MAP_SHARED mappings. 
+> 
+> This will break all applications that mmap more hugetlbpages than they
+> actually use. How do you know these don't exist?
+> 
 
-Yeah I think the patch is reasonable, would be good to get feedback from 
-Thomas/Andi/Ingo though...
+If the large pages exist to satisfy the mapping, the application will not
+even notice this change. They will only break if the are creating larger
+mappings than large pages exist for (or can be allocated for in the event
+they have enabled dynamic resizing with nr_overcommit_hugepages). If they
+are doing that, they are running a big risk as they may get arbitrarily
+killed later. Sometimes their app will run, other times it dies. If more
+than one application is running on the system that is behaving like this,
+they are really playing with fire.
 
-Jesse
+With this change, a mmap() failure is a clear indication that the mapping
+would have been unsafe to use and they should try mmap()ing with small pages
+instead. 
+
+
+> > Opinions?
+> 
+> Seems like a risky interface change to me.
+> 
+
+Using MAP_PRIVATE at all is a faily major risk as it is. I am failing to
+see why risk of random SIGKILL is a desirable "feature".
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
