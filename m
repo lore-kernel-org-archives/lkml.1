@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYDWJ5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYDWJ45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYDWJ5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbYDWJwS
+	id S1758174AbYDWJ45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYDWJwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:52:18 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36915 "EHLO smtp5.pp.htv.fi"
+	Wed, 23 Apr 2008 05:52:09 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36898 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbYDWJwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:52:17 -0400
-Date: Wed, 23 Apr 2008 12:51:38 +0300
+	id S1752152AbYDWJwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:52:07 -0400
+Date: Wed, 23 Apr 2008 12:51:28 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       Grant Likely <grant.likely@secretlab.ca>, paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] char/xilinx_hwicap/ section fix
-Message-ID: <20080423095138.GA28933@cs181133002.pp.htv.fi>
+To: Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] net/mac80211/rx.c: fix off-by-one
+Message-ID: <20080423095128.GY28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,33 +25,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error:
-
-<--  snip  -->
-
-...
-  CC [M]  drivers/char/xilinx_hwicap/xilinx_hwicap.o
-...
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/xilinx_hwicap/xilinx_hwicap.c:806: error: hwicap_of_match causes a section type conflict
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/xilinx_hwicap/xilinx_hwicap.c:806: error: hwicap_of_match causes a section type conflict
-make[4]: *** [drivers/char/xilinx_hwicap/xilinx_hwicap.o] Error 1
-
-<--  snip  -->
+This patch fixes an off-by-one in net/mac80211/rx.c introduced by
+commit 8318d78a44d49ac1edf2bdec7299de3617c4232e
+(cfg80211 API for channels/bitrates, mac80211 and driver conversion)
+and spotted by the Coverity checker.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-2f0f31d8aa696ca6cc45ab865ec8c68b90cd0e46 diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 016f905..dfe6907 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -803,7 +803,7 @@ static int __devexit hwicap_of_remove(struct of_device *op)
- }
+--- linux-2.6/net/mac80211/rx.c.old	2008-04-22 02:23:40.000000000 +0300
++++ linux-2.6/net/mac80211/rx.c	2008-04-22 02:24:23.000000000 +0300
+@@ -2168,11 +2168,11 @@ void __ieee80211_rx(struct ieee80211_hw 
+ 	u32 pkt_load;
+ 	struct ieee80211_rate *rate = NULL;
+ 	struct ieee80211_supported_band *sband;
  
- /* Match table for of_platform binding */
--static const struct of_device_id __devinit hwicap_of_match[] = {
-+static const struct of_device_id __devinitconst hwicap_of_match[] = {
- 	{ .compatible = "xlnx,opb-hwicap-1.00.b", .data = &buffer_icap_config},
- 	{ .compatible = "xlnx,xps-hwicap-1.00.a", .data = &fifo_icap_config},
- 	{},
+ 	if (status->band < 0 ||
+-	    status->band > IEEE80211_NUM_BANDS) {
++	    status->band >= IEEE80211_NUM_BANDS) {
+ 		WARN_ON(1);
+ 		return;
+ 	}
+ 
+ 	sband = local->hw.wiphy->bands[status->band];
 
