@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbYDWJzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbYDWJ4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbYDWJzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYDWJvi
+	id S1757736AbYDWJ4K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYDWJvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:51:38 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36862 "EHLO smtp5.pp.htv.fi"
+	Wed, 23 Apr 2008 05:51:42 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59419 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755462AbYDWJvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:51:37 -0400
-Date: Wed, 23 Apr 2008 12:50:57 +0300
+	id S1755512AbYDWJvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:51:40 -0400
+Date: Wed, 23 Apr 2008 12:51:01 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
-Subject: [2.6 patch] serial/8250_gsc.c: add MODULE_LICENSE
-Message-ID: <20080423095057.GU28933@cs181133002.pp.htv.fi>
+To: Ron Rindjunsky <ron.rindjunsky@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: mac80211/wme.c: check-after-use
+Message-ID: <20080423095101.GV28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,24 +25,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the missing MODULE_LICENSE("GPL").
+The Coverity checker spotted the following check-after-use of the 
+"qdisc" variable in net/mac80211/wme.c introduced by
+commit 9e7234923789897858e1a475c579b5e2e6ad5b74
+(mac80211: A-MPDU Tx adding qdisc support):
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Alan Cox <alan@redhat.com>
+<--  snip  -->
 
----
+...
+void ieee80211_requeue(struct ieee80211_local *local, int queue)
+{
+        struct Qdisc *root_qd = local->mdev->qdisc_sleeping;
+        struct ieee80211_sched_data *q = qdisc_priv(root_qd);
+        struct Qdisc *qdisc = q->queues[queue];
+        struct sk_buff *skb = NULL;
+        u32 len = qdisc->q.qlen;    <------
 
-This patch has been sent on:
-- 14 Apr 2008
+        if (!qdisc || !qdisc->dequeue)
+                return;
+...
 
-c0d845566182db3fc650dcfa35700f84e82bbae7 diff --git a/drivers/serial/8250_gsc.c b/drivers/serial/8250_gsc.c
-index 4eb7437..0416ad3 100644
---- a/drivers/serial/8250_gsc.c
-+++ b/drivers/serial/8250_gsc.c
-@@ -119,3 +119,5 @@ int __init probe_serial_gsc(void)
- }
- 
- module_init(probe_serial_gsc);
-+
-+MODULE_LICENSE("GPL");
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
