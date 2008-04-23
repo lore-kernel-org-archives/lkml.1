@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYDWSJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYDWSPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbYDWSJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYDWSJi
+	id S1754975AbYDWSPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYDWSO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:09:38 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55512 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752810AbYDWSJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:09:37 -0400
-Date: Wed, 23 Apr 2008 11:09:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-In-Reply-To: <20080423155940.GY24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804231105090.12373@schroedinger.engr.sgi.com>
-References: <ea87c15371b1bd49380c.1208872277@duo.random>
- <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com>
- <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com>
- <20080423133619.GV24536@duo.random> <20080423144747.GU30298@sgi.com>
- <20080423155940.GY24536@duo.random>
+	Wed, 23 Apr 2008 14:14:58 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:43246 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbYDWSO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:14:57 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: "Grant Grundler" <grundler@google.com>
+Subject: Re: [PATCH] pci_try_set_mwi() in sata_promise
+Date: Wed, 23 Apr 2008 21:15:32 +0300
+User-Agent: KMail/1.9.7
+Cc: "Mikael Pettersson" <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       "Jeff Garzik" <jgarzik@pobox.com>, linux-ide@vger.kernel.org
+References: <200804222126.56321.mitov@issp.bas.bg> <200804231633.24603.mitov@issp.bas.bg> <da824cf30804230746o74e8de0bxbcb31d4b13e98b6@mail.gmail.com>
+In-Reply-To: <da824cf30804230746o74e8de0bxbcb31d4b13e98b6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804232115.33080.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
+On Wednesday 23 April 2008 05:46:49 pm Grant Grundler wrote:
+> On Wed, Apr 23, 2008 at 6:33 AM, Marin Mitov <mitov@issp.bas.bg> wrote:
+> ...
+> >  > 2. What improvement does that pci_try_set_mwi() cause? Speed? Fewer errors?
+> >
+> >  May be speed, but practically hardly observable.
+> 
+> I expect the difference to be in available memory BW.
+> MWI (Memory Write Invalidate) allows the IO controller to write
+> partial cachlines without having to do a read/modify/write sequence.
 
-> Implement unregister but it's not reliable, only ->release is reliable.
+My understanding of MWI is different. It concerns full cache line writes.
+In that case the CPU can invalidate the cache line (without flushing it to 
+RAM). While in case of partial cache line writes, the processor should 
+flush the cache line before the controller writes to corresponding cached 
+address and then the controller finishes its partial cache line write to RAM.
+In case MWI is NOT enables the CPU should flushe every cache line  touched
+by the controller's DMA machine, nevertheless it will be overwritten latter.
 
-Why is there still the hlist stuff being used for the mmu notifier list? 
-And why is this still unsafe?
+But, as usual, I could be wrong :-)
 
-There are cases in which you do not take the reverse map locks or mmap_sem
-while traversing the notifier list?
+> R/W/M means the cacheline has to cross the memory bus twice.
+> The difference in performance will depend on how often the
+> Promise SATA controller was doing partial cachline
+> transactions with the wrong cacheline size.
+> 
+> This should be measurable if you run a memory test at the same time
+> as you stress the SATA controller with fio. Re-read the same 128KB block
+> repeatedly from the Promise controller (I'm expecting that to be cached)
+> and measure the available memory BW (e.g. see lmbench for a memtest).
+> Repeat with MWI enabled.
+> 
+> 
+> >  > 3. Why call pci_try_set_mwi()? Can't you set the cache line size directly?
+> >
+> >  pci_set_cacheline_size() is NOT exported, while pci_try_set_mwi() IS and
+> > sets (as a side effect) the cache line size.
+> 
+> Setting the cachline size only makes sense if MWI is enabled.
 
-This hope for inclusion without proper review (first for .25 now for .26) 
-seems to interfere with the patch cleanup work and cause delay after delay 
-for getting the patch ready. On what basis do you think that there is a 
-chance of any of these patches making it into 2.6.26 given that this 
-patchset has never been vetted in Andrew's tree?
+Agreed.
 
+> Drivers should not longer directly set the cacheline size since it might
+> not be what they think it is.
+
+That is the reason why pci_set_mwi() and pci_try_set_mwi() exist.
+
+Marin Mitov
+
+> 
+> hth,
+> grant
+> 
 
 
