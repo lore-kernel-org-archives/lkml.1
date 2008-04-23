@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbYDWO3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYDWOgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140AbYDWO3e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 10:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYDWO30
+	id S1757336AbYDWOgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 10:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYDWOgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 10:29:26 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:31523 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753825AbYDWO30 (ORCPT
+	Wed, 23 Apr 2008 10:36:20 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49943 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbYDWOgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 10:29:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mQ1xia2/LyjHTxOB1yn7GtckkBPyzj+4jtJ/7tOBJVVOU40nU6NVtDds52+ucv3NgCYfW0FEV0gpOY7p8WkYagmrqi743iaY5XSBz3WqBjgsMeIHrv62DqjcjEoXYjpJNjF4vZNNzd30VFKWHgdh8GfsRq/uwDghn/EehHX70Jk=
-Message-ID: <b647ffbd0804230729x70966c0ak91b8f6638282a443@mail.gmail.com>
-Date: Wed, 23 Apr 2008 16:29:23 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Subject: Re: [PATCH 1/2] sched: fix RT task-wakeup logic
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20080423111329.4981.88455.stgit@novell1.haskins.net>
+	Wed, 23 Apr 2008 10:36:20 -0400
+Date: Wed, 23 Apr 2008 09:36:10 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
+Message-ID: <20080423143610.GA13718@sergelap.austin.ibm.com>
+References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org> <20080422142539.GA12623@sergelap.austin.ibm.com> <m1hcdtsovg.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080423111313.4981.37345.stgit@novell1.haskins.net>
-	 <20080423111329.4981.88455.stgit@novell1.haskins.net>
+In-Reply-To: <m1hcdtsovg.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/23 Gregory Haskins <ghaskins@novell.com>:
-> Dmitry Adamushko pointed out a logic error in task_wake_up_rt() where we
->  will always evaluate to "true".  You can find the thread here:
->
->  http://lkml.org/lkml/2008/4/22/296
->
->  In reality, we only want to try to push tasks away when a wake up request is
->  not going to preempt the current task.  So lets fix it.
->
->  Note: We introduce test_tsk_need_resched() instead of open-coding the flag
->  check so that the merge-conflict with -rt should help remind us that we
->  may need to support NEEDS_RESCHED_DELAYED in the future, too.
->
->  Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->  CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> >> 
+> >> I'm hoping to be able to get back at this in the week or so as things
+> >> settle down from my move.  My last patches should be in my proof of
+> >> concept network namespace tree, if they don't show up elsewhere.
+> >
+> > Is that the tree I'd get from
+> >
+> > git-fetch
+> > git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-netns.git
+> > master:ebieder.master
+> 
+> Yes.
+> 
+> > ?  So I'd add a user_ns to the struct sysfs_tag_info?
+> >
+> > If so I'll give it a whirl.
+> 
+> Sounds good.  My apologies I keep being almost on the verge
+> of getting someplace.
 
-Acked-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Ok I've got the sysfs relevant patches ported to 2.6.25, and am looking
+at how to extend it to handle /sys/kernel/uids.  You have tagging tied
+intimately to struct class.  So the question is should I generalize the
+taggint to deal with kobjects instead, or create a struct class user
+and make /sys/kernel/uids a symlink to /sys/class/user/uids?
 
+Opinions?
 
-I have to look at the second patch more thoroughly... but I guess,
-we'd be better off opting for something more simple/less complex (it
-looks a bit heavy at the first glance).
+thanks,
+-serge
 
-This patch already fixes an 'obvious' problem in task_wake_up_rt() and
-narrows down the scope of the original problem.
+PS: If you want me to post the patchset before handling userns I can do
+that, otherwise I was just going to wait until I'm done with userns.
 
-For the original scenario (as well as for its variants with SCHED_FIFO
-and != priorities) push_rt_tasks() is 'delayed' untill a reschedule
-(which is already pending and should take place shortly... provided
-'bounded/short' latencies :-)
-
-For T0,T1 having equal prios + SCHED_RR, T1 (which can't be migrated
-due to its affinity) will wait till T0's timeslice expires
-and for SCHED_FIFO -- till T0 releases a CPU.
-
-The 'optimal' way would be moving T0 immediatelly off this cpu.
-
-
--- 
-Best regards,
-Dmitry Adamushko
