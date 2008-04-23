@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYDWQHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbYDWQP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbYDWQHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 12:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbYDWQGs
+	id S1752767AbYDWQP5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 12:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYDWQPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 12:06:48 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59807 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756293AbYDWQGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 12:06:48 -0400
-Date: Wed, 23 Apr 2008 19:06:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Roland McGrath <roland@redhat.com>, ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: mips ptrace compat build error
-Message-ID: <20080423160607.GS28933@cs181133002.pp.htv.fi>
+	Wed, 23 Apr 2008 12:15:47 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:43731
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbYDWQPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 12:15:47 -0400
+Date: Wed, 23 Apr 2008 18:15:45 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
+	lock (first and not last
+Message-ID: <20080423161544.GZ24536@duo.random>
+References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random> <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com> <20080422224048.GR24536@duo.random> <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com> <20080423134427.GW24536@duo.random> <20080423154536.GV30298@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080423154536.GV30298@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit e16b27816462de700f9508d86954410c41105dc2
-(ptrace: compat_ptrace_request siginfo) causes
-the following build error with CONFIG_COMPAT=y
-on mips:
+On Wed, Apr 23, 2008 at 10:45:36AM -0500, Robin Holt wrote:
+> XPMEM has passed all regression tests using your version 12 notifiers.
 
-<--  snip   -->
+That's great news, thanks! I'd greatly appreciate if you could test
+#v13 too as I posted it. It already passed GRU and KVM regressions
+tests and it should work fine for XPMEM too. You can ignore the purely
+cosmetical error I managed to introduce in mm_lock_cmp (I implemented
+a BUG_ON that would have trigger if that wasn't a purely cosmetical
+issue, and it clearly doesn't trigger so you can be sure it's
+only cosmetical ;).
 
-...
-  LD      .tmp_vmlinux1
-kernel/built-in.o: In function `$L181':
-ptrace.c:(.text+0x1d380): undefined reference to `copy_siginfo_from_user32'
-ptrace.c:(.text+0x1d380): relocation truncated to fit: R_MIPS_26 against `copy_siginfo_from_user32'
-make[1]: *** [.tmp_vmlinux1] Error 1
+Once I get confirmation that everyone is ok with #v13 I'll push a #v14
+before Saturday with that cosmetical error cleaned up and
+mmu_notifier_unregister moved at the end (XPMEM will have unregister
+don't worry). I expect the 1/13 of #v14 to go in -mm and then 2.6.26.
 
-<--  snip  -->
+> I have a bug in xpmem which shows up on our 8x oversubscription tests,
+> but that is clearly my bug to figure out.  Unfortunately it only shows
 
-cu
-Adrian
+This is what I meant.
 
--- 
+As opposed we don't have any known bug left in this area, infact we
+need mmu_notifiers to _fix_ issues I identified that can't be fixed
+efficiently without mmu notifiers, and we need the mmu notifier to go
+productive ASAP.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> up on a 128 processor machine so I have 1024 stack traces to sort
+> through each time it fails.  Does take a bit of time and a lot of
+> concentration.
 
+Sure, hope you find it soon!
+
+> SGI is under an equally strict timeline.  We really needed the sleeping
+> version into 2.6.26.  We may still be able to get this accepted by
+> vendor distros if we make 2.6.27.
+
+I don't think vendor distro are less likely to take the patches 2-12
+if 1/N (aka mmu-notifier-core) is merged in 2.6.26 especially at the
+light of kabi.
