@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYDWNai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYDWNdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbYDWNai (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 09:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYDWNa2
+	id S1755709AbYDWNdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 09:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYDWNdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 09:30:28 -0400
-Received: from rtr.ca ([76.10.145.34]:2097 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbYDWNa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 09:30:27 -0400
-Message-ID: <480F39F0.7050207@rtr.ca>
-Date: Wed, 23 Apr 2008 09:30:24 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 23 Apr 2008 09:33:11 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57440
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbYDWNdK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 09:33:10 -0400
+Date: Wed, 23 Apr 2008 15:33:03 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 00 of 12] mmu notifier #v13
+Message-ID: <20080423133303.GU24536@duo.random>
+References: <patchbomb.1208872276@duo.random> <20080422182213.GS22493@sgi.com> <20080422184335.GN24536@duo.random> <20080422194223.GT22493@sgi.com> <Pine.LNX.4.64.0804221328400.3640@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Tejun Heo <htejun@gmail.com>, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi> <480DE3C4.5@ru.mvista.com> <480DE6F5.8060403@gmail.com> <480DE9E8.2070809@ru.mvista.com> <480DEB1F.5060500@gmail.com> <480DF7B7.9030000@rtr.ca> <480DF876.7070800@gmail.com> <480DF9BD.1080104@rtr.ca> <480DFE76.8000809@ru.mvista.com> <480E345D.9090406@ru.mvista.com> <480E9C15.6080103@gmail.com> <480EB930.1040308@garzik.org>
-In-Reply-To: <480EB930.1040308@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804221328400.3640@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Tejun Heo wrote:
->> Aik... We can do s/sff/tf/ and leave bmdma alone to avoid even more 
->> confusion but sff has meant tf base interface for quite some time now 
->> in libata and I think it'll be better to remember that sff is the new 
->> tf. Sorry about the mess.
-> 
-> 
-> This renaming was discussed at the time on lkml and linux-ide, the 
-> patches and git pushes were CC'd, and I do not recall these complaints 
-> being raised at the time.
-> 
-> At this point, it's too ingrained in libata.  Another rename would IMO 
-> just cause more needless churn.
-..
+On Tue, Apr 22, 2008 at 01:30:53PM -0700, Christoph Lameter wrote:
+> One solution would be to separate the invalidate_page() callout into a
+> patch at the very end that can be omitted. AFACIT There is no compelling 
+> reason to have this callback and it complicates the API for the device 
+> driver writers. Not having this callback makes the way that mmu notifiers 
+> are called from the VM uniform which is a desirable goal.
 
-I heartily agree.
+I agree that the invalidate_page optimization can be moved to a
+separate patch. That will be a patch that will definitely alter the
+API in a not backwards compatible way (unlike 2-12 in my #v13, which
+are all backwards compatible in terms of mmu notifier API).
 
-Besides, we all seem to understand that -sff means the register level
-programming interface for ATA, with and without the old style bmdma.
+invalidate_page is beneficial to both mmu notifier users, and a bit
+beneficial to the do_wp_page users too. So there's no point to remove
+it from my mmu-notifier-core as long as the mmu-notifier-core is 1/N
+in my patchset, and N/N in your patchset, the differences caused by
+that ordering difference are a bigger change than invalidate_page
+existing or not.
 
-As opposed to some funky modern host queue style of interface.
-
-It's as good a split as any.
-
-cheers
+As I expected invalidate_page provided significant benefits (not just
+to GRU but to KVM too) without altering the locking scheme at all,
+this is because the page fault handler has to notice if begin->end
+both runs anyway after follow_page/get_user_pages. So it's a no
+brainer to keep and my approach will avoid a not backwards compatible
+breakage of the API IMHO. Not a big deal, nobody can care if the API
+will change, it will definitely change eventually, it's a kernel
+internal one, but given I've already invalidate_page in my patch
+there's no reason to remove it as long as mmu-notifier-core remains
+N/N on your patchset.
