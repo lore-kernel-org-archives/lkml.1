@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYDWIzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYDWI4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYDWIzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 04:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYDWIzL
+	id S1753996AbYDWI4P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 04:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYDWI4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 04:55:11 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58415 "EHLO mx2.suse.de"
+	Wed, 23 Apr 2008 04:56:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:51914 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991AbYDWIzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 04:55:10 -0400
-Date: Wed, 23 Apr 2008 10:55:08 +0200
-Message-ID: <s5hhcdtdk7n.wl%tiwai@suse.de>
+	id S1751617AbYDWIz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 04:55:59 -0400
+Date: Wed, 23 Apr 2008 10:55:57 +0200
+Message-ID: <s5hfxtddk6a.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp causes driver conflict)
-In-Reply-To: <480E2666.9080609@aknet.ru>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<20080419021343.GA3503@nineveh.local>
-	<20080418200237.b5a9e805.akpm@linux-foundation.org>
-	<20080419041429.GA8508@anvil.corenet.prv>
-	<20080418212934.bbe84ee2.akpm@linux-foundation.org>
-	<s5hwsmrcvow.wl%tiwai@suse.de>
-	<480CD281.6050902@aknet.ru>
-	<s5hd4oib3qt.wl%tiwai@suse.de>
-	<480E2666.9080609@aknet.ru>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] make alsa use corect patch for Realtek ALC889A
+In-Reply-To: <1208897629.7522.6.camel@localhost>
+References: <1208017043.1514.50.camel@localhost>
+	<s5hbq4af4h3.wl%tiwai@suse.de>
+	<s5htzi1eur8.wl%tiwai@suse.de>
+	<1208483526.14146.29.camel@localhost>
+	<s5h3apjfox5.wl%tiwai@suse.de>
+	<1208897629.7522.6.camel@localhost>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -34,37 +31,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Tue, 22 Apr 2008 21:54:46 +0400,
-Stas Sergeev wrote:
+At Tue, 22 Apr 2008 22:53:49 +0200,
+Kasper Sandberg wrote:
 > 
-> Hello.
+> On Fri, 2008-04-18 at 12:16 +0200, Takashi Iwai wrote:
+> > At Fri, 18 Apr 2008 03:52:06 +0200,
+> > Kasper Sandberg wrote:
+> > > 
+> > > On Wed, 2008-04-16 at 16:31 +0200, Takashi Iwai wrote:
+> > > > At Wed, 16 Apr 2008 13:01:44 +0200,
+> > > > I wrote:
+> > > > > 
+> > > > > At Sat, 12 Apr 2008 18:17:23 +0200,
+> > > > > Kasper Sandberg wrote:
+> > > > > > 
+> > > > > > Hello..
+> > > > > > I have a gigabyte X48-DQ6 motherboard, specification url:
+> > > > > > http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ClassValue=Motherboard&ProductID=2763&ProductName=GA-X48-DQ6
+> > > > > > they clearly state it uses a realtek alc 889a.
+> > > > > > 
+> > > > > > google around, it seems lots of people which has this chip gets it
+> > > > > > detected as alc885, including me.
+> > > > > > 
+> > > > > > now, audio works (atleast analog out, havent tested the rest), allthough
+> > > > > > i couldnt get the supposed feature of separate channel to front panel to
+> > > > > > work(doesent matter much to me though)
+> > > > > > 
+> > > > > > interrested in fixing this just for the sake of fixing, i ventured into
+> > > > > > patch_realtek.c, and found the structure that defined patches for hda
+> > > > > > audio.
+> > > > > > 
+> > > > > > i inspected my /proc/asound/card0/codec#2 file (only one except the id
+> > > > > > file), and found the following information:
+> > > > > > Codec: Realtek ALC885
+> > > > > > Address: 2
+> > > > > > Vendor Id: 0x10ec0885
+> > > > > > Subsystem Id: 0x1458a002
+> > > > > > Revision Id: 0x100103
+> > > > > > 
+> > > > > > i then modified patch_realtek.c to detect mine as ALC889A, and assign
+> > > > > > the correct patch to it (well, the one used for 889).
+> > > > > > 
+> > > > > > After rebuilding, it now uses patch 883 instead of 882 as it did before.
+> > > > > > i dont appear to have recieved any separate front panel channel,
+> > > > > > however, it still seems more correct now, and is probably wise to keep
+> > > > > > for when 883 is improved to support the hardware fully.
+> > > > > > 
+> > > > > > the only thing i notice has changed, is the message i get from the
+> > > > > > kernel, before i changed, it said:
+> > > > > > hda_codec: Unknown model for ALC882, trying auto-probe from BIOS...
+> > > > > > now it says:
+> > > > > > hda_codec: Unknown model for ALC883, trying auto-probe from BIOS...
+> > > > > > but i guess if it has to spew out such a line, it now spews out the
+> > > > > > correct one.
+> > > > > > 
+> > > > > > analog audio works, so thats fine..
+> > > > > > 
+> > > > > > the patch(i apologize if my mailer messes up whitespace, but its so
+> > > > > > simple that it doesent matter):
+> > > > > 
+> > > > > The change looks OK (although I'd move the line just before ALC885
+> > > I wasnt sure how it was evaluated, i dont really know alsa alot, so i
+> > > wanted to make sure my entry got evaluated first.
+> > > > > entry).  I have no datasheet of ALC889A, but rumor says that it's
+> > > > > almost compatible with ALC888.  So patch_alc883 seems to be a better
+> > > > > choice than now.
+> > > > > 
+> > > > > I'll fix it on ALSA tree now.
+> > > > 
+> > > > On the second thought, replacing to patch_alc883 may break many
+> > > > devices with preset models because patch_alc882() and patch_alc883()
+> > > > have different model tables.  So, I applied the patch below in
+> > > > addition.
+> > > > 
+> > > > BTW, could you show your codec#* files?  This will be really helpful
+> > > > to identify problems.
+> > > 
+> > > Yes, sorry for delay, for some reason my mail client decided not to
+> > > update the view.. weird..
+> > > 
+> > > You should know that this is WITH my modification..
+> > > 
+> > > About problems.. well.. now that you do mention it, when i play
+> > > something without a .asoundrc, i get:
+> > > ALSA lib dlmisc.c:118:(snd_dlsym_verify) unable to verify version for
+> > > symbol _snd_pcm_empty_open
+> > > ALSA lib pcm.c:2108:(snd_pcm_open_conf) symbol _snd_pcm_empty_open is
+> > > not defined inside [builtin]
+> > > No default libao driver available.
+> > 
+> > It's a bug of alsa-lib that was already fixed in the recent version.
+> > Nothing to do with kernel.
+> > 
+> > > Now as far as i know, the gigabyte site(and realteks site) says that
+> > > this ALC889A should have 7.1 surround, with 2 separate channels of
+> > > streaming for front. I connected the hd audio connector for front panel
+> > > on motherboard.. but well.. the same thing comes out, and i see no
+> > > special channels for it.. BUT, one thing i find odd is, if i play 2
+> > > channel stuff, it also comes out of all the other channels, eg the
+> > > surround channels.. :)
+> > 
+> > You can open 4, 6 or 8 channels with the device.  But, the default PCM
+> > is set up only for two channels due to soft-mixing.  You can use
+> > special PCM names such as "surround51" to open for 5.1 output
+> > instead.  Again, no kernel issue.
 > 
-> Takashi Iwai wrote:
-> > Err, no, this wasn't merged to sound git tree because apparently the
-> > patch is to 2.6.22 and you didn't resubmit it...
-> That's simply because the old one
-> applies fine. :)
-> 
-> > No, I gave no ACK yet.
-> OK, sorry.
-> 
-> > I'd rather add a new line with a single "depends on SND_PCSP=n".
-> > You see a clear difference in the art of dependencies, one for
-> > architectures and one for driver-specific.
-> Done.
-> 
-> ---
-> - Update CREDITS with the pc-speaker
-> driver authors.
-> - Prevent pcspkr from being built together
-> with snd-pcsp.
-> 
-> Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+> if i open hw:0,0, and play only 2 channels, it comes out of all 8
+> channels.. but thats fine.. what i meant that does NOT work, is that
+> according to gigabyte, i actually should have 10 channels, 7.1 for the
+> back panel connectors, and two entirely separate for the front panel,
+> but the front panel just plays same as back panel stereo (green)
+> connector.
 
-Thanks, applied to my git tree.
-	git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+Then some output route is missing either in the BIOS setting or in the
+driver setup.
 
-Meanwhile, we need to add a similar depenency to snd-pcsp as well, no?
+> Btw, i now inspected the motherboard, and it is indeed ALC889A, atleast
+> if the label on the chip is to be trusted..
+
+OK, thanks, that's good to know.
 
 
 Takashi
