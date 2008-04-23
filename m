@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758438AbYDWFVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYDWFV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758438AbYDWFVY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 01:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYDWFVO
+	id S1754693AbYDWFV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 01:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYDWFVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 01:21:14 -0400
-Received: from smtp.enter.net ([216.193.128.24]:1661 "EHLO smtp.enter.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbYDWFVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 01:21:13 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Subject: Re: x86: 4kstacks default
-Date: Wed, 23 Apr 2008 01:21:10 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Romano Giannetti <romanol@upcomillas.es>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <1208888454.10279.7.camel@localhost> <200804230703.11816.vda.linux@googlemail.com>
-In-Reply-To: <200804230703.11816.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 23 Apr 2008 01:21:46 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52028 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYDWFVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 01:21:45 -0400
+Date: Wed, 23 Apr 2008 08:21:42 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Pete Zaitcev <zaitcev@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
+       clameter@sgi.com
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+In-Reply-To: <20080422143253.20a8a410.zaitcev@redhat.com>
+Message-ID: <Pine.LNX.4.64.0804230819100.24771@sbz-30.cs.Helsinki.FI>
+References: <200804212310.41729.elendil@planet.nl> <20080422134034.GF7311@elte.hu>
+ <20080422143253.20a8a410.zaitcev@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804230121.11004.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008 01:03:11 Denys Vlasenko wrote:
-> On Tuesday 22 April 2008 20:20, Romano Giannetti wrote:
-> > On Sun, 2008-04-20 at 11:44 -0400, Daniel Hazelton wrote:
-> > > Since the second-most-common reason for stack overages is
-> > > ndiswrapper... Well, with there being so much more hardware now
-> > > supported directly by the linux kernel...
-> >
-> > How would I like you being right... Atheros AR5008, AR5414 PHY, "not yet
-> > here". It's almost one year now since I bought this laptop, and till now
-> > it's the cable or ndiswrapper. But yes, it's going better. For my first
-> > wifi laptop I waited two and a half years, now it seems that in a bit
-> > more than one there will be an open source driver...
-> >
-> > I know all the trouble ndiswrapper signify. But I see also that people
-> > around me with a laptop and linux use more ndiswrapper than a real
-> > driver, so... be gentle with it.
->
-> Nobody knows how much potential development is not done because
-> "you can make your wifi work with ndiswrapper".
+Hi Pete,
 
-I've got to agree with that sentiment. Once a working solution is found, no 
-matter how crappy, it seems that almost all development stops.
+On Tue, 22 Apr 2008 15:40:34 +0200, Ingo Molnar <mingo@elte.hu> wrote:
+> > Cc:-ing USB folks as the kmem_cache_destroy() comes from 
+> > drivers/usb/mon/mon_text.c.
 
-DRH
+On Tue, 22 Apr 2008, Pete Zaitcev wrote:
+> Thanks, Ingo, I'll look at it right away. It's difficult to
+> believe that usbmon would do something so stupid but stranger
+> things happened. Actually, I used an explicit SLAB cache and
+> not kmalloc specifically because SLAB catched this condition.
+> It would be strange if SLAB didn't and SLUB started catching it.
+> Anyway we'll see soon enough.
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+SLAB checks this too so you should get a similar error.
+
+		Pekka
