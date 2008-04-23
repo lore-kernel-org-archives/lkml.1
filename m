@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbYDWGTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751166AbYDWGcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761405AbYDWGTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYDWGTk
+	id S1751166AbYDWGcN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbYDWGcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:19:40 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55750 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbYDWGTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:19:39 -0400
-Message-ID: <480ED4D8.5070607@cn.fujitsu.com>
-Date: Wed, 23 Apr 2008 14:19:04 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: akpm@linux-foundation.org, Hugh Dickins <hugh@veritas.com>,
-       Mel Gorman <mel@csn.ul.ie>, balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v3
-References: <20080418161522.GB9147@csn.ul.ie>	<48080706.50305@cn.fujitsu.com>	<48080930.5090905@cn.fujitsu.com>	<48080B86.7040200@cn.fujitsu.com>	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>	<20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0804211250000.16476@blonde.site>	<20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com> <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Apr 2008 02:32:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60171 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbYDWGcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:32:04 -0400
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, sam@ravnborg.org
+In-Reply-To: <20080423060725.GT12774@kernel.dk>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com>
+	 <1208890227-24808-2-git-send-email-jens.axboe@oracle.com>
+	 <1208895423.7115.290.camel@twins>  <20080423060725.GT12774@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 08:32:00 +0200
+Message-Id: <1208932320.7115.319.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote::
-> fixed typos.
-> ==
-> usemap must be initialized only when pfn is within zone.
-> If not, it corrupts memory.
+On Wed, 2008-04-23 at 08:07 +0200, Jens Axboe wrote:
+> On Tue, Apr 22 2008, Peter Zijlstra wrote:
+> > On Tue, 2008-04-22 at 20:50 +0200, Jens Axboe wrote:
+> > 
+> > > +int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+> > > +			     int retry, int wait)
+> > > +{
+> > > +	unsigned long flags;
+> > > +	/* prevent preemption and reschedule on another processor */
+> > > +	int me = get_cpu();
+> > > +
+> > > +	/* Can deadlock when called with interrupts disabled */
+> > > +	WARN_ON(wait && irqs_disabled());
+> > 
+> > With this fallback to wait the above condition isn't sufficient.
 > 
-> And this patch also reduces the number of calls to set_pageblock_migratetype()
-> from
-> 	(pfn & (pageblock_nr_pages -1)
-> to
-> 	!(pfn & (pageblock_nr_pages-1)
-> it should be called once per pageblock.
-> 
-> Changelog.
-> v2->v3
->  - Fixed typos.
-> v1->v2
->  - Fixed boundary check.
->  - Move calculation of pointer for zone struct to out of loop.
+> What deadlock are you concerned with here? Would making cfd_fallback
+> per-cpu make you feel better?
 
-I noticed v3 takes "zone" instead of "zid" in the code line 
-"z = &NODE_DATA(nid)->node_zones[zone];".
-I tested v3, it works well now.
+  CPU0					  CPU1
 
-Thanks,
--Shi
+local_irq_disable()			local_irq_disable()
+
+					smp_call_function_single(0,..,0)
+					  test_and_set_bit_lock()
+					  send IPI
+smp_call_function_single(1,..,0)
+  while(test_and_set_bit_lock())
+    cpu_relax();
+
+
+This will spin forever, because it needs to handle the IPI in order to
+free the cfd_fallback thingy, but can't for its waiting for it.
+
+That particular deadlock can indeed be solved by making cfd_fallback
+per-cpu.
+
+But if you were to use multiple smp_call_function*() calls under a
+single IRQ disabled, then that would not be sufficient. Now I can't
+directly come up with a good reason to need to do that, but still.
+
+You'd need somethine like:
+
+local_irq_disable()
+
+smp_call_function_single(n, func_a,..,0)
+smp_call_function_single(m, func_b,..,0)
+
+local_irq_enable()
+
+And invite 3 cpus to the party while under memory pressure and you get
+deadlock potential.
+
+[ if it were both the same function, you'd want to use
+  smp_call_function() and provide a mask; if it were the same cpu you'd
+  want to call a function doing both ]
+
+
 
