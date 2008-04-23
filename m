@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbYDWJyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbYDWJzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbYDWJyp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbYDWJv2
+	id S1751652AbYDWJzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYDWJve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:51:28 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59389 "EHLO smtp6.pp.htv.fi"
+	Wed, 23 Apr 2008 05:51:34 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59410 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755326AbYDWJv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:51:27 -0400
-Date: Wed, 23 Apr 2008 12:50:47 +0300
+	id S1755398AbYDWJvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:51:33 -0400
+Date: Wed, 23 Apr 2008 12:50:53 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: chris@zankel.net
+To: chris@zankel.net, p_gortmaker@yahoo.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xtensa: remove the nonexisting highmem support
-Message-ID: <20080423095047.GR28933@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] xtensa: don't offer CONFIG_GEN_RTC
+Message-ID: <20080423095053.GT28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,29 +23,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to compile an xtensa kernel with CONFIG_HIGHMEM=y fails early and 
-hard:
+This patch fixes the following compile error:
 
 <--  snip  -->
 
 ...
-  CC      init/main.o
-In file included from 
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:10,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/buffer_head.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:53:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h: In function 'clear_user_highpage':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: implicit declaration of function 'kmap_atomic'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: 'KM_USER0' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:68: error: for each function it appears in.)
+  CC [M]  drivers/char/genrtc.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/genrtc.c:58:21: error: asm/rtc.h: No such file or directory
 ...
-make[2]: *** [init/main.o] Error 1
+make[3]: *** [drivers/char/genrtc.o] Error 1
 
 <--  snip  -->
-
-This patch removes all traces of highmem support from the
-xtensa port - highmem support was simply nonexisting.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -54,72 +42,19 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 14 Apr 2008
 
- arch/xtensa/Kconfig          |    3 ---
- arch/xtensa/mm/init.c        |    8 --------
- include/asm-xtensa/highmem.h |   17 -----------------
- 3 files changed, 28 deletions(-)
+8efde38c14112370e1a2cdbe64a99c0c50f18f4f diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 5dc5794..da98c9a 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -776,7 +776,7 @@ config SGI_IP27_RTC
+ 
+ config GEN_RTC
+ 	tristate "Generic /dev/rtc emulation"
+-	depends on RTC!=y && !IA64 && !ARM && !M32R && !MIPS && !SPARC && !FRV && !S390 && !SUPERH && !AVR32
++	depends on RTC!=y && !IA64 && !ARM && !M32R && !MIPS && !SPARC && !FRV && !S390 && !SUPERH && !AVR32 && !XTENSA
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/rtc with
+ 	  major number 10 and minor number 135 using mknod ("man mknod"), you
 
-4593b43e8e6c763d90a4f45c9f2db8750e0fa9c7 diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index 9fc8551..09dafbc 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -97,9 +97,6 @@ config MATH_EMULATION
- 	help
- 	Can we use information of configuration file?
- 
--config HIGHMEM
--	bool "High memory support"
--
- endmenu
- 
- menu "Platform options"
-diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
-index 81d0560..89531ff 100644
---- a/arch/xtensa/mm/init.c
-+++ b/arch/xtensa/mm/init.c
-@@ -169,10 +169,6 @@ void __init paging_init(void)
- 	for (i = 1; i < MAX_NR_ZONES; i++)
- 		zones_size[i] = 0;
- 
--#ifdef CONFIG_HIGHMEM
--	zones_size[ZONE_HIGHMEM] = max_pfn - max_low_pfn;
--#endif
--
- 	/* Initialize the kernel's page tables. */
- 
- 	memset(swapper_pg_dir, 0, PAGE_SIZE);
-@@ -222,10 +218,6 @@ void __init mem_init(void)
- 	high_memory = (void *) __va(max_mapnr << PAGE_SHIFT);
- 	highmemsize = 0;
- 
--#ifdef CONFIG_HIGHMEM
--#error HIGHGMEM not implemented in init.c
--#endif
--
- 	totalram_pages += free_all_bootmem();
- 
- 	reservedpages = ram = 0;
-diff --git a/include/asm-xtensa/highmem.h b/include/asm-xtensa/highmem.h
-deleted file mode 100644
-index 0a046ca..0000000
---- a/include/asm-xtensa/highmem.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--/*
-- * include/asm-xtensa/highmem.h
-- *
-- * This file is subject to the terms and conditions of the GNU General
-- * Public License.  See the file "COPYING" in the main directory of
-- * this archive for more details.
-- *
-- * Copyright (C) 2003 - 2005 Tensilica Inc.
-- */
--
--#ifndef _XTENSA_HIGHMEM_H
--#define _XTENSA_HIGHMEM_H
--
--extern void flush_cache_kmaps(void);
--
--#endif
--
+
 
