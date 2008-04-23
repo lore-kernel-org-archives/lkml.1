@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYDWPhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYDWPiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbYDWPhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 11:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYDWPhk
+	id S1754835AbYDWPiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 11:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYDWPhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 11:37:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53053 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbYDWPhk (ORCPT
+	Wed, 23 Apr 2008 11:37:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51268 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbYDWPhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 11:37:40 -0400
-Date: Wed, 23 Apr 2008 17:43:23 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andi Kleen <andi@firstfloor.org>, wli@holomorphy.com, agl@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
-Message-ID: <20080423154323.GA29087@one.firstfloor.org>
-References: <20080421183621.GA13100@csn.ul.ie> <87hcdsznep.fsf@basil.nowhere.org> <20080423151428.GA15834@csn.ul.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Apr 2008 11:37:54 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=f10g2kE7lP08eFJwkq5HZaoqfRpygJvVwt15kJLq2Ag3RSFDSUNiv6Vpfkf3miwVl
+	hZduCoAIs1QDHXT4T+nfA==
+Message-ID: <6599ad830804230837x48860632m7c41e425458ba6b3@mail.gmail.com>
+Date: Wed, 23 Apr 2008 08:37:45 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Cedric Le Goater" <clg@fr.ibm.com>
+Subject: Re: [RFC PATCH 5/5] Add a Signal Control Group Subsystem
+Cc: "Matt Helsley" <matthltc@us.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Oren Laadan" <orenl@cs.columbia.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Pavel Machek" <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <480F5321.9030008@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080423151428.GA15834@csn.ul.ie>
-User-Agent: Mutt/1.4.2.1i
+References: <20080423142517.062433911@us.ibm.com>
+	 <20080423142518.703428301@us.ibm.com> <480F5321.9030008@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If the large pages exist to satisfy the mapping, the application will not
-> even notice this change. They will only break if the are creating larger
-> mappings than large pages exist for (or can be allocated for in the event
-> they have enabled dynamic resizing with nr_overcommit_hugepages). If they
-> are doing that, they are running a big risk as they may get arbitrarily
-> killed later. 
+On Wed, Apr 23, 2008 at 8:17 AM, Cedric Le Goater <clg@fr.ibm.com> wrote:
+> Hello Matt !
+>
+>  > Add a signal control group subsystem that allows us to send signals to all tasks
+>  > in the control group by writing the desired signal(7) number to the kill file.
+>  >
+>  > NOTE: We don't really need per-cgroup state, but control groups doesn't support
+>  > stateless subsystems yet.
+>  >
+>  > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+>  > ---
+>  >  include/linux/cgroup_signal.h |   28 +++++++++
+>  >  include/linux/cgroup_subsys.h |    6 +
+>  >  init/Kconfig                  |    6 +
+>  >  kernel/Makefile               |    1
+>  >  kernel/cgroup_signal.c        |  129 ++++++++++++++++++++++++++++++++++++++++++
+>  >  5 files changed, 170 insertions(+)
+>
+>
+>  I think there is a small race with new tasks entering the cgroup
+>  while it's beeing killed, and a _fork ops would handle that. nop ?
+>
 
-The point is it is pretty common (especially when you have enough 
-address space) just create a huge mapping and only use the begining.
-This avoids costly resize operations later and is a quite useful
-strategy on 64bit (but even on 32bit).  Now the upper size will
-likely be incredibly huge (far beyond available physical memory), but it's 
-obviously impossible really uses all of it.
+I never saw the actual patch (what lists did it go out to?) but I
+suspect that this is one of those operations that's just going to be
+inherently racy, and that the API should guarantee to affect all tasks
+that are members of the group for the entirety of the operation, but
+with no guarantees about what happens to tasks that enter or leave in
+the meantime.
 
-It's also common in languages who don't support dynamic allocation well (like 
-older fortran dialects). Given these won't use hugetlbfs directly either, 
-but I couldn't rule out that someone wrote a special fortran run time library 
-which transparently allocates large arrays from hugetlbfs. 
-
-In fact i would be surprised if a number of such beasts don't exist -- it is 
-really an obvious simple tuning option for old HPC fortran applications.
-
-> Sometimes their app will run, other times it dies. If more
-> than one application is running on the system that is behaving like this,
-> they are really playing with fire.
-
-With your change such an application will not run at all. Doesn't
-seem like an improvement to me.
-
-> With this change, a mmap() failure is a clear indication that the mapping
-> would have been unsafe to use and they should try mmap()ing with small pages
-> instead. 
-
-I don't have a problem with having an optional strict overcommit checking 
-mode (similar to what standard VM has), but it should be configurable
-and off by default.
-
--Andi
-
+Paul
