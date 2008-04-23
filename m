@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbYDWQh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYDWQjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273AbYDWQh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 12:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYDWQhR
+	id S1754336AbYDWQjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 12:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYDWQjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 12:37:17 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:53149
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbYDWQhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 12:37:16 -0400
-Date: Wed, 23 Apr 2008 18:37:13 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080423163713.GC24536@duo.random>
-References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com> <20080423002848.GA32618@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423002848.GA32618@sgi.com>
+	Wed, 23 Apr 2008 12:39:11 -0400
+Received: from vena.lwn.net ([206.168.112.25]:43041 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751477AbYDWQjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 12:39:11 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Document SEQ_SKIP
+cc: viro@parcelfarce.linux.theplanet.co.uk
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 23 Apr 2008 10:39:10 -0600
+Message-ID: <16841.1208968750@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 07:28:49PM -0500, Jack Steiner wrote:
-> The GRU driver unregisters the notifier when all GRU mappings
-> are unmapped. I could make it work either way - either with or without
-> an unregister function. However, unregister is the most logical
-> action to take when all mappings have been destroyed.
+I noticed that SEQ_SKIP went into the mainline; here's a little doc fix
+to match.  I'll feed this up through my docs tree unless somebody else
+wants it.
 
-This is true for KVM as well, unregister would be the most logical
-action to take when the kvm device is closed and the vm
-destroyed. However we can't implement mm_lock in O(N*log(N)) without
-triggering RAM allocations. And the size of those ram allocations are
-unknown at the time unregister runs (they also depend on the
-max_nr_vmas sysctl). So on a second thought not even passing the array
-from register to unregister would solve it (unless we allocate
-max_nr_vmas and we block the sysctl to alter max_nr_vmas if not all
-unregister run yet).That's clearly unacceptable.
+jon
 
-The only way to avoid failing because of vmalloc space shortage or
-oom, would be to provide a O(N*N) fallback. But one that can't be
-interrupted by sigkill! sigkill interruption was ok in #v12 because we
-didn't rely on mmu_notifier_unregister to succeed. So it avoided any
-DoS but it still can't provide any reliable unregister.
+--
+    Document SEQ_SKIP
+    
+    2.6.26 adds a SEQ_SKIP return value for the seq_file show() function;
+    update the documentation to match.
+    
+    Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 
-So in the end unregistering with kill -9 leading to ->release in O(1)
-sounds safer solution for the long term. You can't loop if unregister
-fails and pretend your module not to have deadlocks.
-
-Yes, waiting ->release add up a bit of complexity but I think it worth
-it, and there weren't genial ideas on how to avoid O(N*N) complexity
-and allocations too in mmu_notifier_unregister yet. Until that genius
-idea will materialize we'll stick with ->release in O(1) as the only
-safe unregister so we guarantee the admin will be in control of his
-hardware in O(1) with kill -9 no matter if /dev/kvm and /dev/gru are
-owned by sillyuser.
-
-I'm afraid if you don't want to worst-case unregister with ->release
-you need to have a better idea than my mm_lock and personally I can't
-see any other way than mm_lock to ensure not to miss range_begin...
-
-All the above is in 2.6.27 context (for 2.6.26 ->release is the way,
-even if the genius idea would materialize).
+diff --git a/Documentation/filesystems/seq_file.txt b/Documentation/filesystems/seq_file.txt
+index 7fb8e6d..0ab92c2 100644
+--- a/Documentation/filesystems/seq_file.txt
++++ b/Documentation/filesystems/seq_file.txt
+@@ -122,8 +122,7 @@ stop() is the place to free it.
+ 	}
+ 
+ Finally, the show() function should format the object currently pointed to
+-by the iterator for output. It should return zero, or an error code if
+-something goes wrong. The example module's show() function is:
++by the iterator for output.  The example module's show() function is:
+ 
+ 	static int ct_seq_show(struct seq_file *s, void *v)
+ 	{
+@@ -132,6 +131,12 @@ something goes wrong. The example module's show() function is:
+ 	        return 0;
+ 	}
+ 
++If all is well, the show() function should return zero.  A negative error
++code in the usual manner indicates that something went wrong; it will be
++passed back to user space.  This function can also return SEQ_SKIP, which
++causes the current item to be skipped; if the show() function has already
++generated output before returning SEQ_SKIP, that output will be dropped.
++
+ We will look at seq_printf() in a moment. But first, the definition of the
+ seq_file iterator is finished by creating a seq_operations structure with
+ the four functions we have just defined:
