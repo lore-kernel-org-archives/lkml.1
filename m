@@ -1,82 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYDWR7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYDWSAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbYDWR7W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYDWR7K
+	id S1754491AbYDWSAJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYDWR7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:59:10 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:53490 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbYDWR7I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:59:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E5Ayo8OJ7OdeoUZwYN8u7b0f30t8HhUt9lSkf5FOWoMHClEeXBRnuE/49SKlMmG3SZfrWS+F1MnQhGPy+a4jH66A091neIFaUzKaIlBlSK6R/80XyMHwRcO+QX5SNbuJ7jYj4zwS/Ji86+cLB828+hmTJ7QMMjhqiQ0jX/IxgQk=
-Message-ID: <8bd0f97a0804231059w76592878s3f6bf4a488b3ddea@mail.gmail.com>
-Date: Wed, 23 Apr 2008 13:59:05 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Will Newton" <will.newton@gmail.com>
-Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
-Cc: "Kyle McMartin" <kyle@mcmartin.ca>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <8bd0f97a0804230905x19fd96aevc8f225d241e59369@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
-	 <20080422081211.e85989ec.randy.dunlap@oracle.com>
-	 <87a5b0800804220816y72a7f4f9gec2111df08a1a57f@mail.gmail.com>
-	 <20080422152426.GG19802@phobos.i.cabal.ca>
-	 <87a5b0800804220834q4d6daec1x4146d211115ab5c@mail.gmail.com>
-	 <20080422153849.GH19802@phobos.i.cabal.ca>
-	 <87a5b0800804230736k340e7fe9mffbd72b5b8164015@mail.gmail.com>
-	 <20080423154038.GL19802@phobos.i.cabal.ca>
-	 <87a5b0800804230850y4d577ff2taf1689f4af26b274@mail.gmail.com>
-	 <8bd0f97a0804230905x19fd96aevc8f225d241e59369@mail.gmail.com>
+	Wed, 23 Apr 2008 13:59:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36863 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753364AbYDWR7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:59:54 -0400
+From: eparis@redhat.com
+To: linux-kernel@vger.kernel.org
+Cc: jmorris@namei.org, serue@us.ibm.com, Eric Paris <eparis@redhat.com>
+Subject: [PATCH 3/4] capability: kernel/capability.c whitespace, syntax, and other cleanups
+Date: Wed, 23 Apr 2008 13:52:33 -0400
+Message-Id: <12089731553073-git-send-email-eparis@redhat.com>
+X-Mailer: git-send-email 1.5.2.1
+In-Reply-To: <12089731553297-git-send-email-eparis@redhat.com>
+References: <12089731541206-git-send-email-eparis@redhat.com>
+ <12089731553297-git-send-email-eparis@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 12:05 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Apr 23, 2008 at 11:50 AM, Will Newton <will.newton@gmail.com> wrote:
->  > On Wed, Apr 23, 2008 at 4:40 PM, Kyle McMartin <kyle@mcmartin.ca> wrote:
->  >  > On Wed, Apr 23, 2008 at 03:36:23PM +0100, Will Newton wrote:
->  >  >  > +config ARCH_HAS_SYS_SYSFS
->  >  >  > +     bool
->  >  >  > +     default y
->  >  >  > +
->  >  >  >  source "init/Kconfig"
->  >  >  >
->  >  >
->  >  >  Sorry, I meant something more like
->  >  >
->  >  >
->  >  >  config ARCH_HAS_SYS_SYSFS
->  >  >         def_bool !BLACKFIN
->  >  >         help
->  >  >           Obsolete sys_sysfs syscall
->  >  >
->  >  >  in init/Kconfig
->  >  >
->  >  >  But, it's your patch, you can do it however you like. :)
->  >
->  >  That's definitely shorter - but it feels a bit more like #ifdef
->  >  CONFIG_BLACKFIN which is explicitly what I don't want to do, because
->  >  I'm not actually interested in blackfin. ;-)
->
->  i'd have to agree that updating asm/unistd.h fits better with existing
->  paradigm.  if we want to talk about converting *all cases* to Kconfig,
->  we can do it in a separate thread.  splitting the design between two
->  different files is simply confusing to everyone involved as they spend
->  their time going "well which way am *i* supposed to do it".
+From: Eric Paris <eparis@redhat.com>
 
-thinking about this some more ... we actually have three choices here,
-not just two.  checksyscalls.sh introduced a new form in asm/unistd.h:
-#define __IGNORE_sysfs
-perhaps we should be unifying the __ARCH_WANT_XXX and the __IGNORE_XXX
--mike
+This patch changes kernel/capability.c to fix whitespace and syntax issues.  Things that
+are fixed may include (does not not have to include)
+
+whitespace at end of lines
+spaces followed by tabs
+spaces used instead of tabs
+spacing around parenthesis
+location of { around structs and else clauses
+location of * in pointer declarations
+removal of initialization of static data to keep it in the right section
+useless {} in if statemetns
+useless checking for NULL before kfree
+fixing of the indentation depth of switch statements
+no assignments in if statements
+include spaces around , in function calls
+and any number of other things I forgot to mention
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+ kernel/capability.c |   44 ++++++++++++++++++++++----------------------
+ 1 files changed, 22 insertions(+), 22 deletions(-)
+
+diff --git a/kernel/capability.c b/kernel/capability.c
+index 39e8193..0185d10 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -161,8 +161,8 @@ out:
+  * group.  We call this holding task_capability_lock and tasklist_lock.
+  */
+ static inline int cap_set_pg(int pgrp_nr, kernel_cap_t *effective,
+-			      kernel_cap_t *inheritable,
+-			      kernel_cap_t *permitted)
++			     kernel_cap_t *inheritable,
++			     kernel_cap_t *permitted)
+ {
+ 	struct task_struct *g, *target;
+ 	int ret = -EPERM;
+@@ -195,27 +195,27 @@ static inline int cap_set_pg(int pgrp_nr, kernel_cap_t *effective,
+  * and self.  We call this holding task_capability_lock and tasklist_lock.
+  */
+ static inline int cap_set_all(kernel_cap_t *effective,
+-			       kernel_cap_t *inheritable,
+-			       kernel_cap_t *permitted)
++			      kernel_cap_t *inheritable,
++			      kernel_cap_t *permitted)
+ {
+-     struct task_struct *g, *target;
+-     int ret = -EPERM;
+-     int found = 0;
+-
+-     do_each_thread(g, target) {
+-             if (target == current || is_container_init(target->group_leader))
+-                     continue;
+-             found = 1;
+-	     if (security_capset_check(target, effective, inheritable,
+-						permitted))
+-		     continue;
+-	     ret = 0;
+-	     security_capset_set(target, effective, inheritable, permitted);
+-     } while_each_thread(g, target);
+-
+-     if (!found)
+-	     ret = 0;
+-     return ret;
++	struct task_struct *g, *target;
++	int ret = -EPERM;
++	int found = 0;
++
++	do_each_thread(g, target) {
++		if (target == current || is_container_init(target->group_leader))
++			continue;
++		found = 1;
++		if (security_capset_check(target, effective, inheritable,
++					  permitted))
++			continue;
++		ret = 0;
++		security_capset_set(target, effective, inheritable, permitted);
++	} while_each_thread(g, target);
++
++	if (!found)
++		ret = 0;
++	return ret;
+ }
+ 
+ /**
+-- 
+1.5.2.1
+
