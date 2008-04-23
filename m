@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYDWLZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYDWLcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYDWLZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 07:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYDWLZv
+	id S1753496AbYDWLcL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 07:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYDWLb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 07:25:51 -0400
-Received: from mail0.scram.de ([78.47.204.202]:59610 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYDWLZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 07:25:50 -0400
-X-Spam-Score: -4.2
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <480F1CB5.6050307@scram.de>
-Date: Wed, 23 Apr 2008 13:25:41 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 23 Apr 2008 07:31:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:7061 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbYDWLb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 07:31:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ucygSoHJm46WK4qjA0CkkR7tPfKkY2lLvmyo4WQVhvfFJ0YiV7uCHn/GplCaE41iFvH/Gpxu9oNvyDEx8LREoPzQs1hQD6r/2f/LDSLTEEK74CjHTOE51relRCPlDvQWopD3NJXbLIeo4ue+RP5xLw2c7anGOh/br2lElx1yQ7k=
+Message-ID: <eb3ff54b0804230431i186d222cl63e52446d1ff4a7b@mail.gmail.com>
+Date: Wed, 23 Apr 2008 14:31:53 +0300
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "=?BIG5?B?WU9TSElGVUpJIEhpZGVha2kgLyCmTsPDrV6p+g==?=" 
+	<yoshfuji@linux-ipv6.org>,
+       netdev@vger.kernel.org, "David Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] [IPV6] Some cleanup patches.
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [2.6 patch] drivers/of/of_i2c.c: add MODULE_LICENSE
-References: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
-In-Reply-To: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk schrieb:
+Hi,
 
-> After commit 585468e5d5962660867c269e26f0a4b89a599473
-> ([POWERPC] i2c: Fix build breakage introduced by OF helpers)
-> drivers/of/of_i2c.c needs a MODULE_LICENSE.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Following are 3 cleanup patches made while probing into IPv6 code.
 
-Acked-by: Jochen Friedrich <jochen@scram.de>
-
-Thanks,
-Jochen
+Regards,
+Rami Rosen
