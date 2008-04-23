@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbYDWGMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbYDWGTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932487AbYDWGMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYDWGMn
+	id S1761405AbYDWGTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYDWGTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:12:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:10961 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbYDWGMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:12:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fZynR8G9XFyYu0eN0YWTaGyefB/0KyTnR3OQsLVZh5tXNOE7pQIZD6xLirVXn7byu6yhN6z6bGwKQkVtlfJkHo/MJSLs8oCBRQgXglOj14CJwUivhZAb332dSrI9xLmiHYxXPLMFstCbcqXHoofyD+pPUk92c6lsT91h20mYCzg=
-Message-ID: <e2e108260804222312u673df0bbic3e30089f1d4a238@mail.gmail.com>
-Date: Wed, 23 Apr 2008 08:12:41 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: Unexport of blk_get_queue and blk_put_queue
-Cc: "Philipp Reisner" <philipp.reisner@linbit.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Lars Ellenberg" <lars.ellenberg@linbit.com>
-In-Reply-To: <20080421122413.GD6011@cs181133002.pp.htv.fi>
+	Wed, 23 Apr 2008 02:19:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55750 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbYDWGTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:19:39 -0400
+Message-ID: <480ED4D8.5070607@cn.fujitsu.com>
+Date: Wed, 23 Apr 2008 14:19:04 +0800
+From: Shi Weihua <shiwh@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: akpm@linux-foundation.org, Hugh Dickins <hugh@veritas.com>,
+       Mel Gorman <mel@csn.ul.ie>, balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v3
+References: <20080418161522.GB9147@csn.ul.ie>	<48080706.50305@cn.fujitsu.com>	<48080930.5090905@cn.fujitsu.com>	<48080B86.7040200@cn.fujitsu.com>	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>	<20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0804211250000.16476@blonde.site>	<20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com> <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e2e108260804180443s429e0db7j3a48056088634ed9@mail.gmail.com>
-	 <20080421122413.GD6011@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 21, 2008 at 2:24 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Fri, Apr 18, 2008 at 01:43:17PM +0200, Bart Van Assche wrote:
->  > I noticed that blk_get_queue and blk_put_queue were unexported in the
->  > 2.6.25 kernel. Are you aware that this breaks DRBD (an out-of-tree
->  > kernel module) ?
->
->  no, I verify that my patches don't break Linus' tree and often also peek
->  at -mm, but not at external modules.
->
->  And I'm a proponent of "no stable kernel API, but as many external
->  modules as reasonably possible should be part of the kernel", so emails
->  like yours are always a good point to start asking why the code isn't in
->  Linus' tree.
->
->  What happened to DRBD?
->  It didn't seem that far from getting merged half a year ago.
+KAMEZAWA Hiroyuki wrote::
+> fixed typos.
+> ==
+> usemap must be initialized only when pfn is within zone.
+> If not, it corrupts memory.
+> 
+> And this patch also reduces the number of calls to set_pageblock_migratetype()
+> from
+> 	(pfn & (pageblock_nr_pages -1)
+> to
+> 	!(pfn & (pageblock_nr_pages-1)
+> it should be called once per pageblock.
+> 
+> Changelog.
+> v2->v3
+>  - Fixed typos.
+> v1->v2
+>  - Fixed boundary check.
+>  - Move calculation of pointer for zone struct to out of loop.
 
-You mean this message: http://lkml.org/lkml/2007/7/21/255 ?
-(Added Lars Ellenberg in CC.)
+I noticed v3 takes "zone" instead of "zid" in the code line 
+"z = &NODE_DATA(nid)->node_zones[zone];".
+I tested v3, it works well now.
 
-Bart.
+Thanks,
+-Shi
+
