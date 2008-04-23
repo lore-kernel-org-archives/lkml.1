@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbYDWGpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751702AbYDWGrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbYDWGpN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbYDWGpA
+	id S1751702AbYDWGrp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYDWGrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:45:00 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:49435 "EHLO mr1.bfh.ch"
+	Wed, 23 Apr 2008 02:47:37 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:44699 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbYDWGo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:44:59 -0400
-Message-ID: <480EDAE0.5070702@bfh.ch>
-Date: Wed, 23 Apr 2008 08:44:48 +0200
-From: Seewer Philippe <philippe.seewer@bfh.ch>
-Organization: BFH
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	id S1750780AbYDWGrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:47:36 -0400
+Message-ID: <480ED9D5.1010906@parallels.com>
+Date: Wed, 23 Apr 2008 10:40:21 +0400
+From: Kirill Korotaev <dev@parallels.com>
+Organization: Parallels
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-CC: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Disk geometry from /sys
-References: <38b2ab8a0804091353h3725ce29s196e27e8b4f1ff56@mail.gmail.com>	 <480354C9.1050600@bfh.ch>	 <38b2ab8a0804150040i14840a9fudc3b95ba80d52ac1@mail.gmail.com>	 <4805AF93.90209@bfh.ch>	 <38b2ab8a0804170709m58830adagcba46f059ed10809@mail.gmail.com>	 <4807635E.9060101@bfh.ch> <4808A09B.6090106@rtr.ca>	 <4808A409.3080406@bfh.ch> <38b2ab8a0804221311u12fd2209l1fe71c99779eb6fa@mail.gmail.com>
-In-Reply-To: <38b2ab8a0804221311u12fd2209l1fe71c99779eb6fa@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       containers@lists.linux-foundation.org, nick@nick-andrew.net,
+       Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object	creation
+ with a specified id)
+References: <20080418054459.891481000@bull.net>	<20080422193612.GA15835@martell.zuzino.mipt.ru>	<1208890580.17117.14.camel@nimitz.home.sr71.net>	<20080422210130.GA15937@martell.zuzino.mipt.ru> <1208904967.17117.51.camel@nimitz.home.sr71.net>
+In-Reply-To: <1208904967.17117.51.camel@nimitz.home.sr71.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Apr 2008 06:44:31.0286 (UTC) FILETIME=[7BF4D560:01C8A50D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau wrote:
-[snip]
->>  If anyones interested in even more Details about C/H/S adressing and so on,
->> there's a very good document about that to be found here:
->>  http://www.mossywell.com/boot-sequence/
->>
+> If the current interface is insufficient, we should first expand it in
+> such a way that it can be used for checkpoint.  That certainly won't
+> work in all cases.  fork(), for instance, doesn't take any arguments and
+> is going to be awfully hard to expand. :)
 > 
-> unfortunately this link doesn't work for now...
-Google has it cached:
-http://209.85.135.104/search?q=cache:www.mossywell.com/boot-sequence/
+> I'd love to hear some of your insights about how things like the current
+> iptables interfaces are insufficient for checkpoint/restart.
+
+iptables is a bad example. Luckily for checkpointing - it always had an interface
+"load full state", "dump full state".
+
+But even iptables are not working in current form for checkpointing - they can't
+save/restore state of conntracks. Do you think netdev@/netfilter@ guys will be happy
+to have APIs allowing to set conntracks and have all the pain related
+to API stability - cause conntrack state changed a couple of times during last 2 years.
+
+Consider more intimate kernel states like:
+a. task statistics
+b. task start time
+c. load average
+d. skb state and it's data.
+e. mount tree.
+
+If you think over, e.g. (b) is a bad thing. It was used to be accounted in jiffies, then in timespec.
+(a) is another example of dataset which we can't predict. task statistics change over a time.
+Why bother with such intimate data in user-space at all?
+Why the hell user-space should know about it and be ABLE to modify it?
+
+Why do we need to export ability to set IDs for some objects which none of the
+operating systems do and then to have a burden to support it for application compatibility
+the rest of our lifes? Do you really believe none of the applications except for checkpointing
+will be using it?
+
+My personal vision is that:
+1. user space must initialize checkpointing/restore state via some system call,
+   supply file descriptor from where data can be read/written to.
+2. must call the syscall asking kernel to restore/save different subsytems one by one.
+3. finalize cpt/restore state via the syscall
+But user-space MUST NOT bother about data content. At least not about the data supplied by the kernel.
+It can add additional sections if needed, e.g. about iptables state.
+
+Having all this functionality in a signle syscall we specifically CLAIM a black box,
+and that no one can use this interfaces for something different from checkpoint/restore.
+
+So I think we have to know what other maintainers think before we can go.
 
 
-
+>> These next ids are suitable, well, only for ids which is very, very small
+>> part of kernel state needed to restore group of processes.
+> 
+> I couldn't agree more.  This id setting mechanism would only be useful
+> for a small subset of the things we need during a restart.
+> 
+> -- Dave
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
