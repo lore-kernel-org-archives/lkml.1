@@ -1,133 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYDWNDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYDWNIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYDWNDE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 09:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYDWNCz
+	id S1755266AbYDWNIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 09:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYDWNIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 09:02:55 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47918 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYDWNCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 09:02:53 -0400
-Date: Wed, 23 Apr 2008 13:46:20 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, Hugh Dickins <hugh@veritas.com>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v3
-Message-ID: <20080423124619.GA9092@csn.ul.ie>
-References: <20080418161522.GB9147@csn.ul.ie> <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com> <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com> <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com> <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0804211250000.16476@blonde.site> <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com> <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 23 Apr 2008 09:08:24 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:36989 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbYDWNIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 09:08:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Cc: yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>,
+       Jeff Garzik <jeff@garzik.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sathya Prakash <sathya.prakash@lsi.com>
+References: <200804222148.17530.yhlu.kernel@gmail.com>
+	<1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
+Date: Wed, 23 Apr 2008 06:08:09 -0700
+In-Reply-To: <1208928277.9212.1.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Wed, 23 Apr 2008 15:24:37 +1000")
+Message-ID: <m1hcdsoh1i.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/04/08 13:46), KAMEZAWA Hiroyuki didst pronounce:
-> fixed typos.
-> ==
-> usemap must be initialized only when pfn is within zone.
-> If not, it corrupts memory.
-> 
-> And this patch also reduces the number of calls to set_pageblock_migratetype()
-> from
-> 	(pfn & (pageblock_nr_pages -1)
-> to
-> 	!(pfn & (pageblock_nr_pages-1)
-> it should be called once per pageblock.
-> 
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-Nicely spotted.
+> On Tue, 2008-04-22 at 21:48 -0700, Yinghai Lu wrote:
+>> this change
+>> 
+>> | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
+>> | Author: Prakash, Sathya <sathya.prakash@lsi.com>
+>> | Date:   Fri Mar 7 15:53:21 2008 +0530
+>> |
+>> |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
+>> |
+>> | This patch modifies the driver to enable MSI by default for all SAS chips.
+>> |
+>> |     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
+>> |     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+>> |
+>> cause kexec RHEL 5.1 kernel fail.
+>> 
+>> root casue: the rhel 5.1 kernel still use INTx emulation.
+>> and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec
+> path
+>> 
+>> so try to call pci_disable_msi in shutdown patch
+>
+> How is kdump going to work? Your shutdown routine won't be called and
+> you'll have the same problem in the 2nd kernel, won't you?
 
-> Changelog.
-> v2->v3
->  - Fixed typos.
-> v1->v2
->  - Fixed boundary check.
->  - Move calculation of pointer for zone struct to out of loop.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  mm/page_alloc.c |   14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.25/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.25.orig/mm/page_alloc.c
-> +++ linux-2.6.25/mm/page_alloc.c
-> @@ -2518,7 +2518,9 @@ void __meminit memmap_init_zone(unsigned
->  	struct page *page;
->  	unsigned long end_pfn = start_pfn + size;
->  	unsigned long pfn;
-> +	struct zone *z;
->  
-> +	z = &NODE_DATA(nid)->node_zones[zone];
->  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+Taking a quick look our current msi initialization appears robust in
+not assuming the state of the msi config bits.
 
-Ok, this is fine. zone being an index instead of a struct zone is a
-little confusing but it's not your fault.
+So the only remaining problem is running older software that 
+assumes the msi config bits are in the state they should be in
+out of reset.
 
->  		/*
->  		 * There can be holes in boot-time mem_map[]s
-> @@ -2536,7 +2538,6 @@ void __meminit memmap_init_zone(unsigned
->  		init_page_count(page);
->  		reset_page_mapcount(page);
->  		SetPageReserved(page);
-> -
->  		/*
->  		 * Mark the block movable so that blocks are reserved for
->  		 * movable at startup. This will force kernel allocations
+YH on that score it appears I goofed a little when I gave you
+my suggestion on how to fix this in pci_disable_msi.
 
-Spurious whitespace change there.
+If we have crazy hardware that supports multi irqs in with
+a plain msi capability.  During initialization we mask
+all of the irqs.
 
-> @@ -2545,8 +2546,15 @@ void __meminit memmap_init_zone(unsigned
->  		 * kernel allocations are made. Later some blocks near
->  		 * the start are marked MIGRATE_RESERVE by
->  		 * setup_zone_migrate_reserve()
-> +		 *
-> +		 * bitmap is created for zone's valid pfn range. but memmap
-> +		 * can be created for invalid pages (for alignment)
-> +		 * check here not to call set_pageblock_migratetype() against
-> +		 * pfn out of zone.
->  		 */
-> -		if ((pfn & (pageblock_nr_pages-1)))
-> +		if ((z->zone_start_pfn <= pfn)
-> +		    && (pfn < z->zone_start_pfn + z->spanned_pages)
-> +		    && !(pfn & (pageblock_nr_pages - 1)))
->  			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
->  
+from msi_capability_init:
+        if (entry->msi_attrib.maskbit) {
+                unsigned int maskbits, temp;
+                /* All MSIs are unmasked by default, Mask them all */
+                pci_read_config_dword(dev,
+                        msi_mask_bits_reg(pos, is_64bit_address(control)),
+                        &maskbits);
+                temp = (1 << multi_msi_capable(control));
+                temp = ((temp - 1) & ~temp);
+                maskbits |= temp;
+                pci_write_config_dword(dev,
+                        msi_mask_bits_reg(pos, is_64bit_address(control)),
+                        maskbits);
+        }
 
-This looks correct. The boundary check is definitly correct and
-set_pageblock_migratetype is now only getting called once per pageblock.
+So it appears to truly return to the reset state we should unmask
+them all, instead of just that one.  Not that it matters in practice,
+but handling that corner case would be polite.
 
->  		INIT_LIST_HEAD(&page->lru);
-> @@ -4460,6 +4468,8 @@ void set_pageblock_flags_group(struct pa
->  	pfn = page_to_pfn(page);
->  	bitmap = get_pageblock_bitmap(zone, pfn);
->  	bitidx = pfn_to_bitidx(zone, pfn);
-> +	VM_BUG_ON(pfn < zone->zone_start_pfn);
-> +	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
->  
-
-Looks good, it would have caught this particular error earlier.
-
->  	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
->  		if (flags & value)
-> 
-
-Seems find and boots successfully on a number of machines.
-
-Thanks
-
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Eric
