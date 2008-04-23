@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYDWHRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYDWHS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbYDWHRo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 03:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYDWHRe
+	id S1753172AbYDWHS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 03:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYDWHST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 03:17:34 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48276 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbYDWHRd (ORCPT
+	Wed, 23 Apr 2008 03:18:19 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:52810 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbYDWHSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 03:17:33 -0400
-Message-ID: <480EE1F6.3070205@ak.jp.nec.com>
-Date: Wed, 23 Apr 2008 16:15:02 +0900
-From: KaiGai Kohei <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 23 Apr 2008 03:18:18 -0400
+Date: Wed, 23 Apr 2008 09:18:13 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: Pull request for semaphore include changes
+In-Reply-To: <20080419184029.GO20637@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0804230917330.9710@anakin>
+References: <20080419184029.GO20637@parisc-linux.org>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] exporting capability name/code pairs (for 2.6.26)
-References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com> <20080423053726.GF3861@localhost.localdomain>
-In-Reply-To: <20080423053726.GF3861@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * KaiGai Kohei (kaigai@ak.jp.nec.com) wrote:
->> [PATCH 2/3] exporting capability name/code pairs
->>
->> This patch enables to export code/name pairs of capabilities the running
->> kernel supported.
->>
->> A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
->> at 2.6.25. However, we have no interface to disclose what capabilities
->> are supported on the running kernel. Thus, we have to maintain libcap
->> version in appropriate one synchronously.
->>
->> This patch enables libcap to collect the list of capabilities at run time,
->> and provide them for users. It helps to improve portability of library.
->>
->> It exports these information as regular files under /sys/kernel/capability.
->> The numeric node exports its name, the symbolic node exports its code.
-> 
-> I do not understand why this is necessary.  The capability bits are an ABI
-> that shouldn't change in a non-backward compat way (i.e. only additions).
-> 
-> We typically don't export strings <-> number conversions for constants.
-> I know you've explained this a few times before, but it still seems to me
-> like a userspace only problem.  What can userspace do with a capability
-> it does not know about?
+On Sat, 19 Apr 2008, Matthew Wilcox wrote:
+> Thanks for pulling the generic semaphores.  This follow-on series
+> removes all in-tree references to asm/semaphore.h.  Many of the existing
+> references are in files which do not use semaphores, so they are simply
+> deleted.  The remainder are converted to use linux/semaphore.h.
 
-When we run a userspace utility on the latest kernel, it has to be compiled
-with kernel-headers which have same capability set at least.
-If installed userspace utility does not support newly added capabilities,
-it requires users to rebuild their utilities when they update the kernel.
+Subject: [PATCH] drivers/input/serio/hp_sdc.c needs <linux/semaphore.h>
 
-Typically, kernel developer faces this kind of version mismatching.
-When they boots their kernel with new capabilities, it also requires to
-rebuild libcap. Then, they have to revert it, when they boots with normal
-kernel.
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-If libcap can know what capabilities are supported on the running kernel
-automatically, it does not need users to rebuild libcap concurrently.
+drivers/input/serio/hp_sdc.c: In function 'hp_sdc_take':
+drivers/input/serio/hp_sdc.c:198: error: implicit declaration of function 'up'
 
-Thanks,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/input/serio/hp_sdc.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/input/serio/hp_sdc.c
++++ b/drivers/input/serio/hp_sdc.c
+@@ -69,6 +69,7 @@
+ #include <linux/time.h>
+ #include <linux/slab.h>
+ #include <linux/hil.h>
++#include <linux/semaphore.h>
+ #include <asm/io.h>
+ #include <asm/system.h>
+ 
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
