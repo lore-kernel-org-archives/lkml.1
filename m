@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYDWR6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYDWR6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYDWR6D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYDWR5y
+	id S1756081AbYDWR6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYDWR6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:57:54 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45636 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbYDWR5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:57:52 -0400
-Date: Wed, 23 Apr 2008 12:57:49 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-Message-ID: <20080423175749.GA17618@sergelap.austin.ibm.com>
-References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com> <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org> <20080422142539.GA12623@sergelap.austin.ibm.com> <m1hcdtsovg.fsf@frodo.ebiederm.org> <20080423143610.GA13718@sergelap.austin.ibm.com>
+	Wed, 23 Apr 2008 13:58:30 -0400
+Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:40425 "HELO
+	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753103AbYDWR63 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:58:29 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [patch v2] doc: DMA-mapping.txt has undeclared variables [Bug 10397]
+Date: Wed, 23 Apr 2008 10:58:19 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Matti Linnanvuori <mattilinnanvuori@yahoo.com>,
+       linux-kernel@vger.kernel.org
+References: <935779.51834.qm@web52004.mail.re2.yahoo.com> <200804070905.51499.jbarnes@virtuousgeek.org> <20080409184532.GG1624@colo.lackof.org>
+In-Reply-To: <20080409184532.GG1624@colo.lackof.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080423143610.GA13718@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200804231058.20005.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Serge E. Hallyn (serue@us.ibm.com):
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
-> > "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> > >> 
-> > >> I'm hoping to be able to get back at this in the week or so as things
-> > >> settle down from my move.  My last patches should be in my proof of
-> > >> concept network namespace tree, if they don't show up elsewhere.
+On Wednesday, April 09, 2008 11:45 am Grant Grundler wrote:
+> On Mon, Apr 07, 2008 at 09:05:51AM -0700, Jesse Barnes wrote:
+> > On Monday, April 07, 2008 9:01 am Matti Linnanvuori wrote:
+> > > From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 > > >
-> > > Is that the tree I'd get from
-> > >
-> > > git-fetch
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-netns.git
-> > > master:ebieder.master
-> > 
-> > Yes.
-> > 
-> > > ?  So I'd add a user_ns to the struct sysfs_tag_info?
-> > >
-> > > If so I'll give it a whirl.
-> > 
-> > Sounds good.  My apologies I keep being almost on the verge
-> > of getting someplace.
-> 
-> Ok I've got the sysfs relevant patches ported to 2.6.25, and am looking
-> at how to extend it to handle /sys/kernel/uids.  You have tagging tied
-> intimately to struct class.  So the question is should I generalize the
-> taggint to deal with kobjects instead, or create a struct class user
-> and make /sys/kernel/uids a symlink to /sys/class/user/uids?
+> > > Fix undeclared variables in code examples.
+> > > Consistently use pdev as the variable of type struct pci_dev *.
+> > > Bug 10397.
+> >
+> > I think Grant's comment still stands, "fix undeclared variables" isn't an
+> > accurate description of what you're doing here...
+>
+> Yes, please just drop the first sentence. The second sentence is
+> sufficient.
+>
+> > That said, the patch itself looks fine to me, if a bit pedantic.  The
+> > compiler will catch any mismatched arguments in this case, and the rest
+> > of the documentation is pretty clear that these routines take struct
+> > pci_dev not struct device, so I'd be inclined to just leave it the way it
+> > is to avoid churn.
+>
+> I think it's a good habit to use "pdev" in device drivers and would
+> like the documentation to incorporate that.
+>
+> I'm ok with the churn since it's not conflicting with anything else AFAIK.
 
-Heh, never mind, I was thinking class was a kobject class, not a device
-class  :)  So I'll just have to generalize tagging.
+Matti, can you post an update with Grant's comments addressed?  It's mainly 
+about the changelog comment at this point, which should read something 
+like "Update DMA mapping documentation to use 'pdev' rather than 'dev' in 
+example code that calls routines expecting 'struct pci_device *', since 'dev' 
+might make readers think they're passing 'struct device *' parameters."
 
-thanks,
--serge
+Assuming it looks ok I'll go ahead and put it into the PCI tree.
 
-> Opinions?
-> 
-> thanks,
-> -serge
-> 
-> PS: If you want me to post the patchset before handling userns I can do
-> that, otherwise I was just going to wait until I'm done with userns.
+Thanks,
+Jesse
+
