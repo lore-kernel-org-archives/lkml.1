@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYDWRVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYDWRYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYDWRVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYDWRVC
+	id S1754780AbYDWRYn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYDWRYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:21:02 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:58277 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbYDWRVA (ORCPT
+	Wed, 23 Apr 2008 13:24:35 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:36321
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbYDWRYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:21:00 -0400
-Message-ID: <480F6FF9.9000605@tiscali.nl>
-Date: Wed, 23 Apr 2008 19:20:57 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 23 Apr 2008 13:24:34 -0400
+Date: Wed, 23 Apr 2008 19:24:32 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080423172432.GE24536@duo.random>
+References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <Pine.LNX.4.64.0804221619540.4996@schroedinger.engr.sgi.com> <20080423162629.GB24536@duo.random>
 MIME-Version: 1.0
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] vga16fb: test virtual screen range before subtraction on
- unsigned
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080423162629.GB24536@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dx and dy are u32's, so the test should occur before the subtraction
+On Wed, Apr 23, 2008 at 06:26:29PM +0200, Andrea Arcangeli wrote:
+> On Tue, Apr 22, 2008 at 04:20:35PM -0700, Christoph Lameter wrote:
+> > I guess I have to prepare another patchset then?
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 9b3c592..9d27517 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1087,12 +1087,15 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
- 	width = x2 - dx;
- 	height = y2 - dy;
- 
-+	if (sx + dx < old_dx || sy + dy < old_dy)
-+		return;
-+
- 	/* update sx1,sy1 */
- 	sx += (dx - old_dx);
- 	sy += (dy - old_dy);
- 
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
-+	if (sx + width > vxres || sy + height > vyres)
- 		return;
- 
- 	switch (info->fix.type) {
+Apologies for my previous not too polite comment in answer to the
+above, but I thought this double patchset was over now that you
+converged in #v12 and obsoleted EMM and after the last private
+discussions. There's nothing personal here on my side, just a bit of
+general frustration on this matter. I appreciate all great
+contribution from you, as last your idea to use sort(), but I can't
+really see any possible benefit or justification anymore from keeping
+two patchsets floating around given we already converged on the
+mmu-notifier-core, and given it's almost certain mmu-notifier-core
+will go in -mm in time for 2.6.26. Let's put it this way, if I fail to
+merge mmu-notifier-core into 2.6.26 I'll voluntarily give up my entire
+patchset and leave maintainership to you so you move 1/N to N/N and
+remove mm_lock-sem patch (everything else can remain the same as it's
+all orthogonal so changing the order is a matter of minutes).
