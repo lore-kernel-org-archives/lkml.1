@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYDWWoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYDWWqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYDWWoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYDWWnx
+	id S1755020AbYDWWqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYDWWqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:43:53 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:23501 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYDWWnw (ORCPT
+	Wed, 23 Apr 2008 18:46:14 -0400
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:41866 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751808AbYDWWqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:43:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gCB81SKMVTVEJmNhmzPfO3ACkI3bShoIfqjrEN3hRRdXUuXcGDkpQVv5MwfV/JB8jxSZ3tdt2AkgzHYbqnYP0ujFykYKys7R8Y85F44/MFcRqBkXlojgFocOrJOBUIltOQqloiqd8XZa6bXECgUN4PIiQspTEOWQonq5zmXUL4M=
-Message-ID: <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
-Date: Thu, 24 Apr 2008 00:43:51 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "devzero@web.de" <devzero@web.de>
-Subject: Re: make cloneconfig ?
-Cc: linux-kernel@vger.kernel.org, agruen@suse.de
-In-Reply-To: <251459002@web.de>
+	Wed, 23 Apr 2008 18:46:13 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
+Date: Wed, 23 Apr 2008 15:46:06 -0700
+User-Agent: KMail/1.9.9
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com> <200804221712.45972.jbarnes@virtuousgeek.org> <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <251459002@web.de>
+Message-Id: <200804231546.07172.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/04/2008, devzero@web.de <devzero@web.de> wrote:
-> any reason why "make cloneconfig" never made it into mainline?
+On Tuesday, April 22, 2008 6:05 pm Shaohua Li wrote:
+> On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
+> > On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
+> > > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
+> > > 'y' in Kconfig even though the feature is both experimental and the
+> > > help text recommends that if you are unsure you say 'n'.
+> > > It seems to me that this really should default to 'n', not 'y' at the
+> > > moment.
+> > > The following patch makes that change. Please consider applying.
+> >
+> > Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
+> > though...
 >
->  many people are quite used to it and every time i build vanilla kernel i step into that trap  "oh - that`s a suse`ism"
->
->  make cloneconfig exists since /proc/config.gz - but while that one went into mainline, cloneconfig never did.
->
->  anyone know the reason for that ?
->
->  i wished, distros kernels were more similar to vanilla kernels - so what about making them more similar ?
->
->
+> Ok, I'm fine with the patch. Though by default, the policy is to use
+> BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
 
-Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
-make oldconfig" ???   If so, why do we need yet another "make
-<some_target>" Makefile rule? What would actually be gained?
+Ok, pushed.  Thanks Jesper & Shaohua.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Jesse
