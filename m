@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbYDWLys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbYDWMAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbYDWLys (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 07:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYDWLyi
+	id S1753665AbYDWMAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYDWMAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 07:54:38 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7880 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbYDWLyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 07:54:37 -0400
-Date: Wed, 23 Apr 2008 13:54:31 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 11/11] s390: convert to generic helpers for IPI  function calls
-Message-ID: <20080423115430.GK12774@kernel.dk>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-12-git-send-email-jens.axboe@oracle.com> <20080423075831.GB15850@osiris.boeblingen.de.ibm.com> <20080423081147.GC12774@kernel.dk> <20080423112124.GJ12774@kernel.dk> <20080423114744.GA29422@osiris.boeblingen.de.ibm.com>
+	Wed, 23 Apr 2008 08:00:41 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:44848 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751787AbYDWMAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 08:00:38 -0400
+Date: Wed, 23 Apr 2008 14:00:34 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jens Axboe <axboe@kernel.dk>
+cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: [PATCH] ps3disk: Remove superfluous cast
+Message-ID: <Pine.LNX.4.64.0804231357170.13313@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423114744.GA29422@osiris.boeblingen.de.ibm.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-481070356-1208952034=:13313"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23 2008, Heiko Carstens wrote:
-> > > > Your generic patch changes semantics of smp_call_function(). At least the
-> > > > s390 version of smp_call_function() mask used to not return unless all IPIs
-> > > > where received on the target cpus.
-> > > > Your patch changes that. It will already return as soon as all IPIs have
-> > > > been sent. Unfortunately Martin's etr code in arch/s390/kernel/time.c
-> > > 
-> > > Yep, this is what I mentioned in the intro mail.
-> > > 
-> > > > relies on exactly the old semantics.
-> > > 
-> > > OK, I could not see anything which relied on that and I did think that
-> > > it was a somewhat odd interface. By the time that smp_call_function()
-> > > stops waiting for startups, we could easily be in the condition that the
-> > > N-1 CPUs executed the function part a long time ago. I just didn't see
-> > > much usefulness in that, you may as well just set wait == 1 in that
-> > > case.
-> > > 
-> > > > Since this seems to be an s390 only issue, could you just drop the s390
-> > > > conversion patch? We'll have to think about how to change the err code
-> > > > and convert later I guess.
-> > > 
-> > > I'll drop the s390 bits. I can easily add something like
-> > > smp_call_function_foo() that has this behaviour.
-> > 
-> > I added an smp_call_function_sync() for this purpose and kept the s390
-> > conversion, I would very much appreciate if you could look it over. I
-> > wont post the full patchset again today, but you can inspect it here:
-> > 
-> > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=refs/heads/generic-ipi
-> > 
-> > The interesting bits are patch #1 for the generic bits and patch #11 for
-> > the s390 part. Thanks!
-> 
-> I don't think that works: the old code also relied on the fact that there
-> could be only one cpu sending an smp_call_* IPI (serialized by call_lock).
-> The current etr code exploits that to serialize all cpus:
-> 
-> Do smp_call_function() to force all other cpus into clock_sync_cpu_start()
-> where they sort of busy wait(!). Then the master cpu is syncing the clock
-> and when it finished the other cpus may continue again and finally leave
-> the smp_call_function interrupt handler.
-> 
-> Your patch series however doesn't make sure anymore that there is only
-> one cpu doing an smp_call_function*, so we may deadlock as soon as two
-> cpus are trying to synchronize all cpus this way.
-> After all I think the etr code should be converted to use stop_machine_run
-> instead. However that doesn't allow for master/slave cpus.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-You are right. I'll drop the code again, it would be nice to get rid of
-this interface, I guess s390 can do that when they convert to the
-generic helpers.
+---584349381-481070356-1208952034=:13313
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
--- 
-Jens Axboe
+As ps3disk is a ppc64-only driver, sector_t equals to unsigned long, and the
+cast is not needed.
 
+Reuse in another (possibly 32-bit) driver is protected by the safety net called
+`compiler warning' (with the cast, it may silently truncate to 32-bit).
+If sector_t ever changes, we will get a compiler warning as well (with the
+cast, we won't).
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Acked-by: Christoph Hellwig <hch@lst.de>
+---
+Please apply, thx!
+
+ drivers/block/ps3disk.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -102,8 +102,7 @@ static void ps3disk_scatter_gather(struc
+ 		dev_dbg(&dev->sbd.core,
+ 			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
+ 			__func__, __LINE__, i, bio_segments(iter.bio),
+-			bio_sectors(iter.bio),
+-			(unsigned long)iter.bio->bi_sector);
++			bio_sectors(iter.bio), iter.bio->bi_sector);
+ 
+ 		size = bvec->bv_len;
+ 		buf = bvec_kmap_irq(bvec, &flags);
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · BIC GEBABEBB08A · IBAN BE39001382358619
+---584349381-481070356-1208952034=:13313--
