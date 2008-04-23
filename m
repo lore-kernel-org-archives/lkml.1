@@ -1,81 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYDWWMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYDWWTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbYDWWMo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYDWWMf
+	id S1754420AbYDWWTG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYDWWSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:12:35 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:20118 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYDWWMe (ORCPT
+	Wed, 23 Apr 2008 18:18:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:58555 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbYDWWSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:12:34 -0400
-Date: Wed, 23 Apr 2008 15:11:23 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: iwl4965 regression since 2.6.24
-Message-ID: <20080423221123.GC17022@mail.oracle.com>
-Mail-Followup-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <20080423124105.GA4783@ics.muni.cz>
+	Wed, 23 Apr 2008 18:18:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=VWVxhBJ6SVM/JM5HZwuzQoSm1sMKEfYANKh2wy5Fs/pI2GCFhc/NCqEDqxh+DhHKpsW0xL7s62S9Mv8q7SC4Ao3IjMyM87pimSF0mRnTVlzmyCGG9hVxFYi1jMIc6xnIY/vbRAFHeKlWC9aGSGOsCXhAAvFcZPIokUbeKeiDHKo=
+Date: Thu, 24 Apr 2008 00:18:48 +0200 (CEST)
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eric Youngdale <eric@andante.org>, David Miller <davem@davemloft.net>,
+       Mike Anderson <andmike@us.ibm.com>, Russell King <rmk@arm.linux.org.uk>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+Subject: [PATCH] fewer pointer derefs in scsi_error
+Message-ID: <alpine.LNX.1.00.0804240006450.2438@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423124105.GA4783@ics.muni.cz>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 02:41:06PM +0200, Lukas Hejtmanek wrote:
-> as of 2.6.25 kernel, the intel driver iwl4965 has serious troubles to
-> associate with AP. I must many times set essid till the association is done.
-> 
-> Moreover, it seems that it is unable to associate with different AP (using the
-> same SSID). I must remove the module completly to be able to associate to the
-> different AP. I think it is big regression.
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-	I am experiencing the same problems on 2.6.24.  I have also
-noticed that it cannot recover association after waking from sleep.  I
-must set the essid before it will talk to the AP.  I always see this in
-dmesg at the time:
+This patch reduces the number of sequential pointer derefs in scsi_error 
+( drivers/scsi/scsi_error.c ).
 
-  ADDRCONF(NETDEV_UP): wlan0: link is not ready
+The bennefits of this are:
+	- makes the code easier to read. Lots of sequential derefs of the 
+	  same pointers are not easy on the eye.
+	- makes the size of the source file 55 bytes smaller.
+	- makes the size of the object file 48 bytes smaller.
+	- theoretically at least, just dereferencing the pointers once can 
+	  allow the compiler to generally slightly faster code, so in 
+	  theory this could also be a micro speed optimization.
 
-After I explicitly re-specify the ssid, I see this in dmesg:
-
-  ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-
-	To clarify: when the interface comes up after boot or wake, it
-associates but will not actually send data (Destination Host
-Unreachable).  I must run "iwconfig wlan0 essid <ssid>".  After that, it
-works.  When I move to a new network with a different access point, I
-must unload and reload the module.
-	Hopefully, I'll get a chance to run with debugging and send
-along some logs.
-
-Thinkpad x61s,
-03:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN Network Connection (rev 61)
+Please consider applying.
 
 
-Joel
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
--- 
+ scsi_error.c |   58 ++++++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 32 insertions(+), 26 deletions(-)
 
-"One of the symptoms of an approaching nervous breakdown is the
- belief that one's work is terribly important."
-         - Bertrand Russell 
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index 221f31e..94395a7 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -185,13 +185,14 @@ int scsi_delete_timer(struct scsi_cmnd *scmd)
+ void scsi_times_out(struct scsi_cmnd *scmd)
+ {
+ 	enum scsi_eh_timer_return (* eh_timed_out)(struct scsi_cmnd *);
++	struct Scsi_Host *host = scmd->device->host; 
+ 
+ 	scsi_log_completion(scmd, TIMEOUT_ERROR);
+ 
+-	if (scmd->device->host->transportt->eh_timed_out)
+-		eh_timed_out = scmd->device->host->transportt->eh_timed_out;
+-	else if (scmd->device->host->hostt->eh_timed_out)
+-		eh_timed_out = scmd->device->host->hostt->eh_timed_out;
++	if (host->transportt->eh_timed_out)
++		eh_timed_out = host->transportt->eh_timed_out;
++	else if (host->hostt->eh_timed_out)
++		eh_timed_out = host->hostt->eh_timed_out;
+ 	else
+ 		eh_timed_out = NULL;
+ 
+@@ -474,22 +475,22 @@ static int scsi_try_host_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+ 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Host RST\n",
+ 					  __FUNCTION__));
+ 
+-	if (!scmd->device->host->hostt->eh_host_reset_handler)
++	if (!host->hostt->eh_host_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_host_reset_handler(scmd);
++	rtn = host->hostt->eh_host_reset_handler(scmd);
+ 
+ 	if (rtn == SUCCESS) {
+-		if (!scmd->device->host->hostt->skip_settle_delay)
++		if (!host->hostt->skip_settle_delay)
+ 			ssleep(HOST_RESET_SETTLE_TIME);
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
+-		scsi_report_bus_reset(scmd->device->host,
+-				      scmd_channel(scmd));
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
++		scsi_report_bus_reset(host, scmd_channel(scmd));
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -503,22 +504,22 @@ static int scsi_try_bus_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+ 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Bus RST\n",
+ 					  __FUNCTION__));
+ 
+-	if (!scmd->device->host->hostt->eh_bus_reset_handler)
++	if (!host->hostt->eh_bus_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_bus_reset_handler(scmd);
++	rtn = host->hostt->eh_bus_reset_handler(scmd);
+ 
+ 	if (rtn == SUCCESS) {
+-		if (!scmd->device->host->hostt->skip_settle_delay)
++		if (!host->hostt->skip_settle_delay)
+ 			ssleep(BUS_RESET_SETTLE_TIME);
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
+-		scsi_report_bus_reset(scmd->device->host,
+-				      scmd_channel(scmd));
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
++		scsi_report_bus_reset(host, scmd_channel(scmd));
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -544,16 +545,17 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+-	if (!scmd->device->host->hostt->eh_target_reset_handler)
++	if (!host->hostt->eh_target_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_target_reset_handler(scmd);
++	rtn = host->hostt->eh_target_reset_handler(scmd);
+ 	if (rtn == SUCCESS) {
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
+ 		__starget_for_each_device(scsi_target(scmd->device), NULL,
+ 					  __scsi_report_device_reset);
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -572,11 +574,12 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+ {
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+-	if (!scmd->device->host->hostt->eh_device_reset_handler)
++	if (!host->hostt->eh_device_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_device_reset_handler(scmd);
++	rtn = host->hostt->eh_device_reset_handler(scmd);
+ 	if (rtn == SUCCESS)
+ 		__scsi_report_device_reset(scmd->device, NULL);
+ 	return rtn;
+@@ -584,10 +587,13 @@ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+ 
+ static int __scsi_try_to_abort_cmd(struct scsi_cmnd *scmd)
+ {
+-	if (!scmd->device->host->hostt->eh_abort_handler)
++	int (* eh_abort_handler)(struct scsi_cmnd *)
++		= scmd->device->host->hostt->eh_abort_handler;
++
++	if (!eh_abort_handler)
+ 		return FAILED;
+ 
+-	return scmd->device->host->hostt->eh_abort_handler(scmd);
++	return eh_abort_handler(scmd);
+ }
+ 
+ /**
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+
