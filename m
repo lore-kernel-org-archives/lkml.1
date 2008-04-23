@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYDWSC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYDWSEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbYDWSC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYDWSCV
+	id S1756245AbYDWSEP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWSEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:02:21 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:54533 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751144AbYDWSCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:02:20 -0400
-Date: Wed, 23 Apr 2008 11:02:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 04 of 12] Moves all mmu notifier methods outside the PT
- lock (first and not last
-In-Reply-To: <20080423134427.GW24536@duo.random>
-Message-ID: <Pine.LNX.4.64.0804231059300.12373@schroedinger.engr.sgi.com>
-References: <ac9bb1fb3de2aa5d2721.1208872280@duo.random>
- <Pine.LNX.4.64.0804221323510.3640@schroedinger.engr.sgi.com>
- <20080422224048.GR24536@duo.random> <Pine.LNX.4.64.0804221613570.4868@schroedinger.engr.sgi.com>
- <20080423134427.GW24536@duo.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Apr 2008 14:04:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47667 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbYDWSD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:03:59 -0400
+From: eparis@redhat.com
+To: linux-kernel@vger.kernel.org
+Cc: jmorris@namei.org, serue@us.ibm.com, Eric Paris <eparis@redhat.com>
+Subject: [PATCH 2/4] capability: security/capability.c whitespace, syntax, and other cleanups
+Date: Wed, 23 Apr 2008 13:52:32 -0400
+Message-Id: <12089731553297-git-send-email-eparis@redhat.com>
+X-Mailer: git-send-email 1.5.2.1
+In-Reply-To: <12089731541206-git-send-email-eparis@redhat.com>
+References: <12089731541206-git-send-email-eparis@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008, Andrea Arcangeli wrote:
+From: Eric Paris <eparis@redhat.com>
 
-> I know you rather want to see KVM development stalled for more months
-> than to get a partial solution now that already covers KVM and GRU
-> with the same API that XPMEM will also use later. It's very unfair on
-> your side to pretend to stall other people development if what you
-> need has stronger requirements and can't be merged immediately. This
-> is especially true given it was publically stated that XPMEM never
-> passed all regression tests anyway, so you can't possibly be in such
-> an hurry like we are, we can't progress without this. Infact we can
-> but it would be an huge effort and it would run _slower_ and it would
-> all need to be deleted once mmu notifiers are in.
+This patch changes security/capability.c to fix whitespace and syntax issues.  Things that
+are fixed may include (does not not have to include)
 
-We have had this workaround effort done years ago and have been 
-suffering the ill effects of pinning for years. Had to deal with 
-it again and again so I guess we do not matter? Certainly we have no 
-interest in stalling KVM development.
+whitespace at end of lines
+spaces followed by tabs
+spaces used instead of tabs
+spacing around parenthesis
+location of { around structs and else clauses
+location of * in pointer declarations
+removal of initialization of static data to keep it in the right section
+useless {} in if statemetns
+useless checking for NULL before kfree
+fixing of the indentation depth of switch statements
+no assignments in if statements
+include spaces around , in function calls
+and any number of other things I forgot to mention
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+ security/capability.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/security/capability.c b/security/capability.c
+index 2c6e06d..e77d5e4 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -46,9 +46,9 @@ static struct security_operations capability_ops = {
+ 	.task_post_setuid =		cap_task_post_setuid,
+ 	.task_reparent_to_init =	cap_task_reparent_to_init,
+ 
+-	.syslog =                       cap_syslog,
++	.syslog =			cap_syslog,
+ 
+-	.vm_enough_memory =             cap_vm_enough_memory,
++	.vm_enough_memory =		cap_vm_enough_memory,
+ };
+ 
+ /* flag to keep track of how we were registered */
+@@ -57,25 +57,25 @@ static int secondary;
+ static int capability_disable;
+ module_param_named(disable, capability_disable, int, 0);
+ 
+-static int __init capability_init (void)
++static int __init capability_init(void)
+ {
+ 	if (capability_disable) {
+ 		printk(KERN_INFO "Capabilities disabled at initialization\n");
+ 		return 0;
+ 	}
+ 	/* register ourselves with the security framework */
+-	if (register_security (&capability_ops)) {
++	if (register_security(&capability_ops)) {
+ 		/* try registering with primary module */
+-		if (mod_reg_security (KBUILD_MODNAME, &capability_ops)) {
+-			printk (KERN_INFO "Failure registering capabilities "
+-				"with primary security module.\n");
++		if (mod_reg_security(KBUILD_MODNAME, &capability_ops)) {
++			printk(KERN_INFO "Failure registering capabilities "
++			       "with primary security module.\n");
+ 			return -EINVAL;
+ 		}
+ 		secondary = 1;
+ 	}
+-	printk (KERN_INFO "Capability LSM initialized%s\n",
+-		secondary ? " as secondary" : "");
++	printk(KERN_INFO "Capability LSM initialized%s\n",
++	       secondary ? " as secondary" : "");
+ 	return 0;
+ }
+ 
+-security_initcall (capability_init);
++security_initcall(capability_init);
+-- 
+1.5.2.1
+
