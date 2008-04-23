@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYDWLZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYDWLZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYDWLZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 07:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYDWLZO
+	id S1755858AbYDWLZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 07:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYDWLZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 07:25:14 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:41238 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbYDWLZN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 07:25:13 -0400
-Message-ID: <480F1C60.4030305@s5r6.in-berlin.de>
-Date: Wed, 23 Apr 2008 13:24:16 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+	Wed, 23 Apr 2008 07:25:51 -0400
+Received: from mail0.scram.de ([78.47.204.202]:59610 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbYDWLZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 07:25:50 -0400
+X-Spam-Score: -4.2
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <480F1CB5.6050307@scram.de>
+Date: Wed, 23 Apr 2008 13:25:41 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Romano Giannetti <romanol@upcomillas.es>
-CC: Daniel Hazelton <dhazelton@enter.net>, david@lang.hm,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: x86: 4kstacks default
-References: <200804181737.m3IHbabI010051@hera.kernel.org>	 <200804230121.11004.dhazelton@enter.net>	 <alpine.DEB.1.10.0804222222490.23325@asgard>	 <200804230141.09523.dhazelton@enter.net> <1208936787.13905.14.camel@localhost>
-In-Reply-To: <1208936787.13905.14.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+CC: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [2.6 patch] drivers/of/of_i2c.c: add MODULE_LICENSE
+References: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
+In-Reply-To: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Romano Giannetti wrote:
-[stack size requirements -> ndiswrapper -> hardware support status -> ?]
-> a nice page with "_this_ laptop will fully work with linux" would be
-> nice. Linux on laptop or similar is too complex to be a real help when
-> you have to buy a laptop in 2 days. 
+Adrian Bunk schrieb:
 
-If sites like tuxmobil.org, hardware4linux.info, and the hardware
-compatibility databases of Linux distributors don't work for you, then
-just ask the notebook vendors directly.
--- 
-Stefan Richter
--=====-==--- -=-- =-===
-http://arcgraph.de/sr/
+> After commit 585468e5d5962660867c269e26f0a4b89a599473
+> ([POWERPC] i2c: Fix build breakage introduced by OF helpers)
+> drivers/of/of_i2c.c needs a MODULE_LICENSE.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+Acked-by: Jochen Friedrich <jochen@scram.de>
+
+Thanks,
+Jochen
