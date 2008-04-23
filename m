@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYDWSQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbYDWSQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbYDWSQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYDWSPc
+	id S1757438AbYDWSQn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYDWSQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:15:32 -0400
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:11362 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753630AbYDWSP3 (ORCPT
+	Wed, 23 Apr 2008 14:16:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38992 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757094AbYDWSQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:15:29 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
-Date: Wed, 23 Apr 2008 20:15:26 +0200
-User-Agent: KMail/1.9.9
-Cc: "Pete Zaitcev" <zaitcev@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
-       "Christoph Lameter" <clameter@sgi.com>
-References: <200804212310.41729.elendil@planet.nl> <20080423101123.a69e4945.zaitcev@redhat.com> <84144f020804231035w3fdb10aax4b90dc4e0bc1957d@mail.gmail.com>
-In-Reply-To: <84144f020804231035w3fdb10aax4b90dc4e0bc1957d@mail.gmail.com>
+	Wed, 23 Apr 2008 14:16:22 -0400
+Message-ID: <480F7C11.8040302@zytor.com>
+Date: Wed, 23 Apr 2008 11:12:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
+References: <200804181856.m3IIuKd4007403@hera.kernel.org>	 <1208917076.9212.721.camel@pmac.infradead.org>	 <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com> <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com>
+In-Reply-To: <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804232015.27257.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Apr 2008 18:15:27.0754 (UTC) FILETIME=[01EFD6A0:01C8A56E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008, Pekka Enberg wrote:
-> Well, a race in mon_text_release() after the kmem_cache_free() loop
-> and the call to kmem_cache_destroy() but looks like that can't happen
-> either. Frans, is this easily triggerable? If so, can you try with
-> CONFIG_SLAB and CONFIG_DEBUG_SLAB enabled instead?
+Cyrill Gorcunov wrote:
+> 
+> Hi David,
+> 
+> actually, this CONFIG_VM86 was there even before the renaming was done.
+> The main questions (imo) - is there any user space application who uses
+> these flags? If they are - then even the idea of this patch was a bit bogus,
+> and I should *not* remove all these VM86 specific flags but better define them
+> as aliases on flags from processor-flags.h.
+> 
 
-Not really. I've only seen it once two days ago and not at all today while I 
-was doing the traces for the scheduling issue.
+Hard to know.  VM86 is only used by a handful of applications (DOSEMU, 
+X.org, others?) but it's hard to know what exactly they are.
 
-I can give it a go, but I'm not yet ready to switch to current git on this 
-box for longer periods (although so far I've actually had less issues than 
-with .24-rc1; fingers crossed). If I get anything I'll follow up.
+The fact that noone hollered when that CONFIG_VM86 went in is probably a 
+good hint that they don't matter, but it's hard to say for sure.
+
+	-hpa
+
