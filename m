@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbYDWC1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933947AbYDWCpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762756AbYDWC1o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 22:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYDWC1e
+	id S933947AbYDWCpc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 22:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbYDWCpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 22:27:34 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61625 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755443AbYDWC1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 22:27:33 -0400
-Message-ID: <480E9E52.4080905@cn.fujitsu.com>
-Date: Wed, 23 Apr 2008 10:26:26 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 22 Apr 2008 22:45:21 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:63865 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759082AbYDWCpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 22:45:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=aoYLFZrZDu9Y89ss+YHo6KO4ShiS6DoOiaSUUvCApkBxzpa7gtn/UJsJg7uhUiIxcERUCOUOE+w/SIpcYCgBzQVCyBGP+cTpAcoPKBiJODX08MYW8/cQFRz+wIY1fV8ErXf80YydhRLJ6e0MBonrwccFxaWwjxLija8XMd8BAjs=
+Reply-To: yhlu.kernel@gmail.com
+To: akpm@linux-foundation.org,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: [PATCH] mptsas: add mptsas_shutdown to call pci_disable_msi
+Date: Tue, 22 Apr 2008 19:44:33 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Prakash@mpk12-office-77-204, Sathya <sathya.prakash@lsi.com>,
+       "Moore, Eric" <Eric.Moore@lsi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH] memcg: remove redundant initialization in mem_cgroup_create()
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804221944.33775.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*mem has been zeroed, that means mem->info has already
-been filled with 0.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- mm/memcontrol.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+this change
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index eefa750..020e8f5 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1014,8 +1014,6 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+| commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
+| Author: Prakash, Sathya <sathya.prakash@lsi.com>
+| Date:   Fri Mar 7 15:53:21 2008 +0530
+|
+|     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
+|
+|     This patch modifies the driver to enable MSI by default for all SAS chips.
+|
+cause kexec RHEL 5.1 kernel fail.
+
+root casue: the rhel 5.1 kernel still use INTx emulation.
+and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec path
+
+so try to call mptsas_remove in mptsas_shutdown.
+then pci_disable_msi will be called via mptsas_remove==>mptscih_remove==>
+mpt_detach.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Prakash, Sathya <sathya.prakash@lsi.com>
+CC: "Moore, Eric" <Eric.Moore@lsi.com>
+
+Index: linux-2.6/drivers/message/fusion/mptsas.c
+===================================================================
+--- linux-2.6.orig/drivers/message/fusion/mptsas.c
++++ linux-2.6/drivers/message/fusion/mptsas.c
+@@ -3327,6 +3327,11 @@ static void __devexit mptsas_remove(stru
+ 	mptscsih_remove(pdev);
+ }
  
- 	res_counter_init(&mem->res);
- 
--	memset(&mem->info, 0, sizeof(mem->info));
--
- 	for_each_node_state(node, N_POSSIBLE)
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
- 			goto free_out;
--- 1.5.4.rc3
++static void mptsas_shutdown(struct pci_dev *pdev)
++{
++	mptsas_remove(pdev);
++}
++
+ static struct pci_device_id mptsas_pci_table[] = {
+ 	{ PCI_VENDOR_ID_LSI_LOGIC, MPI_MANUFACTPAGE_DEVID_SAS1064,
+ 		PCI_ANY_ID, PCI_ANY_ID },
+@@ -3348,7 +3353,7 @@ static struct pci_driver mptsas_driver =
+ 	.id_table	= mptsas_pci_table,
+ 	.probe		= mptsas_probe,
+ 	.remove		= __devexit_p(mptsas_remove),
+-	.shutdown	= mptscsih_shutdown,
++	.shutdown	= mptsas_shutdown,
+ #ifdef CONFIG_PM
+ 	.suspend	= mptscsih_suspend,
+ 	.resume		= mptscsih_resume,
