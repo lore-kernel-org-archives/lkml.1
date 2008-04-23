@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYDWKOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYDWKPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbYDWKOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbYDWKOn
+	id S1756753AbYDWKPS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbYDWKO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 06:14:43 -0400
+	Wed, 23 Apr 2008 06:14:58 -0400
 Received: from fg-out-1718.google.com ([72.14.220.156]:30919 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbYDWKOl (ORCPT
+	with ESMTP id S1756379AbYDWKO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 06:14:41 -0400
+	Wed, 23 Apr 2008 06:14:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:sender;
-        b=hgvMOSnLwmWU1x6jpYDD109T44QQQqaSiMiq+X+aCLKXsW1TJzUmbvn8ysyqPmnHoetm+zA9n2Km+36lEIhYYhvgmYDkVRsmC9HflE+FEi8Xg4ti1xbBvIwCT52RoabEHa+JMg7Xr5x+D2CJ08apX+BME0EzAwIjbblPuVAOVvs=
-Date: Wed, 23 Apr 2008 12:14:34 +0200
+        b=CT7h4kzsTK5QfcndX1DF5qgNFu6Kw+KI+t3jSPr6StRnRTzsZrbWkIZ3LP5uqGWZCbDdixYN/SteMXVeb3GZaULh4lyQNgQ5tTyuO0L7kRyYrKlPV/HtzP4DKKr4fwCWtuXafFPYJeUXzLo9Ix0yugxRZzVH/r1a4pIe537IyB0=
+Date: Wed, 23 Apr 2008 12:14:51 +0200
 From: Rodney Lorrimar <rodney@rodney.id.au>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Pavel Machek <pavel@suse.cz>, jikos@suse.cz,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Andrew McNabb <amcnabb@mcnabbs.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] Input: adbhid - fix capslock key state after suspend
-Message-ID: <20080423101434.GB4735@solaria.local>
+Subject: [PATCH 2/2] Input: adbhid - capslock and power button fix
+Message-ID: <20080423101451.GC4735@solaria.local>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
+	protocol="application/pgp-signature"; boundary="KDt/GgjP6HVcx58l"
 Content-Disposition: inline
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,108 +32,77 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---SkvwRMAIpAhPCcCJ
+--KDt/GgjP6HVcx58l
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 If the adbhid module parameter restore_capslock_events is used,
-sometimes capslock will get stuck down after resuming.
+pressing the power button may confuse the capslock state. This is
+because the power button release scancode (0xff) is sometimes the same
+as the capslock press/release scancode.
 
-My fix is to remember the capslock state before suspend and then
-ignore the first 'caps lock key down' message after resume if the
-capslock LED was on before suspending.
+This fix adds yet another flag to track the state of the power button
+so that it works independently of capslock.
 
 Signed-off-by: Rodney Lorrimar <rodney@rodney.id.au>
 ---
- drivers/macintosh/adbhid.c |   43 +++++++++++++++++++++++++++++++++++++---=
----
- 1 files changed, 37 insertions(+), 6 deletions(-)
+ drivers/macintosh/adbhid.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index ef4c117..19d0984 100644
+index 19d0984..2f28444 100644
 --- a/drivers/macintosh/adbhid.c
 +++ b/drivers/macintosh/adbhid.c
-@@ -219,11 +219,12 @@ struct adbhid {
- 	int flags;
- };
-=20
--#define FLAG_FN_KEY_PRESSED	0x00000001
--#define FLAG_POWER_FROM_FN	0x00000002
--#define FLAG_EMU_FWDEL_DOWN	0x00000004
--#define FLAG_CAPSLOCK_TRANSLATE	0x00000008
--#define FLAG_CAPSLOCK_DOWN	0x00000010
-+#define FLAG_FN_KEY_PRESSED		0x00000001
-+#define FLAG_POWER_FROM_FN		0x00000002
-+#define FLAG_EMU_FWDEL_DOWN		0x00000004
-+#define FLAG_CAPSLOCK_TRANSLATE		0x00000008
-+#define FLAG_CAPSLOCK_DOWN		0x00000010
-+#define FLAG_CAPSLOCK_IGNORE_NEXT	0x00000020
+@@ -225,6 +225,7 @@ struct adbhid {
+ #define FLAG_CAPSLOCK_TRANSLATE		0x00000008
+ #define FLAG_CAPSLOCK_DOWN		0x00000010
+ #define FLAG_CAPSLOCK_IGNORE_NEXT	0x00000020
++#define FLAG_POWER_KEY_PRESSED		0x00000040
 =20
  static struct adbhid *adbhid[16];
 =20
-@@ -291,8 +292,15 @@ adbhid_input_keycode(int id, int scancode, int repeat)
- 		if (keycode =3D=3D ADB_KEY_CAPSLOCK && !up_flag) {
- 			/* Key pressed, turning on the CapsLock LED.
- 			 * The next 0xff will be interpreted as a release. */
--			ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
-+			if (ahid->flags & FLAG_CAPSLOCK_IGNORE_NEXT) {
-+				/* Throw away this key event if it happens
-+				 * just after resume. */
-+				ahid->flags &=3D ~FLAG_CAPSLOCK_IGNORE_NEXT;
-+				return;
-+			} else {
-+				ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
+@@ -301,9 +302,11 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+ 				ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
  					| FLAG_CAPSLOCK_DOWN;
-+			}
- 		} else if (scancode =3D=3D 0xff) {
+ 			}
+-		} else if (scancode =3D=3D 0xff) {
++		} else if (scancode =3D=3D 0xff &&
++			   !(ahid->flags & FLAG_POWER_KEY_PRESSED)) {
  			/* Scancode 0xff usually signifies that the capslock
- 			 * key was either pressed or released. */
-@@ -681,6 +689,20 @@ static int adbhid_kbd_event(struct input_dev *dev, uns=
-igned int type, unsigned i
- 	return -1;
- }
-=20
-+static void
-+adbhid_kbd_capslock_remember(void)
-+{
-+	struct adbhid *ahid;
-+	int i;
-+	for (i =3D 1; i < 16; i++) {
-+		ahid =3D adbhid[i];
-+
-+		if (ahid && ahid->id =3D=3D ADB_KEYBOARD)
-+			if (ahid->flags & FLAG_CAPSLOCK_TRANSLATE)
-+				ahid->flags |=3D FLAG_CAPSLOCK_IGNORE_NEXT;
-+	}
-+}
-+
- static int
- adb_message_handler(struct notifier_block *this, unsigned long code, void =
-*x)
- {
-@@ -699,6 +721,15 @@ adb_message_handler(struct notifier_block *this, unsig=
-ned long code, void *x)
- 		/* Stop pending led requests */
- 		while(leds_req_pending)
- 			adb_poll();
-+
-+		/* After resume, and if the capslock LED is on, the PMU will
-+		 * send a "capslock down" key event. This confuses the
-+		 * restore_capslock_events logic. Remember if the capslock
-+		 * LED was on before suspend so the unwanted key event can
-+		 * be ignored after resume. */
-+		if (restore_capslock_events)
-+			adbhid_kbd_capslock_remember();
-+
+-			 * key was either pressed or released. */
++			 * key was either pressed or released, or that the
++			 * power button was released. */
+ 			if (ahid->flags & FLAG_CAPSLOCK_TRANSLATE) {
+ 				keycode =3D ADB_KEY_CAPSLOCK;
+ 				if (ahid->flags & FLAG_CAPSLOCK_DOWN) {
+@@ -317,7 +320,7 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+ 				}
+ 			} else {
+ 				printk(KERN_INFO "Spurious caps lock event "
+-						"(scancode 0xff).");
++						 "(scancode 0xff).\n");
+ 			}
+ 		}
+ 	}
+@@ -344,6 +347,12 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+ 		}
  		break;
-=20
- 	case ADB_MSG_POST_RESET:
+ 	case ADB_KEY_POWER:
++		/* Keep track of the power key state */
++		if (up_flag)
++			ahid->flags &=3D ~FLAG_POWER_KEY_PRESSED;
++		else
++			ahid->flags |=3D FLAG_POWER_KEY_PRESSED;
++
+ 		/* Fn + Command will produce a bogus "power" keycode */
+ 		if (ahid->flags & FLAG_FN_KEY_PRESSED) {
+ 			keycode =3D ADB_KEY_CMD;
 --=20
 1.5.5.1
 
 
---SkvwRMAIpAhPCcCJ
+--KDt/GgjP6HVcx58l
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -141,9 +110,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIDwwKbBchLr+YxKcRAgY3AJ0SycNbp8TDWstCpnLqVOsaz/DLTgCfVTx3
-9w7FR4OR28Q34URldDp/pF4=
-=8OHL
+iD8DBQFIDwwbbBchLr+YxKcRAibdAKCF/GKGG5e1Ypt+hd942iQ6oTnBpgCfST/y
+Lj23Zz3foVYyI2YRp2x8s0k=
+=ONkJ
 -----END PGP SIGNATURE-----
 
---SkvwRMAIpAhPCcCJ--
+--KDt/GgjP6HVcx58l--
