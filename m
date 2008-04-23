@@ -1,137 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbYDWBim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYDWBjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933860AbYDWBim (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759076AbYDWBid
+	id S1760930AbYDWBjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762221AbYDWBij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:38:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46326 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758921AbYDWBic convert rfc822-to-8bit (ORCPT
+	Tue, 22 Apr 2008 21:38:39 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:38803 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762119AbYDWBii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:38:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: device_pm_add (was: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff)
-Date: Wed, 23 Apr 2008 02:50:24 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, herbert@gondor.apana.org.au,
-       Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org> <200804222234.19936.rjw@sisk.pl> <alpine.LFD.1.10.0804221350110.2779@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804221350110.2779@woody.linux-foundation.org>
+	Tue, 22 Apr 2008 21:38:38 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bisected] Latest git not seeing HD with sata_nv
+References: <adazlrlcw9f.fsf@cisco.com> <adave29cqgh.fsf@cisco.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 22 Apr 2008 18:38:36 -0700
+In-Reply-To: <adave29cqgh.fsf@cisco.com> (Roland Dreier's message of "Tue, 22
+	Apr 2008 18:25:34 -0700")
+Message-ID: <adar6cxcpur.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804230250.26159.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Apr 2008 01:38:37.0441 (UTC) FILETIME=[C0365710:01C8A4E2]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry for resending, but it looks like this message didn't reach the lists.]
+FWIW, the patch below also makes my box start working again...  I have
+no idea what the right fix is, given that bug 3352 mostly seems to be
+about nforce2 and nforce3, and my box has a more modern nvidia chipset:
 
-On Tuesday, 22 of April 2008, Linus Torvalds wrote:
-> 
-> On Tue, 22 Apr 2008, Rafael J. Wysocki wrote:
-> > 
-> > There is a bug in device_add() that IMO can be fixed this way:
-> 
-> Ok, looks fine. Greg?
-> 
-> > Index: linux-2.6/drivers/base/core.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/core.c
-> > +++ linux-2.6/drivers/base/core.c
-> > @@ -820,11 +820,11 @@ int device_add(struct device *dev)
-> >  	error = bus_add_device(dev);
-> >  	if (error)
-> >  		goto BusError;
-> > +	bus_attach_device(dev);
-> >  	error = device_pm_add(dev);
-> >  	if (error)
-> >  		goto PMError;
-> >  	kobject_uevent(&dev->kobj, KOBJ_ADD);
-> > -	bus_attach_device(dev);
-> >  	if (parent)
-> >  		klist_add_tail(&dev->knode_parent, &parent->klist_children);
-> >  
-> > The problem is that bus_remove_device() assumes bus_attach_device() to have
-> > run, AFAICS.
-> 
-> As to the other issue:
-> 
-> > > So I would suggest reverting that commit, or at least just making it a 
-> > > warning (while still registering the device).
-> > 
-> > Are drivers supposed to register children of suspended devices?  That doesn't
-> > make much sense IMO ...
-> 
-> Well, that's why I think the warning itself makes sense - and then we can 
-> decide whether it makes sense for that particular case or not. Clearly it 
-> happens (since it triggered), now we need to figure out _why_ it happened. 
+    00:04.0 IDE interface [0101]: nVidia Corporation MCP55 IDE [10de:036e] (rev a1)
 
-Well, this particular case looks like a race to me.
+Anyway, it seems 305d2a1a broke the logic that nv_hardreset() relies on
+when it doesn't let sata_sff_hardreset() set class.
 
-> But I don't think debugging messages should change behaviour.
-
-Okay, below is a more complete patch that changes device_pm_add() so that
-it doesn't refuse to add children of suspended devices.  Note, however, that
-even if such a registration succeeds, it will probably lead to some future
-problems.
-
-Thanks,
-Rafael
-
-
----
-Do not refuse to actually register children of suspended devices,
-but still warn about attempts to do that.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -62,7 +62,7 @@ static bool all_sleeping;
-  */
- int device_pm_add(struct device *dev)
- {
--	int error = 0;
-+	int error;
- 
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
-@@ -70,18 +70,15 @@ int device_pm_add(struct device *dev)
- 	mutex_lock(&dpm_list_mtx);
- 	if ((dev->parent && dev->parent->power.sleeping) || all_sleeping) {
- 		if (dev->parent->power.sleeping)
--			dev_warn(dev,
--				"parent %s is sleeping, will not add\n",
-+			dev_warn(dev, "parent %s is sleeping\n",
- 				dev->parent->bus_id);
- 		else
--			dev_warn(dev, "devices are sleeping, will not add\n");
-+			dev_warn(dev, "all devices are sleeping\n");
- 		WARN_ON(true);
--		error = -EBUSY;
--	} else {
--		error = dpm_sysfs_add(dev);
--		if (!error)
--			list_add_tail(&dev->power.entry, &dpm_active);
- 	}
-+	error = dpm_sysfs_add(dev);
-+	if (!error)
-+		list_add_tail(&dev->power.entry, &dpm_active);
- 	mutex_unlock(&dpm_list_mtx);
- 	return error;
+diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+index 109b074..d0d85a3 100644
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -1597,7 +1597,7 @@ static int nv_hardreset(struct ata_link *link, unsigned int *class,
+ 	 * some controllers.  Don't classify on hardreset.  For more
+ 	 * info, see http://bugzilla.kernel.org/show_bug.cgi?id=3352
+ 	 */
+-	return sata_sff_hardreset(link, &dummy, deadline);
++	return sata_sff_hardreset(link, class, deadline);
  }
+ 
+ static void nv_adma_error_handler(struct ata_port *ap)
