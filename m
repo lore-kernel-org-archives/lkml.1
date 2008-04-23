@@ -1,152 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYDWKCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYDWKDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbYDWKCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbYDWJxu
+	id S1757760AbYDWKDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbYDWJ5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:53:50 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:23719 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755276AbYDWJxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:53:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pH3U7QFpHrDiTQIuu24uKvCBhu6l/x9a5yEkPQ/vjILA7AJULW6k5v932hwVe4CWBlapdBh2izrPLM6n6jgAAtbm92r4OBuyJkcGAQPf76dKFjT3IGZB0vBI+A4wrCIs7/fhCSw0fGUBNy0ervwo/d5oHrUnKCNi7AjCmBEsWvU=
-Message-ID: <b647ffbd0804230253i32f48fcgb5dc7cf5b55607ac@mail.gmail.com>
-Date: Wed, 23 Apr 2008 11:53:47 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated tasks have been added
-Cc: "Gregory Haskins" <ghaskins@novell.com>, mingo@elte.hu,
-       suresh.b.siddha@intel.com, chinang.ma@intel.com, arjan@linux.intel.com,
-       willy@linux.intel.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <b647ffbd0804230105u7966ed06wd4ed248f59132849@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
-	 <20080421181015.4560.7658.stgit@novell1.haskins.net>
-	 <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
-	 <Pine.LNX.4.58.0804221144410.21511@gandalf.stny.rr.com>
-	 <b647ffbd0804230105u7966ed06wd4ed248f59132849@mail.gmail.com>
+	Wed, 23 Apr 2008 05:57:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40080
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758243AbYDWJ5U convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:57:20 -0400
+Date: Wed, 23 Apr 2008 02:57:21 -0700 (PDT)
+Message-Id: <20080423.025721.50367920.davem@davemloft.net>
+To: michel@tungstengraphics.com
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net,
+       hollisb@us.ibm.com, adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, dzu@denx.de
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/3] radeonfb: Fix 64 bits
+ resources on 32 bits archs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1208943127.5632.324.camel@thor.sulgenrain.local>
+References: <480E0A54.9010203@linux.vnet.ibm.com>
+	<1208902903.9640.138.camel@pasglop>
+	<1208943127.5632.324.camel@thor.sulgenrain.local>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/23 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
-> Hi Steven,
->
->  > [ ... ]
->
-> >  > square#0:
->  >  >
->  >  > cpu1:  T0 is running
->  >  >
->  >  > T1 is of the same prio as T0 (shouldn't really matter but to get the
->  >  > same result it would require altering the flow of events slightly)
->  >  >
->  >  > T1's affinity allows it to be run only on cpu1.
->  >  > T0 can run on both.
->  >  >
->  >  > try_to_wake_up() is called for T1.
->  >  > |
->  >  > --> select_task_rq_rt() => gives cpu1
->  >  > |
->  >  > --> task_wake_up_rt()
->  >  >    |
->  >  >    ---> push_rt_tasks() -> rq->rt.pushed = 1
->  >  >
->  >  > now, neither T1 (due to its affinity), nor T0 (it's running) can be
->  >  > pushed away to cpu0.
->  >
->  >  Ah, this may be what you are talking about. T0 was running, but because
->  >  T1 has its affinity set to cpu1 it wont cause a push. When T0 schedules
->  >  away to give T1 its cpu time, T0 wont push away because of the pushed
->  >  flag.
->  >
->  >  Hmm, interesting. Of course my response is "Don't use SCHED_RR! It's
->  >  evil!" ;-)
->
->  It's not just SCHED_RR ;-) They both can be of SCHED_FIFO.
->
->  T1 _preempts_ T0 and again
->
->
->   --> task_wake_up_rt()
->   |
->   ---> push_rt_tasks() -> rq->rt.pushed = 1
->
->  and T0 won't be pushed away to cpu0 by post_schedule_rt().
->
->  As Gregory has pointed out, at the very least it's a test in
->  task_wake_up_rt() which is wrong.
->
->  push_rt_tasks() should not be called when 'p' (a newly woken up task)
->  is the next one to run.
->
->  IOW, it should be (p->prio < rq->curr->prio) instead of (p->prio >=
->  rq->rt.highest_prio).
+From: Michel Dänzer <michel@tungstengraphics.com>
+Date: Wed, 23 Apr 2008 11:32:07 +0200
 
-No, this argument is wrong indeed.
+> On Wed, 2008-04-23 at 08:21 +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2008-04-22 at 17:55 +0200, Christian Ehrhardt wrote:
+> > > I wanted to ask if there are any known workarounds atm that would
+> > > allow me to use my X11 for now?
+> > 
+> > X is doing a mmap of /dev/mem instead of /dev/fb ?
+> > 
+> > You can normally map the fb mapping /dev/fb and then map the registers
+> > using /dev/fb at an offset beyond the framebuffer (fix->smem_len).
+> > 
+> > If X is using /dev/mem instead, then it's being stupid and needs to be
+> > fixed...
+> 
+> It's up to the driver, and again, the current radeon driver doesn't use
+> radeonfb at all anymore...
 
-Something like this:
-(white-spaces are broken)
+The only portable thing is for X to use the PCI sysfs mmap() stuff,
+which current Xorg servers using libpciaccess do.
 
---- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
-+++ sched_rt.c  2008-04-23 11:36:20.000000000 +0200
-@@ -1121,9 +1121,13 @@ static void post_schedule_rt(struct rq *
-
- static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
- {
--       if (!task_running(rq, p) &&
--           (p->prio >= rq->rt.highest_prio) &&
--           rq->rt.overloaded)
-+       /*
-+        * Consider pushing 'p' off to other CPUS only
-+        * if it's not the next task to run on this CPU.
-+        */
-+       if (rq->rt.overloaded &&
-+           p->prio > rq->rt.highest_prio &&
-+           pick_rt_task(rq, p, -1))
-                push_rt_tasks(rq);
- }
-
-
-or even this (although, it's a bit heavier)
-
---- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
-+++ sched_rt.c  2008-04-23 11:49:03.000000000 +0200
-@@ -1118,12 +1118,22 @@ static void post_schedule_rt(struct rq *
-        }
- }
-
- static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
- {
--       if (!task_running(rq, p) &&
--           (p->prio >= rq->rt.highest_prio) &&
--           rq->rt.overloaded)
-+       if (!rq->rt.overloaded)
-+               return;
-+
-+       /*
-+        * Consider pushing 'p' off to other CPUS only
-+        * if it's not the next task to run on this CPU.
-+        * i.e. it's not a single task with the highest prio
-+        * on the queue.
-+        */
-+       if (p->prio == rq->rt.highest_prio &&
-+           p->rt.run_list.prev == p->rt.run_list.next)
-+               return;
-+
-+       if (pick_rt_task(rq, p, -1))
-                push_rt_tasks(rq);
- }
-
-
--- 
-Best regards,
-Dmitry Adamushko
+I know because I'm typing this from a sparc64 using a Radeon
+with current Xorg :-)
