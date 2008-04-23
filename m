@@ -1,76 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760838AbYDWKCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYDWKCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760838AbYDWKCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 06:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYDWJxc
+	id S1761057AbYDWKCz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 06:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbYDWJxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:53:32 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59539 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755924AbYDWJxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:53:31 -0400
-Date: Wed, 23 Apr 2008 12:52:51 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Erik Bosman <ejbosman@cs.vu.nl>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86: make enable_TSC() static
-Message-ID: <20080423095251.GP28933@cs181133002.pp.htv.fi>
+	Wed, 23 Apr 2008 05:53:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:23719 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755276AbYDWJxs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:53:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pH3U7QFpHrDiTQIuu24uKvCBhu6l/x9a5yEkPQ/vjILA7AJULW6k5v932hwVe4CWBlapdBh2izrPLM6n6jgAAtbm92r4OBuyJkcGAQPf76dKFjT3IGZB0vBI+A4wrCIs7/fhCSw0fGUBNy0ervwo/d5oHrUnKCNi7AjCmBEsWvU=
+Message-ID: <b647ffbd0804230253i32f48fcgb5dc7cf5b55607ac@mail.gmail.com>
+Date: Wed, 23 Apr 2008 11:53:47 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 1/2] sched: push rt tasks only if newly activated tasks have been added
+Cc: "Gregory Haskins" <ghaskins@novell.com>, mingo@elte.hu,
+       suresh.b.siddha@intel.com, chinang.ma@intel.com, arjan@linux.intel.com,
+       willy@linux.intel.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <b647ffbd0804230105u7966ed06wd4ed248f59132849@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080421180747.4560.67794.stgit@novell1.haskins.net>
+	 <20080421181015.4560.7658.stgit@novell1.haskins.net>
+	 <b647ffbd0804220830h6524e788n1467b027bc5bc4d2@mail.gmail.com>
+	 <Pine.LNX.4.58.0804221144410.21511@gandalf.stny.rr.com>
+	 <b647ffbd0804230105u7966ed06wd4ed248f59132849@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global enable_TSC() static.
+2008/4/23 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
+> Hi Steven,
+>
+>  > [ ... ]
+>
+> >  > square#0:
+>  >  >
+>  >  > cpu1:  T0 is running
+>  >  >
+>  >  > T1 is of the same prio as T0 (shouldn't really matter but to get the
+>  >  > same result it would require altering the flow of events slightly)
+>  >  >
+>  >  > T1's affinity allows it to be run only on cpu1.
+>  >  > T0 can run on both.
+>  >  >
+>  >  > try_to_wake_up() is called for T1.
+>  >  > |
+>  >  > --> select_task_rq_rt() => gives cpu1
+>  >  > |
+>  >  > --> task_wake_up_rt()
+>  >  >    |
+>  >  >    ---> push_rt_tasks() -> rq->rt.pushed = 1
+>  >  >
+>  >  > now, neither T1 (due to its affinity), nor T0 (it's running) can be
+>  >  > pushed away to cpu0.
+>  >
+>  >  Ah, this may be what you are talking about. T0 was running, but because
+>  >  T1 has its affinity set to cpu1 it wont cause a push. When T0 schedules
+>  >  away to give T1 its cpu time, T0 wont push away because of the pushed
+>  >  flag.
+>  >
+>  >  Hmm, interesting. Of course my response is "Don't use SCHED_RR! It's
+>  >  evil!" ;-)
+>
+>  It's not just SCHED_RR ;-) They both can be of SCHED_FIFO.
+>
+>  T1 _preempts_ T0 and again
+>
+>
+>   --> task_wake_up_rt()
+>   |
+>   ---> push_rt_tasks() -> rq->rt.pushed = 1
+>
+>  and T0 won't be pushed away to cpu0 by post_schedule_rt().
+>
+>  As Gregory has pointed out, at the very least it's a test in
+>  task_wake_up_rt() which is wrong.
+>
+>  push_rt_tasks() should not be called when 'p' (a newly woken up task)
+>  is the next one to run.
+>
+>  IOW, it should be (p->prio < rq->curr->prio) instead of (p->prio >=
+>  rq->rt.highest_prio).
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+No, this argument is wrong indeed.
 
----
+Something like this:
+(white-spaces are broken)
 
- arch/x86/kernel/process_32.c |    2 +-
- arch/x86/kernel/process_64.c |    2 +-
- include/asm-x86/tsc.h        |    1 -
- 3 files changed, 2 insertions(+), 3 deletions(-)
+--- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
++++ sched_rt.c  2008-04-23 11:36:20.000000000 +0200
+@@ -1121,9 +1121,13 @@ static void post_schedule_rt(struct rq *
 
-4628dd5f4a92b7b7f86eab04e5bdaf4c411ca8e2 diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 7adad08..77de848 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -550,7 +550,7 @@ static void hard_enable_TSC(void)
- 	write_cr4(read_cr4() & ~X86_CR4_TSD);
+ static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
+ {
+-       if (!task_running(rq, p) &&
+-           (p->prio >= rq->rt.highest_prio) &&
+-           rq->rt.overloaded)
++       /*
++        * Consider pushing 'p' off to other CPUS only
++        * if it's not the next task to run on this CPU.
++        */
++       if (rq->rt.overloaded &&
++           p->prio > rq->rt.highest_prio &&
++           pick_rt_task(rq, p, -1))
+                push_rt_tasks(rq);
  }
- 
--void enable_TSC(void)
-+static void enable_TSC(void)
- {
- 	preempt_disable();
- 	if (test_and_clear_thread_flag(TIF_NOTSC))
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 891af1a..131c2ee 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -562,7 +562,7 @@ static void hard_enable_TSC(void)
- 	write_cr4(read_cr4() & ~X86_CR4_TSD);
- }
- 
--void enable_TSC(void)
-+static void enable_TSC(void)
- {
- 	preempt_disable();
- 	if (test_and_clear_thread_flag(TIF_NOTSC))
-diff --git a/include/asm-x86/tsc.h b/include/asm-x86/tsc.h
-index 0434bd8..d2d8eb5 100644
---- a/include/asm-x86/tsc.h
-+++ b/include/asm-x86/tsc.h
-@@ -18,7 +18,6 @@ extern unsigned int cpu_khz;
- extern unsigned int tsc_khz;
- 
- extern void disable_TSC(void);
--extern void enable_TSC(void);
- 
- static inline cycles_t get_cycles(void)
- {
 
+
+or even this (although, it's a bit heavier)
+
+--- sched_rt-prev.c     2008-04-23 11:26:39.000000000 +0200
++++ sched_rt.c  2008-04-23 11:49:03.000000000 +0200
+@@ -1118,12 +1118,22 @@ static void post_schedule_rt(struct rq *
+        }
+ }
+
+ static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
+ {
+-       if (!task_running(rq, p) &&
+-           (p->prio >= rq->rt.highest_prio) &&
+-           rq->rt.overloaded)
++       if (!rq->rt.overloaded)
++               return;
++
++       /*
++        * Consider pushing 'p' off to other CPUS only
++        * if it's not the next task to run on this CPU.
++        * i.e. it's not a single task with the highest prio
++        * on the queue.
++        */
++       if (p->prio == rq->rt.highest_prio &&
++           p->rt.run_list.prev == p->rt.run_list.next)
++               return;
++
++       if (pick_rt_task(rq, p, -1))
+                push_rt_tasks(rq);
+ }
+
+
+-- 
+Best regards,
+Dmitry Adamushko
