@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYDWUl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYDWUpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbYDWUl1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 16:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYDWUlU
+	id S1756090AbYDWUpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 16:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYDWUpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 16:41:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60837 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYDWUlT (ORCPT
+	Wed, 23 Apr 2008 16:45:46 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54715 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbYDWUpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 16:41:19 -0400
-Date: Wed, 23 Apr 2008 16:41:17 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH] ftrace: use raw_smp_processor_id for mcount functions
-Message-ID: <Pine.LNX.4.58.0804231639490.28387@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Apr 2008 16:45:45 -0400
+Date: Wed, 23 Apr 2008 23:45:17 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: clameter@sgi.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] SLUB debugging fixes for 2.6.25
+Message-ID: <Pine.LNX.4.64.0804232343410.6858@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Due to debug hooks in the kernel that can change the way smp_processor_id
-works, use raw_smp_processor_id in mcount called functions (namely
-ftrace_record_ip). Currently we annotate most debug functions from calling
-mcount, but we should not rely on that to prevent kernel lockups.
+Please pull the latest SLUB git tree from:
 
-This patch uses the raw_smp_processor_id to prevent a recusive crash
-that can happen if a debug hook in smp_processor_id calls mcount.
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ftrace.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+It contains two minor fixes that improve SLUB debugging support.
 
-Index: linux-sched-devel.git/kernel/trace/ftrace.c
-===================================================================
---- linux-sched-devel.git.orig/kernel/trace/ftrace.c	2008-04-09 11:47:32.000000000 -0400
-+++ linux-sched-devel.git/kernel/trace/ftrace.c	2008-04-23 16:39:05.000000000 -0400
-@@ -267,6 +267,7 @@ ftrace_record_ip(unsigned long ip)
- 	unsigned long key;
- 	int resched;
- 	int atomic;
-+	int cpu;
+                Pekka
 
- 	if (!ftrace_enabled || ftrace_disabled)
- 		return;
-@@ -274,9 +275,15 @@ ftrace_record_ip(unsigned long ip)
- 	resched = need_resched();
- 	preempt_disable_notrace();
+Christoph Lameter (1):
+      slub: fix parameters passed to slab_bug()
 
--	/* We simply need to protect against recursion */
--	__get_cpu_var(ftrace_shutdown_disable_cpu)++;
--	if (__get_cpu_var(ftrace_shutdown_disable_cpu) != 1)
-+	/*
-+	 * We simply need to protect against recursion.
-+	 * Use the the raw version of smp_processor_id and not
-+	 * __get_cpu_var which can call debug hooks that can
-+	 * cause a recursive crash here.
-+	 */
-+	cpu = raw_smp_processor_id();
-+	per_cpu(ftrace_shutdown_disable_cpu, cpu)++;
-+	if (per_cpu(ftrace_shutdown_disable_cpu, cpu) != 1)
- 		goto out;
+Pekka Enberg (1):
+      slub: improve kmem_cache_destroy() error message
 
- 	if (unlikely(ftrace_record_suspend))
-@@ -317,7 +324,7 @@ ftrace_record_ip(unsigned long ip)
-  out_unlock:
- 	spin_unlock_irqrestore(&ftrace_shutdown_lock, flags);
-  out:
--	__get_cpu_var(ftrace_shutdown_disable_cpu)--;
-+	per_cpu(ftrace_shutdown_disable_cpu, cpu)--;
+ mm/slub.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
- 	/* prevent recursion with scheduler */
- 	if (resched)
-
+diff --git a/mm/slub.c b/mm/slub.c
+index 7f8aaa2..378d3f1 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -521,7 +521,7 @@ static void print_trailer(struct kmem_cache *s, struct page *page, u8 *p)
+ static void object_err(struct kmem_cache *s, struct page *page,
+ 			u8 *object, char *reason)
+ {
+-	slab_bug(s, reason);
++	slab_bug(s, "%s", reason);
+ 	print_trailer(s, page, object);
+ }
+ 
+@@ -533,7 +533,7 @@ static void slab_err(struct kmem_cache *s, struct page *page, char *fmt, ...)
+ 	va_start(args, fmt);
+ 	vsnprintf(buf, sizeof(buf), fmt, args);
+ 	va_end(args);
+-	slab_bug(s, fmt);
++	slab_bug(s, "%s", buf);
+ 	print_page_info(page);
+ 	dump_stack();
+ }
+@@ -2426,8 +2426,11 @@ void kmem_cache_destroy(struct kmem_cache *s)
+ 	if (!s->refcount) {
+ 		list_del(&s->list);
+ 		up_write(&slub_lock);
+-		if (kmem_cache_close(s))
+-			WARN_ON(1);
++		if (kmem_cache_close(s)) {
++			printk(KERN_ERR "SLUB %s: %s called for cache that "
++				"still has objects.\n", s->name, __func__);
++			dump_stack();
++		}
+ 		sysfs_slab_remove(s);
+ 	} else
+ 		up_write(&slub_lock);
