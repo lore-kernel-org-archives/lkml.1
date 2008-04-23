@@ -1,42 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbYDWMlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYDWMqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbYDWMlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYDWMlJ
+	id S1754793AbYDWMqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbYDWMqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:41:09 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:54227 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbYDWMlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:41:08 -0400
-Date: Wed, 23 Apr 2008 14:41:06 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org
-Subject: iwl4965 regression since 2.6.24
-Message-ID: <20080423124105.GA4783@ics.muni.cz>
+	Wed, 23 Apr 2008 08:46:02 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:56448 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbYDWMqA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 08:46:00 -0400
+X-AuditID: 0ac90648-aa2f0ba0000012fa-a5-480f2f85f9e1
+Message-ID: <480F2F7D.7060303@hitachi.com>
+Date: Wed, 23 Apr 2008 21:45:49 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 206.196.180.225
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 23 Apr 2008 14:41:05 +0200 (CEST)
+To: Andreas Dilger <adilger@sun.com>
+Cc: Mingming Cao <cmm@us.ibm.com>, Josef Bacik <jbacik@redhat.com>,
+       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 0/4] jbd: possible filesystem corruption fixes
+References: <48089B86.5020108@hitachi.com> 
+    <20080418140946.GA26062@unused.rdu.redhat.com> 
+    <1208546807.9475.4.camel@localhost.localdomain> 
+    <20080421210738.GN2775@webber.adilger.int>
+In-Reply-To: <20080421210738.GN2775@webber.adilger.int>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Andreas Dilger wrote:
 
-as of 2.6.25 kernel, the intel driver iwl4965 has serious troubles to
-associate with AP. I must many times set essid till the association is done.
+> On Apr 18, 2008  12:26 -0700, Mingming Cao wrote:
+> 
+>>On Fri, 2008-04-18 at 10:09 -0400, Josef Bacik wrote:
+>>
+>>>On Fri, Apr 18, 2008 at 10:00:54PM +0900, Hidehiro Kawai wrote:
+>>>
+>>>>Subject: [PATCH 0/4] jbd: possible filesystem corruption fixes
+>>>>
+>>>>The current JBD is not sufficient for I/O error handling.  It can
+>>>>cause filesystem corruption.   An example scenario:
+>>>>
+>>>>1. fail to write a metadata buffer to block B in the journal
+>>>>2. succeed to write the commit record
+>>>>3. the system crashes, reboots and mount the filesystem
+>>>>4. in the recovery phase, succeed to read data from block B
+>>>>5. write back the read data to the filesystem, but it is a stale
+>>>>   metadata
+>>>>6. lose some files and directories!
+>>>>
+>>>>This scenario is a rare case, but it (temporal I/O error)
+>>>>can occur.  If we abort the journal between 1. and 2., this
+>>>>tragedy can be avoided.
+>>>>
+>>>>This patch set fixes several error handling problems to protect
+>>>>from filesystem corruption caused by I/O errors.  It has been
+>>>>done only for JBD and ext3 parts.
+>>
+>>Could you sent Ext4/JBD2 version patches? Thanks!
+> 
+> 
+> Actually, the journal checksum in ext4/jbd2 detects this kind of error,
+> as well as errors that are NOT reported to the caller (e.g. media errors
+> not reported to the kernel).
 
-Moreover, it seems that it is unable to associate with different AP (using the
-same SSID). I must remove the module completly to be able to associate to the
-different AP. I think it is big regression.
+It's interesting feature.  I read the journal checksum patch,
+it seems to fix the problem addressed by PATCH 3/4.
+However, journal checksum feature is optional, so PATCH 3/4
+will be needed as long as checksuming feature isn't turned
+on always.
 
+> One question is whether we want to _introduce_ a point of failure to the
+> filesystem that may never actually cause a problem for the system,
+> since the journal is only needed in the case of a crash.  By aborting
+> the journal at this point instead of letting the checkpoint write the
+> data to the filesystem then we are guaranteed a filesystem failure
+> instead of "likely no problem at all".
+
+I think it depends on the system and administrator.
+When we failed to write metadata to the journal, we...
+
+  (a) abort journaling
+      - the filesystem can keep a consistent state if the system
+        crashed
+      - the system will stop because the filesystem becomes read-only
+        state (default)
+  (b) only do printk()
+      - the system can continue to work
+      - bad journalled data may break the file system if the system
+        crashed
+
+A user who demands high data integrity will choose (a), and
+a user who demands high availability will choose (b).
+We might want to enable the user to specify the behavior
+on error such as the "errors" mount option.
+
+ 
+> The journal checksum would detect the bad data in the transaction in the
+> cases where it is important, and during operation it makes more sense
+> to report the error via printk() so the administrator has some chance to
+> do something about it.  There is no reason why the jbd2 change couldn't be
+> merged back to jbd so ext3 could use the journal checksumming.  It is a
+> "COMPAT" journal feature.
+
+It's interesting.  For example, when a fsync operation is issued,
+commit the current transaction, then read the journalled data of
+that transaction to check the checksum.  If the bad data is detected,
+flush the whole journal.  Aborting the journal will also make sense
+because the journal space is errorneous.
+
+Regards,
 -- 
-Luká¹ Hejtmánek
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
