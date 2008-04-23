@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYDWUj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYDWUl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYDWUj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 16:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYDWUjr
+	id S1756616AbYDWUl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 16:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYDWUlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 16:39:47 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54215 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbYDWUjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 16:39:47 -0400
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net
-Message-Id: <7C711FFF-E1C5-4286-93A8-382055C6760C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-In-Reply-To: <480F99D5.7070300@tiscali.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] spi_mpc83xx: test below 0 on unsigned irq in mpc83xx_spi_probe()
-Date: Wed, 23 Apr 2008 15:39:32 -0500
-References: <480F99D5.7070300@tiscali.nl>
-X-Mailer: Apple Mail (2.919.2)
+	Wed, 23 Apr 2008 16:41:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60837 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbYDWUlT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 16:41:19 -0400
+Date: Wed, 23 Apr 2008 16:41:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH] ftrace: use raw_smp_processor_id for mcount functions
+Message-ID: <Pine.LNX.4.58.0804231639490.28387@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Apr 23, 2008, at 3:19 PM, Roel Kluin wrote:
-> mpc83xx_spi->irq is unsigned, so the test fails
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Due to debug hooks in the kernel that can change the way smp_processor_id
+works, use raw_smp_processor_id in mcount called functions (namely
+ftrace_record_ip). Currently we annotate most debug functions from calling
+mcount, but we should not rely on that to prevent kernel lockups.
 
-you should copy the linux-spi list on such patches.
+This patch uses the raw_smp_processor_id to prevent a recusive crash
+that can happen if a debug hook in smp_processor_id calls mcount.
 
-- k
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ftrace.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
->
-> ---
-> diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-> index be15a62..033fd51 100644
-> --- a/drivers/spi/spi_mpc83xx.c
-> +++ b/drivers/spi/spi_mpc83xx.c
-> @@ -454,12 +454,12 @@ static int __init mpc83xx_spi_probe(struct  
-> platform_device *dev)
-> 		goto put_master;
-> 	}
->
-> -	mpc83xx_spi->irq = platform_get_irq(dev, 0);
-> -
-> -	if (mpc83xx_spi->irq < 0) {
-> -		ret = -ENXIO;
-> +	ret = platform_get_irq(dev, 0);
-> +	if (ret < 0)
-> 		goto unmap_io;
-> -	}
-> +
-> +	mpc83xx_spi->irq = ret;
-> +	ret = 0;
->
-> 	/* Register for SPI Interrupt */
-> 	ret = request_irq(mpc83xx_spi->irq, mpc83xx_spi_irq,
+Index: linux-sched-devel.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-sched-devel.git.orig/kernel/trace/ftrace.c	2008-04-09 11:47:32.000000000 -0400
++++ linux-sched-devel.git/kernel/trace/ftrace.c	2008-04-23 16:39:05.000000000 -0400
+@@ -267,6 +267,7 @@ ftrace_record_ip(unsigned long ip)
+ 	unsigned long key;
+ 	int resched;
+ 	int atomic;
++	int cpu;
+
+ 	if (!ftrace_enabled || ftrace_disabled)
+ 		return;
+@@ -274,9 +275,15 @@ ftrace_record_ip(unsigned long ip)
+ 	resched = need_resched();
+ 	preempt_disable_notrace();
+
+-	/* We simply need to protect against recursion */
+-	__get_cpu_var(ftrace_shutdown_disable_cpu)++;
+-	if (__get_cpu_var(ftrace_shutdown_disable_cpu) != 1)
++	/*
++	 * We simply need to protect against recursion.
++	 * Use the the raw version of smp_processor_id and not
++	 * __get_cpu_var which can call debug hooks that can
++	 * cause a recursive crash here.
++	 */
++	cpu = raw_smp_processor_id();
++	per_cpu(ftrace_shutdown_disable_cpu, cpu)++;
++	if (per_cpu(ftrace_shutdown_disable_cpu, cpu) != 1)
+ 		goto out;
+
+ 	if (unlikely(ftrace_record_suspend))
+@@ -317,7 +324,7 @@ ftrace_record_ip(unsigned long ip)
+  out_unlock:
+ 	spin_unlock_irqrestore(&ftrace_shutdown_lock, flags);
+  out:
+-	__get_cpu_var(ftrace_shutdown_disable_cpu)--;
++	per_cpu(ftrace_shutdown_disable_cpu, cpu)--;
+
+ 	/* prevent recursion with scheduler */
+ 	if (resched)
 
