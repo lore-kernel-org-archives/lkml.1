@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbYDWGwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbYDWGxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751944AbYDWGwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 02:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYDWGwY
+	id S1752729AbYDWGxP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 02:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYDWGw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 02:52:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53773 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbYDWGwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 02:52:23 -0400
-Date: Tue, 22 Apr 2008 23:51:48 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, gregkh@suse.de, penberg@cs.helsinki.fi,
-       zaitcev@redhat.com
-Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
-Message-Id: <20080422235148.c49dc6b7.zaitcev@redhat.com>
-In-Reply-To: <20080422134034.GF7311@elte.hu>
-References: <200804212310.41729.elendil@planet.nl>
-	<20080422134034.GF7311@elte.hu>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Apr 2008 02:52:59 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:51409 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbYDWGw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 02:52:58 -0400
+Message-ID: <480EDBD2.2060709@linux.vnet.ibm.com>
+Date: Wed, 23 Apr 2008 12:18:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroup: use read lock to guard find_existing_css_set()
+References: <480EA744.2050300@cn.fujitsu.com>
+In-Reply-To: <480EA744.2050300@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008 15:40:34 +0200, Ingo Molnar <mingo@elte.hu> wrote:
+Li Zefan wrote:
+> The function does not modify anything (except the temporary
+> css template), so it's sufficient to hold read lock.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/cgroup.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 2727f92..e9eb5da 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -406,11 +406,11 @@ static struct css_set *find_css_set(
+> 
+>  	/* First see if we already have a cgroup group that matches
+>  	 * the desired set */
+> -	write_lock(&css_set_lock);
+> +	read_lock(&css_set_lock);
+>  	res = find_existing_css_set(oldcg, cgrp, template);
+>  	if (res)
+>  		get_css_set(res);
+> -	write_unlock(&css_set_lock);
+> +	read_unlock(&css_set_lock);
+> 
+>  	if (res)
+>  		return res;
 
-> > I got the following warning while running sched-devel/latest.
-> > WARNING: at mm/slub.c:2443 kmem_cache_destroy+0x168/0x1a9()
+Looks good to me. Did you run lockdep?
 
-> >  [<ffffffff80293c5d>] kmem_cache_destroy+0x168/0x1a9
-> >  [<ffffffff803974d8>] mon_text_release+0x89/0xae
-> >  [<ffffffff80299254>] __fput+0xb9/0x161
-> >  [<ffffffff8029957b>] fput+0x14/0x16
-> >  [<ffffffff80296892>] filp_close+0x66/0x71
-> >  [<ffffffff80239eea>] put_files_struct+0x77/0xcb
-> >  [<ffffffff80239f72>] __exit_files+0x34/0x39
 
-> Cc:-ing USB folks as the kmem_cache_destroy() comes from 
-> drivers/usb/mon/mon_text.c.
 
-I looked at this whole day today, but found nothing.
-
-The code analysis for usbmon shows nothing. Anyone wants to have
-a look?
-
-Reproduction does not work either. I tried various loads, loops
-of opening/closing while pushing events from USB, nothing.
-
-BTW, I tried to create memory pressure with mem=300MB, result:
-
-top: page allocation failure. order:4, mode:0xc0d0
-Pid: 2337, comm: top Not tainted 2.6.25-ub #33
-
-Call Trace:
- [<ffffffff8027450d>] __alloc_pages+0x32f/0x352
- [<ffffffff80272252>] rmqueue_bulk+0x8a/0x9b
- [<ffffffff80273a3d>] __get_free_pages+0xe/0x4d
- [<ffffffff802ddd14>] show_stat+0x25/0x4f1
- [<ffffffff80252f6f>] __lock_acquire+0xd95/0xda4
- [<ffffffff80252f6f>] __lock_acquire+0xd95/0xda4
- [<ffffffff802b349c>] seq_read+0x37/0x2a7
- [<ffffffff80251a2a>] mark_held_locks+0x57/0x73
- [<ffffffff802b349c>] seq_read+0x37/0x2a7
- [<ffffffff80470fff>] mutex_lock_nested+0x23a/0x256
- [<ffffffff80251bd4>] trace_hardirqs_on+0xf9/0x123
- [<ffffffff8047100c>] mutex_lock_nested+0x247/0x256
- [<ffffffff80470fff>] mutex_lock_nested+0x23a/0x256
- [<ffffffff8047100c>] mutex_lock_nested+0x247/0x256
- [<ffffffff802b3579>] seq_read+0x114/0x2a7
- [<ffffffff802b3465>] seq_read+0x0/0x2a7
- [<ffffffff802d74a7>] proc_reg_read+0x80/0x9b
-
-The error is not just advisory, the application (top) dies because
-/proc/stat cannot be read. I'm surprised that you people managed
-to get the warning at 2443, because things start unravel way earlier
-for me.
-
--- Pete
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
