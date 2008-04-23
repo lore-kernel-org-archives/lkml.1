@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbYDWBVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964851AbYDWBXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbYDWBVO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYDWBU5
+	id S964851AbYDWBXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYDWBXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:20:57 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14855 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYDWBU5 (ORCPT
+	Tue, 22 Apr 2008 21:23:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41283 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753421AbYDWBXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:20:57 -0400
-Date: Tue, 22 Apr 2008 18:19:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Randy Dunlap <RANDY.DUNLAP@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: kgdb: core
-Message-Id: <20080422181942.80f96975.randy.dunlap@oracle.com>
-In-Reply-To: <480E567B.6060708@windriver.com>
-References: <200804181741.m3IHfTeC012089@hera.kernel.org>
-	<20080418150930.476ea7aa.akpm@linux-foundation.org>
-	<20080421141252.GR9554@elte.hu>
-	<20080421214636.617970c6.akpm@linux-foundation.org>
-	<20080422082519.62adc7f1.randy.dunlap@oracle.com>
-	<20080422135716.c6ee339b.akpm@linux-foundation.org>
-	<5739699.1208898133855.JavaMail.oracle@acsmt302.oracle.com>
-	<480E567B.6060708@windriver.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 22 Apr 2008 21:23:00 -0400
+Date: Tue, 22 Apr 2008 18:22:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-arch@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       peterz@infradead.org, sam@ravnborg.org
+Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function
+ calls
+In-Reply-To: <20080423011153.GB17572@wotan.suse.de>
+Message-ID: <alpine.LFD.1.10.0804221817050.2779@woody.linux-foundation.org>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-3-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804221157220.2779@woody.linux-foundation.org> <20080422191213.GA6370@elte.hu> <alpine.LFD.1.10.0804221218410.2779@woody.linux-foundation.org>
+ <20080422192601.GB12588@elte.hu> <alpine.LFD.1.10.0804221244350.2779@woody.linux-foundation.org> <20080423011153.GB17572@wotan.suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008 16:19:55 -0500 Jason Wessel wrote:
 
-> Randy Dunlap wrote:
-> > --- Original Message --- (akpm wrote:)
-> >>> On Tue, 22 Apr 2008 08:25:19 -0700 Randy Dunlap
-> <randy.dunlap@oracle.com> wrote:
-> >>>
-> >>> kernel-doc output doesn't depend on build $ARCH.
-> >> Ah, interesting.  I made an ass of u and me.
-> >>
-> >> In that case documentng them in x86 .c and leaving all other definitions
-> >> and declarations uncommented sounds the way to go?  
-> >
-> > Yes, that would be fine and traditional (historical).
-> >
-> > ~Randy
-> >
+
+On Wed, 23 Apr 2008, Nick Piggin wrote:
 > 
-> So is the summary here that we cannot just document the actual
-> interface API in the incude/linux/kgdb.h?
-
-The summary is that we prefer for kernel-doc to be placed at (function
-etc.) definition/implementation sites, not at declaration sites.
-However, I'm sure that there are exceptions to this.
-
-> The problem I had here was pretty simple in that not all of the
-> functions in the API are used by all the archs.  It seemed pretty
-> reasonable at the time to just document everything in the .h file
-> because it was more for the folks who wanted to add kgdb support to an
-> arch and of little to no use to end users of kgdb.
-
-I see.  That could pose a problem.
-
-And there is not any one $arch that does use the complete API?
-If so, all of the kernel-doc could be in that $arch.
-
-> The mainline only has a small chunk of the docs right now because not
-> all of kgdb is merged.  I was just hoping it was real easy to generate
-> some reasonable looking docs.  The docs for all the kgdb code that
-> exists (in mainline and not in mainline) can be viewed here as an
-> example.
+> The "too expensive to check the shared queue" is one aspect of it. The
+> shared queue need not have events *for us* (at least, unless Jens has
+> changed the implementation a bit) but it can still have events that we
+> would need to check through.
 > 
-> http://kernel.org/pub/linux/kernel/people/jwessel/kgdb/
+> I don't think deadlock is a problem (any more than with multiple vectors).
 
-If it poses an extreme hardship on you to conform to the
-norms/expectations, so be it.  It won't kill anything AFAIK.
-(i.e., I won't object.)
+I'm happy with it either way, but as pointed out by Ralf, for the MIPS 
+version of the patch there aren't even other vectors available.
 
----
-~Randy
+So sharing the vector is going to be a requirement on other architectures, 
+maybe we should look at whether we can make it generic and peform well 
+regardless?
+
+			Linus
