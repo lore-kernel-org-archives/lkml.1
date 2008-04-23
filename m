@@ -1,86 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYDWLWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYDWLZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYDWLWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 07:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYDWLWE
+	id S1753506AbYDWLZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 07:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYDWLZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 07:22:04 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:41887 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750995AbYDWLWC (ORCPT
+	Wed, 23 Apr 2008 07:25:14 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:41238 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbYDWLZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 07:22:02 -0400
-X-SourceIP: 80.56.237.116
-Subject: Re: [git pull] scheduler changes for v2.6.26
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Frans Pop <elendil@planet.nl>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Richard Jonsson <richie@coderworld.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <1208946604.4803.9.camel@marge.simson.net>
-References: <20080419181304.GB21353@elte.hu>
-	 <200804192147.43719.elendil@planet.nl> <20080421123903.GE9554@elte.hu>
-	 <200804211831.29976.elendil@planet.nl> <20080421194359.GD8770@elte.hu>
-	 <1208854300.4695.7.camel@marge.simson.net>  <20080422085905.GA9939@elte.hu>
-	 <1208867154.4873.4.camel@marge.simson.net>
-	 <1208938303.4905.23.camel@marge.simson.net>
-	 <1208946604.4803.9.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 13:21:55 +0200
-Message-Id: <1208949715.7115.334.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Wed, 23 Apr 2008 07:25:13 -0400
+Message-ID: <480F1C60.4030305@s5r6.in-berlin.de>
+Date: Wed, 23 Apr 2008 13:24:16 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Romano Giannetti <romanol@upcomillas.es>
+CC: Daniel Hazelton <dhazelton@enter.net>, david@lang.hm,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: x86: 4kstacks default
+References: <200804181737.m3IHbabI010051@hera.kernel.org>	 <200804230121.11004.dhazelton@enter.net>	 <alpine.DEB.1.10.0804222222490.23325@asgard>	 <200804230141.09523.dhazelton@enter.net> <1208936787.13905.14.camel@localhost>
+In-Reply-To: <1208936787.13905.14.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-23 at 12:30 +0200, Mike Galbraith wrote:
-> On Wed, 2008-04-23 at 10:11 +0200, Mike Galbraith wrote:
-> 
-> > I dug my old p3/500 out and hooked it up since I still can't get minicom
-> > functional plugging P4->Q6600, but no joy.  Whatever the heck is going
-> > wrong in sched-devel is so catastrophic that not one character hits the
-> > console when it locks, and nmi_watchdog=1 does nada.
-> 
-> I built x86/latest to see if it locked, and while testing to see if
-> minicom was really really working properly on p3/500, I created an
-> explosion.  I see in the log that clockevents griped during boot, and
-> when I later poked SysRq-W, box blew to pieces.
+Romano Giannetti wrote:
+[stack size requirements -> ndiswrapper -> hardware support status -> ?]
+> a nice page with "_this_ laptop will fully work with linux" would be
+> nice. Linux on laptop or similar is too complex to be a real help when
+> you have to buy a laptop in 2 days. 
 
-> [  604.923629] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
-> [  604.923629] IP: [<ffffffff802a93ac>] seq_printf+0x2e/0xa7
-
-Sorry about that :-/
-
-this should fix it:
-
----
-Subject: sched: fix oops
-
-sched_debug uses SEQ_printf to use printk when the seqfile 'm' is NULL.
-Instead of doing that here too; choose to not output the weight tree
-to cut back on output.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 89fa32b..353a481 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1643,8 +1643,10 @@ static void print_cfs_stats(struct seq_file *m, int cpu)
- 	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
- 		print_cfs_rq(m, cpu, cfs_rq);
- 
--	seq_printf(m, "\nWeight tree:\n");
--	print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
-+	if (m) {
-+		seq_printf(m, "\nWeight tree:\n");
-+		print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
-+	}
- 	rcu_read_unlock();
- }
- #endif
-
-
+If sites like tuxmobil.org, hardware4linux.info, and the hardware
+compatibility databases of Linux distributors don't work for you, then
+just ask the notebook vendors directly.
+-- 
+Stefan Richter
+-=====-==--- -=-- =-===
+http://arcgraph.de/sr/
