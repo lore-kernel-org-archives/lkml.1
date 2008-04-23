@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934072AbYDWBGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934023AbYDWBMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934072AbYDWBGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYDWBGp
+	id S934023AbYDWBMO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYDWBL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:06:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50169 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756229AbYDWBGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:06:45 -0400
-Date: Tue, 22 Apr 2008 18:06:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Broken] PCI: clean up resource alignment management
-In-Reply-To: <200804221551.56502.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.1.10.0804221805460.2779@woody.linux-foundation.org>
-References: <b6a2187b0804220943l26f7b441sb5a7309dff0e84dc@mail.gmail.com> <alpine.LFD.1.10.0804221451270.2779@woody.linux-foundation.org> <alpine.LFD.1.10.0804221510420.2779@woody.linux-foundation.org> <200804221551.56502.jbarnes@virtuousgeek.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Apr 2008 21:11:57 -0400
+Received: from ns1.suse.de ([195.135.220.2]:40404 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757473AbYDWBL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Apr 2008 21:11:56 -0400
+Date: Wed, 23 Apr 2008 03:11:54 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-arch@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       peterz@infradead.org, sam@ravnborg.org
+Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function calls
+Message-ID: <20080423011153.GB17572@wotan.suse.de>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-3-git-send-email-jens.axboe@oracle.com> <alpine.LFD.1.10.0804221157220.2779@woody.linux-foundation.org> <20080422191213.GA6370@elte.hu> <alpine.LFD.1.10.0804221218410.2779@woody.linux-foundation.org> <20080422192601.GB12588@elte.hu> <alpine.LFD.1.10.0804221244350.2779@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804221244350.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Apr 2008, Jesse Barnes wrote:
-
-> On Tuesday, April 22, 2008 3:13 pm Linus Torvalds wrote:
-> >
-> > Now we just need to have somebody test it. It turns out that I no longer
-> > have any Cardbus cards, since my laptops now all have built-in wireless.
-> > Boo hiss for me.
+On Tue, Apr 22, 2008 at 12:50:30PM -0700, Linus Torvalds wrote:
 > 
-> I may be in the same boat, I'll have to dig around and see if I have any...  
-> That said, I think an explicit alignment field would make things even cleaner 
-> (and like you said allow us to take advantage of bus specific alignment 
-> better).
+> 
+> On Tue, 22 Apr 2008, Ingo Molnar wrote:
+> > 
+> > ok. In which case the reschedule vector could be consolidated into that 
+> > as well (it's just a special single-CPU call). Then there would be no 
+> > new vector allocations needed at all, just the renaming of 
+> > RESCHEDULE_VECTOR to something more generic.
+> 
+> Yes.
+> 
+> Btw, don't get me wrong - I'm not against multiple vectors per se. I just 
+> wonder if there is any real reason for the code duplication. 
+> 
+> And there certainly *can* be tons of valid reasons for it. For example, 
+> some of the LAPIC can only have something like two pending interrupts per 
+> vector, and after that IPI's would get lost.
+> 
+> However, since the queuing is actually done with the data structures, I 
+> don't think it matters for the IPI's - they don't need any hardware 
+> queuing at all, afaik, since even if two IPI's would be merged into one 
+> (due to lack of hw queueing) the IPI handling code still has its list of 
+> events, so it doesn't matter.
+> 
+> And performance can be a valid reason ("too expensive to check the shared 
+> queue if we only have per-cpu events"), although I$ issues can cause that 
+> argument to go both ways.
+> 
+> I was also wondering whether there are deadlock issues (ie one type of IPI 
+> has to complete even if a lock is held for the other type). 
+> 
+> So I don't dislike the patch per se, I just wanted to understand _why_ the 
+> IPI's wanted separate vectors.
 
-Never mind. The error happens even without a card or driver, just plain 
-cardbus. 
+The "too expensive to check the shared queue" is one aspect of it. The
+shared queue need not have events *for us* (at least, unless Jens has
+changed the implementation a bit) but it can still have events that we
+would need to check through.
 
-I'll test the fix and check it in if it looks ok,
+I don't think deadlock is a problem (any more than with multiple vectors).
 
-		Linus
+
