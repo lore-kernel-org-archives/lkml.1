@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYDWRCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYDWRJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbYDWRCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYDWRC0
+	id S1754439AbYDWRJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYDWRJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:02:26 -0400
-Received: from OSB1387.piap.pl ([195.187.100.11]:33332 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751032AbYDWRCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:02:25 -0400
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m33apdyajf.fsf@maximus.localdomain>
-	<480E5CB3.2080003@microgate.com> <480E4FA1.5020508@garzik.org>
-	<20080422.150559.115368150.davem@davemloft.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 23 Apr 2008 19:02:22 +0200
-In-Reply-To: <20080422.150559.115368150.davem@davemloft.net> (David Miller's message of "Tue\, 22 Apr 2008 15\:05\:59 -0700 \(PDT\)")
-Message-ID: <m34p9smrmp.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Wed, 23 Apr 2008 13:09:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52543 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751848AbYDWRJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:09:26 -0400
+Date: Wed, 23 Apr 2008 12:09:09 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080423170909.GA1459@sgi.com>
+References: <patchbomb.1208872276@duo.random> <ea87c15371b1bd49380c.1208872277@duo.random>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea87c15371b1bd49380c.1208872277@duo.random>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
 
-> The fact that non-HDLC users of syncppp got left broken
+You may have spotted this already. If so, just ignore this.
 
-The fact is it isn't broken WRT dev->priv at least (I don't know about
-random unrelated breakage).
+It looks like there is a bug in copy_page_range() around line 667.
+It's possible to do a mmu_notifier_invalidate_range_start(), then
+return -ENOMEM w/o doing a corresponding mmu_notifier_invalidate_range_end().
 
-The drivers:
-a) alloc a netdev
-b) set dev->priv to some private kmalloced area
+--- jack
 
-It was like that for years, and it worked. The commit in question
-changed netdev_priv() and the drivers don't use this function.
 
-netdev_priv() was introduced at some point in time to allow
-alloc_netdev() to optionally allocate additional memory for internal
-use by the driver. It had nothing to do with dev->priv except "priv"
-name. The drivers don't use it passing size 0.
-
-This is probably suboptimal (two+ allocations instead of one), if the
-drivers had maintainers with access to hardware I guess it would be
-optimized, but it has nothing to do with the regression.
-
-The regression is present in HDLC PPP only, becase HDLC PPP actually
-used netdev_priv() (unlike non-HDLC PPP cases) as a means of addressing
-the area following net_device struct and not for retrieving dev->priv,
-and then the semantics suddenly changed.
-
-> I would have been more than happy if syncppp was retained and fixed
-> properly, instead of being abandoned and duplicated in one fell swoop.
-
-I would be happy as well. The problem is that nobody shown any idea
-how to do it.
-
-I have offered: I will port any existing sync serial driver to generic
-HDLC if I'm sent a free hardware sample. That includes old ISA cards
-(I still have an old 2*PII-333 ISA test machine), and porting PC300
-T1/E1 code to pc300too.
-
-If some driver/hw has no users I think there is no point in keeping it
-on life support here. The same goes for syncppp - if/when the number
-of drivers using it drops to zero, we can let it go.
--- 
-Krzysztof Halasa
