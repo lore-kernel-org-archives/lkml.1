@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbYDWM6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYDWM7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbYDWM6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYDWM6Z
+	id S1757277AbYDWM7G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYDWM6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:58:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:60313 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbYDWM6Y (ORCPT
+	Wed, 23 Apr 2008 08:58:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51314 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752828AbYDWM6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TH/MLpwpeMNEFN+xZw3HE1M/ZwKon9009R0tHYCxe6DagU1E8rsD67slxppDU3o+SJTLLV4X9cgy2TBsjCSRBFsW71VTLIftuI4VJ82Rs2PncFhFRjVgKNSryhn7JqrIFENyGW9aG6uN7pSb3CJppimutRW4n+HVN+Efhp3Ng6g=
-Message-ID: <36ca99e90804230558y7ad26b78t1375a67d85edd286@mail.gmail.com>
-Date: Wed, 23 Apr 2008 14:58:21 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] drivers/base/cpu.c: make code static
-Cc: "Mike Travis" <travis@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080423095233.GL28933@cs181133002.pp.htv.fi>
+	Wed, 23 Apr 2008 08:58:52 -0400
+Date: Wed, 23 Apr 2008 08:58:50 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH 2/2] sched: prioritize non-migratable tasks over migratable
+ ones
+In-Reply-To: <20080423111334.4981.19638.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0804230854210.23815@gandalf.stny.rr.com>
+References: <20080423111313.4981.37345.stgit@novell1.haskins.net>
+ <20080423111334.4981.19638.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080423095233.GL28933@cs181133002.pp.htv.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 11:52 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> This patch makes the following needlessly global code static:
->  - attr_online_map
->  - attr_possible_map
->  - attr_present_map
->
->  Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
->  ---
->  8ab09fe4313384faa5e3577d99845cedccb245bc diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
->  index 6fe4174..da6f4ae 100644
->  --- a/drivers/base/cpu.c
->  +++ b/drivers/base/cpu.c
->  @@ -119,7 +119,7 @@ static ssize_t print_cpus_##type(struct sysdev_class *class, char *buf)     \
->   {                                                                      \
->         return print_cpus_map(buf, &cpu_##type##_map);                  \
->   }                                                                      \
->  -struct sysdev_class_attribute attr_##type##_map =                      \
->  +static struct sysdev_class_attribute attr_##type##_map =               \
->         _SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
->
->   print_cpus_func(online);
-I think the cpu_state_attr array a few lines down should be static too.
 
-Bert
+
+On Wed, 23 Apr 2008, Gregory Haskins wrote:
+
+>
+> There are several details for utilizing this properly.
+>
+> 1) During task-wake-up, we not only need to check if the priority
+>    preempts the current task, but we also need to check for this
+>    non-migratable condition.  Therefore, if a non-migratable task wakes
+>    up and sees an equal priority migratable task already running, it
+>    will attempt to preempt it *if* there is a likelyhood that the
+>    current task will find an immediate home.
+>
+> 2) Tasks only get this non-migratable "priority boost" on wake-up.  Any
+>    requeuing will result in the non-migratable task being queued to the
+>    end of the shared queue.  This is an attempt to prevent the system
+>    from being completely unfair to migratable tasks during things like
+>    SCHED_RR timeslicing.
+>
+> I am sure this patch introduces potentially "odd" behavior if you
+> concoct a scenario where a bunch of non-migratable threads could starve
+> migratable ones given the right pattern.  I am not yet convinced that
+> this is a problem since we are talking about tasks of equal RT priority
+> anyway, and there never is much in the way of guarantees against
+> starvation under that scenario anyway. (e.g. you could come up with a
+> similar scenario with a specific timing environment verses an affinity
+> environment).  I can be convinced otherwise, but for now I think this is
+> "ok".
+>
+
+I'm not giving an Ack on this patch (not yet). My main concern here is
+that this is performing on a verge of policy change. As you stated, this
+is a known issue. One that can be avoided by giving RT tasks different
+priorities.  It is known that two tasks with the same priority fighting
+for the same CPUS (even if one is migratable and one is not) has
+non-deterministic behaviour.
+
+This patch needs a bit of running through the grind to see what effects it
+has before going in.
+
+-- Steve
+
