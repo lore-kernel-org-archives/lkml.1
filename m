@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYDWWqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYDWWsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYDWWqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 18:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYDWWqO
+	id S1755937AbYDWWsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 18:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYDWWsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 18:46:14 -0400
-Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:41866 "HELO
-	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751808AbYDWWqN (ORCPT
+	Wed, 23 Apr 2008 18:48:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54315 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbYDWWsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 18:46:13 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
-Date: Wed, 23 Apr 2008 15:46:06 -0700
-User-Agent: KMail/1.9.9
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com> <200804221712.45972.jbarnes@virtuousgeek.org> <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 23 Apr 2008 18:48:10 -0400
+Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
+From: David Woodhouse <dwmw2@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <480FBA73.2090209@zytor.com>
+References: <200804181856.m3IIuKd4007403@hera.kernel.org>
+	 <1208917076.9212.721.camel@pmac.infradead.org>
+	 <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com>
+	 <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com>
+	 <480F7C11.8040302@zytor.com> <20080423185859.GB7713@cvg>
+	 <480FBA73.2090209@zytor.com>
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 23:48:02 +0100
+Message-Id: <1208990882.9212.855.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804231546.07172.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, April 22, 2008 6:05 pm Shaohua Li wrote:
-> On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
-> > On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
-> > > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
-> > > 'y' in Kconfig even though the feature is both experimental and the
-> > > help text recommends that if you are unsure you say 'n'.
-> > > It seems to me that this really should default to 'n', not 'y' at the
-> > > moment.
-> > > The following patch makes that change. Please consider applying.
-> >
-> > Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
-> > though...
->
-> Ok, I'm fine with the patch. Though by default, the policy is to use
-> BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
+On Wed, 2008-04-23 at 15:38 -0700, H. Peter Anvin wrote:
+> Cyrill Gorcunov wrote:
+> > 
+> > Peter, Ingo,
+> > 
+> > any objections on the patch like that?
+> > 
+> 
+> Well, I would prefer to try to get rid of them; as you said, most 
+> userland don't rely on these, and if they aren't used they are just 
+> namespace pollution, and rather bad such.
 
-Ok, pushed.  Thanks Jesper & Shaohua.
+Yeah, I'd prefer just to kill them off if we think we can get away with
+it. These are hardware-defined flags, not Linux-specific, so userspace
+should probably get them from elsewhere anyway.
 
-Jesse
+-- 
+dwmw2
+
