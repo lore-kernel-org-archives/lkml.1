@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYDWMcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbYDWMdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYDWMcf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYDWMcZ
+	id S1753040AbYDWMdH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYDWMcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:32:25 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:16922 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756123AbYDWMcY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:32:24 -0400
-Date: Wed, 23 Apr 2008 14:32:12 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: alek du <alek.du@intel.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] i2c: Add Intel SCH I2C SMBus support
-Message-ID: <20080423143212.36dba2ea@hyperion.delvare>
-In-Reply-To: <20080422100420.3ee5f150@dxy.sh.intel.com>
-References: <20080422100420.3ee5f150@dxy.sh.intel.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Apr 2008 08:32:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34256 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751277AbYDWMcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 08:32:52 -0400
+Date: Wed, 23 Apr 2008 08:32:33 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       kdb@oss.sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       kexec@lists.infradead.org, Keith Owens <kaos@ocs.com.au>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Randy Dunlap <rdunlap@xenotime.net>, greg@kroah.com, bwalle@suse.de,
+       k-miyoshi@cb.jp.nec.com
+Subject: Re: [PATCH 0/3] add new notifier function ,take4
+Message-ID: <20080423123233.GA23066@redhat.com>
+References: <480F1957.2070609@ah.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480F1957.2070609@ah.jp.nec.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alek,
-
-On Tue, 22 Apr 2008 10:04:20 +0800, alek du wrote:
-> This patch adds Intel SCH chipsets (US15W, US15L, UL11L) i2c bus support.
-
-What kind of machines are these?
-
+On Wed, Apr 23, 2008 at 08:11:19PM +0900, Takenori Nagano wrote:
+> Hi,
 > 
-> Signed-off-by: Alek Du <alek.du@intel.com>
-> ---
->  drivers/i2c/busses/Kconfig   |    7 +
->  drivers/i2c/busses/Makefile  |    1 +
->  drivers/i2c/busses/i2c-sch.c |  419 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 427 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/i2c/busses/i2c-sch.c
-> (...)
+> changelog take3 -> take4
+> 
+> - Rebased 2.6.25-mm1
+> - Add a document
+> - Add kdump on panic_notifier
+> 
+> These patches add new notifier function and implement it to panic_notifier_list.
+> We used the hardcoded notifier chain so far, but it was not flexible. New
+> notifier is very flexible, because user can change a list of order by control files.
+> 
+> And, third patch moves crash_kexec() to panic_notifier. It helps us to do
+> something before taking a crash dump. It's useful for some RAS tools developer.
 
-MAINTAINERS says:
+Hi Takenori,
 
-I2C SUBSYSTEM
-(...)
-L:	i2c@lm-sensors.org
+What's the "something" which you want to do after panic and before kdump.
+Can you please give a concrete example. We have talked about this quite
+a few times but nothing concrete has come out so far, except a generic
+statement that it helps "RAS tool developers".
 
-So it would be great if you could send your patch there rather than on
-LKML.
+The only thing we could think of was debuggers (kdb and kgdb) and one easy
+solution is that debuggers/users can put a break point at panic() instead
+of introducing this infrastructure.
 
-Thanks,
--- 
-Jean Delvare
+Thanks
+Vivek
