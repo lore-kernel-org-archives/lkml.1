@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYDWXjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYDWXnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbYDWXjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 19:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYDWXjK
+	id S1754450AbYDWXnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 19:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYDWXn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 19:39:10 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:35674 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbYDWXjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 19:39:09 -0400
-Date: Thu, 24 Apr 2008 01:39:04 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: "Chatre, Reinette" <reinette.chatre@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: iwl4965 regression since 2.6.24
-Message-ID: <20080423233904.GD14412@ics.muni.cz>
-References: <20080423124105.GA4783@ics.muni.cz> <D936D925018D154694D8A362EEB0892004415BC8@orsmsx416.amr.corp.intel.com>
+	Wed, 23 Apr 2008 19:43:27 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:42898 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbYDWXn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 19:43:27 -0400
+X-Greylist: delayed 1634 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Apr 2008 19:43:27 EDT
+Date: Thu, 24 Apr 2008 01:16:09 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: pb@handhelds.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] asic3: platform_get_irq() may return signed unnoticed
+Message-ID: <20080423231608.GC18907@caravaggio>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <480FAB05.1040107@tiscali.nl> <480FBA51.8020403@tiscali.nl> <480FBEFA.3030903@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <D936D925018D154694D8A362EEB0892004415BC8@orsmsx416.amr.corp.intel.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 206.196.180.225
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 24 Apr 2008 01:39:04 +0200 (CEST)
+In-Reply-To: <480FBEFA.3030903@tiscali.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 02:29:14PM -0700, Chatre, Reinette wrote:
-> Could you please send us some logs that can help us debug this problem?
-> Please load the driver with debugging (modprobe iwl4965 debug=0x43ffb)
-> to get detailed logs and add a detailed description about what you are
-> trying to do with the driver as the logs are created. Also, please
-> consider filing a bug at http://www.intellinuxwireless.org/bugzilla/
-> with these logs attached.
+On Thu, Apr 24, 2008 at 12:58:02AM +0200, Roel Kluin wrote:
+> Thanks to Joe Perches for catching an error in my previous
+Yep, that makes sense now.
 
-done at:
-http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1659
+> ---
+> asic->irq_nr is unsigned. platform_get_irq() may return signed unnoticed
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Acked-by: Samuel Ortiz <sameo@openedhand.com>
 
--- 
-Luká¹ Hejtmánek
+> ---
+> diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+> index f6f2d96..abd7ffc 100644
+> --- a/drivers/mfd/asic3.c
+> +++ b/drivers/mfd/asic3.c
+> @@ -300,10 +300,13 @@ static int asic3_irq_probe(struct platform_device *pdev)
+>  	struct asic3 *asic = platform_get_drvdata(pdev);
+>  	unsigned long clksel = 0;
+>  	unsigned int irq, irq_base;
+> +	int ret;
+> +
+> +	ret = platform_get_irq(pdev, 0);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	asic->irq_nr = platform_get_irq(pdev, 0);
+> -	if (asic->irq_nr < 0)
+> -		return asic->irq_nr;
+> +	asic->irq_nr = ret;
+>  
+>  	/* turn on clock to IRQ controller */
+>  	clksel |= CLOCK_SEL_CX;
+> 
