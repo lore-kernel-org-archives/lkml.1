@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbYDWF1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYDWFib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760814AbYDWF1r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 01:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWF1k
+	id S1760043AbYDWFib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 01:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYDWFiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 01:27:40 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54432 "EHLO gate.crashing.org"
+	Wed, 23 Apr 2008 01:38:21 -0400
+Received: from ozlabs.org ([203.10.76.45]:52147 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbYDWF1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 01:27:39 -0400
-Subject: Re: x86: 4kstacks default
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080419142329.GA5339@elte.hu>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	 <20080418142934.38ce6bf4.akpm@linux-foundation.org>
-	 <20080419142329.GA5339@elte.hu>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 15:27:01 +1000
-Message-Id: <1208928421.9060.22.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1751485AbYDWFiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 01:38:20 -0400
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Subject: [PATCH] mutex-debug: Check mutex magic before owner
+Message-Id: <1208929092.367844.810203758306.1.gpush@pingu>
+To: <linux-kernel@vger.kernel.org>
+Cc: <mingo@redhat.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 23 Apr 2008 15:38:12 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently, the mutex debug code checks the lock->owner before
+lock->magic, so a corrupt mutex will most likely result in
+failing the owner check, rather than the magic check.
 
-On Sat, 2008-04-19 at 16:23 +0200, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > >  config 4KSTACKS
-> > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > > -	depends on DEBUG_KERNEL
-> > >  	depends on X86_32
-> > > +	default y
-> > 
-> > This patch will cause kernels to crash.
-> 
-> what mainline kernels crash and how will they crash? Fedora and other 
-> distros have had 4K stacks enabled for years:
-> 
->   $ grep 4K /boot/config-2.6.24-9.fc9
->   CONFIG_4KSTACKS=y
-> 
-> and we've conducted tens of thousands of bootup tests with all sorts of 
-> drivers and kernel options enabled and have yet to see a single crash 
-> due to 4K stacks. So basically the kernel default just follows the 
-> common distro default now. (distros and users can still disable it)
+This change to debug_mutex_unlock does the magic check first, so
+we have a better idea of what breaks.
 
-Do we routinely test nasty scenarii such as a GFP_KERNEL allocation deep
-in a call stack trying to swap something out to NFS ?
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-Ben.
+---
+ kernel/mutex-debug.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
+diff --git a/kernel/mutex-debug.c b/kernel/mutex-debug.c
+index 3aaa06c..1d94160 100644
+--- a/kernel/mutex-debug.c
++++ b/kernel/mutex-debug.c
+@@ -79,8 +79,8 @@ void debug_mutex_unlock(struct mutex *lock)
+ 	if (unlikely(!debug_locks))
+ 		return;
+ 
+-	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+ 	DEBUG_LOCKS_WARN_ON(lock->magic != lock);
++	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+ 	DEBUG_LOCKS_WARN_ON(!lock->wait_list.prev && !lock->wait_list.next);
+ 	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+ }
