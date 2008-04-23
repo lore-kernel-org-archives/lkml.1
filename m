@@ -1,154 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbYDWEsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYDWE7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbYDWEsx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 00:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYDWEsn
+	id S1755194AbYDWE7f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 00:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbYDWE7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 00:48:43 -0400
-Received: from rv-out-0708.google.com ([209.85.198.249]:59133 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751204AbYDWEsm (ORCPT
+	Wed, 23 Apr 2008 00:59:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:16696 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbYDWE7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 00:48:42 -0400
+	Wed, 23 Apr 2008 00:59:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=E2z2dfanoCB48Wj7OtfbPcG6MRZ56HOksbbj/6jM6BkNY2sO6wjRnE+bDB9yk2bE31XxwU2FaCMiNHd39sPYE5uHVAumvBVe0/Wo1YMCTB8LhaeQLwiX+Gcv8Q8VUmnsesokdVQAAZyhXs71tgG+vdHO3Sm1OdxMYemVb5OoFcw=
-Reply-To: yhlu.kernel@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
-Date: Tue, 22 Apr 2008 21:48:16 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Greg KH" <greg@kroah.com>, "David Miller" <davem@davemloft.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "linux-pci" <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Sathya Prakash <sathya.prakash@lsi.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YHf+YfM3MJHM+M7mjT37LKaI8irGrkvCXVsySxgUWNZp/sYwOktM/RU/l6WckvD5ZwfGvWVLZ7EA59rVWepkFc9pTyMMXhX8MQvJ726lJEEII3z9xxq6YcN9EoAr7zQQMuPvQAxlwoTg1su0MRX/5meaMyGExKv6Qs9HdUwJtk8=
+Message-ID: <aa79d98a0804222159l5ae49a64n101c4b299a3242ac@mail.gmail.com>
+Date: Wed, 23 Apr 2008 08:59:22 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804222148.17530.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+References: <200804181856.m3IIuKd4007403@hera.kernel.org>
+	 <1208917076.9212.721.camel@pmac.infradead.org>
+	 <aa79d98a0804222118me7de773kae498479531a9585@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 23, 2008 at 8:18 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>
+> On Wed, Apr 23, 2008 at 6:17 AM, David Woodhouse <dwmw2@infradead.org> wrote:
+>  > On Fri, 2008-04-18 at 18:56 +0000, Linux Kernel Mailing List wrote:
+>  >  > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6b6891f9c545ccd45d6d8ddfd33ce27c22c271a7
+>  >  > Commit:     6b6891f9c545ccd45d6d8ddfd33ce27c22c271a7
+>  >  > Parent:     6093015db2bd9e70cf20cdd23be1a50733baafdd
+>  >  > Author:     gorcunov@gmail.com <gorcunov@gmail.com>
+>  >  > AuthorDate: Fri Mar 28 17:56:57 2008 +0300
+>  >  > Committer:  Ingo Molnar <mingo@elte.hu>
+>  >  > CommitDate: Thu Apr 17 17:41:33 2008 +0200
+>  >  >
+>  >  >     x86: cleanup - rename VM_MASK to X86_VM_MASK
+>  >  >
+>  >  >     This patch renames VM_MASK to X86_VM_MASK (which
+>  >  >     in turn defined as alias to X86_EFLAGS_VM) to better
+>  >  >     distinguish from virtual memory flags. We can't just
+>  >  >     use X86_EFLAGS_VM instead because it is also used
+>  >  >     for conditional compilation
+>  >  >
+>  >  >     Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>  >  >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>  >
+>  >
+>  >  > --- a/include/asm-x86/vm86.h
+>  >  > +++ b/include/asm-x86/vm86.h
+>  >  > @@ -17,9 +17,9 @@
+>  >  >  #define IOPL_MASK    0x00003000
+>  >  >  #define NT_MASK              0x00004000
+>  >  >  #ifdef CONFIG_VM86
+>  >  > -#define VM_MASK              0x00020000
+>  >  > +#define X86_VM_MASK  X86_EFLAGS_VM
+>  >  >  #else
+>  >  > -#define VM_MASK              0 /* ignored */
+>  >  > +#define X86_VM_MASK  0 /* No VM86 support */
+>  >  >  #endif
+>  >  >  #define AC_MASK              0x00040000
+>  >  >  #define VIF_MASK     0x00080000      /* virtual interrupt flag */
+>  >
+>  >  This is user-visible. Yet we're changing the name and also making it
+>  >  depend on #ifdef CONFIG_VM86, which is not going to be set in userspace.
+>  >  Perhaps it should be within #ifdef __KERNEL__?
+>  >
+>  >  --
+>  >  dwmw2
+>  >
+>  >
+>
+>  Thanks David, will check it today evening (i'm in office now)
+>
 
-this change
+Hi David,
 
-| commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
-| Author: Prakash, Sathya <sathya.prakash@lsi.com>
-| Date:   Fri Mar 7 15:53:21 2008 +0530
-|
-|     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
-|
-|     This patch modifies the driver to enable MSI by default for all SAS chips.
-|
-|     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
-|     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-|
-cause kexec RHEL 5.1 kernel fail.
+actually, this CONFIG_VM86 was there even before the renaming was done.
+The main questions (imo) - is there any user space application who uses
+these flags? If they are - then even the idea of this patch was a bit bogus,
+and I should *not* remove all these VM86 specific flags but better define them
+as aliases on flags from processor-flags.h.
 
-root casue: the rhel 5.1 kernel still use INTx emulation.
-and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec path
-
-so try to call pci_disable_msi in shutdown patch
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -360,6 +360,8 @@ static void pci_device_shutdown(struct d
- 
- 	if (drv && drv->shutdown)
- 		drv->shutdown(pci_dev);
-+	pci_disable_msi_simple(pci_dev);
-+	pci_disable_msix_simple(pci_dev);
- }
- 
- /**
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -722,9 +722,11 @@ static inline void pci_restore_msi_state
- { }
- #else
- extern int pci_enable_msi(struct pci_dev *dev);
-+extern void pci_disable_msi_simple(struct pci_dev *dev);
- extern void pci_disable_msi(struct pci_dev *dev);
- extern int pci_enable_msix(struct pci_dev *dev,
- 	struct msix_entry *entries, int nvec);
-+extern void pci_disable_msix_simple(struct pci_dev *dev);
- extern void pci_disable_msix(struct pci_dev *dev);
- extern void msi_remove_pci_irq_vectors(struct pci_dev *dev);
- extern void pci_restore_msi_state(struct pci_dev *dev);
-Index: linux-2.6/drivers/pci/msi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/msi.c
-+++ linux-2.6/drivers/pci/msi.c
-@@ -569,7 +569,7 @@ int pci_enable_msi(struct pci_dev* dev)
- }
- EXPORT_SYMBOL(pci_enable_msi);
- 
--void pci_disable_msi(struct pci_dev* dev)
-+static void __pci_disable_msi(struct pci_dev* dev, int msi_free)
- {
- 	struct msi_desc *entry;
- 	int default_irq;
-@@ -591,11 +591,20 @@ void pci_disable_msi(struct pci_dev* dev
- 	}
- 
- 	default_irq = entry->msi_attrib.default_irq;
--	msi_free_irqs(dev);
-+	if (msi_free)
-+		msi_free_irqs(dev);
- 
- 	/* Restore dev->irq to its default pin-assertion irq */
- 	dev->irq = default_irq;
- }
-+void pci_disable_msi_simple(struct pci_dev* dev)
-+{
-+	__pci_disable_msi(dev, 0);
-+}
-+void pci_disable_msi(struct pci_dev* dev)
-+{
-+	__pci_disable_msi(dev, 1);
-+}
- EXPORT_SYMBOL(pci_disable_msi);
- 
- static int msi_free_irqs(struct pci_dev* dev)
-@@ -687,7 +696,7 @@ static void msix_free_all_irqs(struct pc
- 	msi_free_irqs(dev);
- }
- 
--void pci_disable_msix(struct pci_dev* dev)
-+static void __pci_disable_msix(struct pci_dev* dev, int msix_free)
- {
- 	if (!pci_msi_enable || !dev || !dev->msix_enabled)
- 		return;
-@@ -696,7 +705,16 @@ void pci_disable_msix(struct pci_dev* de
- 	pci_intx_for_msi(dev, 1);
- 	dev->msix_enabled = 0;
- 
--	msix_free_all_irqs(dev);
-+	if (msix_free)
-+		msix_free_all_irqs(dev);
-+}
-+void pci_disable_msix_simple(struct pci_dev* dev)
-+{
-+	__pci_disable_msix(dev, 0);
-+}
-+void pci_disable_msix(struct pci_dev* dev)
-+{
-+	__pci_disable_msix(dev, 1);
- }
- EXPORT_SYMBOL(pci_disable_msix);
- 
+Ingo? Peter?
