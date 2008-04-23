@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYDWROE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYDWRVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYDWROE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 13:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYDWRNx
+	id S1754507AbYDWRVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYDWRVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 13:13:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34697 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbYDWRNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 13:13:52 -0400
-Date: Wed, 23 Apr 2008 10:13:11 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Frans Pop" <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
-       "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
-Message-Id: <20080423101311.d7420a13.zaitcev@redhat.com>
-In-Reply-To: <84144f020804230034y3d31fb02n597b69d7ed866260@mail.gmail.com>
-References: <200804212310.41729.elendil@planet.nl>
-	<20080422134034.GF7311@elte.hu>
-	<20080422235148.c49dc6b7.zaitcev@redhat.com>
-	<84144f020804230031w612176c1k8ec5a6fb27ca3315@mail.gmail.com>
-	<84144f020804230034y3d31fb02n597b69d7ed866260@mail.gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Apr 2008 13:21:02 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:58277 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbYDWRVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:21:00 -0400
+Message-ID: <480F6FF9.9000605@tiscali.nl>
+Date: Wed, 23 Apr 2008 19:20:57 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vga16fb: test virtual screen range before subtraction on
+ unsigned
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008 10:34:57 +0300, "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-> On Wed, Apr 23, 2008 at 10:31 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >  On Wed, Apr 23, 2008 at 9:51 AM, Pete Zaitcev <zaitcev@redhat.com> wrote:
+dx and dy are u32's, so the test should occur before the subtraction
 
-> >  >  I looked at this whole day today, but found nothing.
-> >  >
-> >  >  The code analysis for usbmon shows nothing. Anyone wants to have
-> >  >  a look?
-> 
-> >  I didn't look too closely but mon_text_fetch() does list_del() but no
-> >  kmem_cache_free() which looks fishy.
-> 
-> Yup, looks like a leak in the error path. So it's mon_text_read_t() ->
-> mon_text_read_wait() -> mon_text_fetch() that removes it from the list
-> but we can fail before we reach the kmem_cache_free() in
-> mon_text_read_t() and thus lose track of the object.
-
-This is false, we cannot fail. There's only one "return" for non-NULL
-case and the kmem_cache_free is right in front of it. See my reply
-to the patch.
-
--- Pete
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 9b3c592..9d27517 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1087,12 +1087,15 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
+ 	width = x2 - dx;
+ 	height = y2 - dy;
+ 
++	if (sx + dx < old_dx || sy + dy < old_dy)
++		return;
++
+ 	/* update sx1,sy1 */
+ 	sx += (dx - old_dx);
+ 	sy += (dy - old_dy);
+ 
+ 	/* the source must be completely inside the virtual screen */
+-	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
++	if (sx + width > vxres || sy + height > vyres)
+ 		return;
+ 
+ 	switch (info->fix.type) {
