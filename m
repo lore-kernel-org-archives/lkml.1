@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYDWH2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYDWHbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbYDWH2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 03:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYDWH20
+	id S1753333AbYDWHbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 03:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYDWHbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 03:28:26 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:9718 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYDWH2Z (ORCPT
+	Wed, 23 Apr 2008 03:31:34 -0400
+Received: from rv-out-0708.google.com ([209.85.198.247]:14893 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751205AbYDWHbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 03:28:25 -0400
-Date: Wed, 23 Apr 2008 09:28:21 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org
-Subject: Re: [RFC patch 7/9] S390 remove -traditional
-Message-ID: <20080423072821.GA15850@osiris.boeblingen.de.ibm.com>
-References: <20080422172404.502954084@polymtl.ca> <20080422172842.809030360@polymtl.ca>
+	Wed, 23 Apr 2008 03:31:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PSVY+7Hb3LhFUPSOXgNUXv6gO1fjqoQvNatFII8ROV8hPj3YbuH60wFQlA12s5rXV+JiDRUbd3TYe3QERU+Bg6JojF48ymsk4182y9dITm16cJD/SMuNDeJzPlySqWvvD7mdQvf47I+Giuljnu+kjDHO3CJFr3a4jkwBaI1FesQ=
+Message-ID: <84144f020804230031w612176c1k8ec5a6fb27ca3315@mail.gmail.com>
+Date: Wed, 23 Apr 2008 10:31:31 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Frans Pop" <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20080422235148.c49dc6b7.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080422172842.809030360@polymtl.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <200804212310.41729.elendil@planet.nl>
+	 <20080422134034.GF7311@elte.hu>
+	 <20080422235148.c49dc6b7.zaitcev@redhat.com>
+X-Google-Sender-Auth: b534e1c317cab273
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 01:24:11PM -0400, Mathieu Desnoyers wrote:
-> Subject: [RFC patch 7/9] Re: [PATCH] Stringify support commas
->  > This is a no-no for those archs that still use -traditional.
->  > > I dunno if this is a problem for you at the moment and the
->  > > right fix is anyway to nuke -traditional.
->  > > 
->  > >     Sam
-> 
-> (cross-compile test ok)
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Sam Ravnborg <sam@ravnborg.org>
-> CC: schwidefsky@de.ibm.com
-> CC: heiko.carstens@de.ibm.com
-> CC: linux390@de.ibm.com
-> CC: linux-s390@vger.kernel.org
-> ---
->  arch/s390/kernel/Makefile   |    2 --
->  arch/s390/lib/Makefile      |    2 --
->  arch/s390/math-emu/Makefile |    1 -
->  3 files changed, 5 deletions(-)
-> 
-> Index: linux-2.6-lttng/arch/s390/kernel/Makefile
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/s390/kernel/Makefile	2008-04-21 10:04:43.000000000 -0400
-> +++ linux-2.6-lttng/arch/s390/kernel/Makefile	2008-04-21 10:04:47.000000000 -0400
-> @@ -2,8 +2,6 @@
->  # Makefile for the linux kernel.
->  #
-> 
-> -EXTRA_AFLAGS	:= -traditional
-> -
+Hi Pete,
 
-Thanks, applied. This did cause problems in late 2.6.25 and I think Martin
-had a similar patch ready.
+On Wed, Apr 23, 2008 at 9:51 AM, Pete Zaitcev <zaitcev@redhat.com> wrote:
+>  I looked at this whole day today, but found nothing.
+>
+>  The code analysis for usbmon shows nothing. Anyone wants to have
+>  a look?
+
+I didn't look too closely but mon_text_fetch() does list_del() but no
+kmem_cache_free() which looks fishy.
