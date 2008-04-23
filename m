@@ -1,73 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYDWMPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYDWMQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYDWMPk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 08:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbYDWMPO
+	id S1755323AbYDWMQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 08:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYDWMQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 08:15:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:35723 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755452AbYDWMPM (ORCPT
+	Wed, 23 Apr 2008 08:16:11 -0400
+Received: from mail-gw3.adaptec.com ([162.62.93.58]:59869 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbYDWMQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 08:15:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=uQN2E2H+K3VSo392VuKPs2oMf1GhBAFPrKGWjXW9khCbvNHdSzg8bAE+D1ZMiUI7ZS+/blfLUaSkHFFn5TFxUY2W3aZ9zxxpJr4UmJUnLfKgR+GAPTHzNZmoUqI5vr/MUdQ3U8xabjVplGUQKljymbkXYBRjNGTXX9mdd8+e2eo=
-Message-ID: <480F2842.4010505@googlemail.com>
-Date: Wed, 23 Apr 2008 14:14:58 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>
-Subject: BIOS bug, APIC version is 0 for CPU#0!
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Apr 2008 08:16:09 -0400
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Message-Id: <BCC76E6D-9A0F-4DC1-822A-50EE44A52890@adaptec.com>
+From: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
+To: Linux-Scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <86802c440804211742g1fe25aadjeaffce49722e7c46@mail.gmail.com>
+Content-Type: multipart/mixed; boundary=Apple-Mail-329-865016404
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: [PATCH] aacraid: Fix down_interruptible() to check the return value take 2 (was: aacraid broken in git)
+Date: Wed, 23 Apr 2008 08:16:06 -0400
+References: <86802c440804181855t615a5616g62d083695ca8ea08@mail.gmail.com> <3AC1542A-0338-4796-9218-502C4AAD64D2@adaptec.com> <86802c440804211742g1fe25aadjeaffce49722e7c46@mail.gmail.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I've just compiled latest linus git tree and getting now on an Q9300 Core2Quad , ASUS P5E-VM DO motherboard with BIOS Ver. 0606 , BIOS Rev. 8.12
-the BIOS bug for CPU#0 message for each processor ?!? That seems somewhat buggy ?:)
+--Apple-Mail-329-865016404
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
 
-That BIOS version is beta and may be really buggy but I never got such a message on 2.6.24* nor on 2.6.25.
+On Apr 21, 2008, at 8:42 PM, Yinghai Lu wrote:
 
-
---($:~)-- uname -a
-Linux thor 2.6.25-03530-g94bc891 #773 SMP PREEMPT Wed Apr 23 13:55:10 CEST 2008 i686 GNU/Linux
-
-
-..
-
-[    0.000000] ACPI: PM-Timer IO Port: 0x808
-[    0.000000] ACPI: Local APIC address 0xfee00000
-[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-[    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-[    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-[    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
-[    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-[    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
-[    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-[    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
-[    0.000000] IOAPIC[0]: apic_id 4, version 32, address 0xfec00000, GSI 0-23
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-[    0.000000] ACPI: IRQ0 used by override.
-[    0.000000] ACPI: IRQ2 used by override.
-[    0.000000] ACPI: IRQ9 used by override.
-[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
-[    0.000000] ACPI: HPET id: 0xffffffff base: 0xfed00000
-[    0.000000] Using ACPI (MADT) for SMP configuration information
-
-...
-
-Please let me know if you need more infos , dmesg , config etc .
+> bisected to:
+>
+> yhlu@mpk12-office-77-185:~/xx/xx/kernel/linux-2.6> git-bisect good
+> e6990c6448ca9359b6d4ad027c0a6efbf4379e64 is first bad commit
+> commit e6990c6448ca9359b6d4ad027c0a6efbf4379e64
+> Author: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
+> Date:   Mon Apr 14 14:20:16 2008 -0400
+>
+>    [SCSI] aacraid: Fix down_interruptible() to check the return value
+>
+>    Instead of ignoring the return value in aac_fib_send() return 2 to
+>    indicate to the layers above that fib transmission was aborted  
+> due to
+>    timeout.
+>
+>    Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+>    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com 
+> >
+>
+> :040000 040000 2f23bf33d76d6f37c558251003f88537c6e639fe
+> 63d59091ca7ac527b5106540eea06d7b6649862d M      drivers
 
 
-Regards,
+The return value for down_interruptible was incorrectly checked!  
+updated patch enclosed.
 
-Gabriel C
+This attached patch is against current scsi-misc-2.6 (minus original  
+down_interruptible patch).
+
+ObligatoryDisclaimer: Please accept my condolences regarding Outlook's  
+handling of patch attachments (inline gets damaged, please use  
+attachment).
+
+Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+
+  drivers/scsi/aacraid/commsup.c |    8 +++++---
+  1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff -ru a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/ 
+commsup.c
+--- a/drivers/scsi/aacraid/commsup.c	2008-04-14 14:08:00.737201138 -0400
++++ b/drivers/scsi/aacraid/commsup.c	2008-04-14 14:09:34.019252960 -0400
+@@ -515,10 +515,12 @@
+  				}
+  				udelay(5);
+  			}
+-		} else
+-			(void)down_interruptible(&fibptr->event_wait);
++		} else if (down_interruptible(&fibptr->event_wait)) {
++			fibptr->done = 2;
++			up(&fibptr->event_wait);
++		}
+  		spin_lock_irqsave(&fibptr->event_lock, flags);
+-		if (fibptr->done == 0) {
++		if ((fibptr->done == 0) || (fibptr->done == 2)) {
+  			fibptr->done = 2; /* Tell interrupt we aborted */
+  			spin_unlock_irqrestore(&fibptr->event_lock, flags);
+  			return -EINTR;
+
+Sincerely - Mark Salyzyn
+
+
+--Apple-Mail-329-865016404
+Content-Disposition: attachment;
+	filename=aacraid_down_interruptible2.patch
+Content-Type: application/octet-stream;
+	x-unix-mode=0644;
+	name="aacraid_down_interruptible2.patch"
+Content-Transfer-Encoding: 7bit
+
+diff -ru a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+--- a/drivers/scsi/aacraid/commsup.c	2008-04-14 14:08:00.737201138 -0400
++++ b/drivers/scsi/aacraid/commsup.c	2008-04-14 14:09:34.019252960 -0400
+@@ -515,10 +515,12 @@
+ 				}
+ 				udelay(5);
+ 			}
+-		} else
+-			(void)down_interruptible(&fibptr->event_wait);
++		} else if (down_interruptible(&fibptr->event_wait)) {
++			fibptr->done = 2;
++			up(&fibptr->event_wait);
++		}
+ 		spin_lock_irqsave(&fibptr->event_lock, flags);
+-		if (fibptr->done == 0) {
++		if ((fibptr->done == 0) || (fibptr->done == 2)) {
+ 			fibptr->done = 2; /* Tell interrupt we aborted */
+ 			spin_unlock_irqrestore(&fibptr->event_lock, flags);
+ 			return -EINTR;
+
+--Apple-Mail-329-865016404
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+
+
+--Apple-Mail-329-865016404--
