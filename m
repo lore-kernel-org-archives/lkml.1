@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYDWJSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYDWJZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbYDWJSU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYDWJSJ
+	id S1753115AbYDWJZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYDWJZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:18:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:43252 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbYDWJSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:18:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,698,1199692800"; 
-   d="scan'208";a="273700255"
-Subject: [patch]cpufreq state info wrong after resume
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 17:21:13 +0800
-Message-Id: <1208942473.6630.2.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 23 Apr 2008 05:25:50 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:35427 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYDWJZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:25:49 -0400
+Message-ID: <480EFDD3.4020707@aitel.hist.no>
+Date: Wed, 23 Apr 2008 11:13:55 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Willy Tarreau <w@1wt.eu>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: 4kstacks default
+References: <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <20080420132113.GA1899@cs181133002.pp.htv.fi>
+In-Reply-To: <20080420132113.GA1899@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes old_index != stat->last_index, see cpufreq_update_policy, bios
-can change cpu setting in resume. In my test, after resume cpu is in
-lowest speed, but the stat info shows cpu is in full speed. This patch
-makes the stat info correct after a resume. 
+Adrian Bunk wrote:
+> What actually brings bad reputation is shipping a 4k option that is 
+> known to break under some circumstances.
+>   
+How about making 4k stacks incompatible with those circumstances then?
+I.e. is you select 4k stacks, then you can't select XFS because we know
+that _may_ fail. Similiar for ndiswrapper networking, and other
+stuff where problems have been noticed.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Some people don't need any of these, and can then use
+safe 4k stacks. Well, at least as safe as the 8k stacks are, there is no
+mathematical proof for their safety in all cases either.
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 070421a..78bd2f3 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -284,7 +284,7 @@ cpufreq_stat_notifier_trans (struct notifier_block *nb, unsigned long val,
- 	if (!stat)
- 		return 0;
- 
--	old_index = freq_table_get_index(stat, freq->old);
-+	old_index = stat->last_index;
- 	new_index = freq_table_get_index(stat, freq->new);
- 
- 	cpufreq_stats_update(freq->cpu);
-
-
+Helge Hafting
