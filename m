@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYDWUpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYDWUyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbYDWUpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 16:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYDWUpq
+	id S1755256AbYDWUyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 16:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYDWUx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 16:45:46 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54715 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbYDWUpp (ORCPT
+	Wed, 23 Apr 2008 16:53:59 -0400
+Received: from service2.sh.cvut.cz ([147.32.127.218]:58370 "EHLO
+	service2.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbYDWUx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 16:45:45 -0400
-Date: Wed, 23 Apr 2008 23:45:17 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: torvalds@linux-foundation.org
-cc: clameter@sgi.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] SLUB debugging fixes for 2.6.25
-Message-ID: <Pine.LNX.4.64.0804232343410.6858@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Apr 2008 16:53:59 -0400
+Message-ID: <480FA235.8000203@seznam.cz>
+Date: Wed, 23 Apr 2008 22:55:17 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Williams <john.williams@petalogix.com>, jwboyer@linux.vnet.ibm.com,
+       John Linn <John.Linn@xilinx.com>, git-dev@xilinx.com,
+       Grant Likely <grant.likely@secretlab.ca>, git@xilinx.com,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
+Subject: Re: Microblaze Linux release
+References: <48020A21.4000404@seznam.cz> <200804160944.42734.arnd@arndb.de> <48061B36.20800@seznam.cz> <200804161733.04714.arnd@arndb.de>
+In-Reply-To: <200804161733.04714.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull the latest SLUB git tree from:
+Hi all,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
+I update Microblaze kernel to latest Linus tree. I fixed some problems which
+come with it.
 
-It contains two minor fixes that improve SLUB debugging support.
+Regards,
+Michal
 
-                Pekka
 
-Christoph Lameter (1):
-      slub: fix parameters passed to slab_bug()
-
-Pekka Enberg (1):
-      slub: improve kmem_cache_destroy() error message
-
- mm/slub.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 7f8aaa2..378d3f1 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -521,7 +521,7 @@ static void print_trailer(struct kmem_cache *s, struct page *page, u8 *p)
- static void object_err(struct kmem_cache *s, struct page *page,
- 			u8 *object, char *reason)
- {
--	slab_bug(s, reason);
-+	slab_bug(s, "%s", reason);
- 	print_trailer(s, page, object);
- }
- 
-@@ -533,7 +533,7 @@ static void slab_err(struct kmem_cache *s, struct page *page, char *fmt, ...)
- 	va_start(args, fmt);
- 	vsnprintf(buf, sizeof(buf), fmt, args);
- 	va_end(args);
--	slab_bug(s, fmt);
-+	slab_bug(s, "%s", buf);
- 	print_page_info(page);
- 	dump_stack();
- }
-@@ -2426,8 +2426,11 @@ void kmem_cache_destroy(struct kmem_cache *s)
- 	if (!s->refcount) {
- 		list_del(&s->list);
- 		up_write(&slub_lock);
--		if (kmem_cache_close(s))
--			WARN_ON(1);
-+		if (kmem_cache_close(s)) {
-+			printk(KERN_ERR "SLUB %s: %s called for cache that "
-+				"still has objects.\n", s->name, __func__);
-+			dump_stack();
-+		}
- 		sysfs_slab_remove(s);
- 	} else
- 		up_write(&slub_lock);
+>>> One more reason for the microblaze kernel to base on top of linux-next
+>>> instead of mainline.
+>> For me is not difficult to use lmb from microblaze/mm or from lib if the files
+>> are the same.
+>>
+> 
+> What I meant is that there are a number of reasons to use linux-next
+> as a base for your kernel (this being one of them) and few against.
+> 
+> 	Arnd <><
+> 
+> 
