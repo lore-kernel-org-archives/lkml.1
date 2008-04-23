@@ -1,164 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbYDWVf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYDWVgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbYDWVf6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 17:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYDWVfu
+	id S1757090AbYDWVgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 17:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYDWVg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 17:35:50 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54689 "EHLO pasmtpA.tele.dk"
+	Wed, 23 Apr 2008 17:36:29 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:43913 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751262AbYDWVfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 17:35:48 -0400
-Subject: Re: [PATCH] make alsa use corect patch for Realtek ALC889A
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hfxtddk6a.wl%tiwai@suse.de>
-References: <1208017043.1514.50.camel@localhost>
-	 <s5hbq4af4h3.wl%tiwai@suse.de> <s5htzi1eur8.wl%tiwai@suse.de>
-	 <1208483526.14146.29.camel@localhost> <s5h3apjfox5.wl%tiwai@suse.de>
-	 <1208897629.7522.6.camel@localhost>  <s5hfxtddk6a.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 23:35:42 +0200
-Message-Id: <1208986542.7743.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	id S1751430AbYDWVg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 17:36:28 -0400
+Date: Wed, 23 Apr 2008 23:36:25 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Chris Hallinan <challinan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: iwl4965 regression since 2.6.24
+Message-ID: <20080423213625.GE4783@ics.muni.cz>
+References: <20080423124105.GA4783@ics.muni.cz> <c4aed99f0804230916h7eeff631ub4bba502844aebdd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c4aed99f0804230916h7eeff631ub4bba502844aebdd@mail.gmail.com>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 206.196.180.225
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 23 Apr 2008 23:36:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-23 at 10:55 +0200, Takashi Iwai wrote:
-> At Tue, 22 Apr 2008 22:53:49 +0200,
-> Kasper Sandberg wrote:
-> > 
-> > On Fri, 2008-04-18 at 12:16 +0200, Takashi Iwai wrote:
-> > > At Fri, 18 Apr 2008 03:52:06 +0200,
-> > > Kasper Sandberg wrote:
-> > > > 
-> > > > On Wed, 2008-04-16 at 16:31 +0200, Takashi Iwai wrote:
-> > > > > At Wed, 16 Apr 2008 13:01:44 +0200,
-> > > > > I wrote:
-> > > > > > 
-> > > > > > At Sat, 12 Apr 2008 18:17:23 +0200,
-> > > > > > Kasper Sandberg wrote:
-> > > > > > > 
-> > > > > > > Hello..
-> > > > > > > I have a gigabyte X48-DQ6 motherboard, specification url:
-> > > > > > > http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ClassValue=Motherboard&ProductID=2763&ProductName=GA-X48-DQ6
-> > > > > > > they clearly state it uses a realtek alc 889a.
-> > > > > > > 
-> > > > > > > google around, it seems lots of people which has this chip gets it
-> > > > > > > detected as alc885, including me.
-> > > > > > > 
-> > > > > > > now, audio works (atleast analog out, havent tested the rest), allthough
-> > > > > > > i couldnt get the supposed feature of separate channel to front panel to
-> > > > > > > work(doesent matter much to me though)
-> > > > > > > 
-> > > > > > > interrested in fixing this just for the sake of fixing, i ventured into
-> > > > > > > patch_realtek.c, and found the structure that defined patches for hda
-> > > > > > > audio.
-> > > > > > > 
-> > > > > > > i inspected my /proc/asound/card0/codec#2 file (only one except the id
-> > > > > > > file), and found the following information:
-> > > > > > > Codec: Realtek ALC885
-> > > > > > > Address: 2
-> > > > > > > Vendor Id: 0x10ec0885
-> > > > > > > Subsystem Id: 0x1458a002
-> > > > > > > Revision Id: 0x100103
-> > > > > > > 
-> > > > > > > i then modified patch_realtek.c to detect mine as ALC889A, and assign
-> > > > > > > the correct patch to it (well, the one used for 889).
-> > > > > > > 
-> > > > > > > After rebuilding, it now uses patch 883 instead of 882 as it did before.
-> > > > > > > i dont appear to have recieved any separate front panel channel,
-> > > > > > > however, it still seems more correct now, and is probably wise to keep
-> > > > > > > for when 883 is improved to support the hardware fully.
-> > > > > > > 
-> > > > > > > the only thing i notice has changed, is the message i get from the
-> > > > > > > kernel, before i changed, it said:
-> > > > > > > hda_codec: Unknown model for ALC882, trying auto-probe from BIOS...
-> > > > > > > now it says:
-> > > > > > > hda_codec: Unknown model for ALC883, trying auto-probe from BIOS...
-> > > > > > > but i guess if it has to spew out such a line, it now spews out the
-> > > > > > > correct one.
-> > > > > > > 
-> > > > > > > analog audio works, so thats fine..
-> > > > > > > 
-> > > > > > > the patch(i apologize if my mailer messes up whitespace, but its so
-> > > > > > > simple that it doesent matter):
-> > > > > > 
-> > > > > > The change looks OK (although I'd move the line just before ALC885
-> > > > I wasnt sure how it was evaluated, i dont really know alsa alot, so i
-> > > > wanted to make sure my entry got evaluated first.
-> > > > > > entry).  I have no datasheet of ALC889A, but rumor says that it's
-> > > > > > almost compatible with ALC888.  So patch_alc883 seems to be a better
-> > > > > > choice than now.
-> > > > > > 
-> > > > > > I'll fix it on ALSA tree now.
-> > > > > 
-> > > > > On the second thought, replacing to patch_alc883 may break many
-> > > > > devices with preset models because patch_alc882() and patch_alc883()
-> > > > > have different model tables.  So, I applied the patch below in
-> > > > > addition.
-> > > > > 
-> > > > > BTW, could you show your codec#* files?  This will be really helpful
-> > > > > to identify problems.
-> > > > 
-> > > > Yes, sorry for delay, for some reason my mail client decided not to
-> > > > update the view.. weird..
-> > > > 
-> > > > You should know that this is WITH my modification..
-> > > > 
-> > > > About problems.. well.. now that you do mention it, when i play
-> > > > something without a .asoundrc, i get:
-> > > > ALSA lib dlmisc.c:118:(snd_dlsym_verify) unable to verify version for
-> > > > symbol _snd_pcm_empty_open
-> > > > ALSA lib pcm.c:2108:(snd_pcm_open_conf) symbol _snd_pcm_empty_open is
-> > > > not defined inside [builtin]
-> > > > No default libao driver available.
-> > > 
-> > > It's a bug of alsa-lib that was already fixed in the recent version.
-> > > Nothing to do with kernel.
-> > > 
-> > > > Now as far as i know, the gigabyte site(and realteks site) says that
-> > > > this ALC889A should have 7.1 surround, with 2 separate channels of
-> > > > streaming for front. I connected the hd audio connector for front panel
-> > > > on motherboard.. but well.. the same thing comes out, and i see no
-> > > > special channels for it.. BUT, one thing i find odd is, if i play 2
-> > > > channel stuff, it also comes out of all the other channels, eg the
-> > > > surround channels.. :)
-> > > 
-> > > You can open 4, 6 or 8 channels with the device.  But, the default PCM
-> > > is set up only for two channels due to soft-mixing.  You can use
-> > > special PCM names such as "surround51" to open for 5.1 output
-> > > instead.  Again, no kernel issue.
-> > 
-> > if i open hw:0,0, and play only 2 channels, it comes out of all 8
-> > channels.. but thats fine.. what i meant that does NOT work, is that
-> > according to gigabyte, i actually should have 10 channels, 7.1 for the
-> > back panel connectors, and two entirely separate for the front panel,
-> > but the front panel just plays same as back panel stereo (green)
-> > connector.
+On Wed, Apr 23, 2008 at 12:16:34PM -0400, Chris Hallinan wrote:
+> I tried associating manually using the AP address itself, to all the
+> cells I could see, but could not get past the "Link Quality: 0" issue.
 > 
-> Then some output route is missing either in the BIOS setting or in the
-> driver setup.
-> 
-Do you think it could be that i am able to open 10 channels on hw:0,0?
-is there some way i can see? this is what gigabyte's site says:
-7.1+2 Channel High Definition Output
-The ALC889A provides support for 7.1 sound playback, plus 2 channels of
-independent stereo output (multiple streaming) through the front panel
-stereo outputs.
+> Windows XP on this same laptop connected immediately and worked. :(
 
-either way, its not VERY important for me, but for some it might be :)
+I found out that iwconfig wlan0 ap auto (which according to the man page
+should reassociate with the strongest AP) does nothing at all. 
 
+It seems that once associated with AP, the mac or iwl4965 driver (do not know
+which one) is unable to associate with a different AP.
 
-> > Btw, i now inspected the motherboard, and it is indeed ALC889A, atleast
-> > if the label on the chip is to be trusted..
-> 
-> OK, thanks, that's good to know.
-> 
-> 
-> Takashi
-
+-- 
+Luká¹ Hejtmánek
