@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYDWJ4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYDWJ50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758036AbYDWJ4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 05:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYDWJvu
+	id S1758283AbYDWJ50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 05:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbYDWJwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 05:51:50 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59428 "EHLO smtp6.pp.htv.fi"
+	Wed, 23 Apr 2008 05:52:17 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59453 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755547AbYDWJvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 05:51:49 -0400
-Date: Wed, 23 Apr 2008 12:51:10 +0300
+	id S1755911AbYDWJwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 05:52:13 -0400
+Date: Wed, 23 Apr 2008 12:51:34 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: James.Bottomley@HansenPartnership.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] scsi/FlashPoint.c: fix off-by-one errors
-Message-ID: <20080423095110.GX28933@cs181133002.pp.htv.fi>
+To: Jochen Friedrich <jochen@scram.de>, Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [2.6 patch] drivers/of/of_i2c.c: add MODULE_LICENSE
+Message-ID: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,24 +23,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes off-by-one errors in error checks (the variables are 
-used as array indexes for arrays with MAX_SCSI_TAR resp. MAX_LUN 
-elements) spotted by the Coverity checker.
+After commit 585468e5d5962660867c269e26f0a4b89a599473
+([POWERPC] i2c: Fix build breakage introduced by OF helpers)
+drivers/of/of_i2c.c needs a MODULE_LICENSE.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-02fc526feb4e67cfb0008e04f5b797e8315b9cd4 diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
-index b374e45..b898d38 100644
---- a/drivers/scsi/FlashPoint.c
-+++ b/drivers/scsi/FlashPoint.c
-@@ -1499,7 +1499,7 @@ static void FlashPoint_StartCCB(unsigned long pCurrCard, struct sccb *p_Sccb)
- 	thisCard = ((struct sccb_card *)pCurrCard)->cardIndex;
- 	ioport = ((struct sccb_card *)pCurrCard)->ioPort;
+
+ drivers/of/of_i2c.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+946ca8103416a313577b0b9d52d30541fe7eef85 diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index 6316891..715a444 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -13,6 +13,7 @@
  
--	if ((p_Sccb->TargID > MAX_SCSI_TAR) || (p_Sccb->Lun > MAX_LUN)) {
-+	if ((p_Sccb->TargID >= MAX_SCSI_TAR) || (p_Sccb->Lun >= MAX_LUN)) {
+ #include <linux/i2c.h>
+ #include <linux/of.h>
++#include <linux/module.h>
  
- 		p_Sccb->HostStatus = SCCB_COMPLETE;
- 		p_Sccb->SccbStatus = SCCB_ERROR;
+ struct i2c_driver_device {
+ 	char    *of_device;
+@@ -113,3 +114,5 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 	}
+ }
+ EXPORT_SYMBOL(of_register_i2c_devices);
++
++MODULE_LICENSE("GPL");
 
