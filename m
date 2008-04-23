@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYDWQ71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYDWRCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbYDWQ71 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 12:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYDWQ7H
+	id S1755201AbYDWRCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 13:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYDWRC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 12:59:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:18324 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbYDWQ7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 12:59:05 -0400
-Date: Wed, 23 Apr 2008 09:56:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       jejb <James.Bottomley@HansenPartnership.com>
-Cc: gregkh <greg@kroah.com>, akpm <akpm@linux-foundation.org>,
-       sfr@canb.auug.org.au
-Subject: [PATCH -next 2/2] sysfs: sysfs_update_group stub for CONFIG_SYSFS=n
-Message-Id: <20080423095622.25e29f45.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 23 Apr 2008 13:02:26 -0400
+Received: from OSB1387.piap.pl ([195.187.100.11]:33332 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbYDWRCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 13:02:25 -0400
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m33apdyajf.fsf@maximus.localdomain>
+	<480E5CB3.2080003@microgate.com> <480E4FA1.5020508@garzik.org>
+	<20080422.150559.115368150.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 23 Apr 2008 19:02:22 +0200
+In-Reply-To: <20080422.150559.115368150.davem@davemloft.net> (David Miller's message of "Tue\, 22 Apr 2008 15\:05\:59 -0700 \(PDT\)")
+Message-ID: <m34p9smrmp.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+David Miller <davem@davemloft.net> writes:
 
-scsi_transport_spi uses sysfs_update_group() when CONFIG_SYSFS=n,
-so provide a stub for it.
+> The fact that non-HDLC users of syncppp got left broken
 
-next-20080423/drivers/scsi/scsi_transport_spi.c:1467: error: implicit declaration of function 'sysfs_update_group'
-make[3]: *** [drivers/scsi/scsi_transport_spi.o] Error 1
+The fact is it isn't broken WRT dev->priv at least (I don't know about
+random unrelated breakage).
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/sysfs.h |    6 ++++++
- 1 file changed, 6 insertions(+)
+The drivers:
+a) alloc a netdev
+b) set dev->priv to some private kmalloced area
 
---- next-20080423.orig/include/linux/sysfs.h
-+++ next-20080423/include/linux/sysfs.h
-@@ -191,6 +191,12 @@ static inline int sysfs_create_group(str
- 	return 0;
- }
- 
-+static inline int sysfs_update_group(struct kobject *kobj,
-+				const struct attribute_group *grp)
-+{
-+	return 0;
-+}
-+
- static inline void sysfs_remove_group(struct kobject *kobj,
- 				      const struct attribute_group *grp)
- {
+It was like that for years, and it worked. The commit in question
+changed netdev_priv() and the drivers don't use this function.
+
+netdev_priv() was introduced at some point in time to allow
+alloc_netdev() to optionally allocate additional memory for internal
+use by the driver. It had nothing to do with dev->priv except "priv"
+name. The drivers don't use it passing size 0.
+
+This is probably suboptimal (two+ allocations instead of one), if the
+drivers had maintainers with access to hardware I guess it would be
+optimized, but it has nothing to do with the regression.
+
+The regression is present in HDLC PPP only, becase HDLC PPP actually
+used netdev_priv() (unlike non-HDLC PPP cases) as a means of addressing
+the area following net_device struct and not for retrieving dev->priv,
+and then the semantics suddenly changed.
+
+> I would have been more than happy if syncppp was retained and fixed
+> properly, instead of being abandoned and duplicated in one fell swoop.
+
+I would be happy as well. The problem is that nobody shown any idea
+how to do it.
+
+I have offered: I will port any existing sync serial driver to generic
+HDLC if I'm sent a free hardware sample. That includes old ISA cards
+(I still have an old 2*PII-333 ISA test machine), and porting PC300
+T1/E1 code to pc300too.
+
+If some driver/hw has no users I think there is no point in keeping it
+on life support here. The same goes for syncppp - if/when the number
+of drivers using it drops to zero, we can let it go.
+-- 
+Krzysztof Halasa
