@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYDWV31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYDWVdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYDWV31 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 17:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYDWV3S
+	id S1754534AbYDWVdJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 17:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYDWVc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 17:29:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62535 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbYDWV3R convert rfc822-to-8bit (ORCPT
+	Wed, 23 Apr 2008 17:32:57 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:41299 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYDWVc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 17:29:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,701,1199692800"; 
-   d="scan'208";a="320576896"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 23 Apr 2008 17:32:56 -0400
+Message-ID: <480FAB05.1040107@tiscali.nl>
+Date: Wed, 23 Apr 2008 23:32:53 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: iwl4965 regression since 2.6.24
-Date: Wed, 23 Apr 2008 14:29:14 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892004415BC8@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <20080423124105.GA4783@ics.muni.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: iwl4965 regression since 2.6.24
-Thread-Index: AcilP2WppMxMo+6/T+iGVvW0u6hAzwASWovw
-References: <20080423124105.GA4783@ics.muni.cz>
-From: "Chatre, Reinette" <reinette.chatre@intel.com>
-To: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>, <linux-kernel@vger.kernel.org>
-Cc: <linux-wireless@vger.kernel.org>
-X-OriginalArrivalTime: 23 Apr 2008 21:29:15.0014 (UTC) FILETIME=[1452EA60:01C8A589]
+To: pb@handhelds.org, sameo@openedhand.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] asic3: platform_get_irq() may return signed unnoticed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On , linux-wireless-owner@vger.kernel.org  wrote:
+asic->irq_nr is unsigned. platform_get_irq() may return signed unnoticed
 
-> Hello,
-> 
-> as of 2.6.25 kernel, the intel driver iwl4965 has serious troubles to
-> associate with AP. I must many times set essid till the
-> association is done.
-> 
-> Moreover, it seems that it is unable to associate with
-> different AP (using the
-> same SSID). I must remove the module completly to be able to
-> associate to the different AP. I think it is big regression.
-> 
-
-Could you please send us some logs that can help us debug this problem?
-Please load the driver with debugging (modprobe iwl4965 debug=0x43ffb)
-to get detailed logs and add a detailed description about what you are
-trying to do with the driver as the logs are created. Also, please
-consider filing a bug at http://www.intellinuxwireless.org/bugzilla/
-with these logs attached.
-
-Thanks
-
-Reinette
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+index f6f2d96..95f7b0c 100644
+--- a/drivers/mfd/asic3.c
++++ b/drivers/mfd/asic3.c
+@@ -302,7 +302,7 @@ static int asic3_irq_probe(struct platform_device *pdev)
+ 	unsigned int irq, irq_base;
+ 
+ 	asic->irq_nr = platform_get_irq(pdev, 0);
+-	if (asic->irq_nr < 0)
++	if (asic->irq_nr == -ENXIO)
+ 		return asic->irq_nr;
+ 
+ 	/* turn on clock to IRQ controller */
