@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbYDWARv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbYDWASb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933873AbYDWARv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 20:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbYDWARm
+	id S933918AbYDWASb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 20:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYDWASX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 20:17:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54811 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756160AbYDWARl (ORCPT
+	Tue, 22 Apr 2008 20:18:23 -0400
+Received: from mail-in-09.arcor-online.net ([151.189.21.49]:47305 "EHLO
+	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754994AbYDWASV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 20:17:41 -0400
-Date: Tue, 22 Apr 2008 17:16:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk
-Subject: Re: [git patch] free_irq() fixes
-In-Reply-To: <20080423000529.GG28933@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
-References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org>
- <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 22 Apr 2008 20:18:21 -0400
+Message-ID: <480E8069.20502@henry.ne.arcor.de>
+Date: Wed, 23 Apr 2008 02:18:49 +0200
+From: Henry Nestler <Henry.Ne@Arcor.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: endless page faults in mount_block_root for Linux
+ 2.6
+References: <480E6BB4.5080902@henry.nestler.gmail.com>
+In-Reply-To: <480E6BB4.5080902@henry.nestler.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+An other fix would be to copy the "fs_names+offset" into a new page and
+give a page alignment buffer to do_mount_root. I feel it is better to
+fix the fault handler for all failed addresses, not only the mount?
+
+--- linux-2.6.25/init/do_mounts.c
++++ linux-2.6.25/init/do_mounts.c
+@@ -204,6 +204,7 @@
+ void __init mount_block_root(char *name, int flags)
+ {
+        char *fs_names = __getname();
++       char *fs_type = __getname();
+        char *p;
+ #ifdef CONFIG_BLOCK
+        char b[BDEVNAME_SIZE];
+@@ -214,7 +215,12 @@
+        get_fs_names(fs_names);
+ retry:
+        for (p = fs_names; *p; p += strlen(p)+1) {
+-               int err = do_mount_root(name, p, flags, root_mount_data);
++               int err;
++
++               /* fs_type must size >= PAGE_SIZE or in user space */
++               strcpy(fs_type, p);
++
++               err = do_mount_root(name, fs_type, flags, root_mount_data);
+                switch (err) {
+                        case 0:
+                                goto out;
+@@ -251,6 +257,7 @@
+ #endif
+        panic("VFS: Unable to mount root fs on %s", b);
+ out:
++       putname(fs_type);
+        putname(fs_names);
+ }
 
 
-On Wed, 23 Apr 2008, Adrian Bunk wrote:
-> 
-> If it goes like the regs removal in one big patch around -rc1 into your 
-> tree this shouldn't be a problem.
-
-Well, the regs removal had a real upside (it wasn't even sensible for all 
-irq types), and really nobody used it apart from "system users" (ie Sysrq 
-etc).
-
-I'm still waiting for anybody mentioning any upside at _all_ on removing 
-"irq".
-
-			Linus
+-- 
+Henry N.
