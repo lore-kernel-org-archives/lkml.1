@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYDWSEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYDWSEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYDWSEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 14:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYDWSEA
+	id S1756794AbYDWSEi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 14:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYDWSE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 14:04:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47667 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbYDWSD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 14:03:59 -0400
-From: eparis@redhat.com
-To: linux-kernel@vger.kernel.org
-Cc: jmorris@namei.org, serue@us.ibm.com, Eric Paris <eparis@redhat.com>
-Subject: [PATCH 2/4] capability: security/capability.c whitespace, syntax, and other cleanups
-Date: Wed, 23 Apr 2008 13:52:32 -0400
-Message-Id: <12089731553297-git-send-email-eparis@redhat.com>
-X-Mailer: git-send-email 1.5.2.1
-In-Reply-To: <12089731541206-git-send-email-eparis@redhat.com>
-References: <12089731541206-git-send-email-eparis@redhat.com>
+	Wed, 23 Apr 2008 14:04:27 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2646 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbYDWSE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 14:04:26 -0400
+Message-ID: <480F7A0E.2080202@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: mchehab@infradead.org
+Cc: hverkuil@xs4all.nl, video4linux-list@redhat.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, ivtv-devel@ivtvdriver.org,
+       biercenator@gmail.com
+Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
+Date: Wed, 23 Apr 2008 14:03:58 -0400
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+in-reply-to: <20080423143454.0d50b209@gaivota>
+x-originalarrivaltime: 23 Apr 2008 18:01:05.0481 (UTC) FILETIME=[FFFB6B90:01C8A56B]
+user-agent: Thunderbird 2.0.0.12 (Windows/20080213)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Paris <eparis@redhat.com>
+Mauro Carvalho Chehab wrote:
+> On Sun, 20 Apr 2008 12:10:00 -0400
+> Michael Krufky <mkrufky@linuxtv.org> wrote:
+>
+>   
+>> Hans Verkuil wrote:
+>>     
+>>> On Sunday 20 April 2008 13:27:36 Alan Cox wrote:
+>>>   
+>>>       
+>>>> Frank Bennett reported that ivtv was causing skype to crash. With
+>>>> help from one of their developers he showed it was a kernel problem.
+>>>> VIDIOCGCAP copies a name into a fixed length buffer - ivtv uses names
+>>>> that are too long and does not truncate them so corrupts a few bytes
+>>>> of the app data area.
+>>>>
+>>>> Possibly the names also want trimming but for now this should fix the
+>>>> corruption case.
+>>>>     
+>>>>         
+>>> Ouch, nasty one.
+>>>
+>>> Mauro, can you apply this patch to the v4l-dvb master?
+>>>
+>>> Mike, this one should obviously go into a 2.6.25 dot-release, and I 
+>>> think also to a 2.6.24 dot-release.
+>>>
+>>> Frank, thank you for reporting this!
+>>>
+>>> 	Hans
+>>>
+>>> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+>>>   
+>>>       
+>> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+>>     
+>
+> In this case, it should be reviewed-by.
+>
+> I should be sending this soon to Linus.
 
-This patch changes security/capability.c to fix whitespace and syntax issues.  Things that
-are fixed may include (does not not have to include)
 
-whitespace at end of lines
-spaces followed by tabs
-spaces used instead of tabs
-spacing around parenthesis
-location of { around structs and else clauses
-location of * in pointer declarations
-removal of initialization of static data to keep it in the right section
-useless {} in if statemetns
-useless checking for NULL before kfree
-fixing of the indentation depth of switch statements
-no assignments in if statements
-include spaces around , in function calls
-and any number of other things I forgot to mention
+Mauro,
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
- security/capability.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+I think it's wrong that you alter signatures.  You did this:
 
-diff --git a/security/capability.c b/security/capability.c
-index 2c6e06d..e77d5e4 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -46,9 +46,9 @@ static struct security_operations capability_ops = {
- 	.task_post_setuid =		cap_task_post_setuid,
- 	.task_reparent_to_init =	cap_task_reparent_to_init,
- 
--	.syslog =                       cap_syslog,
-+	.syslog =			cap_syslog,
- 
--	.vm_enough_memory =             cap_vm_enough_memory,
-+	.vm_enough_memory =		cap_vm_enough_memory,
- };
- 
- /* flag to keep track of how we were registered */
-@@ -57,25 +57,25 @@ static int secondary;
- static int capability_disable;
- module_param_named(disable, capability_disable, int, 0);
- 
--static int __init capability_init (void)
-+static int __init capability_init(void)
- {
- 	if (capability_disable) {
- 		printk(KERN_INFO "Capabilities disabled at initialization\n");
- 		return 0;
- 	}
- 	/* register ourselves with the security framework */
--	if (register_security (&capability_ops)) {
-+	if (register_security(&capability_ops)) {
- 		/* try registering with primary module */
--		if (mod_reg_security (KBUILD_MODNAME, &capability_ops)) {
--			printk (KERN_INFO "Failure registering capabilities "
--				"with primary security module.\n");
-+		if (mod_reg_security(KBUILD_MODNAME, &capability_ops)) {
-+			printk(KERN_INFO "Failure registering capabilities "
-+			       "with primary security module.\n");
- 			return -EINVAL;
- 		}
- 		secondary = 1;
- 	}
--	printk (KERN_INFO "Capability LSM initialized%s\n",
--		secondary ? " as secondary" : "");
-+	printk(KERN_INFO "Capability LSM initialized%s\n",
-+	       secondary ? " as secondary" : "");
- 	return 0;
- }
- 
--security_initcall (capability_init);
-+security_initcall(capability_init);
--- 
-1.5.2.1
+Reviewed-by: <mkrufky@linuxtv.org <mailto:mkrufky@linuxtv.org>>
+
+But I provided this:
+
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+
+I sign the patch, because I have handled it in my -stable queue.
+
+
+You put my email address without my name!
+
+A signature is sacred and nobody should fudge it.
+
+Please fix it before you send to -git.
+
+-Mike
 
