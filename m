@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYDWBjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934173AbYDWBlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYDWBjB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Apr 2008 21:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762221AbYDWBij
+	id S934173AbYDWBlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Apr 2008 21:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759718AbYDWBl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Apr 2008 21:38:39 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:38803 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762119AbYDWBii (ORCPT
+	Tue, 22 Apr 2008 21:41:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49442 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758729AbYDWBl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Apr 2008 21:38:38 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bisected] Latest git not seeing HD with sata_nv
-References: <adazlrlcw9f.fsf@cisco.com> <adave29cqgh.fsf@cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 22 Apr 2008 18:38:36 -0700
-In-Reply-To: <adave29cqgh.fsf@cisco.com> (Roland Dreier's message of "Tue, 22
-	Apr 2008 18:25:34 -0700")
-Message-ID: <adar6cxcpur.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Apr 2008 01:38:37.0441 (UTC) FILETIME=[C0365710:01C8A4E2]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Tue, 22 Apr 2008 21:41:26 -0400
+Date: Wed, 23 Apr 2008 10:45:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: akpm@linux-foundation.org, Mel Gorman <mel@csn.ul.ie>,
+       Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v2
+Message-Id: <20080423104511.3148a126.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0804221106250.12316@blonde.site>
+References: <20080418161522.GB9147@csn.ul.ie>
+	<48080706.50305@cn.fujitsu.com>
+	<48080930.5090905@cn.fujitsu.com>
+	<48080B86.7040200@cn.fujitsu.com>
+	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
+	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0804211250000.16476@blonde.site>
+	<20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0804221106250.12316@blonde.site>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FWIW, the patch below also makes my box start working again...  I have
-no idea what the right fix is, given that bug 3352 mostly seems to be
-about nforce2 and nforce3, and my box has a more modern nvidia chipset:
+On Tue, 22 Apr 2008 11:12:59 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-    00:04.0 IDE interface [0101]: nVidia Corporation MCP55 IDE [10de:036e] (rev a1)
+> On Tue, 22 Apr 2008, KAMEZAWA Hiroyuki wrote:
+> > Tested on ia64/2.6.25
+> >    DISCONTIGMEM + 16KB/64KB pages
+> >    SPARSEMEM    + 16KB/64KB pages
+> > seems no troubles.
+> > 
+> > Thanks,
+> > -Kame
+> 
+> Looks good to me, if Mel and Shi approve.  (Well, there are two typos,
+> "creted" should be "created" and "migratetpye" should be "migratetype".)
+> 
+Ouch...I'll fix.
 
-Anyway, it seems 305d2a1a broke the logic that nv_hardreset() relies on
-when it doesn't let sata_sff_hardreset() set class.
+Thanks,
+-Kame
 
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 109b074..d0d85a3 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -1597,7 +1597,7 @@ static int nv_hardreset(struct ata_link *link, unsigned int *class,
- 	 * some controllers.  Don't classify on hardreset.  For more
- 	 * info, see http://bugzilla.kernel.org/show_bug.cgi?id=3352
- 	 */
--	return sata_sff_hardreset(link, &dummy, deadline);
-+	return sata_sff_hardreset(link, class, deadline);
- }
- 
- static void nv_adma_error_handler(struct ata_port *ap)
