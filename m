@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYDXBWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYDXBYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYDXBWf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 21:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYDXBWY
+	id S1755987AbYDXBYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 21:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYDXBYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 21:22:24 -0400
-Received: from rv-out-0708.google.com ([209.85.198.241]:48967 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753615AbYDXBWX (ORCPT
+	Wed, 23 Apr 2008 21:24:45 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:43881 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753568AbYDXBYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 21:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o8f/YDOaYvzO40OgCjSSZgy/Ntu4SfqUJ1EIZKSEV19XHto3Xfgq6OkG/Whbqe/2PBh4RLQXjW6tBqZedddvc39ArasoQNWZ40XSoxu+6fz18TVGS7HZ1r5IbZ/y9FdUORa95KfHenbQPd30z6R1HRMaQ7dndifco9gg2auBMLI=
-Message-ID: <86802c440804231822s7cc4e2c1vfdb7f40ae0580045@mail.gmail.com>
-Date: Wed, 23 Apr 2008 18:22:22 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Greg KH" <greg@kroah.com>,
-       "David Miller" <davem@davemloft.net>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Sathya Prakash" <sathya.prakash@lsi.com>
-In-Reply-To: <1208996273.9245.18.camel@concordia.ozlabs.ibm.com>
+	Wed, 23 Apr 2008 21:24:44 -0400
+Message-ID: <480F3ECC.1090809@keyaccess.nl>
+Date: Wed, 23 Apr 2008 15:51:08 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Adrian Bunk <bunk@kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [git patch] free_irq() fixes
+References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org> <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804222148.17530.yhlu.kernel@gmail.com>
-	 <1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
-	 <m1hcdsoh1i.fsf@frodo.ebiederm.org>
-	 <1208996273.9245.18.camel@concordia.ozlabs.ibm.com>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 5:17 PM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
-> On Wed, 2008-04-23 at 06:08 -0700, Eric W. Biederman wrote:
->  > Michael Ellerman <michael@ellerman.id.au> writes:
->  >
->  > > On Tue, 2008-04-22 at 21:48 -0700, Yinghai Lu wrote:
->  > >> this change
->  > >>
->  > >> | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
->  > >> | Author: Prakash, Sathya <sathya.prakash@lsi.com>
->  > >> | Date:   Fri Mar 7 15:53:21 2008 +0530
->  > >> |
->  > >> |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
->  > >> |
->  > >> | This patch modifies the driver to enable MSI by default for all SAS chips.
->  > >> |
->  > >> |     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
->  > >> |     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
->  > >> |
->  > >> cause kexec RHEL 5.1 kernel fail.
->  > >>
->  > >> root casue: the rhel 5.1 kernel still use INTx emulation.
->  > >> and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec
->  > > path
->  > >>
->  > >> so try to call pci_disable_msi in shutdown patch
->  > >
->  > > How is kdump going to work? Your shutdown routine won't be called and
->  > > you'll have the same problem in the 2nd kernel, won't you?
->  >
->  > Taking a quick look our current msi initialization appears robust in
->  > not assuming the state of the msi config bits.
->
->  But does that help us? What if the device driver in the 2nd kernel
->  assumes it's using INTX, when in fact MSI is enabled on the device. In
->  that case none of the MSI code will even be called AFAIK.
+On 23-04-08 02:16, Linus Torvalds wrote:
 
-ok. for kdump case, if driver can not use msi (?), with pci=nomsi
-we need to call pci_intx_for_msi(dev, 1) at beginning of second kernel.
+> On Wed, 23 Apr 2008, Adrian Bunk wrote:
+>> If it goes like the regs removal in one big patch around -rc1 into your 
+>> tree this shouldn't be a problem.
+> 
+> Well, the regs removal had a real upside (it wasn't even sensible for all 
+> irq types), and really nobody used it apart from "system users" (ie Sysrq 
+> etc).
+> 
+> I'm still waiting for anybody mentioning any upside at _all_ on removing 
+> "irq".
 
-will produce another patch about that case.
+Saves another 4 bytes of stack? :-/ Seriously, Jeff can probably better 
+answer himself but when this was posted before:
 
-YH
+http://lkml.org/lkml/2007/5/19/23
+
+Eric Biederman said it fit nicely into his "nefarious plan of making 
+everything use a struct irq pointer". A later mention:
+
+http://lkml.org/lkml/2007/10/19/66
+
+got strong ACKs from Thomas Gleixner, Ingo Molnar and Greg KH. Remember due 
+to working on a local driver at the time and deleting the "irq" argument 
+usage from its handler (unneccesarily used in a debugging printk) from it in 
+response.
+
+My own view is that if it's not really overly painful this does make for a 
+nice API cleanliness thing -- the IRQ level is only relevant to the lower 
+level generic handler code not the "driver endpoint handler" and not passing 
+it in the first place thereby is in keeping with this layering.
+
+Rene.
