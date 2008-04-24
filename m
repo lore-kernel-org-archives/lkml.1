@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYDXT14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbYDXTao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbYDXT14 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYDXT1s
+	id S1761448AbYDXTao (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYDXTag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:27:48 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:21616 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYDXT1r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:27:47 -0400
-To: Timur Tabi <timur@freescale.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Calling free_pages on part of the memory returned by get_free_pages?
-From: Andi Kleen <andi@firstfloor.org>
-References: <480D032E.20204@freescale.com>
-Date: Thu, 24 Apr 2008 21:27:19 +0200
-In-Reply-To: <480D032E.20204@freescale.com> (Timur Tabi's message of "Mon, 21 Apr 2008 16:12:14 -0500")
-Message-ID: <87r6cvxdd4.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Apr 2008 19:20:29.0329 (UTC) FILETIME=[41DEB010:01C8A640]
+	Thu, 24 Apr 2008 15:30:36 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49430 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753267AbYDXTaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 15:30:35 -0400
+Date: Thu, 24 Apr 2008 14:30:32 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       clg@fr.ibm.com, pavel@ucw.cz, menage@google.com,
+       torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+Subject: Re: [RFC][PATCH 5/5] Add a Signal Control Group Subsystem
+Message-Id: <20080424143032.7e659522.pj@sgi.com>
+In-Reply-To: <20080424064758.113999091@us.ibm.com>
+References: <20080424064756.643890130@us.ibm.com>
+	<20080424064758.113999091@us.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi <timur@freescale.com> writes:
+> +static struct cftype kill_file = {
+> +	.name = "kill",
 
-> According to LDD3, if I call get_free_pages() to allocate X bytes, I have to
-> free all of those pages with free_pages().  The VM internals are a little bit
-> over my head, but I looked at the code and I didn't see why that is a requirement.
->
-> For example, let's say I want to allocated 6MB of physically-contiguous memory.
->  If I call x = get_free_pages(11) to get 8MB.  What happens if I then do
-> "free_pages(x + 6 * 1024 * 1024, 9)"?
->
-> I remember doing this on the 2.4 kernel, and it never gave me any problems.
+The name "kill" seems ambiguous to me.  It suggests that any write
+will send some default signal (TERM or KILL?) to all tasks in the
+cgroup, rather like the 'killall' command.
 
-It is ok, as long as you don't use compound pages (__GFP_COMP) and call
-split_page() to fix up the reference counts.
+I'm guessing that more people, on seeing this file in a cgroup
+directory, will guess correctly what it does if it were named
+"signal" or "send_signal" or some such.
 
-Also you do this to save memory right? The large system hash code does it too
-and I used to do it in some 2.4 change with an alloc_pages_exact()
-which never made it into 2.6.
-
-If it's reasonably common we should re-add alloc/get_pages_exact() helper to 
-make this pattern clear and easier to use.
-
--Andi
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
