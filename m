@@ -1,141 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYDXGAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbYDXGFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYDXGAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 02:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYDXF75
+	id S1754384AbYDXGFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 02:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYDXGFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 01:59:57 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:42983 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYDXF7z (ORCPT
+	Thu, 24 Apr 2008 02:05:22 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39636 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbYDXGFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 01:59:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Rene Herman <rene.herman@keyaccess.nl>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-References: <20080422221733.GA16260@havoc.gtf.org>
-	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>
-	<480E6DE5.6010103@garzik.org>
-	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
-	<480E796E.4070001@garzik.org>
-	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>
-	<20080423000529.GG28933@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
-	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
-	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
-Date: Wed, 23 Apr 2008 22:59:39 -0700
-In-Reply-To: <alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Wed, 23 Apr 2008 19:19:52 -0700 (PDT)")
-Message-ID: <m1od7zkd2s.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 24 Apr 2008 02:05:20 -0400
+Message-ID: <4810231B.6020105@linux.vnet.ibm.com>
+Date: Thu, 24 Apr 2008 11:35:15 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+CC: kernel list <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, nacc@us.ibm.com
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
+ kernbench and tbench on powerpc
+References: <47BC40BC.3040405@linux.vnet.ibm.com> <18427.11023.8067.795279@cargo.ozlabs.ibm.com> <47FB5C5A.5020104@linux.vnet.ibm.com> <18427.65299.403151.344959@cargo.ozlabs.ibm.com> <47FC5227.3030501@linux.vnet.ibm.com> <18435.11286.201115.396713@cargo.ozlabs.ibm.com> <48035C03.10104@linux.vnet.ibm.com> <18446.61538.620549.715043@cargo.ozlabs.ibm.com>
+In-Reply-To: <18446.61538.620549.715043@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [git patch] free_irq() fixes
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Paul Mackerras wrote:
+> Kamalesh Babulal writes:
+> 
+>> After applying the patch above and the patch posted on
+>> http://lkml.org/lkml/2008/4/8/42
+>> the bug had the following information,
+> 
+> Thanks.  The patch below, against Linus' current git tree, fixes one
+> bug that might be the cause of the problem, and also attempts to
+> detect the erroneous situation earlier and fix it up, and also print
+> some debug information.  Please try to reproduce the problem with this
+> patch applied, and if there are any console log messages starting with
+> SLB: or FWNMI:, please send me the console log.
+> 
+> Paul.
+> 
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index c0db5b7..f7f0962 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -439,6 +439,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
+>  	mr	r1,r8		/* start using new stack pointer */
+>  	std	r7,PACAKSAVE(r13)
+> 
+> +	/* check that SLB entry 2 contains the right thing */
+> +	clrrdi	r6,r1,28
+> +	clrldi.	r0,r6,2
+> +	beq	3f
+> +	li	r0,2
+> +	slbmfee	r7,r0
+> +	oris	r6,r6,SLB_ESID_V@h
+> +	cmpd	r6,r7
+> +	beq	3f
+> +	bl	bad_slb_switch
+> +	ld	r3,PACACURRENT(r13)
+> +	addi	r3,r3,THREAD
+> +3:
+>  	ld	r6,_CCR(r1)
+>  	mtcrf	0xFF,r6
+> 
+> @@ -540,6 +553,19 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+>  	ld	r4,_XER(r1)
+>  	mtspr	SPRN_XER,r4
+> 
+> +	/* check that SLB entry 2 contains the right thing */
+> +	clrrdi	r6,r1,28	/* stack ESID */
+> +	clrldi.	r0,r6,2
+> +	beq	57f
+> +	li	r0,2
+> +	slbmfee	r7,r0
+> +	oris	r6,r6,SLB_ESID_V@h
+> +	cmpd	r6,r7
+> +	beq	57f
+> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+> +	bl	bad_slb_exc
+> +	ld	r3,_MSR(r1)
+> +57:
+>  	REST_8GPRS(5, r1)
+> 
+>  	andi.	r0,r3,MSR_RI
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index be35ffa..c938134 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -45,6 +45,7 @@
+>  #include <asm/system.h>
+>  #include <asm/mpic.h>
+>  #include <asm/vdso_datapage.h>
+> +#include <asm/mmu.h>
+>  #ifdef CONFIG_PPC64
+>  #include <asm/paca.h>
+>  #endif
+> @@ -580,6 +581,10 @@ int __devinit start_secondary(void *unused)
+>  	atomic_inc(&init_mm.mm_count);
+>  	current->active_mm = &init_mm;
+> 
+> +	/* Bolt in the entry for the kernel stack now */
+> +	if (cpu_has_feature(CPU_FTR_SLB))
+> +		slb_flush_and_rebolt();
+> +
+>  	smp_store_cpu_info(cpu);
+>  	set_dec(tb_ticks_per_jiffy);
+>  	preempt_disable();
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 906daed..bb7765b 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -309,3 +309,34 @@ void slb_initialize(void)
+>  	 * one. */
+>  	asm volatile("isync":::"memory");
+>  }
+> +
+> +static void dump_slb(void)
+> +{
+> +	long entry;
+> +	unsigned long esid, vsid;
+> +
+> +	printk(KERN_EMERG "SLB contents now:\n");
+> +	for (entry = 0; entry < 64; ++entry) {
+> +		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (entry));
+> +		if (esid == 0)
+> +			/* valid bit is clear along with everything else */
+> +			continue;
+> +		asm volatile("slbmfev  %0,%1" : "=r" (vsid) : "r" (entry));
+> +		printk(KERN_EMERG "%d: %.16lx %.16lx\n", entry, esid, vsid);
+> +	}
+> +}
+> +
+> +void bad_slb_exc(struct pt_regs *regs)
+> +{
+> +	printk(KERN_EMERG "SLB: stack not bolted on exception return\n");
+> +	dump_slb();
+> +	slb_flush_and_rebolt();
+> +	show_regs(regs);
+> +}
+> +
+> +void bad_slb_switch(void)
+> +{
+> +	printk(KERN_EMERG "SLB: stack not bolted on context switch\n");
+> +	dump_slb();
+> +	slb_flush_and_rebolt();
+> +}
+> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+> index a1ab25c..ed68083 100644
+> --- a/arch/powerpc/platforms/pseries/ras.c
+> +++ b/arch/powerpc/platforms/pseries/ras.c
+> @@ -325,6 +325,8 @@ static int recover_mce(struct pt_regs *regs, struct rtas_error_log * err)
+> 
+>  	if (err->disposition == RTAS_DISP_FULLY_RECOVERED) {
+>  		/* Platform corrected itself */
+> +		printk(KERN_ALERT "FWNMI: platform corrected error %.16lx\n",
+> +		       *(unsigned long *)err);
+>  		nonfatal = 1;
+>  	} else if ((regs->msr & MSR_RI) &&
+>  		   user_mode(regs) &&
 
-> On Wed, 23 Apr 2008, Jeff Garzik wrote:
->> 
->> When drivers make assumptions about system irq numbering, particularly on x86,
->> IMO the situation is fragile.
->
-> And when people make changes to long-standing and stable infrastructure, 
-> the situation also gets fragile.
->
-> The fact is, stability of interfaces is a really worthy goal in itself. 
-> Making a change for its own sake is not a good thing. This fixes 
-> *nothing*, and the driver changes I objected to I objected to because they 
-> were ugly as sin.
->
-> And I want to point out that your patches made it *much* uglier.
->
-> So "cleanup" it sure as hell wasn't. That irq number may not be worth all 
-> that much in itself, but it has no subtle implementation problems (we 
-> _need_ that irq number for registration and irq handler lookup anyway, so 
-> it is meaningful from a driver perspective, and is well-defined from a irq 
-> core standpoint as well).
->
-> I don't mind cleanups, but this is "churn". Change for its own sake. If it 
-> doesn't lead to any _improvement_, it's pointless.
->
-> If drivers don't need it, let them ignore it. But let them ignore it in 
-> ways that work across versions, and in ways that don't cause ridiculous 
-> and ugly work-arounds for when they do want it (even if it's just for a 
-> printk() or similar).
+Hi Paul,
 
-I haven't looked at what Jeff's patches in particular so I can not
-comment there.  I do remember looking at the drivers in question and
-yes there were indeed bugs with the handful of drivers that used
-the irq parameter.  So fixing and cleaning up those drivers so they
-use the same idioms as the rest of the kernel should be a maintenance
-win.  Even if we do keep the irq parameter to the interrupt handler.
+Thanks, after applying the patch the oops is not reproducible on the machine. The console
+log had no message starting with SLB: or FWNMI:. I have updated the bugzilla also.
 
-I can comment on where there seems to be a real need for change.
-The hard coded NR_IRQS parameter and the arrays of size NR_IRQS are a
-kernel scaling bottle neck.  They prevents us from building one kernel
-that works well on a large ranges of machines sizes.  Having a single
-array prevents us from allocating the irq structures with NUMA
-affinity which slows down irq processing.  Having a small number for
-NR_IRQS to keep the table compact keeps the irq number from being
-readable/useful in the case of MSI and occasionally in the case of
-IO_APICs.
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-
-...
-Since there does seem to be a real win it is my intention to kill all
-arrays of NR_IRQs size in the generic code.  I did a quick search for
-[NR_IRQS] and have only found about 7 of them.
-
-Then modify the genirq code to allow architectures to provide an
-alternative to todays irq_desc array.
-
-To export the struct irq_desc to the rest of the kernel generically as
-a struct irq, with a new API irq_request,irq_free etc.
-
-To build the existing API on top of the new API with a potentially
-slow function that maps an irq number to the struct irq. Irq actions
-are not fast path so we should be ok with even if we do a linear walk
-through the set of irqs.
-
-After that I will see about removing irq number references from 
-the bulk of kernel drivers.  Essentially transferring the drivers to
-the new API in some stepwise fashion.  Which is where I see synergy
-with Jeff's effort.
-
-For old ISA drivers the irq number has real meaning and I don't
-intend to loose that, and I don't fundamentally intend to loose
-the irq number, instead  reserving it for talking to users.  Which
-will allow us to use a stable mapping for MSI irqs where we simply
-do not have enough bits below NR_IRQS today.
-
-My goal is for an API upgrade that is a slight variation of todays
-API that will be stable into the future as machines grow larger
-and larger and we get more and more irq sources.  I believe the trend
-line is for the number of irqs in a machine to grow linearly with
-the number of cores, which means I expect them to start going
-exponential.  Not having an integer which can and has been abused
-in some hideous ways but instead a structure pointer is likely to keep
-things more robust into the future.
-
-Eric
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
