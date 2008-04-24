@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYDXP5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbYDXQA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbYDXP5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYDXP5N
+	id S1760735AbYDXQA1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYDXQAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:57:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42912 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754262AbYDXP5M (ORCPT
+	Thu, 24 Apr 2008 12:00:07 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39755 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbYDXQAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:57:12 -0400
-Date: Thu, 24 Apr 2008 08:55:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [git patch] free_irq() fixes
-In-Reply-To: <4810A9E6.1080201@garzik.org>
-Message-ID: <alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org>
-References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org>
- <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org> <480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
- <alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org> <m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org> <alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org> <4810A9E6.1080201@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 24 Apr 2008 12:00:04 -0400
+Date: Thu, 24 Apr 2008 16:59:54 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+Message-ID: <20080424155954.GM15214@ZenIV.linux.org.uk>
+References: <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk> <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu> <20080424152129.GK15214@ZenIV.linux.org.uk> <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 24, 2008 at 05:37:39PM +0200, Miklos Szeredi wrote:
+> > > What is left is the guarantee, that the race-free r/o remounts will
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > always work and some obscure caller didn't forget to surround it with
+^^^^^^^^^^^^^^^^^
 
+> Why are those so important?  Yes, if we have multiple vfs_() calls,
+> surround them with an extra want/drop pair.
 
-On Thu, 24 Apr 2008, Jeff Garzik wrote:
+Which leaves you with the same need to audit all these suckers anyway.
+
+I'm in principle fine with having such helper functions, *IF* they are
+not sold as providing all protection one needs, *IF* you are not expecting
+to be able to fold all areas down into them and *IF* original ones are
+left intact.
+
+Modulo the like path_rename(), BTW - that one is just plain ugly API.
+
+> > We don't even have many callers of each, and with a few we do it's not
+> > obvious that we want to go through vfsmounts (and vfsmount-based checks)
+> > in all of them.  So no, I don't buy your argument.  Sorry.
+> > 
+> > I'm not even convinced that they are useful as helpers, at least until
+> > we'd decided what to do with checks in nfsd.  Until then we do, as
+> > far as I'm concerned, one place where they would definitely DTRT - fs/namei.c.
+> > And I want more than one caller before merging those,
 > 
-> However, it does not follow that an int is what _must_ be passed around.  We
-> already have design patterns like
+> unix_bind() -> vfs_mknod()
+> sys_mq_unlink() -> vfs_unlink()
+> open.c (several) -> notify_change()
+> *setxattr() -> vfs_setxattr()
+> *removexattr() -> vfs_removexattr()
+
+OK.
+
+> > let alone removing the interface that doesn't require checks to be
+> > vfsmount-based for all users.
 > 
-> 	cookie_pointer = ioremap(raw bus resource)
-> 
-> Not that I am the one pushing for that, just noting.
+> What users?  There are paractically _no_ other users.  The ones that
+> there are (like reiserfs) should not be using them, and there are
+> already some patches cleaning that mess up.
 
-I do agree that we could use something more type-safe.
-
-So a "pointer" to a structure that doesn't actually exist would be fine 
-and would give us some C type checking. 
-
-But then you'd have to have some way to "printk" the information, which is 
-a very common requirement (and the printk still needs to be a number, 
-because you want to match up 'dmesg' output with the '/proc/interrupts' 
-file etc).
-
-That, in turn, would effectively force a whole new function, and then 
-you'd have things like
-
-	printk(.. irq %d .., irq_number(irqcookie) ..)
-
-which while not ugly isn't really all that clean either. And I guarantee 
-that people would misuse that "irq_number(cookie)" exactly in the same 
-ways they'd misuse "irq" (ie not very much).
-
-Quite frankly, I'd much prefer a
-
-	typedef int __bitwise irq_t;
-
-and then we can use sparse to do this testing, without breaking any 
-existing use at all (because it will still be an "int" to gcc, but sparse 
-will make "irq_t" a type of its own and make sure that people pass it 
-around as such and not do arithmetic ops on it etc).
-
-> > EVERYTHING else would be architecture-specific. And that is exactly what we
-> > do not want. EVER. 
-> 
-> Not true -- you have metadata/OOB data like MSI messages, where you are passed
-> a value from the PCI hardware in the PCI message, not just an "interrupt
-> asserted" condition.  Or s/value/values/ if you enable PCI MSI's multiple
-> message support.
-
-The point is, MSI *is* architecture-specific. In fact, it's even 
-motherboard-specific, in that you are going to have (for the forseeable 
-future) drivers that have to work with or witgout MSI even on the same 
-architecture.
-
-			Linus
+OK, explain me, in small words, WTF should something that wants to do
+operations on filesystem tree have a vfsmount.  Slowly.  And "r/o
+bind loses value if it can be bypassed" is a hogwash - fs methods are
+still there, so it *can* be bypassed just fine, thank you very much.
+It's really up to caller.  "But they won't be able to do open()" also
+doesn't fly - again, it's up to whoever writes particular piece of code.
