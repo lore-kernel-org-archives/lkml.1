@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbYDXSvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbYDXSvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762947AbYDXSvb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYDXSvU
+	id S1763309AbYDXSvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762411AbYDXSvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:51:20 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:51248 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYDXSvT (ORCPT
+	Thu, 24 Apr 2008 14:51:43 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:40791 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753939AbYDXSvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:51:19 -0400
-X-Greylist: delayed 1022 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 14:51:18 EDT
-Date: Thu, 24 Apr 2008 20:51:17 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch 10/15] m68k: Some network drivers do not check the platform
-In-Reply-To: <20080424184256.GA8531@infradead.org>
-Message-ID: <Pine.LNX.4.64.0804242045510.21224@anakin>
-References: <20080424182940.424312704@mail.of.borg> <20080424183242.943446357@mail.of.borg>
- <20080424184256.GA8531@infradead.org>
+	Thu, 24 Apr 2008 14:51:42 -0400
+Date: Thu, 24 Apr 2008 12:51:40 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
+       linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] ia64: Remove printk noise on unimplemented
+	SAL_PHYSICAL_ID_INFO
+Message-ID: <20080424185140.GB32553@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
+	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com> <20080421052450.GA24055@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com> <20080424184417.GA32553@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424184417.GA32553@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008, Christoph Hellwig wrote:
-> On Thu, Apr 24, 2008 at 08:29:50PM +0200, Geert Uytterhoeven wrote:
-> > +++ b/drivers/net/macmace.c
-> > @@ -781,6 +781,9 @@ static int __init mac_mace_init_module(v
-> >  {
-> >  	int err;
-> >  
-> > +	if (!MACH_IS_MAC)
-> > +		return -ENODEV;
-> > +
-> >  	if ((err = platform_driver_register(&mac_mace_driver))) {
-> >  		printk(KERN_ERR "Driver registration failed\n");
-> >  		return err;
-> 
-> This is rather odd.  The whole point of the platform_driver
-> infrastructure is that the arch code only registers it if it's present
-> and then the driver can match for it.  So the right fix here is to move
-> the platform_driver_register(&mac_mace_driver) into the mac arch setup
+Commit 113134fcbca83619be4c68d0ca66db6093777b5d changed the flow of
+control when calling PAL_LOGICAL_TO_PHYSICAL and SAL_PHYSICAL_ID_INFO.
+With the change, if a platform did not implement the latter, a useless
+printk would appear in the boot log:
 
-I suppose you mean platform_*device*_register(), not
-platform_*driver*_register()?
+	ia64_sal_pltid failed with -1
 
-> code.  A quick grep shows this is a quite common pattern for m68k
-> drivers.
+So let's check the return code and only printk on a true error, and do
+not print anything in the unimplemented case. While we're in there,
+clean up some stylistic issues too.
 
-I know. That's work in progress.
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+ arch/ia64/kernel/smpboot.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-All these drivers predate the platform device framework and have been converted
-to this framework a while ago, without separating the actual platform drivers
-and platform devices.
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index 16483be..8d86e1f 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -873,7 +873,8 @@ identify_siblings(struct cpuinfo_ia64 *c)
+ 	u16 pltid;
+ 	pal_logical_to_physical_t info;
+ 
+-	if ((status = ia64_pal_logical_to_phys(-1, &info)) != PAL_STATUS_SUCCESS) {
++	status = ia64_pal_logical_to_phys(-1, &info);
++	if (status != PAL_STATUS_SUCCESS) {
+ 		if (status != PAL_STATUS_UNIMPLEMENTED) {
+ 			printk(KERN_ERR
+ 				"ia64_pal_logical_to_phys failed with %ld\n",
+@@ -885,8 +886,13 @@ identify_siblings(struct cpuinfo_ia64 *c)
+ 		info.overview_cpp  = 1;
+ 		info.overview_tpc  = 1;
+ 	}
+-	if ((status = ia64_sal_physical_id_info(&pltid)) != PAL_STATUS_SUCCESS) {
+-		printk(KERN_ERR "ia64_sal_pltid failed with %ld\n", status);
++
++	status = ia64_sal_physical_id_info(&pltid);
++	if (status != PAL_STATUS_SUCCESS) {
++		if (status != PAL_STATUS_UNIMPLEMENTED)
++			printk(KERN_ERR 
++				"ia64_sal_pltid failed with %ld\n", 
++				status);
+ 		return;
+ 	}
+ 
+-- 
+1.5.3.1.g1e61
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
