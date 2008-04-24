@@ -1,49 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbYDXPSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbYDXPSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbYDXPSH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbYDXPOq
+	id S1761433AbYDXPSg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759468AbYDXPOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:46 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56052 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:48 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56061 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756803AbYDXPOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:14:42 -0400
-Message-Id: <20080424151406.160144705@polymtl.ca>
+	id S1759348AbYDXPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:14:43 -0400
+Message-Id: <20080424151407.622943449@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:55 -0400
+Date: Thu, 24 Apr 2008 11:03:58 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 31/37] Markers use imv jump
-Content-Disposition: inline; filename=markers-use-imv-jump.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:06 +0000
+Subject: [patch 34/37] LTTng instrumentation ipc
+Content-Disposition: inline; filename=lttng-instrumentation-ipc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let markers use the heavily optimized imv_cond() version of immediate values.
+Interprocess communication, core events.
+
+Added markers :
+
+ipc_msg_create
+ipc_sem_create
+ipc_shm_create
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/marker.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ ipc/msg.c |    6 +++++-
+ ipc/sem.c |    6 +++++-
+ ipc/shm.c |    6 +++++-
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/marker.h
+Index: linux-2.6-lttng/ipc/msg.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2008-04-16 00:16:52.000000000 -0400
-+++ linux-2.6-lttng/include/linux/marker.h	2008-04-16 00:17:12.000000000 -0400
-@@ -76,7 +76,7 @@ struct marker {
- 		{ __mark_empty_function, NULL}, NULL };			\
- 		__mark_check_format(format, ## args);			\
- 		if (!generic) {						\
--			if (unlikely(imv_read(__mark_##name.state)))	\
-+			if (unlikely(imv_cond(__mark_##name.state)))	\
- 				(*__mark_##name.call)			\
- 					(&__mark_##name, call_private,	\
- 					## args);			\
+--- linux-2.6-lttng.orig/ipc/msg.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/msg.c	2008-03-27 07:40:12.000000000 -0400
+@@ -37,6 +37,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/current.h>
+ #include <asm/uaccess.h>
+@@ -293,6 +294,7 @@ asmlinkage long sys_msgget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops msg_ops;
+ 	struct ipc_params msg_params;
++	long ret;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -303,7 +305,9 @@ asmlinkage long sys_msgget(key_t key, in
+ 	msg_params.key = key;
+ 	msg_params.flg = msgflg;
+ 
+-	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	ret = ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	trace_mark(ipc_msg_create, "id %ld flags %d", ret, msgflg);
++	return ret;
+ }
+ 
+ static inline unsigned long
+Index: linux-2.6-lttng/ipc/sem.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/sem.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/sem.c	2008-03-27 07:40:12.000000000 -0400
+@@ -83,6 +83,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/nsproxy.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ #include "util.h"
+@@ -312,6 +313,7 @@ asmlinkage long sys_semget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops sem_ops;
+ 	struct ipc_params sem_params;
++	long err;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -326,7 +328,9 @@ asmlinkage long sys_semget(key_t key, in
+ 	sem_params.flg = semflg;
+ 	sem_params.u.nsems = nsems;
+ 
+-	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	err = ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	trace_mark(ipc_sem_create, "id %ld flags %d", err, semflg);
++	return err;
+ }
+ 
+ /* Manage the doubly linked list sma->sem_pending as a FIFO:
+Index: linux-2.6-lttng/ipc/shm.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/shm.c	2008-03-27 07:40:09.000000000 -0400
++++ linux-2.6-lttng/ipc/shm.c	2008-03-27 07:40:12.000000000 -0400
+@@ -39,6 +39,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/mount.h>
+ #include <linux/ipc_namespace.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -482,6 +483,7 @@ asmlinkage long sys_shmget (key_t key, s
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops shm_ops;
+ 	struct ipc_params shm_params;
++	long err;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -493,7 +495,9 @@ asmlinkage long sys_shmget (key_t key, s
+ 	shm_params.flg = shmflg;
+ 	shm_params.u.size = size;
+ 
+-	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	err = ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	trace_mark(ipc_shm_create, "id %ld flags %d", err, shmflg);
++	return err;
+ }
+ 
+ static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
 
 -- 
 Mathieu Desnoyers
