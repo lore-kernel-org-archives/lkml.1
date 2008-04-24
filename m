@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYDXB6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYDXCDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYDXB6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 21:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDXB6b
+	id S1756072AbYDXCDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 22:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYDXCDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 21:58:31 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:37555 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbYDXB6a (ORCPT
+	Wed, 23 Apr 2008 22:03:14 -0400
+Received: from rv-out-0708.google.com ([209.85.198.249]:3605 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751711AbYDXCDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 21:58:30 -0400
-Date: Thu, 24 Apr 2008 07:28:14 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, vatsa@in.ibm.com,
-       dmitry.adamushko@gmail.com, efault@gmx.de,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/2] sched: higher granularity load on 64bit
-	systems
-Message-ID: <20080424015814.GA17190@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <1208988476.2849.8.camel@lappy> <20080423.172710.152976766.davem@davemloft.net>
+	Wed, 23 Apr 2008 22:03:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ff9/lp3jAtFs0Z/QTLa390m2T5mlb/rTmEwSWkvdwC6TvhQACSv+A+aqxClQhIDMjTCmhJxgIi5iA1u6ekbxr8cVCfMXGWp6SPlXSqoBFgsL1PJP2dCrwVBWkmiCk4b2iayy19e1RZK9B4ZQlMpk/OUCBq84ErP7U72GC2Wx8NM=
+Message-ID: <44c63dc40804231903m654736e7k47d79373d5449571@mail.gmail.com>
+Date: Thu, 24 Apr 2008 11:03:11 +0900
+From: "minchan Kim" <barrioskmc@gmail.com>
+To: linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: wrong comment in do_try_to_free_pages ?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080423.172710.152976766.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 05:27:10PM -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu, 24 Apr 2008 00:07:56 +0200
-> 
-> > The below is an RFC because for some reason it regresses kbuild by 5% on
-> > my machine (and more on the largesmp that are the reason for it).
-> 
-> This causes my 64-cpu Niagara2 box to completely hang when I run "make
-> clean" on a kernel tree after a fresh bootup.
-> 
+static unsigned long do_try_to_free_pages(struct zone **zones, gfp_t gfp_mask,
+           struct scan_control *sc)
+...
+...
+   /* Take a nap, wait for some writeback to complete */
+   if (sc->nr_scanned && priority < DEF_PRIORITY - 2)
+     congestion_wait(WRITE, HZ/10);
+ }
+ /* top priority shrink_caches still had more to do? don't OOM, then */
+                     ^^^^^^^^^^^^^^^^^
+ if (!sc->all_unreclaimable && scan_global_lru(sc))
+   ret = 1;
+out:
+ /*
+....
 
-Any traces? Or anything? It stayed pretty stable on the 128 way I trying
-on, (but for the performance regression) and I was able to reproduce
-your group scheduler hang (or so i think, it might a separate one
-altogether.)
+I think we change shrink_caches commet with shrink_zone.
 
-> Can we just revert all of this broken code until it's sorted out? :-/
-> 
-> We're going on 4 days with unfixed major regressions from the
-> scheduler tree merge, and these regressions make systems unusable.
-> 
-> This is blocking my own work, and I'm starting to lose my patience.
+And I can't understand that's comment.
+
+What's role sc->all_unreclaimable ?
+What benefit do we can get with that code ?
+If we don't have that code, What's problem happen ?
 
 -- 
-regards,
-Dhaval
+Thanks,
+barrios
