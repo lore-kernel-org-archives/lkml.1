@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYDXVMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYDXVOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYDXVMM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYDXVLz
+	id S1754816AbYDXVOL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYDXVNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:11:55 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:15843 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbYDXVLy (ORCPT
+	Thu, 24 Apr 2008 17:13:55 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33265 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752925AbYDXVNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:11:54 -0400
-Date: Thu, 24 Apr 2008 14:11:24 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 14/15] m68k: Update defconfigs
-Message-ID: <20080424211124.GD2131@mail.oracle.com>
-Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080424182940.424312704@mail.of.borg> <20080424183243.884021921@mail.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080424183243.884021921@mail.of.borg>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 24 Apr 2008 17:13:54 -0400
+Date: Thu, 24 Apr 2008 21:44:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, paulkf@microgate.com,
+       jchapman@katalix.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+Message-ID: <20080424214457.1d5a1655@the-village.bc.nu>
+In-Reply-To: <m3ve27nfpx.fsf@maximus.localdomain>
+References: <m3r6cv75xq.fsf@maximus.localdomain>
+	<20080424.063006.153647297.davem@davemloft.net>
+	<m3mynj74nw.fsf@maximus.localdomain>
+	<20080424.065555.30390704.davem@davemloft.net>
+	<m3ve27nfpx.fsf@maximus.localdomain>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 08:29:54PM +0200, Geert Uytterhoeven wrote:
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> Update the m68k defconfigs
+> I think it's easier to a) simply remove syncppp.c, b) apply my patch
+> with new PPP, c) blindly port the old drivers to generic HDLC,
+> d) hope for the best, with a bit of luck nobody would notice.
 
-<snip>
-
->  CONFIG_OCFS2_FS=m
-> +# CONFIG_OCFS2_FS_O2CB is not set
-> +# CONFIG_OCFS2_FS_USERSPACE_CLUSTER is not set
->  # CONFIG_OCFS2_DEBUG_MASKLOG is not set
->  # CONFIG_OCFS2_DEBUG_FS is not set
-
-	In these defconfigs, you disable the cluster stack drivers for
-ocfs2.  This means that ocfs2 can only work as a local filesystem.
-While it will work fine that way, I figured I'd send an email in case
-that wasn't your intention :-)  I note that the following
-multi_defconfig has the cluster stack drivers enabled:
-
-+CONFIG_OCFS2_FS=m
-+CONFIG_OCFS2_FS_O2CB=m
-+CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
-
-Joel
-
--- 
-
-"The one important thing i have learned over the years is the
- difference between taking one's work seriously and taking one's self
- seriously.  The first is imperative and the second is disastrous."
-	-Margot Fonteyn
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+I would agree with this. There isn't a sane way to sort out the old
+kernel side syncppp (which is useless for todays networks as it doesn't
+do compression, IPv6 or auth protocols) except by going to user space.
