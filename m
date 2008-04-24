@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYDXOyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDXO6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbYDXOyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYDXOyK
+	id S1757422AbYDXO6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYDXO6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:54:10 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57859 "EHLO
+	Thu, 24 Apr 2008 10:58:14 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60059 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755144AbYDXOyJ (ORCPT
+	with ESMTP id S1753157AbYDXO6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:54:09 -0400
+	Thu, 24 Apr 2008 10:58:13 -0400
 To: viro@ZenIV.linux.org.uk
 CC: miklos@szeredi.hu, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
        ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-reply-to: <20080424144448.GH15214@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 24 Apr 2008 15:44:48 +0100)
+In-reply-to: <20080424144815.GI15214@ZenIV.linux.org.uk> (message from Al Viro
+	on Thu, 24 Apr 2008 15:48:15 +0100)
 Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <E1Jp28U-0003r3-8r@pomaz-ex.szeredi.hu> <20080424142857.GF15214@ZenIV.linux.org.uk> <E1Jp2Yw-0003xF-Fk@pomaz-ex.szeredi.hu> <20080424144448.GH15214@ZenIV.linux.org.uk>
-Message-Id: <E1Jp2pD-00043W-IF@pomaz-ex.szeredi.hu>
+References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk>
+Message-Id: <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
 From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 24 Apr 2008 16:53:27 +0200
+Date: Thu, 24 Apr 2008 16:58:00 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > RTFS.  permission() doesn't do "is that vfsmount read-only" checks, exactly
-> > > because it's 100% bogus - either you cover it with entire area where we
-> > > are guaranteed to stay r/w, or it's by definition racy.
+> > >  You are right - we do have races there.  Always had.
+> > > And nfsd_permission() is the next target for continuation of ro-bind
+> > > series.  Assuming that we don't simply make r/w export to hold will_write
+> > > all along, in which case all these checks around calls of vfs_...() in
+> > > there simply go away - that's also an arguable option.
 > > 
-> > I know that.
-> > 
-> > That does not mean, that fh_verify() needs to do vfsmount r/o checks.
-> > AFAICS it's perfectly OK to do that later, around the vfs_ call.
+> > Yes.  And that _still_ doesn't make the path_*() interface wrong.
 > 
-> ... and around everything else that happens to be done after fh_verify
-> for write access, surely?
+> It would make it bloody useless for nfsd.  With ecryptfs being a piss-poor
+> argument in favour of anything other than git rm, what's left?  Another
+> stack frame in fs/namei.c syscalls?
 
-What in particular?  You have managed to avoid answering this question
-for the last...I don't know how many emails.
+Since all the vfs_* functions will become static with path_* being the
+only caller, the compiler will be happy to get rid of that stack frame
+too.
 
->  Note that e.g. nfsd_setattr() does _not_ call
-> vfs_<anything>()...
+What is left is the guarantee, that the race-free r/o remounts will
+always work and some obscure caller didn't forget to surround it with
+the r/o checks.
 
-Yes it does: notify_change().  It's vfs_setattr() under a pseudonym.
+I think it's definitely worth it.
 
 Miklos
