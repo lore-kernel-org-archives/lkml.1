@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYDXUqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYDXUq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbYDXUqa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 16:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYDXUqR
+	id S1755731AbYDXUq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 16:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbYDXUqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 16:46:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51897 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756558AbYDXUqP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 16:46:15 -0400
-Date: Thu, 24 Apr 2008 13:45:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RxRPC: Fix a regression in the RXKAD security module
-In-Reply-To: <20080424193856.14737.16718.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LFD.1.10.0804241248290.2779@woody.linux-foundation.org>
-References: <20080424193856.14737.16718.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 24 Apr 2008 16:46:40 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38926 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752692AbYDXUqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 16:46:37 -0400
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m3r6cv75xq.fsf@maximus.localdomain>
+	<20080424.063006.153647297.davem@davemloft.net>
+	<m3mynj74nw.fsf@maximus.localdomain>
+	<20080424.065555.30390704.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 24 Apr 2008 22:46:34 +0200
+In-Reply-To: <20080424.065555.30390704.davem@davemloft.net> (David Miller's message of "Thu\, 24 Apr 2008 06\:55\:55 -0700 \(PDT\)")
+Message-ID: <m3ve27nfpx.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller <davem@davemloft.net> writes:
 
+> I would rather see you add small extensions to syncppp to
+> provide for HDLC's needs, rather than reimplement it.
 
-On Thu, 24 Apr 2008, David Howells wrote:
->
-> Fix a regression in the RXKAD security module introduced in:
-> 
-> 	commit 91e916cffec7c0153c5cbaa447151862a7a9a047
-> 	Author: Al Viro <viro@ftp.linux.org.uk>
-> 	Date:   Sat Mar 29 03:08:38 2008 +0000
-> 
-> 	net/rxrpc trivial annotations
-> 
-> A variable was declared as a 16-bit type rather than a 32-bit type.
+It's not about extensions, syncppp is just unmaintainable. It's
+implementation of two protocols - Cisco HDLC and (sync) PPP intermixed
+together.
 
-Ok, that looks stupid, and should even have had a warning (shifting a u16 
-right by 16 should warn about it being pointless, but doesn't, because the 
-compiler quietly expands it to "int" in the meantime).
+What would be needed is a) splitting them into two files (including
+protocol selection in drivers - somehow), b) replacing existing
+broken syncppp state machines distributed all over the place with a
+single sane state machine, c) perhaps adding IPv6, people want it,
+d) packet flow from hw drivers would need to be upgraded as well
+(*_type_trans() and fast path for IP/IPv6 and perhaps IPX, though
+I don't know anyone ever using IPX with sync PPP).
 
-Hmm. I could do something to sparse that warns about that too. 
+I guess then you'd get generic HDLC.
 
-		Linus
+I think it's easier to a) simply remove syncppp.c, b) apply my patch
+with new PPP, c) blindly port the old drivers to generic HDLC,
+d) hope for the best, with a bit of luck nobody would notice.
+
+Alternative c) simply remove the old drivers (d) unchanged).
+
+I don't want the breakage resulting from either action thus I think
+syncppp.c should stay there (basically unchanged, though we could
+at last remove those variables used only by the original FreeBSD
+code in 1994).
+
+If the new implementation is my patch or if it uses generic PPP is
+debatable. I think simplicity is a good thing, the interface to
+generic PPP would be bigger than the whole sync-only PPP. But I'm not
+against using generic PPP, it's (AFAICS) clean and *working* and
+*maintained* (and I'm not worried about backward compatibility and
+certainly not about users' visions).
+-- 
+Krzysztof Halasa
