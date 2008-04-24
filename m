@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYDXONA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYDXONW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYDXONA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYDXOMv
+	id S1759437AbYDXONW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbYDXONM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:12:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45293 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbYDXOMv (ORCPT
+	Thu, 24 Apr 2008 10:13:12 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:40208 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753506AbYDXONL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:12:51 -0400
-Message-ID: <4810955E.6080903@firstfloor.org>
-Date: Thu, 24 Apr 2008 16:12:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 24 Apr 2008 10:13:11 -0400
+Message-ID: <48109571.70905@hp.com>
+Date: Thu, 24 Apr 2008 10:13:05 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, vojtech@suse.cz,
-       muli@il.ibm.com, jdmason@kudzu.us, tglx@linutronix.de, mingo@redhat.com,
-       davem@davemloft.net
-Subject: Re: [PATCH RFC] x86: Fix 64-bit DMA masks on VIA
-References: <200804232055.13102.mb@bu3sch.de> <87mynjgyg9.fsf@basil.nowhere.org> <200804241606.00883.mb@bu3sch.de>
-In-Reply-To: <200804241606.00883.mb@bu3sch.de>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org> <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk>
+In-Reply-To: <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Thursday 24 April 2008 15:43:50 Andi Kleen wrote:
->> Michael Buesch <mb@bu3sch.de> writes:
->>
->>> This untested patch is supposed to fix DMAing on some VIA boards.
->>> Currently the DMA subsystem returns an error, if the driver does
->>> tell that it supports a 64bit DMA mask. So the driver probing
->>> would fail in that case. 
->> The driver is broken then. It is supposed to retry with a small
->> mask on an error. Please fix the driver.
-
-I must admit my comment was slightly wrong. In some cases
-it can make sense to start with a small mask and retry bigger.
-
+Jens Axboe wrote:
+> On 24/04/2008, at 15.29, Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> I already added a workaround to the driver.
-> Why do we need to workaround this in _every_ driver? 
+>> "Alan D. Brunelle" <Alan.Brunelle@hp.com> writes:
+>>
+>>> The block I/O + elevator + I/O scheduler code spends a lot of time
+>>> trying to merge I/Os -- rightfully so under "normal" circumstances.
+>>> However, if one were to know that the incoming I/O stream was /very/
+>>> random in nature, the cycles are wasted. (This can be the case, for
+>>> example, during OLTP-type runs.)
+>>>
+>>> This patch stream adds a per-request_queue tunable that (when set)
+>>> disables merge attempts, thus freeing up a non-trivial amount of CPU
+>>> cycles.
+>>
+>> It sounds interesting. But explicit tunables are always bad because
+>> they will be only used by a elite few. Do you think it would be
+>> possible instead to keep some statistics on how successfull merging is
+>> and
+>> when the success rate is very low disable it automatically for some
+>> time until a time out?
+>>
+>> This way nearly everybody could get most of the benefit from this
+>> change.
+> 
+> Not a good idea IMHO, it's much better with an explicit setting. That
+> way you don't introduce indeterministic behavior.
 
-The API was designed this way because many devices support different
-hardware interfaces for different address sizes. So for example with a
-32bit mask you might be able to transfer less data than with a 64bit
-mask. And with the retry steps you should be able to figure out the
-most efficient format for the current system.
+Another way to attack this would be to have a user level daemon "watch
+things" -
 
-See the discussion in Documentation/DMA-mapping.txt
+o  We could leave 'nomerges' alone: if someone set that, they "know"
+what they are doing, and we just don't attempt merges. [This tunable
+would really be for the "elite few" - those that no which devices are
+used in which ways - people that administer Enterprise load environments
+tend to need to know this.]
 
-cc: DaveM; I think the concept was from him originally.
+o  The kernel already exports stats on merges, so the daemon could watch
+those stats in comparison to the number of I/Os submitted. If it
+determined that merge attempts were not being very successful, it could
+turn off merges for a period of time. Later it could turn them back on,
+watch for a while, and repeat.
 
--Andi
+Does this sound better/worthwhile?
+
+Alan
