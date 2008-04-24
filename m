@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbYDXNQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbYDXNaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbYDXNQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 09:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYDXNQ2
+	id S1758533AbYDXNaJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 09:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYDXNaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 09:16:28 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:35154 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753182AbYDXNQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 09:16:27 -0400
-Date: Thu, 24 Apr 2008 15:16:24 +0200 (CEST)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Takashi Iwai <tiwai@suse.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] ALSA updates for 2.6.26
-In-Reply-To: <s5hwsmnbhlv.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.61.0804241514210.7882@tm8103.perex-int.cz>
-References: <s5hwsmnbhlv.wl%tiwai@suse.de>
+	Thu, 24 Apr 2008 09:30:01 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:48314 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751812AbYDXNaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 09:30:00 -0400
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+From: Andi Kleen <andi@firstfloor.org>
+References: <480F8936.5030406@hp.com>
+Date: Thu, 24 Apr 2008 15:29:05 +0200
+In-Reply-To: <480F8936.5030406@hp.com> (Alan D. Brunelle's message of "Wed, 23 Apr 2008 15:08:38 -0400")
+Message-ID: <87ve27gz4u.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Apr 2008 13:22:15.0948 (UTC) FILETIME=[36D104C0:01C8A60E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008, Takashi Iwai wrote:
+"Alan D. Brunelle" <Alan.Brunelle@hp.com> writes:
 
-> Linus,
-> 
-> please pull ALSA updates for 2.6.26 from:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
-> 
-> 
-> This updates include a few new drivers (pcsp, aw2, soc davinci, etc),
-> and many fixes/updates for HD-audio and oxygen drivers, together with
-> lots of trivial fixes.
+> The block I/O + elevator + I/O scheduler code spends a lot of time
+> trying to merge I/Os -- rightfully so under "normal" circumstances.
+> However, if one were to know that the incoming I/O stream was /very/
+> random in nature, the cycles are wasted. (This can be the case, for
+> example, during OLTP-type runs.)
+>
+> This patch stream adds a per-request_queue tunable that (when set)
+> disables merge attempts, thus freeing up a non-trivial amount of CPU cycles.
 
-A repository with identical patches and ALSA version update is here:
+It sounds interesting. But explicit tunables are always bad because
+they will be only used by a elite few. Do you think it would be
+possible instead to keep some statistics on how successfull merging is and
+when the success rate is very low disable it automatically for some
+time until a time out?
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+This way nearly everybody could get most of the benefit from this
+change.
 
-The GNU patch is available at:
-
-  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2008-04-24.patch.gz
-
-						Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
-
+-Andi
