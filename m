@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbYDXSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYDXSsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbYDXSoe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYDXSoU
+	id S1760910AbYDXSsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYDXSsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:44:20 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:46667 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbYDXSoT (ORCPT
+	Thu, 24 Apr 2008 14:48:22 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56440 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984AbYDXSsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:44:19 -0400
-Date: Thu, 24 Apr 2008 12:44:17 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: lenb@kernel.org, linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Create 'slot'
-	sysfsattributein/sys/devices/system/cpu/cpuN/topology/
-Message-ID: <20080424184417.GA32553@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
-	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com> <20080421052450.GA24055@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 24 Apr 2008 14:48:21 -0400
+To: dave@linux.vnet.ibm.com
+CC: miklos@szeredi.hu, viro@ZenIV.linux.org.uk, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <1209059717.12718.32.camel@nimitz.home.sr71.net> (message from
+	Dave Hansen on Thu, 24 Apr 2008 10:55:17 -0700)
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+References: <20080424113950.818688067@szeredi.hu>
+	 <20080424124245.GC15214@ZenIV.linux.org.uk>
+	 <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu>
+	 <20080424134826.GD15214@ZenIV.linux.org.uk>
+	 <20080424140000.GE15214@ZenIV.linux.org.uk>
+	 <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu>
+	 <20080424143537.GG15214@ZenIV.linux.org.uk>
+	 <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu>
+	 <20080424144815.GI15214@ZenIV.linux.org.uk>
+	 <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
+	 <20080424152129.GK15214@ZenIV.linux.org.uk>
+	 <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu> <1209059717.12718.32.camel@nimitz.home.sr71.net>
+Message-Id: <E1Jp6U9-0004n5-0N@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 24 Apr 2008 20:47:57 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
-
-* Luck, Tony <tony.luck@intel.com>:
-> > I noticed that this patch wasn't in the git tree you sent to
-> > Linus for 2.6.26. I don't remember seeing a NACK though -- is
-> > there something that I could rework to make it more acceptable?
+> > Why are those so important?  Yes, if we have multiple vfs_() calls,
+> > surround them with an extra want/drop pair.  We do already do multiple
+> > overlapping want/drop pairs with O_TRUNC and O_CREAT (AFAIR).
 > 
-> I'm mostly ok with this version of the patch.  I didn't see any
-> comments from the linux-kernel crowd on the whether they are fond
-> of the new API ("slot" file in cpu/cpuN/topology/) and hate to make
-> the presumption that because they are silent that they agree.
+> The one that I remember is the pair that we take for O_CREAT and the
+> nameidata_to_filp() in do_filp_open() that we do on it after the
+> creation and hold while the file is open.
 > 
-> The "mostly ok" part would transform to "fully ok" if there were a way
-> to make sure the "slot" files only appeared on systems where they are
-> meaningful (i.e. have a value other then -1 in them).  If there is
-> an easy way to make this happen, then it would make me happier (less
-> clutter in /sys) and perhaps others too (since this API is only useful
-> on large systems where "slot" is meaningful, and there is generally
-> some bias from the community at large about adding interfaces that
-> aren't needed for normal desktop/laptop systems).
+> The only reason for this one is that we want to shut down a potential
+> race that would allow the file to be created, then still return a -EROFS
+> because someone did a r/w->r/o transition between the create an the
+> nameidata_to_filp().
+> 
+> We could pass some information into nameidata_to_filp()->__dentry_open()
+> telling it that we already have a write and it doesn't need to take one,
+> but I think having the two nested writes is cleaner.
 
-Yeah, I agree that the first few attempts weren't so great. I
-don't really like the idea of adding a new 'slot' file to sysfs
-either.
+Agreed.
 
-I reworked this patch to play nicer with the current topology
-stuff.
+> Is that the case you're thinking of?
 
-I've also included a cleanup patch that you might be happy to see
-(removes the noisy ia64_sal_pltid failed with -1 printk).
+Yes.  And the same thing is done a little below for similar reasons
+around may_open() which does truncation.
 
-Tested on an hp rx4640 with Madisons and verified that I actually
-get sane output in /proc/cpuinfo:
-
-[root@max ~]# cat /proc/cpuinfo | grep processor
-processor  : 0
-processor  : 1
-processor  : 2
-processor  : 3
-[root@max ~]# cat /proc/cpuinfo | grep physical
-physical id: 0
-physical id: 1
-physical id: 2
-physical id: 3
-
-Also tested on a Tiger and verified that /proc/cpuinfo remains
-unchanged, and no useless printk's appear during boot.
-
-Thanks.
-
-/ac
-
+Miklos
