@@ -1,72 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbYDXFDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYDXF2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbYDXFDD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 01:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbYDXFBm
+	id S1754244AbYDXF2f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 01:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYDXF2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 01:01:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:37187 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755688AbYDXFBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 01:01:41 -0400
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 24 Apr 2008 00:01:35 -0500
-Subject: [PATCH 6/6] module: add MODULE_STATE_GOING notifier call
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+	Thu, 24 Apr 2008 01:28:24 -0400
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:63553 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbYDXF2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 01:28:21 -0400
+Message-ID: <48101A71.3020403@nttdata.co.jp>
+Date: Thu, 24 Apr 2008 14:28:17 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+Organization: NTT DATA CORPORATION
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>
+Subject: Re: [TOMOYO #7 00/30] TOMOYO Linux 1.6.0 released
+References: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+In-Reply-To: <20080404122242.867070732@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804241501.35631.rusty@rustcorp.com.au>
+X-OriginalArrivalTime: 24 Apr 2008 05:28:18.0635 (UTC) FILETIME=[00DB69B0:01C8A5CC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+After examining the feedback to our latest patches and some personal
+suggestions sent via e-mail, we came to realize we took totally
+wrong way to propose another access control implementation.
+I apologize for that and thank people for comments and suggestions
+from the bottom of my heart.
 
-Provide module unload callback. Required by the gcov profiling
-infrastructure to keep track of profiling data structures.
+The following Jonathan's LWN article is a real *great*, in-depth
+explanation of TOMOYO Linux and pathname-based security history.
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/module.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+http://lwn.net/Articles/277833/
 
-Index: linux-2.6.25/kernel/module.c
-===================================================================
---- linux-2.6.25.orig/kernel/module.c
-+++ linux-2.6.25/kernel/module.c
-@@ -737,12 +737,13 @@ sys_delete_module(const char __user *nam
- 	if (!forced && module_refcount(mod) != 0)
- 		wait_for_zero_refcount(mod);
- 
-+	mutex_unlock(&module_mutex);
- 	/* Final destruction now noone is using it. */
--	if (mod->exit != NULL) {
--		mutex_unlock(&module_mutex);
-+	if (mod->exit != NULL)
- 		mod->exit();
--		mutex_lock(&module_mutex);
--	}
-+	blocking_notifier_call_chain(&module_notify_list,
-+				     MODULE_STATE_GOING, mod);
-+	mutex_lock(&module_mutex);
- 	/* Store the name of the last unloaded module for diagnostic purposes */
- 	strlcpy(last_unloaded_module, mod->name, sizeof(last_unloaded_module));
- 	free_module(mod);
-@@ -2185,6 +2186,8 @@ sys_init_module(void __user *umod,
- 		mod->state = MODULE_STATE_GOING;
- 		synchronize_sched();
- 		module_put(mod);
-+		blocking_notifier_call_chain(&module_notify_list,
-+					     MODULE_STATE_GOING, mod);
- 		mutex_lock(&module_mutex);
- 		free_module(mod);
- 		mutex_unlock(&module_mutex);
+As was described in the article, I am planning to take the Stephen's
+"option 2" approach.
 
+> 2) Submit patches to add new security hooks to the callers where the
+> vfsmount is already available (some have suggested moving the existing
+> security_inode hooks to the callers, but that would cause problems for
+> SELinux as I've posted elsewhere, so adding new hooks is preferable, and
+> then SELinux can just default to the dummy functions for those new
+> hooks).
 
+This approach should not require large impacts on VFS and filesystems.
+The work is in progress. Our next patch will include:
+- new LSM hooks for TOMOYO Linux
+- the smallest set of hooks (to save reviewers' time)
 
+BTW, we have attended the ELC2008 and listened to the Andrew's keynote.
+Yes, we were encouraged deeply, again. We, TOMOYO Linux developers,
+are serious about getting our code into the mainline, we will
+continue working like Casey (and "ask him" in case of trouble).
 
+We will be back (with our new patches). :)
 
+Cheers,
+Toshiharu Harada
+NTT DATA CORPORATION
+
+On 4/4/2008 9:22 PM, Tetsuo Handa wrote:
+> What is TOMOYO Linux for?
+> 
+>   It is userland applications' charge to keep processes under control.
+>   This includes that userland applications restrict what programs are
+>   permitted to execute and what files are permitted to read/write
+>   by the application.
+>   Thus, the kernel does whatever asked by the userland applications.
+> 
+>   But userland applications often make mistakes such as buffer overflow,
+>   OS command injection, directory traversal etc.
+>   As a result, they can't always keep processes under control.
+> 
+>   TOMOYO Linux is developed to take partial charge of keeping processes
+>   under control, by teaching the kernel what programs are
+>   permitted to execute and what files are permitted to read/write
+>   by the application and letting the kernel check it once again.
+> 
+> Can TOMOYO Linux coexist with SELinux, SMACK, AppArmor etc. ?
+> 
+>   Yes. TOMOYO Linux 1.x is not using LSM because I want don't want to disable
+>   different access control implementations.
+> 
+>   TOMOYO Linux is good at dealing with the subject's request chains,
+>   while LSM is good at dealing with object's life-cycle.
+> 
+> What are new features of this release?
+> 
+>   This release reinforced execution parameter checks.
+> 
+>   Introduced execute handler mechanism.
+> 
+>     The usage of TOMOYO Linux is that understand what programs are executed and
+>     what files are opened by individual applications and let the kernel
+>     enforce them. Thus, assuming that all programs needed by individual
+>     applications are known by the time of enforcing, attempts to execute
+>     not ever observed application (e.g. /bin/sh) are considered to be attacks.
+> 
+>     Some shellcode (an exploit code used to execute /bin/sh) attempts to
+>     execute /bin/sh until the execution succeeds. One of such shellcodes is
+>     Samba's trans2open exploit. It attempts to execute /bin/sh from infinite
+>     loop. As a result, just rejecting execute request of /bin/sh triggers
+>     CPU power consumption problem (all CPU powers are eaten by the shellcode's
+>     infinite loop).
+> 
+>     But by using execute handler, you can run different programs instead of
+>     just rejecting execute request to redirect the process to somewhere else.
+> 
+>     This redirection mechanism is useful for deploying on demand honey pot.
+>     You can provide regular service in peacetime, and you can redirect
+>     the attacker trying to start /bin/sh to honey pot in wartime.
+> 
+>     Also, since the fact that a program which is different from the requested
+>     one is executed by execute handler is not notified to the caller process,
+>     you can use execute handler as a transparent validation interface
+>     like "Web Application Firewall" or "AntiVirus". You can monitor
+>     parameters passed to execve() and stdio to drop unwanted parameters or
+>     reject the execution of the program requested by the caller process.
+> 
+>   Introduced "struct linux_bprm" checks.
+> 
+>     Proper codes tends to setting up argv[] and envp[] when executing
+>     a new program. But shellcodes tend to not setting up argv[] and envp[]
+>     when executed using buffer overflows.
+>     Thus, it became possible to require specific argv[] and envp[] values
+>     when executing a program.
+> 
+>   Introduced environment variable names checks.
+> 
+>     Some environment variables (e.g. LD_PRELOAD) are used by attackers to make
+>     the application behave differently.
+>     Thus, it became possible to restrict acceptable environment variable's
+>     names passed to execve().
+> 
+>   And various usability enhancement like more detailed access logs and
+>   policy management by non root user.
+> 
+> Is TOMOYO Linux architecture independent?
+> 
+>   Yes. I think TOMOYO Linux doesn't contain architecture dependent code.
+>   TOMOYO Linux touches only surface of the kernel code.
+> 
+> Are older kernels supported?
+> 
+>   Yes. From 2.4.30 to 2.4.36 and from 2.6.11 to 2.6.25-rc7 are supported.
+>   Also, various distributions' latest kernels are supported.
+> 
+> Where's the web page?
+> 
+>   http://elinux.org/TomoyoLinux
+>   http://tomoyo.sourceforge.jp/wiki-e/?WhatIs
+>   http://sourceforge.jp/projects/tomoyo/document/fosdem2008.pdf
+> 
+>   TOMOYO Linux is compact and suits well to PC servers and embedded systems.
+>   There is a TOMOYO Linux presentation at CELF Embedded Linux Conference 2008
+>   held in California from April 15th to the 17th.
+> 
+> Thank you.
 
