@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYDXR1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbYDXRbC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbYDXR1P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYDXR06
+	id S1760178AbYDXRbC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:31:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYDXRaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:26:58 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37962 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbYDXR05 (ORCPT
+	Thu, 24 Apr 2008 13:30:52 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58467 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753638AbYDXRaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:26:57 -0400
-Date: Thu, 24 Apr 2008 13:25:58 -0400
-Message-Id: <200804241725.m3OHPwIs015778@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Al Viro <viro@zeniv.linux.org.uk>
+	Thu, 24 Apr 2008 13:30:52 -0400
+Date: Thu, 24 Apr 2008 18:30:13 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Erez Zadok <ezk@cs.sunysb.edu>
 Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
-In-reply-to: Your message of "Thu, 24 Apr 2008 14:48:26 BST."
-             <20080424134826.GD15214@ZenIV.linux.org.uk> 
-X-MailKey: Erez_Zadok
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+Message-ID: <20080424173013.GA5882@ZenIV.linux.org.uk>
+References: <20080424134826.GD15214@ZenIV.linux.org.uk> <200804241725.m3OHPwIs015778@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804241725.m3OHPwIs015778@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080424134826.GD15214@ZenIV.linux.org.uk>, Al Viro writes:
-> On Thu, Apr 24, 2008 at 03:05:21PM +0200, Miklos Szeredi wrote:
-[...]
-> And yes, we need the counterpart for superblock-level stuff, to deal with
-> remaining races (look at fs_may_remount_ro() and puke - it's still racy
-> as hell).  E.g. unlink should do sb-level "will write" when it drops
-> i_nlink to 0 and final removal of inode should do "won't write".
+On Thu, Apr 24, 2008 at 01:25:58PM -0400, Erez Zadok wrote:
+> Al, any near-term plans for sb-level "want write" locking as we discussed
+> briefly at LSF?  Being able to do so for copyup in unionfs will hopefully
+> allow me to prevent concurrent topology changes.
 
-Al, any near-term plans for sb-level "want write" locking as we discussed
-briefly at LSF?  Being able to do so for copyup in unionfs will hopefully
-allow me to prevent concurrent topology changes.
+That's pretty close to the top.
 
-And while we're digressing.  It appears to me that when someone wants to
-change a single meta-data item in a f/s, then locking rules are simple:
-e.g., lock the directory inode.  But when you want to modify more than one,
-you need a different kind of lock -- hence the s_vfs_rename_mutex.  The
-latter requires calling lock_rename to find the lowest common ancestor of
-the two directories that need locking.  This rename-locking protocol appears
-to be a special case of the sb-level "want write" idea, right?  Moreover, I
-don't believe that cross-directory renames are that common, so replacing the
-s_vfs_rename_mutex and its use with a more generic sb-level multi-operation
-write-lock should have a negligible performance impact.
+> the two directories that need locking.  This rename-locking protocol appears
+> to be a special case of the sb-level "want write" idea, right?
 
-Thanks,
-Erez.
+Not really - that one doesn't provide any exclusion between writers and
+that's what we want from rename/rename.
+
+Take a look at Documentation/filesystems/directory-locking for details
+of locking scheme...
