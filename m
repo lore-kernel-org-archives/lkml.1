@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYDXOud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYDXOwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbYDXOud (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYDXOuW
+	id S1757577AbYDXOwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYDXOwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:50:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36930 "EHLO mx1.redhat.com"
+	Thu, 24 Apr 2008 10:52:46 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36012 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752385AbYDXOuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:50:21 -0400
-Message-ID: <48109DFB.900@redhat.com>
-Date: Thu, 24 Apr 2008 07:49:31 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1752358AbYDXOwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 10:52:45 -0400
+Date: Thu, 24 Apr 2008 17:51:59 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
+Message-ID: <20080424145159.GC2559@cs181133002.pp.htv.fi>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <20080422081211.e85989ec.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       michael.kerrisk@gmail.com, linux-man@vger.kernel.org
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	 <20080424112514.055d8071@the-village.bc.nu> <517f3f820804240534r3bbbdc52s52a6dfe3f2d14b7f@mail.gmail.com>
-In-Reply-To: <517f3f820804240534r3bbbdc52s52a6dfe3f2d14b7f@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080422081211.e85989ec.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, Apr 22, 2008 at 08:12:11AM -0700, Randy Dunlap wrote:
+> On Tue, 22 Apr 2008 13:13:39 +0100 Will Newton wrote:
+> 
+> > Hi,
+> > 
+> > This patch introduces a __ARCH_WANT_SYS_SYSFS #define for
+> > architectures that support the sysfs(2) system call. At the moment
+> > that's everybody but blackfin, but future architectures may want to
+> > save the (admittedly small) code size that it adds to the kernel as
+> > well.
+> > 
+> > (patch attached as well as inline because gmail seems to mangle my whitespace)
+> > 
+> > ---
+> > >From d0746366e8ccb5fbaa6c9945540cecbe0c421222 Mon Sep 17 00:00:00 2001
+> > From: Will Newton <will.newton@imgtec.com>
+> > Date: Tue, 22 Apr 2008 12:57:03 +0100
+> > Subject: [PATCH] Introduce __ARCH_WANT_SYS_SYSFS.
+> > 
+> > Signed-off-by: Will Newton <will.newton@imgtec.com>
+> > 
+> > All arches that want the sysfs(2) system call should define this symbol.
+> > Arches such as blackfin that do not implement the system call don't compile
+> > the code and save some small amount of space.
+> 
+> Is there any reason that this couldn't (and shouldn't) be done
+> in the Kconfig space and done as documented in
+> Documentation/kbuild/kconfig-language.txt ?
+>...
 
-Michael Kerrisk wrote:
-> * dup2() -- use fcntl(F_DUPFD) instead
+Moving it to Kconfig makes sense for stuff where the placement is 
+arbitrary.
 
-Wrong.  You cannot implement dup2 with fcntl since the latter won't use
-a file descriptor which is already in use.
+But in this case having everything in one file is better than splitting 
+the information between the header and Kconfig.
 
+> ~Randy
 
-> So the alternative to sys_indirect(), at least for the purpose of
-> O_CLOEXEC and similar, would be to create 5 new system calls (or six,
-> if one finds the signalfd() hack too ugly, which perhaps it is; or 7
-> if one doesn't like Alan's suggestion for socket()
+cu
+Adrian
 
-Without changing the socket interfaces (plural, socketpair) there would
-have to be 7 new syscalls, with changing socket* to an IMO cleaner
-interface 9.
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Or we just add sys_indirect (which is also usable for other syscall
-extensions, not just the CLOEXEC stuff) and let userlevel (i.e., me)
-worry about adding new interfaces to libc.  As you can see, for the more
-recent interfaces like signalfd I have already added an additional
-parameter so the number of interface changes would be reduced.
-
-Somebody please make a call and then let's go on with life.  I don't
-care much either way anymore.  I do hope nobody thinks this is an issue
-which can be completely ignored (see, e.g., the bug I pointed to the
-other day).
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIEJ372ijCOnn/RHQRAorwAJ4u78MYFrJbPqcqW1fPae2liLxxhwCfa7e7
-r2vc7FnEpzyJmqEKU6aCd5E=
-=EG3n
------END PGP SIGNATURE-----
