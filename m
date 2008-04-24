@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYDXW7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYDXXGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbYDXW7Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYDXW7I
+	id S1754498AbYDXXGa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYDXXGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:59:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40136 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbYDXW7F (ORCPT
+	Thu, 24 Apr 2008 19:06:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36558 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYDXXGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:59:05 -0400
-Date: Thu, 24 Apr 2008 15:56:04 -0700
-From: Greg KH <greg@kroah.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org
-Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before
-	mounting root
-Message-ID: <20080424225604.GA18737@kroah.com>
-References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 24 Apr 2008 19:06:17 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Mikael Starvik <starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: [PATCH 06/24] cris: types: use <asm-generic/int-*.h> for the cris architecture
+Date: Thu, 24 Apr 2008 16:05:18 -0700
+Message-Id: <1209078352-7593-12-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <1209078352-7593-11-git-send-email-hpa@zytor.com>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
+ <1209078352-7593-2-git-send-email-hpa@zytor.com>
+ <1209078352-7593-3-git-send-email-hpa@zytor.com>
+ <1209078352-7593-4-git-send-email-hpa@zytor.com>
+ <1209078352-7593-5-git-send-email-hpa@zytor.com>
+ <1209078352-7593-6-git-send-email-hpa@zytor.com>
+ <1209078352-7593-7-git-send-email-hpa@zytor.com>
+ <1209078352-7593-8-git-send-email-hpa@zytor.com>
+ <1209078352-7593-9-git-send-email-hpa@zytor.com>
+ <1209078352-7593-10-git-send-email-hpa@zytor.com>
+ <1209078352-7593-11-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 12:25:04AM +0300, Pekka J Enberg wrote:
-> On Thu, 24 Apr 2008, Pekka J Enberg wrote:
-> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
-> > > 
-> > > Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
-> > > wait until background scanning of USB mass storage devices is complete before
-> > > attempting to mount the root filesystem.
-> > > 
-> > > The config option is an alternative to the root_delay= kernel parameter
-> > > solution people currently use to boot from USB mass storage devices.
-> 
-> On Thu, 24 Apr 2008, Alan Stern wrote:
-> > This doesn't take into account what happens when CONFIG_SCSI_SCAN_ASYNC
-> > is set.
-> 
-> Oh, right. Thanks! So something like the following should take care of it.
-> 
-> 		Pekka
-> 
-> Subject: [RFC/PATCH] usb-storage: wait for device scanning before mounting root V2
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
-> wait until background scanning of USB mass storage devices is complete before
-> attempting to mount the root filesystem.
+This modifies <asm-cris/types.h> to use the <asm-generic/int-*.h>
+generic include files.
 
-What happens if there is no USB device present in the system?  Because
-of that, there is no way that this option could ever be enabled by any
-distro or anyone wanting their kernel to run on more than one machine :(
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Mikael Starvik <starvik@axis.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ include/asm-cris/types.h |   33 ++-------------------------------
+ 1 files changed, 2 insertions(+), 31 deletions(-)
 
-I don't like it.
+diff --git a/include/asm-cris/types.h b/include/asm-cris/types.h
+index 5a21c42..5790262 100644
+--- a/include/asm-cris/types.h
++++ b/include/asm-cris/types.h
+@@ -1,29 +1,12 @@
+ #ifndef _ETRAX_TYPES_H
+ #define _ETRAX_TYPES_H
+ 
++#include <asm-generic/int-ll64.h>
++
+ #ifndef __ASSEMBLY__
+ 
+ typedef unsigned short umode_t;
+ 
+-/*
+- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
+- * header files exported to user space
+- */
+-
+-typedef __signed__ char __s8;
+-typedef unsigned char __u8;
+-
+-typedef __signed__ short __s16;
+-typedef unsigned short __u16;
+-
+-typedef __signed__ int __s32;
+-typedef unsigned int __u32;
+-
+-#if defined(__GNUC__)
+-__extension__ typedef __signed__ long long __s64;
+-__extension__ typedef unsigned long long __u64;
+-#endif
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+@@ -35,18 +18,6 @@ __extension__ typedef unsigned long long __u64;
+ 
+ #ifndef __ASSEMBLY__
+ 
+-typedef signed char s8;
+-typedef unsigned char u8;
+-
+-typedef signed short s16;
+-typedef unsigned short u16;
+-
+-typedef signed int s32;
+-typedef unsigned int u32;
+-
+-typedef signed long long s64;
+-typedef unsigned long long u64;
+-
+ /* Dma addresses are 32-bits wide, just like our other addresses.  */
+  
+ typedef u32 dma_addr_t;
+-- 
+1.5.4.1
 
-thanks,
-
-greg k-h
