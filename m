@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYDXIJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbYDXIbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYDXIJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYDXIJa
+	id S1752589AbYDXIbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYDXIbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:09:30 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1199 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750841AbYDXIJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:09:29 -0400
-Date: Thu, 24 Apr 2008 10:09:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [RFC][PATCH 1/5] Container Freezer: Add TIF_FREEZE flag to all architectures
-Message-ID: <20080424080918.GA10867@ucw.cz>
-References: <20080424064756.643890130@us.ibm.com> <20080424064756.935832298@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Apr 2008 04:31:22 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:39260 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYDXIbV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 04:31:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rf79kRuO3HMT+ajVe3kqpXISTN4lPS3d4Mz+d+s9nZkAKaprGERcHCgCvaA6QBPh4QKUOi00wb6O5zsTR2EfiGH9WAAq+F5YED0YCIV3ZNSbTYPmFmfU1v89nX0kTfTneQ+iu1R4WYeExjM8QJ36PJZ/AZiQ/3AVkjd8ZriH+i4=
+Message-ID: <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
+Date: Thu, 24 Apr 2008 10:31:15 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Samuel Thibault" <samuel.thibault@ens-lyon.org>,
+       "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+In-Reply-To: <20080424001656.GM4825@implementation>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080424064756.935832298@us.ibm.com>
-User-Agent: Mutt/1.5.9i
+References: <20080308022321.GC5853@implementation>
+	 <20080323.215641.192753003.davem@davemloft.net>
+	 <20080324104330.GF4434@implementation.uk.xensource.com>
+	 <87abko734d.fsf@basil.nowhere.org>
+	 <20080324121719.GJ4434@implementation.uk.xensource.com>
+	 <20080324122700.GK4434@implementation.uk.xensource.com>
+	 <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com>
+	 <4808D1C5.8050304@gmail.com> <20080424001656.GM4825@implementation>
+X-Google-Sender-Auth: c1574d3ca6d98496
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-04-23 23:47:57, Matt Helsley wrote:
-> This patch is the first step in making the refrigerator() available 
-> to all architectures, even for those without power management. 
-> 
-> The purpose of such a change is to be able to use the refrigerator() 
-> in a new control group subsystem which will implement a control group
-> freezer.
-> 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+>  > and I see that in net/unix/af_unix.c::unix_getname() there is:
+>  >
+>
+> >                 *uaddr_len = sizeof(short);
+>
+>  I'd say that code should be fixed into using sa_family_t.
 
-ACK.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Is there a patch for this?
