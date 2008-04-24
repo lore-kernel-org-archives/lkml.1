@@ -1,171 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbYDXP06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764493AbYDXP1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764360AbYDXP06 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757977AbYDXPQG
+	id S1764493AbYDXP1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760352AbYDXPQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:16:06 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56707 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:16:22 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56807 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758997AbYDXPQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:16:04 -0400
-Message-Id: <20080424151358.635666823@polymtl.ca>
+	id S1760336AbYDXPQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:16:20 -0400
+Message-Id: <20080424151403.749010234@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:39 -0400
+Date: Thu, 24 Apr 2008 11:03:50 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@muc.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
        akpm@osdl.org
-Subject: [patch 15/37] Immediate Values - x86 Optimization
-Content-Disposition: inline; filename=immediate-values-x86-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:59 +0000
+Subject: [patch 26/37] Scheduler Profiling - Use Immediate Values
+Content-Disposition: inline; filename=scheduler-profiling-use-immediate-values.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86 optimization of the immediate values which uses a movl with code patching
-to set/unset the value used to populate the register used as variable source.
+Use immediate values with lower d-cache hit in optimized version as a
+condition for scheduler profiling call.
 
-Note : a movb needs to get its value froma =q constraint.
-
-Quoting "H. Peter Anvin" <hpa@zytor.com>
-
-Using =r for single-byte values is incorrect for 32-bit code -- that would 
-permit %spl, %bpl, %sil, %dil which are illegal in 32-bit mode.
-
-Changelog:
-- Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
-  non atomic writes to a code region only touched by us (nobody can execute it
-  since we are protected by the imv_mutex).
-- Put imv_set and _imv_set in the architecture independent header.
-- Use $0 instead of %2 with (0) operand.
-- Add x86_64 support, ready for i386+x86_64 -> x86 merge.
-- Use asm-x86/asm.h.
-- Bugfix : 8 bytes 64 bits immediate value was declared as "4 bytes" in the
-  immediate structure.
-- Change the immediate.c update code to support variable length opcodes.
-- Vastly simplified, using a busy looping IPI with interrupts disabled.
-  Does not protect against NMI nor MCE.
-- Pack the __imv section. Use smallest types required for size (char).
+Changelog :
 - Use imv_* instead of immediate_*.
+- Follow the white rabbit : kvm_main.c which becomes x86.c.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <ak@muc.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Chuck Ebbert <cebbert@redhat.com>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
 CC: Rusty Russell <rusty@rustcorp.com.au>
 CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: mingo@elte.hu
 CC: akpm@osdl.org
 ---
- arch/x86/Kconfig            |    1 
- include/asm-x86/immediate.h |   77 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 78 insertions(+)
+ arch/x86/kvm/x86.c      |    2 +-
+ include/linux/profile.h |    5 +++--
+ kernel/profile.c        |   22 +++++++++++-----------
+ kernel/sched_fair.c     |    5 +----
+ 4 files changed, 16 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-sched-devel/include/asm-x86/immediate.h
+Index: linux-2.6-sched-devel/kernel/profile.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-sched-devel/include/asm-x86/immediate.h	2008-04-22 20:22:29.000000000 -0400
-@@ -0,0 +1,77 @@
-+#ifndef _ASM_X86_IMMEDIATE_H
-+#define _ASM_X86_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. x86 architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm.h>
-+
-+/**
-+ * imv_read - read immediate variable
-+ * @name: immediate value name
-+ *
-+ * Reads the value of @name.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _imv_read() instead.
-+ * If size is bigger than the architecture long size, fall back on a memory
-+ * read.
-+ *
-+ * Make sure to populate the initial static 64 bits opcode with a value
-+ * what will generate an instruction with 8 bytes immediate value (not the REX.W
-+ * prefixed one that loads a sign extended 32 bits immediate value in a r64
-+ * register).
-+ */
-+#define imv_read(name)							\
-+	({								\
-+		__typeof__(name##__imv) value;				\
-+		BUILD_BUG_ON(sizeof(value) > 8);			\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
-+				".byte %c2\n\t"				\
-+				".previous\n\t"				\
-+				"mov $0,%0\n\t"				\
-+				"3:\n\t"				\
-+				: "=q" (value)				\
-+				: "i" (&name##__imv),			\
-+				  "i" (sizeof(value)));			\
-+			break;						\
-+		case 2:							\
-+		case 4:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
-+				".byte %c2\n\t"				\
-+				".previous\n\t"				\
-+				"mov $0,%0\n\t"				\
-+				"3:\n\t"				\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv),			\
-+				  "i" (sizeof(value)));			\
-+			break;						\
-+		case 8:							\
-+			if (sizeof(long) < 8) {				\
-+				value = name##__imv;			\
-+				break;					\
-+			}						\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
-+				".byte %c2\n\t"				\
-+				".previous\n\t"				\
-+				"mov $0xFEFEFEFE01010101,%0\n\t" 	\
-+				"3:\n\t"				\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv),			\
-+				  "i" (sizeof(value)));			\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+#endif /* _ASM_X86_IMMEDIATE_H */
-Index: linux-2.6-sched-devel/arch/x86/Kconfig
+--- linux-2.6-sched-devel.orig/kernel/profile.c	2008-04-22 20:04:13.000000000 -0400
++++ linux-2.6-sched-devel/kernel/profile.c	2008-04-22 20:23:26.000000000 -0400
+@@ -40,8 +40,8 @@ static int (*timer_hook)(struct pt_regs 
+ static atomic_t *prof_buffer;
+ static unsigned long prof_len, prof_shift;
+ 
+-int prof_on __read_mostly;
+-EXPORT_SYMBOL_GPL(prof_on);
++DEFINE_IMV(char, prof_on) __read_mostly;
++EXPORT_IMV_SYMBOL_GPL(prof_on);
+ 
+ static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
+ #ifdef CONFIG_SMP
+@@ -59,7 +59,7 @@ static int __init profile_setup(char *st
+ 
+ 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
+ #ifdef CONFIG_SCHEDSTATS
+-		prof_on = SLEEP_PROFILING;
++		imv_set(prof_on, SLEEP_PROFILING);
+ 		if (str[strlen(sleepstr)] == ',')
+ 			str += strlen(sleepstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -72,7 +72,7 @@ static int __init profile_setup(char *st
+ 			"kernel sleep profiling requires CONFIG_SCHEDSTATS\n");
+ #endif /* CONFIG_SCHEDSTATS */
+ 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
+-		prof_on = SCHED_PROFILING;
++		imv_set(prof_on, SCHED_PROFILING);
+ 		if (str[strlen(schedstr)] == ',')
+ 			str += strlen(schedstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -81,7 +81,7 @@ static int __init profile_setup(char *st
+ 			"kernel schedule profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
+-		prof_on = KVM_PROFILING;
++		imv_set(prof_on, KVM_PROFILING);
+ 		if (str[strlen(kvmstr)] == ',')
+ 			str += strlen(kvmstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -91,7 +91,7 @@ static int __init profile_setup(char *st
+ 			prof_shift);
+ 	} else if (get_option(&str, &par)) {
+ 		prof_shift = par;
+-		prof_on = CPU_PROFILING;
++		imv_set(prof_on, CPU_PROFILING);
+ 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	}
+@@ -102,7 +102,7 @@ __setup("profile=", profile_setup);
+ 
+ void __init profile_init(void)
+ {
+-	if (!prof_on)
++	if (!_imv_read(prof_on))
+ 		return;
+ 
+ 	/* only text is profiled */
+@@ -289,7 +289,7 @@ void profile_hits(int type, void *__pc, 
+ 	int i, j, cpu;
+ 	struct profile_hit *hits;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+ 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+@@ -399,7 +399,7 @@ void profile_hits(int type, void *__pc, 
+ {
+ 	unsigned long pc;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+ 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+@@ -556,7 +556,7 @@ static int __init create_hash_tables(voi
+ 	}
+ 	return 0;
+ out_cleanup:
+-	prof_on = 0;
++	imv_set(prof_on, 0);
+ 	smp_mb();
+ 	on_each_cpu(profile_nop, NULL, 0, 1);
+ 	for_each_online_cpu(cpu) {
+@@ -583,7 +583,7 @@ static int __init create_proc_profile(vo
+ {
+ 	struct proc_dir_entry *entry;
+ 
+-	if (!prof_on)
++	if (!_imv_read(prof_on))
+ 		return 0;
+ 	if (create_hash_tables())
+ 		return -1;
+Index: linux-2.6-sched-devel/include/linux/profile.h
 ===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/Kconfig	2008-04-22 20:04:02.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/Kconfig	2008-04-22 20:22:50.000000000 -0400
-@@ -25,6 +25,7 @@ config X86
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
- 	select HAVE_ARCH_KGDB if !X86_VOYAGER
-+	select HAVE_IMMEDIATE
+--- linux-2.6-sched-devel.orig/include/linux/profile.h	2008-04-19 17:41:23.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/profile.h	2008-04-22 20:23:26.000000000 -0400
+@@ -7,10 +7,11 @@
+ #include <linux/init.h>
+ #include <linux/cpumask.h>
+ #include <linux/cache.h>
++#include <linux/immediate.h>
  
+ #include <asm/errno.h>
  
- config GENERIC_LOCKBREAK
+-extern int prof_on __read_mostly;
++DECLARE_IMV(char, prof_on) __read_mostly;
+ 
+ #define CPU_PROFILING	1
+ #define SCHED_PROFILING	2
+@@ -38,7 +39,7 @@ static inline void profile_hit(int type,
+ 	/*
+ 	 * Speedup for the common (no profiling enabled) case:
+ 	 */
+-	if (unlikely(prof_on == type))
++	if (unlikely(imv_read(prof_on) == type))
+ 		profile_hits(type, ip, 1);
+ }
+ 
+Index: linux-2.6-sched-devel/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/sched_fair.c	2008-04-22 20:04:13.000000000 -0400
++++ linux-2.6-sched-devel/kernel/sched_fair.c	2008-04-22 20:23:26.000000000 -0400
+@@ -616,11 +616,8 @@ static void enqueue_sleeper(struct cfs_r
+ 		 * get a milliseconds-range estimation of the amount of
+ 		 * time that the task spent sleeping:
+ 		 */
+-		if (unlikely(prof_on == SLEEP_PROFILING)) {
+-
+-			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
++		profile_hits(SLEEP_PROFILING, (void *)get_wchan(task_of(se)),
+ 				     delta >> 20);
+-		}
+ 		account_scheduler_latency(tsk, delta >> 10, 0);
+ 	}
+ #endif
+Index: linux-2.6-sched-devel/arch/x86/kvm/x86.c
+===================================================================
+--- linux-2.6-sched-devel.orig/arch/x86/kvm/x86.c	2008-04-19 17:41:23.000000000 -0400
++++ linux-2.6-sched-devel/arch/x86/kvm/x86.c	2008-04-22 20:23:26.000000000 -0400
+@@ -2604,7 +2604,7 @@ again:
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING)) {
++	if (unlikely(imv_read(prof_on) == KVM_PROFILING)) {
+ 		kvm_x86_ops->cache_regs(vcpu);
+ 		profile_hit(KVM_PROFILING, (void *)vcpu->arch.rip);
+ 	}
 
 -- 
 Mathieu Desnoyers
