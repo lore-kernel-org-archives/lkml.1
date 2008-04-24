@@ -1,171 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762166AbYDXPTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbYDXPTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762166AbYDXPTg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYDXPOx
+	id S1762323AbYDXPTx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759525AbYDXPOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:53 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56072 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:54 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56074 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759407AbYDXPOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759337AbYDXPOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 11:14:45 -0400
-Message-Id: <20080424151408.991424268@polymtl.ca>
+Message-Id: <20080424151407.215864144@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:04:01 -0400
+Date: Thu, 24 Apr 2008 11:03:57 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org
-Subject: [patch 37/37] LTTng instrumentation net
-Content-Disposition: inline; filename=lttng-instrumentation-net.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:09 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 33/37] LTTng instrumentation fs
+Content-Disposition: inline; filename=lttng-instrumentation-fs.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Network core events.
+Core filesystem events markers.
 
-Added markers :
+Markers added :
 
-net_del_ifa_ipv4
-net_dev_receive
-net_dev_xmit
-net_insert_ifa_ipv4
-net_socket_call
-net_socket_create
-net_socket_recvmsg
-net_socket_sendmsg
+fs_buffer_wait_end
+fs_buffer_wait_start
+fs_close
+fs_exec
+fs_ioctl
+fs_llseek
+fs_lseek
+fs_open
+fs_pollfd
+fs_pread64
+fs_pwrite64
+fs_read
+fs_readv
+fs_select
+fs_write
+fs_writev
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: netdev@vger.kernel.org
+CC: Alexander Viro <viro@zeniv.linux.org.uk>
 ---
- net/core/dev.c     |    6 ++++++
- net/ipv4/devinet.c |    6 ++++++
- net/socket.c       |   19 +++++++++++++++++++
- 3 files changed, 31 insertions(+)
+ fs/buffer.c     |    3 +++
+ fs/compat.c     |    2 ++
+ fs/exec.c       |    2 ++
+ fs/ioctl.c      |    3 +++
+ fs/open.c       |    3 +++
+ fs/read_write.c |   23 +++++++++++++++++++++--
+ fs/select.c     |    5 +++++
+ 7 files changed, 39 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/net/core/dev.c
+Index: linux-2.6-sched-devel/fs/buffer.c
 ===================================================================
---- linux-2.6-lttng.orig/net/core/dev.c	2008-03-27 07:26:26.000000000 -0400
-+++ linux-2.6-lttng/net/core/dev.c	2008-03-27 07:31:44.000000000 -0400
-@@ -119,6 +119,7 @@
- #include <linux/err.h>
- #include <linux/ctype.h>
- #include <linux/if_arp.h>
+--- linux-2.6-sched-devel.orig/fs/buffer.c	2008-04-22 20:04:10.000000000 -0400
++++ linux-2.6-sched-devel/fs/buffer.c	2008-04-22 20:23:31.000000000 -0400
+@@ -41,6 +41,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mpage.h>
+ #include <linux/bit_spinlock.h>
 +#include <linux/marker.h>
  
- #include "net-sysfs.h"
+ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
  
-@@ -1643,6 +1644,8 @@ int dev_queue_xmit(struct sk_buff *skb)
- 	}
+@@ -89,7 +90,9 @@ void unlock_buffer(struct buffer_head *b
+  */
+ void __wait_on_buffer(struct buffer_head * bh)
+ {
++	trace_mark(fs_buffer_wait_start, "bh %p", bh);
+ 	wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
++	trace_mark(fs_buffer_wait_end, "bh %p", bh);
+ }
  
- gso:
-+	trace_mark(net_dev_xmit, "skb %p protocol #2u%hu", skb, skb->protocol);
-+
- 	spin_lock_prefetch(&dev->queue_lock);
- 
- 	/* Disable soft irqs for various locks below. Also
-@@ -2043,6 +2046,9 @@ int netif_receive_skb(struct sk_buff *sk
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
- 
-+	trace_mark(net_dev_receive, "skb %p protocol #2u%hu",
-+		skb, skb->protocol);
-+
- 	skb_reset_network_header(skb);
- 	skb_reset_transport_header(skb);
- 	skb->mac_len = skb->network_header - skb->mac_header;
-Index: linux-2.6-lttng/net/ipv4/devinet.c
+ static void
+Index: linux-2.6-sched-devel/fs/compat.c
 ===================================================================
---- linux-2.6-lttng.orig/net/ipv4/devinet.c	2008-03-27 07:26:26.000000000 -0400
-+++ linux-2.6-lttng/net/ipv4/devinet.c	2008-03-27 07:31:49.000000000 -0400
-@@ -56,6 +56,7 @@
- #include <linux/sysctl.h>
- #endif
- #include <linux/kmod.h>
-+#include <linux/marker.h>
- 
- #include <net/arp.h>
- #include <net/ip.h>
-@@ -258,6 +259,8 @@ static void __inet_del_ifa(struct in_dev
- 		struct in_ifaddr **ifap1 = &ifa1->ifa_next;
- 
- 		while ((ifa = *ifap1) != NULL) {
-+			trace_mark(net_del_ifa_ipv4, "label %s",
-+				ifa->ifa_label);
- 			if (!(ifa->ifa_flags & IFA_F_SECONDARY) &&
- 			    ifa1->ifa_scope <= ifa->ifa_scope)
- 				last_prim = ifa;
-@@ -364,6 +367,9 @@ static int __inet_insert_ifa(struct in_i
- 			}
- 			ifa->ifa_flags |= IFA_F_SECONDARY;
- 		}
-+		trace_mark(net_insert_ifa_ipv4, "label %s address #4u%lu",
-+			ifa->ifa_label,
-+			(unsigned long)ifa->ifa_address);
- 	}
- 
- 	if (!(ifa->ifa_flags & IFA_F_SECONDARY)) {
-Index: linux-2.6-lttng/net/socket.c
-===================================================================
---- linux-2.6-lttng.orig/net/socket.c	2008-03-27 07:26:26.000000000 -0400
-+++ linux-2.6-lttng/net/socket.c	2008-03-27 07:31:57.000000000 -0400
-@@ -85,6 +85,7 @@
- #include <linux/audit.h>
- #include <linux/wireless.h>
- #include <linux/nsproxy.h>
+--- linux-2.6-sched-devel.orig/fs/compat.c	2008-03-27 14:02:05.000000000 -0400
++++ linux-2.6-sched-devel/fs/compat.c	2008-04-22 20:23:31.000000000 -0400
+@@ -50,6 +50,7 @@
+ #include <linux/poll.h>
+ #include <linux/mm.h>
+ #include <linux/eventpoll.h>
 +#include <linux/marker.h>
  
  #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -567,6 +568,11 @@ int sock_sendmsg(struct socket *sock, st
- 	struct sock_iocb siocb;
- 	int ret;
+ #include <asm/mmu_context.h>
+@@ -1401,6 +1402,7 @@ int compat_do_execve(char * filename,
  
-+	trace_mark(net_socket_sendmsg,
-+		"sock %p family %d type %d protocol %d size %zu",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, size);
-+
- 	init_sync_kiocb(&iocb, NULL);
- 	iocb.private = &siocb;
- 	ret = __sock_sendmsg(&iocb, sock, msg, size);
-@@ -650,7 +656,13 @@ int sock_recvmsg(struct socket *sock, st
- 	struct sock_iocb siocb;
- 	int ret;
+ 	retval = search_binary_handler(bprm, regs);
+ 	if (retval >= 0) {
++		trace_mark(fs_exec, "filename %s", filename);
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+Index: linux-2.6-sched-devel/fs/ioctl.c
+===================================================================
+--- linux-2.6-sched-devel.orig/fs/ioctl.c	2008-03-27 14:02:05.000000000 -0400
++++ linux-2.6-sched-devel/fs/ioctl.c	2008-04-22 20:23:31.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include <linux/marker.h>
  
-+	trace_mark(net_socket_recvmsg,
-+		"sock %p family %d type %d protocol %d size %zu",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, size);
-+
- 	init_sync_kiocb(&iocb, NULL);
-+
- 	iocb.private = &siocb;
- 	ret = __sock_recvmsg(&iocb, sock, msg, size, flags);
- 	if (-EIOCBQUEUED == ret)
-@@ -1226,6 +1238,11 @@ asmlinkage long sys_socket(int family, i
- 	if (retval < 0)
- 		goto out_release;
+ #include <asm/ioctls.h>
  
-+	trace_mark(net_socket_create,
-+		"sock %p family %d type %d protocol %d fd %d",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, retval);
+@@ -201,6 +202,8 @@ asmlinkage long sys_ioctl(unsigned int f
+ 	if (!filp)
+ 		goto out;
+ 
++	trace_mark(fs_ioctl, "fd %u cmd %u arg %lu", fd, cmd, arg);
 +
- out:
- 	/* It may be already another descriptor 8) Not kernel problem. */
+ 	error = security_file_ioctl(filp, cmd, arg);
+ 	if (error)
+ 		goto out_fput;
+Index: linux-2.6-sched-devel/fs/open.c
+===================================================================
+--- linux-2.6-sched-devel.orig/fs/open.c	2008-04-22 20:04:11.000000000 -0400
++++ linux-2.6-sched-devel/fs/open.c	2008-04-22 20:23:31.000000000 -0400
+@@ -27,6 +27,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
++#include <linux/marker.h>
+ 
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+@@ -1089,6 +1090,7 @@ long do_sys_open(int dfd, const char __u
+ 				fsnotify_open(f->f_path.dentry);
+ 				fd_install(fd, f);
+ 			}
++			trace_mark(fs_open, "fd %d filename %s", fd, tmp);
+ 		}
+ 		putname(tmp);
+ 	}
+@@ -1178,6 +1180,7 @@ asmlinkage long sys_close(unsigned int f
+ 	filp = fdt->fd[fd];
+ 	if (!filp)
+ 		goto out_unlock;
++	trace_mark(fs_close, "fd %u", fd);
+ 	rcu_assign_pointer(fdt->fd[fd], NULL);
+ 	FD_CLR(fd, fdt->close_on_exec);
+ 	__put_unused_fd(files, fd);
+Index: linux-2.6-sched-devel/fs/read_write.c
+===================================================================
+--- linux-2.6-sched-devel.orig/fs/read_write.c	2008-03-27 14:02:06.000000000 -0400
++++ linux-2.6-sched-devel/fs/read_write.c	2008-04-22 20:23:31.000000000 -0400
+@@ -16,6 +16,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
++#include <linux/marker.h>
+ #include "read_write.h"
+ 
+ #include <asm/uaccess.h>
+@@ -146,6 +147,9 @@ asmlinkage off_t sys_lseek(unsigned int 
+ 		if (res != (loff_t)retval)
+ 			retval = -EOVERFLOW;	/* LFS: should only happen on 32 bit platforms */
+ 	}
++
++	trace_mark(fs_lseek, "fd %u offset %ld origin %u", fd, offset, origin);
++
+ 	fput_light(file, fput_needed);
+ bad:
  	return retval;
-@@ -2024,6 +2041,8 @@ asmlinkage long sys_socketcall(int call,
- 	a0 = a[0];
- 	a1 = a[1];
+@@ -173,6 +177,10 @@ asmlinkage long sys_llseek(unsigned int 
+ 	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
+ 			origin);
  
-+	trace_mark(net_socket_call, "call %d a0 %lu", call, a0);
++	trace_mark(fs_llseek, "fd %u offset %llu origin %u", fd,
++			(unsigned long long)offset,
++			origin);
 +
- 	switch (call) {
- 	case SYS_SOCKET:
- 		err = sys_socket(a0, a1, a[2]);
+ 	retval = (int)offset;
+ 	if (offset >= 0) {
+ 		retval = -EFAULT;
+@@ -359,6 +367,7 @@ asmlinkage ssize_t sys_read(unsigned int
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_read, "fd %u count %zu", fd, count);
+ 		ret = vfs_read(file, buf, count, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -376,6 +385,7 @@ asmlinkage ssize_t sys_write(unsigned in
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_write, "fd %u count %zu", fd, count);
+ 		ret = vfs_write(file, buf, count, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -397,8 +407,12 @@ asmlinkage ssize_t sys_pread64(unsigned 
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PREAD)
++		if (file->f_mode & FMODE_PREAD) {
++			trace_mark(fs_pread64, "fd %u count %zu pos %llu",
++				fd, count, (unsigned long long)pos);
+ 			ret = vfs_read(file, buf, count, &pos);
++		}
++
+ 		fput_light(file, fput_needed);
+ 	}
+ 
+@@ -418,8 +432,11 @@ asmlinkage ssize_t sys_pwrite64(unsigned
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PWRITE)  
++		if (file->f_mode & FMODE_PWRITE) {
++			trace_mark(fs_pwrite64, "fd %u count %zu pos %llu",
++				fd, count, (unsigned long long)pos);
+ 			ret = vfs_write(file, buf, count, &pos);
++		}
+ 		fput_light(file, fput_needed);
+ 	}
+ 
+@@ -663,6 +680,7 @@ sys_readv(unsigned long fd, const struct
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_readv, "fd %lu vlen %lu", fd, vlen);
+ 		ret = vfs_readv(file, vec, vlen, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -684,6 +702,7 @@ sys_writev(unsigned long fd, const struc
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_writev, "fd %lu vlen %lu", fd, vlen);
+ 		ret = vfs_writev(file, vec, vlen, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+Index: linux-2.6-sched-devel/fs/select.c
+===================================================================
+--- linux-2.6-sched-devel.orig/fs/select.c	2008-04-22 20:04:11.000000000 -0400
++++ linux-2.6-sched-devel/fs/select.c	2008-04-22 20:23:31.000000000 -0400
+@@ -23,6 +23,7 @@
+ #include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/rcupdate.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -231,6 +232,9 @@ int do_select(int n, fd_set_bits *fds, s
+ 				file = fget_light(i, &fput_needed);
+ 				if (file) {
+ 					f_op = file->f_op;
++					trace_mark(fs_select,
++							"fd %d timeout #8d%lld",
++							i, (long long)*timeout);
+ 					mask = DEFAULT_POLLMASK;
+ 					if (f_op && f_op->poll)
+ 						mask = (*f_op->poll)(file, retval ? NULL : wait);
+@@ -559,6 +563,7 @@ static inline unsigned int do_pollfd(str
+ 		file = fget_light(fd, &fput_needed);
+ 		mask = POLLNVAL;
+ 		if (file != NULL) {
++			trace_mark(fs_pollfd, "fd %d", fd);
+ 			mask = DEFAULT_POLLMASK;
+ 			if (file->f_op && file->f_op->poll)
+ 				mask = file->f_op->poll(file, pwait);
+Index: linux-2.6-sched-devel/fs/exec.c
+===================================================================
+--- linux-2.6-sched-devel.orig/fs/exec.c	2008-03-27 14:02:05.000000000 -0400
++++ linux-2.6-sched-devel/fs/exec.c	2008-04-22 20:23:31.000000000 -0400
+@@ -51,6 +51,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -1338,6 +1339,7 @@ int do_execve(char * filename,
+ 
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
++		trace_mark(fs_exec, "filename %s", filename);
+ 		/* execve success */
+ 		free_arg_pages(bprm);
+ 		security_bprm_free(bprm);
 
 -- 
 Mathieu Desnoyers
