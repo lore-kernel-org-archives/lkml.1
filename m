@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDXO6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbYDXO65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbYDXO6X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYDXO6O
+	id S1758862AbYDXO65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYDXO6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:58:14 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:60059 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbYDXO6N (ORCPT
+	Thu, 24 Apr 2008 10:58:49 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42711 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753191AbYDXO6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:58:13 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20080424144815.GI15214@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 24 Apr 2008 15:48:15 +0100)
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk>
-Message-Id: <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 24 Apr 2008 16:58:00 +0200
+	Thu, 24 Apr 2008 10:58:48 -0400
+Date: Thu, 24 Apr 2008 15:27:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [2.6 patch] select ATA_SFF
+Message-ID: <20080424152758.789e024c@the-village.bc.nu>
+In-Reply-To: <481080EA.7010107@ru.mvista.com>
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi>
+	<480DE3C4.5@ru.mvista.com>
+	<480DE6F5.8060403@gmail.com>
+	<480DE9E8.2070809@ru.mvista.com>
+	<480DEB1F.5060500@gmail.com>
+	<20080424123541.09e5ef96@the-village.bc.nu>
+	<481080EA.7010107@ru.mvista.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >  You are right - we do have races there.  Always had.
-> > > And nfsd_permission() is the next target for continuation of ro-bind
-> > > series.  Assuming that we don't simply make r/w export to hold will_write
-> > > all along, in which case all these checks around calls of vfs_...() in
-> > > there simply go away - that's also an arguable option.
-> > 
-> > Yes.  And that _still_ doesn't make the path_*() interface wrong.
-> 
-> It would make it bloody useless for nfsd.  With ecryptfs being a piss-poor
-> argument in favour of anything other than git rm, what's left?  Another
-> stack frame in fs/namei.c syscalls?
+>     If you mean SFF-8038i (which can indeed be named "SFF/Intel"), it
+> documents *only* BMDMA.  If you mean something else, please be more precise.
 
-Since all the vfs_* functions will become static with path_* being the
-only caller, the compiler will be happy to get rid of that stack frame
-too.
+It documents where the PIO spaces are mapped, the class codes and then
+documents the rest by inheriting it from the other specs. That makes it
+the definitive spec for PCI "standard" controllers both PIO and DMA and
+it is indeed followed literally by just about every PCI ATA controller
+except the CS5520
 
-What is left is the guarantee, that the race-free r/o remounts will
-always work and some obscure caller didn't forget to surround it with
-the r/o checks.
-
-I think it's definitely worth it.
-
-Miklos
+Alan
