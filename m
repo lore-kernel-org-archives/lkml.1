@@ -1,265 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYDXKyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYDXK7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757974AbYDXKyv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 06:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbYDXKyj
+	id S1756598AbYDXK7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 06:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYDXK7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 06:54:39 -0400
-Received: from rv-out-0708.google.com ([209.85.198.240]:9984 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752234AbYDXKyh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 06:54:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=ijcZv/x3KmsruJ3r97XtMp4ZpbGpLVuFsjYtL5pFUdhoiOvwRcr4C6u2JoeSeHSPH1Mo6NnM6hboC7kbELHBYZQoi0SEzrDsbkPmg0wMdL2VPhaKqil0QbkTw00jdb/jEr5ZBchQH3mTDLgCZiog1V65FMaasOV1vy0ZPCk9mpU=
-Date: Thu, 24 Apr 2008 18:53:57 +0800 (CST)
-Message-Id: <20080424.185357.213760123.xiyou.wangcong@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] UML: make several things static
-From: WANG Cong <xiyou.wangcong@gmail.com>
-In-Reply-To: <20080424.163655.11981438.xiyou.wangcong@gmail.com>
-References: <20080424.163655.11981438.xiyou.wangcong@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 06:59:21 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17485 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751666AbYDXK7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 06:59:20 -0400
+Date: Thu, 24 Apr 2008 12:59:08 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+Message-ID: <20080424105908.GW12774@kernel.dk>
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480E70ED.3030701@rtr.ca> <20080423072432.GX12774@kernel.dk> <480F3CBC.60305@rtr.ca> <20080423135110.GO12774@kernel.dk> <480F4BD9.8090003@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <480F4BD9.8090003@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: WANG Cong <xiyou.wangcong@gmail.com>
-Date: Thu, 24 Apr 2008 16:36:55 +0800 (CST)
+On Wed, Apr 23 2008, Mark Lord wrote:
+> Jens Axboe wrote:
+> >On Wed, Apr 23 2008, Mark Lord wrote:
+> >..
+> >>The second bug, is that for the halt case at least,
+> >>nobody waits for the other CPU to actually halt
+> >>before continuing.. so we sometimes enter the shutdown
+> >>code while other CPUs are still active.
+> >>
+> >>This causes some machines to hang at shutdown,
+> >>unless CPU_HOTPLUG is configured and takes them offline
+> >>before we get here.
+> >
+> >I'm guessing there's a reason it doesn't pass '1' as the last argument,
+> >because that would fix that issue?
+> ..
 > 
-> Make some variables and functions static, since they don't need
-> to be global.
+> Undoubtedly -- perhaps the called CPU halts, and therefore cannot reply.  :)
+
+Uhm yes, I guess stop_this_cpu() does exactly what the name implies :-)
+
+> But some kind of pre-halt ack, perhaps plus a short delay by the caller
+> after receipt of the ack, would probably suffice to kill that bug.
 > 
-> And remove an unused function - arch/um/kernel/time.c::sched_clock().
-> 
+> But I really haven't studied this code enough to know,
+> other than that it historically has been a sticky area
+> to poke around in.
 
-Sorry, Andrew.
-I forgot to run checkpatch for this one. Please use the following one instead.
+Something like this will close the window to right up until the point
+where the other CPUs have 'almost' called halt().
 
-Cc: Jeff Dike <jdike@addtoit.com>
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-
-
----
- arch/um/include/skas/skas.h     |    1 -
- arch/um/include/um_uaccess.h    |    1 -
- arch/um/kernel/physmem.c        |    2 +-
- arch/um/kernel/ptrace.c         |    2 +-
- arch/um/kernel/time.c           |    8 --------
- arch/um/kernel/uaccess.c        |    2 +-
- arch/um/os-Linux/sigio.c        |    2 +-
- arch/um/os-Linux/signal.c       |    2 +-
- arch/um/os-Linux/skas/process.c |    2 +-
- arch/um/os-Linux/umid.c         |    2 +-
- arch/um/sys-i386/bugs.c         |    2 +-
- arch/um/sys-i386/checksum.S     |    5 ++---
- arch/um/sys-i386/ldt.c          |    4 ++--
- include/asm-um/ptrace-generic.h |    3 ---
- 14 files changed, 12 insertions(+), 26 deletions(-)
-
-diff --git a/arch/um/include/skas/skas.h b/arch/um/include/skas/skas.h
-index b073f8a..64d2c74 100644
---- a/arch/um/include/skas/skas.h
-+++ b/arch/um/include/skas/skas.h
-@@ -16,7 +16,6 @@ extern int user_thread(unsigned long stack, int flags);
- extern void new_thread_handler(void);
- extern void handle_syscall(struct uml_pt_regs *regs);
- extern int new_mm(unsigned long stack);
--extern void get_skas_faultinfo(int pid, struct faultinfo * fi);
- extern long execute_syscall_skas(void *r);
- extern unsigned long current_stub_stack(void);
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index 5398385..94ec9bf 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -155,8 +155,9 @@ static void stop_this_cpu(void *dummy)
+ 	/*
+ 	 * Remove this CPU:
+ 	 */
+-	cpu_clear(smp_processor_id(), cpu_online_map);
+ 	disable_local_APIC();
++	cpu_clear(smp_processor_id(), cpu_online_map);
++	smp_wmb();
+ 	if (hlt_works(smp_processor_id()))
+ 		for (;;) halt();
+ 	for (;;);
+@@ -175,6 +176,12 @@ static void native_smp_send_stop(void)
  
-diff --git a/arch/um/include/um_uaccess.h b/arch/um/include/um_uaccess.h
-index 2b6fc8e..45c0499 100644
---- a/arch/um/include/um_uaccess.h
-+++ b/arch/um/include/um_uaccess.h
-@@ -34,7 +34,6 @@ extern int copy_to_user(void __user *to, const void *from, int n);
- 
- extern int __do_copy_to_user(void *to, const void *from, int n,
- 			     void **fault_addr, jmp_buf **fault_catcher);
--extern void __do_copy(void *to, const void *from, int n);
- 
- /*
-  * strncpy_from_user: - Copy a NUL terminated string from userspace.
-diff --git a/arch/um/kernel/physmem.c b/arch/um/kernel/physmem.c
-index 9757085..a1a9090 100644
---- a/arch/um/kernel/physmem.c
-+++ b/arch/um/kernel/physmem.c
-@@ -185,7 +185,7 @@ unsigned long find_iomem(char *driver, unsigned long *len_out)
- 	return 0;
- }
- 
--int setup_iomem(void)
-+static int setup_iomem(void)
- {
- 	struct iomem_region *region = iomem_regions;
- 	unsigned long iomem_start = high_physmem + PAGE_SIZE;
-diff --git a/arch/um/kernel/ptrace.c b/arch/um/kernel/ptrace.c
-index 47b57b4..15e8b7c 100644
---- a/arch/um/kernel/ptrace.c
-+++ b/arch/um/kernel/ptrace.c
-@@ -225,7 +225,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 	return ret;
- }
- 
--void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
-+static void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
- 		  int error_code)
- {
- 	struct siginfo info;
-diff --git a/arch/um/kernel/time.c b/arch/um/kernel/time.c
-index e066e84..353c174 100644
---- a/arch/um/kernel/time.c
-+++ b/arch/um/kernel/time.c
-@@ -12,14 +12,6 @@
- #include "kern_util.h"
- #include "os.h"
- 
--/*
-- * Scheduler clock - returns current time in nanosec units.
-- */
--unsigned long long sched_clock(void)
--{
--	return (unsigned long long)jiffies_64 * (NSEC_PER_SEC / HZ);
--}
--
- void timer_handler(int sig, struct uml_pt_regs *regs)
- {
- 	unsigned long flags;
-diff --git a/arch/um/kernel/uaccess.c b/arch/um/kernel/uaccess.c
-index f0f4b04..dd33f04 100644
---- a/arch/um/kernel/uaccess.c
-+++ b/arch/um/kernel/uaccess.c
-@@ -12,7 +12,7 @@
- #include <linux/string.h>
- #include "os.h"
- 
--void __do_copy(void *to, const void *from, int n)
-+static void __do_copy(void *to, const void *from, int n)
- {
- 	memcpy(to, from, n);
- }
-diff --git a/arch/um/os-Linux/sigio.c b/arch/um/os-Linux/sigio.c
-index abf47a7..07705c1 100644
---- a/arch/um/os-Linux/sigio.c
-+++ b/arch/um/os-Linux/sigio.c
-@@ -523,7 +523,7 @@ static void tty_close(int master, int slave)
- 		printk(UM_KERN_CONT "No, enabling workaround\n");
- }
- 
--void __init check_sigio(void)
-+static void __init check_sigio(void)
- {
- 	if ((access("/dev/ptmx", R_OK) < 0) &&
- 	    (access("/dev/ptyp0", R_OK) < 0)) {
-diff --git a/arch/um/os-Linux/signal.c b/arch/um/os-Linux/signal.c
-index 3f1694b..1a3d233 100644
---- a/arch/um/os-Linux/signal.c
-+++ b/arch/um/os-Linux/signal.c
-@@ -125,7 +125,7 @@ void set_sigstack(void *sig_stack, int size)
- 		panic("enabling signal stack failed, errno = %d\n", errno);
- }
- 
--void (*handlers[_NSIG])(int sig, struct sigcontext *sc);
-+static void (*handlers[_NSIG])(int sig, struct sigcontext *sc);
- 
- void handle_signal(int sig, struct sigcontext *sc)
- {
-diff --git a/arch/um/os-Linux/skas/process.c b/arch/um/os-Linux/skas/process.c
-index 1e8cba6..87d05fb 100644
---- a/arch/um/os-Linux/skas/process.c
-+++ b/arch/um/os-Linux/skas/process.c
-@@ -96,7 +96,7 @@ bad_wait:
- 
- extern unsigned long current_stub_stack(void);
- 
--void get_skas_faultinfo(int pid, struct faultinfo * fi)
-+static void get_skas_faultinfo(int pid, struct faultinfo *fi)
- {
- 	int err;
- 
-diff --git a/arch/um/os-Linux/umid.c b/arch/um/os-Linux/umid.c
-index 106fa86..a27defb 100644
---- a/arch/um/os-Linux/umid.c
-+++ b/arch/um/os-Linux/umid.c
-@@ -245,7 +245,7 @@ int __init set_umid(char *name)
- /* Changed in make_umid, which is called during early boot */
- static int umid_setup = 0;
- 
--int __init make_umid(void)
-+static int __init make_umid(void)
- {
- 	int fd, err;
- 	char tmp[256];
-diff --git a/arch/um/sys-i386/bugs.c b/arch/um/sys-i386/bugs.c
-index a74442d..2c6d0d7 100644
---- a/arch/um/sys-i386/bugs.c
-+++ b/arch/um/sys-i386/bugs.c
-@@ -12,7 +12,7 @@
- #include "sysdep/ptrace.h"
- 
- /* Set during early boot */
--int host_has_cmov = 1;
-+static int host_has_cmov = 1;
- static jmp_buf cmov_test_return;
- 
- static void cmov_sigill_test_handler(int sig)
-diff --git a/arch/um/sys-i386/checksum.S b/arch/um/sys-i386/checksum.S
-index 62c7e56..f058d2f 100644
---- a/arch/um/sys-i386/checksum.S
-+++ b/arch/um/sys-i386/checksum.S
-@@ -243,13 +243,12 @@ unsigned int csum_partial_copy_generic (const char *src, char *dst,
- 	.previous
- 
- .align 4
--.globl csum_partial_copy_generic_i386
--				
+ 	local_irq_save(flags);
+ 	smp_call_function(stop_this_cpu, NULL, 0, 0);
 +
- #ifndef CONFIG_X86_USE_PPRO_CHECKSUM
- 
- #define ARGBASE 16		
- #define FP		12
--		
++	while (cpus_weight(cpu_online_map) > 1) {
++		cpu_relax();
++		smp_rmb();
++	}
 +
- csum_partial_copy_generic_i386:
- 	subl  $4,%esp	
- 	pushl %edi
-diff --git a/arch/um/sys-i386/ldt.c b/arch/um/sys-i386/ldt.c
-index a34263e..a4846a8 100644
---- a/arch/um/sys-i386/ldt.c
-+++ b/arch/um/sys-i386/ldt.c
-@@ -14,8 +14,8 @@
- 
- extern int modify_ldt(int func, void *ptr, unsigned long bytecount);
- 
--long write_ldt_entry(struct mm_id * mm_idp, int func, struct user_desc * desc,
--		     void **addr, int done)
-+static long write_ldt_entry(struct mm_id *mm_idp, int func,
-+		     struct user_desc *desc, void **addr, int done)
- {
- 	long res;
- 
-diff --git a/include/asm-um/ptrace-generic.h b/include/asm-um/ptrace-generic.h
-index 6aefcd3..3157497 100644
---- a/include/asm-um/ptrace-generic.h
-+++ b/include/asm-um/ptrace-generic.h
-@@ -47,9 +47,6 @@ extern int set_fpregs(struct user_i387_struct __user *buf,
- 
- extern void show_regs(struct pt_regs *regs);
- 
--extern void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
--			 int error_code);
--
- extern int arch_copy_tls(struct task_struct *new);
- extern void clear_flushed_tls(struct task_struct *task);
- 
+ 	disable_local_APIC();
+ 	local_irq_restore(flags);
+ }
+
 -- 
-1.5.2.4
+Jens Axboe
 
