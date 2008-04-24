@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbYDXT45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763423AbYDXUKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763940AbYDXT45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYDXT4p
+	id S1763423AbYDXUKM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 16:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbYDXUJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:56:45 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50295 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758295AbYDXT4n (ORCPT
+	Thu, 24 Apr 2008 16:09:58 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:4227 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759056AbYDXUJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:56:43 -0400
-Date: Thu, 24 Apr 2008 15:56:24 -0400
-Message-Id: <200804241956.m3OJuOVE000991@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Miklos Szeredi <miklos@szeredi.hu>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       dave@linux.vnet.ibm.com, mhalcrow@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
-In-reply-to: Your message of "Thu, 24 Apr 2008 18:30:13 BST."
-             <20080424173013.GA5882@ZenIV.linux.org.uk> 
-X-MailKey: Erez_Zadok
+	Thu, 24 Apr 2008 16:09:57 -0400
+X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 16:09:57 EDT
+From: James Cloos <cloos@jhcloos.com>
+To: linux-kernel@vger.kernel.org
+Subject: Regression: starting X locks box with git master
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:080424:linux-kernel@vger.kernel.org::Qe2KxK2fsNSZWLzl:0000000000000000000000000000000000uNf
+Date: Thu, 24 Apr 2008 15:59:49 -0400
+Message-ID: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080424173013.GA5882@ZenIV.linux.org.uk>, Al Viro writes:
-> On Thu, Apr 24, 2008 at 01:25:58PM -0400, Erez Zadok wrote:
-> > Al, any near-term plans for sb-level "want write" locking as we discussed
-> > briefly at LSF?  Being able to do so for copyup in unionfs will hopefully
-> > allow me to prevent concurrent topology changes.
-> 
-> That's pretty close to the top.
-> 
-> > the two directories that need locking.  This rename-locking protocol appears
-> > to be a special case of the sb-level "want write" idea, right?
-> 
-> Not really - that one doesn't provide any exclusion between writers and
-> that's what we want from rename/rename.
+3dc5063786b273f1aee545844f6bd4e9651ebffe was current when I compiled.
 
-When you say "that one", do you mean the sb-level idea?  If the sb-level
-"want write" not provide exclusion among writers, then how can I prevent
-lower topology changes while copyup takes place?
+With that kernel, my laptop locks up as soon as I startx.
 
-If your sb-level "want write" idea won't provide that exclusion at the sb
-level, then how about we elevate the s_vfs_rename_mutex into a generic
-s_vfs_multi_dir_change_mutex of sorts, which can be used by rename as well
-as copyup?
+The Xorg.0.log showed that the radeon driver got as far as starting
+the i2c calls to the M7 video card.
 
-> Take a look at Documentation/filesystems/directory-locking for details
-> of locking scheme...
+After that the box would reply to ICMP pings and SysRq-B, but was
+otherwise non-responsive.  Even SysRq-[KSU] seemed to do nothing.
 
-OK.  lock_rename() at most locks one "parent" and one "child" inodes.  So
-what happens to all the ones in b/t?  Suppose I have a path /a/b/c/d/e/f and
-someone wants to mv /a/b/c/d/e to /a/b/; in that case lock_rename at least
-grabs the mutex on /a/b, right?  Can someone go in the middle and try to
-muck with the "c/d/" parts in between?
+v2.6.25 works fine.
 
->From what I gathered, lock_rename won't be enough for me to prevent topology
-changes during copyup; I'd really need to lock an entire arbitrarily deep
-path of inodes.  That just seems so complex and prone to bugs, that it might
-just be easier to have a single sb-level mutex for these complex
-multi-directory operations.  I'm not sure how much performance hit this'd
-be, thou, and if there's a more efficient way to do so.
+There are 3562 commits (including merges) between those two, and
+it takes an hour or more for each kernel compile.  Bisecting will
+be quite painful.  And I only have the one box to work on.  But I
+will see what I can do.
 
-If you think lock_rename will be sufficient for me to deal with copyups
-vs. topology changes, then I'll start using it.
+Posting before bisecting in case it helps anyone else....
 
-Thanks,
-Erez.
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+
+
