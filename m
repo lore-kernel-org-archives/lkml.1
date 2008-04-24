@@ -1,576 +1,562 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbYDXPQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYDXPQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760561AbYDXPQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759333AbYDXPOj
+	id S1760684AbYDXPQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbYDXPOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:39 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55950 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:42 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56012 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759251AbYDXPOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:14:32 -0400
-Message-Id: <20080424151408.119472116@polymtl.ca>
+	id S1759297AbYDXPOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:14:39 -0400
+Message-Id: <20080424151406.629522363@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:59 -0400
+Date: Thu, 24 Apr 2008 11:03:56 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 35/37] LTTng instrumentation kernel
-Content-Disposition: inline; filename=lttng-instrumentation-kernel.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:08 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [patch 32/37] Port ftrace to markers
+Content-Disposition: inline; filename=port-ftrace-to-markers.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Core kernel events.
+Porting ftrace to the marker infrastructure.
 
-*not* present in this patch because they are architecture specific :
-- syscall entry/exit
-- traps
-- kernel thread creation
-
-Added markers :
-
-kernel_irq_entry
-kernel_irq_exit
-kernel_kthread_stop
-kernel_kthread_stop_ret
-kernel_module_free
-kernel_module_load
-kernel_printk
-kernel_process_exit
-kernel_process_fork
-kernel_process_free
-kernel_process_wait
-kernel_sched_migrate_task
-kernel_sched_schedule
-kernel_sched_try_wakeup
-kernel_sched_wait_task
-kernel_sched_wakeup_new_task
-kernel_send_signal
-kernel_softirq_entry
-kernel_softirq_exit
-kernel_softirq_raise
-kernel_tasklet_high_entry
-kernel_tasklet_high_exit
-kernel_tasklet_low_entry
-kernel_tasklet_low_exit
-kernel_timer_itimer_expired
-kernel_timer_itimer_set
-kernel_timer_set
-kernel_timer_timeout
-kernel_timer_update_time
-kernel_vprintk
-locking_hardirqs_off
-locking_hardirqs_on
-locking_lock_acquire
-locking_lock_release
-locking_softirqs_off
-locking_softirqs_on
+Don't need to chain to the wakeup tracer from the sched tracer, because markers
+support multiple probes connected.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/exit.c       |    8 ++++++++
- kernel/fork.c       |    5 +++++
- kernel/irq/handle.c |    7 +++++++
- kernel/itimer.c     |   13 +++++++++++++
- kernel/kthread.c    |    5 +++++
- kernel/lockdep.c    |   20 ++++++++++++++++++++
- kernel/module.c     |    5 +++++
- kernel/printk.c     |   27 +++++++++++++++++++++++++++
- kernel/sched.c      |    5 +++++
- kernel/signal.c     |    3 +++
- kernel/softirq.c    |   23 +++++++++++++++++++++++
- kernel/timer.c      |   13 ++++++++++++-
- 12 files changed, 133 insertions(+), 1 deletion(-)
+ include/linux/sched.h             |   32 -------
+ kernel/sched.c                    |   14 ++-
+ kernel/trace/trace.h              |   20 ----
+ kernel/trace/trace_sched_switch.c |  173 +++++++++++++++++++++++++++++++-------
+ kernel/trace/trace_sched_wakeup.c |  108 ++++++++++++++++++++++-
+ 5 files changed, 257 insertions(+), 90 deletions(-)
 
-Index: linux-2.6-sched-devel/kernel/irq/handle.c
+Index: linux-2.6-sched-devel/include/linux/sched.h
 ===================================================================
---- linux-2.6-sched-devel.orig/kernel/irq/handle.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/irq/handle.c	2008-04-24 11:00:49.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/random.h>
- #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
-+#include <linux/marker.h>
- 
- #include "internals.h"
- 
-@@ -130,6 +131,10 @@ irqreturn_t handle_IRQ_event(unsigned in
- {
- 	irqreturn_t ret, retval = IRQ_NONE;
- 	unsigned int status = 0;
-+	struct pt_regs *regs = get_irq_regs();
-+
-+	trace_mark(kernel_irq_entry, "irq_id %u kernel_mode %u", irq,
-+		(regs)?(!user_mode(regs)):(1));
- 
- 	handle_dynamic_tick(action);
- 
-@@ -148,6 +153,8 @@ irqreturn_t handle_IRQ_event(unsigned in
- 		add_interrupt_randomness(irq);
- 	local_irq_disable();
- 
-+	trace_mark(kernel_irq_exit, MARK_NOARGS);
-+
- 	return retval;
+--- linux-2.6-sched-devel.orig/include/linux/sched.h	2008-04-24 11:00:30.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/sched.h	2008-04-24 11:00:41.000000000 -0400
+@@ -2080,38 +2080,6 @@ __trace_special(void *__tr, void *__data
  }
+ #endif
  
-Index: linux-2.6-sched-devel/kernel/itimer.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/itimer.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/itimer.c	2008-04-24 11:00:49.000000000 -0400
-@@ -12,6 +12,7 @@
- #include <linux/time.h>
- #include <linux/posix-timers.h>
- #include <linux/hrtimer.h>
-+#include <linux/marker.h>
+-#ifdef CONFIG_CONTEXT_SWITCH_TRACER
+-extern void
+-ftrace_ctx_switch(void *rq, struct task_struct *prev, struct task_struct *next);
+-extern void
+-ftrace_wake_up_task(void *rq, struct task_struct *wakee,
+-		    struct task_struct *curr);
+-extern void ftrace_all_fair_tasks(void *__rq, void *__tr, void *__data);
+-extern void
+-ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
+-#else
+-static inline void
+-ftrace_ctx_switch(void *rq, struct task_struct *prev, struct task_struct *next)
+-{
+-}
+-static inline void
+-sched_trace_special(unsigned long p1, unsigned long p2, unsigned long p3)
+-{
+-}
+-static inline void
+-ftrace_wake_up_task(void *rq, struct task_struct *wakee,
+-		    struct task_struct *curr)
+-{
+-}
+-static inline void ftrace_all_fair_tasks(void *__rq, void *__tr, void *__data)
+-{
+-}
+-static inline void
+-ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3)
+-{
+-}
+-#endif
+-
+ extern long sched_setaffinity(pid_t pid, const cpumask_t *new_mask);
+ extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
  
- #include <asm/uaccess.h>
- 
-@@ -132,6 +133,9 @@ enum hrtimer_restart it_real_fn(struct h
- 	struct signal_struct *sig =
- 		container_of(timer, struct signal_struct, real_timer);
- 
-+	trace_mark(kernel_timer_itimer_expired, "pid %d",
-+		pid_nr(sig->leader_pid));
-+
- 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
- 
- 	return HRTIMER_NORESTART;
-@@ -157,6 +161,15 @@ int do_setitimer(int which, struct itime
- 	    !timeval_valid(&value->it_interval))
- 		return -EINVAL;
- 
-+	trace_mark(kernel_timer_itimer_set,
-+			"which %d interval_sec %ld interval_usec %ld "
-+			"value_sec %ld value_usec %ld",
-+			which,
-+			value->it_interval.tv_sec,
-+			value->it_interval.tv_usec,
-+			value->it_value.tv_sec,
-+			value->it_value.tv_usec);
-+
- 	switch (which) {
- 	case ITIMER_REAL:
- again:
-Index: linux-2.6-sched-devel/kernel/kthread.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/kthread.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/kthread.c	2008-04-24 11:00:49.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/mutex.h>
- #include <linux/cpumask.h>
- #include <linux/cpuset.h>
-+#include <linux/marker.h>
- 
- #define KTHREAD_NICE_LEVEL (-5)
- 
-@@ -207,6 +208,8 @@ int kthread_stop(struct task_struct *k)
- 	/* It could exit after stop_info.k set, but before wake_up_process. */
- 	get_task_struct(k);
- 
-+	trace_mark(kernel_kthread_stop, "pid %d", k->pid);
-+
- 	/* Must init completion *before* thread sees kthread_stop_info.k */
- 	init_completion(&kthread_stop_info.done);
- 	smp_wmb();
-@@ -222,6 +225,8 @@ int kthread_stop(struct task_struct *k)
- 	ret = kthread_stop_info.err;
- 	mutex_unlock(&kthread_stop_lock);
- 
-+	trace_mark(kernel_kthread_stop_ret, "ret %d", ret);
-+
- 	return ret;
- }
- EXPORT_SYMBOL(kthread_stop);
-Index: linux-2.6-sched-devel/kernel/lockdep.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/lockdep.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/lockdep.c	2008-04-24 11:00:49.000000000 -0400
-@@ -40,6 +40,7 @@
- #include <linux/utsname.h>
- #include <linux/hash.h>
- #include <linux/ftrace.h>
-+#include <linux/marker.h>
- 
- #include <asm/sections.h>
- 
-@@ -2024,6 +2025,9 @@ void trace_hardirqs_on_caller(unsigned l
- 
- 	time_hardirqs_on(CALLER_ADDR0, a0);
- 
-+	_trace_mark(locking_hardirqs_on, "ip #p%lu",
-+		(unsigned long) __builtin_return_address(0));
-+
- 	if (unlikely(!debug_locks || current->lockdep_recursion))
- 		return;
- 
-@@ -2078,6 +2082,9 @@ void trace_hardirqs_off_caller(unsigned 
- 
- 	time_hardirqs_off(CALLER_ADDR0, a0);
- 
-+	_trace_mark(locking_hardirqs_off, "ip #p%lu",
-+		(unsigned long) __builtin_return_address(0));
-+
- 	if (unlikely(!debug_locks || current->lockdep_recursion))
- 		return;
- 
-@@ -2110,6 +2117,9 @@ void trace_softirqs_on(unsigned long ip)
- {
- 	struct task_struct *curr = current;
- 
-+	_trace_mark(locking_softirqs_on, "ip #p%lu",
-+		(unsigned long) __builtin_return_address(0));
-+
- 	if (unlikely(!debug_locks))
- 		return;
- 
-@@ -2144,6 +2154,9 @@ void trace_softirqs_off(unsigned long ip
- {
- 	struct task_struct *curr = current;
- 
-+	_trace_mark(locking_softirqs_off, "ip #p%lu",
-+		(unsigned long) __builtin_return_address(0));
-+
- 	if (unlikely(!debug_locks))
- 		return;
- 
-@@ -2376,6 +2389,10 @@ static int __lock_acquire(struct lockdep
- 	int chain_head = 0;
- 	u64 chain_key;
- 
-+	_trace_mark(locking_lock_acquire,
-+		"ip #p%lu subclass %u lock %p trylock %d",
-+		ip, subclass, lock, trylock);
-+
- 	if (!prove_locking)
- 		check = 1;
- 
-@@ -2649,6 +2666,9 @@ __lock_release(struct lockdep_map *lock,
- {
- 	struct task_struct *curr = current;
- 
-+	_trace_mark(locking_lock_release, "ip #p%lu lock %p nested %d",
-+		ip, lock, nested);
-+
- 	if (!check_unlock(curr, lock, ip))
- 		return;
- 
-Index: linux-2.6-sched-devel/kernel/printk.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/printk.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/printk.c	2008-04-24 11:00:49.000000000 -0400
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
-+#include <linux/marker.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -607,6 +608,7 @@ asmlinkage int printk(const char *fmt, .
- 	int r;
- 
- 	va_start(args, fmt);
-+	trace_mark(kernel_printk, "ip %p", __builtin_return_address(0));
- 	r = vprintk(fmt, args);
- 	va_end(args);
- 
-@@ -683,6 +685,31 @@ asmlinkage int vprintk(const char *fmt, 
- 	raw_local_irq_save(flags);
- 	this_cpu = smp_processor_id();
- 
-+	if (printed_len > 0) {
-+		unsigned int loglevel;
-+		int mark_len;
-+		char *mark_buf;
-+		char saved_char;
-+
-+		if (printk_buf[0] == '<' && printk_buf[1] >= '0' &&
-+		   printk_buf[1] <= '7' && printk_buf[2] == '>') {
-+			loglevel = printk_buf[1] - '0';
-+			mark_buf = &printk_buf[3];
-+			mark_len = printed_len - 3;
-+		} else {
-+			loglevel = default_message_loglevel;
-+			mark_buf = printk_buf;
-+			mark_len = printed_len;
-+		}
-+		if (mark_buf[mark_len - 1] == '\n')
-+			mark_len--;
-+		saved_char = mark_buf[mark_len];
-+		mark_buf[mark_len] = '\0';
-+		_trace_mark(kernel_vprintk, "loglevel %c string %s ip %p",
-+			loglevel, mark_buf, __builtin_return_address(0));
-+		mark_buf[mark_len] = saved_char;
-+	}
-+
- 	/*
- 	 * Ouch, printk recursed into itself!
- 	 */
 Index: linux-2.6-sched-devel/kernel/sched.c
 ===================================================================
---- linux-2.6-sched-devel.orig/kernel/sched.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/sched.c	2008-04-24 11:00:49.000000000 -0400
-@@ -71,6 +71,7 @@
- #include <linux/debugfs.h>
- #include <linux/ctype.h>
+--- linux-2.6-sched-devel.orig/kernel/sched.c	2008-04-24 11:00:30.000000000 -0400
++++ linux-2.6-sched-devel/kernel/sched.c	2008-04-24 11:01:35.000000000 -0400
+@@ -2618,7 +2618,9 @@ out_activate:
+ 	success = 1;
+ 
+ out_running:
+-	ftrace_wake_up_task(rq, p, rq->curr);
++	trace_mark(kernel_sched_wakeup,
++		"pid %d state %ld ## rq %p task %p rq->curr %p",
++		p->pid, p->state, rq, p, rq->curr);
+ 	check_preempt_curr(rq, p);
+ 
+ 	p->state = TASK_RUNNING;
+@@ -2749,7 +2751,9 @@ void wake_up_new_task(struct task_struct
+ 		p->sched_class->task_new(rq, p);
+ 		inc_nr_running(rq);
+ 	}
+-	ftrace_wake_up_task(rq, p, rq->curr);
++	trace_mark(kernel_sched_wakeup_new,
++		"pid %d state %ld ## rq %p task %p rq->curr %p",
++		p->pid, p->state, rq, p, rq->curr);
+ 	check_preempt_curr(rq, p);
+ #ifdef CONFIG_SMP
+ 	if (p->sched_class->task_wake_up)
+@@ -2922,7 +2926,11 @@ context_switch(struct rq *rq, struct tas
+ 	struct mm_struct *mm, *oldmm;
+ 
+ 	prepare_task_switch(rq, prev, next);
+-	ftrace_ctx_switch(rq, prev, next);
++	trace_mark(kernel_sched_schedule,
++		"prev_pid %d next_pid %d prev_state %ld "
++		"## rq %p prev %p next %p",
++		prev->pid, next->pid, prev->state,
++		rq, prev, next);
+ 	mm = next->mm;
+ 	oldmm = prev->active_mm;
+ 	/*
+Index: linux-2.6-sched-devel/kernel/trace/trace.h
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/trace/trace.h	2008-04-24 11:00:30.000000000 -0400
++++ linux-2.6-sched-devel/kernel/trace/trace.h	2008-04-24 11:00:41.000000000 -0400
+@@ -240,25 +240,10 @@ void update_max_tr_single(struct trace_a
+ 
+ extern cycle_t ftrace_now(int cpu);
+ 
+-#ifdef CONFIG_SCHED_TRACER
+-extern void
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next);
+-extern void
+-wakeup_sched_wakeup(struct task_struct *wakee, struct task_struct *curr);
+-#else
+-static inline void
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next)
+-{
+-}
+-static inline void
+-wakeup_sched_wakeup(struct task_struct *wakee, struct task_struct *curr)
+-{
+-}
+-#endif
+-
+ #ifdef CONFIG_CONTEXT_SWITCH_TRACER
+ typedef void
+ (*tracer_switch_func_t)(void *private,
++			void *__rq,
+ 			struct task_struct *prev,
+ 			struct task_struct *next);
+ 
+@@ -268,9 +253,6 @@ struct tracer_switch_ops {
+ 	struct tracer_switch_ops	*next;
+ };
+ 
+-extern int register_tracer_switch(struct tracer_switch_ops *ops);
+-extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
+-
+ #endif /* CONFIG_CONTEXT_SWITCH_TRACER */
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+Index: linux-2.6-sched-devel/kernel/trace/trace_sched_switch.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/trace/trace_sched_switch.c	2008-04-24 11:00:30.000000000 -0400
++++ linux-2.6-sched-devel/kernel/trace/trace_sched_switch.c	2008-04-24 11:00:41.000000000 -0400
+@@ -16,11 +16,14 @@
+ 
+ static struct trace_array	*ctx_trace;
+ static int __read_mostly	tracer_enabled;
++static atomic_t			sched_ref;
+ 
+ static void
+-ctx_switch_func(void *__rq, struct task_struct *prev, struct task_struct *next)
++sched_switch_func(void *private, void *__rq, struct task_struct *prev,
++			struct task_struct *next)
+ {
+-	struct trace_array *tr = ctx_trace;
++	struct trace_array **ptr = private;
++	struct trace_array *tr = *ptr;
+ 	struct trace_array_cpu *data;
+ 	unsigned long flags;
+ 	long disabled;
+@@ -41,10 +44,40 @@ ctx_switch_func(void *__rq, struct task_
+ 	local_irq_restore(flags);
+ }
+ 
++static notrace void
++sched_switch_callback(void *probe_data, void *call_data,
++		      const char *format, va_list *args)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	struct rq *__rq;
++
++	if (!atomic_read(&sched_ref))
++		return;
++
++	/* skip prev_pid %d next_pid %d prev_state %ld */
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, long);
++	__rq = va_arg(*args, typeof(__rq));
++	prev = va_arg(*args, typeof(prev));
++	next = va_arg(*args, typeof(next));
++
++	tracing_record_cmdline(prev);
++
++	/*
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
++	 */
++	sched_switch_func(probe_data, __rq, prev, next);
++}
++
+ static void
+-wakeup_func(void *__rq, struct task_struct *wakee, struct task_struct *curr)
++wakeup_func(void *private, void *__rq, struct task_struct *wakee, struct
++			task_struct *curr)
+ {
+-	struct trace_array *tr = ctx_trace;
++	struct trace_array **ptr = private;
++	struct trace_array *tr = *ptr;
+ 	struct trace_array_cpu *data;
+ 	unsigned long flags;
+ 	long disabled;
+@@ -67,35 +100,29 @@ wakeup_func(void *__rq, struct task_stru
+ 	local_irq_restore(flags);
+ }
+ 
+-void
+-ftrace_ctx_switch(void *__rq, struct task_struct *prev,
+-		  struct task_struct *next)
+-{
+-	if (unlikely(atomic_read(&trace_record_cmdline_enabled)))
+-		tracing_record_cmdline(prev);
++static notrace void
++wake_up_callback(void *probe_data, void *call_data,
++		 const char *format, va_list *args)
++{
++	struct task_struct *curr;
++	struct task_struct *task;
++	struct rq *__rq;
+ 
+-	/*
+-	 * If tracer_switch_func only points to the local
+-	 * switch func, it still needs the ptr passed to it.
+-	 */
+-	ctx_switch_func(__rq, prev, next);
++	if (likely(!tracer_enabled))
++		return;
+ 
+-	/*
+-	 * Chain to the wakeup tracer (this is a NOP if disabled):
+-	 */
+-	wakeup_sched_switch(prev, next);
+-}
++	/* Skip pid %d state %ld */
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, long);
++	/* now get the meat: "rq %p task %p rq->curr %p" */
++	__rq = va_arg(*args, typeof(__rq));
++	task = va_arg(*args, typeof(task));
++	curr = va_arg(*args, typeof(curr));
+ 
+-void
+-ftrace_wake_up_task(void *__rq, struct task_struct *wakee,
+-		    struct task_struct *curr)
+-{
+-	wakeup_func(__rq, wakee, curr);
++	tracing_record_cmdline(task);
++	tracing_record_cmdline(curr);
+ 
+-	/*
+-	 * Chain to the wakeup tracer (this is a NOP if disabled):
+-	 */
+-	wakeup_sched_wakeup(wakee, curr);
++	wakeup_func(probe_data, __rq, task, curr);
+ }
+ 
+ void
+@@ -132,15 +159,95 @@ static void sched_switch_reset(struct tr
+ 		tracing_reset(tr->data[cpu]);
+ }
+ 
++static int tracing_sched_register(void)
++{
++	int ret;
++
++	ret = marker_probe_register("kernel_sched_wakeup",
++			"pid %d state %ld ## rq %p task %p rq->curr %p",
++			wake_up_callback,
++			&ctx_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup\n");
++		return ret;
++	}
++
++	ret = marker_probe_register("kernel_sched_wakeup_new",
++			"pid %d state %ld ## rq %p task %p rq->curr %p",
++			wake_up_callback,
++			&ctx_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup_new\n");
++		goto fail_deprobe;
++	}
++
++	ret = marker_probe_register("kernel_sched_schedule",
++		"prev_pid %d next_pid %d prev_state %ld "
++		"## rq %p prev %p next %p",
++		sched_switch_callback,
++		&ctx_trace);
++	if (ret) {
++		pr_info("sched trace: Couldn't add marker"
++			" probe to kernel_sched_schedule\n");
++		goto fail_deprobe_wake_new;
++	}
++
++	return ret;
++fail_deprobe_wake_new:
++	marker_probe_unregister("kernel_sched_wakeup_new",
++				wake_up_callback,
++				&ctx_trace);
++fail_deprobe:
++	marker_probe_unregister("kernel_sched_wakeup",
++				wake_up_callback,
++				&ctx_trace);
++	return ret;
++}
++
++static void tracing_sched_unregister(void)
++{
++	marker_probe_unregister("kernel_sched_schedule",
++				sched_switch_callback,
++				&ctx_trace);
++	marker_probe_unregister("kernel_sched_wakeup_new",
++				wake_up_callback,
++				&ctx_trace);
++	marker_probe_unregister("kernel_sched_wakeup",
++				wake_up_callback,
++				&ctx_trace);
++}
++
++void tracing_start_sched_switch(void)
++{
++	long ref;
++
++	ref = atomic_inc_return(&sched_ref);
++	if (ref == 1)
++		tracing_sched_register();
++}
++
++void tracing_stop_sched_switch(void)
++{
++	long ref;
++
++	ref = atomic_dec_and_test(&sched_ref);
++	if (ref)
++		tracing_sched_unregister();
++}
++
+ static void start_sched_trace(struct trace_array *tr)
+ {
+ 	sched_switch_reset(tr);
+ 	atomic_inc(&trace_record_cmdline_enabled);
+ 	tracer_enabled = 1;
++	tracing_start_sched_switch();
+ }
+ 
+ static void stop_sched_trace(struct trace_array *tr)
+ {
++	tracing_stop_sched_switch();
+ 	atomic_dec(&trace_record_cmdline_enabled);
+ 	tracer_enabled = 0;
+ }
+@@ -181,6 +288,14 @@ static struct tracer sched_switch_trace 
+ 
+ __init static int init_sched_switch_trace(void)
+ {
++	int ret = 0;
++
++	if (atomic_read(&sched_ref))
++		ret = tracing_sched_register();
++	if (ret) {
++		pr_info("error registering scheduler trace\n");
++		return ret;
++	}
+ 	return register_tracer(&sched_switch_trace);
+ }
+ device_initcall(init_sched_switch_trace);
+Index: linux-2.6-sched-devel/kernel/trace/trace_sched_wakeup.c
+===================================================================
+--- linux-2.6-sched-devel.orig/kernel/trace/trace_sched_wakeup.c	2008-04-24 11:00:30.000000000 -0400
++++ linux-2.6-sched-devel/kernel/trace/trace_sched_wakeup.c	2008-04-24 11:00:41.000000000 -0400
+@@ -15,6 +15,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/uaccess.h>
  #include <linux/ftrace.h>
 +#include <linux/marker.h>
  
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -2275,6 +2276,8 @@ void wait_task_inactive(struct task_stru
- 		 * just go back and repeat.
- 		 */
- 		rq = task_rq_lock(p, &flags);
-+		trace_mark(kernel_sched_wait_task, "pid %d state %ld",
-+			p->pid, p->state);
- 		running = task_running(rq, p);
- 		on_rq = p->se.on_rq;
- 		task_rq_unlock(rq, &flags);
-@@ -3163,6 +3166,8 @@ static void sched_migrate_task(struct ta
- 	    || unlikely(cpu_is_offline(dest_cpu)))
- 		goto out;
+ #include "trace.h"
  
-+	trace_mark(kernel_sched_migrate_task, "pid %d state %ld dest_cpu %d",
-+		p->pid, p->state, dest_cpu);
- 	/* force the process onto the specified CPU */
- 	if (migrate_task(p, dest_cpu, &req)) {
- 		/* Need to wait for migration thread (might exit: take ref). */
-Index: linux-2.6-sched-devel/kernel/signal.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/signal.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/signal.c	2008-04-24 11:00:49.000000000 -0400
-@@ -26,6 +26,7 @@
- #include <linux/freezer.h>
- #include <linux/pid_namespace.h>
- #include <linux/nsproxy.h>
-+#include <linux/marker.h>
- 
- #include <asm/param.h>
- #include <asm/uaccess.h>
-@@ -663,6 +664,8 @@ static int send_signal(int sig, struct s
- 	struct sigqueue * q = NULL;
- 	int ret = 0;
- 
-+	trace_mark(kernel_send_signal, "pid %d signal %d", t->pid, sig);
-+
- 	/*
- 	 * Deliver the signal to listening signalfds. This must be called
- 	 * with the sighand lock held.
-Index: linux-2.6-sched-devel/kernel/softirq.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/softirq.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/softirq.c	2008-04-24 11:00:49.000000000 -0400
-@@ -21,6 +21,7 @@
- #include <linux/rcupdate.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include <linux/marker.h>
- 
- #include <asm/irq.h>
- /*
-@@ -231,7 +232,15 @@ restart:
- 
- 	do {
- 		if (pending & 1) {
-+			trace_mark(kernel_softirq_entry, "softirq_id %lu",
-+				((unsigned long)h
-+					- (unsigned long)softirq_vec)
-+					/ sizeof(*h));
- 			h->action(h);
-+			trace_mark(kernel_softirq_exit, "softirq_id %lu",
-+				((unsigned long)h
-+					- (unsigned long)softirq_vec)
-+					/ sizeof(*h));
- 			rcu_bh_qsctr_inc(cpu);
- 		}
- 		h++;
-@@ -323,6 +332,8 @@ void irq_exit(void)
-  */
- inline void raise_softirq_irqoff(unsigned int nr)
- {
-+	trace_mark(kernel_softirq_raise, "softirq_id %u", nr);
-+
- 	__raise_softirq_irqoff(nr);
- 
- 	/*
-@@ -412,7 +423,13 @@ static void tasklet_action(struct softir
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_mark(kernel_tasklet_low_entry,
-+						"func %p data %lu",
-+						t->func, t->data);
- 				t->func(t->data);
-+				trace_mark(kernel_tasklet_low_exit,
-+						"func %p data %lu",
-+						t->func, t->data);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-@@ -447,7 +464,13 @@ static void tasklet_hi_action(struct sof
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_mark(kernel_tasklet_high_entry,
-+						"func %p data %lu",
-+						t->func, t->data);
- 				t->func(t->data);
-+				trace_mark(kernel_tasklet_high_exit,
-+						"func %p data %lu",
-+						t->func, t->data);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-Index: linux-2.6-sched-devel/kernel/timer.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/timer.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/timer.c	2008-04-24 11:00:49.000000000 -0400
-@@ -37,12 +37,14 @@
- #include <linux/delay.h>
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
-+#include <linux/marker.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include <asm/div64.h>
- #include <asm/timex.h>
- #include <asm/io.h>
-+#include <asm/irq_regs.h>
- 
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
- 
-@@ -288,6 +290,8 @@ static void internal_add_timer(struct tv
- 		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
- 		vec = base->tv5.vec + i;
- 	}
-+	trace_mark(kernel_timer_set, "expires %lu function %p data %lu",
-+		expires, timer->function, timer->data);
- 	/*
- 	 * Timers are FIFO:
- 	 */
-@@ -940,6 +944,11 @@ void do_timer(unsigned long ticks)
- {
- 	jiffies_64 += ticks;
- 	update_times(ticks);
-+	trace_mark(kernel_timer_update_time,
-+		"jiffies #8u%llu xtime_sec %ld xtime_nsec %ld "
-+		"walltomonotonic_sec %ld walltomonotonic_nsec %ld",
-+		(unsigned long long)jiffies_64, xtime.tv_sec, xtime.tv_nsec,
-+		wall_to_monotonic.tv_sec, wall_to_monotonic.tv_nsec);
+@@ -44,11 +45,13 @@ static int report_latency(cycle_t delta)
+ 	return 1;
  }
  
- #ifdef __ARCH_WANT_SYS_ALARM
-@@ -1021,7 +1030,9 @@ asmlinkage long sys_getegid(void)
- 
- static void process_timeout(unsigned long __data)
+-void
+-wakeup_sched_switch(struct task_struct *prev, struct task_struct *next)
++static void notrace
++wakeup_sched_switch(void *private, void *rq, struct task_struct *prev,
++	struct task_struct *next)
  {
--	wake_up_process((struct task_struct *)__data);
-+	struct task_struct *task = (struct task_struct *)__data;
-+	trace_mark(kernel_timer_timeout, "pid %d", task->pid);
-+	wake_up_process(task);
+ 	unsigned long latency = 0, t0 = 0, t1 = 0;
+-	struct trace_array *tr = wakeup_trace;
++	struct trace_array **ptr = private;
++	struct trace_array *tr = *ptr;
+ 	struct trace_array_cpu *data;
+ 	cycle_t T0, T1, delta;
+ 	unsigned long flags;
+@@ -113,6 +116,31 @@ out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
  }
  
- /**
-Index: linux-2.6-sched-devel/kernel/exit.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/exit.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/exit.c	2008-04-24 11:01:06.000000000 -0400
-@@ -44,6 +44,7 @@
- #include <linux/resource.h>
- #include <linux/blkdev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/marker.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -137,6 +138,8 @@ static void __exit_signal(struct task_st
- 
- static void delayed_put_task_struct(struct rcu_head *rhp)
++static notrace void
++sched_switch_callback(void *probe_data, void *call_data,
++		      const char *format, va_list *args)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	struct rq *__rq;
++
++	/* skip prev_pid %d next_pid %d prev_state %ld */
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, long);
++	__rq = va_arg(*args, typeof(__rq));
++	prev = va_arg(*args, typeof(prev));
++	next = va_arg(*args, typeof(next));
++
++	tracing_record_cmdline(prev);
++
++	/*
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
++	 */
++	wakeup_sched_switch(probe_data, __rq, prev, next);
++}
++
+ static void __wakeup_reset(struct trace_array *tr)
  {
-+	trace_mark(kernel_process_free, "pid %d",
-+		container_of(rhp, struct task_struct, rcu)->pid);
- 	put_task_struct(container_of(rhp, struct task_struct, rcu));
+ 	struct trace_array_cpu *data;
+@@ -188,19 +216,68 @@ out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
  }
  
-@@ -951,6 +954,9 @@ NORET_TYPE void do_exit(long code)
- 
- 	if (group_dead)
- 		acct_process();
+-void wakeup_sched_wakeup(struct task_struct *wakee, struct task_struct *curr)
+-{
++static notrace void
++wake_up_callback(void *probe_data, void *call_data,
++		 const char *format, va_list *args)
++{
++	struct trace_array **ptr = probe_data;
++	struct trace_array *tr = *ptr;
++	struct task_struct *curr;
++	struct task_struct *task;
++	struct rq *__rq;
 +
-+	trace_mark(kernel_process_exit, "pid %d", tsk->pid);
+ 	if (likely(!tracer_enabled))
+ 		return;
+ 
++	/* Skip pid %d state %ld */
++	(void)va_arg(*args, int);
++	(void)va_arg(*args, long);
++	/* now get the meat: "rq %p task %p rq->curr %p" */
++	__rq = va_arg(*args, typeof(__rq));
++	task = va_arg(*args, typeof(task));
++	curr = va_arg(*args, typeof(curr));
 +
- 	exit_sem(tsk);
- 	exit_files(tsk);
- 	exit_fs(tsk);
-@@ -1435,6 +1441,8 @@ static long do_wait(enum pid_type type, 
- 	struct task_struct *tsk;
- 	int flag, retval;
++	tracing_record_cmdline(task);
+ 	tracing_record_cmdline(curr);
+-	tracing_record_cmdline(wakee);
  
-+	trace_mark(kernel_process_wait, "pid %d", pid_nr(pid));
-+
- 	add_wait_queue(&current->signal->wait_chldexit,&wait);
- repeat:
- 	/* If there is nothing that can match our critier just get out */
-Index: linux-2.6-sched-devel/kernel/fork.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/fork.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/fork.c	2008-04-24 11:00:49.000000000 -0400
-@@ -54,6 +54,7 @@
- #include <linux/proc_fs.h>
- #include <linux/blkdev.h>
- #include <linux/magic.h>
-+#include <linux/marker.h>
+-	wakeup_check_start(wakeup_trace, wakee, curr);
++	wakeup_check_start(tr, task, curr);
+ }
  
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -1516,6 +1517,10 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
- 
-+		trace_mark(kernel_process_fork,
-+			"parent_pid %d child_pid %d child_tgid %d",
-+			current->pid, p->pid, p->tgid);
-+
- 		nr = task_pid_vnr(p);
- 
- 		if (clone_flags & CLONE_PARENT_SETTID)
-Index: linux-2.6-sched-devel/kernel/module.c
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/module.c	2008-04-24 11:00:47.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/module.c	2008-04-24 11:00:49.000000000 -0400
-@@ -47,6 +47,7 @@
- #include <asm/cacheflush.h>
- #include <linux/license.h>
- #include <asm/sections.h>
-+#include <linux/marker.h>
- 
- #if 0
- #define DEBUGP printk
-@@ -1332,6 +1333,8 @@ static int __unlink_module(void *_mod)
- /* Free a module, remove from lists, etc (must hold module_mutex). */
- static void free_module(struct module *mod)
+ static void start_wakeup_tracer(struct trace_array *tr)
  {
-+	trace_mark(kernel_module_free, "name %s", mod->name);
++	int ret;
 +
- 	/* Delete from various lists */
- 	stop_machine_run(__unlink_module, mod, NR_CPUS);
- 	remove_notes_attrs(mod);
-@@ -2117,6 +2120,8 @@ static struct module *load_module(void _
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
- 
-+	trace_mark(kernel_module_load, "name %s", mod->name);
++	ret = marker_probe_register("kernel_sched_wakeup",
++			"pid %d state %ld ## rq %p task %p rq->curr %p",
++			wake_up_callback,
++			&wakeup_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup\n");
++		return;
++	}
 +
- 	/* Done! */
- 	return mod;
++	ret = marker_probe_register("kernel_sched_wakeup_new",
++			"pid %d state %ld ## rq %p task %p rq->curr %p",
++			wake_up_callback,
++			&wakeup_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup_new\n");
++		goto fail_deprobe;
++	}
++
++	ret = marker_probe_register("kernel_sched_schedule",
++		"prev_pid %d next_pid %d prev_state %ld "
++		"## rq %p prev %p next %p",
++		sched_switch_callback,
++		&wakeup_trace);
++	if (ret) {
++		pr_info("sched trace: Couldn't add marker"
++			" probe to kernel_sched_schedule\n");
++		goto fail_deprobe_wake_new;
++	}
++
+ 	wakeup_reset(tr);
  
+ 	/*
+@@ -215,11 +292,28 @@ static void start_wakeup_tracer(struct t
+ 	tracer_enabled = 1;
+ 
+ 	return;
++fail_deprobe_wake_new:
++	marker_probe_unregister("kernel_sched_wakeup_new",
++				wake_up_callback,
++				&wakeup_trace);
++fail_deprobe:
++	marker_probe_unregister("kernel_sched_wakeup",
++				wake_up_callback,
++				&wakeup_trace);
+ }
+ 
+ static void stop_wakeup_tracer(struct trace_array *tr)
+ {
+ 	tracer_enabled = 0;
++	marker_probe_unregister("kernel_sched_schedule",
++				sched_switch_callback,
++				&wakeup_trace);
++	marker_probe_unregister("kernel_sched_wakeup_new",
++				wake_up_callback,
++				&wakeup_trace);
++	marker_probe_unregister("kernel_sched_wakeup",
++				wake_up_callback,
++				&wakeup_trace);
+ }
+ 
+ static void wakeup_tracer_init(struct trace_array *tr)
 
 -- 
 Mathieu Desnoyers
