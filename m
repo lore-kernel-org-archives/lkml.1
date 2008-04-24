@@ -1,134 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbYDXPSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762166AbYDXPTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbYDXPSw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbYDXPOt
+	id S1762166AbYDXPTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYDXPOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:49 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56066 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:53 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56072 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754653AbYDXPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:14:43 -0400
-Message-Id: <20080424151356.476361987@polymtl.ca>
+	id S1759407AbYDXPOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:14:45 -0400
+Message-Id: <20080424151408.991424268@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:35 -0400
+Date: Thu, 24 Apr 2008 11:04:01 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       Roel Kluin <12o3l@tiscali.nl>
-Subject: [patch 11/37] Text Edit Lock - kprobes architecture independent support
-Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent-support.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:57 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org
+Subject: [patch 37/37] LTTng instrumentation net
+Content-Disposition: inline; filename=lttng-instrumentation-net.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+Network core events.
 
-Changelog:
+Added markers :
 
-Move the kernel_text_lock/unlock out of the for loops.
+net_del_ifa_ipv4
+net_dev_receive
+net_dev_xmit
+net_insert_ifa_ipv4
+net_socket_call
+net_socket_create
+net_socket_recvmsg
+net_socket_sendmsg
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
-CC: Roel Kluin <12o3l@tiscali.nl>
+CC: netdev@vger.kernel.org
 ---
- kernel/kprobes.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ net/core/dev.c     |    6 ++++++
+ net/ipv4/devinet.c |    6 ++++++
+ net/socket.c       |   19 +++++++++++++++++++
+ 3 files changed, 31 insertions(+)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+Index: linux-2.6-lttng/net/core/dev.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2008-04-09 10:52:51.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2008-04-09 10:52:57.000000000 -0400
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
+--- linux-2.6-lttng.orig/net/core/dev.c	2008-03-27 07:26:26.000000000 -0400
++++ linux-2.6-lttng/net/core/dev.c	2008-03-27 07:31:44.000000000 -0400
+@@ -119,6 +119,7 @@
+ #include <linux/err.h>
+ #include <linux/ctype.h>
+ #include <linux/if_arp.h>
++#include <linux/marker.h>
  
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -577,9 +578,10 @@ static int __kprobes __register_kprobe(s
- 		goto out;
+ #include "net-sysfs.h"
+ 
+@@ -1643,6 +1644,8 @@ int dev_queue_xmit(struct sk_buff *skb)
  	}
  
-+	kernel_text_lock();
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
+ gso:
++	trace_mark(net_dev_xmit, "skb %p protocol #2u%hu", skb, skb->protocol);
++
+ 	spin_lock_prefetch(&dev->queue_lock);
  
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -587,7 +589,8 @@ static int __kprobes __register_kprobe(s
+ 	/* Disable soft irqs for various locks below. Also
+@@ -2043,6 +2046,9 @@ int netif_receive_skb(struct sk_buff *sk
  
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	kernel_text_unlock();
+ 	__get_cpu_var(netdev_rx_stat).total++;
+ 
++	trace_mark(net_dev_receive, "skb %p protocol #2u%hu",
++		skb, skb->protocol);
++
+ 	skb_reset_network_header(skb);
+ 	skb_reset_transport_header(skb);
+ 	skb->mac_len = skb->network_header - skb->mac_header;
+Index: linux-2.6-lttng/net/ipv4/devinet.c
+===================================================================
+--- linux-2.6-lttng.orig/net/ipv4/devinet.c	2008-03-27 07:26:26.000000000 -0400
++++ linux-2.6-lttng/net/ipv4/devinet.c	2008-03-27 07:31:49.000000000 -0400
+@@ -56,6 +56,7 @@
+ #include <linux/sysctl.h>
+ #endif
+ #include <linux/kmod.h>
++#include <linux/marker.h>
+ 
+ #include <net/arp.h>
+ #include <net/ip.h>
+@@ -258,6 +259,8 @@ static void __inet_del_ifa(struct in_dev
+ 		struct in_ifaddr **ifap1 = &ifa1->ifa_next;
+ 
+ 		while ((ifa = *ifap1) != NULL) {
++			trace_mark(net_del_ifa_ipv4, "label %s",
++				ifa->ifa_label);
+ 			if (!(ifa->ifa_flags & IFA_F_SECONDARY) &&
+ 			    ifa1->ifa_scope <= ifa->ifa_scope)
+ 				last_prim = ifa;
+@@ -364,6 +367,9 @@ static int __inet_insert_ifa(struct in_i
+ 			}
+ 			ifa->ifa_flags |= IFA_F_SECONDARY;
+ 		}
++		trace_mark(net_insert_ifa_ipv4, "label %s address #4u%lu",
++			ifa->ifa_label,
++			(unsigned long)ifa->ifa_address);
+ 	}
+ 
+ 	if (!(ifa->ifa_flags & IFA_F_SECONDARY)) {
+Index: linux-2.6-lttng/net/socket.c
+===================================================================
+--- linux-2.6-lttng.orig/net/socket.c	2008-03-27 07:26:26.000000000 -0400
++++ linux-2.6-lttng/net/socket.c	2008-03-27 07:31:57.000000000 -0400
+@@ -85,6 +85,7 @@
+ #include <linux/audit.h>
+ #include <linux/wireless.h>
+ #include <linux/nsproxy.h>
++#include <linux/marker.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -567,6 +568,11 @@ int sock_sendmsg(struct socket *sock, st
+ 	struct sock_iocb siocb;
+ 	int ret;
+ 
++	trace_mark(net_socket_sendmsg,
++		"sock %p family %d type %d protocol %d size %zu",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, size);
++
+ 	init_sync_kiocb(&iocb, NULL);
+ 	iocb.private = &siocb;
+ 	ret = __sock_sendmsg(&iocb, sock, msg, size);
+@@ -650,7 +656,13 @@ int sock_recvmsg(struct socket *sock, st
+ 	struct sock_iocb siocb;
+ 	int ret;
+ 
++	trace_mark(net_socket_recvmsg,
++		"sock %p family %d type %d protocol %d size %zu",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, size);
++
+ 	init_sync_kiocb(&iocb, NULL);
++
+ 	iocb.private = &siocb;
+ 	ret = __sock_recvmsg(&iocb, sock, msg, size, flags);
+ 	if (-EIOCBQUEUED == ret)
+@@ -1226,6 +1238,11 @@ asmlinkage long sys_socket(int family, i
+ 	if (retval < 0)
+ 		goto out_release;
+ 
++	trace_mark(net_socket_create,
++		"sock %p family %d type %d protocol %d fd %d",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, retval);
++
  out:
- 	mutex_unlock(&kprobe_mutex);
+ 	/* It may be already another descriptor 8) Not kernel problem. */
+ 	return retval;
+@@ -2024,6 +2041,8 @@ asmlinkage long sys_socketcall(int call,
+ 	a0 = a[0];
+ 	a1 = a[1];
  
-@@ -630,8 +633,11 @@ valid_p:
- 		 * enabled - otherwise, the breakpoint would already have
- 		 * been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled)
-+		if (kprobe_enabled) {
-+			kernel_text_lock();
- 			arch_disarm_kprobe(p);
-+			kernel_text_unlock();
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 		cleanup_p = 1;
- 	} else {
-@@ -729,7 +735,6 @@ static int __kprobes pre_handler_kretpro
- 		}
- 
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		hlist_del(&ri->uflist);
- 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
-@@ -951,11 +956,13 @@ static void __kprobes enable_all_kprobes
- 	if (kprobe_enabled)
- 		goto already_enabled;
- 
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			arch_arm_kprobe(p);
- 	}
-+	kernel_text_unlock();
- 
- 	kprobe_enabled = true;
- 	printk(KERN_INFO "Kprobes globally enabled\n");
-@@ -980,6 +987,7 @@ static void __kprobes disable_all_kprobe
- 
- 	kprobe_enabled = false;
- 	printk(KERN_INFO "Kprobes globally disabled\n");
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
-@@ -987,6 +995,7 @@ static void __kprobes disable_all_kprobe
- 				arch_disarm_kprobe(p);
- 		}
- 	}
-+	kernel_text_unlock();
- 
- 	mutex_unlock(&kprobe_mutex);
- 	/* Allow all currently running kprobes to complete */
++	trace_mark(net_socket_call, "call %d a0 %lu", call, a0);
++
+ 	switch (call) {
+ 	case SYS_SOCKET:
+ 		err = sys_socket(a0, a1, a[2]);
 
 -- 
 Mathieu Desnoyers
