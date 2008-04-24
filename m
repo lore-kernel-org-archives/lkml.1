@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbYDXQUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbYDXQVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762771AbYDXQUJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYDXQT5
+	id S1758766AbYDXQVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYDXQU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:19:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49926 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbYDXQT4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:19:56 -0400
-Date: Thu, 24 Apr 2008 13:19:31 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Alan Cox <alan@redhat.com>
-Cc: Frank Bennett <biercenator@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       video4linux-list@redhat.com, Michael Krufky <mkrufky@linuxtv.org>,
-       linux-kernel@vger.kernel.org, ivtv-devel@ivtvdriver.org
-Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
-Message-ID: <20080424131931.4b7e513b@gaivota>
-In-Reply-To: <20080424160043.GA12202@devserv.devel.redhat.com>
-References: <20080420122736.20d60eff@the-village.bc.nu>
-	<200804201806.33464.hverkuil@xs4all.nl>
-	<480B6AD8.9090404@linuxtv.org>
-	<20080423143454.0d50b209@gaivota>
-	<53208a5f0804231226n3cf04ea5ja3cebb5584886183@mail.gmail.com>
-	<20080424124708.3169448a@gaivota>
-	<20080424160043.GA12202@devserv.devel.redhat.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 Apr 2008 12:20:59 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40753 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755957AbYDXQU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:20:59 -0400
+Message-ID: <4810B361.8000305@garzik.org>
+Date: Thu, 24 Apr 2008 12:20:49 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [git patch] free_irq() fixes
+References: <20080422221733.GA16260@havoc.gtf.org>	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>	<480E6DE5.6010103@garzik.org>	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>	<480E796E.4070001@garzik.org>	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>	<20080423000529.GG28933@cs181133002.pp.htv.fi>	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>	<480F3ECC.1090809@keyaccess.nl>	<480FEC1B.6040102@garzik.org>	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>	<m1od7zkd2s.fsf@frodo.ebiederm.org>	<481066C1.1030805@garzik.org>	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>	<4810A9E6.1080201@garzik.org>	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org> <20080424163735.29ef21db@the-village.bc.nu>
+In-Reply-To: <20080424163735.29ef21db@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008 12:00:43 -0400
-Alan Cox <alan@redhat.com> wrote:
+Alan Cox wrote:
+> Sparc32 had this and it was very ugly. However if you don't pass in the
+> IRQ then people will store the irq value privately and things like
+> request_irq can deal with numeric interrupts and the like as before while
+> new interfaces for MSI can deal in MSI objects whatever they end up like.
 
-> On Thu, Apr 24, 2008 at 12:47:08PM -0300, Mauro Carvalho Chehab wrote:
-> > Maybe we can just add his name in parenthesis. Would this patch description be
-> > ok for you, Andrew and Alan?
-> 
-> I have no idea if Mr Macks did the work or minds his name being used so I 
-> can form no view on the change. Obviously please remove my sign off if you
-> make the change
 
-So, I'll keep the patch as-is.
+Yes, and on a related note...
 
-Cheers,
-Mauro
+_Today_ drivers _already_ store the irq value privately, because they must:
+
+Logic dictates they must do so because all other functions in the driver 
+do not have an 'irq' argument, but do need to call things (free_irq, 
+disable_irq) that take an irq number argument.
+
+That is one of my key design objections to passing 'int' to an irq handler:
+
+Every modern driver _must_ store the irq value anyway -- and typically 
+this is done automatically in struct device or struct pci_dev resources, 
+so the driver writer need not bother with storing it themselves.
+
+	Jeff
+
+
+
+
