@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbYDXKrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbYDXKr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131AbYDXKrR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 06:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYDXKrD
+	id S1757483AbYDXKr5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 06:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYDXKrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 06:47:03 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:32950 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751585AbYDXKrB (ORCPT
+	Thu, 24 Apr 2008 06:47:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42720
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751140AbYDXKrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 06:47:01 -0400
-Date: Thu, 24 Apr 2008 11:18:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: ben-linux@fluff.org, Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: s3c2410: platform_get_irq() may return signed
- unnoticed
-Message-ID: <20080424111847.2cb41a68@the-village.bc.nu>
-In-Reply-To: <480FB148.5000704@tiscali.nl>
-References: <480FB148.5000704@tiscali.nl>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 24 Apr 2008 06:47:46 -0400
+Date: Thu, 24 Apr 2008 03:47:45 -0700 (PDT)
+Message-Id: <20080424.034745.213455935.davem@davemloft.net>
+To: youvegotmoxie@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] fix typo in net/ipv6/Kconfig
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080424103950.GA6723@snafu.setup>
+References: <20080424103950.GA6723@snafu.setup>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Apr 2008 23:59:36 +0200
-Roel Kluin <12o3l@tiscali.nl> wrote:
+From: Michael Beasley <youvegotmoxie@gmail.com>
+Date: Thu, 24 Apr 2008 06:39:50 -0400
 
-> dev->irq is unsigned, platform_get_irq() may return signed unnoticed
+> diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
+> index eb0b808..56b4d86 100644
+> --- a/net/ipv6/Kconfig
+> +++ b/net/ipv6/Kconfig
+> @@ -172,7 +172,7 @@ config IPV6_SIT
+>           Tunneling means encapsulating data of one protocol type within
+>           another protocol and sending it over a channel that understands the
+>           encapsulating protocol. This driver implements encapsulation of IPv6
+> -         into IPv4 packets. This is useful if you want to connect two IPv6
+> +         into IPv4 packets. This is useful if you want to connect to IPv6
+>           networks over an IPv4-only path.
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>           Saying M here will produce a module called sit.ko. If unsure, say Y.
 
-Acked-by: Alan Cox <alan@redhat.com>
+Your email client corrupted the patch, it has turned tab characters
+into spaces.
 
+You should also be sure to post your networking patches to
+netdev@vger.kernel.org as that's where the networking developers
+listen.
+
+Please also provide a proper Signed-off-by: line for your patch (see
+linux/Docuemtnation/SubmittingPatches, section 5).
+
+Thanks.
