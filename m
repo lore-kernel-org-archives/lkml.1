@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbYDXXUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYDXXUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761472AbYDXXUk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYDXXIL
+	id S1756999AbYDXXUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbYDXXIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:08:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36641 "EHLO
+	Thu, 24 Apr 2008 19:08:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36701 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYDXXGm (ORCPT
+	with ESMTP id S1755531AbYDXXHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:06:42 -0400
+	Thu, 24 Apr 2008 19:07:20 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 20/24] v850: types: use <asm-generic/int-*.h> for the v850 architecture
-Date: Thu, 24 Apr 2008 16:05:46 -0700
-Message-Id: <1209078352-7593-40-git-send-email-hpa@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>
+Subject: [PATCH 08/24] h8300: types: use <asm-generic/int-*.h> for the h8300 architecture
+Date: Thu, 24 Apr 2008 16:05:22 -0700
+Message-Id: <1209078352-7593-16-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-39-git-send-email-hpa@zytor.com>
+In-Reply-To: <1209078352-7593-15-git-send-email-hpa@zytor.com>
 References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-2-git-send-email-hpa@zytor.com>
  <1209078352-7593-3-git-send-email-hpa@zytor.com>
@@ -36,55 +37,36 @@ References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-13-git-send-email-hpa@zytor.com>
  <1209078352-7593-14-git-send-email-hpa@zytor.com>
  <1209078352-7593-15-git-send-email-hpa@zytor.com>
- <1209078352-7593-16-git-send-email-hpa@zytor.com>
- <1209078352-7593-17-git-send-email-hpa@zytor.com>
- <1209078352-7593-18-git-send-email-hpa@zytor.com>
- <1209078352-7593-19-git-send-email-hpa@zytor.com>
- <1209078352-7593-20-git-send-email-hpa@zytor.com>
- <1209078352-7593-21-git-send-email-hpa@zytor.com>
- <1209078352-7593-22-git-send-email-hpa@zytor.com>
- <1209078352-7593-23-git-send-email-hpa@zytor.com>
- <1209078352-7593-24-git-send-email-hpa@zytor.com>
- <1209078352-7593-25-git-send-email-hpa@zytor.com>
- <1209078352-7593-26-git-send-email-hpa@zytor.com>
- <1209078352-7593-27-git-send-email-hpa@zytor.com>
- <1209078352-7593-28-git-send-email-hpa@zytor.com>
- <1209078352-7593-29-git-send-email-hpa@zytor.com>
- <1209078352-7593-30-git-send-email-hpa@zytor.com>
- <1209078352-7593-31-git-send-email-hpa@zytor.com>
- <1209078352-7593-32-git-send-email-hpa@zytor.com>
- <1209078352-7593-33-git-send-email-hpa@zytor.com>
- <1209078352-7593-34-git-send-email-hpa@zytor.com>
- <1209078352-7593-35-git-send-email-hpa@zytor.com>
- <1209078352-7593-36-git-send-email-hpa@zytor.com>
- <1209078352-7593-37-git-send-email-hpa@zytor.com>
- <1209078352-7593-38-git-send-email-hpa@zytor.com>
- <1209078352-7593-39-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-v850/types.h> to use the <asm-generic/int-*.h>
+This modifies <asm-h8300/types.h> to use the <asm-generic/int-*.h>
 generic include files.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
 ---
- include/asm-v850/types.h |   32 +-------------------------------
- 1 files changed, 1 insertions(+), 31 deletions(-)
+ include/asm-h8300/types.h |   33 ++-------------------------------
+ 1 files changed, 2 insertions(+), 31 deletions(-)
 
-diff --git a/include/asm-v850/types.h b/include/asm-v850/types.h
-index 284bda8..89f735e 100644
---- a/include/asm-v850/types.h
-+++ b/include/asm-v850/types.h
-@@ -10,28 +10,10 @@
-  * not a major issue.  However, for interoperability, libraries still
-  * need to be careful to avoid a name clashes.
-  */
-+#include <asm-generic/int-ll64.h>
+diff --git a/include/asm-h8300/types.h b/include/asm-h8300/types.h
+index 56566e2..1287519 100644
+--- a/include/asm-h8300/types.h
++++ b/include/asm-h8300/types.h
+@@ -1,6 +1,8 @@
+ #ifndef _H8300_TYPES_H
+ #define _H8300_TYPES_H
  
++#include <asm-generic/int-ll64.h>
++
+ #if !defined(__ASSEMBLY__)
+ 
+ /*
+@@ -14,41 +16,10 @@
  typedef unsigned short umode_t;
  
--/*
+ /*
 - * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
 - * header files exported to user space
 - */
@@ -103,12 +85,10 @@ index 284bda8..89f735e 100644
 -__extension__ typedef unsigned long long __u64;
 -#endif
 -
- #endif /* !__ASSEMBLY__ */
- 
- /*
-@@ -43,18 +25,6 @@ __extension__ typedef unsigned long long __u64;
- 
- #ifndef __ASSEMBLY__
+-/*
+  * These aren't exported outside the kernel to avoid name space clashes
+  */
+ #ifdef __KERNEL__
  
 -typedef signed char s8;
 -typedef unsigned char u8;
@@ -122,9 +102,9 @@ index 284bda8..89f735e 100644
 -typedef signed long long s64;
 -typedef unsigned long long u64;
 -
- /* Dma addresses are 32-bits wide.  */
+ #define BITS_PER_LONG 32
  
- typedef u32 dma_addr_t;
+ /* Dma addresses are 32-bits wide.  */
 -- 
 1.5.4.1
 
