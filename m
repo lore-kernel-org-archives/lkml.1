@@ -1,39 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYDXI4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYDXI5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbYDXI4m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYDXI4d
+	id S1754761AbYDXI5t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYDXI5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:56:33 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:12250 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYDXI4c (ORCPT
+	Thu, 24 Apr 2008 04:57:40 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40775 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbYDXI5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:56:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dezpRxTi/55nhLeAp3uIoZsYZcZ5cQ/7gyE9HwkW42RjMd9nfslcsE9YW+TMM5zgAzLRG/IZhFbuWYjB2IhKM2mjAZoL+6H4tKJlhiTM/bMK4CpLDP8w14gixsIa9EewZlwNMtQnR91WVZFs5e5oYsMHfdEnkdpe1H3hE6WK3mw=
-Message-ID: <df9815e70804240156x70e7b548ydfedf496db9442e8@mail.gmail.com>
-Date: Thu, 24 Apr 2008 16:56:27 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "=?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?=" <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH] fix typo "kernal" -> "kernel"
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-In-Reply-To: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Thu, 24 Apr 2008 04:57:39 -0400
+Subject: Re: [PATCH] wireless: rndis_wlan: modparam_workaround_interval is
+	never below 0.
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: jussi.kivilinna@mbnet.fi, linux-wireless@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <480F97B5.9030009@tiscali.nl> (sfid-20080423_221109_783456_35B212E0)
+References: <480F97B5.9030009@tiscali.nl>
+	 (sfid-20080423_221109_783456_35B212E0)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-elk0awi/LJdjBsMIIy/d"
+Date: Thu, 24 Apr 2008 10:57:31 +0200
+Message-Id: <1209027451.3357.49.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3O8uxEB006941
 
-seems to be the same. To be pedantic,
-http://en.wikipedia.org/wiki/KERNAL
-The KERNAL was known as kernel[1] inside of Commodore since the PETdays, but in 1980 Robert Russell misspelled the word in his notebooksforming the word kernal. When Commodore technical writers Neil Harrisand Andy Finkel collected Russell's notes and used them as the basisfor the VIC-20 programmer's manual, the misspelling followed themalong and stuck.[2]
-;-)Thanks,
 
-On Thu, Apr 24, 2008 at 4:42 PM, Uwe Kleine-KÃ¶nig<Uwe.Kleine-Koenig@digi.com> wrote:> Signed-off-by: Uwe Kleine-KÃ¶nig <Uwe.Kleine-Koenig@digi.com>>  Cc: trivial@kernel.org>  --->   fs/proc/nommu.c |    2 +->   1 files changed, 1 insertions(+), 1 deletions(-)>>  diff --git a/fs/proc/nommu.c b/fs/proc/nommu.c>  index 941e951..618a732 100644>  --- a/fs/proc/nommu.c>  +++ b/fs/proc/nommu.c>  @@ -76,7 +76,7 @@ int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)>>   /*>   * display a list of all the VMAs the kernel knows about>  - * - nommu kernals have a single flat list>  + * - nommu kernels have a single flat list>   */>   static int nommu_vma_list_show(struct seq_file *m, void *v)>   {>  -->  1.5.5.1>>  -->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in>  the body of a message to majordomo@vger.kernel.org>  More majordomo info at  http://vger.kernel.org/majordomo-info.html>  Please read the FAQ at  http://www.tux.org/lkml/>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+--=-elk0awi/LJdjBsMIIy/d
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2008-04-23 at 22:10 +0200, Roel Kluin wrote:
+> priv->param_workaround_interval is unsigned,
+> modparam_workaround_interval not.
+> the former is never < 0.
+
+> -	priv->param_workaround_interval =3D modparam_workaround_interval;
+> =20
+> -	if (priv->param_workaround_interval < 0)
+> +	if (modparam_workaround_interval < 0)
+>  		priv->param_workaround_interval =3D 500;
+> +	else
+> +		priv->param_workaround_interval =3D modparam_workaround_interval;
+
+Eh, why not make the modparam unsigned and default to 500?
+
+johannes
+
+--=-elk0awi/LJdjBsMIIy/d
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASBBLeqVg1VMiehFYAQIpKg//SWw4D0YZo9M9stw0llJljNhDTlzv+eGP
+41gf/bm7Hi8VAnPc2Lkf/CmrhOQAd33Cb/w6PNZq5/rt70MJUE8o3HHpPmsXjYqN
+s70Rz7qKtVY9eSLIWb7AW9w3HPYNEwbDwiE8/WmAbTbHizXXbplwdQbP6FuMXEiI
+bRwRdQPiBp22CCY5Nq7U6vQMS51Y+7nMH2AwCh/qnkZraIFrlyzaCEqP76OxuH56
+Zyq+Sfg479/Z6RJnHFGJF5IzjJSSRnPtErn96iTS3fpbunskJnYC+oPFDeTXDuyw
+1nB9h6vgFNVVg20cTPbUsgJ4K0BfF92OzLJaHSbXXnJdbgXdAwwsdP5F0VrMSyf1
+vmH45Irqc4/B/1gmvU7Hp/LR3y7qn66ocH4K1oJQtG48T8WsrEN029JWG5HeWAxC
+XRD6sc7u6P91alPWn/FrOZ3rhrsygbUse/S8ytMgPrQAvYXUgetlX1/VjoaJ9VUS
+oTq0n79wynEmHibWJlf/ywvnMg1YkxpuEpZWq8vRAhIb3magUK8L8LoI2nqu4/SZ
+sqJdGNeKKEiwi4cdK0c2e42/RxSQ3tnaIgQInKE/PMXUjqym9LhFDtBuAvZ3gfAm
+Jd5HZJqISKff6u5d+FEYmR30Gva50AoS8MDAuX3RTl+L8I7GdQeW3hGngHjL9roF
+YgpB9deszCQ=
+=J7yc
+-----END PGP SIGNATURE-----
+
+--=-elk0awi/LJdjBsMIIy/d--
+
