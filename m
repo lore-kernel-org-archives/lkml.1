@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbYDXMo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYDXMqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbYDXMo2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 08:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYDXMoS
+	id S1758967AbYDXMqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYDXMqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 08:44:18 -0400
-Received: from rtr.ca ([76.10.145.34]:1221 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755914AbYDXMoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 08:44:17 -0400
-Message-ID: <481080A0.9050804@rtr.ca>
-Date: Thu, 24 Apr 2008 08:44:16 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 24 Apr 2008 08:46:10 -0400
+Received: from homer.mvista.com ([63.81.120.155]:63950 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752810AbYDXMqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 08:46:08 -0400
+Message-ID: <481080EA.7010107@ru.mvista.com>
+Date: Thu, 24 Apr 2008 16:45:30 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, pavel@ucw.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480E70ED.3030701@rtr.ca> <20080423072432.GX12774@kernel.dk> <480F3CBC.60305@rtr.ca> <20080423135110.GO12774@kernel.dk> <480F4BD9.8090003@rtr.ca> <20080424105908.GW12774@kernel.dk>
-In-Reply-To: <20080424105908.GW12774@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi>	<480DE3C4.5@ru.mvista.com>	<480DE6F5.8060403@gmail.com>	<480DE9E8.2070809@ru.mvista.com>	<480DEB1F.5060500@gmail.com> <20080424123541.09e5ef96@the-village.bc.nu>
+In-Reply-To: <20080424123541.09e5ef96@the-village.bc.nu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Apr 23 2008, Mark Lord wrote:
->> Jens Axboe wrote:
->>> On Wed, Apr 23 2008, Mark Lord wrote:
->>> ..
->>>> The second bug, is that for the halt case at least,
->>>> nobody waits for the other CPU to actually halt
->>>> before continuing.. so we sometimes enter the shutdown
->>>> code while other CPUs are still active.
->>>>
->>>> This causes some machines to hang at shutdown,
->>>> unless CPU_HOTPLUG is configured and takes them offline
->>>> before we get here.
->>> I'm guessing there's a reason it doesn't pass '1' as the last argument,
->>> because that would fix that issue?
->> ..
->>
->> Undoubtedly -- perhaps the called CPU halts, and therefore cannot reply.  :)
-> 
-> Uhm yes, I guess stop_this_cpu() does exactly what the name implies :-)
-> 
->> But some kind of pre-halt ack, perhaps plus a short delay by the caller
->> after receipt of the ack, would probably suffice to kill that bug.
->>
->> But I really haven't studied this code enough to know,
->> other than that it historically has been a sticky area
->> to poke around in.
-> 
-> Something like this will close the window to right up until the point
-> where the other CPUs have 'almost' called halt().
-> 
-> diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-> index 5398385..94ec9bf 100644
-> --- a/arch/x86/kernel/smp.c
-> +++ b/arch/x86/kernel/smp.c
-> @@ -155,8 +155,9 @@ static void stop_this_cpu(void *dummy)
->  	/*
->  	 * Remove this CPU:
->  	 */
-> -	cpu_clear(smp_processor_id(), cpu_online_map);
->  	disable_local_APIC();
-> +	cpu_clear(smp_processor_id(), cpu_online_map);
-> +	smp_wmb();
->  	if (hlt_works(smp_processor_id()))
->  		for (;;) halt();
->  	for (;;);
-> @@ -175,6 +176,12 @@ static void native_smp_send_stop(void)
->  
->  	local_irq_save(flags);
->  	smp_call_function(stop_this_cpu, NULL, 0, 0);
-> +
-> +	while (cpus_weight(cpu_online_map) > 1) {
-> +		cpu_relax();
-> +		smp_rmb();
-> +	}
-> +
->  	disable_local_APIC();
->  	local_irq_restore(flags);
->  }
-..
+Alan Cox wrote:
 
-Yup, that looks like it oughta work consistently.
-Now we just need to hear from some of the folks who
-have danced around this code in the past.
+>>Sergei Shtylyov wrote:
 
-(added Pavel & Rafael to Cc:).
+>>>>>   Jeff, Tejun, what "sff" in the file name actually means? Isn't it 
+>>>>>strange that the drivers lacking DMA support or not really compliant 
+>>>>>with SFF-8038i have to link with this file?
+
+>>>>Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
+>>>>and bmdma is acceptable, hopefully, right?
+
+>>>   What's sff sans bmdma?
+
+>>Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
+>>although it's entirely possible that I misunderstood it and used it in 
+>>the wrong way.  Alan, can you please clear up the confusion?
+
+> The SFF/Intel spec is for PCI IDE (BMDMA or otherwise), so it covers and
+> defines all the common bits of the IDE interface on PCI (and in defining
+> the legacy interface conveniently documents the extended ST-412 interface
+> used by ATA and "pre-ATA" IDE/EIDE controllers).
+
+    If you mean SFF-8038i (which can indeed be named "SFF/Intel"), it
+documents *only* BMDMA.  If you mean something else, please be more precise.
+
+> Alan
+
+WBR, Sergei
+
