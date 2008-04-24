@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYDXXLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYDXXLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYDXXLe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYDXXHE
+	id S1757839AbYDXXLu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYDXXHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:07:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36637 "EHLO
+	Thu, 24 Apr 2008 19:07:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36639 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbYDXXGj (ORCPT
+	with ESMTP id S1754793AbYDXXGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:06:39 -0400
+	Thu, 24 Apr 2008 19:06:40 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Arch Mailing List <linux-arch@vger.kernel.org>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 16/24] s390: types: use <asm-generic/int-*.h> for the s390 architecture
-Date: Thu, 24 Apr 2008 16:05:39 -0700
-Message-Id: <1209078352-7593-33-git-send-email-hpa@zytor.com>
+Subject: [PATCH 19/24] sparc64: types: use <asm-generic/int-*.h> for the sparc64 architecture
+Date: Thu, 24 Apr 2008 16:05:45 -0700
+Message-Id: <1209078352-7593-39-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-32-git-send-email-hpa@zytor.com>
+In-Reply-To: <1209078352-7593-38-git-send-email-hpa@zytor.com>
 References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-2-git-send-email-hpa@zytor.com>
  <1209078352-7593-3-git-send-email-hpa@zytor.com>
@@ -53,39 +53,41 @@ References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-30-git-send-email-hpa@zytor.com>
  <1209078352-7593-31-git-send-email-hpa@zytor.com>
  <1209078352-7593-32-git-send-email-hpa@zytor.com>
+ <1209078352-7593-33-git-send-email-hpa@zytor.com>
+ <1209078352-7593-34-git-send-email-hpa@zytor.com>
+ <1209078352-7593-35-git-send-email-hpa@zytor.com>
+ <1209078352-7593-36-git-send-email-hpa@zytor.com>
+ <1209078352-7593-37-git-send-email-hpa@zytor.com>
+ <1209078352-7593-38-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-s390/types.h> to use the <asm-generic/int-*.h>
+This modifies <asm-sparc64/types.h> to use the <asm-generic/int-*.h>
 generic include files.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- include/asm-s390/types.h |   48 +++++----------------------------------------
- 1 files changed, 6 insertions(+), 42 deletions(-)
+ include/asm-sparc64/types.h |   30 +-----------------------------
+ 1 files changed, 1 insertions(+), 29 deletions(-)
 
-diff --git a/include/asm-s390/types.h b/include/asm-s390/types.h
-index 2c5879a..78dda03 100644
---- a/include/asm-s390/types.h
-+++ b/include/asm-s390/types.h
-@@ -9,34 +9,16 @@
- #ifndef _S390_TYPES_H
- #define _S390_TYPES_H
+diff --git a/include/asm-sparc64/types.h b/include/asm-sparc64/types.h
+index d0ee7f1..5dbe04f 100644
+--- a/include/asm-sparc64/types.h
++++ b/include/asm-sparc64/types.h
+@@ -9,28 +9,12 @@
+  * not a major issue.  However, for interoperability, libraries still
+  * need to be careful to avoid a name clashes.
+  */
++#include <asm-generic/int-l64.h>
  
-+#ifndef __s390x__
-+# include <asm-generic/int-l64.h>
-+#else
-+# include <asm-generic/int-ll64.h>
-+#endif
-+
  #ifndef __ASSEMBLY__
  
  typedef unsigned short umode_t;
  
 -/*
-- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-- * header files exported to user space
+- * _xx is ok: it doesn't pollute the POSIX namespace. Use these in the
+- * header files exported to user space.
 - */
 -
 -typedef __signed__ char __s8;
@@ -97,44 +99,31 @@ index 2c5879a..78dda03 100644
 -typedef __signed__ int __s32;
 -typedef unsigned int __u32;
 -
--#ifndef __s390x__
--#if defined(__GNUC__)
--__extension__ typedef __signed__ long long __s64;
--__extension__ typedef unsigned long long __u64;
--#endif
--#else /* __s390x__ */
 -typedef __signed__ long __s64;
 -typedef unsigned long __u64;
--#endif
 -
- /* A address type so that arithmetic can be done on it & it can be upgraded to
-    64 bit when necessary 
- */
-@@ -58,24 +40,6 @@ typedef __signed__ long saddr_t;
+ #endif /* __ASSEMBLY__ */
+ 
+ #ifdef __KERNEL__
+@@ -39,18 +23,6 @@ typedef unsigned long __u64;
  
  #ifndef __ASSEMBLY__
  
--
--typedef signed char s8;
+-typedef __signed__ char s8;
 -typedef unsigned char u8;
 -
--typedef signed short s16;
+-typedef __signed__ short s16;
 -typedef unsigned short u16;
 -
--typedef signed int s32;
+-typedef __signed__ int s32;
 -typedef unsigned int u32;
 -
--#ifndef __s390x__
--typedef signed long long s64;
--typedef unsigned long long u64;
--#else /* __s390x__ */
--typedef signed long s64;
--typedef unsigned  long u64;
--#endif /* __s390x__ */
+-typedef __signed__ long s64;
+-typedef unsigned long u64;
 -
- typedef u32 dma_addr_t;
+ /* Dma addresses come in generic and 64-bit flavours.  */
  
- #ifndef __s390x__
+ typedef u32 dma_addr_t;
 -- 
 1.5.4.1
 
