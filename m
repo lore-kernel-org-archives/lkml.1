@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYDXCYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbYDXCZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYDXCYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 22:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYDXCYQ
+	id S1757399AbYDXCZQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 22:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDXCZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 22:24:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49736
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbYDXCYQ (ORCPT
+	Wed, 23 Apr 2008 22:25:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48709 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbYDXCZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 22:24:16 -0400
-Date: Wed, 23 Apr 2008 19:24:18 -0700 (PDT)
-Message-Id: <20080423.192418.188020745.davem@davemloft.net>
-To: vapier@gentoo.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] linux/atm_tcp.h: cleanup for userspace
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1208661754-3197-1-git-send-email-vapier@gentoo.org>
-References: <1208661754-3197-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Apr 2008 22:25:03 -0400
+Date: Wed, 23 Apr 2008 22:24:55 -0400 (EDT)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: mkrufky@linuxtv.org
+cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       ivtv-devel@ivtvdriver.org, biercenator@gmail.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Fix VIDIOCGAP corruption in ivtv
+In-Reply-To: <480F7A0E.2080202@linuxtv.org>
+Message-ID: <Pine.LNX.4.64.0804232210550.31358@bombadil.infradead.org>
+References: <480F7A0E.2080202@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Sat, 19 Apr 2008 23:22:34 -0400
+>>> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+>>
+>> In this case, it should be reviewed-by.
+>>
+>> I should be sending this soon to Linus.
+>
+>
+> Mauro,
+>
+> I think it's wrong that you alter signatures.  You did this:
+>
+> Reviewed-by: <mkrufky@linuxtv.org <mailto:mkrufky@linuxtv.org>>
 
-> The atm_tcp.h uses types from linux/atm.h, but does not include it.  It
-> should also use the standard __u## types from linux/types.h rather than the
-> uint##_t types since the former can be found with the kernel already.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Argh! I didn't notice that weird stuff. This should be fixed before 
+forwarding the patch. Sorry for the mess.
 
-I don't think this is a sufficient patch to solve these problems.
+> But I provided this:
+>
+> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+>
+> I sign the patch, because I have handled it in my -stable queue.
 
-> @@ -8,10 +8,8 @@
->  #define LINUX_ATM_TCP_H
->  
->  #include <linux/atmapi.h>
-> -
-> -#ifdef __KERNEL__
->  #include <linux/types.h>
-> -#endif
-> +#include <linux/atm.h>
->  #include <linux/atmioc.h>
->  
->  
+SOB is the proper tag for your -stable queue. However, asking me to add 
+this to my tree is not what it is expected.
 
-So you're adding linux/atm.h as an include for non-kernel, fine,
-but:
+SOB is meant to track the patch history until it reaches the kernel. So, 
+the first SOB(s) is(are) from its author(s). The author(s) will send this 
+to a driver maintainer, that will send to a subsystem maintainer, etc, 
+until reach mainstream.
 
-> @@ -20,9 +18,9 @@
->   */
->  
->  struct atmtcp_hdr {
-> -	uint16_t	vpi;
-> -	uint16_t	vci;
-> -	uint32_t	length;		/* ... of data part */
-> +	__u16	vpi;
-> +	__u16	vci;
-> +	__u32	length;		/* ... of data part */
->  };
->  
->  /*
+In the case of this patch, it was sent to the ML. Hans picked it, as the 
+maintainer of ivtv, and asked me to pull.
 
-Well, linux/atm.h, which we'll now get, has the same exact problem,
-it uses "uint16_t" and related types.
+You didn't wrote the patch, not forwarded it to me, so, the tag doesn't 
+apply on my tree.
 
-Futehermore, nothing in the include chain will get linux/types.h
-include, which we'll need.  linux/atm.h protects the inclusion
-of linux/types.h with __KERNEL__.
+After the merge at mainstream, you'll send this to stable. In this case, 
+you'll take it from my tree, add your SOB, and forward it.
+
+Unfortunately, it is a common mistake of people sending SOB's instead of 
+acked-by or reviewed-by, so several maintainers warns about the improper 
+usage of the tags and corrects it on their trees, or simply ignores such 
+improper usage.
+
+If you prefer, I may just drop the tag from my tree, or fix the 
+"reviewed-by".
+
+Cheers,
+Mauro.
