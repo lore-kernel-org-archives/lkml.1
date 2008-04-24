@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbYDXRXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYDXR1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759583AbYDXRXz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYDXRXp
+	id S1758955AbYDXR1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYDXR06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:23:45 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52491 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbYDXRXo (ORCPT
+	Thu, 24 Apr 2008 13:26:58 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37962 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbYDXR05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:23:44 -0400
-To: ezk@cs.sunysb.edu
-CC: miklos@szeredi.hu, ezk@cs.sunysb.edu, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       dave@linux.vnet.ibm.com, mhalcrow@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <200804241714.m3OHE0Ua014682@agora.fsl.cs.sunysb.edu> (message
-	from Erez Zadok on Thu, 24 Apr 2008 13:14:00 -0400)
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <200804241714.m3OHE0Ua014682@agora.fsl.cs.sunysb.edu>
-Message-Id: <E1Jp5AP-0004Zd-ID@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 24 Apr 2008 19:23:29 +0200
+	Thu, 24 Apr 2008 13:26:57 -0400
+Date: Thu, 24 Apr 2008 13:25:58 -0400
+Message-Id: <200804241725.m3OHPwIs015778@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
+       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
+In-reply-to: Your message of "Thu, 24 Apr 2008 14:48:26 BST."
+             <20080424134826.GD15214@ZenIV.linux.org.uk> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Sure, unionfs already does some of it now (and some of it can be recoded
-> > > more cleanly), but I'd like to get rid of much of it if I could -- these new
-> > > path_* helpers make me have to maintain vfsmounts even moreso than before.
-> > 
-> > With the words of Al: "that is hogwash".  Stacks either maintain
-> > vfsmounts or they don't.  There's no middle ground.
-> 
-> So, if I wanted to not maintain vfsmounts at all in unionfs, how can I use
-> the proposed new path_* helpers which require vfsmounts?  Will there be some
-> other helpers available to perform lower-filesystem operations (e.g., mkdir,
-> create, unlink, etc.) which won't require passing vfsmounts?
-> 
-> The "or they don't" is not much of an option when I'm forced to use an API
-> that requires a vfsmount...
+In message <20080424134826.GD15214@ZenIV.linux.org.uk>, Al Viro writes:
+> On Thu, Apr 24, 2008 at 03:05:21PM +0200, Miklos Szeredi wrote:
+[...]
+> And yes, we need the counterpart for superblock-level stuff, to deal with
+> remaining races (look at fs_may_remount_ro() and puke - it's still racy
+> as hell).  E.g. unlink should do sb-level "will write" when it drops
+> i_nlink to 0 and final removal of inode should do "won't write".
 
-Yes.  The vfsmount is already needed for open() and that pretty much
-determines the fate of all stacking filesystems, except the ones which
-don't want to do file I/O, but that is rather hard to imagine.
+Al, any near-term plans for sb-level "want write" locking as we discussed
+briefly at LSF?  Being able to do so for copyup in unionfs will hopefully
+allow me to prevent concurrent topology changes.
 
-And anyway, I don't see the issue here.  If the stack wants to work on
-a single filesystem directly, just do a bind mount of the original to
-a kernel private mount and use that.  I'm not sure this can be done
-with the current API, but it doesn't sound difficult to implement at
-all.
+And while we're digressing.  It appears to me that when someone wants to
+change a single meta-data item in a f/s, then locking rules are simple:
+e.g., lock the directory inode.  But when you want to modify more than one,
+you need a different kind of lock -- hence the s_vfs_rename_mutex.  The
+latter requires calling lock_rename to find the lowest common ancestor of
+the two directories that need locking.  This rename-locking protocol appears
+to be a special case of the sb-level "want write" idea, right?  Moreover, I
+don't believe that cross-directory renames are that common, so replacing the
+s_vfs_rename_mutex and its use with a more generic sb-level multi-operation
+write-lock should have a negligible performance impact.
 
-Miklos
+Thanks,
+Erez.
