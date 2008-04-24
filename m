@@ -1,130 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYDXIsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYDXI4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbYDXIsq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYDXIsj
+	id S1753320AbYDXI4m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYDXI4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:48:39 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3675 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbYDXIsh (ORCPT
+	Thu, 24 Apr 2008 04:56:33 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:12250 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYDXI4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:48:37 -0400
-Date: Thu, 24 Apr 2008 09:47:37 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andi Kleen <andi@firstfloor.org>, wli@holomorphy.com, agl@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
-Message-ID: <20080424084736.GA25266@shadowen.org>
-References: <20080421183621.GA13100@csn.ul.ie> <87hcdsznep.fsf@basil.nowhere.org> <20080423151428.GA15834@csn.ul.ie> <20080423154323.GA29087@one.firstfloor.org> <20080423160112.GC15834@csn.ul.ie>
+	Thu, 24 Apr 2008 04:56:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dezpRxTi/55nhLeAp3uIoZsYZcZ5cQ/7gyE9HwkW42RjMd9nfslcsE9YW+TMM5zgAzLRG/IZhFbuWYjB2IhKM2mjAZoL+6H4tKJlhiTM/bMK4CpLDP8w14gixsIa9EewZlwNMtQnR91WVZFs5e5oYsMHfdEnkdpe1H3hE6WK3mw=
+Message-ID: <df9815e70804240156x70e7b548ydfedf496db9442e8@mail.gmail.com>
+Date: Thu, 24 Apr 2008 16:56:27 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "=?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?=" <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [PATCH] fix typo "kernal" -> "kernel"
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+In-Reply-To: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20080423160112.GC15834@csn.ul.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3O8uxEB006941
 
-On Wed, Apr 23, 2008 at 05:01:13PM +0100, Mel Gorman wrote:
-> On (23/04/08 17:43), Andi Kleen didst pronounce:
-> > > If the large pages exist to satisfy the mapping, the application will not
-> > > even notice this change. They will only break if the are creating larger
-> > > mappings than large pages exist for (or can be allocated for in the event
-> > > they have enabled dynamic resizing with nr_overcommit_hugepages). If they
-> > > are doing that, they are running a big risk as they may get arbitrarily
-> > > killed later. 
-> > 
-> > The point is it is pretty common (especially when you have enough 
-> > address space) just create a huge mapping and only use the begining.
-> 
-> Clearly these applications are assuming that overcommit is always allowed
-> because otherwise they would be failing. Also, the behaviour with reservations
-> is currently inconsistent as MAP_SHARED always tries to reserve the pages.
-> Maybe large shared mappings are rarer than large private mappings, but
-> this inconsistency is still shoddy.
+seems to be the same. To be pedantic,
+http://en.wikipedia.org/wiki/KERNAL
+The KERNAL was known as kernel[1] inside of Commodore since the PETdays, but in 1980 Robert Russell misspelled the word in his notebooksforming the word kernal. When Commodore technical writers Neil Harrisand Andy Finkel collected Russell's notes and used them as the basisfor the VIC-20 programmer's manual, the misspelling followed themalong and stuck.[2]
+;-)Thanks,
 
-As I remember history, in the beginning we had pre-fault semantics for all
-mappings.  This meant that for the longest time we had the equivalent to
-"reserve at mmap" semantics, indeed probabally had reserve at fork() too.
-When dynamic faulting went in (to get locality of allocation to reference
-for performance in numa systems) that changed, but mostly because it
-was seen as hard to implement, or perhaps hard to decide what the sane
-semantics were.
-
-During the evolution since its been clear that the biggest problem is
-unreliable semantics.  A semantic difference between private and shared
-mappings is annoying enough, but the random SIGKILL at a random time in
-the future has always been a festering thorn.  How many customers would
-accept a support response of "yeah it'll do that on day 5 one time in
-20 or so *beam*" not many I would bet.
-
-In an ideal world we would have the same semantics for small and large
-pages, but that would be to ignore the obvious difference in quantity and
-availability of these mappings.  Of the strict and sloppy semantic options
-we have had, the former are cirtainly easier to rely on if potentially
-harder to work with.
-
-> > This avoids costly resize operations later and is a quite useful
-> > strategy on 64bit (but even on 32bit).  Now the upper size will
-> > likely be incredibly huge (far beyond available physical memory), but it's 
-> > obviously impossible really uses all of it.
-> > 
-> > It's also common in languages who don't support dynamic allocation well (like 
-> > older fortran dialects). Given these won't use hugetlbfs directly either, 
-> > but I couldn't rule out that someone wrote a special fortran run time library 
-> > which transparently allocates large arrays from hugetlbfs. 
-> > 
-> > In fact i would be surprised if a number of such beasts don't exist -- it is 
-> > really an obvious simple tuning option for old HPC fortran applications.
-> > 
-> 
-> I don't know if such a run-time library exists but libhugetlbfs is occasionally
-> used in situations like this to back the data segment backed by huge pages. It
-> first copies the data MAP_SHARED to fake the reservation before remapping
-> private and kinda hopes for the best.
-
-Indeed we do see a number of such fortran apps.  The nice thing about them
-is that they actually have only static allocations and so that in reality we
-know how big they are up front and can use that information when sizing
-the mappings to back them.  So those are actually the _easiest_ to handle.
-
-> > > Sometimes their app will run, other times it dies. If more
-> > > than one application is running on the system that is behaving like this,
-> > > they are really playing with fire.
-> > 
-> > With your change such an application will not run at all. Doesn't
-> > seem like an improvement to me.
-> > 
-> 
-> I disagree. mmap() failing is something an application should be able to
-> take care of and at least it possible as opposed to SIGKILL where it's
-> "game over". Even if they are using run-time helpers like libhugetlbfs,
-> it should be able to detect when a large-page-backed is flaky and use small
-> pages instead. As it is, it's very difficult to detect in advance if future
-> faults will succeed, particularly when more than one application is running.
-> 
-> If the application is unable to handle mmap() failing, then yes, it'll
-> exit. But at least it'll exit consistently and not get SIGKILLed
-> randomly which to me is a far worse situation.
->
-> > > With this change, a mmap() failure is a clear indication that the mapping
-> > > would have been unsafe to use and they should try mmap()ing with small pages
-> > > instead. 
-> > 
-> > I don't have a problem with having an optional strict overcommit checking 
-> > mode (similar to what standard VM has), but it should be configurable
-> > and off by default.
-> > 
-> 
-> There already is partial strict overcommit checking for MAP_SHARED. I
-> think it should be consistent and done for MAP_PRIVATE.
-> 
-> For disabling, I could look into adding MAP_NORESERVE support and
-> something like the current overcommit_memory tunable for hugetlbfs.
-> However with yet another proc tunable, I would push for enabling strict
-> checking by default for safe behaviour than disabled by default for
-> random SIGKILLs.
-
--apw
+On Thu, Apr 24, 2008 at 4:42 PM, Uwe Kleine-KÃ¶nig<Uwe.Kleine-Koenig@digi.com> wrote:> Signed-off-by: Uwe Kleine-KÃ¶nig <Uwe.Kleine-Koenig@digi.com>>  Cc: trivial@kernel.org>  --->   fs/proc/nommu.c |    2 +->   1 files changed, 1 insertions(+), 1 deletions(-)>>  diff --git a/fs/proc/nommu.c b/fs/proc/nommu.c>  index 941e951..618a732 100644>  --- a/fs/proc/nommu.c>  +++ b/fs/proc/nommu.c>  @@ -76,7 +76,7 @@ int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)>>   /*>   * display a list of all the VMAs the kernel knows about>  - * - nommu kernals have a single flat list>  + * - nommu kernels have a single flat list>   */>   static int nommu_vma_list_show(struct seq_file *m, void *v)>   {>  -->  1.5.5.1>>  -->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in>  the body of a message to majordomo@vger.kernel.org>  More majordomo info at  http://vger.kernel.org/majordomo-info.html>  Please read the FAQ at  http://www.tux.org/lkml/>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
