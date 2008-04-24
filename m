@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYDXXlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086AbYDXXoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYDXXlM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYDXXk6
+	id S1752086AbYDXXoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYDXXo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:40:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40843 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbYDXXk5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:40:57 -0400
-Date: Thu, 24 Apr 2008 20:39:37 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Brandon Philips <bphilips@suse.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Matthias Schwarzott <zzam@gentoo.org>,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
-       Patrick Boettcher <pb@linuxtv.org>
-Subject: Re: [v4l-dvb-maintainer] no help text for DVB_TUNER_ITD1000
-Message-ID: <20080424203937.0c21093b@gaivota>
-In-Reply-To: <20080424210821.GA14416@plankton>
-References: <20080424202257.GC18854@cs181133002.pp.htv.fi>
-	<20080424172838.5df1da67@gaivota>
-	<20080424210821.GA14416@plankton>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Thu, 24 Apr 2008 19:44:29 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:59850 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbYDXXo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 19:44:28 -0400
+Subject: [GIT PULL] LED tree pull request
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 25 Apr 2008 00:44:04 +0100
+Message-Id: <1209080644.28694.13.camel@dax.rpnet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008 14:08:21 -0700
-Brandon Philips <bphilips@suse.de> wrote:
+Linus,
 
-> On 17:28 Thu 24 Apr 2008, Mauro Carvalho Chehab wrote:
-> > On Thu, 24 Apr 2008 23:22:57 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> > > The DVB_TUNER_ITD1000 option introduced by
-> > > commit 1881ee89e0fe03ac5bba9045acb3bea1818f9466
-> > > (V4L/DVB (7571): mt312: Cleanup buffer variables of read/write functions)
-> > > lacks a help text.
-> > > 
-> > > Please add a help text.
-> > 
-> > Thanks for pointing.
-> > 
-> > I just noticed and prepared a patch. I should soon add it to devel branch
-> > at -git for people to review. 
-> 
-> How is adding this Kconfig related to the patch that Matthias posted?
-> Once again, some very strange folding is happening as things are moving
-> into git.
-> 
-> http://article.gmane.org/gmane.linux.drivers.dvb/41017/match=mt312+cleanup+buffer+variables+read+write+functions
-> 
-> vs.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=1881ee89e0fe03ac5bba9045acb3bea1818f9466;hp=dbad108bdcb30629c850f5606949510da010a686
+Could you please pull from:
 
-I didn't understood what happened. some chunks from patch 7569 were wrongly merged on 7571.
+git://git.o-hand.com/linux-rpurdie-leds for-linus
 
-I suspect that it is a trouble on my local copy of the -git tree. git fsck is
-generating 3434 lines of errors.
+for the LED tree updates for 2.6.26. Most of the noise is from a
+whitespace cleanup but there are also some core enhancements and some
+driver tweaks all of which has been in -mm for a while.
 
-I've did a diff between the applied patch and the original ones. It is not easy
-to compare the diffs manually, since file order changes, but it seems that the
-other patches are ok.
+I've also included a new driver which depended on ARM patches merging
+and has therefore not been in -mm and a new LED trigger. 
 
-I'll just drop this -git and create another replica.
+Thanks, Richard
 
-Matthias, Patrick and others,
+ Documentation/leds-class.txt      |   12 +
+ drivers/leds/Kconfig              |   17 ++
+ drivers/leds/Makefile             |    2 
+ drivers/leds/led-class.c          |   12 +
+ drivers/leds/led-core.c           |    4 
+ drivers/leds/led-triggers.c       |  120 +++++++++--------
+ drivers/leds/leds-clevo-mail.c    |   16 +-
+ drivers/leds/leds-cobalt-qube.c   |    2 
+ drivers/leds/leds-cobalt-raq.c    |    6 
+ drivers/leds/leds-corgi.c         |   11 +
+ drivers/leds/leds-fsg.c           |  261 ++++++++++++++++++++++++++++++++++++++
+ drivers/leds/leds-gpio.c          |   15 ++
+ drivers/leds/leds-h1940.c         |   64 ++++-----
+ drivers/leds/leds-hp6xx.c         |    6 
+ drivers/leds/leds-s3c24xx.c       |    4 
+ drivers/leds/leds-spitz.c         |   11 +
+ drivers/leds/leds.h               |   11 +
+ drivers/leds/ledtrig-default-on.c |   45 ++++++
+ drivers/leds/ledtrig-ide-disk.c   |    2 
+ drivers/leds/ledtrig-timer.c      |   35 +++--
+ include/linux/leds.h              |    6 
+ 21 files changed, 536 insertions(+), 126 deletions(-)
 
-sorry for the mess.
+Henrique de Moraes Holschuh (1):
+      leds: Add support to leds with readable status
 
-Cheers,
-Mauro
+Herbert Valerio Riedel (1):
+      leds: enable support for blink_set() platform hook in leds-gpio
+
+Mrton Nmeth (1):
+      leds: Add mail LED support for "Clevo D400P"
+
+Nick Forbes (1):
+      leds: Add default-on trigger
+
+Németh Márton (2):
+      leds: disable triggers on brightness set
+      leds: Cleanup various whitespace and code style issues
+
+Richard Purdie (1):
+      leds: Document the context brightness_set needs
+
+Rod Whitby (1):
+      leds: Add new driver for the LEDs on the Freecom FSG-3
+
+
+
