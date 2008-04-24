@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYDXL3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYDXLkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbYDXL3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 07:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYDXL3R
+	id S1756619AbYDXLkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 07:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYDXLk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 07:29:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41470 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbYDXL3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 07:29:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200804231458.53282.rgetz@blackfin.uclinux.org>
-References: <200804231458.53282.rgetz@blackfin.uclinux.org> <200804221356.15748.rgetz@blackfin.uclinux.org> <8682.1208900110@redhat.com>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: dhowells@redhat.com, "Greg Ungerer" <gerg@snapgear.com>,
-       linux-kernel@vger.kernel.org, "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Subject: Re: [PATCH] mm/nommu.c - return 0 from kobjsize with invalid objects
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 24 Apr 2008 12:28:11 +0100
-Message-ID: <10954.1209036491@redhat.com>
+	Thu, 24 Apr 2008 07:40:26 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57174 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYDXLkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 07:40:25 -0400
+Message-Id: <20080424113950.818688067@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Thu, 24 Apr 2008 13:39:50 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: viro@zeniv.linux.org.uk
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/13] vfs: add helpers to check r/o bind mounts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+Patches 1-3 are cleanups/bugfixes preceding the main series.  The
+description is in 4/13.  This is against latest git.
 
-> Don't perform kobjsize operations on objects the kernel doesn't manage.
-> 
-> Signed-off-by: Michael Hennerich <Michael.Hennerich@analog.com>
-> Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+<rant>
 
-Acked-by: David Howells <dhowells@redhat.com>
+R/O bind mounts patches have been reviewed numerous times.  Still a
+relatively large number of places remained where checking for R/O
+mounts was missed.
+
+Then I did this series, which basically guarantees, that that cannot
+happen.  Al rejected it, and rather fixed some of the remaining
+places.  He still missed several, which sort of proves my point.
+
+I think it's totally pointless to continue trying to fix the symptoms
+instead of getting at the root of the problem.
+
+I know that VFS interfaces are a sensitive question, but it would be
+nice it we could have some sanity back in this discussion.
+
+</rant>
+
+Thanks,
+Miklos
+
+--
