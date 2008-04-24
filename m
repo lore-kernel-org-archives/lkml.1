@@ -1,56 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbYDXKr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYDXKuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbYDXKr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 06:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYDXKrq
+	id S1756893AbYDXKuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 06:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDXKt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 06:47:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42720
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751140AbYDXKrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 06:47:46 -0400
-Date: Thu, 24 Apr 2008 03:47:45 -0700 (PDT)
-Message-Id: <20080424.034745.213455935.davem@davemloft.net>
-To: youvegotmoxie@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] fix typo in net/ipv6/Kconfig
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080424103950.GA6723@snafu.setup>
-References: <20080424103950.GA6723@snafu.setup>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 06:49:59 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:12725 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780AbYDXKt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 06:49:57 -0400
+Date: Thu, 24 Apr 2008 12:49:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
+       linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org, wilder@us.ibm.com
+Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
+Message-ID: <20080424104945.GV12774@kernel.dk>
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <1207628587.7535.8.camel@charm-linux> <20080423074518.GA12774@kernel.dk> <1209011553.9808.10.camel@charm-linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209011553.9808.10.camel@charm-linux>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Beasley <youvegotmoxie@gmail.com>
-Date: Thu, 24 Apr 2008 06:39:50 -0400
-
-> diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
-> index eb0b808..56b4d86 100644
-> --- a/net/ipv6/Kconfig
-> +++ b/net/ipv6/Kconfig
-> @@ -172,7 +172,7 @@ config IPV6_SIT
->           Tunneling means encapsulating data of one protocol type within
->           another protocol and sending it over a channel that understands the
->           encapsulating protocol. This driver implements encapsulation of IPv6
-> -         into IPv4 packets. This is useful if you want to connect two IPv6
-> +         into IPv4 packets. This is useful if you want to connect to IPv6
->           networks over an IPv4-only path.
+On Wed, Apr 23 2008, Tom Zanussi wrote:
 > 
->           Saying M here will produce a module called sit.ko. If unsure, say Y.
+> On Wed, 2008-04-23 at 09:45 +0200, Jens Axboe wrote:
+> > On Mon, Apr 07 2008, Tom Zanussi wrote:
+> > > 
+> > > On Fri, 2008-03-14 at 14:22 +0100, Christof Schmitt wrote:
+> > > > plain text document attachment (Re: blktrace/relay/s390: Oops in
+> > > > subbuf_splice_actor.eml)
+> > > > On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
+> > > > > On Fri, Mar 14 2008, Christof Schmitt wrote:
+> > > > > > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+> > > > > > > That is indeed a bug, does this work for you?
+> > > > > > > 
+> > > > > > > diff --git a/kernel/relay.c b/kernel/relay.c
+> > > > > > > index d080b9d..39d1fa8 100644
+> > > > > > > --- a/kernel/relay.c
+> > > > > > > +++ b/kernel/relay.c
+> > > > > > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+> > > > > > >  			       unsigned int flags,
+> > > > > > >  			       int *nonpad_ret)
+> > > > > > >  {
+> > > > > > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+> > > > > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> > > > > > >  	struct rchan_buf *rbuf = in->private_data;
+> > > > > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> > > > > > >  	uint64_t pos = (uint64_t) *ppos;
+> > > > > > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+> > > > > > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+> > > > > > >  	poff = read_start & ~PAGE_MASK;
+> > > > > > > 
+> > > > > > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+> > > > > > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+> > > > > > > +
+> > > > > > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+> > > > > > >  		unsigned int this_len, this_end, private;
+> > > > > > >  		unsigned int cur_pos = read_start + total_len;
+> > > > > > 
+> > > > > > With the patch, i can run dd and 'blktrace -h traceserver' without the
+> > > > > > oops. But the output from blktrace only contains only zeros and no
+> > > > > > usable data for blkparse. Using blktrace to write the data directly to
+> > > > > > disk, without using the blktrace server works. Is there anything i
+> > > > > > should look for to help debugging the problem?
+> > > > > 
+> > > > > We should probably get Tom in the loop, as he is the relay expert. I'll
+> > > > > make sure the above patch gets into 2.6.25, as it is definitely a bug
+> > > > > that needs fixing.
+> > > > 
+> > > > http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
+> > > > his email address seems to be no longer valid. I copy Dave Wilder
+> > > > here, since he is mentioned as relay maintainer on the web page.
+> > > > 
+> > > 
+> > > Hi,
+> > > 
+> > > Yeah, I no longer work for IBM - I need to update the relayfs site to
+> > > reflect that.
+> > > 
+> > > > Dave, can you have a look at this? I can easily reproduce the problem
+> > > > on s390 Linux for testing and getting more debug information.
+> > > > 
+> > > 
+> > > Not sure anyone's still looking into this, but it doesn't look like an
+> > > s390 problem specifically.  Apparently what happened was that some
+> > > internal changes to splice seem to have broken the relay splice_read
+> > > implementation.  The above patch fixes part of the problem; the patch
+> > > below should fix the rest, and AFAICT it doesn't break anything else.
+> > > 
+> > > Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+> > > 
+> > > diff --git a/fs/splice.c b/fs/splice.c
+> > > index a861bb3..068b210 100644
+> > > --- a/fs/splice.c
+> > > +++ b/fs/splice.c
+> > > @@ -1094,7 +1094,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+> > >  
+> > >  	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
+> > >  	if (ret > 0)
+> > > -		*ppos += ret;
+> > > +		*ppos = sd.pos;
+> > 
+> > Tom, did you verify that sd.pos is always updated?
+> > 
+> 
+> Yeah, everything else that can be a sendfile source ends up using
+> generic_file_splice_read(), which updates sd.pos as expected.
 
-Your email client corrupted the patch, it has turned tab characters
-into spaces.
+Goodie, thanks for confirming!
 
-You should also be sure to post your networking patches to
-netdev@vger.kernel.org as that's where the networking developers
-listen.
+-- 
+Jens Axboe
 
-Please also provide a proper Signed-off-by: line for your patch (see
-linux/Docuemtnation/SubmittingPatches, section 5).
-
-Thanks.
