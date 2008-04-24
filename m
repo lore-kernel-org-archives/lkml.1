@@ -1,127 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYDXEcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYDXEdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbYDXEcr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 00:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYDXEch
+	id S1754346AbYDXEdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 00:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYDXEdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 00:32:37 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:56273
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392AbYDXEcg (ORCPT
+	Thu, 24 Apr 2008 00:33:25 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:45945 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYDXEdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 00:32:36 -0400
-X-Authority-Analysis: v=1.0 c=1 a=U9g90OMrTUoA:10 a=FP58Ms26AAAA:8
- a=EOVmgI2XQSbHicgGKwUA:9 a=_47fEnth4omNVDpT4YDyvp2Xl0gA:4 a=si9q_4b84H0A:10
- a=WuK_CZDBSqoA:10
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-From: Tom Zanussi <zanussi@comcast.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wilder@us.ibm.com
-In-Reply-To: <20080423074518.GA12774@kernel.dk>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com>
-	 <20080314115802.GK17940@kernel.dk>
-	 <20080314130552.GA9352@schmichrtp.de.ibm.com>
-	 <20080314131007.GQ17940@kernel.dk>
-	 <20080314132238.GA9815@schmichrtp.de.ibm.com>
-	 <1207628587.7535.8.camel@charm-linux>  <20080423074518.GA12774@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 23:32:33 -0500
-Message-Id: <1209011553.9808.10.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 00:33:24 -0400
+Date: Thu, 24 Apr 2008 14:33:23 +1000
+To: David Miller <davem@davemloft.net>, linux-net@bakeyournoodle.com
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Silence 'may be used uninitialized' warning in net/key/af_key.c
+Message-ID: <20080424043323.GR20457@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently the kernel warns about:
+net/key/af_key.c: In function 'pfkey_spddelete':
+net/key/af_key.c:2359: warning: 'pol_ctx' may be used uninitialized in this function
 
-On Wed, 2008-04-23 at 09:45 +0200, Jens Axboe wrote:
-> On Mon, Apr 07 2008, Tom Zanussi wrote:
-> > 
-> > On Fri, 2008-03-14 at 14:22 +0100, Christof Schmitt wrote:
-> > > plain text document attachment (Re: blktrace/relay/s390: Oops in
-> > > subbuf_splice_actor.eml)
-> > > On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > > > On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > > > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > > > > That is indeed a bug, does this work for you?
-> > > > > > 
-> > > > > > diff --git a/kernel/relay.c b/kernel/relay.c
-> > > > > > index d080b9d..39d1fa8 100644
-> > > > > > --- a/kernel/relay.c
-> > > > > > +++ b/kernel/relay.c
-> > > > > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > > > > >  			       unsigned int flags,
-> > > > > >  			       int *nonpad_ret)
-> > > > > >  {
-> > > > > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > > > >  	struct rchan_buf *rbuf = in->private_data;
-> > > > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > > > >  	uint64_t pos = (uint64_t) *ppos;
-> > > > > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > > > > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > > > > >  	poff = read_start & ~PAGE_MASK;
-> > > > > > 
-> > > > > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > > > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > > > > +
-> > > > > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > > > > >  		unsigned int this_len, this_end, private;
-> > > > > >  		unsigned int cur_pos = read_start + total_len;
-> > > > > 
-> > > > > With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > > > > oops. But the output from blktrace only contains only zeros and no
-> > > > > usable data for blkparse. Using blktrace to write the data directly to
-> > > > > disk, without using the blktrace server works. Is there anything i
-> > > > > should look for to help debugging the problem?
-> > > > 
-> > > > We should probably get Tom in the loop, as he is the relay expert. I'll
-> > > > make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > > > that needs fixing.
-> > > 
-> > > http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > > his email address seems to be no longer valid. I copy Dave Wilder
-> > > here, since he is mentioned as relay maintainer on the web page.
-> > > 
-> > 
-> > Hi,
-> > 
-> > Yeah, I no longer work for IBM - I need to update the relayfs site to
-> > reflect that.
-> > 
-> > > Dave, can you have a look at this? I can easily reproduce the problem
-> > > on s390 Linux for testing and getting more debug information.
-> > > 
-> > 
-> > Not sure anyone's still looking into this, but it doesn't look like an
-> > s390 problem specifically.  Apparently what happened was that some
-> > internal changes to splice seem to have broken the relay splice_read
-> > implementation.  The above patch fixes part of the problem; the patch
-> > below should fix the rest, and AFAICT it doesn't break anything else.
-> > 
-> > Signed-off-by: Tom Zanussi <zanussi@comcast.net>
-> > 
-> > diff --git a/fs/splice.c b/fs/splice.c
-> > index a861bb3..068b210 100644
-> > --- a/fs/splice.c
-> > +++ b/fs/splice.c
-> > @@ -1094,7 +1094,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
-> >  
-> >  	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
-> >  	if (ret > 0)
-> > -		*ppos += ret;
-> > +		*ppos = sd.pos;
-> 
-> Tom, did you verify that sd.pos is always updated?
-> 
+Certainly in the case that CONFIG_SECURITY_NETWORK_XFRM is not set a bogus
+value for pol_ctx will be passed arround.  Unconditonnaly initialise to NULL,
+to avoid this problem.
 
-Yeah, everything else that can be a sendfile source ends up using
-generic_file_splice_read(), which updates sd.pos as expected.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ net/key/af_key.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Tom
+diff --git a/net/key/af_key.c b/net/key/af_key.c
+index 81a8e52..48923e0 100644
+--- a/net/key/af_key.c
++++ b/net/key/af_key.c
+@@ -2385,6 +2385,7 @@ static int pfkey_spddelete(struct sock *sk, struct sk_buff *skb, struct sadb_msg
+ 	if (sel.dport)
+ 		sel.dport_mask = htons(0xffff);
+ 
++	pol_ctx = NULL;
+ 	sec_ctx = (struct sadb_x_sec_ctx *) ext_hdrs[SADB_X_EXT_SEC_CTX-1];
+ 	if (sec_ctx != NULL) {
+ 		struct xfrm_user_sec_ctx *uctx = pfkey_sadb2xfrm_user_sec_ctx(sec_ctx);
+@@ -2396,8 +2397,7 @@ static int pfkey_spddelete(struct sock *sk, struct sk_buff *skb, struct sadb_msg
+ 		kfree(uctx);
+ 		if (err)
+ 			return err;
+-	} else
+-		pol_ctx = NULL;
++	}
+ 
+ 	xp = xfrm_policy_bysel_ctx(XFRM_POLICY_TYPE_MAIN,
+ 				   pol->sadb_x_policy_dir - 1, &sel, pol_ctx,
+-- 
+1.5.5.1
 
 
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
 
