@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYDXWlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYDXWnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbYDXWlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYDXWln
+	id S1756670AbYDXWnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYDXWnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:41:43 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:19728 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754386AbYDXWlm (ORCPT
+	Thu, 24 Apr 2008 18:43:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42633 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754751AbYDXWnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:41:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XypyZN9Q+XP7LJKbsicQlltUXJh2go4e1FfEM/xZta+m6wgV6F8JC/7qXTQ/6JcLN/ij0ZuyHAHix7/MJ0A/xvJVeMr5thwPDkn51jigC7Uw6rFKdw+M9SNJPmcAU639vN8jUtaF6a8iWjOVeJTSR+DuLOyjGARrPYTNdXdA2C0=
-Subject: Re: [git pull] generic bitops
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>
-In-Reply-To: <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org>
-References: <20080424215739.GA32378@elte.hu>
-	 <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 15:41:37 -0700
-Message-Id: <1209076897.20088.2.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 18:43:12 -0400
+Date: Thu, 24 Apr 2008 15:41:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <4811090A.9030809@gmail.com>
+Message-ID: <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com>
+ <20080422095315.GA28014@elte.hu>  <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>  <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
+ <4811090A.9030809@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-24 at 15:14 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 24 Apr 2008, Ingo Molnar wrote:
-> >
-> > this started out as improvements/generalizations to x86 bitops, but grew 
-> > generic impact (and generic optimizations) as well, so it's offered as a 
-> > separate tree.
-> 
-> Can you do the config thing differently?
-> 
-> > diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
-> > index e09edfa..49990ea 100644
-> > --- a/arch/um/Kconfig.i386
-> > +++ b/arch/um/Kconfig.i386
-> > @@ -39,6 +39,14 @@ config ARCH_REUSE_HOST_VSYSCALL_AREA
-> >  	bool
-> >  	default y
-> >  
-> > +config GENERIC_FIND_FIRST_BIT
-> > +	bool
-> > +	default y
-> > +
-> > +config GENERIC_FIND_NEXT_BIT
-> > +	bool
-> > +	default y
-> > +
-> 
-> .. because instead of having each architecture do these kinds of things, 
-> we're trying to make the *generic* code (ie lib/Kconfig) do
-> 
-> 	config GENERIC_FIND_FIRST_BIT
-> 		bool
-> 		default n
 
-config HAVE_GENERIC_FIND_FIRST_BIT
-	def_bool n
 
-(I know it defaults to n, but this pattern is becoming suggestive of
-features that must be selected, in addition to the HAVE_ prefix)
+On Fri, 25 Apr 2008, Jiri Slaby wrote:
+> 
+> 20 arpings running on wlan0 (don't know if this is related so far), suspend,
+> resume, right after resume:
+> 
+> freed 114
+> alloced 115
+> freed 115
+> alloced 116
+> WHAT THE HELL (000a3ff8):
+> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
 
-Although I think for lib stuff, we may want to think about WANT_
-prefixes to suggest you have to opt in.
+Very interesting indeed.
 
-Harvey
+> Shouldn't be 2.6.25 uttered as broken until this is solved to not corrupt
+> anyone's data? I'm going to play with that testing program further in the
+> meantime.
 
+Do you actually see this with _plain_ 2.6.25? So far I've assumed that all 
+the reports are about post-2.6.25 issues.
+
+Also, it does seem like you can re-create this at will in ways that others 
+can not. Could you try to bisect it a bit? Right now we have no real clue 
+what it is all about, except that it seems to be related to suspend/resume 
+and there are some indications that it's about networking (and _perhaps_ 
+wireless in particular).
+
+		Linus
