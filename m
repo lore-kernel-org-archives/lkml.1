@@ -1,109 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYDXCKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYDXCLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbYDXCKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 22:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYDXCKp
+	id S1757285AbYDXCLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 22:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDXCLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 22:10:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39323 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYDXCKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 22:10:44 -0400
-Message-ID: <480FEC1B.6040102@garzik.org>
-Date: Wed, 23 Apr 2008 22:10:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 23 Apr 2008 22:11:07 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:24119 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752176AbYDXCLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 22:11:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=FgH6c0hnZvqmYyVdpLSgLz//uqPV8Kj8Pfp429iKwt1FnIbnBI6PbkOHDiqEXWFlgjXfirS/6vGJWmzaDEN0nAQzytf4ysp7Hdrvz7Q0WIswn4QOcOK5y3OUBIiyh/ID/8jhGbzO67WGQr9pApFN06H+MxlVM5su0lH1G78kIH4=
+Message-ID: <86802c440804231911y51d2cf9bw50246a6435ae1f98@mail.gmail.com>
+Date: Wed, 23 Apr 2008 19:11:02 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Greg KH" <greg@kroah.com>,
+       "David Miller" <davem@davemloft.net>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Sathya Prakash" <sathya.prakash@lsi.com>
+In-Reply-To: <86802c440804231822s7cc4e2c1vfdb7f40ae0580045@mail.gmail.com>
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [git patch] free_irq() fixes
-References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org> <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org> <480F3ECC.1090809@keyaccess.nl>
-In-Reply-To: <480F3ECC.1090809@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_20301_28018326.1209003062792"
+References: <200804222148.17530.yhlu.kernel@gmail.com>
+	 <1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
+	 <m1hcdsoh1i.fsf@frodo.ebiederm.org>
+	 <1208996273.9245.18.camel@concordia.ozlabs.ibm.com>
+	 <86802c440804231822s7cc4e2c1vfdb7f40ae0580045@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 23-04-08 02:16, Linus Torvalds wrote:
-> 
->> On Wed, 23 Apr 2008, Adrian Bunk wrote:
->>> If it goes like the regs removal in one big patch around -rc1 into 
->>> your tree this shouldn't be a problem.
->>
->> Well, the regs removal had a real upside (it wasn't even sensible for 
->> all irq types), and really nobody used it apart from "system users" 
->> (ie Sysrq etc).
->>
->> I'm still waiting for anybody mentioning any upside at _all_ on 
->> removing "irq".
-> 
-> Saves another 4 bytes of stack? :-/ Seriously, Jeff can probably better 
-> answer himself but when this was posted before:
-> 
-> http://lkml.org/lkml/2007/5/19/23
-> 
-> Eric Biederman said it fit nicely into his "nefarious plan of making 
-> everything use a struct irq pointer". A later mention:
-> 
-> http://lkml.org/lkml/2007/10/19/66
-> 
-> got strong ACKs from Thomas Gleixner, Ingo Molnar and Greg KH. Remember 
-> due to working on a local driver at the time and deleting the "irq" 
-> argument usage from its handler (unneccesarily used in a debugging 
-> printk) from it in response.
+------=_Part_20301_28018326.1209003062792
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Thanks.  I was hoping that some of the people who expressed interest in 
-prior threads would appear.
+On Wed, Apr 23, 2008 at 6:22 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> On Wed, Apr 23, 2008 at 5:17 PM, Michael Ellerman
+>  <michael@ellerman.id.au> wrote:
+>  >  But does that help us? What if the device driver in the 2nd kernel
+>  >  assumes it's using INTX, when in fact MSI is enabled on the device. In
+>  >  that case none of the MSI code will even be called AFAIK.
+>
+>  ok. for kdump case, if driver can not use msi (?), with pci=nomsi
+>  we need to call pci_intx_for_msi(dev, 1) at beginning of second kernel.
+>
+>  will produce another patch about that case.
 
-Answering Linus's question, the things I tend to think of are
+attached kernel should fix second kernel by kdump doesn't have msi
+support problem.
 
-* it's not used in overwhelming majority of cases
+anyway kexec path doesn't need attached one, because shutdown in first
+kernel already did pci_msi_shutdown and it called pci_initx_for_msi
 
-* irq number has morphed over time with MSI-X and APICs and such from a 
-direct "reference" to a hardware line to a more abstract cookie value.
+also long term should teach every driver call pci_intx_for_msi(dev, 1)?
 
-* the need for a struct [pci_]device everywhere means drivers have ready 
-access to irq number _anyway_
+YH
 
-* it has clearly led to many helpful cleanups and bug fixes, by both me 
-and others [and yes, for the sake of argument I'm excluding those 
-discussed in this thread]
+------=_Part_20301_28018326.1209003062792
+Content-Type: text/x-patch; name=enable_intx_for_kdump.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ffep033d0
+Content-Disposition: attachment; filename=enable_intx_for_kdump.patch
 
-* it helps clean up abuses like HPET where it is used to encode data 
-(ignoring dev_id unnecessarily...  I posted a patch to fix this):
+W1BBVENIXSBwY2kvaXJxOiBlbmFibGUgSU5UeCBpbiBwY2lfaW5pdAoKaW4gY2FzZSBzZWNvbmQg
+a2VybmVsIHRoYXQgaXMgdXNlZCBieSBrZHVtcCBkb24ndCBoYXZlIE1TSSBzdXBwb3J0LgoKU2ln
+bmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvcGNpL21zaS5jIGIvZHJpdmVycy9wY2kvbXNpLmMKaW5kZXggMjY5MzhkYS4u
+Y2EwNTcyNiAxMDA2NDQKLS0tIGEvZHJpdmVycy9wY2kvbXNpLmMKKysrIGIvZHJpdmVycy9wY2kv
+bXNpLmMKQEAgLTI2OSwxMiArMjY5LDYgQEAgc3RhdGljIHN0cnVjdCBtc2lfZGVzYyogYWxsb2Nf
+bXNpX2VudHJ5KHZvaWQpCiAJcmV0dXJuIGVudHJ5OwogfQogCi1zdGF0aWMgdm9pZCBwY2lfaW50
+eF9mb3JfbXNpKHN0cnVjdCBwY2lfZGV2ICpkZXYsIGludCBlbmFibGUpCi17Ci0JaWYgKCEoZGV2
+LT5kZXZfZmxhZ3MgJiBQQ0lfREVWX0ZMQUdTX01TSV9JTlRYX0RJU0FCTEVfQlVHKSkKLQkJcGNp
+X2ludHgoZGV2LCBlbmFibGUpOwotfQotCiBzdGF0aWMgdm9pZCBfX3BjaV9yZXN0b3JlX21zaV9z
+dGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQogewogCWludCBwb3M7CmRpZmYgLS1naXQgYS9kcml2
+ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCmluZGV4IGU0NTQ4YWIuLmY1YjBlNTAg
+MTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcGNpL3BjaS5jCisrKyBiL2RyaXZlcnMvcGNpL3BjaS5jCkBA
+IC0xMzgxLDYgKzEzODEsMTMgQEAgcGNpX2ludHgoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGludCBl
+bmFibGUpCiAJfQogfQogCisvKiBpbiBjYXNlIHNlY29uZCBrZXJuZWwgZG9lc24ndCBoYXZlIE1T
+SSBzdXBwb3J0IGJ1aWx0LWluICovCit2b2lkIHBjaV9pbnR4X2Zvcl9tc2koc3RydWN0IHBjaV9k
+ZXYgKmRldiwgaW50IGVuYWJsZSkKK3sKKwlpZiAoIShkZXYtPmRldl9mbGFncyAmIFBDSV9ERVZf
+RkxBR1NfTVNJX0lOVFhfRElTQUJMRV9CVUcpKQorCQlwY2lfaW50eChkZXYsIGVuYWJsZSk7Cit9
+CisKIC8qKgogICogcGNpX21zaV9vZmYgLSBkaXNhYmxlcyBhbnkgbXNpIG9yIG1zaXggY2FwYWJp
+bGl0aWVzCiAgKiBAZGV2OiB0aGUgUENJIGRldmljZSB0byBvcGVyYXRlIG9uCkBAIC0xNjM3LDYg
+KzE2NDQsNyBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwY2lfaW5pdCh2b2lkKQogCXN0cnVjdCBw
+Y2lfZGV2ICpkZXYgPSBOVUxMOwogCiAJd2hpbGUgKChkZXYgPSBwY2lfZ2V0X2RldmljZShQQ0lf
+QU5ZX0lELCBQQ0lfQU5ZX0lELCBkZXYpKSAhPSBOVUxMKSB7CisJCXBjaV9pbnR4X2Zvcl9tc2ko
+ZGV2LCAxKTsKIAkJcGNpX2ZpeHVwX2RldmljZShwY2lfZml4dXBfZmluYWwsIGRldik7CiAJfQog
+CXJldHVybiAwOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wY2kuaCBiL2luY2x1ZGUvbGlu
+dXgvcGNpLmgKaW5kZXggOGY1M2Y0Yi4uZDEwODBkMCAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51
+eC9wY2kuaAorKysgYi9pbmNsdWRlL2xpbnV4L3BjaS5oCkBAIC01OTIsNiArNTkyLDcgQEAgaW50
+IF9fbXVzdF9jaGVjayBwY2lfc2V0X213aShzdHJ1Y3QgcGNpX2RldiAqZGV2KTsKIGludCBwY2lf
+dHJ5X3NldF9td2koc3RydWN0IHBjaV9kZXYgKmRldik7CiB2b2lkIHBjaV9jbGVhcl9td2koc3Ry
+dWN0IHBjaV9kZXYgKmRldik7CiB2b2lkIHBjaV9pbnR4KHN0cnVjdCBwY2lfZGV2ICpkZXYsIGlu
+dCBlbmFibGUpOwordm9pZCBwY2lfaW50eF9mb3JfbXNpKHN0cnVjdCBwY2lfZGV2ICpkZXYsIGlu
+dCBlbmFibGUpOwogdm9pZCBwY2lfbXNpX29mZihzdHJ1Y3QgcGNpX2RldiAqZGV2KTsKIGludCBw
+Y2lfc2V0X2RtYV9tYXNrKHN0cnVjdCBwY2lfZGV2ICpkZXYsIHU2NCBtYXNrKTsKIGludCBwY2lf
+c2V0X2NvbnNpc3RlbnRfZG1hX21hc2soc3RydWN0IHBjaV9kZXYgKmRldiwgdTY0IG1hc2spOwo=
 
-         if (rtc_int_flag) {
-                 rtc_int_flag |= (RTC_IRQF | (RTC_NUM_INTS << 8));
-                 if (irq_handler)
-                         irq_handler(rtc_int_flag, dev_id);
-         }
-
-["irq_handler" is a function passed to request_irq, as well as being 
-called here]
-
-dev_id exists for passing various data to the irq_handler...  with some 
-drivers abusing the 'irq' argument to pass data, that potential opens 
-holes for bugs whenever the irq numbering (aka cookie) scheme is changed 
--- because changing the cookie scheme could potentially trigger code like
-
-	if (irq == MAGIC_NUMBER)
-		this is an internal self-call, do some polling
-	else
-		handle real hardware-raised interrupt
-
-When drivers make assumptions about system irq numbering, particularly 
-on x86, IMO the situation is fragile.
-
-	Jeff
-
-
-
+------=_Part_20301_28018326.1209003062792--
