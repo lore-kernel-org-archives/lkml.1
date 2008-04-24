@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYDXHY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbYDXH0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYDXHY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYDXHYS
+	id S1752617AbYDXH0a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 03:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYDXH0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:24:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40044 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYDXHYR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:24:17 -0400
-Subject: Re: physmap and "request_module: runaway loop modprobe net-pf-1"
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: gordonfarquharson@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080424.002038.201593352.davem@davemloft.net>
-References: <1209016143.9212.910.camel@pmac.infradead.org>
-	 <20080423.231055.193687131.davem@davemloft.net>
-	 <1209021399.9212.927.camel@pmac.infradead.org>
-	 <20080424.002038.201593352.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 08:24:12 +0100
-Message-Id: <1209021852.9212.936.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+	Thu, 24 Apr 2008 03:26:22 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:37997 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbYDXH0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 03:26:22 -0400
+Message-ID: <48103002.5090806@parallels.com>
+Date: Thu, 24 Apr 2008 11:00:18 +0400
+From: Kirill Korotaev <dev@parallels.com>
+Organization: Parallels
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
+       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object	creation
+ with a specified id)
+References: <20080418054459.891481000@bull.net>	 <20080422193612.GA15835@martell.zuzino.mipt.ru>	 <1208890580.17117.14.camel@nimitz.home.sr71.net>	 <20080422210130.GA15937@martell.zuzino.mipt.ru>	 <1208904967.17117.51.camel@nimitz.home.sr71.net>	 <480ED9D5.1010906@parallels.com> <1208964798.17117.72.camel@nimitz.home.sr71.net>
+In-Reply-To: <1208964798.17117.72.camel@nimitz.home.sr71.net>
+Content-Type: text/plain; charset=windows-1251
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-04-24 at 00:20 -0700, David Miller wrote:
-> But won't the request_module() for AF_UNIX spit out that warning too?
+Yeah... we talked with Andrew yesterday. He mostly agrees with a black box.
+He also said an interesting idea, that if you need compatibility
+between the kernels (like we for example, support for migration from 2.6.9 to 2.6.18 in OpenVZ)
+you can do image conversion in user-space... Though I think we will prefer simply to have
+a compatibility patch for specific kernel versions in our kernel tree (not in mainstream).
 
-Yes. If you build AF_UNIX as a module, it will. Just once though, before
-loading it (assuming it's available).
+Definitely, other ideas/opinions are welcome.
 
-> Actually, I think I need a clarification.  It is the modular loader
-> utility in userspace which is trying to open up AF_UNIX sockets,
-> right?
+Kirill
 
-Yes. Or probably libc.
 
--- 
-dwmw2
-
+Dave Hansen wrote:
+> On Wed, 2008-04-23 at 10:40 +0400, Kirill Korotaev wrote:
+>> Having all this functionality in a signle syscall we specifically CLAIM a black box,
+>> and that no one can use this interfaces for something different from checkpoint/restore.
+>>
+>> So I think we have to know what other maintainers think before we can go.
+> 
+> I completely agree.
+> 
+> Have you asked any particular maintainers what they think?
+> 
+> -- Dave
+> 
+> 
