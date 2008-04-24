@@ -1,92 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbYDXQeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYDXQiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbYDXQeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYDXQeH
+	id S1757422AbYDXQiV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYDXQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:34:07 -0400
-Received: from sacred.ru ([62.205.161.221]:51660 "EHLO sacred.ru"
+	Thu, 24 Apr 2008 12:38:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38331 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbYDXQeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:34:05 -0400
-Message-ID: <4810B5C0.1080501@openvz.org>
-Date: Thu, 24 Apr 2008 20:30:56 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1750944AbYDXQiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:38:04 -0400
+Message-ID: <4810B75B.20202@redhat.com>
+Date: Thu, 24 Apr 2008 09:37:47 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch 37/37] LTTng instrumentation net
-References: <20080424150324.802695381@polymtl.ca> <20080424151408.991424268@polymtl.ca> <4810ACB4.501@openvz.org> <20080424161337.GA22874@Krystal>
-In-Reply-To: <20080424161337.GA22874@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 24 Apr 2008 20:33:27 +0400 (MSD)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] alternative^2 to sys_indirect: socket, socketpair
+References: <200804241618.m3OGI9kd013025@devserv.devel.redhat.com> <20080424170325.569afa43@the-village.bc.nu>
+In-Reply-To: <20080424170325.569afa43@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Pavel Emelyanov (xemul@openvz.org) wrote:
->> Mathieu Desnoyers wrote:
->>> Network core events.
->>>
->>> Added markers :
->>>
->>> net_del_ifa_ipv4
->>> net_dev_receive
->>> net_dev_xmit
->>> net_insert_ifa_ipv4
->>> net_socket_call
->>> net_socket_create
->>> net_socket_recvmsg
->>> net_socket_sendmsg
->> Network "core" events are not limited with the above calls.
->>
-> 
-> True. This is by no mean an exhaustive list of network events. It just
-> happens to be the ones which has been useful to LTT/LTTng users for the
-> past ~10 years.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Do you mean, that we'll have these debris all over the networking code some day?
+Alan Cox wrote:
 
->> Besides, real "core" events already sent notifications about themselves.
->> Why do we need additional hooks?
->>
-> 
-> I doubt the current notification hooks have a performance impact as
-> small as the proposed markers. Which notification mechanism do you refer
-> to ? It could be interesting to put markers in there instead.
+>> -int sock_map_fd(struct socket *sock)
+>> +static int sock_map_fd_flags(struct socket *sock, int flags)
 
-E.g. call_netdevice_notifiers and co. 
-And they have nothing to do with performance, since configuration code is 
-not supposed to have a rocket speed.
+sock_map_fd is exported to modules.  Isn't it a big no-no to change
+those interfaces?
 
-> The goal behind this is to feed information to a general purpose tracer
-> like lttng, a scripting mechanism like systemtap or a special-purpose
-> tracer like ftrace.
-> 
-> I think that the most important instrumentation in this patchset is the
-> xmit/recv of a packet at the device level. The net_socket_*
-> instrumentation could eventually be replaced by an architecture specfic
-> system call parameters instrumentation.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-I will not argue about the value of such hooks in xmit/recv paths, but
-as far as the net_socket_xxx is concerned - there is already the
-* ptrace
-* security
-* kprobes
-way to screw the normal code flow up in these places.
-
-> Mathieu
-> 
->>> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->>> CC: netdev@vger.kernel.org
->>> ---
->>>  net/core/dev.c     |    6 ++++++
->>>  net/ipv4/devinet.c |    6 ++++++
->>>  net/socket.c       |   19 +++++++++++++++++++
->>>  3 files changed, 31 insertions(+)
-> 
-
+iD8DBQFIELda2ijCOnn/RHQRAoXZAKCAnv7JAup2v6KukBp59LDELfNUeACgvuET
+eBYx7ErX8E27VLxlYOdeXjs=
+=D+sf
+-----END PGP SIGNATURE-----
