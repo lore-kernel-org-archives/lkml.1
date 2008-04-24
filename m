@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbYDXE4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYDXE4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751763AbYDXE4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 00:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYDXEz6
+	id S1756233AbYDXE4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 00:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYDXE4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 00:55:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:58748 "EHLO ozlabs.org"
+	Thu, 24 Apr 2008 00:56:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:58754 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754488AbYDXEz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 00:55:56 -0400
+	id S1752679AbYDXE4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 00:56:16 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Wed, 23 Apr 2008 23:55:47 -0500
-Cc: virtualization@lists.linux-foundation.org
-Subject: [PATCH 1/6] virtio: ignore corrupted virtqueues rather than spinning.
+Date: Wed, 23 Apr 2008 23:56:07 -0500
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org
+Subject: [PATCH 2/6] virtio: fix tx_ stats in virtio_net
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804241455.47462.rusty@rustcorp.com.au>
+Message-Id: <200804241456.07551.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-A corrupt virtqueue (caused by the other end screwing up) can have
-strange results such as a driver spinning: just bail when we try to
-get a buffer from a known-broken queue.
+get_buf() gives the length written by the other side, which will be
+zero.  We want to add the skb length.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- drivers/virtio/virtio_ring.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/virtio_net.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -r cbd83e592664 drivers/virtio/virtio_ring.c
---- a/drivers/virtio/virtio_ring.c	Fri Apr 04 22:42:47 2008 +1100
-+++ b/drivers/virtio/virtio_ring.c	Sat Apr 05 21:12:42 2008 +1100
-@@ -184,6 +184,11 @@ static void *vring_get_buf(struct virtqu
- 
- 	START_USE(vq);
- 
-+	if (unlikely(vq->broken)) {
-+		END_USE(vq);
-+		return NULL;
-+	}
-+
- 	if (!more_used(vq)) {
- 		pr_debug("No more buffers in queue\n");
- 		END_USE(vq);
+diff -r 51bdbdc4f199 drivers/net/virtio_net.c
+--- a/drivers/net/virtio_net.c	Thu Apr 10 15:55:52 2008 +1000
++++ b/drivers/net/virtio_net.c	Mon Apr 14 11:13:45 2008 +1000
+@@ -221,7 +221,7 @@ static void free_old_xmit_skbs(struct vi
+ 	while ((skb = vi->svq->vq_ops->get_buf(vi->svq, &len)) != NULL) {
+ 		pr_debug("Sent skb %p\n", skb);
+ 		__skb_unlink(skb, &vi->send);
+-		vi->dev->stats.tx_bytes += len;
++		vi->dev->stats.tx_bytes += skb->len;
+ 		vi->dev->stats.tx_packets++;
+ 		kfree_skb(skb);
+ 	}
 
