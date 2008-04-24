@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYDXPzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbYDXP4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbYDXPzy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbYDXPzi
+	id S1760947AbYDXP4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759184AbYDXPzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 24 Apr 2008 11:55:39 -0400
+Received: from sacred.ru ([62.205.161.221]:35024 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758116AbYDXPzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 11:55:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50475 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757596AbYDXPzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:55:36 -0400
-Date: Thu, 24 Apr 2008 16:27:03 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-Message-ID: <20080424162703.1eec01a2@the-village.bc.nu>
-In-Reply-To: <4810AB29.5030604@redhat.com>
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
-	<20080424112514.055d8071@the-village.bc.nu>
-	<481096C3.2020206@redhat.com>
-	<20080424152436.6cf53c1b@the-village.bc.nu>
-	<4810A46B.1090809@redhat.com>
-	<20080424160352.30f2dd5b@the-village.bc.nu>
-	<4810AB29.5030604@redhat.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <4810ACB4.501@openvz.org>
+Date: Thu, 24 Apr 2008 19:52:20 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [patch 37/37] LTTng instrumentation net
+References: <20080424150324.802695381@polymtl.ca> <20080424151408.991424268@polymtl.ca>
+In-Reply-To: <20080424151408.991424268@polymtl.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 24 Apr 2008 19:54:51 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Alan Cox wrote:
-> > Kernel socket type values are assigned by the kernel team so that
-> > isn't a problem.
+Mathieu Desnoyers wrote:
+> Network core events.
 > 
-> Again, it's not about assigned values.  It about those not yet assigned.
+> Added markers :
+> 
+> net_del_ifa_ipv4
+> net_dev_receive
+> net_dev_xmit
+> net_insert_ifa_ipv4
+> net_socket_call
+> net_socket_create
+> net_socket_recvmsg
+> net_socket_sendmsg
 
-Earth calling Ulrich, Earth calling Ulrich...
+Network "core" events are not limited with the above calls.
 
-"Kernel socket type values are assigned by the kernel team so that isn't a
-problem."
+Besides, real "core" events already sent notifications about themselves.
+Why do we need additional hooks?
 
-Believe it or not we have the compute capability between us to not
-accidentally reassign values we assigned to one thing to something else.
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: netdev@vger.kernel.org
+> ---
+>  net/core/dev.c     |    6 ++++++
+>  net/ipv4/devinet.c |    6 ++++++
+>  net/socket.c       |   19 +++++++++++++++++++
+>  3 files changed, 31 insertions(+)
 
-> Oh really?  You open a server socket, use fcntl(FD_CLOEXEC), and then
-> accept(). 
-
-And your behaviour just became OS specific....
-
-Alan
