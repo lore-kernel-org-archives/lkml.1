@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYDXIml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYDXInh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbYDXIml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYDXImd
+	id S1754617AbYDXInh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbYDXIn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:42:33 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:56975 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750748AbYDXImc (ORCPT
+	Thu, 24 Apr 2008 04:43:29 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:63180 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbYDXIn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:42:32 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-4.tower-29.messagelabs.com!1209026551!12050812!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: <linux-kernel@vger.kernel.org>
-CC: <trivial@kernel.org>
-Subject: [PATCH] fix typo "kernal" -> "kernel"
-Date: Thu, 24 Apr 2008 10:42:17 +0200
-Message-ID: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.5.1
+	Thu, 24 Apr 2008 04:43:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=NrVIXk25ni7bSBgx7oa7UgkdsiSnvEkc4xNQvXlWEDfhWgRg5okdNjiRaOE+ECh044jAZaXVahtsndtiR2ZsZGu8bzTwm6bVp53oP0GKaqRZgs3h/GrKyOHz9e8uwpVITfqrlgmoNYTgvZA+jU6YHOmJOor2ELnIbZcDxnlnR8U=
+Date: Thu, 24 Apr 2008 12:42:41 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs
+Message-ID: <20080424084241.GA8624@cvg>
+References: <20080424083558.GA7749@cvg> <1209026364.9212.978.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 24 Apr 2008 08:42:17.0670 (UTC) FILETIME=[1A433660:01C8A5E7]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15866.007
-X-TM-AS-Result: No--10.329000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209026364.9212.978.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-Cc: trivial@kernel.org
----
- fs/proc/nommu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+[David Woodhouse - Thu, Apr 24, 2008 at 09:39:24AM +0100]
+| On Thu, 2008-04-24 at 12:35 +0400, Cyrill Gorcunov wrote:
+| > X86_VM_MASK is a kernel specific flag so lets hide it from
+| > userland programs
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| 
+| Since and there's already an #ifdef __KERNEL__ section later on in the
+| file, and since X86_VM_MASK isn't used before that, I probably would
+| have been inclined to shift it down there instead of adding a new
+| #ifdef.
+| 
+| But maybe I should just stop heckling... :)
+| 
+| -- 
+| dwmw2
+| 
 
-diff --git a/fs/proc/nommu.c b/fs/proc/nommu.c
-index 941e951..618a732 100644
---- a/fs/proc/nommu.c
-+++ b/fs/proc/nommu.c
-@@ -76,7 +76,7 @@ int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)
- 
- /*
-  * display a list of all the VMAs the kernel knows about
-- * - nommu kernals have a single flat list
-+ * - nommu kernels have a single flat list
-  */
- static int nommu_vma_list_show(struct seq_file *m, void *v)
- {
--- 
-1.5.5.1
+I was thought about that too ;) David, I'll recheck this
+all today evening (have to go to office now). And please
+continue heckling - it allows to make this file in particular
+*better*, so I think it's ok ;)
 
+		- Cyrill -
