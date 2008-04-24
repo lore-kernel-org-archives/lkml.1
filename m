@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbYDXAAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbYDXAA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbYDXAAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 20:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYDXAAf
+	id S1753058AbYDXAA6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 20:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYDXAAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 20:00:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:49748 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760AbYDXAAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 20:00:35 -0400
-Message-ID: <480FCD9F.3020403@goop.org>
-Date: Wed, 23 Apr 2008 17:00:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
+	Wed, 23 Apr 2008 20:00:45 -0400
+Received: from simmts8-srv.bellnexxia.net ([206.47.199.166]:37002 "EHLO
+	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756305AbYDXAAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 20:00:43 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkwBAJpqD0icIvqD/2dsb2JhbAAIimSjHg
+Message-ID: <480FCDA6.6000509@gmail.com>
+Date: Wed, 23 Apr 2008 21:00:38 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
-Subject: Re: [PATCH 1/3] xen: Move manage.c to drivers/xen for ia64/xen support.
-References: <12088476062604-git-send-email-yamahata@valinux.co.jp> <12088476061989-git-send-email-yamahata@valinux.co.jp>
-In-Reply-To: <12088476061989-git-send-email-yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: linux-kernel@vger.kernel.org,
+       Krishna Balasubramanian <balasub@cis.ohio-state.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Let SYSVIPC default to 'y'
+References: <alpine.LNX.1.00.0804240057240.2438@dragon.funnycrock.com>
+In-Reply-To: <alpine.LNX.1.00.0804240057240.2438@dragon.funnycrock.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> move arch/x86/xen/manage.c under drivers/xen/to share codes
-> with x86 and ia64.
-> ia64/xen also uses manage.c
->   
-
-Hm, I've got patches to add suspend/resume to manage.c.  I guess they're 
-going to be at least partially arch-specific.  Well, no problem to split 
-those out.
-
-    J
-
-> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+Jesper Juhl wrote:
+> SYSVIPC is a pretty crucial feature that I doubt very much if anyone 
+> except embedded people should even consider disabling - it simply 
+> breaks too much software for a Linux box to really be useful without it, 
+> for most purposes.
+> For that reason I find it quite odd that the feature defaults to 'No' 
+> currently.  I really cannot see any reason why we wouldn't want this to 
+> default to 'Yes', so this patch changes the default by adding 'default y' 
+> to Kconfig.
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 > ---
->  arch/x86/xen/Makefile              |    2 +-
->  drivers/xen/Makefile               |    2 +-
->  {arch/x86 => drivers}/xen/manage.c |    0 
->  3 files changed, 2 insertions(+), 2 deletions(-)
->  rename {arch/x86 => drivers}/xen/manage.c (100%)
->
-> diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-> index 3d8df98..40b119b 100644
-> --- a/arch/x86/xen/Makefile
-> +++ b/arch/x86/xen/Makefile
-> @@ -1,4 +1,4 @@
->  obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
-> -			time.o manage.o xen-asm.o grant-table.o
-> +			time.o xen-asm.o grant-table.o
+> 
+>  Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index ba3a389..023b2b6 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -112,6 +112,7 @@ config SWAP
 >  
->  obj-$(CONFIG_SMP)	+= smp.o
-> diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-> index 37af04f..363286c 100644
-> --- a/drivers/xen/Makefile
-> +++ b/drivers/xen/Makefile
-> @@ -1,4 +1,4 @@
-> -obj-y	+= grant-table.o features.o events.o
-> +obj-y	+= grant-table.o features.o events.o manage.o
->  obj-y	+= xenbus/
->  obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
->  obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
-> diff --git a/arch/x86/xen/manage.c b/drivers/xen/manage.c
-> similarity index 100%
-> rename from arch/x86/xen/manage.c
-> rename to drivers/xen/manage.c
->   
+>  config SYSVIPC
+>  	bool "System V IPC"
+> +	default y
+>  	---help---
+>  	  Inter Process Communication is a suite of library functions and
+>  	  system calls which let processes (running programs) synchronize and
+> 
+> 
 
+I am running up-to-date Kubuntu Hardy Heron, but...
+
+kevin@alekhine:~/linux/linux-2.6$ grep SYSVIPC .config
+# CONFIG_SYSVIPC is not set
+
+What software that would be in a standard install would be broken?  I don't seem to notice anything...
+
+Not that I mind the default being changed - I just wonder if things on my box are broken and I just don't know it.
+
+-- 
+Kevin Winchester
