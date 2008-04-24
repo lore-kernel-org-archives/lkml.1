@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbYDXP4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbYDXP4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760947AbYDXP4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759184AbYDXPzj
+	id S1762010AbYDXP4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759753AbYDXPzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:55:39 -0400
-Received: from sacred.ru ([62.205.161.221]:35024 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758116AbYDXPzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:55:38 -0400
-Message-ID: <4810ACB4.501@openvz.org>
-Date: Thu, 24 Apr 2008 19:52:20 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch 37/37] LTTng instrumentation net
-References: <20080424150324.802695381@polymtl.ca> <20080424151408.991424268@polymtl.ca>
-In-Reply-To: <20080424151408.991424268@polymtl.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 24 Apr 2008 19:54:51 +0400 (MSD)
+	Thu, 24 Apr 2008 11:55:46 -0400
+Received: from brmea-mail-2.Sun.COM ([192.18.98.43]:49295 "EHLO
+	brmea-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759398AbYDXPzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:55:40 -0400
+Date: Thu, 24 Apr 2008 11:53:14 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+In-reply-to: <20080424150425.GD12774@kernel.dk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Reply-to: davecb@sun.com
+Message-id: <4810ACEA.5070401@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org>
+ <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk>
+ <4810961A.4000104@firstfloor.org> <20080424150425.GD12774@kernel.dk>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Network core events.
+Jens Axboe wrote:
+> On Thu, Apr 24 2008, Andi Kleen wrote:
 > 
-> Added markers :
+>>>Not a good idea IMHO, it's much better with an explicit setting. That
+>>>way you don't introduce indeterministic behavior.
+>>
+>>So you would be deterministically slower.
 > 
-> net_del_ifa_ipv4
-> net_dev_receive
-> net_dev_xmit
-> net_insert_ifa_ipv4
-> net_socket_call
-> net_socket_create
-> net_socket_recvmsg
-> net_socket_sendmsg
+> 
+> Yes, absolutely. Think about the case for a second - the potential gain is in
+> fractions of a percent basically, the potential loss however is HUGE.
+> There's absolutely no way on earth I'd ever make this dynamic.
 
-Network "core" events are not limited with the above calls.
+  If this is intended for databases, it might be backwards (;-)) 
 
-Besides, real "core" events already sent notifications about themselves.
-Why do we need additional hooks?
+  The commercial unix "forcedirectio" option that Oracle and other
+database vendors usually ask for turns out to be a benefit
+in large sequential data transfers, because it does two things:
 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: netdev@vger.kernel.org
-> ---
->  net/core/dev.c     |    6 ++++++
->  net/ipv4/devinet.c |    6 ++++++
->  net/socket.c       |   19 +++++++++++++++++++
->  3 files changed, 31 insertions(+)
+1) transfers directly between user address space and disk, avoiding buffering, and
+2) allows enthusiastic coalescence of synchronous writes
 
+  Is this intended for DBMSs, or for something esle?
+
+--dave 
+-- 
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+(905) 943-1983, cell: (647) 833-9377, (800) 555-9786 x56583
+bridge: (877) 385-4099 code: 506 9191#
