@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbYDXH7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYDXIJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbYDXH7O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbYDXH66
+	id S1752576AbYDXIJp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYDXIJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:58:58 -0400
-Received: from mga09.intel.com ([134.134.136.24]:8102 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYDXH65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:58:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,703,1199692800"; 
-   d="scan'208";a="274154883"
-Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
-From: Shaohua Li <shaohua.li@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <87abjjzo84.fsf@basil.nowhere.org>
-References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
-	 <200804221712.45972.jbarnes@virtuousgeek.org>
-	 <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
-	 <87abjjzo84.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 16:02:06 +0800
-Message-Id: <1209024126.7479.0.camel@sli10-desk.sh.intel.com>
+	Thu, 24 Apr 2008 04:09:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1199 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750841AbYDXIJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 04:09:29 -0400
+Date: Thu, 24 Apr 2008 10:09:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH 1/5] Container Freezer: Add TIF_FREEZE flag to all architectures
+Message-ID: <20080424080918.GA10867@ucw.cz>
+References: <20080424064756.643890130@us.ibm.com> <20080424064756.935832298@us.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424064756.935832298@us.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-04-24 at 09:49 +0200, Andi Kleen wrote:
-> Shaohua Li <shaohua.li@intel.com> writes:
+On Wed 2008-04-23 23:47:57, Matt Helsley wrote:
+> This patch is the first step in making the refrigerator() available 
+> to all architectures, even for those without power management. 
 > 
-> > On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
-> >> On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
-> >> > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
-> >> > 'y' in Kconfig even though the feature is both experimental and the
-> >> > help text recommends that if you are unsure you say 'n'.
-> >> > It seems to me that this really should default to 'n', not 'y' at the
-> >> > moment.
-> >> > The following patch makes that change. Please consider applying.
-> >> 
-> >> Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
-> >> though...
-> > Ok, I'm fine with the patch. Though by default, the policy is to use
-> > BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
+> The purpose of such a change is to be able to use the refrigerator() 
+> in a new control group subsystem which will implement a control group
+> freezer.
 > 
-> Once the feature is considered stable it would be nice to make it
-> default y
-> again. I think any power saving should be on by default (unless
-> serious
-> issues are known), not off.
-yes, we could do it in next release.
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Tested-by: Matt Helsley <matthltc@us.ibm.com>
 
-Thanks,
-Shaohua
-
+ACK.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
