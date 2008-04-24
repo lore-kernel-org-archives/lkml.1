@@ -1,121 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbYDXLzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYDXMKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbYDXLzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 07:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDXLzp
+	id S1758110AbYDXMKj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 08:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbYDXMKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 07:55:45 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:16152 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbYDXLzn convert rfc822-to-8bit (ORCPT
+	Thu, 24 Apr 2008 08:10:12 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:24543 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbYDXMJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 07:55:43 -0400
-Message-Id: <48103D18.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 24 Apr 2008 05:56:08 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Gregory Haskins" <GHaskins@novell.com>
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/2] sched: fix RT task-wakeup logic
-References: <20080423111313.4981.37345.stgit@novell1.haskins.net>
- <20080423111329.4981.88455.stgit@novell1.haskins.net>
-In-Reply-To: <20080423111329.4981.88455.stgit@novell1.haskins.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 24 Apr 2008 08:09:59 -0400
+Message-ID: <48107891.5000308@hp.com>
+Date: Thu, 24 Apr 2008 08:09:53 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk>
+In-Reply-To: <20080424070923.GQ12774@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Apr 23, 2008 at  7:13 AM, in message
-<20080423111329.4981.88455.stgit@novell1.haskins.net>, Gregory Haskins
-<ghaskins@novell.com> wrote: 
-> Dmitry Adamushko pointed out a logic error in task_wake_up_rt() where we
-> will always evaluate to "true".  You can find the thread here:
+Jens Axboe wrote:
+> On Wed, Apr 23 2008, Alan D. Brunelle wrote:
+>> The block I/O + elevator + I/O scheduler code spends a lot of time
+>> trying to merge I/Os -- rightfully so under "normal" circumstances.
+>> However, if one were to know that the incoming I/O stream was /very/
+>> random in nature, the cycles are wasted. (This can be the case, for
+>> example, during OLTP-type runs.)
+>>
+>> This patch stream adds a per-request_queue tunable that (when set)
+>> disables merge attempts, thus freeing up a non-trivial amount of CPU cycles.
+>>
+>> I'll be doing some more benchmarking, but this is a representative set
+>> of data on a two-way Opteron box w/ 4 SATA drives. 'fio' was used to
+>> generate random 4k asynchronous direct I/Os over the 128GiB of each SATA
+>> drive.  Oprofile was used to collect the results, and we collected
+>> CPU_CLK_UNHALTED (CPU) and DATA_CACHE_MISSES (DCM) events. The data
+>> extracted below shows both the percentage for all samples (including
+>> non-kernel) as well as just those from the block I/O layer + elevator +
+>> deadline I/O scheduler + SATA modules.
+>>
+>> v2.6.25 (not patched):  CPU: 5.8330% (total)  7.5644% (I/O code only)
+>> v2.6.25 + nomerges = 0: CPU: 5.8008% (total)  7.5806% (I/O code only)
+>> v2.6.25 + nomerges = 1: CPU: 4.5404% (total)  5.9416% (I/O code only)
+>>
+>> v2.6.25 (not patched):  DCM: 8.1967% (total) 10.5188% (I/O code only)
+>> v2.6.25 + nomerges = 0: DCM: 7.2291% (total)  9.4087% (I/O code only)
+>> v2.6.25 + nomerges = 1: DCM: 6.1989% (total)  8.0155% (I/O code only)
+>>
+>> I've typically been seeing a good 20-25% reduction in CPU samples, and
+>> 10-15% in DCM samples for the random load w/ nomerges set to 1 compared
+>> to set to 0 (looking at just the block code).
+>>
+>> [BTW: The I/O performance doesn't change much between the 3 sets of data
+>> - the seek + I/O times themselves dominate things to such a large
+>> extent.  There is a very small improvement seen w/ nomerges=1, but <<1%.]
+>>
+>> It's not clear to me why 2.6.25 (not patched) requires /more/ cycles
+>> than does the patched kernel w/ nomerges=0 -- it's been consistent in
+>> the handful of runs I've done. I'm going to do a large set of runs for
+>> each condition (not patched, nomerges=0 & nomerges=1) to verify that
+>> this holds over multiple runs. I'm also going to check out sequential
+>> loads to see what (if any) penalty the extra couple of checks incurs on
+>> those (probably not noticeable).
+>>
+>> The first patch in the series adds the tunable; The second adds in the
+>> check to skip the merge code; and the third adds in the check to skip
+>> adding requests to hash lists for merging.
 > 
-> http://lkml.org/lkml/2008/4/22/296
+> The functionality is fine with me, merging is obviously a non-zero
+> amount of cycles spent on IO and if you know it's in vain, may as well
+> turn it off. One suggestion, though - if you add this as a performance
+> rather than functionality change, I would suggest keeping the one-hit
+> cache merge as that is essentially free. Better than free actually,
+> since if you hit that merge point you'll be spending way less cycles
+> than allocating+setting up a new request.
 > 
-> In reality, we only want to try to push tasks away when a wake up request is
-> not going to preempt the current task.  So lets fix it.
-> 
-> Note: We introduce test_tsk_need_resched() instead of open-coding the flag
-> check so that the merge-conflict with -rt should help remind us that we
-> may need to support NEEDS_RESCHED_DELAYED in the future, too.
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Steven Rostedt <rostedt@goodmis.org>
 
+Hi Jens -
 
-Hi Ingo,
-  So based on the discussion and the sign-off on this patch from Dmitry and Steven, I would propose to move patch #1 from "RFC" to "Consider for inclusion" status.  Patch #2 should remain RFC pending further discussion.  I would recommend #1 to be considered for both 25.y stable as well as going into the 26 merge window  (pending positive testing results, and your discretion).
+I'll look into retaining the one-hit cache merge functionality, remove
+the errant elv_rqhas_del code, and repost w/ the results from the other
+tests I've run.
 
-Regards,
--Greg
-
-
-> ---
-> 
->  include/linux/sched.h |    7 ++++++-
->  kernel/sched_rt.c     |    7 +++++--
->  2 files changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 949bd54..55d4bd4 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1966,6 +1966,11 @@ static inline void clear_tsk_need_resched(struct 
-> task_struct *tsk)
->  	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
->  }
->  
-> +static inline int test_tsk_need_resched(struct task_struct *tsk)
-> +{
-> +	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));
-> +}
-> +
->  static inline int signal_pending(struct task_struct *p)
->  {
->  	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
-> @@ -1980,7 +1985,7 @@ static inline int fatal_signal_pending(struct 
-> task_struct *p)
->  
->  static inline int need_resched(void)
->  {
-> -	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
-> +	return unlikely(test_tsk_need_resched(current));
->  }
->  
->  /*
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 79e5ad5..ae6b0e6 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -1058,11 +1058,14 @@ static void post_schedule_rt(struct rq *rq)
->  	}
->  }
->  
-> -
-> +/*
-> + * If we are not running and we are not going to reschedule soon, we should
-> + * try to push tasks away now
-> + */
->  static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
->  {
->  	if (!task_running(rq, p) &&
-> -	    (p->prio >= rq->rt.highest_prio) &&
-> +	    !test_tsk_need_resched(rq->curr) &&
->  	    rq->rt.overloaded)
->  		push_rt_tasks(rq);
->  }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Thanks,
+Alan
 
