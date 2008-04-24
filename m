@@ -1,466 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbYDXTrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbYDXT45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932392AbYDXTrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217AbYDXTq7
+	id S1763940AbYDXT45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYDXT4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:46:59 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:42631 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932174AbYDXTq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:46:56 -0400
-Message-ID: <4810E39A.3010108@us.ibm.com>
-Date: Thu, 24 Apr 2008 14:46:35 -0500
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Carl Love <cel@us.ibm.com>
-CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, oprofile-list@lists.sourceforge.net
-Subject: Re: [Cbe-oss-dev] [PATCH] Reworked Cell OProfile: SPU mutex lock
- fix
-References: <1208965811.6444.91.camel@carll-linux-desktop>
-In-Reply-To: <1208965811.6444.91.camel@carll-linux-desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 15:56:45 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50295 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758295AbYDXT4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 15:56:43 -0400
+Date: Thu, 24 Apr 2008 15:56:24 -0400
+Message-Id: <200804241956.m3OJuOVE000991@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Miklos Szeredi <miklos@szeredi.hu>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
+In-reply-to: Your message of "Thu, 24 Apr 2008 18:30:13 BST."
+             <20080424173013.GA5882@ZenIV.linux.org.uk> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carl Love wrote:
-> This is a reworked patch to fix the SPU data storage.  Currently, the 
-> SPU escape sequences and program counter data is being added directly 
-> into the kernel buffer without holding the buffer_mutex lock.  This 
-> patch changes how the data is stored.  A new function,
-> oprofile_add_value, is added into the oprofile driver to allow adding
-> generic data to the per cpu buffers.  This enables a series of calls
-> to the oprofile_add_value to enter the needed SPU escape sequences 
-> and SPU program data into the kernel buffer via the per cpu buffers
-> without any additional processing. The oprofile_add_value function is
-> generic so it could be used by other architecures as well provided
-> the needed postprocessing was added to opreport.
->
-> Finally, this patch backs out the changes previously added to the 
-> oprofile generic code for handling the architecture specific 
-> ops.sync_start and ops.sync_stop that allowed the architecture
-> to skip the per CPU buffer creation.
->   
-Looks good except for the few minor things noted below . . .
+In message <20080424173013.GA5882@ZenIV.linux.org.uk>, Al Viro writes:
+> On Thu, Apr 24, 2008 at 01:25:58PM -0400, Erez Zadok wrote:
+> > Al, any near-term plans for sb-level "want write" locking as we discussed
+> > briefly at LSF?  Being able to do so for copyup in unionfs will hopefully
+> > allow me to prevent concurrent topology changes.
+> 
+> That's pretty close to the top.
+> 
+> > the two directories that need locking.  This rename-locking protocol appears
+> > to be a special case of the sb-level "want write" idea, right?
+> 
+> Not really - that one doesn't provide any exclusion between writers and
+> that's what we want from rename/rename.
 
--Maynard
-> Signed-off-by: Carl Love <carll@us.ibm.com>
->
-> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/pr_util.h
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/cell/pr_util.h
-> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/pr_util.h
-> @@ -20,11 +20,6 @@
->  #include <asm/cell-regs.h>
->  #include <asm/spu.h>
->
-> -/* Defines used for sync_start */
-> -#define SKIP_GENERIC_SYNC 0
-> -#define SYNC_START_ERROR -1
-> -#define DO_GENERIC_SYNC 1
-> -
->  struct spu_overlay_info {	/* map of sections within an SPU overlay */
->  	unsigned int vma;	/* SPU virtual memory address from elf */
->  	unsigned int size;	/* size of section from elf */
-> @@ -85,7 +80,7 @@ void stop_spu_profiling(void);
->  int spu_sync_start(void);
->
->  /* remove the hooks */
-> -int spu_sync_stop(void);
-> +void spu_sync_stop(void);
->
->  /* Record SPU program counter samples to the oprofile event buffer. */
->  void spu_sync_buffer(int spu_num, unsigned int *samples,
-> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/spu_task_sync.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/cell/spu_task_sync.c
-> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/spu_task_sync.c
-> @@ -31,11 +31,13 @@
->
->  #define RELEASE_ALL 9999
->
-> -static DEFINE_SPINLOCK(buffer_lock);
-> +static DEFINE_SPINLOCK(add_value_lock);
->  static DEFINE_SPINLOCK(cache_lock);
->  static int num_spu_nodes;
-> +int per_cpu_buffers_exist=0;
->   
-The per_cpu_buffers_exist variable is not used for anything useful -- a 
-vestige of something done earlier, I think.
->  int spu_prof_num_nodes;
->  int last_guard_val[MAX_NUMNODES * 8];
-> +static int spu_ctx_sw_seen[MAX_NUMNODES * 8];
->   
-[snip]
->  int spu_sync_start(void)
->  {
->  	int k;
-> -	int ret = SKIP_GENERIC_SYNC;
-> +	int ret = 0;
->  	int register_ret;
-> -	unsigned long flags = 0;
-> +	int cpu;
->
->  	spu_prof_num_nodes = number_of_online_nodes();
->  	num_spu_nodes = spu_prof_num_nodes * 8;
->
-> -	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_PROFILING_CODE);
-> -	add_event_entry(num_spu_nodes);
-> -	spin_unlock_irqrestore(&buffer_lock, flags);
-> +	/* At this point, the CPU buffers have been generated so
->   
-Suggest you change "generated" to "allocated" for clarity.
-> +	 * writes to the per CPU buffers can occur.  Need to
-> +	 * set the flag that the buffers exist before registering for
-> +	 * the SPU context switches or the routine to process the
-> +	 * context switches will not write context switch information.
-> +	 */
-> +	per_cpu_buffers_exist = 1;
->   
-delete
-> +
-> +	/* The SPU_PROFILING_CODE escape sequence must proceed
-> +	 * the SPU context switch info.
-> +	 */
-> +	for_each_online_cpu(cpu) {
-> +		oprofile_add_value(ESCAPE_CODE, cpu);
-> +		oprofile_add_value(SPU_PROFILING_CODE, cpu);
-> +		oprofile_add_value((unsigned long int)
-> +					    num_spu_nodes, cpu);
-> +	}
->
->  	/* Register for SPU events  */
->  	register_ret = spu_switch_event_register(&spu_active);
->  	if (register_ret) {
-> -		ret = SYNC_START_ERROR;
-> +		/* Stop the profile_spus() function from trying
-> +		 * to store samples into the per CPU buffer.  The
-> +		 * buffer will not be there.
-> +		 */
-> +		per_cpu_buffers_exist = 0;
->   
-delete
-> +		ret = -1;
->  		goto out;
->  	}
->
-> -	for (k = 0; k < (MAX_NUMNODES * 8); k++)
-> +	for (k = 0; k < (MAX_NUMNODES * 8); k++) {
->  		last_guard_val[k] = 0;
-> +		spu_ctx_sw_seen[k] = 0;
-> +	}
->  	pr_debug("spu_sync_start -- running.\n");
->  out:
->  	return ret;
-> +
->  }
->
->  /* Record SPU program counter samples to the oprofile event buffer. */
-> @@ -432,7 +460,7 @@ void spu_sync_buffer(int spu_num, unsign
->
->  	map = c_info->map;
->  	the_spu = c_info->the_spu;
-> -	spin_lock(&buffer_lock);
-> +	spin_lock(&add_value_lock);
->  	for (i = 0; i < num_samples; i++) {
->  		unsigned int sample = *(samples+i);
->  		int grd_val = 0;
-> @@ -452,15 +480,22 @@ void spu_sync_buffer(int spu_num, unsign
->  			break;
->  		}
->
-> -		add_event_entry(file_offset | spu_num_shifted);
->   
-In our initial Cell SPU oprofile support submission to the kernel, we 
-had added a prototype for add_event_entry to include/linux/oprofile.h .  
-Now that this patch has replaced all uses of add_event_entry with the 
-new oprofile_add_value function, we should remove the add_event_entry 
-prototype from the header file -- especially since we were 
-misusing/abusing it anyway (not grabbing the buffer_mutex before calling).
-> +		/* We must ensure that the SPU context switch has been written
-> +		 * out before samples for the SPU.  Otherwise, the SPU context
-> +		 * information is not available and the postprocessing of the
-> +		 * SPU PC will fail with no available anonymous map information.
-> +		 */
-> +		if (spu_ctx_sw_seen[spu_num])
-> +			oprofile_add_value((file_offset | spu_num_shifted),
-> +						    (spu_num >> 2));
->   
-Carl, you and I had discussed earlier in a phone call how the above use 
-of oprofile_add_value results in the CPU buffer space being used up 
-twice as fast as normal (because of the implementation of 
-oprofile_add_value writing a special ESCAPE code followed by the actual 
-data).  Do we need to do something (either in userspace or kernel 
-driver) to increase CPU buffer size?  Maybe on Cell BE, the default CPU 
-buffer size should be doubled, but I don't think that could easily be 
-done in the kernel driver.  Probably easier to add in the userspace tools.
->  	}
-> -	spin_unlock(&buffer_lock);
-> +	spin_unlock(&add_value_lock);
->  out:
->  	spin_unlock_irqrestore(&cache_lock, flags);
->  }
->
->
-> -int spu_sync_stop(void)
-> +void spu_sync_stop(void)
->  {
->  	unsigned long flags = 0;
->  	int ret = spu_switch_event_unregister(&spu_active);
->   
-The variable 'ret' isn't needed anymore.  Maybe add a comment that we're 
-intentionally ignoring return values from spu_switch_event_unregister 
-and release_cached_info since we want/need generic sync_stop to run even 
-if spu_sync_stop has a problem.
-> @@ -475,8 +510,9 @@ int spu_sync_stop(void)
->  	ret = release_cached_info(RELEASE_ALL);
->  	spin_unlock_irqrestore(&cache_lock, flags);
->  out:
-> +	per_cpu_buffers_exist = 0;
->   
-delete
->  	pr_debug("spu_sync_stop -- done.\n");
-> -	return ret;
-> +	return;
->  }
->
->
-> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> @@ -1191,15 +1191,15 @@ static int cell_sync_start(void)
->  	if (spu_cycle_reset)
->  		return spu_sync_start();
->  	else
-> -		return DO_GENERIC_SYNC;
-> +		return 0;
->  }
->
-> -static int cell_sync_stop(void)
-> +static void cell_sync_stop(void)
->  {
->  	if (spu_cycle_reset)
-> -		return spu_sync_stop();
-> -	else
-> -		return 1;
-> +		spu_sync_stop();
-> +
-> +	return;
->  }
->
->  struct op_powerpc_model op_model_cell = {
-> Index: Cell_kernel_4_15_2008/drivers/oprofile/buffer_sync.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/drivers/oprofile/buffer_sync.c
-> +++ Cell_kernel_4_15_2008/drivers/oprofile/buffer_sync.c
-> @@ -521,6 +521,20 @@ void sync_buffer(int cpu)
->  			} else if (s->event == CPU_TRACE_BEGIN) {
->  				state = sb_bt_start;
->  				add_trace_begin();
-> +			} else if (s->event == VALUE_HEADER_ID) {
-> +				/* The next event contains a value
-> +				 * to enter directly into the event buffer.
-> +				 */
-> +				increment_tail(cpu_buf);
-> +				i++;  /* one less entry in buffer to process */
-> +
-> +				s = &cpu_buf->buffer[cpu_buf->tail_pos];
-> +
-> +				if (is_code(s->eip))
->   
-This check seems sort of superfluous to me, but if you really want to 
-keep it, make it an 'if (unlikely()) ' type of check.
-> +					add_event_entry(s->event);
-> +				else
-> +					printk("KERN_ERR Oprofile per CPU" \
-> +					       "buffer sequence error.\n");
->  			} else {
->  				struct mm_struct * oldmm = mm;
->
-> Index: Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/drivers/oprofile/cpu_buffer.c
-> +++ Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.c
-> @@ -224,6 +224,35 @@ static void oprofile_end_trace(struct op
->  	cpu_buf->tracing = 0;
->  }
->
-> +/*
-> + * Add a value to the per CPU buffer.  The value is passed from the per CPU
-> + * buffer to the kernel buffer with no additional processing.  The assumption
-> + * is any processing of the value will be done in the postprocessor.  This
-> + * function should only be used for special architecture specific data.
-> + * Currently only used by the CELL processor.
-> + *
-> + * The first enty in the per cpu buffer consists of the escape code and
->   
-"entry"
-> + * the VALUE_HEADER_ID value.  The next entry consists of an escape code
-> + * with the value to store.  The syn_buffer routine takes the value from
-> + * the second entry and put it into the kernel buffer.
-> + */
-> +void oprofile_add_value(unsigned long value, int cpu) {
-> +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
-> +
-> +	/* Enter a sequence of two evnets.  The first event says the
->   
-"events"
-> +	 * next event contains a value that is to be put directly into the
-> +	 * event buffer.
-> +	 */
-> +
-> +	if (nr_available_slots(cpu_buf) < 3) {
-> +		cpu_buf->sample_lost_overflow++;
-> +		return;
-> +	}
-> +
-> +	add_sample(cpu_buf, ESCAPE_CODE, VALUE_HEADER_ID);
-> +	add_sample(cpu_buf, ESCAPE_CODE, value);
-> +}
-> +
->  void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
->  				unsigned long event, int is_kernel)
->  {
-> Index: Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.h
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/drivers/oprofile/cpu_buffer.h
-> +++ Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.h
-> @@ -54,5 +54,6 @@ void cpu_buffer_reset(struct oprofile_cp
->  /* transient events for the CPU buffer -> event buffer */
->  #define CPU_IS_KERNEL 1
->  #define CPU_TRACE_BEGIN 2
-> +#define VALUE_HEADER_ID 3
->
->  #endif /* OPROFILE_CPU_BUFFER_H */
-> Index: Cell_kernel_4_15_2008/drivers/oprofile/oprof.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/drivers/oprofile/oprof.c
-> +++ Cell_kernel_4_15_2008/drivers/oprofile/oprof.c
-> @@ -53,24 +53,13 @@ int oprofile_setup(void)
->  	 * us missing task deaths and eventually oopsing
->  	 * when trying to process the event buffer.
->  	 */
-> -	if (oprofile_ops.sync_start) {
-> -		int sync_ret = oprofile_ops.sync_start();
-> -		switch (sync_ret) {
-> -		case 0:
-> -			goto post_sync;
-> -		case 1:
-> -			goto do_generic;
-> -		case -1:
-> -			goto out3;
-> -		default:
-> -			goto out3;
-> -		}
-> -	}
-> -do_generic:
-> +	if (oprofile_ops.sync_start
-> +	    && ((err = oprofile_ops.sync_start())))
-> +		goto out2;
-> +
->  	if ((err = sync_start()))
->  		goto out3;
->
-> -post_sync:
->  	is_setup = 1;
->  	mutex_unlock(&start_mutex);
->  	return 0;
-> @@ -133,20 +122,9 @@ out:
->  void oprofile_shutdown(void)
->  {
->  	mutex_lock(&start_mutex);
-> -	if (oprofile_ops.sync_stop) {
-> -		int sync_ret = oprofile_ops.sync_stop();
-> -		switch (sync_ret) {
-> -		case 0:
-> -			goto post_sync;
-> -		case 1:
-> -			goto do_generic;
-> -		default:
-> -			goto post_sync;
-> -		}
-> -	}
-> -do_generic:
-> +	if (oprofile_ops.sync_stop)
-> +		oprofile_ops.sync_stop();
->  	sync_stop();
-> -post_sync:
->  	if (oprofile_ops.shutdown)
->  		oprofile_ops.shutdown();
->  	is_setup = 0;
-> Index: Cell_kernel_4_15_2008/include/linux/oprofile.h
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/include/linux/oprofile.h
-> +++ Cell_kernel_4_15_2008/include/linux/oprofile.h
->   
-As mentioned above, the add_event_entry prototype should be removed from 
-this header file.
-> @@ -56,12 +56,10 @@ struct oprofile_operations {
->  	/* Stop delivering interrupts. */
->  	void (*stop)(void);
->  	/* Arch-specific buffer sync functions.
-> -	 * Return value = 0:  Success
-> -	 * Return value = -1: Failure
-> -	 * Return value = 1:  Run generic sync function
-> +	 * Sync start: Return 0 for Success,  -1 for Failure
->  	 */
->  	int (*sync_start)(void);
-> -	int (*sync_stop)(void);
-> +	void (*sync_stop)(void);
->
->  	/* Initiate a stack backtrace. Optional. */
->  	void (*backtrace)(struct pt_regs * const regs, unsigned int depth);
-> @@ -106,6 +104,17 @@ void oprofile_add_sample(struct pt_regs 
->  void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
->  				unsigned long event, int is_kernel);
->
-> +/*
-> + * Add a value to the per CPU buffer.  The value is passed from the per CPU
-> + * buffer to the kernel buffer with no additional processing.  The assumption
-> + * is any processing of the value will be done in the postprocessor.  This
-> + * function should only be used for special architecture specific data.
-> + * Currently only used by the CELL processor.
-> + *
-> + * This function does not perform a backtrace.
-> + */
-> +void oprofile_add_value(unsigned long value, int cpu);
-> +
->  /* Use this instead when the PC value is not from the regs. Doesn't
->   * backtrace. */
->  void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event);
-> Index: Cell_kernel_4_15_2008/include/asm-powerpc/oprofile_impl.h
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/include/asm-powerpc/oprofile_impl.h
-> +++ Cell_kernel_4_15_2008/include/asm-powerpc/oprofile_impl.h
-> @@ -48,7 +48,7 @@ struct op_powerpc_model {
->  	void (*stop) (void);
->  	void (*global_stop) (void);
->  	int (*sync_start)(void);
-> -	int (*sync_stop)(void);
-> +	void (*sync_stop)(void);
->  	void (*handle_interrupt) (struct pt_regs *,
->  				  struct op_counter_config *);
->  	int num_counters;
->
->
->
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-> Don't miss this year's exciting event. There's still time to save $100. 
-> Use priority code J8TL2D2. 
-> http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
-> _______________________________________________
-> oprofile-list mailing list
-> oprofile-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/oprofile-list
->   
+When you say "that one", do you mean the sb-level idea?  If the sb-level
+"want write" not provide exclusion among writers, then how can I prevent
+lower topology changes while copyup takes place?
 
+If your sb-level "want write" idea won't provide that exclusion at the sb
+level, then how about we elevate the s_vfs_rename_mutex into a generic
+s_vfs_multi_dir_change_mutex of sorts, which can be used by rename as well
+as copyup?
 
+> Take a look at Documentation/filesystems/directory-locking for details
+> of locking scheme...
+
+OK.  lock_rename() at most locks one "parent" and one "child" inodes.  So
+what happens to all the ones in b/t?  Suppose I have a path /a/b/c/d/e/f and
+someone wants to mv /a/b/c/d/e to /a/b/; in that case lock_rename at least
+grabs the mutex on /a/b, right?  Can someone go in the middle and try to
+muck with the "c/d/" parts in between?
+
+>From what I gathered, lock_rename won't be enough for me to prevent topology
+changes during copyup; I'd really need to lock an entire arbitrarily deep
+path of inodes.  That just seems so complex and prone to bugs, that it might
+just be easier to have a single sb-level mutex for these complex
+multi-directory operations.  I'm not sure how much performance hit this'd
+be, thou, and if there's a more efficient way to do so.
+
+If you think lock_rename will be sufficient for me to deal with copyups
+vs. topology changes, then I'll start using it.
+
+Thanks,
+Erez.
