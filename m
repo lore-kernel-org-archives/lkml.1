@@ -1,113 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbYDXHDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbYDXHDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbYDXHDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYDXHDO
+	id S1751372AbYDXHDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 03:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYDXHDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:03:14 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58219 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYDXHDN (ORCPT
+	Thu, 24 Apr 2008 03:03:32 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:51867 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbYDXHDa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:03:13 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 24 Apr 2008 09:02:04 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] ieee1394: silence defined but not used warning in
- non-modular builds
-To: Tony Breeds <tony@bakeyournoodle.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel@lists.sourceforge.net
-In-Reply-To: <20080424042839.GQ20457@bakeyournoodle.com>
-Message-ID: <tkrat.417b268d913e3389@s5r6.in-berlin.de>
-References: <20080424042839.GQ20457@bakeyournoodle.com>
+	Thu, 24 Apr 2008 03:03:30 -0400
+Date: Thu, 24 Apr 2008 09:00:52 +0200
+Message-Id: <251743781@web.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+From: devzero@web.de
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: agruen@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: make cloneconfig ?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+uGRyP27S1uai4YDgs5UdHIAMpWp0BfQtICx6Nqm+dkwtxG
+ PtzMxgXsjekoTzZrObUfkFui38WvPsl9vLa/8yjLtzj9wTgS1w=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tony Breeds <tony@bakeyournoodle.com>
+> Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
+> make oldconfig" ???  
 
-Currently the kernel will issue the following warning:
-drivers/ieee1394/raw1394.c:2938: warning: 'raw1394_id_table' defined but not used
-Add #ifdef MODULE guards arround the declaration.
+yes (see below)
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> If so, why do we need yet another "make
+> <some_target>" Makefile rule? What would actually be gained?
 
-Ditto with dv1394_id_table and video1394_id_table.
+ease of use and less confused users of suse-kernel based distro`s.
+i have seen people giving hints for kernel compilation and telling "just do make cloneconfig" to non-suse users, just because they didn`t know, that this is suse specific.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/dv1394.c    |    2 ++
- drivers/ieee1394/raw1394.c   |    2 ++
- drivers/ieee1394/video1394.c |    2 ++
- 3 files changed, 6 insertions(+)
+ok, that`s not a real reason because you could argue that suse should drop it for more consistent end-user experience, but i think it`s much easier (and hassle free) to add it to mainline than drop it from suse. 
 
-Index: linux/drivers/ieee1394/dv1394.c
+roland
+
+
+List:       linux-kernel
+Subject:    [kbuild 3/5] Add cloneconfig target
+From:       Andreas Gruenbacher <agruen () suse ! de>
+Date:       2005-01-18 18:41:23
+Message-ID: 20050118192608.500213000.suse.de
+[Download message RAW]
+
+Cloneconfig takes the first configuration it finds which appears to
+belong to the running kernel, and configures the kernel sources to match
+this configuration as closely as possible.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+Index: linux-2.6.11-rc1-bk6/scripts/kconfig/Makefile
 ===================================================================
---- linux.orig/drivers/ieee1394/dv1394.c
-+++ linux/drivers/ieee1394/dv1394.c
-@@ -2167,6 +2167,7 @@ static const struct file_operations dv13
- /*
-  * Export information about protocols/devices supported by this driver.
-  */
-+#ifdef MODULE
- static struct ieee1394_device_id dv1394_id_table[] = {
- 	{
- 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
-@@ -2177,6 +2178,7 @@ static struct ieee1394_device_id dv1394_
- };
+--- linux-2.6.11-rc1-bk6.orig/scripts/kconfig/Makefile
++++ linux-2.6.11-rc1-bk6/scripts/kconfig/Makefile
+@@ -37,6 +37,22 @@ allnoconfig: $(obj)/conf
+ allmodconfig: $(obj)/conf
+ 	$< -m arch/$(ARCH)/Kconfig
  
- MODULE_DEVICE_TABLE(ieee1394, dv1394_id_table);
-+#endif /* MODULE */
- 
- static struct hpsb_protocol_driver dv1394_driver = {
- 	.name = "dv1394",
-Index: linux/drivers/ieee1394/raw1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/raw1394.c
-+++ linux/drivers/ieee1394/raw1394.c
-@@ -2940,6 +2940,7 @@ static int raw1394_release(struct inode 
- /*
-  * Export information about protocols/devices supported by this driver.
-  */
-+#ifdef MODULE
- static struct ieee1394_device_id raw1394_id_table[] = {
- 	{
- 	 .match_flags = IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
-@@ -2961,6 +2962,7 @@ static struct ieee1394_device_id raw1394
- };
- 
- MODULE_DEVICE_TABLE(ieee1394, raw1394_id_table);
-+#endif /* MODULE */
- 
- static struct hpsb_protocol_driver raw1394_driver = {
- 	.name = "raw1394",
-Index: linux/drivers/ieee1394/video1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/video1394.c
-+++ linux/drivers/ieee1394/video1394.c
-@@ -1293,6 +1293,7 @@ static const struct file_operations vide
- /*
-  * Export information about protocols/devices supported by this driver.
-  */
-+#ifdef MODULE
- static struct ieee1394_device_id video1394_id_table[] = {
- 	{
- 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
-@@ -1313,6 +1314,7 @@ static struct ieee1394_device_id video13
- };
- 
- MODULE_DEVICE_TABLE(ieee1394, video1394_id_table);
-+#endif /* MODULE */
- 
- static struct hpsb_protocol_driver video1394_driver = {
- 	.name = VIDEO1394_DRIVER_NAME,
++UNAME_RELEASE := $(shell uname -r)
++CLONECONFIG := $(firstword $(wildcard /proc/config.gz \
++				      /lib/modules/$(UNAME_RELEASE)/.config \
++				      /etc/kernel-config \
++				      /boot/config-$(UNAME_RELEASE)))
++cloneconfig: $(obj)/conf
++	$(Q)case "$(CLONECONFIG)" in				\
++	'')	echo -e "The configuration of the running"	\
++			"kernel could not be determined\n";	\
++		false ;;					\
++	*.gz)	gzip -cd $(CLONECONFIG) > .config.running ;;	\
++	*)	cat $(CLONECONFIG) > .config.running ;;		\
++	esac &&							\
++	echo -e "Cloning configuration file $(CLONECONFIG)\n"
++	$(Q)$< -D .config.running arch/$(ARCH)/Kconfig
++
+ defconfig: $(obj)/conf
+ ifeq ($(KBUILD_DEFCONFIG),)
+ 	$< -d arch/$(ARCH)/Kconfig
 
--- 
-Stefan Richter
--=====-==--- -=-- ==---
-http://arcgraph.de/sr/
+--
+Andreas Gruenbacher <agruen@suse.de>
+SUSE Labs, SUSE LINUX PRODUCTS GMBH
+
+
+
+> -----Ursprüngliche Nachricht-----
+> Von: "Jesper Juhl" <jesper.juhl@gmail.com>
+> Gesendet: 24.04.08 00:43:56
+> An: "devzero@web.de" <devzero@web.de>
+> CC: linux-kernel@vger.kernel.org, agruen@suse.de
+> Betreff: Re: make cloneconfig ?
+
+
+> On 24/04/2008, devzero@web.de <devzero@web.de> wrote:
+> > any reason why "make cloneconfig" never made it into mainline?
+> >
+> >  many people are quite used to it and every time i build vanilla kernel i step into that trap  "oh - that`s a suse`ism"
+> >
+> >  make cloneconfig exists since /proc/config.gz - but while that one went into mainline, cloneconfig never did.
+> >
+> >  anyone know the reason for that ?
+> >
+> >  i wished, distros kernels were more similar to vanilla kernels - so what about making them more similar ?
+> >
+> >
+> 
+> Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
+> make oldconfig" ???   If so, why do we need yet another "make
+> <some_target>" Makefile rule? What would actually be gained?
+> 
+> -- 
+> Jesper Juhl <jesper.juhl@gmail.com>
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+> Plain text mails only, please      http://www.expita.com/nomime.html
+> 
+
+
+_______________________________________________________________
+Schon gehört? Der neue WEB.DE MultiMessenger kann`s mit allen: 
+http://www.produkte.web.de/messenger/?did=3016
 
