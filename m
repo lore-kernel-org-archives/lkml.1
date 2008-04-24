@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYDXVOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYDXVSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbYDXVOL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYDXVNz
+	id S1754620AbYDXVSS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYDXVSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:13:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33265 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752925AbYDXVNy (ORCPT
+	Thu, 24 Apr 2008 17:18:06 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51934 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYDXVSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:13:54 -0400
-Date: Thu, 24 Apr 2008 21:44:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, paulkf@microgate.com,
-       jchapman@katalix.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-Message-ID: <20080424214457.1d5a1655@the-village.bc.nu>
-In-Reply-To: <m3ve27nfpx.fsf@maximus.localdomain>
-References: <m3r6cv75xq.fsf@maximus.localdomain>
-	<20080424.063006.153647297.davem@davemloft.net>
-	<m3mynj74nw.fsf@maximus.localdomain>
-	<20080424.065555.30390704.davem@davemloft.net>
-	<m3ve27nfpx.fsf@maximus.localdomain>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 17:18:05 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 24 Apr 2008 23:17:47 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-sbp2: log scsi_target ID at release
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.478a048cc4090b07@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think it's easier to a) simply remove syncppp.c, b) apply my patch
-> with new PPP, c) blindly port the old drivers to generic HDLC,
-> d) hope for the best, with a bit of luck nobody would notice.
+Makes the good-by message more informative.
 
-I would agree with this. There isn't a sane way to sort out the old
-kernel side syncppp (which is useless for todays networks as it doesn't
-do compression, IPv6 or auth protocols) except by going to user space.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -784,7 +784,7 @@ static void sbp2_release_target(struct k
+ 		kfree(lu);
+ 	}
+ 	scsi_remove_host(shost);
+-	fw_notify("released %s\n", tgt->bus_id);
++	fw_notify("released %s, target %d:0:0\n", tgt->bus_id, shost->host_no);
+ 
+ 	fw_unit_put(tgt->unit);
+ 	scsi_host_put(shost);
+
+-- 
+Stefan Richter
+-=====-==--- -=-- ==---
+http://arcgraph.de/sr/
+
