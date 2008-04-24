@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbYDXOxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYDXOyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbYDXOxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYDXOxp
+	id S1755670AbYDXOyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYDXOyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:53:45 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33134 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752385AbYDXOxo (ORCPT
+	Thu, 24 Apr 2008 10:54:10 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57859 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbYDXOyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:53:44 -0400
-Date: Thu, 24 Apr 2008 15:24:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-Message-ID: <20080424152436.6cf53c1b@the-village.bc.nu>
-In-Reply-To: <481096C3.2020206@redhat.com>
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
-	<20080424112514.055d8071@the-village.bc.nu>
-	<481096C3.2020206@redhat.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 10:54:09 -0400
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
+       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20080424144448.GH15214@ZenIV.linux.org.uk> (message from Al Viro
+	on Thu, 24 Apr 2008 15:44:48 +0100)
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <E1Jp28U-0003r3-8r@pomaz-ex.szeredi.hu> <20080424142857.GF15214@ZenIV.linux.org.uk> <E1Jp2Yw-0003xF-Fk@pomaz-ex.szeredi.hu> <20080424144448.GH15214@ZenIV.linux.org.uk>
+Message-Id: <E1Jp2pD-00043W-IF@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 24 Apr 2008 16:53:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't think this is a viable approach because it is not about the
-> range.  People can and do select arbitrary values for those types.
-> Until a value is officially recognized and registered it is in fact best
-> to choose a (possibly large) random value to not conflict with anything
-> else.  Who can guarantee that whatever bit is chosen for SOCK_CLOEXEC
-> isn't already used by someone?
+> > > RTFS.  permission() doesn't do "is that vfsmount read-only" checks, exactly
+> > > because it's 100% bogus - either you cover it with entire area where we
+> > > are guaranteed to stay r/w, or it's by definition racy.
+> > 
+> > I know that.
+> > 
+> > That does not mean, that fh_verify() needs to do vfsmount r/o checks.
+> > AFAICS it's perfectly OK to do that later, around the vfs_ call.
+> 
+> ... and around everything else that happens to be done after fh_verify
+> for write access, surely?
 
-There are only a small number of valid socket types recognized by POSIX
-plus a few BSD plus a few Linux ones so Linux can happily assign the
-upper bits for a different purpose.
+What in particular?  You have managed to avoid answering this question
+for the last...I don't know how many emails.
 
-> Add to this that it's not a complete solution (no such hack possible for
-> accept) and I think using a new interface is cleaner(tm).
+>  Note that e.g. nfsd_setattr() does _not_ call
+> vfs_<anything>()...
 
-Every other property of a socket via accept() is inherited from the
-parent. Making one property different would be bizarre and ugly.
+Yes it does: notify_change().  It's vfs_setattr() under a pseudonym.
 
-Alan
+Miklos
