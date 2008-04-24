@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYDXVH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYDXVJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYDXVH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYDXVHM
+	id S1754471AbYDXVJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYDXVJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:07:12 -0400
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:37325 "EHLO
-	mfe03.nfit.au.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752329AbYDXVHL (ORCPT
+	Thu, 24 Apr 2008 17:09:00 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45547 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752691AbYDXVI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:07:11 -0400
-X-Greylist: delayed 478 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 17:07:11 EDT
-To: linux-kernel@vger.kernel.org
-Subject: stat benchmark
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 24 Apr 2008 22:59:10 +0200
-Message-ID: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Thu, 24 Apr 2008 17:08:59 -0400
+Date: Thu, 24 Apr 2008 17:08:58 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org, <dsd@gentoo.org>,
+       <mdharm-usb@one-eyed-alien.net>, <linux-usb@vger.kernel.org>,
+       <vegardno@ifi.uio.no>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+In-Reply-To: <Pine.LNX.4.64.0804242320190.30047@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At
+On Thu, 24 Apr 2008, Pekka J Enberg wrote:
 
-    http://www.daimi.au.dk/~sandmann/stat-benchmark.c
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
+> wait until background scanning of USB mass storage devices is complete before
+> attempting to mount the root filesystem.
+> 
+> The config option is an alternative to the root_delay= kernel parameter
+> solution people currently use to boot from USB mass storage devices.
 
-there is a simple program that will measure the time it takes to stat
-every file in the current directory with a cold cache.
+This doesn't take into account what happens when CONFIG_SCSI_SCAN_ASYNC
+is set.
 
-This is essentially what applications do in a number of common cases
-such as "ls -l", nautilus opening a directory, or an "open file"
-dialog being showed.
-
-Unfortunately, performance of that operation kinda sucks. On my system
-(ext3), it produces:
-
-    c-24-61-65-93:~% sudo ./a.out 
-    Time to readdir(): 0.307671 s
-    Time to stat 2349 files: 8.203693 s
-
-8 seconds is about 80 times slower than what a user perceives as
-"instantly" and slow enough that we really should display a progress
-bar if it can't be fixed.
-
-So I am looking for ways to improve this.
-
-Under the theory that disk seeks are killing us, one idea is to add a
-'multistat' system call that would allow statting of many files at a
-time, which would give the disk scheduler more to work with. 
-
-Possibly the same thing would need to be done for the getxattr
-information.
-
-Does this sound like a reasonable idea?
+Alan Stern
 
 
-Thanks,
-Soren
