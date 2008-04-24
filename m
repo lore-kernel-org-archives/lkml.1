@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYDXCV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYDXCYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYDXCV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 22:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYDXCVp
+	id S1756552AbYDXCYY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 22:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYDXCYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 22:21:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37063 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752358AbYDXCVo (ORCPT
+	Wed, 23 Apr 2008 22:24:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49736
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751654AbYDXCYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 22:21:44 -0400
-Date: Wed, 23 Apr 2008 19:19:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [git patch] free_irq() fixes
-In-Reply-To: <480FEC1B.6040102@garzik.org>
-Message-ID: <alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
-References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org>
- <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org> <480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Apr 2008 22:24:16 -0400
+Date: Wed, 23 Apr 2008 19:24:18 -0700 (PDT)
+Message-Id: <20080423.192418.188020745.davem@davemloft.net>
+To: vapier@gentoo.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] linux/atm_tcp.h: cleanup for userspace
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1208661754-3197-1-git-send-email-vapier@gentoo.org>
+References: <1208661754-3197-1-git-send-email-vapier@gentoo.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Sat, 19 Apr 2008 23:22:34 -0400
 
-
-On Wed, 23 Apr 2008, Jeff Garzik wrote:
+> The atm_tcp.h uses types from linux/atm.h, but does not include it.  It
+> should also use the standard __u## types from linux/types.h rather than the
+> uint##_t types since the former can be found with the kernel already.
 > 
-> When drivers make assumptions about system irq numbering, particularly on x86,
-> IMO the situation is fragile.
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-And when people make changes to long-standing and stable infrastructure, 
-the situation also gets fragile.
+I don't think this is a sufficient patch to solve these problems.
 
-The fact is, stability of interfaces is a really worthy goal in itself. 
-Making a change for its own sake is not a good thing. This fixes 
-*nothing*, and the driver changes I objected to I objected to because they 
-were ugly as sin.
+> @@ -8,10 +8,8 @@
+>  #define LINUX_ATM_TCP_H
+>  
+>  #include <linux/atmapi.h>
+> -
+> -#ifdef __KERNEL__
+>  #include <linux/types.h>
+> -#endif
+> +#include <linux/atm.h>
+>  #include <linux/atmioc.h>
+>  
+>  
 
-And I want to point out that your patches made it *much* uglier.
+So you're adding linux/atm.h as an include for non-kernel, fine,
+but:
 
-So "cleanup" it sure as hell wasn't. That irq number may not be worth all 
-that much in itself, but it has no subtle implementation problems (we 
-_need_ that irq number for registration and irq handler lookup anyway, so 
-it is meaningful from a driver perspective, and is well-defined from a irq 
-core standpoint as well).
+> @@ -20,9 +18,9 @@
+>   */
+>  
+>  struct atmtcp_hdr {
+> -	uint16_t	vpi;
+> -	uint16_t	vci;
+> -	uint32_t	length;		/* ... of data part */
+> +	__u16	vpi;
+> +	__u16	vci;
+> +	__u32	length;		/* ... of data part */
+>  };
+>  
+>  /*
 
-I don't mind cleanups, but this is "churn". Change for its own sake. If it 
-doesn't lead to any _improvement_, it's pointless.
+Well, linux/atm.h, which we'll now get, has the same exact problem,
+it uses "uint16_t" and related types.
 
-If drivers don't need it, let them ignore it. But let them ignore it in 
-ways that work across versions, and in ways that don't cause ridiculous 
-and ugly work-arounds for when they do want it (even if it's just for a 
-printk() or similar).
-
-		Linus
+Futehermore, nothing in the include chain will get linux/types.h
+include, which we'll need.  linux/atm.h protects the inclusion
+of linux/types.h with __KERNEL__.
