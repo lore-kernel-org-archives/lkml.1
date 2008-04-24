@@ -1,61 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbYDXTkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763715AbYDXTkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763501AbYDXTkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbYDXTkB
+	id S1763715AbYDXTkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbYDXTkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:40:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36939 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932095AbYDXTkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:40:00 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] RxRPC: Fix a regression in the RXKAD security module
-To: torvalds@osdl.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 24 Apr 2008 20:38:56 +0100
-Message-ID: <20080424193856.14737.16718.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 15:40:06 -0400
+Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:36794 "EHLO
+	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932117AbYDXTkE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 15:40:04 -0400
+Date: Thu, 24 Apr 2008 22:39:47 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH v2] x86 mmiotrace: dynamically disable non-boot CPUs
+Message-ID: <20080424223947.55c053f6@daedalus.pq.iki.fi>
+In-Reply-To: <20080413230552.33ca587a@daedalus.pq.iki.fi>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
+	<20080413230552.33ca587a@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a regression in the RXKAD security module introduced in:
+>From 8979ee55cb6a429c4edd72ebec2244b849f6a79a Mon Sep 17 00:00:00 2001
+From: Pekka Paalanen <pq@iki.fi>
+Date: Sat, 12 Apr 2008 00:18:57 +0300
+Subject: [PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
 
-	commit 91e916cffec7c0153c5cbaa447151862a7a9a047
-	Author: Al Viro <viro@ftp.linux.org.uk>
-	Date:   Sat Mar 29 03:08:38 2008 +0000
+Mmiotrace is not reliable with multiple CPUs and may
+miss events. Drop to single CPU when mmiotrace is activated.
 
-	net/rxrpc trivial annotations
-
-A variable was declared as a 16-bit type rather than a 32-bit type.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
 ---
 
- net/rxrpc/rxkad.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I've tested this patch on my Core 2 Duo laptop, and with
+"[PATCH v2] Check for breakpoint in text_poke to eliminate bug_on"
+cpu hotplug seems to work fine on a sched-devel/latest SMP kernel
+both with and without CONFIG_HOTPLUG_CPU.
 
+One strange thing was a stack trace printed just before the CPU resets
+for "shutdown -r now", but I could not see what it was about. I'll ignore
+that for now, hopefully it's something unrelated.
 
-diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index 6d38a81..ba3f6e4 100644
---- a/net/rxrpc/rxkad.c
-+++ b/net/rxrpc/rxkad.c
-@@ -493,8 +493,8 @@ static int rxkad_verify_packet(const struct rxrpc_call *call,
- 		__be32 x[2];
- 	} tmpbuf __attribute__((aligned(8))); /* must all be in same page */
- 	__be32 x;
--	u16 y;
- 	__be16 cksum;
-+	u32 y;
- 	int ret;
+ arch/x86/mm/mmio-mod.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 61 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+index 6d6cac8..1f77d85 100644
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -32,6 +32,7 @@
+ #include <asm/e820.h> /* for ISA_START_ADDRESS */
+ #include <asm/atomic.h>
+ #include <linux/percpu.h>
++#include <linux/cpu.h>
  
- 	sp = rxrpc_skb(skb);
+ #include "pf_in.h"
+ 
+@@ -400,6 +401,64 @@ static void clear_trace_list(void)
+ 	}
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static cpumask_t downed_cpus;
++
++static void enter_uniprocessor(void)
++{
++	int cpu;
++	int err;
++
++	get_online_cpus();
++	downed_cpus = cpu_online_map;
++	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
++	if (num_online_cpus() > 1)
++		pr_notice(NAME "Disabling non-boot CPUs...\n");
++	put_online_cpus();
++
++	for_each_cpu_mask(cpu, downed_cpus) {
++		err = cpu_down(cpu);
++		if (!err) {
++			pr_info(NAME "CPU%d is down.\n", cpu);
++		} else {
++			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
++		}
++	}
++	if (num_online_cpus() > 1)
++		pr_warning(NAME "multiple CPUs still online, "
++						"may miss events.\n");
++}
++
++static void leave_uniprocessor(void)
++{
++	int cpu;
++	int err;
++
++	if (cpus_weight(downed_cpus) == 0)
++		return;
++	pr_notice(NAME "Re-enabling CPUs...\n");
++	for_each_cpu_mask(cpu, downed_cpus) {
++		err = cpu_up(cpu);
++		if (!err)
++			pr_info(NAME "enabled CPU%d.\n", cpu);
++		else
++			pr_err(NAME "cannot re-enable CPU%d: %d\n", cpu, err);
++	}
++}
++
++#else /* !CONFIG_HOTPLUG_CPU */
++static void enter_uniprocessor(void)
++{
++	if (num_online_cpus() > 1)
++		pr_warning(NAME "multiple CPUs are online, may miss events. "
++			"Suggest booting with maxcpus=1 kernel argument.\n");
++}
++
++static void leave_uniprocessor(void)
++{
++}
++#endif
++
+ #if 0 /* XXX: out of order */
+ static struct file_operations fops_marker = {
+ 	.owner =	THIS_MODULE,
+@@ -422,6 +481,7 @@ void enable_mmiotrace(void)
+ 
+ 	if (nommiotrace)
+ 		pr_info(NAME "MMIO tracing disabled.\n");
++	enter_uniprocessor();
+ 	spin_lock_irq(&trace_lock);
+ 	atomic_inc(&mmiotrace_enabled);
+ 	spin_unlock_irq(&trace_lock);
+@@ -442,6 +502,7 @@ void disable_mmiotrace(void)
+ 	spin_unlock_irq(&trace_lock);
+ 
+ 	clear_trace_list(); /* guarantees: no more kmmio callbacks */
++	leave_uniprocessor();
+ 	if (marker_file) {
+ 		debugfs_remove(marker_file);
+ 		marker_file = NULL;
+-- 
+1.5.3.7
 
