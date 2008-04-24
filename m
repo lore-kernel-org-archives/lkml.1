@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYDXXPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYDXXPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYDXXPW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbYDXXHf
+	id S1758192AbYDXXPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYDXXHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:07:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36687 "EHLO
+	Thu, 24 Apr 2008 19:07:37 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36688 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbYDXXHG (ORCPT
+	with ESMTP id S1753075AbYDXXHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:07:06 -0400
+	Thu, 24 Apr 2008 19:07:08 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 09/24] ia64: types: use <asm-generic/int-*.h> for the ia64 architecture
-Date: Thu, 24 Apr 2008 16:05:25 -0700
-Message-Id: <1209078352-7593-19-git-send-email-hpa@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
+       Anton Blanchard <anton@samba.org>
+Subject: [PATCH 15/24] powerpc: types: use <asm-generic/int-*.h> for the powerpc architecture
+Date: Thu, 24 Apr 2008 16:05:36 -0700
+Message-Id: <1209078352-7593-30-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-18-git-send-email-hpa@zytor.com>
+In-Reply-To: <1209078352-7593-29-git-send-email-hpa@zytor.com>
 References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-2-git-send-email-hpa@zytor.com>
  <1209078352-7593-3-git-send-email-hpa@zytor.com>
@@ -39,35 +40,53 @@ References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-16-git-send-email-hpa@zytor.com>
  <1209078352-7593-17-git-send-email-hpa@zytor.com>
  <1209078352-7593-18-git-send-email-hpa@zytor.com>
+ <1209078352-7593-19-git-send-email-hpa@zytor.com>
+ <1209078352-7593-20-git-send-email-hpa@zytor.com>
+ <1209078352-7593-21-git-send-email-hpa@zytor.com>
+ <1209078352-7593-22-git-send-email-hpa@zytor.com>
+ <1209078352-7593-23-git-send-email-hpa@zytor.com>
+ <1209078352-7593-24-git-send-email-hpa@zytor.com>
+ <1209078352-7593-25-git-send-email-hpa@zytor.com>
+ <1209078352-7593-26-git-send-email-hpa@zytor.com>
+ <1209078352-7593-27-git-send-email-hpa@zytor.com>
+ <1209078352-7593-28-git-send-email-hpa@zytor.com>
+ <1209078352-7593-29-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-ia64/types.h> to use the <asm-generic/int-*.h>
+This modifies <asm-powerpc/types.h> to use the <asm-generic/int-*.h>
 generic include files.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
 ---
- include/asm-ia64/types.h |   31 ++-----------------------------
- 1 files changed, 2 insertions(+), 29 deletions(-)
+ include/asm-powerpc/types.h |   48 +++++-------------------------------------
+ 1 files changed, 6 insertions(+), 42 deletions(-)
 
-diff --git a/include/asm-ia64/types.h b/include/asm-ia64/types.h
-index 902850d..e36b371 100644
---- a/include/asm-ia64/types.h
-+++ b/include/asm-ia64/types.h
-@@ -13,6 +13,8 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
-  */
+diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
+index c243a6a..d3374bc 100644
+--- a/include/asm-powerpc/types.h
++++ b/include/asm-powerpc/types.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_POWERPC_TYPES_H
+ #define _ASM_POWERPC_TYPES_H
  
-+#include <asm-generic/int-l64.h>
++#ifdef __powerpc64__
++# include <asm-generic/int-l64.h>
++#else
++# include <asm-generic/int-ll64.h>
++#endif
 +
- #ifdef __ASSEMBLY__
- # define __IA64_UL(x)		(x)
- # define __IA64_UL_CONST(x)	x
-@@ -28,39 +30,10 @@
- typedef unsigned int umode_t;
+ #ifndef __ASSEMBLY__
  
  /*
+@@ -22,30 +28,6 @@ typedef unsigned int umode_t;
+ typedef unsigned short umode_t;
+ #endif
+ 
+-/*
 - * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
 - * header files exported to user space
 - */
@@ -81,29 +100,44 @@ index 902850d..e36b371 100644
 -typedef __signed__ int __s32;
 -typedef unsigned int __u32;
 -
+-#ifdef __powerpc64__
 -typedef __signed__ long __s64;
 -typedef unsigned long __u64;
+-#else
+-#if defined(__GNUC__)
+-__extension__ typedef __signed__ long long __s64;
+-__extension__ typedef unsigned long long __u64;
+-#endif
+-#endif /* __powerpc64__ */
 -
--/*
-  * These aren't exported outside the kernel to avoid name space clashes
-  */
- # ifdef __KERNEL__
+ typedef struct {
+ 	__u32 u[4];
+ } __attribute__((aligned(16))) __vector128;
+@@ -64,24 +46,6 @@ typedef struct {
  
--typedef __s8 s8;
--typedef __u8 u8;
--
--typedef __s16 s16;
--typedef __u16 u16;
--
--typedef __s32 s32;
--typedef __u32 u32;
--
--typedef __s64 s64;
--typedef __u64 u64;
--
- #define BITS_PER_LONG 64
+ #ifndef __ASSEMBLY__
  
- /* DMA addresses are 64-bits wide, in general.  */
+-
+-typedef signed char s8;
+-typedef unsigned char u8;
+-
+-typedef signed short s16;
+-typedef unsigned short u16;
+-
+-typedef signed int s32;
+-typedef unsigned int u32;
+-
+-#ifdef __powerpc64__
+-typedef signed long s64;
+-typedef unsigned long u64;
+-#else
+-typedef signed long long s64;
+-typedef unsigned long long u64;
+-#endif
+-
+ typedef __vector128 vector128;
+ 
+ /* Physical address used by some IO functions */
 -- 
 1.5.4.1
 
