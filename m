@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764319AbYDXPoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764548AbYDXPpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764319AbYDXPoo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764013AbYDXPoe
+	id S1764548AbYDXPpj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbYDXPp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:44:34 -0400
-Received: from mx2.schottelius.org ([62.65.138.77]:50299 "EHLO
-	mx2.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762080AbYDXPod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:44:33 -0400
-X-Greylist: delayed 410 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 11:44:33 EDT
-Date: Thu, 24 Apr 2008 17:37:43 +0200
-From: Nico Schottelius 
-	<nico-lkml-where-to-put-mouse-drivers@schottelius.org>
-To: linux-kernel@vger.kernel.org
-Subject: Where to put mouse drivers?
-Message-ID: <20080424153743.GC4236@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-lkml-where-to-put-mouse-drivers@schottelius.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OBd5C1Lgu00Gd/Tn"
+	Thu, 24 Apr 2008 11:45:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49704 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758072AbYDXPpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:45:25 -0400
+Date: Thu, 24 Apr 2008 11:44:41 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+Message-ID: <20080424154441.GG2255@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com> <20080424112514.055d8071@the-village.bc.nu> <481096C3.2020206@redhat.com> <20080424152436.6cf53c1b@the-village.bc.nu> <4810A46B.1090809@redhat.com> <20080424160352.30f2dd5b@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080424160352.30f2dd5b@the-village.bc.nu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 24, 2008 at 04:03:52PM +0100, Alan Cox wrote:
+> > > Every other property of a socket via accept() is inherited from the
+> > > parent. Making one property different would be bizarre and ugly.
+> > 
+> > Implementing this would visibly change existing code and it would
+> > actively violate POSIX.  Not a good idea.
+> 
+> POSIX has no interface for this new behaviour you propose so that is
+> complete crap. The moment you use one of these features you stepped
+> outside of the POSIX spec - and you know that. If there was an existing
+> standard we wouldn't have a problem.
 
---OBd5C1Lgu00Gd/Tn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Doing:
 
-Hello guys!
+int fd = socket (PF_INET, SOCK_STREAM, 0);
+fcntl (fd, F_SETFD, F_CLOEXEC);
+...
+int fd2 = accept (fd, addr, addrlen);
 
-I am currently wondering, how and where to continue with gpm2.
+certainly doesn't use any of the new interfaces, yet if accept inherits
+the CLOEXEC flag from the socket, would visibly change existing programs.
 
-As currently more and more drivers seem to be implemented into
-the Linux kernel, I am wondering what your idea is, how to continue.
-
-Imho putting the drivers out of the kernel could lead to easier
-portability, but this seems to be against the trend...
-
-You can read more about it at
-http://nico.schottelius.org/notizbuch-blog/archive/2008/04/24/where-to-put-=
-mouse-drivers
-
-I am happy for any input, critics and ideas.
-
-Sincerly
-
-Nico
-
-ps: As always, please CC, I am not subscribed.
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---OBd5C1Lgu00Gd/Tn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIEKlHuL75KpiFGIwRArv9AJ9DCGQ8WH5DippzWuRReQHJinLfiQCeLHic
-OgAt/yvmgCqdHgyIhcm8jX4=
-=tTA5
------END PGP SIGNATURE-----
-
---OBd5C1Lgu00Gd/Tn--
+	Jakub
