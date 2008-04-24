@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYDWX7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbYDXAAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYDWX7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 19:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYDWX7o
+	id S1756406AbYDXAAn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 20:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYDXAAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 19:59:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43499 "EHLO smtps.tip.net.au"
+	Wed, 23 Apr 2008 20:00:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:49748 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbYDWX7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 19:59:43 -0400
-Date: Thu, 24 Apr 2008 09:59:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: optimized inlining
-Message-Id: <20080424095932.70c87714.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__24_Apr_2008_09_59_32_+1000_hFWy.xp+hPwKDV31"
+	id S1751760AbYDXAAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 20:00:35 -0400
+Message-ID: <480FCD9F.3020403@goop.org>
+Date: Wed, 23 Apr 2008 17:00:31 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080407)
+MIME-Version: 1.0
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+CC: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
+Subject: Re: [PATCH 1/3] xen: Move manage.c to drivers/xen for ia64/xen support.
+References: <12088476062604-git-send-email-yamahata@valinux.co.jp> <12088476061989-git-send-email-yamahata@valinux.co.jp>
+In-Reply-To: <12088476061989-git-send-email-yamahata@valinux.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__24_Apr_2008_09_59_32_+1000_hFWy.xp+hPwKDV31
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Isaku Yamahata wrote:
+> move arch/x86/xen/manage.c under drivers/xen/to share codes
+> with x86 and ia64.
+> ia64/xen also uses manage.c
+>   
 
-Hi Ingo,
+Hm, I've got patches to add suspend/resume to manage.c.  I guess they're 
+going to be at least partially arch-specific.  Well, no problem to split 
+those out.
 
-Could you please merge your two patches "x86: add optimized inlining" and
-"generic: optimized inlining, fix" before you send them to Linus.  This
-way we won't have another bad spot to land while bisecting on powerpc.
+    J
 
-Thanks.
+> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+> ---
+>  arch/x86/xen/Makefile              |    2 +-
+>  drivers/xen/Makefile               |    2 +-
+>  {arch/x86 => drivers}/xen/manage.c |    0 
+>  3 files changed, 2 insertions(+), 2 deletions(-)
+>  rename {arch/x86 => drivers}/xen/manage.c (100%)
+>
+> diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+> index 3d8df98..40b119b 100644
+> --- a/arch/x86/xen/Makefile
+> +++ b/arch/x86/xen/Makefile
+> @@ -1,4 +1,4 @@
+>  obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
+> -			time.o manage.o xen-asm.o grant-table.o
+> +			time.o xen-asm.o grant-table.o
+>  
+>  obj-$(CONFIG_SMP)	+= smp.o
+> diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+> index 37af04f..363286c 100644
+> --- a/drivers/xen/Makefile
+> +++ b/drivers/xen/Makefile
+> @@ -1,4 +1,4 @@
+> -obj-y	+= grant-table.o features.o events.o
+> +obj-y	+= grant-table.o features.o events.o manage.o
+>  obj-y	+= xenbus/
+>  obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
+>  obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
+> diff --git a/arch/x86/xen/manage.c b/drivers/xen/manage.c
+> similarity index 100%
+> rename from arch/x86/xen/manage.c
+> rename to drivers/xen/manage.c
+>   
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__24_Apr_2008_09_59_32_+1000_hFWy.xp+hPwKDV31
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFID81pTgG2atn1QN8RAnj9AJ4rMzIgV0OjCxHT4T+zUPQVlXmYsgCgl+iq
-Tlucx0WKtZQ1FBf1PurXHLc=
-=zBUz
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Apr_2008_09_59_32_+1000_hFWy.xp+hPwKDV31--
