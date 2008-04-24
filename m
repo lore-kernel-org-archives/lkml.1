@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbYDXXOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYDXXOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbYDXXOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYDXXHb
+	id S1759205AbYDXXOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYDXXHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:07:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36682 "EHLO
+	Thu, 24 Apr 2008 19:07:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36685 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYDXXHB (ORCPT
+	with ESMTP id S1752086AbYDXXHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:07:01 -0400
+	Thu, 24 Apr 2008 19:07:03 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 21/24] x86: types: use <asm-generic/int-*.h> for the x86 architecture
-Date: Thu, 24 Apr 2008 16:05:47 -0700
-Message-Id: <1209078352-7593-41-git-send-email-hpa@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH 16/24] s390: types: use <asm-generic/int-*.h> for the s390 architecture
+Date: Thu, 24 Apr 2008 16:05:38 -0700
+Message-Id: <1209078352-7593-32-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-40-git-send-email-hpa@zytor.com>
+In-Reply-To: <1209078352-7593-31-git-send-email-hpa@zytor.com>
 References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-2-git-send-email-hpa@zytor.com>
  <1209078352-7593-3-git-send-email-hpa@zytor.com>
@@ -53,39 +54,33 @@ References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-29-git-send-email-hpa@zytor.com>
  <1209078352-7593-30-git-send-email-hpa@zytor.com>
  <1209078352-7593-31-git-send-email-hpa@zytor.com>
- <1209078352-7593-32-git-send-email-hpa@zytor.com>
- <1209078352-7593-33-git-send-email-hpa@zytor.com>
- <1209078352-7593-34-git-send-email-hpa@zytor.com>
- <1209078352-7593-35-git-send-email-hpa@zytor.com>
- <1209078352-7593-36-git-send-email-hpa@zytor.com>
- <1209078352-7593-37-git-send-email-hpa@zytor.com>
- <1209078352-7593-38-git-send-email-hpa@zytor.com>
- <1209078352-7593-39-git-send-email-hpa@zytor.com>
- <1209078352-7593-40-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-x86/types.h> to use the <asm-generic/int-*.h>
+This modifies <asm-s390/types.h> to use the <asm-generic/int-*.h>
 generic include files.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- include/asm-x86/types.h |   38 ++------------------------------------
- 1 files changed, 2 insertions(+), 36 deletions(-)
+ include/asm-s390/types.h |   48 +++++----------------------------------------
+ 1 files changed, 6 insertions(+), 42 deletions(-)
 
-diff --git a/include/asm-x86/types.h b/include/asm-x86/types.h
-index 63733f3..1ac80cd 100644
---- a/include/asm-x86/types.h
-+++ b/include/asm-x86/types.h
-@@ -1,34 +1,12 @@
- #ifndef _ASM_X86_TYPES_H
- #define _ASM_X86_TYPES_H
+diff --git a/include/asm-s390/types.h b/include/asm-s390/types.h
+index 2c5879a..78dda03 100644
+--- a/include/asm-s390/types.h
++++ b/include/asm-s390/types.h
+@@ -9,34 +9,16 @@
+ #ifndef _S390_TYPES_H
+ #define _S390_TYPES_H
  
-+#include <asm-generic/int-ll64.h>
++#ifndef __s390x__
++# include <asm-generic/int-l64.h>
++#else
++# include <asm-generic/int-ll64.h>
++#endif
 +
  #ifndef __ASSEMBLY__
  
@@ -105,23 +100,24 @@ index 63733f3..1ac80cd 100644
 -typedef __signed__ int __s32;
 -typedef unsigned int __u32;
 -
--#ifdef __i386__
--# ifdef __GNUC__
+-#ifndef __s390x__
+-#if defined(__GNUC__)
 -__extension__ typedef __signed__ long long __s64;
 -__extension__ typedef unsigned long long __u64;
--# endif
--#else
--typedef __signed__ long long __s64;
--typedef unsigned long long __u64;
+-#endif
+-#else /* __s390x__ */
+-typedef __signed__ long __s64;
+-typedef unsigned long __u64;
 -#endif
 -
- #endif /* __ASSEMBLY__ */
- 
- /*
-@@ -44,18 +22,6 @@ typedef unsigned long long __u64;
+ /* A address type so that arithmetic can be done on it & it can be upgraded to
+    64 bit when necessary 
+ */
+@@ -58,24 +40,6 @@ typedef __signed__ long saddr_t;
  
  #ifndef __ASSEMBLY__
  
+-
 -typedef signed char s8;
 -typedef unsigned char u8;
 -
@@ -131,12 +127,17 @@ index 63733f3..1ac80cd 100644
 -typedef signed int s32;
 -typedef unsigned int u32;
 -
+-#ifndef __s390x__
 -typedef signed long long s64;
 -typedef unsigned long long u64;
+-#else /* __s390x__ */
+-typedef signed long s64;
+-typedef unsigned  long u64;
+-#endif /* __s390x__ */
 -
- typedef u64 dma64_addr_t;
- #if defined(CONFIG_X86_64) || defined(CONFIG_HIGHMEM64G)
- /* DMA addresses come in 32-bit and 64-bit flavours. */
+ typedef u32 dma_addr_t;
+ 
+ #ifndef __s390x__
 -- 
 1.5.4.1
 
