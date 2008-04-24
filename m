@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYDXI5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbYDXJNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYDXI5t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYDXI5k
+	id S1753375AbYDXJNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 05:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYDXJNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:57:40 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40775 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbYDXI5j (ORCPT
+	Thu, 24 Apr 2008 05:13:37 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:65257 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbYDXJNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:57:39 -0400
-Subject: Re: [PATCH] wireless: rndis_wlan: modparam_workaround_interval is
-	never below 0.
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: jussi.kivilinna@mbnet.fi, linux-wireless@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <480F97B5.9030009@tiscali.nl> (sfid-20080423_221109_783456_35B212E0)
-References: <480F97B5.9030009@tiscali.nl>
-	 (sfid-20080423_221109_783456_35B212E0)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-elk0awi/LJdjBsMIIy/d"
-Date: Thu, 24 Apr 2008 10:57:31 +0200
-Message-Id: <1209027451.3357.49.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Thu, 24 Apr 2008 05:13:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SF75GEJYS+Cl+0wp+xlTX3rQ4OGR3ip5nA+Xv5MDwdoNEMyeQwsVbQTCFBfTYBoiZ0SxS9HxHvZ8koMkMWJnaHldytmmQh3LO6DLSVA6SEZTQqehi2zsKGoGdRVbAVc7a9l8Bbqg9f0OHWGWRfCY278LWgi/FEJRU4g2csSmTyA=
+Message-ID: <1ba2fa240804240213p77f0b96do4da6a2504fac1c65@mail.gmail.com>
+Date: Thu, 24 Apr 2008 12:13:34 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>
+Subject: Re: iwl4965 regression since 2.6.24
+Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       "Johannes Berg" <johannes@sipsolutions.net>
+In-Reply-To: <20080423233904.GD14412@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Disposition: inline
+References: <20080423124105.GA4783@ics.muni.cz>
+	 <D936D925018D154694D8A362EEB0892004415BC8@orsmsx416.amr.corp.intel.com>
+	 <20080423233904.GD14412@ics.muni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3O9EREB007065
 
-
---=-elk0awi/LJdjBsMIIy/d
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2008-04-23 at 22:10 +0200, Roel Kluin wrote:
-> priv->param_workaround_interval is unsigned,
-> modparam_workaround_interval not.
-> the former is never < 0.
-
-> -	priv->param_workaround_interval =3D modparam_workaround_interval;
-> =20
-> -	if (priv->param_workaround_interval < 0)
-> +	if (modparam_workaround_interval < 0)
->  		priv->param_workaround_interval =3D 500;
-> +	else
-> +		priv->param_workaround_interval =3D modparam_workaround_interval;
-
-Eh, why not make the modparam unsigned and default to 500?
-
-johannes
-
---=-elk0awi/LJdjBsMIIy/d
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASBBLeqVg1VMiehFYAQIpKg//SWw4D0YZo9M9stw0llJljNhDTlzv+eGP
-41gf/bm7Hi8VAnPc2Lkf/CmrhOQAd33Cb/w6PNZq5/rt70MJUE8o3HHpPmsXjYqN
-s70Rz7qKtVY9eSLIWb7AW9w3HPYNEwbDwiE8/WmAbTbHizXXbplwdQbP6FuMXEiI
-bRwRdQPiBp22CCY5Nq7U6vQMS51Y+7nMH2AwCh/qnkZraIFrlyzaCEqP76OxuH56
-Zyq+Sfg479/Z6RJnHFGJF5IzjJSSRnPtErn96iTS3fpbunskJnYC+oPFDeTXDuyw
-1nB9h6vgFNVVg20cTPbUsgJ4K0BfF92OzLJaHSbXXnJdbgXdAwwsdP5F0VrMSyf1
-vmH45Irqc4/B/1gmvU7Hp/LR3y7qn66ocH4K1oJQtG48T8WsrEN029JWG5HeWAxC
-XRD6sc7u6P91alPWn/FrOZ3rhrsygbUse/S8ytMgPrQAvYXUgetlX1/VjoaJ9VUS
-oTq0n79wynEmHibWJlf/ywvnMg1YkxpuEpZWq8vRAhIb3magUK8L8LoI2nqu4/SZ
-sqJdGNeKKEiwi4cdK0c2e42/RxSQ3tnaIgQInKE/PMXUjqym9LhFDtBuAvZ3gfAm
-Jd5HZJqISKff6u5d+FEYmR30Gva50AoS8MDAuX3RTl+L8I7GdQeW3hGngHjL9roF
-YgpB9deszCQ=
-=J7yc
------END PGP SIGNATURE-----
-
---=-elk0awi/LJdjBsMIIy/d--
-
+2008/4/24 Lukas Hejtmanek <xhejtman@ics.muni.cz>:> On Wed, Apr 23, 2008 at 02:29:14PM -0700, Chatre, Reinette wrote:>  > Could you please send us some logs that can help us debug this problem?>  > Please load the driver with debugging (modprobe iwl4965 debug=0x43ffb)>  > to get detailed logs and add a detailed description about what you are>  > trying to do with the driver as the logs are created. Also, please>  > consider filing a bug at http://www.intellinuxwireless.org/bugzilla/>  > with these logs attached.>>  done at:>  http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1659>>  -->  Luk·π Hejtm·nek>  -->  To unsubscribe from this list: send the line "unsubscribe linux-wireless" in>
+ThanksSince we moved association process out of the driver and relaying onmac80211 association, it lookslike disassociation is not handled properly and previous configurationis not cleared correctly.  Probably in both levelsmac and the driver.Investigating....
+ThanksTomas
+> the body of a message to majordomo@vger.kernel.org>  More majordomo info at  http://vger.kernel.org/majordomo-info.html>ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
