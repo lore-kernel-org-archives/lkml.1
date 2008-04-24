@@ -1,124 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYDXSja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764098AbYDXSjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbYDXSja (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbYDXSel
+	id S1764098AbYDXSjt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760114AbYDXSen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:34:41 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:60515 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbYDXSeR (ORCPT
+	Thu, 24 Apr 2008 14:34:43 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:55495 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754002AbYDXSeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:34:17 -0400
-Message-Id: <20080424183242.943446357@mail.of.borg>
+	Thu, 24 Apr 2008 14:34:16 -0400
+Message-Id: <20080424183242.456519997@mail.of.borg>
 References: <20080424182940.424312704@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 20:29:50 +0200
+Date: Thu, 24 Apr 2008 20:29:48 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [patch 10/15] m68k: Some network drivers do not check the platform
-Content-Disposition: inline; filename=m68k-net-drivers-break-multiplatform.diff
+       linux-ide@vger.kernel.org
+Subject: [patch 08/15] m68k: macide doesnt check for Mac
+Content-Disposition: inline; filename=m68k-macide-breaks-multi-platform.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Some network drivers do not check whether they're actually running on the
-correct platform, causing multi-platform kernels to crash if they are not.
+The Macintosh IDE driver (macide) doesn't check whether it's actually running
+on Mac hardware, causing a crash if it isn't.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/net/82596.c     |    7 +++++++
- drivers/net/apne.c      |    3 +++
- drivers/net/mac89x0.c   |    3 +++
- drivers/net/macmace.c   |    3 +++
- drivers/net/sun3lance.c |    3 +++
- 5 files changed, 19 insertions(+)
+ drivers/ide/legacy/macide.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/net/82596.c
-+++ b/drivers/net/82596.c
-@@ -1162,6 +1162,7 @@ struct net_device * __init i82596_probe(
- 		memcpy(eth_addr, (void *) 0xfffc1f2c, 6);	/* YUCK! Get addr from NOVRAM */
- 		dev->base_addr = MVME_I596_BASE;
- 		dev->irq = (unsigned) MVME16x_IRQ_I596;
-+		goto found;
- 	}
- #endif
- #ifdef ENABLE_BVME6000_NET
-@@ -1176,6 +1177,7 @@ struct net_device * __init i82596_probe(
- 		rtc[3] = msr;
- 		dev->base_addr = BVME_I596_BASE;
- 		dev->irq = (unsigned) BVME_IRQ_I596;
-+		goto found;
- 	}
- #endif
- #ifdef ENABLE_APRICOT
-@@ -1212,8 +1214,13 @@ struct net_device * __init i82596_probe(
- 		}
- 
- 		dev->irq = 10;
-+		goto found;
- 	}
- #endif
-+	err = -ENODEV;
-+	goto out;
-+
-+found:
- 	dev->mem_start = (int)__get_free_pages(GFP_ATOMIC, 0);
- 	if (!dev->mem_start) {
- 		err = -ENOMEM;
---- a/drivers/net/apne.c
-+++ b/drivers/net/apne.c
-@@ -127,6 +127,9 @@ struct net_device * __init apne_probe(in
- #endif
- 	int err;
- 
-+	if (!MACH_IS_AMIGA)
-+		return ERR_PTR(-ENODEV);
-+
- 	if (apne_owned)
- 		return ERR_PTR(-ENODEV);
- 
---- a/drivers/net/mac89x0.c
-+++ b/drivers/net/mac89x0.c
-@@ -183,6 +183,9 @@ struct net_device * __init mac89x0_probe
- 	int err = -ENODEV;
- 	DECLARE_MAC_BUF(mac);
- 
-+	if (!MACH_IS_MAC)
-+		return ERR_PTR(-ENODEV);
-+
- 	dev = alloc_etherdev(sizeof(struct net_local));
- 	if (!dev)
- 		return ERR_PTR(-ENOMEM);
---- a/drivers/net/macmace.c
-+++ b/drivers/net/macmace.c
-@@ -781,6 +781,9 @@ static int __init mac_mace_init_module(v
- {
- 	int err;
+--- a/drivers/ide/legacy/macide.c
++++ b/drivers/ide/legacy/macide.c
+@@ -95,6 +95,9 @@ static int __init macide_init(void)
+ 	int irq;
+ 	hw_regs_t hw;
  
 +	if (!MACH_IS_MAC)
 +		return -ENODEV;
 +
- 	if ((err = platform_driver_register(&mac_mace_driver))) {
- 		printk(KERN_ERR "Driver registration failed\n");
- 		return err;
---- a/drivers/net/sun3lance.c
-+++ b/drivers/net/sun3lance.c
-@@ -250,6 +250,9 @@ struct net_device * __init sun3lance_pro
- 	static int found;
- 	int err = -ENODEV;
- 
-+	if (!MACH_IS_SUN3 && !MACH_IS_SUN3X)
-+		return ERR_PTR(-ENODEV);
-+
- 	/* check that this machine has an onboard lance */
- 	switch(idprom->id_machtype) {
- 	case SM_SUN3|SM_3_50:
+ 	switch (macintosh_config->ide_type) {
+ 	case MAC_IDE_QUADRA:
+ 		base = IDE_BASE;
 
 -- 
 Gr{oetje,eeting}s,
