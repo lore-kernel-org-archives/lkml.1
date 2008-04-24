@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbYDXTRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYDXTVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761029AbYDXTRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbYDXTQ7
+	id S1761468AbYDXTVG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760712AbYDXTUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:16:59 -0400
-Received: from kolab.mylinuxtime.de ([212.112.242.22]:33881 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759272AbYDXTQ6 (ORCPT
+	Thu, 24 Apr 2008 15:20:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:35822 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760659AbYDXTUx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:16:58 -0400
-X-Spam-ASN: 
-From: Christian Hesse <mail@earthworm.de>
-To: Jeff Arnold <jbarnold@mit.edu>
-Subject: Re: A system for rebootless kernel security updates
-Date: Thu, 24 Apr 2008 21:16:49 +0200
+	Thu, 24 Apr 2008 15:20:53 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] x86: Fix non-kernel use of include/linux/types.h
+Date: Fri, 25 Apr 2008 05:20:38 +1000
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <200804241543.06874.mail@earthworm.de> <alpine.DEB.1.00.0804241306260.21001@vinegar-pot.mit.edu>
-In-Reply-To: <alpine.DEB.1.00.0804241306260.21001@vinegar-pot.mit.edu>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Joe Perches <joe@perches.com>
+References: <200804250114.38971.rusty@rustcorp.com.au> <20080424160101.GA18854@cs181133002.pp.htv.fi>
+In-Reply-To: <20080424160101.GA18854@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200804242116.54019.mail@earthworm.de>
+Message-Id: <200804250520.39124.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 April 2008, Jeff Arnold wrote:
-> > I just wanted to test on my Gentoo system with kernel 2.6.25. The
-> > tarball creation works, but applying the change brings an error to
-> > syslog
+On Friday 25 April 2008 02:01:01 Adrian Bunk wrote:
+> On Fri, Apr 25, 2008 at 01:14:38AM +1000, Rusty Russell wrote:
+> > In file included from ../../include/linux/if_tun.h:21,
+> >                  from lguest.c:30:
+> > ../../include/linux/types.h:203: error: expected specifier-qualifier-list
+> > before ‘__kernel_daddr_t’
+> >
+> > This reversion was created by e40c0fe6b0b5dd16aec3c0dad311d36b19d78fd9
+> > 'x86: cleanup duplicate includes' which removed the !__KERNEL__ case from
+> > asm-x86/posix_types.h.
 >
-> Sorry.  (In 2.6.25, init_mm is marked as an unused symbol, and so whether
-> it is exported depends on whether CONFIG_UNUSED_SYMBOLS is enabled).
->
-> I've committed a change which should fix this problem.  You can get get
-> the new version (0.8.1) from http://web.mit.edu/ksplice/dist/ or from Git.
-> (I haven't yet made the new version the default, so you won't receive it
-> from the main Ksplice page).
+> I'd actually prefer my patch [1] that:
+> - reverts to the 2.6.24 status quo since we shouldn't leak CONFIG_* to
+>   userspace at all and
+> - also fixes the same regression in unistd.h
 
-This time I get the following in syslog:
+Yep, prefer your patch too.
 
-ksplice_h: Preparing and checking ksplice_oq7ne7l6
-ksplice: Aborted. (stack check: to-be-replaced code is busy)
-
-I tried the example from your website (modifying printk).
--- 
-Regards,
-Chris
+Cheers,
+Rusty.
