@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbYDXJSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYDXJWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbYDXJSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 05:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYDXJSh
+	id S1754161AbYDXJWX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 05:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYDXJWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 05:18:37 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:21013 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbYDXJSg (ORCPT
+	Thu, 24 Apr 2008 05:22:15 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:39725 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYDXJWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 05:18:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VMOCv/vF0Omssp3lk19CTb5vMrZtsMVCr5eP3b9buO/sIOijkcRpdBeZV24ryOAOOBzgAbWAw/eFWv3pWSXsrDMJUXX2320ru0fn8j3ho+F4/xGSQxMw/N5Z1eEU2OeyYumxCbS0nZtFJLBBr+FAHpSc3vLYXeBOb1Xaz5cWYpk=
-Message-ID: <87a5b0800804240218l3e907acah438dded122cdec33@mail.gmail.com>
-Date: Thu, 24 Apr 2008 10:18:34 +0100
-From: "Will Newton" <will.newton@gmail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [RFC] Introduce __ARCH_WANT_SYS_SYSFS
-Cc: "Kyle McMartin" <kyle@mcmartin.ca>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <8bd0f97a0804231059w76592878s3f6bf4a488b3ddea@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
-	 <87a5b0800804220816y72a7f4f9gec2111df08a1a57f@mail.gmail.com>
-	 <20080422152426.GG19802@phobos.i.cabal.ca>
-	 <87a5b0800804220834q4d6daec1x4146d211115ab5c@mail.gmail.com>
-	 <20080422153849.GH19802@phobos.i.cabal.ca>
-	 <87a5b0800804230736k340e7fe9mffbd72b5b8164015@mail.gmail.com>
-	 <20080423154038.GL19802@phobos.i.cabal.ca>
-	 <87a5b0800804230850y4d577ff2taf1689f4af26b274@mail.gmail.com>
-	 <8bd0f97a0804230905x19fd96aevc8f225d241e59369@mail.gmail.com>
-	 <8bd0f97a0804231059w76592878s3f6bf4a488b3ddea@mail.gmail.com>
+	Thu, 24 Apr 2008 05:22:14 -0400
+Subject: Re: cpu_clock confusion (was: printk time confusion?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin Herrenschmidt <benh@ozlabs.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Arnd Bergmann <arndb@de.ibm.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080404144641.GA15844@elte.hu>
+References: <1207146186.3957.11.camel@johannes.berg>
+	 <1207219724.10388.319.camel@pasglop>
+	 <1207240450.3797.22.camel@johannes.berg>  <20080404144641.GA15844@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Qqig41e2ATLZLDa/j1zw"
+Date: Thu, 24 Apr 2008 11:21:52 +0200
+Message-Id: <1209028912.3357.52.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 6:59 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
->
-> On Wed, Apr 23, 2008 at 12:05 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
->  > On Wed, Apr 23, 2008 at 11:50 AM, Will Newton <will.newton@gmail.com> wrote:
->  >  > On Wed, Apr 23, 2008 at 4:40 PM, Kyle McMartin <kyle@mcmartin.ca> wrote:
->  >  >  > On Wed, Apr 23, 2008 at 03:36:23PM +0100, Will Newton wrote:
->  >  >  >  > +config ARCH_HAS_SYS_SYSFS
->  >  >  >  > +     bool
->  >  >  >  > +     default y
->  >  >  >  > +
->  >  >  >  >  source "init/Kconfig"
->  >  >  >  >
->  >  >  >
->  >  >  >  Sorry, I meant something more like
->  >  >  >
->  >  >  >
->  >  >  >  config ARCH_HAS_SYS_SYSFS
->  >  >  >         def_bool !BLACKFIN
->  >  >  >         help
->  >  >  >           Obsolete sys_sysfs syscall
->  >  >  >
->  >  >  >  in init/Kconfig
->  >  >  >
->  >  >  >  But, it's your patch, you can do it however you like. :)
->  >  >
->  >  >  That's definitely shorter - but it feels a bit more like #ifdef
->  >  >  CONFIG_BLACKFIN which is explicitly what I don't want to do, because
->  >  >  I'm not actually interested in blackfin. ;-)
->  >
->  >  i'd have to agree that updating asm/unistd.h fits better with existing
->  >  paradigm.  if we want to talk about converting *all cases* to Kconfig,
->  >  we can do it in a separate thread.  splitting the design between two
->  >  different files is simply confusing to everyone involved as they spend
->  >  their time going "well which way am *i* supposed to do it".
->
->  thinking about this some more ... we actually have three choices here,
->  not just two.  checksyscalls.sh introduced a new form in asm/unistd.h:
->  #define __IGNORE_sysfs
->  perhaps we should be unifying the __ARCH_WANT_XXX and the __IGNORE_XXX
 
-I'm not sure this would be possible. IGNORE is saying "please don't
-warn me about the fact that I don't define define this syscall".
-ARCH_WANT is saying "give me the generic implementation of this
-syscall". You should never define IGNORE and ARCH_WANT for the same
-syscall, but you may want to have neither - you have defined the
-syscall but you don't want the generic version.
+--=-Qqig41e2ATLZLDa/j1zw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->  -mike
->
+
+> > [    2.764009 (3/3)]
+> > [    4.272241 (2/2)]
+> > [    4.272322 (2/2)]
+> > [    4.272375 (2/2)]
+> > [    2.948002 (3/3)]
+> >=20
+> > As you can see, I added printk_cpu and smp_processor_id() to the=20
+> > printk timestamp output and thus it is obvious that the different=20
+> > times come from different CPUs.
+>=20
+> the fixes are queued for v2.6.26. You can pick them up from=20
+> sched-devel/latest as well:
+>=20
+>   http://people.redhat.com/mingo/sched-devel.git/README
+
+Hmm. Why is that whole cpu_clock stuff in place anyway? powerpc has
+perfectly synchronised time across processors with dirt cheap access to
+it as well, so why build all this code that only messes it up on top of
+it?
+
+johannes
+
+--=-Qqig41e2ATLZLDa/j1zw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASBBRL6Vg1VMiehFYAQKOCA/9GV98wfgFp/4xMkbPay4pYo5WWKWwg2Oo
+p10Z4iCXYH/MEWsvP5lLxYt3rTW8qeoYidxH0utGoZfG2NV490KP8NAuKkc64mUa
+IeT+ctRebaUHGI6o8UJRf/4Z/4dCrGFeyueTF1RGLnffTaXHooE24DkaGgDQ6GqV
+RRAdb2OpUhUniAT/MJwGSR/lvGAoGMr8wrBTrZzpA0YrsFX3Pd0r//9A1OmCqTiH
+qjNrsMNQiSaG5VPXIe2tb2QxufCxfQJa6332ay5qr/NGfSO3ilk/MzXPFGZPiv8K
+ue26TXmIFtJgFZQxl93O/KQMgi2YEbGfVVZJXhnI/vVGvHFn5o6aOVEX1ed9Zvsh
+qSgPgqSfbXBpWff5sXG3cOL0gL5Jb+QxDEBB9liczi2lnXNqQmjbXkSMfx9j5bRG
+QzGY/rAa+jBJQnXiscTR9a4jXTLDeOKx5xdvn9ajeohEfOCZz6YFhfDG/C4lWSf7
+E1pvxbQ0TeZoWIRCTLXhimxhUFbiK/ouDu063o40bQis6ICz4ofgoMqWtdBnjcAI
+N9mb3Rdit/UomdlqsTbJQo4EalNN5CF0IwDoYeE1BN4o3kYcFRB5+hbIzEcm7zp4
+a1IT16eLsMO2WmZRFv2qq0A38SX6S+ERGD54/eKK1T/2+GCI1HUeMCCvwiwgClSr
+F2uJBDvaIAA=
+=wywX
+-----END PGP SIGNATURE-----
+
+--=-Qqig41e2ATLZLDa/j1zw--
+
