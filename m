@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbYDXRb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYDXRc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761117AbYDXRb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760538AbYDXRbJ
+	id S1760910AbYDXRc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYDXRcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:31:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:32820 "EHLO mail.dvmed.net"
+	Thu, 24 Apr 2008 13:32:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59433 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760380AbYDXRbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:31:07 -0400
-Message-ID: <4810C3B5.3020605@garzik.org>
-Date: Thu, 24 Apr 2008 13:30:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S1751565AbYDXRcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 13:32:18 -0400
+Message-ID: <4810C3F1.9060009@redhat.com>
+Date: Thu, 24 Apr 2008 10:31:29 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [git patch] free_irq() fixes
-References: <20080422221733.GA16260@havoc.gtf.org>	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>	<480E6DE5.6010103@garzik.org>	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>	<480E796E.4070001@garzik.org>	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>	<20080423000529.GG28933@cs181133002.pp.htv.fi>	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>	<m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org>	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>	<4810A9E6.1080201@garzik.org>	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org> <m1r6cvgpw2.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1r6cvgpw2.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       "akpm@linux-foundation.org Jakub Jelinek" <jakub@redhat.com>
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	 <20080424112514.055d8071@the-village.bc.nu>	 <alpine.LFD.1.10.0804240828100.2779@woody.linux-foundation.org>	 <20080424.083908.147395158.davem@davemloft.net>	 <517f3f820804240903y788102bar5c7d1fa9bcee1c8a@mail.gmail.com>	 <20080424164226.415cedeb@the-village.bc.nu> <517f3f820804240948u788745f4s7a5dd4e7417ffeaf@mail.gmail.com> <4810C16A.3000606@zytor.com>
+In-Reply-To: <4810C16A.3000606@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Even if we never export them to drivers we will need to implement
-> in genirq functions like:
-> 
-> int __must_check irq_request(struct irq_desc *irq, irq_handler_t handler,
-> 	 unsigned long irqflags, const char *devname, void *devid);
->         	
-> int __must_check request_irq(unsigned int irq, irq_handler_t handler,
-> 	unsigned long irqflags, const char *devname, void *devid)
-> {
->         return irq_request(cookie_to_desc(irq), handler, irqflags, devname, devid);
-> }
-> 
-> Or at the very least do the mapping from cookie to irq_desc at the
-> start of all of the genirq functions.  One valid implementation of
-> that cookie to desc will be the current array lookup.  But for x86
-> we need something less limiting.
-[...]
-> And on x86 at least the hardware maps the MSI write into an interrupt.
-> So there is not an opportunity to get any metdata/OOB data from the
-> MSI message.  Instead we just potentially get a boatload more irq
-> sources.  Which is one of the things making a static NR_IRQS painful.
-> 
-> To be safe we have to make NR_IRQS 10x+ or so bigger then people use
-> today.  Just in case they decide to plug in some really irq hungry
-> cards.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
+H. Peter Anvin wrote:
+> sys_indirect is a total red herring here, since it won't help one iota
+> making the userspace interface comprehensible - it just introduces a
+> different calling convention that the C library will have to thunk.
 
-Just to be clear, irq_chip/irq_desc and metadata/OOB data are two very 
-different beasts.  irq_chip/irq_desc is more a system attribute as Linus 
-notes.  Also, it doesn't change very often.
+Nobody ever suggested that sys_indirect is in any way visible at the
+userlevel.  It's only meant to solve the problem of changing many
+syscalls (and hence touch lots of arch-specific code).  Again, as said
+several times, it could easily be used to fix the existing signalfd and
+eventfd syscalls without any arch-specific changes and no userlevel
+interface changes (the latter since we already have the correct interface).
 
-metadata/OOB, on the other hand, is different -for each interrupt-, and 
-is highly relevant to drivers.  Thus should be part of the driver API 
-somehow.
+Yes, you don't like sys_indirect, we know it.  But don't deliberately
+misrepresent the approach.
 
-	Jeff
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-
+iD8DBQFIEMPx2ijCOnn/RHQRAr7uAJ0aHkZ+bbjk2nsMhhN2xzslA/yhKgCghi8r
+9PZw8zfW5fxTVTfrbsHIII0=
+=SmAT
+-----END PGP SIGNATURE-----
