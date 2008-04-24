@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYDXPJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYDXPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757974AbYDXPJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYDXPJG
+	id S1755323AbYDXPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYDXPLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:09:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:29459 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894AbYDXPJF (ORCPT
+	Thu, 24 Apr 2008 11:11:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46080 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753394AbYDXPLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:09:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:sender;
-        b=nCRNFMNEOCSvmXUaw6+LvnAMb/L0bqopZF3GWy0L90VzpUdg1d2ecNkt/wwKChk8Am5I4YOIzY8dR7BYXWoEAe+f5lTNYutK3adZjjGL86ja9ENSkQ58oW/UJwxXQDF2mcMqviQKjEKHUniAJK9ty8Zu1jl0LqkhKTD6A+MWFmQ=
-Date: Thu, 24 Apr 2008 17:07:17 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] latest git: DEV_BLK_4DRIVES should be a tristate
-Message-ID: <20080424150717.GA32700@slug>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 24 Apr 2008 11:11:15 -0400
+Date: Thu, 24 Apr 2008 15:42:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       michael.kerrisk@gmail.com, linux-man@vger.kernel.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+Message-ID: <20080424154220.3dae36a1@the-village.bc.nu>
+In-Reply-To: <48109DFB.900@redhat.com>
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
+	<20080424112514.055d8071@the-village.bc.nu>
+	<517f3f820804240534r3bbbdc52s52a6dfe3f2d14b7f@mail.gmail.com>
+	<48109DFB.900@redhat.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Bartlomiej,
+> Somebody please make a call and then let's go on with life.  I don't
+> care much either way anymore.  I do hope nobody thinks this is an issue
+> which can be completely ignored (see, e.g., the bug I pointed to the
+> other day).
 
-The 4drives should be a tristate, the following breakage occurs
-otherwise:
-ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
+Its very hard to do that without knowing what other Unixlike and POSIX OS
+plan to do and if we'll end up with a third yet again different API to
+support when it reaches a standards body.
 
-The following (compile tested) patch fixes it for me.
+We shouldn't be seeing this as a Linux problem, its a BSD problem, an AIX
+problem, a Solaris problem and an HPUX problem and really wants one
+solution applying across distributions or it will harm everyone in the
+long term.
 
-Regards,
-Frederik
-
-
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-
-diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
-index 8753203..3f9e100 100644
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -1031,7 +1031,7 @@ comment "Other IDE chipsets support"
- comment "Note: most of these also require special kernel boot parameters"
- 
- config BLK_DEV_4DRIVES
--	bool "Generic 4 drives/port support"
-+	tristate "Generic 4 drives/port support"
- 	help
- 	  Certain older chipsets, including the Tekram 690CD, use a single set
- 	  of I/O ports at 0x1f0 to control up to four drives, instead of the
+Alan
