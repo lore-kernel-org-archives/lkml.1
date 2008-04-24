@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbYDXH0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYDXHbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbYDXH0a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYDXH0W
+	id S1752063AbYDXHbk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 03:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYDXHbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:26:22 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:37997 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbYDXH0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:26:22 -0400
-Message-ID: <48103002.5090806@parallels.com>
-Date: Thu, 24 Apr 2008 11:00:18 +0400
-From: Kirill Korotaev <dev@parallels.com>
-Organization: Parallels
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 24 Apr 2008 03:31:32 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56158 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbYDXHbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 03:31:32 -0400
+Date: Thu, 24 Apr 2008 09:31:31 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: "devzero@web.de" <devzero@web.de>, linux-kernel@vger.kernel.org,
+       agruen@suse.de
+Subject: Re: make cloneconfig ?
+In-Reply-To: <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0804240930180.15791@fbirervta.pbzchgretzou.qr>
+References: <251459002@web.de> <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net, Andrew Morton <akpm@linux-foundation.org>,
-       nick@nick-andrew.net, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object	creation
- with a specified id)
-References: <20080418054459.891481000@bull.net>	 <20080422193612.GA15835@martell.zuzino.mipt.ru>	 <1208890580.17117.14.camel@nimitz.home.sr71.net>	 <20080422210130.GA15937@martell.zuzino.mipt.ru>	 <1208904967.17117.51.camel@nimitz.home.sr71.net>	 <480ED9D5.1010906@parallels.com> <1208964798.17117.72.camel@nimitz.home.sr71.net>
-In-Reply-To: <1208964798.17117.72.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yeah... we talked with Andrew yesterday. He mostly agrees with a black box.
-He also said an interesting idea, that if you need compatibility
-between the kernels (like we for example, support for migration from 2.6.9 to 2.6.18 in OpenVZ)
-you can do image conversion in user-space... Though I think we will prefer simply to have
-a compatibility patch for specific kernel versions in our kernel tree (not in mainstream).
 
-Definitely, other ideas/opinions are welcome.
-
-Kirill
-
-
-Dave Hansen wrote:
-> On Wed, 2008-04-23 at 10:40 +0400, Kirill Korotaev wrote:
->> Having all this functionality in a signle syscall we specifically CLAIM a black box,
->> and that no one can use this interfaces for something different from checkpoint/restore.
+On Thursday 2008-04-24 00:43, Jesper Juhl wrote:
+>> any reason why "make cloneconfig" never made it into mainline?
 >>
->> So I think we have to know what other maintainers think before we can go.
-> 
-> I completely agree.
-> 
-> Have you asked any particular maintainers what they think?
-> 
-> -- Dave
-> 
-> 
+>>  many people are quite used to it and every time i build vanilla kernel i step into that trap  "oh - that`s a suse`ism"
+>>
+>>  make cloneconfig exists since /proc/config.gz - but while that one went into mainline, cloneconfig never did.
+>>
+>>  anyone know the reason for that ?
+>>
+>>  i wished, distros kernels were more similar to vanilla kernels - so what about making them more similar ?
+>>
+>>
+>
+>Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
+>make oldconfig" ???   If so, why do we need yet another "make
+><some_target>" Makefile rule? What would actually be gained?
+
+Not just that, it also searches /boot/config-... (a redhatism)
+and /lib/modules/.../.config.
+So it's not like it would be a suse-only shortcut.
