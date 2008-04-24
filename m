@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYDXNM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbYDXNQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758693AbYDXNM1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 09:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYDXNMU
+	id S1759283AbYDXNQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 09:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYDXNQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 09:12:20 -0400
-Received: from khc.piap.pl ([195.187.100.11]:44374 "EHLO khc.piap.pl"
+	Thu, 24 Apr 2008 09:16:28 -0400
+Received: from mail1.perex.cz ([212.20.107.53]:35154 "EHLO mail1.perex.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbYDXNMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 09:12:19 -0400
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m34p9smrmp.fsf@maximus.localdomain>
-	<20080423.154953.161012169.davem@davemloft.net>
-	<m3iqy8f57m.fsf@maximus.localdomain>
-	<20080423.180849.240014014.davem@davemloft.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 24 Apr 2008 15:12:17 +0200
-In-Reply-To: <20080423.180849.240014014.davem@davemloft.net> (David Miller's message of "Wed\, 23 Apr 2008 18\:08\:49 -0700 \(PDT\)")
-Message-ID: <m3r6cv75xq.fsf@maximus.localdomain>
+	id S1753182AbYDXNQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 09:16:27 -0400
+Date: Thu, 24 Apr 2008 15:16:24 +0200 (CEST)
+From: Jaroslav Kysela <perex@perex.cz>
+X-X-Sender: perex@tm8103.perex-int.cz
+To: Takashi Iwai <tiwai@suse.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] ALSA updates for 2.6.26
+In-Reply-To: <s5hwsmnbhlv.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.61.0804241514210.7882@tm8103.perex-int.cz>
+References: <s5hwsmnbhlv.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+On Thu, 24 Apr 2008, Takashi Iwai wrote:
 
-> The core kernel code sets dev->priv to the alloc_netdev() allocated
-> memory region.
->
-> It doesn't do that just for fun.
->
-> Any code which overrides that setting is asking for trouble.
-> What if the code kernel code that set it, needed to use it
-> during device release for some reason?
+> Linus,
+> 
+> please pull ALSA updates for 2.6.26 from:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
+> 
+> 
+> This updates include a few new drivers (pcsp, aw2, soc davinci, etc),
+> and many fixes/updates for HD-audio and oxygen drivers, together with
+> lots of trivial fixes.
 
-You are right, the point is Linux is a moving target, and I try to
-write code as good as I can in given circumstances but never better.
-I accept occasional breakage in obscure cases like syncppp+hdlc,
-but I also need a way to fix it and/or remove the obscureness (or
-whatever the right word is).
+A repository with identical patches and ALSA version update is here:
 
-Historically we always have had two pointers:
-- dev->priv
-- first we had struct (net_)device *dev and by embedding it in larger
-  structure we were able to have another private data area (even with
-  Space.c)
-- then netdev_alloc() and netdev_priv() came
-- since 2.6.23 netdev_priv() returns dev->priv - one pointer is gone.
+  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
+gitweb interface:
+  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
 
-Anyway, I guess we should rather concentrate on what to do now with
-the thing. Perhaps you have some idea?
--- 
-Krzysztof Halasa
+The GNU patch is available at:
+
+  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2008-04-24.patch.gz
+
+						Jaroslav
+
+-----
+Jaroslav Kysela <perex@perex.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, Red Hat, Inc.
+
