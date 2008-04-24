@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYDXA5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYDXA7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbYDXA5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 20:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYDXA5Q
+	id S1756067AbYDXA7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 20:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbYDXA7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 20:57:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56653 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbYDXA5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 20:57:15 -0400
-Subject: Re: x86: 4kstacks default
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Chinner <dgc@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080423233652.GT103491721@sgi.com>
-References: <200804181737.m3IHbabI010051@hera.kernel.org>
-	 <20080418142934.38ce6bf4.akpm@linux-foundation.org>
-	 <20080419142329.GA5339@elte.hu> <1208928421.9060.22.camel@pasglop>
-	 <20080423233652.GT103491721@sgi.com>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 10:56:40 +1000
-Message-Id: <1208998600.9060.86.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 23 Apr 2008 20:59:34 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:17675 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966AbYDXA7e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 20:59:34 -0400
+Message-ID: <480FDB72.4030005@hp.com>
+Date: Wed, 23 Apr 2008 20:59:30 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH 3/3] Do not use rqhash when merges disabled
+References: <480F8936.5030406@hp.com> <480F8AB9.2050805@hp.com> <480FD648.70404@gelato.unsw.edu.au>
+In-Reply-To: <480FD648.70404@gelato.unsw.edu.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-04-24 at 09:36 +1000, David Chinner wrote:
-> > Do we routinely test nasty scenarii such as a GFP_KERNEL allocation
-> deep
-> > in a call stack trying to swap something out to NFS ?
+Aaron Carroll wrote:
+> Hi Alan,
 > 
-> I doubt it, because this is the place that a local XFS filesystem
-> typically blows a 4k stack (direct memory reclaim triggering
-> ->writepage). Boot testing does nothing to exercise the potential
-> paths for stack overflows....
+> Alan D. Brunelle wrote:
+>> --- a/block/elevator.c
+>> +++ b/block/elevator.c
+>> @@ -313,7 +313,7 @@ static inline void __elv_rqhash_del(struct request
+>> *rq)
+>>  
+>>  static void elv_rqhash_del(struct request_queue *q, struct request *rq)
+>>  {
+>> -    if (ELV_ON_HASH(rq))
+>> +    if (!blk_queue_nomerges(q) && ELV_ON_HASH(rq))
+>>          __elv_rqhash_del(rq);
+>>  }
+> 
+> If you switch the nomerges tunable while requests are in flight, it is
+> possible that
+> a request is put into the rqhash table but not removed here, leading to
+> the BUG_ON
+> in elv_dequeue_request() triggering.  ELV_ON_HASH needs to be checked
+> regardless of
+> the nomerges state.
+> 
+> 
+> -- Aaron
+> 
+> 
 
-Yup, note even counting when the said NFS is on top of some fancy
-network stack with a driver on top of USB .... I mean, we do have
-potential for worst case scenario that I think -will- blow a 4k stack.
+Hi Aaron -
 
-Ben.
+Good catch - that was a last minute addition, the ELV_ON_HASH should be
+sufficient without the check for blk_queue_nomerges, right?
 
-
+Alan
