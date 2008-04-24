@@ -1,134 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbYDXSwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763853AbYDXSx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763557AbYDXSwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761023AbYDXSwZ
+	id S1763853AbYDXSx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760275AbYDXSxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:52:25 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:41061 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757225AbYDXSwX (ORCPT
+	Thu, 24 Apr 2008 14:53:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49516 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbYDXSxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:52:23 -0400
-Date: Thu, 24 Apr 2008 12:52:22 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
-       linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ia64: Provide ACPI fixup for /proc/cpuinfo/physical_id
-Message-ID: <20080424185222.GC32553@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
-	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com> <20080421052450.GA24055@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com> <20080424184417.GA32553@ldl.fc.hp.com>
+	Thu, 24 Apr 2008 14:53:11 -0400
+Date: Thu, 24 Apr 2008 14:53:09 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [patch 10/15] m68k: Some network drivers do not check the
+	platform
+Message-ID: <20080424185309.GA22381@infradead.org>
+References: <20080424182940.424312704@mail.of.borg> <20080424183242.943446357@mail.of.borg> <20080424184256.GA8531@infradead.org> <Pine.LNX.4.64.0804242045510.21224@anakin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080424184417.GA32553@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.64.0804242045510.21224@anakin>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Legacy HP ia64 platforms currently cannot provide
-/proc/cpuinfo/physical_id due to legacy SAL/PAL implementations.
-However, that physical topology information can be obtained
-via ACPI.
+On Thu, Apr 24, 2008 at 08:51:17PM +0200, Geert Uytterhoeven wrote:
+> I suppose you mean platform_*device*_register(), not
+> platform_*driver*_register()?
 
-Provide an interface that gives ACPI one last chance to provide
-physical_id for these legacy platforms. This logic only comes
-into play iff:
+Yes, sorry.
 
-	- ACPI actually provides slot information for the CPU
-	- we lack a valid socket_id
-
-Otherwise, we don't do anything. Since x86 uses the ACPI processor
-driver as well, we provide an empty #define.
-
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
- arch/ia64/kernel/topology.c   |    7 +++++++
- drivers/acpi/processor_core.c |    8 ++++++++
- include/asm-ia64/cpu.h        |    1 +
- include/asm-ia64/topology.h   |    1 +
- include/asm-x86/topology.h    |    2 ++
- 5 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
-index a2484fc..bb584b4 100644
---- a/arch/ia64/kernel/topology.c
-+++ b/arch/ia64/kernel/topology.c
-@@ -27,6 +27,13 @@
- 
- static struct ia64_cpu *sysfs_cpus;
- 
-+void ia64_fix_socket_id(int num, u32 slot)
-+{
-+	if (cpu_data(num)->socket_id == -1)
-+		cpu_data(num)->socket_id= slot;
-+}
-+EXPORT_SYMBOL_GPL(ia64_fix_socket_id);
-+
- int arch_register_cpu(int num)
- {
- #if defined (CONFIG_ACPI) && defined (CONFIG_HOTPLUG_CPU)
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index a825b43..89578d4 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -612,6 +612,14 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
- 		request_region(pr->throttling.address, 6, "ACPI CPU throttle");
- 	}
- 
-+	/*
-+	 * If ACPI describes a slot number for this CPU, we can use it
-+	 * to fix a broken topology->physical_package_id.
-+	 */
-+	status = acpi_evaluate_object(pr->handle, "_SUN", NULL, &buffer);
-+	if (ACPI_SUCCESS(status))
-+		arch_fix_phys_package_id(pr->id, object.integer.value);
-+
- 	return 0;
- }
- 
-diff --git a/include/asm-ia64/cpu.h b/include/asm-ia64/cpu.h
-index e87fa32..9ba5155 100644
---- a/include/asm-ia64/cpu.h
-+++ b/include/asm-ia64/cpu.h
-@@ -14,6 +14,7 @@ DECLARE_PER_CPU(struct ia64_cpu, cpu_devices);
- 
- DECLARE_PER_CPU(int, cpu_state);
- 
-+extern void arch_fix_phys_package_id(int num, u32 slot);
- extern int arch_register_cpu(int num);
- #ifdef CONFIG_HOTPLUG_CPU
- extern void arch_unregister_cpu(int);
-diff --git a/include/asm-ia64/topology.h b/include/asm-ia64/topology.h
-index f2f72ef..8e68f0f 100644
---- a/include/asm-ia64/topology.h
-+++ b/include/asm-ia64/topology.h
-@@ -116,6 +116,7 @@ void build_cpu_to_node_map(void);
- #define smt_capable() 				(smp_num_siblings > 1)
- #endif
- 
-+#define arch_fix_phys_package_id(num, slot)	ia64_fix_socket_id(num, slot)
- #define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
- 					CPU_MASK_ALL : \
- 					node_to_cpumask(pcibus_to_node(bus)) \
-diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
-index 2207326..efa3108 100644
---- a/include/asm-x86/topology.h
-+++ b/include/asm-x86/topology.h
-@@ -193,6 +193,8 @@ extern cpumask_t cpu_coregroup_map(int cpu);
- #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
- #endif
- 
-+#define arch_fix_phys_package_id(num, slot)
-+
- #ifdef CONFIG_SMP
- #define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
- #define smt_capable()			(smp_num_siblings > 1)
--- 
-1.5.3.1.g1e61
-
+---end quoted text---
