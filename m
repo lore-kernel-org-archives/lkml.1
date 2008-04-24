@@ -1,67 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762903AbYDXPVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbYDXPWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762903AbYDXPVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759603AbYDXPO6
+	id S1763011AbYDXPWB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759608AbYDXPO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:58 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56082 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:59 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56078 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758648AbYDXPOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759423AbYDXPOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 11:14:46 -0400
-Message-Id: <20080424151352.270935465@polymtl.ca>
+Message-Id: <20080424151402.795852962@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:25 -0400
+Date: Thu, 24 Apr 2008 11:03:48 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 01/37] Stringify support commas
-Content-Disposition: inline; filename=stringify-support-commas.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:52 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 24/37] Immediate Values Use Arch NMI and MCE Support
+Content-Disposition: inline; filename=immediate-values-use-arch-nmi-mce-support.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:03 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-#define MYDEF a, b, c
-
-__stringify(MYDEF) should be replaced by "a, b, c", but compilation fails
-because the __stringify macro expects only one argument. Fix it by using
-variable macro arguments in __stringify and __stringify_1.
-
-Needed in my current NMI safe iret paravirt support work so I can expand
-a macro containing assembly code into a string.
-
-Since some architectures still use -traditional, which does not support macros
-with variable arguments, keep the old stringify around. Test with __STDC__ to
-see if -traditional is used.
+Remove the architecture agnostic code now replaced by architecture specific,
+atomic instruction updates.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@osdl.org
-CC: Sam Ravnborg <sam@ravnborg.org>
 ---
- include/linux/stringify.h |    5 +++++
- 1 file changed, 5 insertions(+)
+ include/linux/immediate.h |   11 ------
+ kernel/immediate.c        |   73 +---------------------------------------------
+ 2 files changed, 3 insertions(+), 81 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/stringify.h
+Index: linux-2.6-lttng/kernel/immediate.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/stringify.h	2008-04-22 14:16:21.000000000 -0400
-+++ linux-2.6-lttng/include/linux/stringify.h	2008-04-22 14:19:26.000000000 -0400
-@@ -6,7 +6,12 @@
-  * converts to "bar".
+--- linux-2.6-lttng.orig/kernel/immediate.c	2008-04-11 09:41:33.000000000 -0400
++++ linux-2.6-lttng/kernel/immediate.c	2008-04-14 18:48:05.000000000 -0400
+@@ -19,92 +19,23 @@
+ #include <linux/mutex.h>
+ #include <linux/immediate.h>
+ #include <linux/memory.h>
+-#include <linux/cpu.h>
+-#include <linux/stop_machine.h>
+ 
+ #include <asm/sections.h>
+-#include <asm/cacheflush.h>
+ 
+ /*
+  * Kernel ready to execute the SMP update that may depend on trap and ipi.
   */
+ static int imv_early_boot_complete;
+-static int wrote_text;
  
-+#ifdef __STDC__
-+#define __stringify_1(x...)	#x
-+#define __stringify(x...)	__stringify_1(x)
-+#else	/* Support gcc -traditional, without commas. */
- #define __stringify_1(x)	#x
- #define __stringify(x)		__stringify_1(x)
-+#endif
+ extern struct __imv __start___imv[];
+ extern struct __imv __stop___imv[];
  
- #endif	/* !__LINUX_STRINGIFY_H */
+-static int stop_machine_imv_update(void *imv_ptr)
+-{
+-	struct __imv *imv = imv_ptr;
+-
+-	if (!wrote_text) {
+-		text_poke((void *)imv->imv, (void *)imv->var, imv->size);
+-		wrote_text = 1;
+-		smp_wmb(); /* make sure other cpus see that this has run */
+-	} else
+-		sync_core();
+-
+-	flush_icache_range(imv->imv, imv->imv + imv->size);
+-
+-	return 0;
+-}
+-
+ /*
+  * imv_mutex nests inside module_mutex. imv_mutex protects builtin
+  * immediates and module immediates.
+  */
+ static DEFINE_MUTEX(imv_mutex);
+ 
+-
+-/**
+- * apply_imv_update - update one immediate value
+- * @imv: pointer of type const struct __imv to update
+- *
+- * Update one immediate value. Must be called with imv_mutex held.
+- * It makes sure all CPUs are not executing the modified code by having them
+- * busy looping with interrupts disabled.
+- * It does _not_ protect against NMI and MCE (could be a problem with Intel's
+- * errata if we use immediate values in their code path).
+- */
+-static int apply_imv_update(const struct __imv *imv)
+-{
+-	/*
+-	 * If the variable and the instruction have the same value, there is
+-	 * nothing to do.
+-	 */
+-	switch (imv->size) {
+-	case 1:	if (*(uint8_t *)imv->imv
+-				== *(uint8_t *)imv->var)
+-			return 0;
+-		break;
+-	case 2:	if (*(uint16_t *)imv->imv
+-				== *(uint16_t *)imv->var)
+-			return 0;
+-		break;
+-	case 4:	if (*(uint32_t *)imv->imv
+-				== *(uint32_t *)imv->var)
+-			return 0;
+-		break;
+-	case 8:	if (*(uint64_t *)imv->imv
+-				== *(uint64_t *)imv->var)
+-			return 0;
+-		break;
+-	default:return -EINVAL;
+-	}
+-
+-	if (imv_early_boot_complete) {
+-		kernel_text_lock();
+-		wrote_text = 0;
+-		stop_machine_run(stop_machine_imv_update, (void *)imv,
+-					ALL_CPUS);
+-		kernel_text_unlock();
+-	} else
+-		text_poke_early((void *)imv->imv, (void *)imv->var,
+-				imv->size);
+-	return 0;
+-}
+-
+ /**
+  * imv_update_range - Update immediate values in a range
+  * @begin: pointer to the beginning of the range
+@@ -121,7 +52,9 @@ void imv_update_range(const struct __imv
+ 		mutex_lock(&imv_mutex);
+ 		if (!iter->imv)	/* Skip removed __init immediate values */
+ 			goto skip;
+-		ret = apply_imv_update(iter);
++		kernel_text_lock();
++		ret = arch_imv_update(iter, !imv_early_boot_complete);
++		kernel_text_unlock();
+ 		if (imv_early_boot_complete && ret)
+ 			printk(KERN_WARNING
+ 				"Invalid immediate value. "
+Index: linux-2.6-lttng/include/linux/immediate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/immediate.h	2008-04-11 09:36:58.000000000 -0400
++++ linux-2.6-lttng/include/linux/immediate.h	2008-04-14 18:46:47.000000000 -0400
+@@ -12,17 +12,6 @@
+ 
+ #ifdef CONFIG_IMMEDIATE
+ 
+-struct __imv {
+-	unsigned long var;	/* Pointer to the identifier variable of the
+-				 * immediate value
+-				 */
+-	unsigned long imv;	/*
+-				 * Pointer to the memory location of the
+-				 * immediate value within the instruction.
+-				 */
+-	unsigned char size;	/* Type size. */
+-} __attribute__ ((packed));
+-
+ #include <asm/immediate.h>
+ 
+ /**
 
 -- 
 Mathieu Desnoyers
