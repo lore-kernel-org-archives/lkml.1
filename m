@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbYDXGfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYDXGfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbYDXGfS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 02:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYDXGfG
+	id S1753135AbYDXGfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 02:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYDXGfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 02:35:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:52725 "EHLO ozlabs.org"
+	Thu, 24 Apr 2008 02:35:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:52724 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbYDXGfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750828AbYDXGfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 02:35:05 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18448.10563.385481.904182@cargo.ozlabs.ibm.com>
-Date: Thu, 24 Apr 2008 16:31:31 +1000
+Message-ID: <18448.10755.660560.776824@cargo.ozlabs.ibm.com>
+Date: Thu, 24 Apr 2008 16:34:43 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Roland McGrath <roland@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -30,13 +30,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Roland McGrath writes:
 
-> > This should be _TLF_RESTORE_SIGMASK (leading '_'), I think.
-> 
 > Indeed so.  Here's a replacement patch.
 
-Thanks.  That can't go in until some generic changes have gone in
-first, right?  So are you going to push the lot in one go via Andrew,
-or should I wait until the generic part is upstream and then push the
-powerpc bit?
+Oh, and could you please also fix the occurrence of
+TIF_RESTORE_SIGMASK in arch/ppc/kernel/entry.S when this stuff goes
+in?
 
+Thanks,
 Paul.
