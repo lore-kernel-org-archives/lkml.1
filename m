@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYDXSsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbYDXStw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbYDXSsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYDXSsW
+	id S1762732AbYDXStw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYDXSto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:48:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56440 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbYDXSsV (ORCPT
+	Thu, 24 Apr 2008 14:49:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:28601 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760160AbYDXStn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:48:21 -0400
-To: dave@linux.vnet.ibm.com
-CC: miklos@szeredi.hu, viro@ZenIV.linux.org.uk, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <1209059717.12718.32.camel@nimitz.home.sr71.net> (message from
-	Dave Hansen on Thu, 24 Apr 2008 10:55:17 -0700)
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <20080424113950.818688067@szeredi.hu>
-	 <20080424124245.GC15214@ZenIV.linux.org.uk>
-	 <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu>
-	 <20080424134826.GD15214@ZenIV.linux.org.uk>
-	 <20080424140000.GE15214@ZenIV.linux.org.uk>
-	 <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu>
-	 <20080424143537.GG15214@ZenIV.linux.org.uk>
-	 <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu>
-	 <20080424144815.GI15214@ZenIV.linux.org.uk>
-	 <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
-	 <20080424152129.GK15214@ZenIV.linux.org.uk>
-	 <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu> <1209059717.12718.32.camel@nimitz.home.sr71.net>
-Message-Id: <E1Jp6U9-0004n5-0N@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 24 Apr 2008 20:47:57 +0200
+	Thu, 24 Apr 2008 14:49:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=svuLyTMABy2bWYHYlOwuMI1QIqby22hXHzaTjsRn1tlrgvSk7ONtnccSq6RSWZ4dzJp9zS4O+EMAEeefk+6JJGmsYr02N/CEg/BsCdyuceyE0jXHcKQ/Tlikegpu6Utj1rn35HuQLZjnuKeuwinz3pjFkVNE59fF7FvubDjJQaw=
+Message-ID: <4810D12E.4030700@googlemail.com>
+Date: Thu, 24 Apr 2008 20:27:58 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: BIOS bug, APIC version is 0 for CPU#0!
+References: <480F2842.4010505@googlemail.com>
+In-Reply-To: <480F2842.4010505@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Why are those so important?  Yes, if we have multiple vfs_() calls,
-> > surround them with an extra want/drop pair.  We do already do multiple
-> > overlapping want/drop pairs with O_TRUNC and O_CREAT (AFAIR).
+Gabriel C wrote:
+> Hi,
 > 
-> The one that I remember is the pair that we take for O_CREAT and the
-> nameidata_to_filp() in do_filp_open() that we do on it after the
-> creation and hold while the file is open.
+> I've just compiled latest linus git tree and getting now on an Q9300 Core2Quad , ASUS P5E-VM DO motherboard with BIOS Ver. 0606 , BIOS Rev. 8.12
+> the BIOS bug for CPU#0 message for each processor ?!? That seems somewhat buggy ?:)
 > 
-> The only reason for this one is that we want to shut down a potential
-> race that would allow the file to be created, then still return a -EROFS
-> because someone did a r/w->r/o transition between the create an the
-> nameidata_to_filp().
+> That BIOS version is beta and may be really buggy but I never got such a message on 2.6.24* nor on 2.6.25.
 > 
-> We could pass some information into nameidata_to_filp()->__dentry_open()
-> telling it that we already have a write and it doesn't need to take one,
-> but I think having the two nested writes is cleaner.
+> 
+> --($:~)-- uname -a
+> Linux thor 2.6.25-03530-g94bc891 #773 SMP PREEMPT Wed Apr 23 13:55:10 CEST 2008 i686 GNU/Linux
+> 
+> 
+> ..
+> 
+> [    0.000000] ACPI: PM-Timer IO Port: 0x808
+> [    0.000000] ACPI: Local APIC address 0xfee00000
+> [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+> [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> [    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+> [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> [    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
+> [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> [    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
+> [    0.000000] BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> [    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+> [    0.000000] IOAPIC[0]: apic_id 4, version 32, address 0xfec00000, GSI 0-23
+> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+> [    0.000000] ACPI: IRQ0 used by override.
+> [    0.000000] ACPI: IRQ2 used by override.
+> [    0.000000] ACPI: IRQ9 used by override.
+> [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> [    0.000000] ACPI: HPET id: 0xffffffff base: 0xfed00000
+> [    0.000000] Using ACPI (MADT) for SMP configuration information
+> 
+> ...
+> 
+> Please let me know if you need more infos , dmesg , config etc .
+> 
 
-Agreed.
+I don't see that message on the same kernel but built for 64bit.
 
-> Is that the case you're thinking of?
+...
 
-Yes.  And the same thing is done a little below for similar reasons
-around may_open() which does truncation.
+[    0.000000] ACPI: PM-Timer IO Port: 0x808
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
+[    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 4, version 0, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Setting APIC routing to flat
+[    0.000000] ACPI: HPET id: 0xffffffff base: 0xfed00000
+[    0.000000] Using ACPI (MADT) for SMP configuration information
 
-Miklos
+...
+
+
+So it is 32bit only ? And if yes how it is a HW bug ?
+
+
+Gabriel
