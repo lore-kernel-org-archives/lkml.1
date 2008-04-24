@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYDXMsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYDXMu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbYDXMsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 08:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYDXMso
+	id S1759355AbYDXMu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 08:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYDXMuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 08:48:44 -0400
-Received: from brmea-mail-1.Sun.COM ([192.18.98.31]:51983 "EHLO
-	brmea-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbYDXMsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 08:48:43 -0400
-Date: Thu, 24 Apr 2008 08:46:51 -0400
-From: David Collier-Brown <davecb@sun.com>
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-In-reply-to: <517f3f820804240527l66e4372dt9d6cdc293e35899d@mail.gmail.com>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Reply-to: davecb@sun.com
-Message-id: <4810813B.6010604@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
- <517f3f820804240527l66e4372dt9d6cdc293e35899d@mail.gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
+	Thu, 24 Apr 2008 08:50:18 -0400
+Received: from rtr.ca ([76.10.145.34]:3542 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752810AbYDXMuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 08:50:16 -0400
+Message-ID: <48108208.8060302@rtr.ca>
+Date: Thu, 24 Apr 2008 08:50:16 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [2.6 patch] select ATA_SFF
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi>	<480DE3C4.5@ru.mvista.com>	<480DE6F5.8060403@gmail.com>	<480DE9E8.2070809@ru.mvista.com>	<480DEB1F.5060500@gmail.com> <20080424123541.09e5ef96@the-village.bc.nu> <481080EA.7010107@ru.mvista.com>
+In-Reply-To: <481080EA.7010107@ru.mvista.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Just FYI, if you end up looking at having to make lots of changes to a 
-(probably user-side) interface, I did an open-source version of the
-"score" fast-porting tool, described at http://datacenterworks.com/stories/port.html
+Sergei Shtylyov wrote:
+> Alan Cox wrote:
+> 
+>>> Sergei Shtylyov wrote:
+> 
+>>>>>>   Jeff, Tejun, what "sff" in the file name actually means? Isn't 
+>>>>>> it strange that the drivers lacking DMA support or not really 
+>>>>>> compliant with SFF-8038i have to link with this file?
+> 
+>>>>> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
+>>>>> and bmdma is acceptable, hopefully, right?
+> 
+>>>>   What's sff sans bmdma?
+> 
+>>> Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
+>>> although it's entirely possible that I misunderstood it and used it 
+>>> in the wrong way.  Alan, can you please clear up the confusion?
+> 
+>> The SFF/Intel spec is for PCI IDE (BMDMA or otherwise), so it covers and
+>> defines all the common bits of the IDE interface on PCI (and in defining
+>> the legacy interface conveniently documents the extended ST-412 interface
+>> used by ATA and "pre-ATA" IDE/EIDE controllers).
+> 
+>    If you mean SFF-8038i (which can indeed be named "SFF/Intel"), it
+> documents *only* BMDMA.  If you mean something else, please be more 
+> precise.
+..
 
-It makes fixing annoying API changes somewhat less evil (;-))
+The "Intel PCI IDE Controller Specification Revision 1.0 3/4/94" doesn't mention
+bmdma at all, but does document the taskfile register addresses.
+It defers to ATA-1 for actual taskfile descriptions/functionality, though.
 
---dave (at work) c-b
+There's nothing particularly bad about the current naming we use, though.
 
-Michael Kerrisk wrote:
-> On 4/24/08, Ulrich Drepper <drepper@redhat.com> wrote:
-> 
->>The alternative to using sys_indirect is to create a whole bunch of new
->> syscalls.  Here the beginning.  These are the socket interfaces which
->> create file descriptors and therefore need a flags parameter to let
->> the caller decide about setting the close-on-exit bit.
-> 
-> 
-> Ulrich,
-> 
-> Could you please CC me on patches that make kernel-userland API changes.
-> 
-> Cheers,
-> 
-> Michael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
--- 
-David Collier-Brown            | Always do right. This will gratify
-Sun Microsystems, Toronto      | some people and astonish the rest
-davecb@sun.com                 |                      -- Mark Twain
-(905) 943-1983, cell: (647) 833-9377, (800) 555-9786 x56583
-bridge: (877) 385-4099 code: 506 9191#
+Cheers
