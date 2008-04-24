@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbYDXPPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbYDXPQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760129AbYDXPPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbYDXPOd
+	id S1758411AbYDXPQK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYDXPOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:33 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55943 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:38 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55957 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755564AbYDXPOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:14:31 -0400
-Message-Id: <20080424151355.559306461@polymtl.ca>
+	id S1759297AbYDXPOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:14:34 -0400
+Message-Id: <20080424151404.283234087@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:33 -0400
+Date: Thu, 24 Apr 2008 11:03:51 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 09/37] Fix sched-devel text_poke
-Content-Disposition: inline; filename=fix-sched-devel-text-poke.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:56 +0000
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 27/37] From: Adrian Bunk <bunk@kernel.org>
+Content-Disposition: inline; filename=make-marker_debug-static.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:05 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use core_text_address() instead of kernel_text_address(). Deal with modules in
-the same way used for the core kernel.
+With the needlessly global marker_debug being static gcc can optimize the
+unused code away.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/x86/kernel/alternative.c |   38 ++++++++++++++++++--------------------
- 1 file changed, 18 insertions(+), 20 deletions(-)
 
-Index: linux-2.6-sched-devel/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/kernel/alternative.c	2008-04-22 20:15:41.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/kernel/alternative.c	2008-04-22 20:16:22.000000000 -0400
-@@ -511,31 +511,29 @@ void *__kprobes text_poke(void *addr, co
- 	unsigned long flags;
- 	char *vaddr;
- 	int nr_pages = 2;
-+	struct page *pages[2];
-+	int i;
+ kernel/marker.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN kernel/marker.c~make-marker_debug-static kernel/marker.c
+--- a/kernel/marker.c~make-marker_debug-static
++++ a/kernel/marker.c
+@@ -28,7 +28,7 @@ extern struct marker __start___markers[]
+ extern struct marker __stop___markers[];
  
--	BUG_ON(len > sizeof(long));
--	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
--		- ((long)addr & ~(sizeof(long) - 1)));
--	if (kernel_text_address((unsigned long)addr)) {
--		struct page *pages[2] = { virt_to_page(addr),
--			virt_to_page(addr + PAGE_SIZE) };
--		if (!pages[1])
--			nr_pages = 1;
--		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
--		BUG_ON(!vaddr);
--		local_irq_save(flags);
--		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--		local_irq_restore(flags);
--		vunmap(vaddr);
-+	if (!core_kernel_text((unsigned long)addr)) {
-+		pages[0] = vmalloc_to_page(addr);
-+		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
- 	} else {
--		/*
--		 * modules are in vmalloc'ed memory, always writable.
--		 */
--		local_irq_save(flags);
--		memcpy(addr, opcode, len);
--		local_irq_restore(flags);
-+		pages[0] = virt_to_page(addr);
-+		pages[1] = virt_to_page(addr + PAGE_SIZE);
- 	}
-+	BUG_ON(!pages[0]);
-+	if (!pages[1])
-+		nr_pages = 1;
-+	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-+	BUG_ON(!vaddr);
-+	local_irq_save(flags);
-+	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-+	local_irq_restore(flags);
-+	vunmap(vaddr);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-+	for (i = 0; i < len; i++)
-+		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
- 	return addr;
- }
+ /* Set to 1 to enable marker debug output */
+-const int marker_debug;
++static const int marker_debug;
+ 
+ /*
+  * markers_mutex nests inside module_mutex. Markers mutex protects the builtin
+_
 
 -- 
 Mathieu Desnoyers
