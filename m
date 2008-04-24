@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbYDXWCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYDXWEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbYDXWCq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYDXWCi
+	id S1755927AbYDXWEn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYDXWEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:02:38 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40897 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYDXWCh (ORCPT
+	Thu, 24 Apr 2008 18:04:35 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:25058 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753731AbYDXWEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:02:37 -0400
-Date: Thu, 24 Apr 2008 23:01:57 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-Message-ID: <20080424220157.GA26179@flint.arm.linux.org.uk>
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	npiggin@suse.de, torvalds@linux-foundation.org,
-	peterz@infradead.org, sam@ravnborg.org
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-2-git-send-email-jens.axboe@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Apr 2008 18:04:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=o/X2U0D++av79xywrdMBx0rIqDFy8dZhpF2reJb7zHEHDLyfKLVNsiRdin4qnxTgFTeUbLvw5Nhxs6JwIjPWVbI/iqJQAZ/HwSTsIgAxDF9m3jeMuylZRAQchR9FnCdwmNxWj31MWbUHPHPryaOaaHWIo1ND/F+utzYljTeknsc=
+Message-ID: <ed038eb20804241504s17f7c0edu6ab0017e59fb7535@mail.gmail.com>
+Date: Fri, 25 Apr 2008 00:04:33 +0200
+From: "Carl Henrik Lunde" <chlunde@ping.uio.no>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <48109571.70905@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1208890227-24808-2-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org>
+	 <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk>
+	 <48109571.70905@hp.com>
+X-Google-Sender-Auth: 56517d806799307d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 08:50:17PM +0200, Jens Axboe wrote:
-> +		data->csd.func(data->csd.info);
-> +
-> +		spin_lock(&data->lock);
-> +		cpu_clear(cpu, data->cpumask);
-> +		WARN_ON(data->refs == 0);
-> +		data->refs--;
-> +		refs = data->refs;
+On Thu, Apr 24, 2008 at 4:13 PM, Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
+[...]
+>  o  The kernel already exports stats on merges, so the daemon could watch
+>  those stats in comparison to the number of I/Os submitted. If it
+>  determined that merge attempts were not being very successful, it could
+>  turn off merges for a period of time. Later it could turn them back on,
+>  watch for a while, and repeat.
+>
+>  Does this sound better/worthwhile?
 
-Probably a silly question, but what does data->refs do that
-cpus_empty(data->cpumask) wouldn't do?  (as indeed ARM presently does.)
+It may be more interesting to make a program which makes some helpful
+suggestions
+after looking at a blktrace file.  The program could for example
+suggest changing
+the I/O scheduler, increasing a parameter such as slice_sync, or disable merges.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Carl Henrik
