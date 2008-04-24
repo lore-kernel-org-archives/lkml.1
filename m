@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbYDXVoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYDXVuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbYDXVoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYDXVoI
+	id S1755380AbYDXVuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYDXVty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:44:08 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53136 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbYDXVoH (ORCPT
+	Thu, 24 Apr 2008 17:49:54 -0400
+Received: from adsl-76-245-85-235.dsl.pltn13.sbcglobal.net ([76.245.85.235]:36340
+	"EHLO cynthia.pants.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753480AbYDXVtx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:44:07 -0400
-Date: Thu, 24 Apr 2008 23:44:04 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Soeren Sandmann <sandmann@daimi.au.dk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: stat benchmark
-In-Reply-To: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
-Message-ID: <alpine.LNX.1.10.0804242329060.11644@fbirervta.pbzchgretzou.qr>
-References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Apr 2008 17:49:53 -0400
+X-Greylist: delayed 3103 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 17:49:53 EDT
+Date: Thu, 24 Apr 2008 10:54:49 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [patch 10/15] m68k: Some network drivers do not check the platform
+Message-ID: <20080424175449.GA20639@cynthia.pants.nu>
+References: <20080424182940.424312704@mail.of.borg> <20080424183242.943446357@mail.of.borg> <20080424184256.GA8531@infradead.org> <Pine.LNX.4.64.0804242045510.21224@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804242045510.21224@anakin>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 24, 2008 at 08:51:17PM +0200, Geert Uytterhoeven wrote:
+> On Thu, 24 Apr 2008, Christoph Hellwig wrote:
+> > On Thu, Apr 24, 2008 at 08:29:50PM +0200, Geert Uytterhoeven wrote:
+> > > +++ b/drivers/net/macmace.c
+> > > @@ -781,6 +781,9 @@ static int __init mac_mace_init_module(v
+> > >  {
+> > >  	int err;
+> > >  
+> > > +	if (!MACH_IS_MAC)
+> > > +		return -ENODEV;
+> > > +
+> > >  	if ((err = platform_driver_register(&mac_mace_driver))) {
+> > >  		printk(KERN_ERR "Driver registration failed\n");
+> > >  		return err;
+> > 
+> 
+> All these drivers predate the platform device framework and have been converted
+> to this framework a while ago, without separating the actual platform drivers
+> and platform devices.
 
-On Thursday 2008-04-24 22:59, Soeren Sandmann wrote:
->
->    http://www.daimi.au.dk/~sandmann/stat-benchmark.c
->
->there is a simple program that will measure the time it takes to stat
->every file in the current directory with a cold cache.
->
->This is essentially what applications do in a number of common cases
->such as "ls -l", nautilus opening a directory, or an "open file"
->dialog being showed.
+At some point I intend to merge macmace.c into mace.c by using the macio
+bus code on m68k macs. This would avoid the need for these checks, but
+it's not something I have working yet. My first driver to merge with ppc
+would be serial since we don't need any DMA support for that. It's on my
+list of things to do once I get macio working on m68k. I'll be sure to
+send a patch to the m68k list as soon as I have something that runs.
+After that I'll copy it to the ppc list to make sure I didn't break that,
+and submit it for inclusion once people are satisfied.
 
-Mh somewhat. Some programs/libraries unnecessarily stat No, nautilus is excluded
+	Brad Boyer
+	flar@allandria.com
 
->
->Unfortunately, performance of that operation kinda sucks. On my system
->(ext3), it produces:
->
->    c-24-61-65-93:~% sudo ./a.out 
->    Time to readdir(): 0.307671 s
->    Time to stat 2349 files: 8.203693 s
->
->8 seconds is about 80 times slower than what a user perceives as
->"instantly" and slow enough that we really should display a progress
->bar if it can't be fixed.
->
->So I am looking for ways to improve this.
->
->Under the theory that disk seeks are killing us, one idea is to add a
->'multistat' system call that would allow statting of many files at a
->time, which would give the disk scheduler more to work with. 
->
->Possibly the same thing would need to be done for the getxattr
->information.
->
->Does this sound like a reasonable idea?
->
-
-XFS for example already has bulkstat, but it is not really
-exported to userspace :-/
