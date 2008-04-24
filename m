@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYDXEzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYDXE4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYDXEzi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 00:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYDXEz1
+	id S1755191AbYDXE4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 00:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYDXEz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 24 Apr 2008 00:55:27 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:36371 "EHLO
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:36372 "EHLO
 	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbYDXEz0 (ORCPT
+	with ESMTP id S1751488AbYDXEz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 00:55:26 -0400
-X-Greylist: delayed 1738 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 00:55:26 EDT
-Date: Thu, 24 Apr 2008 14:26:27 +1000
-To: David Miller <davem@davemloft.net>, linux-net@vger.kernel.org
+Date: Thu, 24 Apr 2008 14:22:15 +1000
+To: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org
 Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Silence 'may be used uninitialized' warning in net/sunrpc/svc.c.
-Message-ID: <20080424042627.GP20457@bakeyournoodle.com>
+Subject: [PATCH] Silence 'may be used uninitialized' warning in fs/nfs/callback_xdr.c
+Message-ID: <20080424042215.GO20457@bakeyournoodle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,33 +25,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current kernels warn about:
-net/sunrpc/svc.c: In function '__svc_create_thread':
-net/sunrpc/svc.c:593: warning: 'oldmask.bits[0u]' may be used uninitialized in this function
+Currently the kernel will issue the following warnings:
 
-As far as I can see oldmask will be initialised to something in each
-case it's used.
+fs/nfs/callback_xdr.c: In function 'nfs4_callback_compound':
+fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.taglen' may be used uninitialized in this function
+fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.tag' may be used uninitialized in this function
+fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.nops' may be used uninitialized in this function
+
+It seems that call chain look something like:
+nfs4_callback_compound() 
+ -> decode_compound_hdr_arg()
+  -> decode_string() which may fail and return NFS4ERR_RESOURCE. 
+Which decode_compound_hdr_arg() passes on.  Unfortunately
+nfs4_callback_compound() doesn't check this status and cheerfully uses
+hdr_arg which is basically stack garbage.  The same problem seems to
+apply to encode_compound_hdr_res().
+
+Check the return values, and explictly tell gcc to silence that warning.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- net/sunrpc/svc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/nfs/callback_xdr.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 090af78..0e75a43 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -590,7 +590,7 @@ __svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
- 	struct svc_rqst	*rqstp;
- 	int		error = -ENOMEM;
- 	int		have_oldmask = 0;
--	cpumask_t	oldmask;
-+	cpumask_t	uninitialized_var(oldmask);
+diff --git a/fs/nfs/callback_xdr.c b/fs/nfs/callback_xdr.c
+index 13619d2..d26af3e 100644
+--- a/fs/nfs/callback_xdr.c
++++ b/fs/nfs/callback_xdr.c
+@@ -401,7 +401,7 @@ static __be32 process_op(struct svc_rqst *rqstp,
+  */
+ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp, void *argp, void *resp)
+ {
+-	struct cb_compound_hdr_arg hdr_arg;
++	struct cb_compound_hdr_arg uninitialized_var(hdr_arg);
+ 	struct cb_compound_hdr_res hdr_res;
+ 	struct xdr_stream xdr_in, xdr_out;
+ 	__be32 *p;
+@@ -415,11 +415,15 @@ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp, void *argp, void *r
+ 	p = (__be32*)((char *)rqstp->rq_res.head[0].iov_base + rqstp->rq_res.head[0].iov_len);
+ 	xdr_init_encode(&xdr_out, &rqstp->rq_res, p);
  
- 	rqstp = svc_prepare_thread(serv, pool);
- 	if (IS_ERR(rqstp)) {
+-	decode_compound_hdr_arg(&xdr_in, &hdr_arg);
++	status = decode_compound_hdr_arg(&xdr_in, &hdr_arg);
++	if (unlikely(status != 0))
++		return status;
+ 	hdr_res.taglen = hdr_arg.taglen;
+ 	hdr_res.tag = hdr_arg.tag;
+ 	hdr_res.nops = NULL;
+-	encode_compound_hdr_res(&xdr_out, &hdr_res);
++	status = encode_compound_hdr_res(&xdr_out, &hdr_res);
++	if (unlikely(status != 0))
++		return status;
+ 
+ 	for (;;) {
+ 		status = process_op(rqstp, &xdr_in, argp, &xdr_out, resp);
 -- 
 1.5.5.1
+
 
 
 Yours Tony
