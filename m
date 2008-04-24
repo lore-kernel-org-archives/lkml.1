@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYDXASI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbYDXAWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYDXASI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 20:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYDXARz
+	id S1755040AbYDXAWl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 20:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYDXAWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 20:17:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:49967 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbYDXARz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 20:17:55 -0400
-Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>,
-       Jeff Garzik <jeff@garzik.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Sathya Prakash <sathya.prakash@lsi.com>
-In-Reply-To: <m1hcdsoh1i.fsf@frodo.ebiederm.org>
-References: <200804222148.17530.yhlu.kernel@gmail.com>
-	 <1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
-	 <m1hcdsoh1i.fsf@frodo.ebiederm.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-g0Q++rwmJEr937uZomgr"
-Date: Thu, 24 Apr 2008 10:17:53 +1000
-Message-Id: <1208996273.9245.18.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Wed, 23 Apr 2008 20:22:32 -0400
+Received: from rv-out-0708.google.com ([209.85.198.249]:21062 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753298AbYDXAWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 20:22:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V5LBcQxNyjA5E3r6dcag5+K2Hm1LcelKekQewzK52MBE8ZtdO9vdfyWjpBxGgNVG2EU5pZgC0ZxjkVjDCvdB/GgsQF0czUlpz/Gl+t7wnPEg9od41pMZJOoBx6kruCDQMFOwfC7R4IUDETw/DZ08vS9Y3w2MRkkc3hann7A6Bz4=
+Message-ID: <9a8748490804231722o66ccb740q94b50c9ca7ba23ab@mail.gmail.com>
+Date: Thu, 24 Apr 2008 02:22:30 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Kevin Winchester" <kjwinchester@gmail.com>
+Subject: Re: [PATCH] Let SYSVIPC default to 'y'
+Cc: linux-kernel@vger.kernel.org,
+       "Krishna Balasubramanian" <balasub@cis.ohio-state.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <480FCDA6.6000509@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LNX.1.00.0804240057240.2438@dragon.funnycrock.com>
+	 <480FCDA6.6000509@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-g0Q++rwmJEr937uZomgr
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2008-04-23 at 06:08 -0700, Eric W. Biederman wrote:
-> Michael Ellerman <michael@ellerman.id.au> writes:
->=20
-> > On Tue, 2008-04-22 at 21:48 -0700, Yinghai Lu wrote:
-> >> this change
-> >>=20
-> >> | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
-> >> | Author: Prakash, Sathya <sathya.prakash@lsi.com>
-> >> | Date:   Fri Mar 7 15:53:21 2008 +0530
-> >> |
-> >> |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
-> >> |
-> >> | This patch modifies the driver to enable MSI by default for all SAS =
-chips.
-> >> |
-> >> |     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
-> >> |     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnershi=
-p.com>
-> >> |
-> >> cause kexec RHEL 5.1 kernel fail.
-> >>=20
-> >> root casue: the rhel 5.1 kernel still use INTx emulation.
-> >> and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on=
- kexec
-> > path
-> >>=20
-> >> so try to call pci_disable_msi in shutdown patch
+On 24/04/2008, Kevin Winchester <kjwinchester@gmail.com> wrote:
+> Jesper Juhl wrote:
+>
+> > SYSVIPC is a pretty crucial feature that I doubt very much if anyone
+> except embedded people should even consider disabling - it simply breaks too
+> much software for a Linux box to really be useful without it, for most
+> purposes.
+> > For that reason I find it quite odd that the feature defaults to 'No'
+> currently.  I really cannot see any reason why we wouldn't want this to
+> default to 'Yes', so this patch changes the default by adding 'default y' to
+> Kconfig.
 > >
-> > How is kdump going to work? Your shutdown routine won't be called and
-> > you'll have the same problem in the 2nd kernel, won't you?
->=20
-> Taking a quick look our current msi initialization appears robust in
-> not assuming the state of the msi config bits.
+<...snip...>
+>
+>  I am running up-to-date Kubuntu Hardy Heron, but...
+>
+>  kevin@alekhine:~/linux/linux-2.6$ grep SYSVIPC .config
+>  # CONFIG_SYSVIPC is not set
+>
+>  What software that would be in a standard install would be broken?  I don't
+> seem to notice anything...
+>
+>  Not that I mind the default being changed - I just wonder if things on my
+> box are broken and I just don't know it.
+>
 
-But does that help us? What if the device driver in the 2nd kernel
-assumes it's using INTX, when in fact MSI is enabled on the device. In
-that case none of the MSI code will even be called AFAIK.
+Well,
+  DOSEmu doesn't work without it.
+  SysOrb (http://www.sysorb.com/) doesn't work without it AFAIK.
+  IIRC, X had trouble in the past without it.
+  Anything that uses SysV shared memory, SysV message passing
+(msgget(), msgsnd() etc..),
+  SysV semaphores (semget() etc), will have trouble.
+  In general, System V IPC is just used by many different programs...
+Perhaps not any you run,
+  but it is pretty widely used.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-g0Q++rwmJEr937uZomgr
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBID9GxdSjSd0sB4dIRAtj+AJ0RAvLgNuBGrkPcV+CtQJ7lQmWn4wCfQzhC
-8BaGbG2xJGRi1Ikf9CHIn6E=
-=LwVT
------END PGP SIGNATURE-----
-
---=-g0Q++rwmJEr937uZomgr--
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
