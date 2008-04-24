@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbYDXRVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbYDXRXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760040AbYDXRVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYDXRV1
+	id S1759583AbYDXRXz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYDXRXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:21:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34651 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbYDXRV1 (ORCPT
+	Thu, 24 Apr 2008 13:23:45 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52491 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbYDXRXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:21:27 -0400
-Message-ID: <4810C16A.3000606@zytor.com>
-Date: Thu, 24 Apr 2008 10:20:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "akpm@linux-foundation.org Jakub Jelinek" <jakub@redhat.com>
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	 <20080424112514.055d8071@the-village.bc.nu>	 <alpine.LFD.1.10.0804240828100.2779@woody.linux-foundation.org>	 <20080424.083908.147395158.davem@davemloft.net>	 <517f3f820804240903y788102bar5c7d1fa9bcee1c8a@mail.gmail.com>	 <20080424164226.415cedeb@the-village.bc.nu> <517f3f820804240948u788745f4s7a5dd4e7417ffeaf@mail.gmail.com>
-In-Reply-To: <517f3f820804240948u788745f4s7a5dd4e7417ffeaf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 13:23:44 -0400
+To: ezk@cs.sunysb.edu
+CC: miklos@szeredi.hu, ezk@cs.sunysb.edu, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200804241714.m3OHE0Ua014682@agora.fsl.cs.sunysb.edu> (message
+	from Erez Zadok on Thu, 24 Apr 2008 13:14:00 -0400)
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+References: <200804241714.m3OHE0Ua014682@agora.fsl.cs.sunysb.edu>
+Message-Id: <E1Jp5AP-0004Zd-ID@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 24 Apr 2008 19:23:29 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
-> On 4/24/08, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->>> But this approach fixes just one of the interfaces.  There are 7 or 8
->>  > other interfaces that need to solve the same problem.  What about
->>  > those?
->>
->>
->> Actually it seems to fix most of them.
+> > > Sure, unionfs already does some of it now (and some of it can be recoded
+> > > more cleanly), but I'd like to get rid of much of it if I could -- these new
+> > > path_* helpers make me have to maintain vfsmounts even moreso than before.
+> > 
+> > With the words of Al: "that is hogwash".  Stacks either maintain
+> > vfsmounts or they don't.  There's no middle ground.
 > 
-> Am I missingg something?  How?  There a number of system calls that
-> have neither a flags argument, nor another argument that we can
-> overload (as you propose with socket()).  For those, we'd need new
-> system calls os sys_indirect().
+> So, if I wanted to not maintain vfsmounts at all in unionfs, how can I use
+> the proposed new path_* helpers which require vfsmounts?  Will there be some
+> other helpers available to perform lower-filesystem operations (e.g., mkdir,
+> create, unlink, etc.) which won't require passing vfsmounts?
 > 
+> The "or they don't" is not much of an option when I'm forced to use an API
+> that requires a vfsmount...
 
-sys_indirect is a total red herring here, since it won't help one iota 
-making the userspace interface comprehensible - it just introduces a 
-different calling convention that the C library will have to thunk.
+Yes.  The vfsmount is already needed for open() and that pretty much
+determines the fate of all stacking filesystems, except the ones which
+don't want to do file I/O, but that is rather hard to imagine.
 
-	-hpa
+And anyway, I don't see the issue here.  If the stack wants to work on
+a single filesystem directly, just do a bind mount of the original to
+a kernel private mount and use that.  I'm not sure this can be done
+with the current API, but it doesn't sound difficult to implement at
+all.
+
+Miklos
