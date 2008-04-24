@@ -1,103 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYDXV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYDXVbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYDXV3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYDXV3O
+	id S1755498AbYDXVbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYDXVb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:29:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59250 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753688AbYDXV3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:29:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-Date: Thu, 24 Apr 2008 23:30:00 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, pavel@ucw.cz
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <20080424105908.GW12774@kernel.dk> <481080A0.9050804@rtr.ca>
-In-Reply-To: <481080A0.9050804@rtr.ca>
+	Thu, 24 Apr 2008 17:31:27 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46656 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYDXVb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 17:31:26 -0400
+Date: Thu, 24 Apr 2008 17:31:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, mingo@redhat.com
+Subject: [PATCH] Drop "init_mm" from being exported via
+ EXPORT_UNUSED_SYMBOL.
+Message-ID: <alpine.LFD.1.10.0804241728510.4087@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804242330.01519.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 24 of April 2008, Mark Lord wrote:
-> Jens Axboe wrote:
-> > On Wed, Apr 23 2008, Mark Lord wrote:
-> >> Jens Axboe wrote:
-> >>> On Wed, Apr 23 2008, Mark Lord wrote:
-> >>> ..
-> >>>> The second bug, is that for the halt case at least,
-> >>>> nobody waits for the other CPU to actually halt
-> >>>> before continuing.. so we sometimes enter the shutdown
-> >>>> code while other CPUs are still active.
-> >>>>
-> >>>> This causes some machines to hang at shutdown,
-> >>>> unless CPU_HOTPLUG is configured and takes them offline
-> >>>> before we get here.
-> >>> I'm guessing there's a reason it doesn't pass '1' as the last argument,
-> >>> because that would fix that issue?
-> >> ..
-> >>
-> >> Undoubtedly -- perhaps the called CPU halts, and therefore cannot reply.  :)
-> > 
-> > Uhm yes, I guess stop_this_cpu() does exactly what the name implies :-)
-> > 
-> >> But some kind of pre-halt ack, perhaps plus a short delay by the caller
-> >> after receipt of the ack, would probably suffice to kill that bug.
-> >>
-> >> But I really haven't studied this code enough to know,
-> >> other than that it historically has been a sticky area
-> >> to poke around in.
-> > 
-> > Something like this will close the window to right up until the point
-> > where the other CPUs have 'almost' called halt().
-> > 
-> > diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-> > index 5398385..94ec9bf 100644
-> > --- a/arch/x86/kernel/smp.c
-> > +++ b/arch/x86/kernel/smp.c
-> > @@ -155,8 +155,9 @@ static void stop_this_cpu(void *dummy)
-> >  	/*
-> >  	 * Remove this CPU:
-> >  	 */
-> > -	cpu_clear(smp_processor_id(), cpu_online_map);
-> >  	disable_local_APIC();
-> > +	cpu_clear(smp_processor_id(), cpu_online_map);
-> > +	smp_wmb();
-> >  	if (hlt_works(smp_processor_id()))
-> >  		for (;;) halt();
-> >  	for (;;);
-> > @@ -175,6 +176,12 @@ static void native_smp_send_stop(void)
-> >  
-> >  	local_irq_save(flags);
-> >  	smp_call_function(stop_this_cpu, NULL, 0, 0);
-> > +
-> > +	while (cpus_weight(cpu_online_map) > 1) {
-> > +		cpu_relax();
-> > +		smp_rmb();
-> > +	}
-> > +
-> >  	disable_local_APIC();
-> >  	local_irq_restore(flags);
-> >  }
-> ..
-> 
-> Yup, that looks like it oughta work consistently.
-> Now we just need to hear from some of the folks who
-> have danced around this code in the past.
-> 
-> (added Pavel & Rafael to Cc:).
 
-Well, it looks sane to me, but I'm not really an expert here.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-Thanks,
-Rafael
+---
+
+  since this was listed as removable as of 2.6.26, does that mean its
+removal can go into an appropriate tree now?  or would that mean
+*after* the release of 2.6.26?
+
+diff --git a/arch/x86/kernel/init_task.c b/arch/x86/kernel/init_task.c
+index 3d01e47..5b3ce79 100644
+--- a/arch/x86/kernel/init_task.c
++++ b/arch/x86/kernel/init_task.c
+@@ -15,7 +15,6 @@ static struct files_struct init_files = INIT_FILES;
+ static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
+ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
+ struct mm_struct init_mm = INIT_MM(init_mm);
+-EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
+
+ /*
+  * Initial thread structure.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
