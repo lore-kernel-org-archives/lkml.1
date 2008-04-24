@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYDXW5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYDXW7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYDXW5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYDXW5b
+	id S1754256AbYDXW7Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYDXW7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:57:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:11716 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbYDXW53 (ORCPT
+	Thu, 24 Apr 2008 18:59:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40136 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbYDXW7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:57:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AH+4fpghLHSqLhjCm2bl71F5XwCjrT9yPTHyNa7+aJ6/fQHTPYPGcUTpgTmbSh7K6DzyarMTQT/tQ9OSHO46shUGW2mQCUVvCt5W4M+ZRV1AE6Pa+8LxT3OGOb8DhRpEp39fAlzX0GYudJGGVcQESaYOpNi/4sO6ceBgqdbccmM=
-Message-ID: <48112C74.8000405@gmail.com>
-Date: Fri, 25 Apr 2008 02:57:24 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 24 Apr 2008 18:59:05 -0400
+Date: Thu, 24 Apr 2008 15:56:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before
+	mounting root
+Message-ID: <20080424225604.GA18737@kroah.com>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com> <20080422095315.GA28014@elte.hu>  <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>  <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org> <4811090A.9030809@gmail.com> <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/25/2008 12:41 AM, Linus Torvalds wrote:
+On Fri, Apr 25, 2008 at 12:25:04AM +0300, Pekka J Enberg wrote:
+> On Thu, 24 Apr 2008, Pekka J Enberg wrote:
+> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > 
+> > > Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
+> > > wait until background scanning of USB mass storage devices is complete before
+> > > attempting to mount the root filesystem.
+> > > 
+> > > The config option is an alternative to the root_delay= kernel parameter
+> > > solution people currently use to boot from USB mass storage devices.
 > 
-> On Fri, 25 Apr 2008, Jiri Slaby wrote:
->> 20 arpings running on wlan0 (don't know if this is related so far), suspend,
->> resume, right after resume:
->>
->> freed 114
->> alloced 115
->> freed 115
->> alloced 116
->> WHAT THE HELL (000a3ff8):
->> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+> On Thu, 24 Apr 2008, Alan Stern wrote:
+> > This doesn't take into account what happens when CONFIG_SCSI_SCAN_ASYNC
+> > is set.
 > 
-> Very interesting indeed.
+> Oh, right. Thanks! So something like the following should take care of it.
 > 
->> Shouldn't be 2.6.25 uttered as broken until this is solved to not corrupt
->> anyone's data? I'm going to play with that testing program further in the
->> meantime.
+> 		Pekka
 > 
-> Do you actually see this with _plain_ 2.6.25? So far I've assumed that all 
-> the reports are about post-2.6.25 issues.
+> Subject: [RFC/PATCH] usb-storage: wait for device scanning before mounting root V2
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
+> wait until background scanning of USB mass storage devices is complete before
+> attempting to mount the root filesystem.
 
-Blah, sorry, I lived in a theory, that Rafael got one from 2.6.25 and no, 
-really, he had -git2 applied. Mea culpa, anyway I'll test 2.6.25 too, just for sure.
+What happens if there is no USB device present in the system?  Because
+of that, there is no way that this option could ever be enabled by any
+distro or anyone wanting their kernel to run on more than one machine :(
 
-> Also, it does seem like you can re-create this at will in ways that others 
-> can not. Could you try to bisect it a bit? Right now we have no real clue 
-> what it is all about, except that it seems to be related to suspend/resume 
-> and there are some indications that it's about networking (and _perhaps_ 
-> wireless in particular).
+I don't like it.
 
-Not really. I have no idea what triggers it. Seems like suspend is some kind of 
-catalyzer not working every time. I can't get it to crash for 1 whole day. 
-Probably with the program (I hacked it a hour ago or so) it would be easier to 
-reveal the error far before the crash itself. Will keep you informed. Now going 
-to catch some sleep.
+thanks,
+
+greg k-h
