@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763076AbYDXQEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbYDXQFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763076AbYDXQEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbYDXQD5
+	id S1763277AbYDXQFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbYDXQFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:03:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:26677 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760186AbYDXQDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:03:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=vHamRtQYd+GYGfQDC+KPnyEsLkdkwjlGa1zUtkx9RzYuAXi+KWdQKYWhqbjCPNgT+a0CGSr6rBQaMeUKTYuiLa1LXO5nlrLphTLxmWu8mR5kYagpCYObDk4i6T7R9mx0ud+wvQaWlKwgiJ6NWbuSjT9VicF800CpTjMGwts2T78=
-Message-ID: <517f3f820804240903y788102bar5c7d1fa9bcee1c8a@mail.gmail.com>
-Date: Thu, 24 Apr 2008 18:03:53 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] alternative to sys_indirect, part 1
-Cc: torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       drepper@redhat.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080424.083908.147395158.davem@davemloft.net>
+	Thu, 24 Apr 2008 12:05:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45270 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754823AbYDXQFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:05:05 -0400
+Message-ID: <4810AF9F.5040705@redhat.com>
+Date: Thu, 24 Apr 2008 09:04:47 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
-	 <20080424112514.055d8071@the-village.bc.nu>
-	 <alpine.LFD.1.10.0804240828100.2779@woody.linux-foundation.org>
-	 <20080424.083908.147395158.davem@davemloft.net>
-X-Google-Sender-Auth: c870c6a70eeb999b
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	<20080424112514.055d8071@the-village.bc.nu>	<481096C3.2020206@redhat.com>	<20080424152436.6cf53c1b@the-village.bc.nu>	<4810A46B.1090809@redhat.com>	<20080424160352.30f2dd5b@the-village.bc.nu>	<4810AB29.5030604@redhat.com> <20080424162703.1eec01a2@the-village.bc.nu>
+In-Reply-To: <20080424162703.1eec01a2@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/08, David Miller <davem@davemloft.net> wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
->  Date: Thu, 24 Apr 2008 08:29:14 -0700 (PDT)
->
->
->  >
->  >
->  > On Thu, 24 Apr 2008, Alan Cox wrote:
->  > >
->  > > Given we will never have 2^32 socket types, and in a sense this is part
->  > > of the type why not just use
->  > >
->  > >     socket(PF_INET, SOCK_STREAM|SOCK_CLOEXEC, ...)
->  >
->  > Ok, I have to admit that I find this very appealing. It looks much
->  > cleaner, but perhaps more importantly, it also looks both readable _and_
->  > easier to use for the user-space programmer.
->
->
-> Me too.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-But this approach fixes just one of the interfaces.  There are 7 or 8
-other interfaces that need to solve the same problem.  What about
-those?
+Alan Cox wrote:
+> Believe it or not we have the compute capability between us to not
+> accidentally reassign values we assigned to one thing to something else.
 
-It strikes me to be cleanest to use the same solution for all of them
--- i.e., new syscalls (seems simplest) or sys_indirect() -- including
-socket().
+Once again, this is not about assigned values.  This is about the time
+before you get a value assigned.  Not every experiment out there will
+have a value assigned before it starts development.
 
--- 
-I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
+But it really doesn't matter to me. I'm not the one you would introduce
+the problem.  Patch is forthcoming.
+
+
+>> Oh really?  You open a server socket, use fcntl(FD_CLOEXEC), and then
+>> accept(). 
+> 
+> And your behaviour just became OS specific....
+
+Not according to POSIX.  If some OSes deliberately violate POSIX that's
+their problem.  All POSIX OSes will have up to today return a new file
+descriptor without the close-on-exec flag set at all times.  Just read
+the spec.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFIEK+f2ijCOnn/RHQRAtYRAJ9Ve9XSkMriqkHkiCL00wsXzJJbYgCgmqzQ
+3uexpcjM0NvU7qgngOs7LDA=
+=uNKi
+-----END PGP SIGNATURE-----
