@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYDXUxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYDXUxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYDXUxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 16:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYDXUxL
+	id S1753989AbYDXUxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 16:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYDXUx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 16:53:11 -0400
-Received: from rv-out-0708.google.com ([209.85.198.244]:51499 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751086AbYDXUxJ (ORCPT
+	Thu, 24 Apr 2008 16:53:29 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:4429 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYDXUx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 16:53:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kQijb6oDmzF4NJzp7G7p367lm7V6V/+M1cuQ/dK9uidLghs8IwYINBGlY/Bl/MV6FreoOPCYYA4+uH+EOMKhDfDeUxFKwKJVYd8+ExApEoEUJJuJUzOIQTlysVn678GbL2sYLXOM5IabH28pS8ndUupQ8TWw9Xbhz1WHRPofzOA=
-Message-ID: <86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
-Date: Thu, 24 Apr 2008 13:52:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "James Cloos" <cloos@jhcloos.com>
-Subject: Re: Regression: starting X locks box with git master
+	Thu, 24 Apr 2008 16:53:28 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: "Justin Mattock" <justinmattock@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Re: Regression: starting X locks box with git master
+In-Reply-To: <dd18b0c30804241339n34f7e676xee7807c2b1cf71ff@mail.gmail.com>
+	(Justin Mattock's message of "Thu, 24 Apr 2008 20:39:25 +0000")
 References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
+	<dd18b0c30804241339n34f7e676xee7807c2b1cf71ff@mail.gmail.com>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:080424:justinmattock@gmail.com::KF+SF+8QKT5cKaTk:00000000000000000000000000000000000000OjtB
+X-Hashcash: 1:23:080424:linux-kernel@vger.kernel.org::ogn/TZDE815jheL+:000000000000000000000000000000000qX0e
+Date: Thu, 24 Apr 2008 16:52:53 -0400
+Message-ID: <m3bq3zq8jn.fsf@lugabout.jhcloos.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 12:59 PM, James Cloos <cloos@jhcloos.com> wrote:
-> 3dc5063786b273f1aee545844f6bd4e9651ebffe was current when I compiled.
->
->  With that kernel, my laptop locks up as soon as I startx.
->
->  The Xorg.0.log showed that the radeon driver got as far as starting
->  the i2c calls to the M7 video card.
->
->  After that the box would reply to ICMP pings and SysRq-B, but was
->  otherwise non-responsive.  Even SysRq-[KSU] seemed to do nothing.
->
->  v2.6.25 works fine.
->
->  There are 3562 commits (including merges) between those two, and
->  it takes an hour or more for each kernel compile.  Bisecting will
->  be quite painful.  And I only have the one box to work on.  But I
->  will see what I can do.
->
->  Posting before bisecting in case it helps anyone else....
+>>>>> "Justin" == Justin Mattock <justinmattock@gmail.com> writes:
 
-Do you have CONFIG_X86_PAT in your .config?
+Justin> I seem to expiriencing lockups as well, vary annoying, ...
+Justin> overall I think this has to do with nohz, right now I have
+Justin> nohz=off with highress on and the system seems to be behaving
+Justin> properly.
 
-YH
+I hadn't thought of trying with nohz=off.
+
+I do use nohz and (non-smp) preempt.
+
+I'll have to give nohz=off a test before bisecting.
+
+Thanks for the note.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
