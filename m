@@ -1,76 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbYDXG2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbYDXGa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbYDXG2P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 02:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYDXG2A
+	id S1752176AbYDXGa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 02:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYDXGaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 02:28:00 -0400
-Received: from smtp1.dnainternet.fi ([87.94.96.108]:59320 "EHLO
-	smtp1.dnainternet.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYDXG17 convert rfc822-to-8bit (ORCPT
+	Thu, 24 Apr 2008 02:30:17 -0400
+Received: from rv-out-0708.google.com ([209.85.198.246]:3372 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750828AbYDXGaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 02:27:59 -0400
-X-Greylist: delayed 686 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Apr 2008 02:27:59 EDT
-Message-ID: <20080424091631.4lh9op46jkg4gg84@naisho.dyndns.info>
-Date: Thu, 24 Apr 2008 09:16:31 +0300
-From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: linux-wireless@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] wireless: rndis_wlan: modparam_workaround_interval is
-	never below 0.
-References: <480F97B5.9030009@tiscali.nl>
-In-Reply-To: <480F97B5.9030009@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+	Thu, 24 Apr 2008 02:30:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=t6bLJclUtZ4t+odoTxSzdljOOSfvW0NmZh3qSNuJWPs7nV14SmjbQuAGctj+VmdxzyMwzZJt9fJomMhfnTYmPNyLvsscWW37P20yZ2BLx5ztarVCsLcahzqPtFWqqcSP8veJF5RRbT5pPsYPHF06sdMeq7HhfumKqtDZbPG0a6Y=
+Date: Thu, 24 Apr 2008 14:29:40 +0800 (CST)
+Message-Id: <20080424.142940.45152084.xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] arch/um/kernel/irq.c: clean up some functions
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Roel Kluin <12o3l@tiscali.nl>:
 
-> priv->param_workaround_interval is unsigned,   
-> modparam_workaround_interval not.
-> the former is never < 0.
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Make activate_fd() and free_irq_by_irq_and_dev() static.
+Remove init_aio_irq() since it has no users.
 
-Thanks.
+Compile testing passed.
 
-Acked-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
-> ---
-> diff --git a/drivers/net/wireless/rndis_wlan.c   
-> b/drivers/net/wireless/rndis_wlan.c
-> index 977751f..d0b1fb1 100644
-> --- a/drivers/net/wireless/rndis_wlan.c
-> +++ b/drivers/net/wireless/rndis_wlan.c
-> @@ -2402,7 +2402,6 @@ static int bcm4320_early_init(struct usbnet *dev)
->  	priv->param_power_output = modparam_power_output;
->  	priv->param_roamtrigger  = modparam_roamtrigger;
->  	priv->param_roamdelta    = modparam_roamdelta;
-> -	priv->param_workaround_interval = modparam_workaround_interval;
->
->  	priv->param_country[0] = toupper(priv->param_country[0]);
->  	priv->param_country[1] = toupper(priv->param_country[1]);
-> @@ -2425,8 +2424,10 @@ static int bcm4320_early_init(struct usbnet *dev)
->  	else if (priv->param_roamdelta > 2)
->  		priv->param_roamdelta = 2;
->
-> -	if (priv->param_workaround_interval < 0)
-> +	if (modparam_workaround_interval < 0)
->  		priv->param_workaround_interval = 500;
-> +	else
-> +		priv->param_workaround_interval = modparam_workaround_interval;
->
->  	rndis_set_config_parameter_str(dev, "Country", priv->param_country);
->  	rndis_set_config_parameter_str(dev, "FrameBursting",
->
->
+---
+ arch/um/include/irq_kern.h |    2 --
+ arch/um/include/irq_user.h |    2 --
+ arch/um/kernel/irq.c       |   35 ++---------------------------------
+ 3 files changed, 2 insertions(+), 37 deletions(-)
 
-
-
+diff --git a/arch/um/include/irq_kern.h b/arch/um/include/irq_kern.h
+index 4f77559..fba3895 100644
+--- a/arch/um/include/irq_kern.h
++++ b/arch/um/include/irq_kern.h
+@@ -13,8 +13,6 @@ extern int um_request_irq(unsigned int irq, int fd, int type,
+ 			  irq_handler_t handler,
+ 			  unsigned long irqflags,  const char * devname,
+ 			  void *dev_id);
+-extern int init_aio_irq(int irq, char *name,
+-			irq_handler_t handler);
+ 
+ #endif
+ 
+diff --git a/arch/um/include/irq_user.h b/arch/um/include/irq_user.h
+index e60b318..c6c784d 100644
+--- a/arch/um/include/irq_user.h
++++ b/arch/um/include/irq_user.h
+@@ -21,8 +21,6 @@ struct irq_fd {
+ enum { IRQ_READ, IRQ_WRITE };
+ 
+ extern void sigio_handler(int sig, struct uml_pt_regs *regs);
+-extern int activate_fd(int irq, int fd, int type, void *dev_id);
+-extern void free_irq_by_irq_and_dev(unsigned int irq, void *dev_id);
+ extern void free_irq_by_fd(int fd);
+ extern void reactivate_fd(int fd, int irqnum);
+ extern void deactivate_fd(int fd, int irqnum);
+diff --git a/arch/um/kernel/irq.c b/arch/um/kernel/irq.c
+index 91587f8..3d7aad0 100644
+--- a/arch/um/kernel/irq.c
++++ b/arch/um/kernel/irq.c
+@@ -102,7 +102,7 @@ void sigio_handler(int sig, struct uml_pt_regs *regs)
+ 
+ static DEFINE_SPINLOCK(irq_lock);
+ 
+-int activate_fd(int irq, int fd, int type, void *dev_id)
++static int activate_fd(int irq, int fd, int type, void *dev_id)
+ {
+ 	struct pollfd *tmp_pfd;
+ 	struct irq_fd *new_fd, *irq_fd;
+@@ -216,7 +216,7 @@ static int same_irq_and_dev(struct irq_fd *irq, void *d)
+ 	return ((irq->irq == data->irq) && (irq->id == data->dev));
+ }
+ 
+-void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
++static void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
+ {
+ 	struct irq_and_dev data = ((struct irq_and_dev) { .irq  = irq,
+ 							  .dev  = dev });
+@@ -403,37 +403,6 @@ void __init init_IRQ(void)
+ 	}
+ }
+ 
+-int init_aio_irq(int irq, char *name, irq_handler_t handler)
+-{
+-	int fds[2], err;
+-
+-	err = os_pipe(fds, 1, 1);
+-	if (err) {
+-		printk(KERN_ERR "init_aio_irq - os_pipe failed, err = %d\n",
+-		       -err);
+-		goto out;
+-	}
+-
+-	err = um_request_irq(irq, fds[0], IRQ_READ, handler,
+-			     IRQF_DISABLED | IRQF_SAMPLE_RANDOM, name,
+-			     (void *) (long) fds[0]);
+-	if (err) {
+-		printk(KERN_ERR "init_aio_irq - : um_request_irq failed, "
+-		       "err = %d\n",
+-		       err);
+-		goto out_close;
+-	}
+-
+-	err = fds[1];
+-	goto out;
+-
+- out_close:
+-	os_close_file(fds[0]);
+-	os_close_file(fds[1]);
+- out:
+-	return err;
+-}
+-
+ /*
+  * IRQ stack entry and exit:
+  *
+-- 
+1.5.2.4
 
