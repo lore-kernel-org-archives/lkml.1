@@ -1,135 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbYDXW0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbYDXWht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbYDXW0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYDXW01
+	id S1756084AbYDXWht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYDXWhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:26:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:29099 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYDXW0Z (ORCPT
+	Thu, 24 Apr 2008 18:37:39 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:3702 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754537AbYDXWhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:26:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=xn7qrq3ziRNFgFAQsi0lLRlqq6ay7qfqqkQA+hN7s70EdTFWFC8J1UdB3HXSMuD7RKTLMnCKu57JsjUWtqy+NcJukDoIylYoiykd3ADpfBRfApuQiw+OyafzfmoXa1onjgq4piCELqA3j7BIA52Hr+nXNX8iIEuYp4TecIVhlYI=
-Message-ID: <4811090A.9030809@gmail.com>
-Date: Fri, 25 Apr 2008 00:26:18 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 24 Apr 2008 18:37:38 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Regression: starting X locks box with git master
+In-Reply-To: <86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
+	(Yinghai Lu's message of "Thu, 24 Apr 2008 13:52:53 -0700")
+References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
+	<86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:080424:yhlu.kernel@gmail.com::oawBgn0za2eDNjPb:0000000000000000000000000000000000000000Hf8Q
+X-Hashcash: 1:23:080424:linux-kernel@vger.kernel.org::Zf7+uIIEQrMqeztY:000000000000000000000000000000000sm6R
+Date: Thu, 24 Apr 2008 18:36:54 -0400
+Message-ID: <m37iemq3qa.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com> <20080422095315.GA28014@elte.hu>  <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>  <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/23/2008 05:53 PM, Linus Torvalds wrote:
->> (SPIN LOCK already disabled is my personal trace ooops which is just
->> checking if the spin_lock_irq is already called with disabled irq - in
->> this place probably irqsave version should be used instead, otherwice
->> it's not properly restored)
-> 
-> Yes, that's interesting to see.
+>>>>> "Yinghai" == Yinghai Lu <yhlu.kernel@gmail.com> writes:
 
-And this too :/:
+Yinghai> Do you have CONFIG_X86_PAT in your .config?
 
-#include <err.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+I do not find that in .config at all, set or not:
 
-#define MAGIC 0xff00aa00deadcc22ULL
+:; grep X86_PAT /usr/src/linux-2.6/.config
 
-int main()
-{
-         unsigned int a, b, c = 0;
-         unsigned long long *ch;
+returns nothing.
 
-         while (1) {
-                 ch = malloc(1000000000);
-                 if (!ch)
-                         err(1, "malloc");
+But the kernel which dies does generate this:
 
-                 for (a = 0; a < 1000000000/sizeof(*ch); a++)
-                         ch[a] = MAGIC;
+Apr 24 04:28:09 [kernel] [    0.000000] x86: PAT support disabled.
 
-                 printf("alloced %u\n", c);
-                 sleep(10);
-
-                 for (a = 0; a < 1000000000/sizeof(*ch); a++)
-                         if (ch[a] != MAGIC) {
-                                 printf("WHAT THE HELL (%.8lx):\n", a * 
-sizeof(*ch));
-                                 for (b = a - a % 10; b < (a - a % 10) + 100; b++) {
-                                         printf("%.16llx ", ch[b]);
-                                         if (!((b + 1) % 10))
-                                                 puts("");
-                                 }
-                                 exit(1);
-                         }
-                 free(ch);
-                 printf("freed %u\n", c);
-                 sleep(10);
-                 c++;
-         }
-
-         return 0;
-}
-
-20 arpings running on wlan0 (don't know if this is related so far), suspend, 
-resume, right after resume:
-
-freed 114
-alloced 115
-freed 115
-alloced 116
-WHAT THE HELL (000a3ff8):
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadccf0 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadccf0 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 
-ff00aa00deadcc22 ff00aa00deadcc22
-
-Again those fuc*ing 0xf0s...
-
-Shouldn't be 2.6.25 uttered as broken until this is solved to not corrupt 
-anyone's data? I'm going to play with that testing program further in the meantime.
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
