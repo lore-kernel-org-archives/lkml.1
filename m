@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbYDXOdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYDXOgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757169AbYDXOdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 10:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYDXOdn
+	id S1754013AbYDXOgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYDXOgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 10:33:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:18028 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYDXOdn (ORCPT
+	Thu, 24 Apr 2008 10:36:12 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50904 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752744AbYDXOgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 10:33:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=oRK7SXoj8DJt+WBqOBxoGMv2B/huQsLI4FHY3qytZs9AJxYBW2Nk39drUTsCy76+68gxySHF5BRQQnO3XyTOvhXtC6yBaweP2Cpf554lxCaewDNUtVGbY4y0lOCP+hNG0IPZhwXd9nqsdNjFcbA8a8IObTN1zhDaQFTX4F5Yfac=
-From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
-Subject: [RFC, PATCH] printk when requesting firmware
-Date: Thu, 24 Apr 2008 15:33:37 +0100
-Message-Id: <1209047617-2426-1-git-send-email-ciaran.mccreesh@googlemail.com>
-X-Mailer: git-send-email 1.5.4.2
+	Thu, 24 Apr 2008 10:36:10 -0400
+Date: Thu, 24 Apr 2008 15:35:37 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+Message-ID: <20080424143537.GG15214@ZenIV.linux.org.uk>
+References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before requesting firmware, printk a message saying what we're requesting. This
-makes it easier to see what's going on, and provides an explanation for the
-huge silent delay that one would otherwise get after accidentally building
-ipw2200 as a non-module.
----
- drivers/base/firmware_class.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Thu, Apr 24, 2008 at 04:16:52PM +0200, Miklos Szeredi wrote:
+> > And I certainly agree that it ought to be replaced by will/wont pair to
+> > close the remount race.  One that had been there all along.  All fh_verify()
+> > callers of that kind need it - we want to pull mnt_{will,wont}_write()
+> > pair into callers *and* stretch to protect the entire relevant area.
+> > 
+> > Which contains vfs_...() in case of nfsd_create, etc.  See what I mean?
+> > That's exactly the thing I'd been talking about - the area we want to
+> > cover is _bigger_ than vfs_...() and contains nfsd-specific logic.  IOW,
+> > doesn't get folded into any VFS-provided helper.
+> 
+> I still don't get it why it needs to cover nfsd-specifi logic.  What
+> does nfsd have to do with r/o mounts?
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 1fef7df..9fd4a85 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -396,6 +396,8 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 	if (!firmware_p)
- 		return -EINVAL;
- 
-+	printk(KERN_INFO "firmware: requesting %s\n", name);
-+
- 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
- 	if (!firmware) {
- 		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
--- 
-1.5.4.2
-
+Explain to me again, how fh_verify() manages to contain no nfsd-specific
+logics.  Please.  You are right - we do have races there.  Always had.
+And nfsd_permission() is the next target for continuation of ro-bind
+series.  Assuming that we don't simply make r/w export to hold will_write
+all along, in which case all these checks around calls of vfs_...() in
+there simply go away - that's also an arguable option.
