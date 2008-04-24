@@ -1,156 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYDXVXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYDXVZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbYDXVXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 17:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYDXVXm
+	id S1755252AbYDXVZa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 17:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYDXVZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 17:23:42 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43188 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbYDXVXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 17:23:41 -0400
-Message-ID: <4810FA44.9060402@us.ibm.com>
-Date: Thu, 24 Apr 2008 14:23:16 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
-MIME-Version: 1.0
-To: prasad@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       hunt@redhat.com, michaele@au1.ibm.com, dave@linux.vnet.ibm.com
-Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
-References: <20080415111459.GB5295@in.ibm.com> <20080415112603.GA5770@in.ibm.com> <48066EBE.3040608@us.ibm.com> <20080421124329.GA14118@in.ibm.com>
-In-Reply-To: <20080421124329.GA14118@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 24 Apr 2008 17:25:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40573 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYDXVZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 17:25:12 -0400
+Date: Fri, 25 Apr 2008 00:25:04 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: linux-kernel@vger.kernel.org, dsd@gentoo.org,
+       mdharm-usb@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       vegardno@ifi.uio.no, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+In-Reply-To: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Apr 2008, Pekka J Enberg wrote:
+> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > 
+> > Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
+> > wait until background scanning of USB mass storage devices is complete before
+> > attempting to mount the root filesystem.
+> > 
+> > The config option is an alternative to the root_delay= kernel parameter
+> > solution people currently use to boot from USB mass storage devices.
 
-debugfs_print makes a great improvement to the trace interface.   I 
-missing a couple of bugs the first time I reviewed it.  Please see my 
-comments in-line.
+On Thu, 24 Apr 2008, Alan Stern wrote:
+> This doesn't take into account what happens when CONFIG_SCSI_SCAN_ASYNC
+> is set.
 
-Dave..
+Oh, right. Thanks! So something like the following should take care of it.
 
+		Pekka
 
-> +static inline struct trace_info *init_trace_interface(struct
-> +                        			debugfs_printk_data *dpk)
-> +{
-> +        struct trace_info *ti;
-> +
-> +        dpk->exists = trace_exists(dpk->parent_dir, dpk->dir, &ti);
-> +
-> +        switch(dpk->exists) {
-> +
-> +        case TRACE_PARENT_DIR_EXISTS:
-> +        case TRACE_PARENT_DIR_ABSENT:
-> +                if(!dpk->buf_size)
-> +                        dpk->buf_size = DEFAULT_TRACE_BUF_SIZE;
-> +                if(!dpk->sub_buf_size)
-> +                        dpk->sub_buf_size = DEFAULT_TRACE_SUB_BUF_NR;
-> +                if(!dpk->flags)
-> +			dpk->flags = TRACE_FLIGHT_CHANNEL;
-> +                ti = trace_setup(dpk->parent_dir, dpk->dir,
-> +                        dpk->buf_size, dpk->sub_buf_size, dpk->flags);
-> +                printk(KERN_INFO "Trace interface %s setup through "
-> +                                                        "debugfs_printk\n",
-> +                                                        ti->dir->d_iname);
-> +                if (IS_ERR(ti)) {
-> +                        printk(KERN_ERR "Trace interface could not be "
-> +                        "initialised\n");
-> +                        return PTR_ERR(ti);
-> +                }
-> +                /* Fall through */
-> +        case TRACE_DIR_EXISTS:
-> +             if (ti->state != TRACE_RUNNING) {
+Subject: [RFC/PATCH] usb-storage: wait for device scanning before mounting root V2
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-You should start the trace only if the current state is TRACE_SETUP (I 
-think).  See my comment in debugfs_print()
+Add a new kernel config option CONFIG_LATE_ROOT_MOUNT that makes the kernel
+wait until background scanning of USB mass storage devices is complete before
+attempting to mount the root filesystem.
 
+The config option is an alternative to the root_delay= kernel parameter
+solution people currently use to boot from USB mass storage devices.
 
-		  if (ti->state == TRACE_SETUP)
-> +                        trace_start(ti);
-> +                }
-> +        }
-> +        return ti;
-> +}
-> +
-> +/*
-> + * debugfs_printk - A function to write into the debugfs mount 'directly'
-> + * using 'trace' infrastructure
-> + * @dpk - Structure containing info such as parent_dir and directory
-> + * @format - String containing format string specifiers
-> + * @ap - List of arguments
-> + */
-> +int debugfs_printk(struct debugfs_printk_data *dpk, char *format, ...)
-> +{
-> +	int ret;
-> +	struct trace_info *ti;
-> +	va_list(ap);
-> +	unsigned long flags;
-> +
-> +	va_start(ap, format);
-> +
-> +	ti = init_trace_interface(dpk);
+Cc: Daniel Drake <dsd@gentoo.org>
+Cc: Matthew Dharm <mdharm-usb@one-eyed-alien.net>
+Cc: <linux-usb@vger.kernel.org>
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: <linux-scsi@vger.kernel.org>
+Tested-by: Vegard Nossum <vegardno@ifi.uio.no>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/scsi/scsi_scan.c  |    2 ++
+ drivers/usb/storage/usb.c |    3 +++
+ include/linux/init.h      |   12 ++++++++++++
+ init/Kconfig              |    5 +++++
+ init/do_mounts.c          |   32 ++++++++++++++++++++++++++++++++
+ 5 files changed, 54 insertions(+)
 
-init_trace_interface() alway sets trace->state to TRACE_RUNNING .  The 
-results is that the user is prevented from stopping the trace.  You can 
-see this in fork_new_trace.
-
-$ cat debug/trace_new_example/do_fork/state
-running
-$ echo stop > debug/trace_new_example/do_fork/state
-$ cat debug/trace_new_example/do_fork/state
-running
-
-> +
-> +	/* Now do the actual printing */
-> +	/* Take an RCU Lock over the trace_info state */
-> +	rcu_read_lock();
-> +	/* Take a spinlock for the global buffer used by relay */
-> +	if (dpk->flags & TRACE_GLOBAL_CHANNEL)
-> +		spin_lock_irqsave(&trace_lock, flags);
-> +	ret = trace_printf(ti, format, ap);
-> +	if (dpk->flags & TRACE_GLOBAL_CHANNEL)
-> +		spin_unlock_irqrestore(&trace_lock, flags);
-> +	rcu_read_unlock();
-> +
-> +	va_end(ap);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(debugfs_printk);
-> +
-> +/*
-> + * debugfs_printk - A function to write into the debugfs mount 'directly'
-> + * using 'trace' infrastructure
-> + * @dpk - Structure containing info such as parent_dir and directory
-> + * @output - Data that needs to be output
-> + * @output_len - Length of the output data
-> + */
-> +int debugfs_dump(struct debugfs_printk_data *dpk, const void *output,
-> +							const int output_len)
-> +{
-> +	struct trace_info *ti;
-> +	char *record;
-> +
-> +	ti = init_trace_interface(dpk);
-
-Same issue as debugfs_printf,
-
-You should also check for trace_running as you did for trace_printf.
-
-
-> +
-> +	/* Now do the actual printing */
-> +	rcu_read_lock();
-> +	record = relay_reserve(ti->rchan, output_len);
-> +	if (record)
-> +		memcpy(record, output, output_len);
-> +	else
-> +		return -ENOMEM;
-> +	rcu_read_unlock();
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(debugfs_dump);
+Index: linux-2.6/drivers/usb/storage/usb.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/storage/usb.c
++++ linux-2.6/drivers/usb/storage/usb.c
+@@ -928,6 +928,7 @@ static int usb_stor_scan_thread(void * _
+ 		/* Should we unbind if no devices were detected? */
+ 	}
+ 
++	complete_root_scan();
+ 	complete_and_exit(&us->scanning_done, 0);
+ }
+ 
+@@ -1007,12 +1008,14 @@ static int storage_probe(struct usb_inte
+ 		goto BadDevice;
+ 	}
+ 
++	begin_root_scan();
+ 	/* Start up the thread for delayed SCSI-device scanning */
+ 	th = kthread_create(usb_stor_scan_thread, us, "usb-stor-scan");
+ 	if (IS_ERR(th)) {
+ 		printk(KERN_WARNING USB_STORAGE 
+ 		       "Unable to start the device-scanning thread\n");
+ 		quiesce_and_remove_host(us);
++		complete_root_scan();
+ 		result = PTR_ERR(th);
+ 		goto BadDevice;
+ 	}
+Index: linux-2.6/include/linux/init.h
+===================================================================
+--- linux-2.6.orig/include/linux/init.h
++++ linux-2.6/include/linux/init.h
+@@ -147,6 +147,18 @@ extern unsigned int reset_devices;
+ void setup_arch(char **);
+ void prepare_namespace(void);
+ 
++#ifdef CONFIG_LATE_ROOT_MOUNT
++void begin_root_scan(void);
++void complete_root_scan(void);
++#else /* !CONFIG_LATE_ROOT_MOUNT */
++static inline void begin_root_scan(void)
++{
++}
++static inline void complete_root_scan(void)
++{
++}
++#endif /* CONFIG_LATE_ROOT_MOUNT */
++
+ #endif
+   
+ #ifndef MODULE
+Index: linux-2.6/init/Kconfig
+===================================================================
+--- linux-2.6.orig/init/Kconfig
++++ linux-2.6/init/Kconfig
+@@ -473,6 +473,11 @@ config PID_NS
+ 	  Unless you want to work with an experimental feature
+ 	  say N here.
+ 
++config LATE_ROOT_MOUNT
++	bool "Wait for devices that do background scanning before mounting root"
++	help
++	  Say Y here if your root partition is, for example, on an USB disk.
++
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ 	depends on BROKEN || !FRV
+Index: linux-2.6/init/do_mounts.c
+===================================================================
+--- linux-2.6.orig/init/do_mounts.c
++++ linux-2.6/init/do_mounts.c
+@@ -326,6 +326,36 @@ void __init mount_root(void)
+ #endif
+ }
+ 
++#ifdef CONFIG_LATE_ROOT_MOUNT
++/*
++ * Late root mounting for devices that need background scanning.
++ */
++static DECLARE_COMPLETION(root_scan_done);
++static atomic_t nr_root_scans;
++
++void begin_root_scan(void)
++{
++	atomic_inc(&nr_root_scans);
++}
++
++void complete_root_scan(void)
++{
++	if (atomic_dec_and_test(&nr_root_scans))
++		complete(&root_scan_done);
++}
++
++static void __init wait_for_root_scan(void)
++{
++	if (atomic_read(&nr_root_scans))
++		wait_for_completion(&root_scan_done);
++}
++#else /* !CONFIG_LATE_ROOT_MOUNT */
++
++static inline void wait_for_root_scan(void)
++{
++}
++#endif /* CONFIG_LATE_ROOT_MOUNT */
++
+ /*
+  * Prepare the namespace - decide what/where to mount, load ramdisks, etc.
+  */
+@@ -339,6 +369,8 @@ void __init prepare_namespace(void)
+ 		ssleep(root_delay);
+ 	}
+ 
++	wait_for_root_scan();
++
+ 	/* wait for the known devices to complete their probing */
+ 	while (driver_probe_done() != 0)
+ 		msleep(100);
+Index: linux-2.6/drivers/scsi/scsi_scan.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/scsi_scan.c
++++ linux-2.6/drivers/scsi/scsi_scan.c
+@@ -1802,6 +1802,7 @@ static int do_scan_async(void *_data)
+ 	struct async_scan_data *data = _data;
+ 	do_scsi_scan_host(data->shost);
+ 	scsi_finish_async_scan(data);
++	complete_root_scan();
+ 	return 0;
+ }
+ 
+@@ -1823,6 +1824,7 @@ void scsi_scan_host(struct Scsi_Host *sh
+ 		return;
+ 	}
+ 
++	begin_root_scan();
+ 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
+ 	if (unlikely(IS_ERR(p)))
+ 		do_scan_async(data);
