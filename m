@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYDXHbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYDXHfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbYDXHbk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYDXHbc
+	id S1753012AbYDXHfY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 03:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYDXHfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:31:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56158 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbYDXHbc (ORCPT
+	Thu, 24 Apr 2008 03:35:12 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:33976 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYDXHfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:31:32 -0400
-Date: Thu, 24 Apr 2008 09:31:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: "devzero@web.de" <devzero@web.de>, linux-kernel@vger.kernel.org,
-       agruen@suse.de
-Subject: Re: make cloneconfig ?
-In-Reply-To: <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0804240930180.15791@fbirervta.pbzchgretzou.qr>
-References: <251459002@web.de> <9a8748490804231543h1203ff59i466e1ea9c02af0f2@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 24 Apr 2008 03:35:11 -0400
+Message-ID: <4810382D.8040405@tiscali.nl>
+Date: Thu, 24 Apr 2008 09:35:09 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2 v2] xilinx_spi: test below 0 on unsigned irq in xilinx_spi_probe()
+References: <480F99D5.7070300@tiscali.nl> <480FA248.7080900@tiscali.nl>
+In-Reply-To: <480FA248.7080900@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joe Perches wrote:
+> On Wed, 2008-04-23 at 22:55 +0200, Roel Kluin wrote:
 
-On Thursday 2008-04-24 00:43, Jesper Juhl wrote:
->> any reason why "make cloneconfig" never made it into mainline?
->>
->>  many people are quite used to it and every time i build vanilla kernel i step into that trap  "oh - that`s a suse`ism"
->>
->>  make cloneconfig exists since /proc/config.gz - but while that one went into mainline, cloneconfig never did.
->>
->>  anyone know the reason for that ?
->>
->>  i wished, distros kernels were more similar to vanilla kernels - so what about making them more similar ?
->>
->>
->
->Isn't "cloneconfig" basically just "zcat /proc/config.gz > .config &&
->make oldconfig" ???   If so, why do we need yet another "make
-><some_target>" Makefile rule? What would actually be gained?
+>> -	xspi->irq = platform_get_irq(dev, 0);
+>> -	if (xspi->irq < 0) {
+>> -		ret = -ENXIO;
+>> +	ret = platform_get_irq(dev, 0);
+>> +	if (ret < 0)
+>>  		goto unmap_io;
+>> -	}
+>> +
+>> +	xspi->irq = ret;
+>> +	ret = 0;
+> 
+> Is the only negative return from platform_get_irq ENXIO?
+> I think you still need the ret = -ENXIO before the goto.
+> 
+> Also, you don't need the ret = 0 line, it's set again
+> a few lines below.
+> 
+> I think you should end up with:
+> 
+> 	ret = platform_get_irq(dev, 0);
+> 	if (ret < 0) {
+> 		ret = -ENXIO;
+> 		goto unmap_io;
+> 	}
+> 
+> 	xspi->irq = ret;
+> 
+> cheers, Joe
 
-Not just that, it also searches /boot/config-... (a redhatism)
-and /lib/modules/.../.config.
-So it's not like it would be a suse-only shortcut.
+In that case, this should suffice,
+
+thanks again,
+
+Roel
+---
+xilinx_spi->irq is unsigned, so the test fails
+
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+index cf6aef3..2a471b3 100644
+--- a/drivers/spi/xilinx_spi.c
++++ b/drivers/spi/xilinx_spi.c
+@@ -353,11 +353,12 @@ static int __init xilinx_spi_probe(struct platform_device *dev)
+ 		goto put_master;
+ 	}
+ 
+-	xspi->irq = platform_get_irq(dev, 0);
+-	if (xspi->irq < 0) {
++	ret = platform_get_irq(dev, 0);
++	if (ret < 0) {
+ 		ret = -ENXIO;
+ 		goto unmap_io;
+ 	}
++	xspi->irq = ret;
+ 
+ 	master->bus_num = pdata->bus_num;
+ 	master->num_chipselect = pdata->num_chipselect;
