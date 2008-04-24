@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbYDXRf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbYDXRf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761347AbYDXRf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYDXRfK
+	id S1761530AbYDXRf5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYDXRfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:35:10 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:52147 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755443AbYDXRfJ (ORCPT
+	Thu, 24 Apr 2008 13:35:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46314 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040AbYDXRfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:35:09 -0400
-Date: Thu, 24 Apr 2008 18:34:32 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Michael Abbott <michael@araneidae.co.uk>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] DM9000: Reimplement 2-resource device specification
-	(fwd)
-Message-ID: <20080424173432.GE16284@fluff.org.uk>
-References: <20080424125217.M52274@saturn.araneidae.co.uk>
+	Thu, 24 Apr 2008 13:35:44 -0400
+Message-ID: <4810C4A8.1020505@zytor.com>
+Date: Thu, 24 Apr 2008 10:34:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080424125217.M52274@saturn.araneidae.co.uk>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       "akpm@linux-foundation.org Jakub Jelinek" <jakub@redhat.com>
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	 <20080424112514.055d8071@the-village.bc.nu>	 <alpine.LFD.1.10.0804240828100.2779@woody.linux-foundation.org>	 <20080424.083908.147395158.davem@davemloft.net>	 <517f3f820804240903y788102bar5c7d1fa9bcee1c8a@mail.gmail.com>	 <20080424164226.415cedeb@the-village.bc.nu> <517f3f820804240948u788745f4s7a5dd4e7417ffeaf@mail.gmail.com> <4810C16A.3000606@zytor.com> <4810C3F1.9060009@redhat.com>
+In-Reply-To: <4810C3F1.9060009@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 12:57:08PM +0000, Michael Abbott wrote:
-> From: Michael Abbott <michael.abbott@diamond.ac.uk>
->
-> [PATCH] DM9000: Reimplement 2-resource device specification
->
-> In commit 1a5f1c4ff80f522555d78d4dd0109f18395c6d83 a change was made to
-> the handling of the resources passed the DM9000 device.  Unfortunately,
-> if only two resources are passed (the read and write register in the same
-> area) the pointer db->irq_res ends up being used without being initialised.
->
-> This patch tidies this up a little.  Only one architecture class,
-> blackfin, uses two resource specification, so it may be better to enforce
-> three resource specification as before by simply removing the 0 and 2
-> resource branches from dm9000_probe.
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> H. Peter Anvin wrote:
+>> sys_indirect is a total red herring here, since it won't help one iota
+>> making the userspace interface comprehensible - it just introduces a
+>> different calling convention that the C library will have to thunk.
+> 
+> Nobody ever suggested that sys_indirect is in any way visible at the
+> userlevel.  It's only meant to solve the problem of changing many
+> syscalls (and hence touch lots of arch-specific code).  Again, as said
+> several times, it could easily be used to fix the existing signalfd and
+> eventfd syscalls without any arch-specific changes and no userlevel
+> interface changes (the latter since we already have the correct interface).
+> 
+> Yes, you don't like sys_indirect, we know it.  But don't deliberately
+> misrepresent the approach.
+> 
 
-I think then we should probably make the driver simpler and remove the
-special case for the two resources... any small saving of using just
-two resources is probably cancelled out by the extra code needed.
+I wasn't misrepresenting anything.  I was pointing out to the parent 
+post -- not to you -- that sys_indirect does neither hide nor hair for 
+what *he* was concerned about, which was the comprehensibility of the 
+user-level interface.
 
-> +#define res_size(_r) (((_r)->end - (_r)->start) + 1)
-> +
-
-I'd like to see something like this as an inline function in the
-relevant header, and some patches to get other users to find it.
-
-> -
->  		if (pdata->outblk != NULL)
->  			db->outblk = pdata->outblk;
-> -
->  		if (pdata->dumpblk != NULL)
->  			db->dumpblk = pdata->dumpblk;
-
-I'd rather not see spacing changes done, especially as I don't like
-to see lots of code cramped together. 
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+	-hpa
