@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYDXSfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761189AbYDXSfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbYDXSfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYDXSeT
+	id S1761189AbYDXSfl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbYDXSeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:34:19 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:50934 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbYDXSeO (ORCPT
+	Thu, 24 Apr 2008 14:34:18 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:54896 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753738AbYDXSeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 14:34:14 -0400
-Message-Id: <20080424183241.286539069@mail.of.borg>
+Message-Id: <20080424183240.800543888@mail.of.borg>
 References: <20080424182940.424312704@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 20:29:43 +0200
+Date: Thu, 24 Apr 2008 20:29:41 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 03/15] m68k: FB_HP300 depends on DIO and doesnt need FB_CFB_FILLRECT
-Content-Disposition: inline; filename=m68k-correct-FB_HP300-dependencies.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 01/15] m68k: Convert access_ok() to an inline function
+Content-Disposition: inline; filename=m68k-convert-access_ok-to-inline-func.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Correct FB_HP300 dependencies:
-  - FB_HP300 doesn't depend only on HP300, but also on DIO (which depends on
-    HP300)
-  - FB_HP300 does not need FB_CFB_FILLRECT
+Convert access_ok() from a macro to an inline function, so the compiler no
+longer complains about unused variables:
+
+    fs/read_write.c: In function 'rw_copy_check_uvector':
+    fs/read_write.c:556: warning: unused variable 'buf'
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/Kconfig |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ include/asm-m68k/uaccess.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -596,8 +596,7 @@ config FB_MAC
+--- a/include/asm-m68k/uaccess.h
++++ b/include/asm-m68k/uaccess.h
+@@ -14,7 +14,11 @@
+ #define VERIFY_WRITE	1
  
- config FB_HP300
- 	bool
--	depends on (FB = y) && HP300
--	select FB_CFB_FILLRECT
-+	depends on (FB = y) && DIO
- 	select FB_CFB_IMAGEBLIT
- 	default y
+ /* We let the MMU do all checking */
+-#define access_ok(type,addr,size) 1
++static inline int access_ok(int type, const void __user *addr,
++			    unsigned long size)
++{
++	return 1;
++}
  
+ /*
+  * The exception table consists of pairs of addresses: the first is the
 
 -- 
 Gr{oetje,eeting}s,
