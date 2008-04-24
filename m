@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYDXXOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYDXXPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbYDXXOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYDXXHe
+	id S1758187AbYDXXPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbYDXXHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:07:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36685 "EHLO
+	Thu, 24 Apr 2008 19:07:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36687 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbYDXXHD (ORCPT
+	with ESMTP id S1752390AbYDXXHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:07:03 -0400
+	Thu, 24 Apr 2008 19:07:06 -0400
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 16/24] s390: types: use <asm-generic/int-*.h> for the s390 architecture
-Date: Thu, 24 Apr 2008 16:05:38 -0700
-Message-Id: <1209078352-7593-32-git-send-email-hpa@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 09/24] ia64: types: use <asm-generic/int-*.h> for the ia64 architecture
+Date: Thu, 24 Apr 2008 16:05:25 -0700
+Message-Id: <1209078352-7593-19-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-31-git-send-email-hpa@zytor.com>
+In-Reply-To: <1209078352-7593-18-git-send-email-hpa@zytor.com>
 References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-2-git-send-email-hpa@zytor.com>
  <1209078352-7593-3-git-send-email-hpa@zytor.com>
@@ -41,52 +39,35 @@ References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
  <1209078352-7593-16-git-send-email-hpa@zytor.com>
  <1209078352-7593-17-git-send-email-hpa@zytor.com>
  <1209078352-7593-18-git-send-email-hpa@zytor.com>
- <1209078352-7593-19-git-send-email-hpa@zytor.com>
- <1209078352-7593-20-git-send-email-hpa@zytor.com>
- <1209078352-7593-21-git-send-email-hpa@zytor.com>
- <1209078352-7593-22-git-send-email-hpa@zytor.com>
- <1209078352-7593-23-git-send-email-hpa@zytor.com>
- <1209078352-7593-24-git-send-email-hpa@zytor.com>
- <1209078352-7593-25-git-send-email-hpa@zytor.com>
- <1209078352-7593-26-git-send-email-hpa@zytor.com>
- <1209078352-7593-27-git-send-email-hpa@zytor.com>
- <1209078352-7593-28-git-send-email-hpa@zytor.com>
- <1209078352-7593-29-git-send-email-hpa@zytor.com>
- <1209078352-7593-30-git-send-email-hpa@zytor.com>
- <1209078352-7593-31-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-s390/types.h> to use the <asm-generic/int-*.h>
+This modifies <asm-ia64/types.h> to use the <asm-generic/int-*.h>
 generic include files.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- include/asm-s390/types.h |   48 +++++----------------------------------------
- 1 files changed, 6 insertions(+), 42 deletions(-)
+ include/asm-ia64/types.h |   31 ++-----------------------------
+ 1 files changed, 2 insertions(+), 29 deletions(-)
 
-diff --git a/include/asm-s390/types.h b/include/asm-s390/types.h
-index 2c5879a..78dda03 100644
---- a/include/asm-s390/types.h
-+++ b/include/asm-s390/types.h
-@@ -9,34 +9,16 @@
- #ifndef _S390_TYPES_H
- #define _S390_TYPES_H
+diff --git a/include/asm-ia64/types.h b/include/asm-ia64/types.h
+index 902850d..e36b371 100644
+--- a/include/asm-ia64/types.h
++++ b/include/asm-ia64/types.h
+@@ -13,6 +13,8 @@
+  *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
+  */
  
-+#ifndef __s390x__
-+# include <asm-generic/int-l64.h>
-+#else
-+# include <asm-generic/int-ll64.h>
-+#endif
++#include <asm-generic/int-l64.h>
 +
- #ifndef __ASSEMBLY__
+ #ifdef __ASSEMBLY__
+ # define __IA64_UL(x)		(x)
+ # define __IA64_UL_CONST(x)	x
+@@ -28,39 +30,10 @@
+ typedef unsigned int umode_t;
  
- typedef unsigned short umode_t;
- 
--/*
+ /*
 - * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
 - * header files exported to user space
 - */
@@ -100,44 +81,29 @@ index 2c5879a..78dda03 100644
 -typedef __signed__ int __s32;
 -typedef unsigned int __u32;
 -
--#ifndef __s390x__
--#if defined(__GNUC__)
--__extension__ typedef __signed__ long long __s64;
--__extension__ typedef unsigned long long __u64;
--#endif
--#else /* __s390x__ */
 -typedef __signed__ long __s64;
 -typedef unsigned long __u64;
--#endif
 -
- /* A address type so that arithmetic can be done on it & it can be upgraded to
-    64 bit when necessary 
- */
-@@ -58,24 +40,6 @@ typedef __signed__ long saddr_t;
+-/*
+  * These aren't exported outside the kernel to avoid name space clashes
+  */
+ # ifdef __KERNEL__
  
- #ifndef __ASSEMBLY__
+-typedef __s8 s8;
+-typedef __u8 u8;
+-
+-typedef __s16 s16;
+-typedef __u16 u16;
+-
+-typedef __s32 s32;
+-typedef __u32 u32;
+-
+-typedef __s64 s64;
+-typedef __u64 u64;
+-
+ #define BITS_PER_LONG 64
  
--
--typedef signed char s8;
--typedef unsigned char u8;
--
--typedef signed short s16;
--typedef unsigned short u16;
--
--typedef signed int s32;
--typedef unsigned int u32;
--
--#ifndef __s390x__
--typedef signed long long s64;
--typedef unsigned long long u64;
--#else /* __s390x__ */
--typedef signed long s64;
--typedef unsigned  long u64;
--#endif /* __s390x__ */
--
- typedef u32 dma_addr_t;
- 
- #ifndef __s390x__
+ /* DMA addresses are 64-bits wide, in general.  */
 -- 
 1.5.4.1
 
