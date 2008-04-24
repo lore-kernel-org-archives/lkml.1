@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYDXARR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYDXASI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYDXARR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 20:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYDXARF
+	id S1755970AbYDXASI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 20:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYDXARz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 20:17:05 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:54647 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752563AbYDXARE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 20:17:04 -0400
-Date: Thu, 24 Apr 2008 01:16:56 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, mtk.manpages@gmail.com
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-Message-ID: <20080424001656.GM4825@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Michael Kerrisk <mtk.manpages@googlemail.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	mtk.manpages@gmail.com
-References: <20080308022321.GC5853@implementation> <20080323.215641.192753003.davem@davemloft.net> <20080324104330.GF4434@implementation.uk.xensource.com> <87abko734d.fsf@basil.nowhere.org> <20080324121719.GJ4434@implementation.uk.xensource.com> <20080324122700.GK4434@implementation.uk.xensource.com> <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com> <4808D1C5.8050304@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4808D1C5.8050304@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 23 Apr 2008 20:17:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:49967 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751257AbYDXARz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 20:17:55 -0400
+Subject: Re: [PATCH] pci: let pci_device_shutdown to call pci_disable_msi
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>,
+       Jeff Garzik <jeff@garzik.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sathya Prakash <sathya.prakash@lsi.com>
+In-Reply-To: <m1hcdsoh1i.fsf@frodo.ebiederm.org>
+References: <200804222148.17530.yhlu.kernel@gmail.com>
+	 <1208928277.9212.1.camel@concordia.ozlabs.ibm.com>
+	 <m1hcdsoh1i.fsf@frodo.ebiederm.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-g0Q++rwmJEr937uZomgr"
+Date: Thu, 24 Apr 2008 10:17:53 +1000
+Message-Id: <1208996273.9245.18.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk, le Fri 18 Apr 2008 18:52:21 +0200, a écrit :
-> >>  +is
-> >>  +.IR sizeof(sa_family_t) ,
-> 
-> Why did you write sa_family_t here?
 
-Because to me it made more sense.
+--=-g0Q++rwmJEr937uZomgr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Dave M already said sizeof(short), which is the same thing,
+On Wed, 2008-04-23 at 06:08 -0700, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > On Tue, 2008-04-22 at 21:48 -0700, Yinghai Lu wrote:
+> >> this change
+> >>=20
+> >> | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
+> >> | Author: Prakash, Sathya <sathya.prakash@lsi.com>
+> >> | Date:   Fri Mar 7 15:53:21 2008 +0530
+> >> |
+> >> |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
+> >> |
+> >> | This patch modifies the driver to enable MSI by default for all SAS =
+chips.
+> >> |
+> >> |     Signed-off-by: Sathya Prakash <sathya.prakash@lsi.com>
+> >> |     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnershi=
+p.com>
+> >> |
+> >> cause kexec RHEL 5.1 kernel fail.
+> >>=20
+> >> root casue: the rhel 5.1 kernel still use INTx emulation.
+> >> and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on=
+ kexec
+> > path
+> >>=20
+> >> so try to call pci_disable_msi in shutdown patch
+> >
+> > How is kdump going to work? Your shutdown routine won't be called and
+> > you'll have the same problem in the 2nd kernel, won't you?
+>=20
+> Taking a quick look our current msi initialization appears robust in
+> not assuming the state of the msi config bits.
 
-Ok, but that's exposing implementation.
+But does that help us? What if the device driver in the 2nd kernel
+assumes it's using INTX, when in fact MSI is enabled on the device. In
+that case none of the MSI code will even be called AFAIK.
 
+cheers
 
-> and I see that in net/unix/af_unix.c::unix_getname() there is:
-> 
->                 *uaddr_len = sizeof(short);
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-I'd say that code should be fixed into using sa_family_t.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Samuel
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-g0Q++rwmJEr937uZomgr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBID9GxdSjSd0sB4dIRAtj+AJ0RAvLgNuBGrkPcV+CtQJ7lQmWn4wCfQzhC
+8BaGbG2xJGRi1Ikf9CHIn6E=
+=LwVT
+-----END PGP SIGNATURE-----
+
+--=-g0Q++rwmJEr937uZomgr--
+
