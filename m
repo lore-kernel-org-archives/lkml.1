@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbYDXPF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYDXPGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbYDXPF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYDXPFs
+	id S1759417AbYDXPGY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbYDXPGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:05:48 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:10625 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbYDXPFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:05:47 -0400
-Date: Thu, 24 Apr 2008 17:05:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-Message-ID: <20080424150533.GE12774@kernel.dk>
-References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org> <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk> <48109571.70905@hp.com>
+	Thu, 24 Apr 2008 11:06:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:36746 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756703AbYDXPGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:06:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZsPkjbZeIQT/yrLwZWkdj7IynAStw8z0sO70BlgWH0TG2pGAPyk8FaEwrUpCqQmMQZ/iscfzV0GOfVVUior/hAUXkwPsUUGfdm4nX9pg7hGfzcilw5ISW6uD4bQtvJMBt35pmxj4YGerRjjySel89B1JTPhfY/2bu5spAqnrmyE=
+Message-ID: <c49095e30804240805ge3f9ae1qbdcf95ed17cbf151@mail.gmail.com>
+Date: Thu, 24 Apr 2008 17:05:45 +0200
+From: "Michael Kerrisk" <michael.kerrisk@googlemail.com>
+To: "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       michael.kerrisk@gmail.com, linux-man@vger.kernel.org
+In-Reply-To: <48109DFB.900@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48109571.70905@hp.com>
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
+	 <20080424112514.055d8071@the-village.bc.nu>
+	 <517f3f820804240534r3bbbdc52s52a6dfe3f2d14b7f@mail.gmail.com>
+	 <48109DFB.900@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24 2008, Alan D. Brunelle wrote:
-> Jens Axboe wrote:
-> > On 24/04/2008, at 15.29, Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> >> "Alan D. Brunelle" <Alan.Brunelle@hp.com> writes:
-> >>
-> >>> The block I/O + elevator + I/O scheduler code spends a lot of time
-> >>> trying to merge I/Os -- rightfully so under "normal" circumstances.
-> >>> However, if one were to know that the incoming I/O stream was /very/
-> >>> random in nature, the cycles are wasted. (This can be the case, for
-> >>> example, during OLTP-type runs.)
-> >>>
-> >>> This patch stream adds a per-request_queue tunable that (when set)
-> >>> disables merge attempts, thus freeing up a non-trivial amount of CPU
-> >>> cycles.
-> >>
-> >> It sounds interesting. But explicit tunables are always bad because
-> >> they will be only used by a elite few. Do you think it would be
-> >> possible instead to keep some statistics on how successfull merging is
-> >> and
-> >> when the success rate is very low disable it automatically for some
-> >> time until a time out?
-> >>
-> >> This way nearly everybody could get most of the benefit from this
-> >> change.
-> > 
-> > Not a good idea IMHO, it's much better with an explicit setting. That
-> > way you don't introduce indeterministic behavior.
-> 
-> Another way to attack this would be to have a user level daemon "watch
-> things" -
-> 
-> o  We could leave 'nomerges' alone: if someone set that, they "know"
-> what they are doing, and we just don't attempt merges. [This tunable
-> would really be for the "elite few" - those that no which devices are
-> used in which ways - people that administer Enterprise load environments
-> tend to need to know this.]
-> 
-> o  The kernel already exports stats on merges, so the daemon could watch
-> those stats in comparison to the number of I/Os submitted. If it
-> determined that merge attempts were not being very successful, it could
-> turn off merges for a period of time. Later it could turn them back on,
-> watch for a while, and repeat.
-> 
-> Does this sound better/worthwhile?
+On Thu, Apr 24, 2008 at 4:49 PM, Ulrich Drepper <drepper@redhat.com> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+>  Hash: SHA1
+>
+>
+>  Michael Kerrisk wrote:
+>  > * dup2() -- use fcntl(F_DUPFD) instead
+>
+>  Wrong.  You cannot implement dup2 with fcntl since the latter won't use
+>  a file descriptor which is already in use.
 
-That's is true, you could toggle this from a user daemon if you wish. I
-still think it's a really bad idea, but at least then it's entirely up
-to the user. I'm not a big fan of such schemes, to say the least.
+True.  One could add a flag to fcntl() to provide that behavior.
 
--- 
-Jens Axboe
+>  > So the alternative to sys_indirect(), at least for the purpose of
+>  > O_CLOEXEC and similar, would be to create 5 new system calls (or six,
+>  > if one finds the signalfd() hack too ugly, which perhaps it is; or 7
+>  > if one doesn't like Alan's suggestion for socket()
+>
+>  Without changing the socket interfaces (plural, socketpair) there would
 
+Yes, I overlooked socket pair()...
+
+>  have to be 7 new syscalls, with changing socket* to an IMO cleaner
+>  interface 9.
+>
+>
+>  Or we just add sys_indirect (which is also usable for other syscall
+>  extensions, not just the CLOEXEC stuff) and let userlevel (i.e., me)
+>  worry about adding new interfaces to libc.  As you can see, for the more
+>  recent interfaces like signalfd I have already added an additional
+>  parameter so the number of interface changes would be reduced.
+>
+>  Somebody please make a call and then let's go on with life.  I don't
+>  care much either way anymore.  I do hope nobody thinks this is an issue
+>  which can be completely ignored (see, e.g., the bug I pointed to the
+>  other day).
+
+Since I had to go search, here it is again
+http://bugzilla.redhat.com/show_bug.cgi?id=443321
