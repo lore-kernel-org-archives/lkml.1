@@ -1,128 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYDXPYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763506AbYDXPX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbYDXPYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbYDXPPk
+	id S1763506AbYDXPX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbYDXPPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:15:40 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56488 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:15:10 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56241 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760034AbYDXPPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:15:39 -0400
-Message-Id: <20080424151359.512672078@polymtl.ca>
+	id S1759659AbYDXPPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:15:07 -0400
+Message-Id: <20080424151356.054139808@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:41 -0400
+Date: Thu, 24 Apr 2008 11:03:34 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Adrian Bunk <bunk@stusta.de>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org
-Subject: [patch 17/37] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:59 +0000
+       Andi Kleen <andi@firstfloor.org>
+Subject: [patch 10/37] Text Edit Lock - Architecture Independent Code
+Content-Disposition: inline; filename=text-edit-lock-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+This is an architecture independant synchronization around kernel text
+modifications through use of a global mutex.
 
-Changelog:
-- Put imv_set and _imv_set in the architecture independent header.
-- Pack the __imv section. Use smallest types required for size (char).
-- Remove architecture specific update code : now handled by architecture
-  agnostic code.
-- Use imv_* instead of immediate_*.
+A mutex has been chosen so that kprobes, the main user of this, can sleep during
+memory allocation between the memory read of the instructions it must replace
+and the memory write of the breakpoint.
+
+Other user of this interface: immediate values.
+
+Paravirt and alternatives are always done when SMP is inactive, so there is no
+need to use locks.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Adrian Bunk <bunk@stusta.de>
 CC: Andi Kleen <andi@firstfloor.org>
-CC: mingo@elte.hu
-CC: akpm@osdl.org
+CC: Ingo Molnar <mingo@elte.hu>
 ---
- arch/powerpc/Kconfig            |    1 
- include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+ include/linux/memory.h |    7 +++++++
+ mm/memory.c            |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 41 insertions(+)
 
-Index: linux-2.6-sched-devel/include/asm-powerpc/immediate.h
+Index: linux-2.6-sched-devel/include/linux/memory.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-sched-devel/include/asm-powerpc/immediate.h	2008-04-22 20:22:58.000000000 -0400
-@@ -0,0 +1,55 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
+--- linux-2.6-sched-devel.orig/include/linux/memory.h	2008-04-22 20:04:13.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/memory.h	2008-04-22 20:19:19.000000000 -0400
+@@ -92,4 +92,11 @@ extern int memory_notify(unsigned long v
+ #define hotplug_memory_notifier(fn, pri) do { } while (0)
+ #endif
+ 
 +/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
++ * Take and release the kernel text modification lock, used for code patching.
++ * Users of this lock can sleep.
 + */
++extern void kernel_text_lock(void);
++extern void kernel_text_unlock(void);
 +
-+#include <asm/asm-compat.h>
+ #endif /* _LINUX_MEMORY_H_ */
+Index: linux-2.6-sched-devel/mm/memory.c
+===================================================================
+--- linux-2.6-sched-devel.orig/mm/memory.c	2008-04-19 17:41:25.000000000 -0400
++++ linux-2.6-sched-devel/mm/memory.c	2008-04-22 20:19:19.000000000 -0400
+@@ -51,6 +51,8 @@
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
++#include <linux/kprobes.h>
++#include <linux/mutex.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
+@@ -96,6 +98,12 @@ int randomize_va_space __read_mostly =
+ 					2;
+ #endif
+ 
++/*
++ * mutex protecting text section modification (dynamic code patching).
++ * some users need to sleep (allocating memory...) while they hold this lock.
++ */
++static DEFINE_MUTEX(text_mutex);
++
+ static int __init disable_randmaps(char *s)
+ {
+ 	randomize_va_space = 0;
+@@ -2737,3 +2745,29 @@ void print_vma_addr(char *prefix, unsign
+ 	}
+ 	up_read(&current->mm->mmap_sem);
+ }
 +
 +/**
-+ * imv_read - read immediate variable
-+ * @name: immediate value name
++ * kernel_text_lock     -   Take the kernel text modification lock
 + *
-+ * Reads the value of @name.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _imv_read() instead.
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
 + */
-+#define imv_read(name)							\
-+	({								\
-+		__typeof__(name##__imv) value;				\
-+		BUILD_BUG_ON(sizeof(value) > 8);			\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-1)\n\t"	\
-+					".byte 1\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 2:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-2)\n\t"	\
-+					".byte 2\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 4:							\
-+		case 8:	value = name##__imv;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
++void __kprobes kernel_text_lock(void)
++{
++	mutex_lock(&text_mutex);
++}
++EXPORT_SYMBOL_GPL(kernel_text_lock);
 +
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-sched-devel/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-sched-devel.orig/arch/powerpc/Kconfig	2008-04-22 20:04:01.000000000 -0400
-+++ linux-2.6-sched-devel/arch/powerpc/Kconfig	2008-04-22 20:23:18.000000000 -0400
-@@ -110,6 +110,7 @@ config PPC
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
- 	select HAVE_LMB
-+	select HAVE_IMMEDIATE
- 
- config EARLY_PRINTK
- 	bool
++/**
++ * kernel_text_unlock   -   Release the kernel text modification lock
++ *
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
++ */
++void __kprobes kernel_text_unlock(void)
++{
++	mutex_unlock(&text_mutex);
++}
++EXPORT_SYMBOL_GPL(kernel_text_unlock);
 
 -- 
 Mathieu Desnoyers
