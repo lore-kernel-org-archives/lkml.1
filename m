@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbYDXWht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYDXWlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbYDXWht (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYDXWhj
+	id S1756264AbYDXWlv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYDXWln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:37:39 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:3702 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbYDXWhi (ORCPT
+	Thu, 24 Apr 2008 18:41:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:19728 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754386AbYDXWlm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:37:38 -0400
-From: James Cloos <cloos@jhcloos.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regression: starting X locks box with git master
-In-Reply-To: <86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
-	(Yinghai Lu's message of "Thu, 24 Apr 2008 13:52:53 -0700")
-References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
-	<86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2007 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-X-Hashcash: 1:23:080424:yhlu.kernel@gmail.com::oawBgn0za2eDNjPb:0000000000000000000000000000000000000000Hf8Q
-X-Hashcash: 1:23:080424:linux-kernel@vger.kernel.org::Zf7+uIIEQrMqeztY:000000000000000000000000000000000sm6R
-Date: Thu, 24 Apr 2008 18:36:54 -0400
-Message-ID: <m37iemq3qa.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Apr 2008 18:41:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=XypyZN9Q+XP7LJKbsicQlltUXJh2go4e1FfEM/xZta+m6wgV6F8JC/7qXTQ/6JcLN/ij0ZuyHAHix7/MJ0A/xvJVeMr5thwPDkn51jigC7Uw6rFKdw+M9SNJPmcAU639vN8jUtaF6a8iWjOVeJTSR+DuLOyjGARrPYTNdXdA2C0=
+Subject: Re: [git pull] generic bitops
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+In-Reply-To: <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org>
+References: <20080424215739.GA32378@elte.hu>
+	 <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 24 Apr 2008 15:41:37 -0700
+Message-Id: <1209076897.20088.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Yinghai" == Yinghai Lu <yhlu.kernel@gmail.com> writes:
+On Thu, 2008-04-24 at 15:14 -0700, Linus Torvalds wrote:
+> 
+> On Thu, 24 Apr 2008, Ingo Molnar wrote:
+> >
+> > this started out as improvements/generalizations to x86 bitops, but grew 
+> > generic impact (and generic optimizations) as well, so it's offered as a 
+> > separate tree.
+> 
+> Can you do the config thing differently?
+> 
+> > diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
+> > index e09edfa..49990ea 100644
+> > --- a/arch/um/Kconfig.i386
+> > +++ b/arch/um/Kconfig.i386
+> > @@ -39,6 +39,14 @@ config ARCH_REUSE_HOST_VSYSCALL_AREA
+> >  	bool
+> >  	default y
+> >  
+> > +config GENERIC_FIND_FIRST_BIT
+> > +	bool
+> > +	default y
+> > +
+> > +config GENERIC_FIND_NEXT_BIT
+> > +	bool
+> > +	default y
+> > +
+> 
+> .. because instead of having each architecture do these kinds of things, 
+> we're trying to make the *generic* code (ie lib/Kconfig) do
+> 
+> 	config GENERIC_FIND_FIRST_BIT
+> 		bool
+> 		default n
 
-Yinghai> Do you have CONFIG_X86_PAT in your .config?
+config HAVE_GENERIC_FIND_FIRST_BIT
+	def_bool n
 
-I do not find that in .config at all, set or not:
+(I know it defaults to n, but this pattern is becoming suggestive of
+features that must be selected, in addition to the HAVE_ prefix)
 
-:; grep X86_PAT /usr/src/linux-2.6/.config
+Although I think for lib stuff, we may want to think about WANT_
+prefixes to suggest you have to opt in.
 
-returns nothing.
+Harvey
 
-But the kernel which dies does generate this:
-
-Apr 24 04:28:09 [kernel] [    0.000000] x86: PAT support disabled.
-
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
