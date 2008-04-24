@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbYDXNGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYDXNM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbYDXNGk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 09:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbYDXNGS
+	id S1758693AbYDXNM1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 09:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYDXNMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 09:06:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:60560 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbYDXNGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 09:06:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QhHAneTE2jUapwXTXgSlZxl3nhRCs6mB6hBbqgB0lrQHSgAR3cv1fsbXPDnu5trKmqZQx2ZUjwsCTaImM3GJbHk+Zspw5CKlNiWzk+/33DtxTtpbCEF9A0kUslkzKlVZjbkoJ7Ntj39d0JV0TFIdCtuggrws0DgDDr5EVCxvlUA=
-Message-ID: <18b669d80804240606n47854939x94278f8d974034c1@mail.gmail.com>
-Date: Thu, 24 Apr 2008 22:06:11 +0900
-From: "Shigeo N" <shigeonx@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: XTP for 2.6.25
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <873apbijb9.fsf@basil.nowhere.org>
+	Thu, 24 Apr 2008 09:12:20 -0400
+Received: from khc.piap.pl ([195.187.100.11]:44374 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbYDXNMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 09:12:19 -0400
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, paulkf@microgate.com, jchapman@katalix.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m34p9smrmp.fsf@maximus.localdomain>
+	<20080423.154953.161012169.davem@davemloft.net>
+	<m3iqy8f57m.fsf@maximus.localdomain>
+	<20080423.180849.240014014.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 24 Apr 2008 15:12:17 +0200
+In-Reply-To: <20080423.180849.240014014.davem@davemloft.net> (David Miller's message of "Wed\, 23 Apr 2008 18\:08\:49 -0700 \(PDT\)")
+Message-ID: <m3r6cv75xq.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <18b669d80804240314t7b2f6e4cpc9a9f2690c6d21b4@mail.gmail.com>
-	 <873apbijb9.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now I have connected 2 hosts directly, and evaluate the each throughput.
-Then all the results of UDP, TCP and XTP are the same and 94Mbps. (My
-netwrok is 100Base/TX).
+David Miller <davem@davemloft.net> writes:
 
-In this case round-trip time between 2 hosts is less than 0.1ms
-because they are directly connected. But my previouse case, round-trip
-time between 2 hosts are 4ms. (I use IPSEC between the security
-gateways to increase delay).
-I think that's the reason TCP throughput is slow. If ACK packets are
-delayed, sending window cannot slide and sending packets cannot be
-fully bursted.
+> The core kernel code sets dev->priv to the alloc_netdev() allocated
+> memory region.
+>
+> It doesn't do that just for fun.
+>
+> Any code which overrides that setting is asking for trouble.
+> What if the code kernel code that set it, needed to use it
+> during device release for some reason?
 
-If I changes wmem size through /proc/sys/net/ipv4/tcp_wmem, TCP's
-throughput may improve, but congestion control becomes more difficult
-for TCP.
+You are right, the point is Linux is a moving target, and I try to
+write code as good as I can in given circumstances but never better.
+I accept occasional breakage in obscure cases like syncppp+hdlc,
+but I also need a way to fix it and/or remove the obscureness (or
+whatever the right word is).
 
-That is TCP's disadvantage to XTP.
+Historically we always have had two pointers:
+- dev->priv
+- first we had struct (net_)device *dev and by embedding it in larger
+  structure we were able to have another private data area (even with
+  Space.c)
+- then netdev_alloc() and netdev_priv() came
+- since 2.6.23 netdev_priv() returns dev->priv - one pointer is gone.
 
-Best
-Shigeo
-
-On 4/24/08, Andi Kleen <andi@firstfloor.org> wrote:
-> "Shigeo N" <shigeonx@gmail.com> writes:
-> >
-> > I tested in the network where UDP throughput is 29Mbps, then TCP
-> > throughput was 13Mbps, but XTP's reached to 25Mbps.
->
-> One interesting question is why TCP was so much slower than UDP
-> on your test. It shouldn't be on a fair test setup.
->
-> Please post details. Was the network losing packets?
->
-> New protocols might be interesting, but even more interesting is to
-> fix any (real) problems in existing protocols.
->
-> -Andi
->
+Anyway, I guess we should rather concentrate on what to do now with
+the thing. Perhaps you have some idea?
+-- 
+Krzysztof Halasa
