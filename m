@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763254AbYDXPdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763237AbYDXPet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763254AbYDXPdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762962AbYDXPdb
+	id S1763237AbYDXPet (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbYDXPee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:33:31 -0400
-Received: from outbound-mail-13.bluehost.com ([69.89.18.113]:52070 "HELO
-	outbound-mail-13.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763052AbYDXPd3 (ORCPT
+	Thu, 24 Apr 2008 11:34:34 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39528 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755499AbYDXPec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:33:29 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
-Date: Thu, 24 Apr 2008 08:33:19 -0700
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com> <87abjjzo84.fsf@basil.nowhere.org> <1209024126.7479.0.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1209024126.7479.0.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 24 Apr 2008 11:34:32 -0400
+Date: Thu, 24 Apr 2008 16:03:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+Message-ID: <20080424160352.30f2dd5b@the-village.bc.nu>
+In-Reply-To: <4810A46B.1090809@redhat.com>
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>
+	<20080424112514.055d8071@the-village.bc.nu>
+	<481096C3.2020206@redhat.com>
+	<20080424152436.6cf53c1b@the-village.bc.nu>
+	<4810A46B.1090809@redhat.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804240833.19614.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 12.108.5.2 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, April 24, 2008 1:02 am Shaohua Li wrote:
-> On Thu, 2008-04-24 at 09:49 +0200, Andi Kleen wrote:
-> > Shaohua Li <shaohua.li@intel.com> writes:
-> > > Ok, I'm fine with the patch. Though by default, the policy is to use
-> > > BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
-> >
-> > Once the feature is considered stable it would be nice to make it
-> > default y
-> > again. I think any power saving should be on by default (unless
-> > serious
-> > issues are known), not off.
->
-> yes, we could do it in next release.
+> You didn't read what I wrote.
 
-When we move to 'default y' we should also update the Kconfig text, removing 
-the experimental tag and changing the advice.
+The feeling is mutual
 
-And yeah, I'd like to save power by default too, but do you think this has 
-seen enough test coverage to enable it by default?  Do we know of any 
-platforms where ASPM causes problems because the BIOS enabled it and we tried 
-to use it?
+> For those the implementer must ensure that during the development no
+> value is used which can conflict with any current and future assigned
+> value and not with any other development.
 
+Kernel socket type values are assigned by the kernel team so that
+isn't a problem.
 
-Thanks,
-Jesse
+> > Every other property of a socket via accept() is inherited from the
+> > parent. Making one property different would be bizarre and ugly.
+> 
+> Implementing this would visibly change existing code and it would
+> actively violate POSIX.  Not a good idea.
+
+POSIX has no interface for this new behaviour you propose so that is
+complete crap. The moment you use one of these features you stepped
+outside of the POSIX spec - and you know that. If there was an existing
+standard we wouldn't have a problem.
+
+Alan
