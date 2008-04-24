@@ -1,94 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYDXDdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYDXDjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYDXDdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Apr 2008 23:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYDXDdN
+	id S1754765AbYDXDjU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Apr 2008 23:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYDXDjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Apr 2008 23:33:13 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:48398 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752789AbYDXDdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Apr 2008 23:33:13 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] linux/atm_tcp.h: cleanup for userspace
-Date: Wed, 23 Apr 2008 23:33:10 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <1208661754-3197-1-git-send-email-vapier@gentoo.org> <200804232303.52427.vapier@gentoo.org> <20080423.201844.167236025.davem@davemloft.net>
-In-Reply-To: <20080423.201844.167236025.davem@davemloft.net>
+	Wed, 23 Apr 2008 23:39:10 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38325 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753349AbYDXDjI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Apr 2008 23:39:08 -0400
+Date: Wed, 23 Apr 2008 20:38:49 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, shemminger@vyatta.com, linville@tuxdriver.com,
+       sri@us.ibm.com, davem@davemloft.net
+Subject: [PATCH] list_for_each_rcu must die: networking
+Message-ID: <20080424033849.GA4401@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7020143.XhxB0PRiZs";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200804232333.10968.vapier@gentoo.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7020143.XhxB0PRiZs
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+All uses of list_for_each_rcu() can be profitably replaced by the
+easier-to-use list_for_each_entry_rcu().  This patch makes this change
+for networking, in preparation for removing the list_for_each_rcu()
+API entirely.
 
-On Wednesday 23 April 2008, David Miller wrote:
-> From: Mike Frysinger <vapier@gentoo.org>
-> > On Wednesday 23 April 2008, David Miller wrote:
-> > > From: Mike Frysinger <vapier@gentoo.org>
-> > > > The atm_tcp.h uses types from linux/atm.h, but does not include it.=
-=20
-> > > > It should also use the standard __u## types from linux/types.h rath=
-er
-> > > > than the uint##_t types since the former can be found with the kern=
-el
-> > > > already.
-> > >
-> > > I don't think this is a sufficient patch to solve these problems.
-> >
-> > it is sufficient for atm_tcp.h only.  many of the network headers are
-> > broken for userspace inclusion, so i've just been posting them one at a
-> > time as last time i posted a large patch, no one picked it up.
->
-> But you're adding an include of another file that has the problem
-> you're supposedly fixing.
+Updated to remove the two now-unused variables as noted by Dave Miller.
 
-and i'll send out fixes for that file in time.
+Acked-by: David S. Miller <davem@davemloft.net> (lkml.org/lkml/2008/4/23/448)
+Signed_off_by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-> If using uintN_t types is the problem, you're adding a new one for
-> applications that include linux/atm_tcp.h, because now they'll
-> get linux/atm.h as a side effect which does it too.
+ drivers/net/wireless/strip.c |    6 +++---
+ net/802/psnap.c              |    4 +---
+ net/ipv4/af_inet.c           |    4 +---
+ net/ipv6/af_inet6.c          |    4 +---
+ 4 files changed, 6 insertions(+), 12 deletions(-)
 
-any applications that use linux/atm_tcp.h are already including linux/atm.h=
-,=20
-and already including stdint.h (or whatever indirectly to get uintN_t types=
-). =20
-nothing new is broken, but eventually things will be all fixed.
-=2Dmike
-
---nextPart7020143.XhxB0PRiZs
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iQIVAwUASA//dkFjO5/oN/WBAQIbbhAAhrsNKQ+ti0H56V8+zmNxDDoy/K89giYS
-rBMzPERLf0v1NY2d/uU//MfasoxPOTmIFnL4pWpBzVR8KwnGuvZXickNre0Ojzox
-MWDwv8EqYGNSpE+nYzRCgXcvZmbhlV3PRKkutwvGyVyx/QCaoyC9f67wwTb0mWJd
-7902sGiKD1jj6r6EoEknnFeXyc5n0Fz6fygrNtw19r6FNRjxz/1Avh6pfNyB1YyJ
-+KwaDENDWpdfUoC0ry+YH5UxUj2s9RD7wiJoDbThRgaSrtseb8MsXC0M0ydVBNPK
-YHXJfiMOM5L8eEDE6ESpHs/jW/tvgUnHnYW0cS5IjixA3snXdVBdOkcybekaCFu7
-9VtnpxvZb1zfpX9gFiWbfJ+zoY2gz6ZUg+y3WteeYQAaxYW0mMOKWWRmnffuslqO
-xGF1S/14YrWMcamwct239568pJTOK6w7FW/i3n5IgCKs7Bme0H5zPv5dhC5RJrHm
-rFGTnG0hh8vl7GftEC1oOdZ2mVW+eZDHhYmkgkOUM3UlIV9f92pveLo2BwBh9Ilc
-3sA9ywf/qCdO5Zsp+c21FT8EgYrtN/wKQ3qBsvkr9FojKGHWCNyokAPYeGQB5/kC
-SVIX2AnQD0zAZleAASWjrBb4Ww63DYq4bqfzwdU2tHK9zpNKQ9x1hIL2ArrDP7Z+
-Ckgs4K1+CHE=
-=kFNV
------END PGP SIGNATURE-----
-
---nextPart7020143.XhxB0PRiZs--
+diff -urpNa -X dontdiff linux-2.6.25/drivers/net/wireless/strip.c linux-2.6.25-lfer-net/drivers/net/wireless/strip.c
+--- linux-2.6.25/drivers/net/wireless/strip.c	2008-04-16 19:49:44.000000000 -0700
++++ linux-2.6.25-lfer-net/drivers/net/wireless/strip.c	2008-04-23 16:52:42.000000000 -0700
+@@ -962,12 +962,12 @@ static char *time_delta(char buffer[], l
+ /* get Nth element of the linked list */
+ static struct strip *strip_get_idx(loff_t pos) 
+ {
+-	struct list_head *l;
++	struct strip *s;
+ 	int i = 0;
+ 
+-	list_for_each_rcu(l, &strip_list) {
++	list_for_each_entry_rcu(s, &strip_list, list) {
+ 		if (pos == i)
+-			return list_entry(l, struct strip, list);
++			return s;
+ 		++i;
+ 	}
+ 	return NULL;
+diff -urpNa -X dontdiff linux-2.6.25/net/802/psnap.c linux-2.6.25-lfer-net/net/802/psnap.c
+--- linux-2.6.25/net/802/psnap.c	2008-04-16 19:49:44.000000000 -0700
++++ linux-2.6.25-lfer-net/net/802/psnap.c	2008-04-23 16:56:21.000000000 -0700
+@@ -30,11 +30,9 @@ static struct llc_sap *snap_sap;
+  */
+ static struct datalink_proto *find_snap_client(unsigned char *desc)
+ {
+-	struct list_head *entry;
+ 	struct datalink_proto *proto = NULL, *p;
+ 
+-	list_for_each_rcu(entry, &snap_list) {
+-		p = list_entry(entry, struct datalink_proto, node);
++	list_for_each_entry_rcu(p, &snap_list, node) {
+ 		if (!memcmp(p->type, desc, 5)) {
+ 			proto = p;
+ 			break;
+diff -urpNa -X dontdiff linux-2.6.25/net/ipv4/af_inet.c linux-2.6.25-lfer-net/net/ipv4/af_inet.c
+--- linux-2.6.25/net/ipv4/af_inet.c	2008-04-16 19:49:44.000000000 -0700
++++ linux-2.6.25-lfer-net/net/ipv4/af_inet.c	2008-04-23 19:16:12.000000000 -0700
+@@ -250,7 +250,6 @@ EXPORT_SYMBOL(build_ehash_secret);
+ static int inet_create(struct net *net, struct socket *sock, int protocol)
+ {
+ 	struct sock *sk;
+-	struct list_head *p;
+ 	struct inet_protosw *answer;
+ 	struct inet_sock *inet;
+ 	struct proto *answer_prot;
+@@ -274,8 +273,7 @@ static int inet_create(struct net *net, 
+ lookup_protocol:
+ 	err = -ESOCKTNOSUPPORT;
+ 	rcu_read_lock();
+-	list_for_each_rcu(p, &inetsw[sock->type]) {
+-		answer = list_entry(p, struct inet_protosw, list);
++	list_for_each_entry_rcu(answer, &inetsw[sock->type], list) {
+ 
+ 		/* Check the non-wild match. */
+ 		if (protocol == answer->protocol) {
+diff -urpNa -X dontdiff linux-2.6.25/net/ipv6/af_inet6.c linux-2.6.25-lfer-net/net/ipv6/af_inet6.c
+--- linux-2.6.25/net/ipv6/af_inet6.c	2008-04-16 19:49:44.000000000 -0700
++++ linux-2.6.25-lfer-net/net/ipv6/af_inet6.c	2008-04-23 19:16:33.000000000 -0700
+@@ -84,7 +84,6 @@ static int inet6_create(struct net *net,
+ 	struct inet_sock *inet;
+ 	struct ipv6_pinfo *np;
+ 	struct sock *sk;
+-	struct list_head *p;
+ 	struct inet_protosw *answer;
+ 	struct proto *answer_prot;
+ 	unsigned char answer_flags;
+@@ -105,8 +104,7 @@ static int inet6_create(struct net *net,
+ lookup_protocol:
+ 	err = -ESOCKTNOSUPPORT;
+ 	rcu_read_lock();
+-	list_for_each_rcu(p, &inetsw6[sock->type]) {
+-		answer = list_entry(p, struct inet_protosw, list);
++	list_for_each_entry_rcu(answer, &inetsw6[sock->type], list) {
+ 
+ 		/* Check the non-wild match. */
+ 		if (protocol == answer->protocol) {
