@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbYDXHAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbYDXHDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752789AbYDXHAo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 03:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbYDXHAd
+	id S1753273AbYDXHDW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 03:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYDXHDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 03:00:33 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48295 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748AbYDXHAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 03:00:33 -0400
-Subject: Re: [RFC PATCH 5/5] Add a Signal Control Group Subsystem
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-In-Reply-To: <6599ad830804230837x48860632m7c41e425458ba6b3@mail.gmail.com>
-References: <20080423142517.062433911@us.ibm.com>
-	 <20080423142518.703428301@us.ibm.com> <480F5321.9030008@fr.ibm.com>
-	 <6599ad830804230837x48860632m7c41e425458ba6b3@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 24 Apr 2008 00:00:27 -0700
-Message-Id: <1209020428.20681.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 03:03:14 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58219 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbYDXHDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 03:03:13 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 24 Apr 2008 09:02:04 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] ieee1394: silence defined but not used warning in
+ non-modular builds
+To: Tony Breeds <tony@bakeyournoodle.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel@lists.sourceforge.net
+In-Reply-To: <20080424042839.GQ20457@bakeyournoodle.com>
+Message-ID: <tkrat.417b268d913e3389@s5r6.in-berlin.de>
+References: <20080424042839.GQ20457@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-On Wed, 2008-04-23 at 08:37 -0700, Paul Menage wrote:
-> On Wed, Apr 23, 2008 at 8:17 AM, Cedric Le Goater <clg@fr.ibm.com> wrote:
-> > Hello Matt !
-> >
-> >  > Add a signal control group subsystem that allows us to send signals to all tasks
-> >  > in the control group by writing the desired signal(7) number to the kill file.
-> >  >
-> >  > NOTE: We don't really need per-cgroup state, but control groups doesn't support
-> >  > stateless subsystems yet.
-> >  >
-> >  > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> >  > ---
-> >  >  include/linux/cgroup_signal.h |   28 +++++++++
-> >  >  include/linux/cgroup_subsys.h |    6 +
-> >  >  init/Kconfig                  |    6 +
-> >  >  kernel/Makefile               |    1
-> >  >  kernel/cgroup_signal.c        |  129 ++++++++++++++++++++++++++++++++++++++++++
-> >  >  5 files changed, 170 insertions(+)
-> >
-> >
-> >  I think there is a small race with new tasks entering the cgroup
-> >  while it's beeing killed, and a _fork ops would handle that. nop ?
-> >
-> 
-> I never saw the actual patch (what lists did it go out to?) but I
+Currently the kernel will issue the following warning:
+drivers/ieee1394/raw1394.c:2938: warning: 'raw1394_id_table' defined but not used
+Add #ifdef MODULE guards arround the declaration.
 
-Hi Paul,
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-	Sorry about this. MTA issues again :(. I think I've gotten them fixed
-*this* time. I've resent them and you should have received your own copy
-this time. Please let me know if you still aren't receiving them.
+Ditto with dv1394_id_table and video1394_id_table.
 
-Cheers,
-	-Matt
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/dv1394.c    |    2 ++
+ drivers/ieee1394/raw1394.c   |    2 ++
+ drivers/ieee1394/video1394.c |    2 ++
+ 3 files changed, 6 insertions(+)
+
+Index: linux/drivers/ieee1394/dv1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/dv1394.c
++++ linux/drivers/ieee1394/dv1394.c
+@@ -2167,6 +2167,7 @@ static const struct file_operations dv13
+ /*
+  * Export information about protocols/devices supported by this driver.
+  */
++#ifdef MODULE
+ static struct ieee1394_device_id dv1394_id_table[] = {
+ 	{
+ 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+@@ -2177,6 +2178,7 @@ static struct ieee1394_device_id dv1394_
+ };
+ 
+ MODULE_DEVICE_TABLE(ieee1394, dv1394_id_table);
++#endif /* MODULE */
+ 
+ static struct hpsb_protocol_driver dv1394_driver = {
+ 	.name = "dv1394",
+Index: linux/drivers/ieee1394/raw1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/raw1394.c
++++ linux/drivers/ieee1394/raw1394.c
+@@ -2940,6 +2940,7 @@ static int raw1394_release(struct inode 
+ /*
+  * Export information about protocols/devices supported by this driver.
+  */
++#ifdef MODULE
+ static struct ieee1394_device_id raw1394_id_table[] = {
+ 	{
+ 	 .match_flags = IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+@@ -2961,6 +2962,7 @@ static struct ieee1394_device_id raw1394
+ };
+ 
+ MODULE_DEVICE_TABLE(ieee1394, raw1394_id_table);
++#endif /* MODULE */
+ 
+ static struct hpsb_protocol_driver raw1394_driver = {
+ 	.name = "raw1394",
+Index: linux/drivers/ieee1394/video1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/video1394.c
++++ linux/drivers/ieee1394/video1394.c
+@@ -1293,6 +1293,7 @@ static const struct file_operations vide
+ /*
+  * Export information about protocols/devices supported by this driver.
+  */
++#ifdef MODULE
+ static struct ieee1394_device_id video1394_id_table[] = {
+ 	{
+ 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+@@ -1313,6 +1314,7 @@ static struct ieee1394_device_id video13
+ };
+ 
+ MODULE_DEVICE_TABLE(ieee1394, video1394_id_table);
++#endif /* MODULE */
+ 
+ static struct hpsb_protocol_driver video1394_driver = {
+ 	.name = VIDEO1394_DRIVER_NAME,
+
+-- 
+Stefan Richter
+-=====-==--- -=-- ==---
+http://arcgraph.de/sr/
 
