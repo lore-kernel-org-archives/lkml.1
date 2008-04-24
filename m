@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbYDXQcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbYDXQeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759544AbYDXQcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYDXQbw
+	id S1759328AbYDXQeV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYDXQeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:31:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48766 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755138AbYDXQbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:31:51 -0400
-Date: Thu, 24 Apr 2008 17:03:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] alternative^2 to sys_indirect: socket, socketpair
-Message-ID: <20080424170325.569afa43@the-village.bc.nu>
-In-Reply-To: <200804241618.m3OGI9kd013025@devserv.devel.redhat.com>
-References: <200804241618.m3OGI9kd013025@devserv.devel.redhat.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 Apr 2008 12:34:07 -0400
+Received: from sacred.ru ([62.205.161.221]:51660 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbYDXQeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:34:05 -0400
+Message-ID: <4810B5C0.1080501@openvz.org>
+Date: Thu, 24 Apr 2008 20:30:56 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [patch 37/37] LTTng instrumentation net
+References: <20080424150324.802695381@polymtl.ca> <20080424151408.991424268@polymtl.ca> <4810ACB4.501@openvz.org> <20080424161337.GA22874@Krystal>
+In-Reply-To: <20080424161337.GA22874@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 24 Apr 2008 20:33:27 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comments all come down to implementation details and it basically looks
-sound and fairly small clean change (especially when the various wrappers
-and _flags changes were replaced by just fixing up the callers to
-functions in a final implementation.
+Mathieu Desnoyers wrote:
+> * Pavel Emelyanov (xemul@openvz.org) wrote:
+>> Mathieu Desnoyers wrote:
+>>> Network core events.
+>>>
+>>> Added markers :
+>>>
+>>> net_del_ifa_ipv4
+>>> net_dev_receive
+>>> net_dev_xmit
+>>> net_insert_ifa_ipv4
+>>> net_socket_call
+>>> net_socket_create
+>>> net_socket_recvmsg
+>>> net_socket_sendmsg
+>> Network "core" events are not limited with the above calls.
+>>
+> 
+> True. This is by no mean an exhaustive list of network events. It just
+> happens to be the ones which has been useful to LTT/LTTng users for the
+> past ~10 years.
 
-Add a new accept() and it looks good to me
+Do you mean, that we'll have these debris all over the networking code some day?
 
-> -	fd = get_unused_fd();
-> +	fd = get_unused_fd_flags(flags);
+>> Besides, real "core" events already sent notifications about themselves.
+>> Why do we need additional hooks?
+>>
+> 
+> I doubt the current notification hooks have a performance impact as
+> small as the proposed markers. Which notification mechanism do you refer
+> to ? It could be interesting to put markers in there instead.
 
-Better to fix up the existing users who don't pass flags (and check why
-they need not to), Implementation detail
+E.g. call_netdevice_notifiers and co. 
+And they have nothing to do with performance, since configuration code is 
+not supposed to have a rocket speed.
 
-> -int sock_map_fd(struct socket *sock)
-> +static int sock_map_fd_flags(struct socket *sock, int flags)
+> The goal behind this is to feed information to a general purpose tracer
+> like lttng, a scripting mechanism like systemtap or a special-purpose
+> tracer like ftrace.
+> 
+> I think that the most important instrumentation in this patchset is the
+> xmit/recv of a packet at the device level. The net_socket_*
+> instrumentation could eventually be replaced by an architecture specfic
+> system call parameters instrumentation.
 
-No need to rename these, the compiler errors will let us quickly
-find/fix any users.
+I will not argue about the value of such hooks in xmit/recv paths, but
+as far as the net_socket_xxx is concerned - there is already the
+* ptrace
+* security
+* kprobes
+way to screw the normal code flow up in these places.
 
-> +int sock_map_fd(struct socket *sock)
-> +{
-> +	return sock_map_fd_flags(sock, 0);
-> +}
+> Mathieu
+> 
+>>> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>> CC: netdev@vger.kernel.org
+>>> ---
+>>>  net/core/dev.c     |    6 ++++++
+>>>  net/ipv4/devinet.c |    6 ++++++
+>>>  net/socket.c       |   19 +++++++++++++++++++
+>>>  3 files changed, 31 insertions(+)
+> 
 
-Ditto
-
-> +	/* Extract the close-on-exec flag.  */
-> +	if ((type & SOCK_CLOEXEC) != 0) {
-> +		fflags = O_CLOEXEC;
-> +		type &= ~SOCK_CLOEXEC;
-
-> +	/* Extract the close-on-exec flag.  */
-> +	if ((type & SOCK_CLOEXEC) != 0) {
-> +		fflags = O_CLOEXEC;
-> +		type &= ~SOCK_CLOEXEC;
-> +	}
-
-Should probably be done once in one place in case we ever add future flags
-
-
-
--- 
---
-	"Alan, I'm getting a bit worried about you."
-				-- Linus Torvalds
