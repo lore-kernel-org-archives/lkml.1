@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYDXN7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYDXOAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYDXN7i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 09:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYDXN7b
+	id S1758136AbYDXOAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 10:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYDXOAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 09:59:31 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:2878 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbYDXN7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 09:59:30 -0400
-References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org>
-Message-Id: <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk>
-From: Jens Axboe <axboe@kernel.dk>
-To: Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <87ve27gz4u.fsf@basil.nowhere.org>
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed;
-	delsp=yes
-X-Mailer: iPhone Mail (4A102)
-Mime-Version: 1.0 (iPhone Mail 4A102)
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-Content-Transfer-Encoding: 7bit
-Date: Thu, 24 Apr 2008 15:59:00 +0200
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
+	Thu, 24 Apr 2008 10:00:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40049 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414AbYDXOAH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 10:00:07 -0400
+Date: Thu, 24 Apr 2008 15:00:00 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+Message-ID: <20080424140000.GE15214@ZenIV.linux.org.uk>
+References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424134826.GD15214@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/04/2008, at 15.29, Andi Kleen <andi@firstfloor.org> wrote:
+On Thu, Apr 24, 2008 at 02:48:26PM +0100, Al Viro wrote:
+> On Thu, Apr 24, 2008 at 03:05:21PM +0200, Miklos Szeredi wrote:
+> > Several calls to nfsd_setattr() for starters.  But I didn't do a full
+> > audit of all vfs_* callers, there might well be others.
 
-> "Alan D. Brunelle" <Alan.Brunelle@hp.com> writes:
->
->> The block I/O + elevator + I/O scheduler code spends a lot of time
->> trying to merge I/Os -- rightfully so under "normal" circumstances.
->> However, if one were to know that the incoming I/O stream was /very/
->> random in nature, the cycles are wasted. (This can be the case, for
->> example, during OLTP-type runs.)
->>
->> This patch stream adds a per-request_queue tunable that (when set)
->> disables merge attempts, thus freeing up a non-trivial amount of  
->> CPU cycles.
->
-> It sounds interesting. But explicit tunables are always bad because
-> they will be only used by a elite few. Do you think it would be
-> possible instead to keep some statistics on how successfull merging  
-> is and
-> when the success rate is very low disable it automatically for some
-> time until a time out?
->
-> This way nearly everybody could get most of the benefit from this
-> change.
+BTW, nfsd_setattr() on r/o ->ex_mnt *will* fail.  Again, check fh_verify()
+and see what it does with MAY_SATTR.
 
-Not a good idea IMHO, it's much better with an explicit setting. That  
-way you don't introduce indeterministic behavior. 
+And I certainly agree that it ought to be replaced by will/wont pair to
+close the remount race.  One that had been there all along.  All fh_verify()
+callers of that kind need it - we want to pull mnt_{will,wont}_write()
+pair into callers *and* stretch to protect the entire relevant area.
+
+Which contains vfs_...() in case of nfsd_create, etc.  See what I mean?
+That's exactly the thing I'd been talking about - the area we want to
+cover is _bigger_ than vfs_...() and contains nfsd-specific logic.  IOW,
+doesn't get folded into any VFS-provided helper.
