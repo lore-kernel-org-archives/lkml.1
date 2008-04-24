@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYDXMKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYDXMKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYDXMKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 08:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbYDXMKM
+	id S1756749AbYDXMKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 08:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYDXMJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 08:10:12 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:24543 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754653AbYDXMJ7 (ORCPT
+	Thu, 24 Apr 2008 08:09:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44854 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752063AbYDXMJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 08:09:59 -0400
-Message-ID: <48107891.5000308@hp.com>
-Date: Thu, 24 Apr 2008 08:09:53 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk>
-In-Reply-To: <20080424070923.GQ12774@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Apr 2008 08:09:52 -0400
+Date: Thu, 24 Apr 2008 12:35:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [2.6 patch] select ATA_SFF
+Message-ID: <20080424123541.09e5ef96@the-village.bc.nu>
+In-Reply-To: <480DEB1F.5060500@gmail.com>
+References: <20080421213147.GH2633@cs181133002.pp.htv.fi>
+	<480DE3C4.5@ru.mvista.com>
+	<480DE6F5.8060403@gmail.com>
+	<480DE9E8.2070809@ru.mvista.com>
+	<480DEB1F.5060500@gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Apr 23 2008, Alan D. Brunelle wrote:
->> The block I/O + elevator + I/O scheduler code spends a lot of time
->> trying to merge I/Os -- rightfully so under "normal" circumstances.
->> However, if one were to know that the incoming I/O stream was /very/
->> random in nature, the cycles are wasted. (This can be the case, for
->> example, during OLTP-type runs.)
->>
->> This patch stream adds a per-request_queue tunable that (when set)
->> disables merge attempts, thus freeing up a non-trivial amount of CPU cycles.
->>
->> I'll be doing some more benchmarking, but this is a representative set
->> of data on a two-way Opteron box w/ 4 SATA drives. 'fio' was used to
->> generate random 4k asynchronous direct I/Os over the 128GiB of each SATA
->> drive.  Oprofile was used to collect the results, and we collected
->> CPU_CLK_UNHALTED (CPU) and DATA_CACHE_MISSES (DCM) events. The data
->> extracted below shows both the percentage for all samples (including
->> non-kernel) as well as just those from the block I/O layer + elevator +
->> deadline I/O scheduler + SATA modules.
->>
->> v2.6.25 (not patched):  CPU: 5.8330% (total)  7.5644% (I/O code only)
->> v2.6.25 + nomerges = 0: CPU: 5.8008% (total)  7.5806% (I/O code only)
->> v2.6.25 + nomerges = 1: CPU: 4.5404% (total)  5.9416% (I/O code only)
->>
->> v2.6.25 (not patched):  DCM: 8.1967% (total) 10.5188% (I/O code only)
->> v2.6.25 + nomerges = 0: DCM: 7.2291% (total)  9.4087% (I/O code only)
->> v2.6.25 + nomerges = 1: DCM: 6.1989% (total)  8.0155% (I/O code only)
->>
->> I've typically been seeing a good 20-25% reduction in CPU samples, and
->> 10-15% in DCM samples for the random load w/ nomerges set to 1 compared
->> to set to 0 (looking at just the block code).
->>
->> [BTW: The I/O performance doesn't change much between the 3 sets of data
->> - the seek + I/O times themselves dominate things to such a large
->> extent.  There is a very small improvement seen w/ nomerges=1, but <<1%.]
->>
->> It's not clear to me why 2.6.25 (not patched) requires /more/ cycles
->> than does the patched kernel w/ nomerges=0 -- it's been consistent in
->> the handful of runs I've done. I'm going to do a large set of runs for
->> each condition (not patched, nomerges=0 & nomerges=1) to verify that
->> this holds over multiple runs. I'm also going to check out sequential
->> loads to see what (if any) penalty the extra couple of checks incurs on
->> those (probably not noticeable).
->>
->> The first patch in the series adds the tunable; The second adds in the
->> check to skip the merge code; and the third adds in the check to skip
->> adding requests to hash lists for merging.
+On Tue, 22 Apr 2008 22:41:51 +0900
+Tejun Heo <htejun@gmail.com> wrote:
+
+> Sergei Shtylyov wrote:
+> >>>    Jeff, Tejun, what "sff" in the file name actually means? Isn't it 
+> >>> strange that the drivers lacking DMA support or not really compliant 
+> >>> with SFF-8038i have to link with this file?
+> > 
+> >> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
+> >> and bmdma is acceptable, hopefully, right?
+> > 
+> >    What's sff sans bmdma?
 > 
-> The functionality is fine with me, merging is obviously a non-zero
-> amount of cycles spent on IO and if you know it's in vain, may as well
-> turn it off. One suggestion, though - if you add this as a performance
-> rather than functionality change, I would suggest keeping the one-hit
-> cache merge as that is essentially free. Better than free actually,
-> since if you hit that merge point you'll be spending way less cycles
-> than allocating+setting up a new request.
-> 
+> Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
+> although it's entirely possible that I misunderstood it and used it in 
+> the wrong way.  Alan, can you please clear up the confusion?
 
-Hi Jens -
+The SFF/Intel spec is for PCI IDE (BMDMA or otherwise), so it covers and
+defines all the common bits of the IDE interface on PCI (and in defining
+the legacy interface conveniently documents the extended ST-412 interface
+used by ATA and "pre-ATA" IDE/EIDE controllers).
 
-I'll look into retaining the one-hit cache merge functionality, remove
-the errant elv_rqhas_del code, and repost w/ the results from the other
-tests I've run.
-
-Thanks,
 Alan
-
