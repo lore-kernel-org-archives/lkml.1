@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbYDXSe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYDXSfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbYDXSe5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYDXSeR
+	id S1761354AbYDXSfX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYDXSeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:34:17 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:55470 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbYDXSeO (ORCPT
+	Thu, 24 Apr 2008 14:34:19 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:50934 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbYDXSeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 14:34:14 -0400
-Message-Id: <20080424182940.424312704@mail.of.borg>
+Message-Id: <20080424183241.286539069@mail.of.borg>
+References: <20080424182940.424312704@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 20:29:40 +0200
+Date: Thu, 24 Apr 2008 20:29:43 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/15] m68k patches for 2.6.26
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [patch 03/15] m68k: FB_HP300 depends on DIO and doesnt need FB_CFB_FILLRECT
+Content-Disposition: inline; filename=m68k-correct-FB_HP300-dependencies.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus, Andrew,
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Here are some m68k patches for 2.6.26:
-  [01] m68k: Convert access_ok() to an inline function
-  [02] m68k: Kill CONFIG_FB_DAFB
-  [03] m68k: FB_HP300 depends on DIO and doesn't need FB_CFB_FILLRECT
-  [04] m68k: Kill CONFIG_WHIPPET_SERIAL
-  [05] m68k vme_scc: avoid global namespace pollution
-  [06] m68k: Make gcc aware that BUG() does not return
-  [07] m68k: Correct jump if not running on HP300
-  [08] m68k: macide doesn't check for Mac
-  [09] m68k: dnfb doesn't check for Apollo
-  [10] m68k: Some network drivers do not check the platform
-  [11] m68k: Some input drivers do not check the platform
-  [12] m68k: Return -ENODEV if no device is found
-  [13] m68k: Q40/Q60 floppy support is broken
-  [14] m68k: Update defconfigs
-  [15] m68k: Add multi_defconfig
+Correct FB_HP300 dependencies:
+  - FB_HP300 doesn't depend only on HP300, but also on DIO (which depends on
+    HP300)
+  - FB_HP300 does not need FB_CFB_FILLRECT
 
-Nothing controversial, so please apply, thanks!
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -596,8 +596,7 @@ config FB_MAC
+ 
+ config FB_HP300
+ 	bool
+-	depends on (FB = y) && HP300
+-	select FB_CFB_FILLRECT
++	depends on (FB = y) && DIO
+ 	select FB_CFB_IMAGEBLIT
+ 	default y
+ 
+
+-- 
 Gr{oetje,eeting}s,
 
 						Geert
