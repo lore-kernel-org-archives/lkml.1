@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbYDXXWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYDXXXC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbYDXXWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYDXXK2
+	id S1759896AbYDXXXC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:23:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbYDXXP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:10:28 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42944 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756400AbYDXXK0 (ORCPT
+	Thu, 24 Apr 2008 19:15:29 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:59329 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759318AbYDXXP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:10:26 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Russell King <rmk@arm.linux.org.uk>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [PATCH 03/24] arm: types: use <asm-generic/int-*.h> for the arm architecture
-Date: Thu, 24 Apr 2008 16:05:12 -0700
-Message-Id: <1209078352-7593-6-git-send-email-hpa@zytor.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1209078352-7593-5-git-send-email-hpa@zytor.com>
-References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
- <1209078352-7593-2-git-send-email-hpa@zytor.com>
- <1209078352-7593-3-git-send-email-hpa@zytor.com>
- <1209078352-7593-4-git-send-email-hpa@zytor.com>
- <1209078352-7593-5-git-send-email-hpa@zytor.com>
+	Thu, 24 Apr 2008 19:15:26 -0400
+Message-ID: <481113FD.3010905@cs.columbia.edu>
+Date: Thu, 24 Apr 2008 19:13:01 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Kirill Korotaev <dev@parallels.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Nadia.Derbey@bull.net,
+       Andrew Morton <akpm@linux-foundation.org>, nick@nick-andrew.net,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: Checkpoint/restart (was Re: [PATCH 0/4] - v2 -  Object	creation
+ with a specified id)
+References: <20080418054459.891481000@bull.net>	<20080422193612.GA15835@martell.zuzino.mipt.ru>	<1208890580.17117.14.camel@nimitz.home.sr71.net>	<20080422210130.GA15937@martell.zuzino.mipt.ru>	<1208904967.17117.51.camel@nimitz.home.sr71.net>	<480ED9D5.1010906@parallels.com>	<1208964798.17117.72.camel@nimitz.home.sr71.net>	<48103002.5090806@parallels.com> <1209061809.12718.36.camel@nimitz.home.sr71.net>
+In-Reply-To: <1209061809.12718.36.camel@nimitz.home.sr71.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies <asm-arm/types.h> to use the <asm-generic/int-*.h>
-generic include files.
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: Ben Dooks <ben-linux@fluff.org>
----
- include/asm-arm/types.h |   33 ++-------------------------------
- 1 files changed, 2 insertions(+), 31 deletions(-)
 
-diff --git a/include/asm-arm/types.h b/include/asm-arm/types.h
-index 3141451..345df01 100644
---- a/include/asm-arm/types.h
-+++ b/include/asm-arm/types.h
-@@ -1,29 +1,12 @@
- #ifndef __ASM_ARM_TYPES_H
- #define __ASM_ARM_TYPES_H
- 
-+#include <asm-generic/int-ll64.h>
-+
- #ifndef __ASSEMBLY__
- 
- typedef unsigned short umode_t;
- 
--/*
-- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-- * header files exported to user space
-- */
--
--typedef __signed__ char __s8;
--typedef unsigned char __u8;
--
--typedef __signed__ short __s16;
--typedef unsigned short __u16;
--
--typedef __signed__ int __s32;
--typedef unsigned int __u32;
--
--#if defined(__GNUC__)
--__extension__ typedef __signed__ long long __s64;
--__extension__ typedef unsigned long long __u64;
--#endif
--
- #endif /* __ASSEMBLY__ */
- 
- /*
-@@ -35,18 +18,6 @@ __extension__ typedef unsigned long long __u64;
- 
- #ifndef __ASSEMBLY__
- 
--typedef signed char s8;
--typedef unsigned char u8;
--
--typedef signed short s16;
--typedef unsigned short u16;
--
--typedef signed int s32;
--typedef unsigned int u32;
--
--typedef signed long long s64;
--typedef unsigned long long u64;
--
- /* Dma addresses are 32-bits wide.  */
- 
- typedef u32 dma_addr_t;
--- 
-1.5.4.1
+Dave Hansen wrote:
+> On Thu, 2008-04-24 at 11:00 +0400, Kirill Korotaev wrote:
+>> Yeah... we talked with Andrew yesterday. He mostly agrees with a black
+>> box.
+>> He also said an interesting idea, that if you need compatibility
+>> between the kernels (like we for example, support for migration from
+>> 2.6.9 to 2.6.18 in OpenVZ)
+>> you can do image conversion in user-space...
+> 
+> That sounds compelling to me.  I'm definitely willing to explore it.
 
+Filtering/converting in user-space has long been part of zap: used to
+be able to migrate between both minor and major versions of the kernel
+(always upwards, of course).
+
+In fact, I already proposed it as part of the original thread that led
+eventually to the patch in question:
+https://lists.linux-foundation.org/pipermail/containers/2008-February/009849.html
+
+The need to be able to specify a desired ID (from user-space and/or from
+in-kernel) remains.
+
+Oren.
+
+> Any thoughts on what we should start with?  What can we get merged, most
+> easily?
+> 
+> -- Dave
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
