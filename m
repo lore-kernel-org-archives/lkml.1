@@ -1,91 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYDXE4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbYDXE4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYDXE4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 00:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYDXEz1
+	id S1751763AbYDXE4a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 00:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYDXEz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 00:55:27 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:36372 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbYDXEz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 00:55:26 -0400
-Date: Thu, 24 Apr 2008 14:22:15 +1000
-To: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Silence 'may be used uninitialized' warning in fs/nfs/callback_xdr.c
-Message-ID: <20080424042215.GO20457@bakeyournoodle.com>
+	Thu, 24 Apr 2008 00:55:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:58748 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754488AbYDXEz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 00:55:56 -0400
+To: linux-kernel@vger.kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Wed, 23 Apr 2008 23:55:47 -0500
+Cc: virtualization@lists.linux-foundation.org
+Subject: [PATCH 1/6] virtio: ignore corrupted virtqueues rather than spinning.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+Message-Id: <200804241455.47462.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the kernel will issue the following warnings:
 
-fs/nfs/callback_xdr.c: In function 'nfs4_callback_compound':
-fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.taglen' may be used uninitialized in this function
-fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.tag' may be used uninitialized in this function
-fs/nfs/callback_xdr.c:404: warning: 'hdr_arg.nops' may be used uninitialized in this function
+A corrupt virtqueue (caused by the other end screwing up) can have
+strange results such as a driver spinning: just bail when we try to
+get a buffer from a known-broken queue.
 
-It seems that call chain look something like:
-nfs4_callback_compound() 
- -> decode_compound_hdr_arg()
-  -> decode_string() which may fail and return NFS4ERR_RESOURCE. 
-Which decode_compound_hdr_arg() passes on.  Unfortunately
-nfs4_callback_compound() doesn't check this status and cheerfully uses
-hdr_arg which is basically stack garbage.  The same problem seems to
-apply to encode_compound_hdr_res().
-
-Check the return values, and explictly tell gcc to silence that warning.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- fs/nfs/callback_xdr.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/virtio/virtio_ring.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/fs/nfs/callback_xdr.c b/fs/nfs/callback_xdr.c
-index 13619d2..d26af3e 100644
---- a/fs/nfs/callback_xdr.c
-+++ b/fs/nfs/callback_xdr.c
-@@ -401,7 +401,7 @@ static __be32 process_op(struct svc_rqst *rqstp,
-  */
- static __be32 nfs4_callback_compound(struct svc_rqst *rqstp, void *argp, void *resp)
- {
--	struct cb_compound_hdr_arg hdr_arg;
-+	struct cb_compound_hdr_arg uninitialized_var(hdr_arg);
- 	struct cb_compound_hdr_res hdr_res;
- 	struct xdr_stream xdr_in, xdr_out;
- 	__be32 *p;
-@@ -415,11 +415,15 @@ static __be32 nfs4_callback_compound(struct svc_rqst *rqstp, void *argp, void *r
- 	p = (__be32*)((char *)rqstp->rq_res.head[0].iov_base + rqstp->rq_res.head[0].iov_len);
- 	xdr_init_encode(&xdr_out, &rqstp->rq_res, p);
+diff -r cbd83e592664 drivers/virtio/virtio_ring.c
+--- a/drivers/virtio/virtio_ring.c	Fri Apr 04 22:42:47 2008 +1100
++++ b/drivers/virtio/virtio_ring.c	Sat Apr 05 21:12:42 2008 +1100
+@@ -184,6 +184,11 @@ static void *vring_get_buf(struct virtqu
  
--	decode_compound_hdr_arg(&xdr_in, &hdr_arg);
-+	status = decode_compound_hdr_arg(&xdr_in, &hdr_arg);
-+	if (unlikely(status != 0))
-+		return status;
- 	hdr_res.taglen = hdr_arg.taglen;
- 	hdr_res.tag = hdr_arg.tag;
- 	hdr_res.nops = NULL;
--	encode_compound_hdr_res(&xdr_out, &hdr_res);
-+	status = encode_compound_hdr_res(&xdr_out, &hdr_res);
-+	if (unlikely(status != 0))
-+		return status;
+ 	START_USE(vq);
  
- 	for (;;) {
- 		status = process_op(rqstp, &xdr_in, argp, &xdr_out, resp);
--- 
-1.5.5.1
-
-
-
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
++	if (unlikely(vq->broken)) {
++		END_USE(vq);
++		return NULL;
++	}
++
+ 	if (!more_used(vq)) {
+ 		pr_debug("No more buffers in queue\n");
+ 		END_USE(vq);
 
