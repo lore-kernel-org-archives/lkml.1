@@ -1,150 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763715AbYDXTkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbYDXTlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763715AbYDXTkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbYDXTkG
+	id S1760988AbYDXTlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763355AbYDXTkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:40:06 -0400
-Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:36794 "EHLO
-	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932117AbYDXTkE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:40:04 -0400
-Date: Thu, 24 Apr 2008 22:39:47 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH v2] x86 mmiotrace: dynamically disable non-boot CPUs
-Message-ID: <20080424223947.55c053f6@daedalus.pq.iki.fi>
-In-Reply-To: <20080413230552.33ca587a@daedalus.pq.iki.fi>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi>
-	<20080413230552.33ca587a@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 24 Apr 2008 15:40:21 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:49290 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932196AbYDXTkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 15:40:18 -0400
+Date: Thu, 24 Apr 2008 21:40:15 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com
+Subject: Re: linux-next: Tree for April 24
+In-Reply-To: <20080424173626.bcd088e7.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0804242136420.21224@anakin>
+References: <20080424173626.bcd088e7.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8979ee55cb6a429c4edd72ebec2244b849f6a79a Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sat, 12 Apr 2008 00:18:57 +0300
-Subject: [PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
+On Thu, 24 Apr 2008, Stephen Rothwell wrote:
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
 
-Mmiotrace is not reliable with multiple CPUs and may
-miss events. Drop to single CPU when mmiotrace is activated.
+For the second day in a row, m68k builds failed because of
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
+    fs/xfs/xfs_fsops.c:527: error: implicit declaration of function 'xfs_icsb_sync_counters_locked'
+    make[3]: *** [fs/xfs/xfs_fsops.o] Error 1
 
-I've tested this patch on my Core 2 Duo laptop, and with
-"[PATCH v2] Check for breakpoint in text_poke to eliminate bug_on"
-cpu hotplug seems to work fine on a sched-devel/latest SMP kernel
-both with and without CONFIG_HOTPLUG_CPU.
+According to
+http://www.linux.sgi.com/archives/xfs/2008-03/msg00202.html, there's a
+forward declaration for xfs_icsb_sync_counters_locked() only if HAVE_PERCPU_SB
+is defined, i.e. for CONFIG_SMP. This break UP architectures.
 
-One strange thing was a stack trace printed just before the CPU resets
-for "shutdown -r now", but I could not see what it was about. I'll ignore
-that for now, hopefully it's something unrelated.
+Gr{oetje,eeting}s,
 
- arch/x86/mm/mmio-mod.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 61 insertions(+), 0 deletions(-)
+						Geert
 
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index 6d6cac8..1f77d85 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -32,6 +32,7 @@
- #include <asm/e820.h> /* for ISA_START_ADDRESS */
- #include <asm/atomic.h>
- #include <linux/percpu.h>
-+#include <linux/cpu.h>
- 
- #include "pf_in.h"
- 
-@@ -400,6 +401,64 @@ static void clear_trace_list(void)
- 	}
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+static cpumask_t downed_cpus;
-+
-+static void enter_uniprocessor(void)
-+{
-+	int cpu;
-+	int err;
-+
-+	get_online_cpus();
-+	downed_cpus = cpu_online_map;
-+	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
-+	if (num_online_cpus() > 1)
-+		pr_notice(NAME "Disabling non-boot CPUs...\n");
-+	put_online_cpus();
-+
-+	for_each_cpu_mask(cpu, downed_cpus) {
-+		err = cpu_down(cpu);
-+		if (!err) {
-+			pr_info(NAME "CPU%d is down.\n", cpu);
-+		} else {
-+			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
-+		}
-+	}
-+	if (num_online_cpus() > 1)
-+		pr_warning(NAME "multiple CPUs still online, "
-+						"may miss events.\n");
-+}
-+
-+static void leave_uniprocessor(void)
-+{
-+	int cpu;
-+	int err;
-+
-+	if (cpus_weight(downed_cpus) == 0)
-+		return;
-+	pr_notice(NAME "Re-enabling CPUs...\n");
-+	for_each_cpu_mask(cpu, downed_cpus) {
-+		err = cpu_up(cpu);
-+		if (!err)
-+			pr_info(NAME "enabled CPU%d.\n", cpu);
-+		else
-+			pr_err(NAME "cannot re-enable CPU%d: %d\n", cpu, err);
-+	}
-+}
-+
-+#else /* !CONFIG_HOTPLUG_CPU */
-+static void enter_uniprocessor(void)
-+{
-+	if (num_online_cpus() > 1)
-+		pr_warning(NAME "multiple CPUs are online, may miss events. "
-+			"Suggest booting with maxcpus=1 kernel argument.\n");
-+}
-+
-+static void leave_uniprocessor(void)
-+{
-+}
-+#endif
-+
- #if 0 /* XXX: out of order */
- static struct file_operations fops_marker = {
- 	.owner =	THIS_MODULE,
-@@ -422,6 +481,7 @@ void enable_mmiotrace(void)
- 
- 	if (nommiotrace)
- 		pr_info(NAME "MMIO tracing disabled.\n");
-+	enter_uniprocessor();
- 	spin_lock_irq(&trace_lock);
- 	atomic_inc(&mmiotrace_enabled);
- 	spin_unlock_irq(&trace_lock);
-@@ -442,6 +502,7 @@ void disable_mmiotrace(void)
- 	spin_unlock_irq(&trace_lock);
- 
- 	clear_trace_list(); /* guarantees: no more kmmio callbacks */
-+	leave_uniprocessor();
- 	if (marker_file) {
- 		debugfs_remove(marker_file);
- 		marker_file = NULL;
--- 
-1.5.3.7
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
