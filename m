@@ -1,58 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYDXIg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYDXIhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbYDXIg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 04:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYDXIgq
+	id S1753883AbYDXIhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 04:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYDXIhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 04:36:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:50775 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbYDXIgp (ORCPT
+	Thu, 24 Apr 2008 04:37:34 -0400
+Received: from rv-out-0708.google.com ([209.85.198.242]:4166 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750752AbYDXIhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 04:36:45 -0400
+	Thu, 24 Apr 2008 04:37:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=cJTzu5lBKleVyUSEfKEWJ+5aSCyz+Y5WEluszJdczSS0jzBwPiSrS0NtG9HqI5bfzbZcraqGr0qbtSBXiL/PuL0AwyP++xQhBTlWMhcQT1XKojEZZkKAwFUYTdQmhCNhzTnsLvreBGzVHPLEHEtbQJpgQO9GqPUKKWF5ARtKEZo=
-Date: Thu, 24 Apr 2008 12:35:58 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs
-Message-ID: <20080424083558.GA7749@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=tfmF/DWGBGToYo72xf9YIDd+KbcWs9NjJoq6jJ6YABZobwazsvFncTMpf8Xrr6e5x+fahOQJUMcUjj4SPv+zqvccFOwYQPCDHOs9TaI9vTYBY2YtxYm3fJzxCghMrVoO4FaIU6q3rzZT+7NLlUzUxjY9jCTVRJQPYTpONPNOM78=
+Date: Thu, 24 Apr 2008 16:36:55 +0800 (CST)
+Message-Id: <20080424.163655.11981438.xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] UML: make several things static
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-X86_VM_MASK is a kernel specific flag so lets hide it from
-userland programs
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Make some variables and functions static, since they don't need
+to be global.
+
+And remove an unused function - arch/um/kernel/time.c::sched_clock().
+
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+
 ---
+ arch/um/include/skas/skas.h     |    1 -
+ arch/um/include/um_uaccess.h    |    1 -
+ arch/um/kernel/physmem.c        |    2 +-
+ arch/um/kernel/ptrace.c         |    2 +-
+ arch/um/kernel/time.c           |    8 --------
+ arch/um/kernel/uaccess.c        |    2 +-
+ arch/um/os-Linux/sigio.c        |    2 +-
+ arch/um/os-Linux/signal.c       |    2 +-
+ arch/um/os-Linux/skas/process.c |    2 +-
+ arch/um/os-Linux/umid.c         |    2 +-
+ arch/um/sys-i386/bugs.c         |    2 +-
+ arch/um/sys-i386/checksum.S     |    5 ++---
+ arch/um/sys-i386/ldt.c          |    4 ++--
+ include/asm-um/ptrace-generic.h |    3 ---
+ 14 files changed, 12 insertions(+), 26 deletions(-)
 
-Index: linux-2.6.git/include/asm-x86/vm86.h
-===================================================================
---- linux-2.6.git.orig/include/asm-x86/vm86.h	2008-04-23 22:38:58.000000000 +0400
-+++ linux-2.6.git/include/asm-x86/vm86.h	2008-04-24 12:31:53.000000000 +0400
-@@ -14,12 +14,16 @@
+diff --git a/arch/um/include/skas/skas.h b/arch/um/include/skas/skas.h
+index b073f8a..64d2c74 100644
+--- a/arch/um/include/skas/skas.h
++++ b/arch/um/include/skas/skas.h
+@@ -16,7 +16,6 @@ extern int user_thread(unsigned long stack, int flags);
+ extern void new_thread_handler(void);
+ extern void handle_syscall(struct uml_pt_regs *regs);
+ extern int new_mm(unsigned long stack);
+-extern void get_skas_faultinfo(int pid, struct faultinfo * fi);
+ extern long execute_syscall_skas(void *r);
+ extern unsigned long current_stub_stack(void);
  
- #include <asm/processor-flags.h>
+diff --git a/arch/um/include/um_uaccess.h b/arch/um/include/um_uaccess.h
+index 2b6fc8e..45c0499 100644
+--- a/arch/um/include/um_uaccess.h
++++ b/arch/um/include/um_uaccess.h
+@@ -34,7 +34,6 @@ extern int copy_to_user(void __user *to, const void *from, int n);
  
-+#ifdef __KERNEL__
+ extern int __do_copy_to_user(void *to, const void *from, int n,
+ 			     void **fault_addr, jmp_buf **fault_catcher);
+-extern void __do_copy(void *to, const void *from, int n);
+ 
+ /*
+  * strncpy_from_user: - Copy a NUL terminated string from userspace.
+diff --git a/arch/um/kernel/physmem.c b/arch/um/kernel/physmem.c
+index 9757085..a1a9090 100644
+--- a/arch/um/kernel/physmem.c
++++ b/arch/um/kernel/physmem.c
+@@ -185,7 +185,7 @@ unsigned long find_iomem(char *driver, unsigned long *len_out)
+ 	return 0;
+ }
+ 
+-int setup_iomem(void)
++static int setup_iomem(void)
+ {
+ 	struct iomem_region *region = iomem_regions;
+ 	unsigned long iomem_start = high_physmem + PAGE_SIZE;
+diff --git a/arch/um/kernel/ptrace.c b/arch/um/kernel/ptrace.c
+index 47b57b4..15e8b7c 100644
+--- a/arch/um/kernel/ptrace.c
++++ b/arch/um/kernel/ptrace.c
+@@ -225,7 +225,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 	return ret;
+ }
+ 
+-void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
++static void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
+ 		  int error_code)
+ {
+ 	struct siginfo info;
+diff --git a/arch/um/kernel/time.c b/arch/um/kernel/time.c
+index e066e84..353c174 100644
+--- a/arch/um/kernel/time.c
++++ b/arch/um/kernel/time.c
+@@ -12,14 +12,6 @@
+ #include "kern_util.h"
+ #include "os.h"
+ 
+-/*
+- * Scheduler clock - returns current time in nanosec units.
+- */
+-unsigned long long sched_clock(void)
+-{
+-	return (unsigned long long)jiffies_64 * (NSEC_PER_SEC / HZ);
+-}
+-
+ void timer_handler(int sig, struct uml_pt_regs *regs)
+ {
+ 	unsigned long flags;
+diff --git a/arch/um/kernel/uaccess.c b/arch/um/kernel/uaccess.c
+index f0f4b04..dd33f04 100644
+--- a/arch/um/kernel/uaccess.c
++++ b/arch/um/kernel/uaccess.c
+@@ -12,7 +12,7 @@
+ #include <linux/string.h>
+ #include "os.h"
+ 
+-void __do_copy(void *to, const void *from, int n)
++static void __do_copy(void *to, const void *from, int n)
+ {
+ 	memcpy(to, from, n);
+ }
+diff --git a/arch/um/os-Linux/sigio.c b/arch/um/os-Linux/sigio.c
+index abf47a7..07705c1 100644
+--- a/arch/um/os-Linux/sigio.c
++++ b/arch/um/os-Linux/sigio.c
+@@ -523,7 +523,7 @@ static void tty_close(int master, int slave)
+ 		printk(UM_KERN_CONT "No, enabling workaround\n");
+ }
+ 
+-void __init check_sigio(void)
++static void __init check_sigio(void)
+ {
+ 	if ((access("/dev/ptmx", R_OK) < 0) &&
+ 	    (access("/dev/ptyp0", R_OK) < 0)) {
+diff --git a/arch/um/os-Linux/signal.c b/arch/um/os-Linux/signal.c
+index 3f1694b..1a3d233 100644
+--- a/arch/um/os-Linux/signal.c
++++ b/arch/um/os-Linux/signal.c
+@@ -125,7 +125,7 @@ void set_sigstack(void *sig_stack, int size)
+ 		panic("enabling signal stack failed, errno = %d\n", errno);
+ }
+ 
+-void (*handlers[_NSIG])(int sig, struct sigcontext *sc);
++static void (*handlers[_NSIG])(int sig, struct sigcontext *sc);
+ 
+ void handle_signal(int sig, struct sigcontext *sc)
+ {
+diff --git a/arch/um/os-Linux/skas/process.c b/arch/um/os-Linux/skas/process.c
+index 1e8cba6..9ec0f2d 100644
+--- a/arch/um/os-Linux/skas/process.c
++++ b/arch/um/os-Linux/skas/process.c
+@@ -96,7 +96,7 @@ bad_wait:
+ 
+ extern unsigned long current_stub_stack(void);
+ 
+-void get_skas_faultinfo(int pid, struct faultinfo * fi)
++static void get_skas_faultinfo(int pid, struct faultinfo * fi)
+ {
+ 	int err;
+ 
+diff --git a/arch/um/os-Linux/umid.c b/arch/um/os-Linux/umid.c
+index 106fa86..a27defb 100644
+--- a/arch/um/os-Linux/umid.c
++++ b/arch/um/os-Linux/umid.c
+@@ -245,7 +245,7 @@ int __init set_umid(char *name)
+ /* Changed in make_umid, which is called during early boot */
+ static int umid_setup = 0;
+ 
+-int __init make_umid(void)
++static int __init make_umid(void)
+ {
+ 	int fd, err;
+ 	char tmp[256];
+diff --git a/arch/um/sys-i386/bugs.c b/arch/um/sys-i386/bugs.c
+index a74442d..2c6d0d7 100644
+--- a/arch/um/sys-i386/bugs.c
++++ b/arch/um/sys-i386/bugs.c
+@@ -12,7 +12,7 @@
+ #include "sysdep/ptrace.h"
+ 
+ /* Set during early boot */
+-int host_has_cmov = 1;
++static int host_has_cmov = 1;
+ static jmp_buf cmov_test_return;
+ 
+ static void cmov_sigill_test_handler(int sig)
+diff --git a/arch/um/sys-i386/checksum.S b/arch/um/sys-i386/checksum.S
+index 62c7e56..f058d2f 100644
+--- a/arch/um/sys-i386/checksum.S
++++ b/arch/um/sys-i386/checksum.S
+@@ -243,13 +243,12 @@ unsigned int csum_partial_copy_generic (const char *src, char *dst,
+ 	.previous
+ 
+ .align 4
+-.globl csum_partial_copy_generic_i386
+-				
 +
- #ifdef CONFIG_VM86
- #define X86_VM_MASK	X86_EFLAGS_VM
- #else
- #define X86_VM_MASK	0 /* No VM86 support */
- #endif
+ #ifndef CONFIG_X86_USE_PPRO_CHECKSUM
  
-+#endif /* __KERNEL__ */
+ #define ARGBASE 16		
+ #define FP		12
+-		
 +
- #define BIOSSEG		0x0f000
+ csum_partial_copy_generic_i386:
+ 	subl  $4,%esp	
+ 	pushl %edi
+diff --git a/arch/um/sys-i386/ldt.c b/arch/um/sys-i386/ldt.c
+index a34263e..ccec78a 100644
+--- a/arch/um/sys-i386/ldt.c
++++ b/arch/um/sys-i386/ldt.c
+@@ -14,8 +14,8 @@
  
- #define CPU_086		0
+ extern int modify_ldt(int func, void *ptr, unsigned long bytecount);
+ 
+-long write_ldt_entry(struct mm_id * mm_idp, int func, struct user_desc * desc,
+-		     void **addr, int done)
++static long write_ldt_entry(struct mm_id * mm_idp, int func,
++		     struct user_desc * desc, void **addr, int done)
+ {
+ 	long res;
+ 
+diff --git a/include/asm-um/ptrace-generic.h b/include/asm-um/ptrace-generic.h
+index 6aefcd3..3157497 100644
+--- a/include/asm-um/ptrace-generic.h
++++ b/include/asm-um/ptrace-generic.h
+@@ -47,9 +47,6 @@ extern int set_fpregs(struct user_i387_struct __user *buf,
+ 
+ extern void show_regs(struct pt_regs *regs);
+ 
+-extern void send_sigtrap(struct task_struct *tsk, struct uml_pt_regs *regs,
+-			 int error_code);
+-
+ extern int arch_copy_tls(struct task_struct *new);
+ extern void clear_flushed_tls(struct task_struct *task);
+ 
+-- 
+1.5.2.4
+
