@@ -1,129 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYDXXpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbYDXXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbYDXXpo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 19:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYDXXpe
+	id S1756021AbYDXXrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 19:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYDXXrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 19:45:34 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:36085 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbYDXXpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 19:45:33 -0400
-Date: Thu, 24 Apr 2008 19:45:32 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-scsi@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2] SCSI/aha1542: minor irq handler cleanups
-Message-ID: <20080424234532.GA29471@havoc.gtf.org>
+	Thu, 24 Apr 2008 19:47:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49031 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753000AbYDXXrD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 19:47:03 -0400
+Date: Thu, 24 Apr 2008 16:45:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <48112C74.8000405@gmail.com>
+Message-ID: <alpine.LFD.1.10.0804241633040.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com>
+ <20080422095315.GA28014@elte.hu>  <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>  <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
+ <4811090A.9030809@gmail.com> <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org> <48112C74.8000405@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- where the 'irq' function argument is known never to be used, rename
-  it to 'dummy' to make this more obvious
-    
-- replace per-irq lookup functions and tables with a direct reference
-  to data object obtained via 'dev_id' function argument, passed from
-  request_irq()
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
-NOTE: The previous version failed to update free_irq(), which created a
-new bug.
 
- drivers/scsi/aha1542.c |   26 ++++++++++----------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
+On Fri, 25 Apr 2008, Jiri Slaby wrote:
+> 
+> Blah, sorry, I lived in a theory, that Rafael got one from 2.6.25 and no,
+> really, he had -git2 applied. Mea culpa, anyway I'll test 2.6.25 too, just for
+> sure.
 
-diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-index 5a1471c..8059494 100644
---- a/drivers/scsi/aha1542.c
-+++ b/drivers/scsi/aha1542.c
-@@ -153,8 +153,6 @@ struct aha1542_hostdata {
- 
- #define HOSTDATA(host) ((struct aha1542_hostdata *) &host->hostdata)
- 
--static struct Scsi_Host *aha_host[7];	/* One for each IRQ level (9-15) */
--
- static DEFINE_SPINLOCK(aha1542_lock);
- 
- 
-@@ -163,8 +161,7 @@ static DEFINE_SPINLOCK(aha1542_lock);
- 
- static void setup_mailboxes(int base_io, struct Scsi_Host *shpnt);
- static int aha1542_restart(struct Scsi_Host *shost);
--static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id);
--static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id);
-+static void aha1542_intr_handle(struct Scsi_Host *shost);
- 
- #define aha1542_intr_reset(base)  outb(IRST, CONTROL(base))
- 
-@@ -404,23 +401,19 @@ fail:
- }
- 
- /* A quick wrapper for do_aha1542_intr_handle to grab the spin lock */
--static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id)
-+static irqreturn_t do_aha1542_intr_handle(int dummy, void *dev_id)
- {
- 	unsigned long flags;
--	struct Scsi_Host *shost;
--
--	shost = aha_host[irq - 9];
--	if (!shost)
--		panic("Splunge!");
-+	struct Scsi_Host *shost = dev_id;
- 
- 	spin_lock_irqsave(shost->host_lock, flags);
--	aha1542_intr_handle(shost, dev_id);
-+	aha1542_intr_handle(shost);
- 	spin_unlock_irqrestore(shost->host_lock, flags);
- 	return IRQ_HANDLED;
- }
- 
- /* A "high" level interrupt handler */
--static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id)
-+static void aha1542_intr_handle(struct Scsi_Host *shost)
- {
- 	void (*my_done) (Scsi_Cmnd *) = NULL;
- 	int errstatus, mbi, mbo, mbistatus;
-@@ -1197,7 +1190,8 @@ fail:
- 
- 			DEB(printk("aha1542_detect: enable interrupt channel %d\n", irq_level));
- 			spin_lock_irqsave(&aha1542_lock, flags);
--			if (request_irq(irq_level, do_aha1542_intr_handle, 0, "aha1542", NULL)) {
-+			if (request_irq(irq_level, do_aha1542_intr_handle, 0,
-+					"aha1542", shpnt)) {
- 				printk(KERN_ERR "Unable to allocate IRQ for adaptec controller.\n");
- 				spin_unlock_irqrestore(&aha1542_lock, flags);
- 				goto unregister;
-@@ -1205,7 +1199,7 @@ fail:
- 			if (dma_chan != 0xFF) {
- 				if (request_dma(dma_chan, "aha1542")) {
- 					printk(KERN_ERR "Unable to allocate DMA channel for Adaptec.\n");
--					free_irq(irq_level, NULL);
-+					free_irq(irq_level, shpnt);
- 					spin_unlock_irqrestore(&aha1542_lock, flags);
- 					goto unregister;
- 				}
-@@ -1214,7 +1208,7 @@ fail:
- 					enable_dma(dma_chan);
- 				}
- 			}
--			aha_host[irq_level - 9] = shpnt;
-+
- 			shpnt->this_id = scsi_id;
- 			shpnt->unique_id = base_io;
- 			shpnt->io_port = base_io;
-@@ -1276,7 +1270,7 @@ unregister:
- static int aha1542_release(struct Scsi_Host *shost)
- {
- 	if (shost->irq)
--		free_irq(shost->irq, NULL);
-+		free_irq(shost->irq, shost);
- 	if (shost->dma_channel != 0xff)
- 		free_dma(shost->dma_channel);
- 	if (shost->io_port && shost->n_io_port)
+No problem. I do think this is a post-2.6.25 thing, because I don't think 
+we've ever seen it before that.
+
+There is a 2.6.25-rc8-mm2 report, but that was a -mm tree that had a lot 
+of the stuff that was merged after 2.6.25, so I'm pretty sure that counts 
+as "post" too. If it wasn't, we'd be seeing a lot more of this.
+
+> Not really. I have no idea what triggers it. Seems like suspend is some kind
+> of catalyzer not working every time.
+
+I don't think suspend/resume is sufficient, because I've tried to 
+reproduce it here (and I tried your test program too) on my macmini, and 
+it's not happening. So there almost certainly something else too required 
+to trigger it.
+
+Btw, how do you suspend/resume? That matters, because I've been testing 
+just the normal
+
+	echo mem > /sys/power/state
+
+and with a kernel where everything is compiled-in. But if you use the GUI 
+suspend, on a common distro, I think that one ends up doing a whole lot 
+more, including doing things like unloading and reloading modules, and for 
+all we know the problem is not about suspend itself, but about the things 
+going on around it.
+
+And it might be a module unload issue, rather than the suspend itself (the 
+same way I theorized that it might be a ifconfig down/up rather than the 
+suspend code itself). Who knows..
+
+It might also very well be hardware-specific. You guys seem to have 
+different wireless setups (ath5k vs b43) but it migth be generic 80211 
+code, but it might also be something *totally* unrelated, and the only 
+reason wireless has shown up might be that networking is just in use when 
+the problem happens.
+
+Jiri, Zdenek, Rafael, could you try to compare hardware with each other 
+and see if there is some pattern there?
+
+(And btw, the program you used that allocates a hundred meg and tries to 
+find it - I'm assuming you're not paging or anythign like that, ie you're 
+not even close to out-of-memory. If that isn't correct, holler. I'm trying 
+to reproduce this thing).
+
+			Linus
