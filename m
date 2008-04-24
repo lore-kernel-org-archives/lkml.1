@@ -1,81 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbYDXQRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbYDXQS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761788AbYDXQRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYDXQRn
+	id S1762242AbYDXQS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYDXQSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:17:43 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49979 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754303AbYDXQRm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:17:42 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20080424155954.GM15214@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 24 Apr 2008 16:59:54 +0100)
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk> <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu> <20080424152129.GK15214@ZenIV.linux.org.uk> <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu> <20080424155954.GM15214@ZenIV.linux.org.uk>
-Message-Id: <E1Jp47x-0004MY-1W@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 24 Apr 2008 18:16:53 +0200
+	Thu, 24 Apr 2008 12:18:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60915 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752344AbYDXQSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:18:44 -0400
+Date: Thu, 24 Apr 2008 12:18:09 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200804241618.m3OGI9kd013025@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] alternative^2 to sys_indirect: socket, socketpair
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > What is left is the guarantee, that the race-free r/o remounts will
-> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > > > always work and some obscure caller didn't forget to surround it with
-> ^^^^^^^^^^^^^^^^^
-> 
-> > Why are those so important?  Yes, if we have multiple vfs_() calls,
-> > surround them with an extra want/drop pair.
-> 
-> Which leaves you with the same need to audit all these suckers anyway.
+Here is a patch with just the socket and socketpair changes which uses
+a new SOCK_CLOEXEC flag.  I started the flags at the high end (ignoring
+the sign bit) to avoid collisions.  accept() is not changed in this
+patch.
 
-Not really.  Missing such calls would just make the *caller* buggy
-(i.e. racy with remount r/o), but it would not make the *filesystem*
-buggy.  Big difference.
 
-> I'm in principle fine with having such helper functions, *IF* they are
-> not sold as providing all protection one needs,
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/syscall.h>
 
-I'm not selling them as that.
+#define SOCK_CLOEXEC 0x40000000
 
-> *IF* you are not expecting
-> to be able to fold all areas down into them and *IF* original ones are
-> left intact.
+#define PORT 57392
 
-Left intact for whom, specifically?  Another question you've managed
-to avoid answering.
+int
+main (void)
+{
+  int status = 0;
+  int s;
+  int sp[2];
 
-> Modulo the like path_rename(), BTW - that one is just plain ugly API.
+  s = socket (PF_UNIX, SOCK_STREAM, 0);
 
-I'm all open to improvements.
+  if (s < 0)
+    {
+      puts ("socket failed");
+      status = 1;
+    }
+  else
+    {
+      int fl = fcntl(s, F_GETFD);
+      if ((fl & FD_CLOEXEC) != 0)
+	{
+	  puts ("socket did set CLOEXEC");
+	  status = 1;
+	}
 
-> > > let alone removing the interface that doesn't require checks to be
-> > > vfsmount-based for all users.
-> > 
-> > What users?  There are paractically _no_ other users.  The ones that
-> > there are (like reiserfs) should not be using them, and there are
-> > already some patches cleaning that mess up.
-> 
-> OK, explain me, in small words, WTF should something that wants to do
-> operations on filesystem tree have a vfsmount.  Slowly.  And "r/o
-> bind loses value if it can be bypassed" is a hogwash - fs methods are
-> still there, so it *can* be bypassed just fine, thank you very much.
+      close (s);
+    }
 
-And we know what to do with such users.
+  s = socket (PF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0);
 
-> It's really up to caller.  "But they won't be able to do open()" also
-> doesn't fly - again, it's up to whoever writes particular piece of code.
+  if (s < 0)
+    {
+      puts ("socket(SOCK_CLOEXEC) failed");
+      status = 1;
+    }
+  else
+    {
+      int fl = fcntl(s, F_GETFD);
+      if ((fl & FD_CLOEXEC) == 0)
+	{
+	  puts ("socket(SOCK_CLOEXEC) did not set CLOEXEC");
+	  status = 1;
+	}
 
-I understand your theory.  But it has zero practical significance.
+      close (s);
+    }
 
-IOW it doesn't matter that someone _may_ want to access the filesystem
-without a vfsmount, if that someone doesn't exist.
+  if (socketpair (PF_UNIX, SOCK_STREAM, 0, sp) < 0)
+    {
+      puts ("socketpair failed");
+      status = 1;
+    }
+  else
+    {
+      int fl1 = fcntl(sp[0], F_GETFD);
+      int fl2 = fcntl(sp[1], F_GETFD);
+      if ((fl1 & FD_CLOEXEC) != 0 || (fl2 & FD_CLOEXEC) != 0)
+	{
+	  puts ("socketpair did set CLOEXEC");
+	  status = 1;
+	}
 
-Miklos
+      close (sp[0]);
+      close (sp[1]);
+    }
+
+  if (socketpair (PF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, sp) < 0)
+    {
+      puts ("socketpair(SOCK_CLOEXEC) failed");
+      status = 1;
+    }
+  else
+    {
+      int fl1 = fcntl(sp[0], F_GETFD);
+      int fl2 = fcntl(sp[1], F_GETFD);
+      if ((fl1 & FD_CLOEXEC) == 0 || (fl2 & FD_CLOEXEC) == 0)
+	{
+	  puts ("socketpair(SOCK_CLOEXEC) did not set CLOEXEC");
+	  status = 1;
+	}
+
+      close (sp[0]);
+      close (sp[1]);
+    }
+
+  return status;
+}
+
+
+ include/linux/net.h |    3 +++
+ net/socket.c        |   35 +++++++++++++++++++++++++++--------
+ 2 files changed, 30 insertions(+), 8 deletions(-)
+
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+diff --git a/include/linux/net.h b/include/linux/net.h
+index 71f7dd5..f5dddd8 100644
+--- a/include/linux/net.h
++++ b/include/linux/net.h
+@@ -91,6 +91,9 @@ enum sock_type {
+ 	SOCK_SEQPACKET	= 5,
+ 	SOCK_DCCP	= 6,
+ 	SOCK_PACKET	= 10,
++
++	/* Flag values, ORed to the types above.  */
++	SOCK_CLOEXEC	= 0x40000000
+ };
+ 
+ #define SOCK_MAX (SOCK_PACKET + 1)
+diff --git a/net/socket.c b/net/socket.c
+index 9b5c917..e144f8a 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -348,11 +348,11 @@ static struct dentry_operations sockfs_dentry_operations = {
+  *	but we take care of internal coherence yet.
+  */
+ 
+-static int sock_alloc_fd(struct file **filep)
++static int sock_alloc_fd(struct file **filep, int flags)
+ {
+ 	int fd;
+ 
+-	fd = get_unused_fd();
++	fd = get_unused_fd_flags(flags);
+ 	if (likely(fd >= 0)) {
+ 		struct file *file = get_empty_filp();
+ 
+@@ -395,10 +395,10 @@ static int sock_attach_fd(struct socket *sock, struct file *file)
+ 	return 0;
+ }
+ 
+-int sock_map_fd(struct socket *sock)
++static int sock_map_fd_flags(struct socket *sock, int flags)
+ {
+ 	struct file *newfile;
+-	int fd = sock_alloc_fd(&newfile);
++	int fd = sock_alloc_fd(&newfile, flags);
+ 
+ 	if (likely(fd >= 0)) {
+ 		int err = sock_attach_fd(sock, newfile);
+@@ -413,6 +413,11 @@ int sock_map_fd(struct socket *sock)
+ 	return fd;
+ }
+ 
++int sock_map_fd(struct socket *sock)
++{
++	return sock_map_fd_flags(sock, 0);
++}
++
+ static struct socket *sock_from_file(struct file *file, int *err)
+ {
+ 	if (file->f_op == &socket_file_ops)
+@@ -1217,12 +1222,19 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+ {
+ 	int retval;
+ 	struct socket *sock;
++	int fflags = 0;
++
++	/* Extract the close-on-exec flag.  */
++	if ((type & SOCK_CLOEXEC) != 0) {
++		fflags = O_CLOEXEC;
++		type &= ~SOCK_CLOEXEC;
++	}
+ 
+ 	retval = sock_create(family, type, protocol, &sock);
+ 	if (retval < 0)
+ 		goto out;
+ 
+-	retval = sock_map_fd(sock);
++	retval = sock_map_fd_flags(sock, fflags);
+ 	if (retval < 0)
+ 		goto out_release;
+ 
+@@ -1245,6 +1257,13 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	struct socket *sock1, *sock2;
+ 	int fd1, fd2, err;
+ 	struct file *newfile1, *newfile2;
++	int fflags = 0;
++
++	/* Extract the close-on-exec flag.  */
++	if ((type & SOCK_CLOEXEC) != 0) {
++		fflags = O_CLOEXEC;
++		type &= ~SOCK_CLOEXEC;
++	}
+ 
+ 	/*
+ 	 * Obtain the first socket and check if the underlying protocol
+@@ -1263,13 +1282,13 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	if (err < 0)
+ 		goto out_release_both;
+ 
+-	fd1 = sock_alloc_fd(&newfile1);
++	fd1 = sock_alloc_fd(&newfile1, fflags);
+ 	if (unlikely(fd1 < 0)) {
+ 		err = fd1;
+ 		goto out_release_both;
+ 	}
+ 
+-	fd2 = sock_alloc_fd(&newfile2);
++	fd2 = sock_alloc_fd(&newfile2, fflags);
+ 	if (unlikely(fd2 < 0)) {
+ 		err = fd2;
+ 		put_filp(newfile1);
+@@ -1425,7 +1444,7 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+ 	 */
+ 	__module_get(newsock->ops->owner);
+ 
+-	newfd = sock_alloc_fd(&newfile);
++	newfd = sock_alloc_fd(&newfile, 0);
+ 	if (unlikely(newfd < 0)) {
+ 		err = newfd;
+ 		sock_release(newsock);
