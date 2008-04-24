@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762328AbYDXSgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763203AbYDXShk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762328AbYDXSgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 14:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757917AbYDXSeY
+	id S1763203AbYDXShk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 14:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYDXSe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 14:34:24 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:50953 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYDXSeQ (ORCPT
+	Thu, 24 Apr 2008 14:34:28 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:60581 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754581AbYDXSeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 14:34:16 -0400
-Message-Id: <20080424183242.692694606@mail.of.borg>
+	Thu, 24 Apr 2008 14:34:18 -0400
+Message-Id: <20080424183241.519336114@mail.of.borg>
 References: <20080424182940.424312704@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 20:29:49 +0200
+Date: Thu, 24 Apr 2008 20:29:44 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 09/15] m68k: dnfb doesnt check for Apollo
-Content-Disposition: inline; filename=m68k-dnfb-breaks-multi-platform.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 04/15] m68k: Kill CONFIG_WHIPPET_SERIAL
+Content-Disposition: inline; filename=m68k-whippet-serial-no-longer-exists.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-The Apollo frame buffer device driver (dnfb) doesn't check whether it's
-actually running on Apollo hardware, causing a crash if it isn't.
+The Hisoft Whippet PCMCIA serial driver has been removed a long time ago, but
+it's Kconfig symbol still existed.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/dnfb.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/m68k/Kconfig |    7 -------
+ 1 file changed, 7 deletions(-)
 
---- a/drivers/video/dnfb.c
-+++ b/drivers/video/dnfb.c
-@@ -284,6 +284,9 @@ int __init dnfb_init(void)
- {
- 	int ret;
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -539,13 +539,6 @@ config AMIGA_BUILTIN_SERIAL
  
-+	if (!MACH_IS_APOLLO)
-+		return -ENODEV;
-+
- 	if (fb_get_options("dnfb", NULL))
- 		return -ENODEV;
+ 	  To compile this driver as a module, choose M here.
  
+-config WHIPPET_SERIAL
+-	tristate "Hisoft Whippet PCMCIA serial support"
+-	depends on AMIGA_PCMCIA
+-	help
+-	  HiSoft has a web page at <http://www.hisoft.co.uk/>, but there
+-	  is no listing for the Whippet in their Amiga section.
+-
+ config MULTIFACE_III_TTY
+ 	tristate "Multiface Card III serial support"
+ 	depends on AMIGA
 
 -- 
 Gr{oetje,eeting}s,
