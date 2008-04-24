@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYDXWnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYDXWoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYDXWnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 18:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYDXWnN
+	id S1756760AbYDXWoo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 18:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbYDXWoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 18:43:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42633 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754751AbYDXWnM (ORCPT
+	Thu, 24 Apr 2008 18:44:34 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34317 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754834AbYDXWod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 18:43:12 -0400
-Date: Thu, 24 Apr 2008 15:41:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-In-Reply-To: <4811090A.9030809@gmail.com>
-Message-ID: <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>  <480D1CF1.7010300@gmail.com> <480D208A.9050909@gmail.com>  <200804220254.45251.rjw@sisk.pl>  <alpine.LFD.1.10.0804211759030.2779@woody.linux-foundation.org>  <480DB493.6080004@gmail.com>
- <20080422095315.GA28014@elte.hu>  <c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>  <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org> <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
- <4811090A.9030809@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Apr 2008 18:44:33 -0400
+Date: Thu, 24 Apr 2008 18:39:07 -0400
+Message-Id: <200804242239.m3OMd7hO020968@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Al Viro <viro@zeniv.linux.org.uk>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
+In-reply-to: Your message of "Thu, 24 Apr 2008 15:16:30 CDT."
+             <20080424201630.GC18686@localhost.austin.ibm.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 25 Apr 2008, Jiri Slaby wrote:
+In message <20080424201630.GC18686@localhost.austin.ibm.com>, Michael Halcrow writes:
+> On Thu, Apr 24, 2008 at 03:40:03PM -0400, Erez Zadok wrote:
+> > Ah, I see.  Yes: ecryptfs_init_persistent_file does have this odd
+> > "try to open readwrite and if that failed, try readonly" code there.
+> > I can't really say why it's done that way: Mike?  Maybe it was a
+> > workaround to not having the right permissions to open that
+> > persistent file?
 > 
-> 20 arpings running on wlan0 (don't know if this is related so far), suspend,
-> resume, right after resume:
+> The notion was that of "best effort," and it is sloppy.
 > 
-> freed 114
-> alloced 115
-> freed 115
-> alloced 116
-> WHAT THE HELL (000a3ff8):
-> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+> I think the right way to do it will be to allow up to two persistent
+> files. If the user with read-only perms opens, then open the
+> persistent file RO. Then a user with write-only (but not read) perms
+> opens; open another persistent file WO. Allow subsequent reads or
+> writes by the various users to go through whichever persistent file
+> has the right access. Then a user with RW access opens the file; close
+> both the RO file and the WO file and open a new file RW. All the
+> while, make sure that ecryptfs_open() performs all the requisite perm
+> checks.
 
-Very interesting indeed.
+Correct me if I'm wrong, but what you call "persistent" file is simply (in
+my stacking-speek :-) the lower file, right?  If so, then calling it
+persistent may be confusing, b/c you could be stacked on top of a volatile
+f/s (e.g., tmpfs or even *gasp* another stackable f/s) -- yes, even if it
+may not make much sense from a security perspective.
 
-> Shouldn't be 2.6.25 uttered as broken until this is solved to not corrupt
-> anyone's data? I'm going to play with that testing program further in the
-> meantime.
+The comment above ecryptfs_init_persistent_file() states that you only ever
+keep a single open file for every lower inode.  Was this a security decision
+(say, to prevent different access modes to the same ciphertext?); or was
+that the attempt to workaround the limitation of the
+address_space_operations API (that ->writepage doesn't get a struct file,
+which you need to pass to vfs_write)?
 
-Do you actually see this with _plain_ 2.6.25? So far I've assumed that all 
-the reports are about post-2.6.25 issues.
+I'm unclear what you mean above wrt two open files: do you mean
 
-Also, it does seem like you can re-create this at will in ways that others 
-can not. Could you try to bisect it a bit? Right now we have no real clue 
-what it is all about, except that it seems to be related to suspend/resume 
-and there are some indications that it's about networking (and _perhaps_ 
-wireless in particular).
+1. two struct file's, each pointing to a SEPARATE copy of the physical lower
+  file?
+	or
+2. two struct file's, BOTH pointing to the same lower physical file?
 
-		Linus
+Option #1 may be racy and I'm not clear what happens if a data file gets
+'forked' that way: do you then have to merge it later on?
+
+Or, are you propsing to keep alternating b/t an open struct file for RO, and
+another open struct file for RW (or WO)?  If you alternate b/t the two,
+keeping only one open at a time, what happens if two threads want to access
+the same file: one reading and another writing the file.  Does that mean
+that for every read(2) or write(2) you'll have to essentially release one
+open file and open another (could slow things down a lot)?
+
+> If this sounds reasonable, I will get working on a patch to do this.
+> 
+> Mike
+
+Cheers,
+Erez.
