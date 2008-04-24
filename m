@@ -1,168 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbYDXPkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbYDXPlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760732AbYDXPkE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbYDXPjt
+	id S1763675AbYDXPlJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbYDXPkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:39:49 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37263
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYDXPjq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:39:46 -0400
-Date: Thu, 24 Apr 2008 17:39:43 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080424153943.GJ24536@duo.random>
-References: <ea87c15371b1bd49380c.1208872277@duo.random> <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com> <20080423002848.GA32618@sgi.com> <20080423163713.GC24536@duo.random> <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com>
+	Thu, 24 Apr 2008 11:40:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42478 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754919AbYDXPkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:40:53 -0400
+Message-ID: <4810A9E6.1080201@garzik.org>
+Date: Thu, 24 Apr 2008 11:40:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080424095112.GC30298@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [git patch] free_irq() fixes
+References: <20080422221733.GA16260@havoc.gtf.org> <alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org> <480E6DE5.6010103@garzik.org> <alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org> <480E796E.4070001@garzik.org> <alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org> <20080423000529.GG28933@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org> <480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org> <alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org> <m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org> <alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 04:51:12AM -0500, Robin Holt wrote:
-> It seems to me the work done by mmu_notifier_mm_destroy should really
-> be done inside the mm_lock()/mm_unlock area of mmu_unregister and
+Linus Torvalds wrote:
+> The absolutely _only_ piece of reliably information we have that is 
+> architecture- and irq-controller neutral is the exact information we pass 
+> in to "request_irq()". That is: irq number, the name, and the device 
+> cookie thing. Nothing more.
 
-There's no mm_lock/unlock for mmu_unregister anymore. That's the whole
-point of using srcu so it becomes reliable and quick.
+Agreed.
 
-> mm_notifier_release when we have removed the last entry.  That would
-> give the users job the same performance after they are done using the
-> special device that they had prior to its use.
+However, it does not follow that an int is what _must_ be passed around. 
+  We already have design patterns like
 
-That's not feasible. Otherwise mmu_notifier_mm will go away at any
-time under both _release from exit_mmap and under _unregister
-too. exit_mmap holds an mm_count implicit, so freeing mmu_notifier_mm
-after the last mmdrop makes it safe. mmu_notifier_unregister also
-holds the mm_count because mm_count was pinned by
-mmu_notifier_register. That solves the issue with mmu_notifier_mm
-going away from under mmu_notifier_unregister and _release and that's
-why it can only be freed after mm_count == 0.
+	cookie_pointer = ioremap(raw bus resource)
 
-There's at least one small issue I noticed so far, that while _release
-don't need to care about _register, but _unregister definitely need to
-care about _register. I've to take the mmap_sem in addition or in
-replacement of the unregister_lock. The srcu_read_lock can also likely
-moved just before releasing the unregister_lock but that's just a
-minor optimization to make the code more strict.
+Not that I am the one pushing for that, just noting.
 
-> On Thu, Apr 24, 2008 at 08:49:40AM +0200, Andrea Arcangeli wrote:
-> ...
-> > diff --git a/mm/memory.c b/mm/memory.c
-> > --- a/mm/memory.c
-> > +++ b/mm/memory.c
-> ...
-> > @@ -603,25 +605,39 @@
-> >  	 * readonly mappings. The tradeoff is that copy_page_range is more
-> >  	 * efficient than faulting.
-> >  	 */
-> > +	ret = 0;
-> >  	if (!(vma->vm_flags & (VM_HUGETLB|VM_NONLINEAR|VM_PFNMAP|VM_INSERTPAGE))) {
-> >  		if (!vma->anon_vma)
-> > -			return 0;
-> > +			goto out;
-> >  	}
-> >  
-> > -	if (is_vm_hugetlb_page(vma))
-> > -		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
-> > +	if (unlikely(is_vm_hugetlb_page(vma))) {
-> > +		ret = copy_hugetlb_page_range(dst_mm, src_mm, vma);
-> > +		goto out;
-> > +	}
-> >  
-> > +	if (is_cow_mapping(vma->vm_flags))
-> > +		mmu_notifier_invalidate_range_start(src_mm, addr, end);
-> > +
-> > +	ret = 0;
+Overall this is all wild-assed speculation based on a thought 
+exploration (#irq-remove) that a several kernel hackers seemed to like.
+
+
+>  - the "device cookie". This is the thing that the system itself doesn't 
+>    care about, and is _entirely_ under control of the driver, so the 
+>    driver can pass its own interrupt controller some helpful instance 
+>    pointers.
 > 
-> I don't think this is needed.
+> So of the three, "device cookie" is the one that we absolutely have to 
+> have. The irq number is not necessary, but it does actually have some 
+> meaning especially for legacy devices (eg ISA), and it is at least 
+> _sensible_ to pass around (ie it has no downsides, and it's not 
+> fundamentally broken). And the name would be just stupid.
 
-It's not needed right, but I thought it was cleaner if they all use
-"ret" after I had to change the code at the end of the
-function. Anyway I'll delete this to make the patch shorter and only
-change the minimum, agreed.
+Agreed.
 
-> ...
-> > +/* avoid memory allocations for mm_unlock to prevent deadlock */
-> > +void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data)
-> > +{
-> > +	if (mm->map_count) {
-> > +		if (data->nr_anon_vma_locks)
-> > +			mm_unlock_vfree(data->anon_vma_locks,
-> > +					data->nr_anon_vma_locks);
-> > +		if (data->i_mmap_locks)
-> 
-> I think you really want data->nr_i_mmap_locks.
 
-Indeed. It never happens that there are zero vmas with filebacked
-mappings, this is why this couldn't be triggered in practice, thanks!
+> EVERYTHING else would be architecture-specific. And that is exactly what 
+> we do not want. EVER. 
 
-> The second paragraph of this comment seems extraneous.
+Not true -- you have metadata/OOB data like MSI messages, where you are 
+passed a value from the PCI hardware in the PCI message, not just an 
+"interrupt asserted" condition.  Or s/value/values/ if you enable PCI 
+MSI's multiple message support.
 
-ok removed.
+The PCI devices themselves are moving from sending a single bit of 
+information ("irq!") to sending actual messages.
 
-> > +	/*
-> > +	 * Wait ->release if mmu_notifier_unregister run list_del_rcu.
-> > +	 * srcu can't go away from under us because one mm_count is
-> > +	 * hold by exit_mmap.
-> > +	 */
-> 
-> These two sentences don't make any sense to me.
+That is not arch-specific at all, but a new model for "interrupt" (i.e. 
+event) notification being pushed upon us.
 
-Well that was a short explanation of why the mmu_notifier_mm structure
-can only be freed after the last mmdrop, which is what you asked at
-the top. I'll try to rephrase.
+	Jeff
 
-> > +void mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
-> > +{
-> > +	int before_release = 0, srcu;
-> > +
-> > +	BUG_ON(atomic_read(&mm->mm_count) <= 0);
-> > +
-> > +	srcu = srcu_read_lock(&mm->mmu_notifier_mm->srcu);
-> > +	spin_lock(&mm->mmu_notifier_mm->unregister_lock);
-> > +	if (!hlist_unhashed(&mn->hlist)) {
-> > +		hlist_del_rcu(&mn->hlist);
-> > +		before_release = 1;
-> > +	}
-> > +	spin_unlock(&mm->mmu_notifier_mm->unregister_lock);
-> > +	if (before_release)
-> > +		/*
-> > +		 * exit_mmap will block in mmu_notifier_release to
-> > +		 * guarantee ->release is called before freeing the
-> > +		 * pages.
-> > +		 */
-> > +		mn->ops->release(mn, mm);
-> 
-> I am not certain about the need to do the release callout when the driver
-> has already told this subsystem it is done.  For XPMEM, this callout
-> would immediately return.  I would expect it to be the same or GRU.
 
-The point is that you don't want to run it twice. And without this you
-will have to serialize against ->release yourself in the driver. It's
-much more convenient if you know that ->release will be called just
-once, and before mmu_notifier_unregister returns. It could be called
-by _release even after you're already inside _unregister, _release may
-reach the spinlock before _unregister, you won't notice the
-difference. Solving this race in the driver looked too complex, I
-rather solve it once inside the mmu notifier code to be sure. Missing
-a release event is fatal because all sptes have to be dropped before
-_release returns. The requirement is the same for _unregister, all
-sptes have to be dropped before it returns. ->release should be able
-to sleep as long as it wants even with only 1/N applied. exit_mmap can
-sleep too, no problem. You can't unregister inside ->release first of
-all because 'ret' instruction must be still allocated to return to mmu
-notifier code.
