@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbYDXPb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbYDXPbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765287AbYDXPb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763020AbYDXPWI
+	id S1765036AbYDXPbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762678AbYDXPUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:22:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56310 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbYDXPWG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:22:06 -0400
-Date: Thu, 24 Apr 2008 16:21:29 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-Message-ID: <20080424152129.GK15214@ZenIV.linux.org.uk>
-References: <20080424113950.818688067@szeredi.hu> <20080424124245.GC15214@ZenIV.linux.org.uk> <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk> <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
+	Thu, 24 Apr 2008 11:20:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39112 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762605AbYDXPUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:20:53 -0400
+Message-ID: <4810A4FF.7030004@redhat.com>
+Date: Thu, 24 Apr 2008 08:19:27 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       michael.kerrisk@gmail.com, linux-man@vger.kernel.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>	<20080424112514.055d8071@the-village.bc.nu>	<517f3f820804240534r3bbbdc52s52a6dfe3f2d14b7f@mail.gmail.com>	<48109DFB.900@redhat.com> <20080424154220.3dae36a1@the-village.bc.nu>
+In-Reply-To: <20080424154220.3dae36a1@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 04:58:00PM +0200, Miklos Szeredi wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Since all the vfs_* functions will become static with path_* being the
-> only caller, the compiler will be happy to get rid of that stack frame
-> too.
-> 
-> What is left is the guarantee, that the race-free r/o remounts will
-> always work and some obscure caller didn't forget to surround it with
-> the r/o checks.
-> 
-> I think it's definitely worth it.
+Alan Cox wrote:
+> We shouldn't be seeing this as a Linux problem, its a BSD problem, an AIX
+> problem, a Solaris problem and an HPUX problem and really wants one
+> solution applying across distributions or it will harm everyone in the
+> long term.
 
-It would be, if we had only single vfs_...() as critical sections.  We
-do not - see previous mail or read the fucking tree, already.
+Look at the other interfaces.  I've proposed them for POSIX and they are
+going to be in the next revision (O_CLOEXEC, F_DUPFD_CLOEXEC).  I'm
+confident that whatever we'll do will be endorsed this way.  It's just
+too late for the next revision, it'd have to wait a few years until work
+on the next revision (esp reviews) start.  That's too long.
 
-We don't even have many callers of each, and with a few we do it's not
-obvious that we want to go through vfsmounts (and vfsmount-based checks)
-in all of them.  So no, I don't buy your argument.  Sorry.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-I'm not even convinced that they are useful as helpers, at least until
-we'd decided what to do with checks in nfsd.  Until then we do, as
-far as I'm concerned, one place where they would definitely DTRT - fs/namei.c.
-And I want more than one caller before merging those, let alone removing
-the interface that doesn't require checks to be vfsmount-based for all users.
+iD8DBQFIEKT/2ijCOnn/RHQRAkyoAJ9/FRwN3r6zg2cSvzVrA2TiGlfergCdG1r9
+H/UghrO5A99ieG6O7wXvu7I=
+=pUfi
+-----END PGP SIGNATURE-----
