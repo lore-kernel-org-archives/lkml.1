@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbYDXNBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbYDXNCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759581AbYDXNBB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 09:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYDXNAv
+	id S1759822AbYDXNCJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 09:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYDXNB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 09:00:51 -0400
-Received: from homer.mvista.com ([63.81.120.155]:64177 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751780AbYDXNAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 09:00:50 -0400
-Message-ID: <4810845C.1000508@ru.mvista.com>
-Date: Thu, 24 Apr 2008 17:00:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 24 Apr 2008 09:01:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34189 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753290AbYDXNB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 09:01:56 -0400
+Message-ID: <481084AE.5030607@garzik.org>
+Date: Thu, 24 Apr 2008 09:01:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [2.6 patch] select ATA_SFF
-References: <20080421213147.GH2633@cs181133002.pp.htv.fi>	<480DE3C4.5@ru.mvista.com>	<480DE6F5.8060403@gmail.com>	<480DE9E8.2070809@ru.mvista.com>	<480DEB1F.5060500@gmail.com> <20080424123541.09e5ef96@the-village.bc.nu> <481080EA.7010107@ru.mvista.com> <48108208.8060302@rtr.ca>
-In-Reply-To: <48108208.8060302@rtr.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alpha: fix legacy mode PCI IDE controllers
+References: <20080424125155.GA5048@jurassic.park.msu.ru>
+In-Reply-To: <20080424125155.GA5048@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
+Ivan Kokshaysky wrote:
+> Legacy IDE resources were never properly allocated on most
+> alpha platforms, so IDE expectedly stopped working after
+> commit 10f000a2fd805e8ccfe988e8615545467bb7f7df (generic
+> pci_enable_resources).
+> 
+> Always allocate "fixed" PCI resources before doing anything else;
+> remove Cypress IDE quirk, as it's a generic problem which is
+> handled in common PCI probe code.
+> 
+> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
->>>>>>>   Jeff, Tejun, what "sff" in the file name actually means? Isn't 
->>>>>>> it strange that the drivers lacking DMA support or not really 
->>>>>>> compliant with SFF-8038i have to link with this file?
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
->>>>>> Maybe it should be libata-tf and libata-bmdma, but sff (sans bmdma)
->>>>>> and bmdma is acceptable, hopefully, right?
 
->>>>>   What's sff sans bmdma?
-
->>>> Supposed to be TF interface.  IIRC, the SFF term was first from Alan 
->>>> although it's entirely possible that I misunderstood it and used it 
->>>> in the wrong way.  Alan, can you please clear up the confusion?
-
->>> The SFF/Intel spec is for PCI IDE (BMDMA or otherwise), so it covers and
->>> defines all the common bits of the IDE interface on PCI (and in defining
->>> the legacy interface conveniently documents the extended ST-412 
->>> interface
->>> used by ATA and "pre-ATA" IDE/EIDE controllers).
-
->>    If you mean SFF-8038i (which can indeed be named "SFF/Intel"), it
->> documents *only* BMDMA.  If you mean something else, please be more 
->> precise.
-
-> ..
-
-> The "Intel PCI IDE Controller Specification Revision 1.0 3/4/94" doesn't 
-
-    This is not an SFF spec.
-
-> mention
-> bmdma at all, but does document the taskfile register addresses.
-> It defers to ATA-1 for actual taskfile descriptions/functionality, though.
-
-    Yes, it only describes deviation from "historical" IDE, i.e. the missing 
-drive address register (port 0x3[7F]7).
-
-> There's nothing particularly bad about the current naming we use, though.
-
-    There wouldn't have been anything bad if that file wasn't covering both 
-taskfile and  BMDMA stuff.  This way, it looks misleading (at least for me).
-
-> Cheers
-
-WBR, Sergei
