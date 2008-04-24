@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYDXTVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762398AbYDXTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYDXTVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 15:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760712AbYDXTUy
+	id S1762398AbYDXTZG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761925AbYDXTYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 15:20:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:35822 "EHLO ozlabs.org"
+	Thu, 24 Apr 2008 15:24:51 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51950 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760659AbYDXTUx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 15:20:53 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] x86: Fix non-kernel use of include/linux/types.h
-Date: Fri, 25 Apr 2008 05:20:38 +1000
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Joe Perches <joe@perches.com>
-References: <200804250114.38971.rusty@rustcorp.com.au> <20080424160101.GA18854@cs181133002.pp.htv.fi>
-In-Reply-To: <20080424160101.GA18854@cs181133002.pp.htv.fi>
+	id S1761891AbYDXTYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 15:24:50 -0400
+Date: Thu, 24 Apr 2008 22:24:03 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] latest git: DEV_BLK_4DRIVES should be a tristate
+Message-ID: <20080424192403.GB18854@cs181133002.pp.htv.fi>
+References: <20080424150717.GA32700@slug>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804250520.39124.rusty@rustcorp.com.au>
+In-Reply-To: <20080424150717.GA32700@slug>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 April 2008 02:01:01 Adrian Bunk wrote:
-> On Fri, Apr 25, 2008 at 01:14:38AM +1000, Rusty Russell wrote:
-> > In file included from ../../include/linux/if_tun.h:21,
-> >                  from lguest.c:30:
-> > ../../include/linux/types.h:203: error: expected specifier-qualifier-list
-> > before ‘__kernel_daddr_t’
-> >
-> > This reversion was created by e40c0fe6b0b5dd16aec3c0dad311d36b19d78fd9
-> > 'x86: cleanup duplicate includes' which removed the !__KERNEL__ case from
-> > asm-x86/posix_types.h.
->
-> I'd actually prefer my patch [1] that:
-> - reverts to the 2.6.24 status quo since we shouldn't leak CONFIG_* to
->   userspace at all and
-> - also fixes the same regression in unistd.h
+On Thu, Apr 24, 2008 at 05:07:17PM +0200, Frederik Deweerdt wrote:
+> Hello Bartlomiej,
+> 
+> The 4drives should be a tristate, the following breakage occurs
+> otherwise:
+> ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
+>...
 
-Yep, prefer your patch too.
+"ide: remove obsoleted "idex=" kernel parameters" will already fix this 
+breakage.
 
-Cheers,
-Rusty.
+Bart, can you push this patch?
+
+> Regards,
+> Frederik
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
