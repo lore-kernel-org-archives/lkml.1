@@ -1,137 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbYDXPSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbYDXPSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761433AbYDXPSg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759468AbYDXPOs
+	id S1761608AbYDXPSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbYDXPOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:14:48 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56061 "EHLO smtp.polymtl.ca"
+	Thu, 24 Apr 2008 11:14:49 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56066 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759348AbYDXPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754653AbYDXPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Apr 2008 11:14:43 -0400
-Message-Id: <20080424151407.622943449@polymtl.ca>
+Message-Id: <20080424151356.476361987@polymtl.ca>
 References: <20080424150324.802695381@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Apr 2008 11:03:58 -0400
+Date: Thu, 24 Apr 2008 11:03:35 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 34/37] LTTng instrumentation ipc
-Content-Disposition: inline; filename=lttng-instrumentation-ipc.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:14:07 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Roel Kluin <12o3l@tiscali.nl>
+Subject: [patch 11/37] Text Edit Lock - kprobes architecture independent support
+Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent-support.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Apr 2008 15:13:57 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interprocess communication, core events.
+Use the mutual exclusion provided by the text edit lock in the kprobes code. It
+allows coherent manipulation of the kernel code by other subsystems.
 
-Added markers :
+Changelog:
 
-ipc_msg_create
-ipc_sem_create
-ipc_shm_create
+Move the kernel_text_lock/unlock out of the for loops.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+CC: Roel Kluin <12o3l@tiscali.nl>
 ---
- ipc/msg.c |    6 +++++-
- ipc/sem.c |    6 +++++-
- ipc/shm.c |    6 +++++-
- 3 files changed, 15 insertions(+), 3 deletions(-)
+ kernel/kprobes.c |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng/ipc/msg.c
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/ipc/msg.c	2008-03-27 07:40:09.000000000 -0400
-+++ linux-2.6-lttng/ipc/msg.c	2008-03-27 07:40:12.000000000 -0400
-@@ -37,6 +37,7 @@
- #include <linux/rwsem.h>
- #include <linux/nsproxy.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/marker.h>
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2008-04-09 10:52:51.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2008-04-09 10:52:57.000000000 -0400
+@@ -43,6 +43,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
+ #include <linux/kdebug.h>
++#include <linux/memory.h>
  
- #include <asm/current.h>
- #include <asm/uaccess.h>
-@@ -293,6 +294,7 @@ asmlinkage long sys_msgget(key_t key, in
- 	struct ipc_namespace *ns;
- 	struct ipc_ops msg_ops;
- 	struct ipc_params msg_params;
-+	long ret;
+ #include <asm-generic/sections.h>
+ #include <asm/cacheflush.h>
+@@ -577,9 +578,10 @@ static int __kprobes __register_kprobe(s
+ 		goto out;
+ 	}
  
- 	ns = current->nsproxy->ipc_ns;
++	kernel_text_lock();
+ 	ret = arch_prepare_kprobe(p);
+ 	if (ret)
+-		goto out;
++		goto out_unlock_text;
  
-@@ -303,7 +305,9 @@ asmlinkage long sys_msgget(key_t key, in
- 	msg_params.key = key;
- 	msg_params.flg = msgflg;
+ 	INIT_HLIST_NODE(&p->hlist);
+ 	hlist_add_head_rcu(&p->hlist,
+@@ -587,7 +589,8 @@ static int __kprobes __register_kprobe(s
  
--	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
-+	ret = ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
-+	trace_mark(ipc_msg_create, "id %ld flags %d", ret, msgflg);
-+	return ret;
- }
+ 	if (kprobe_enabled)
+ 		arch_arm_kprobe(p);
+-
++out_unlock_text:
++	kernel_text_unlock();
+ out:
+ 	mutex_unlock(&kprobe_mutex);
  
- static inline unsigned long
-Index: linux-2.6-lttng/ipc/sem.c
-===================================================================
---- linux-2.6-lttng.orig/ipc/sem.c	2008-03-27 07:40:09.000000000 -0400
-+++ linux-2.6-lttng/ipc/sem.c	2008-03-27 07:40:12.000000000 -0400
-@@ -83,6 +83,7 @@
- #include <linux/rwsem.h>
- #include <linux/nsproxy.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/marker.h>
+@@ -630,8 +633,11 @@ valid_p:
+ 		 * enabled - otherwise, the breakpoint would already have
+ 		 * been removed. We save on flushing icache.
+ 		 */
+-		if (kprobe_enabled)
++		if (kprobe_enabled) {
++			kernel_text_lock();
+ 			arch_disarm_kprobe(p);
++			kernel_text_unlock();
++		}
+ 		hlist_del_rcu(&old_p->hlist);
+ 		cleanup_p = 1;
+ 	} else {
+@@ -729,7 +735,6 @@ static int __kprobes pre_handler_kretpro
+ 		}
  
- #include <asm/uaccess.h>
- #include "util.h"
-@@ -312,6 +313,7 @@ asmlinkage long sys_semget(key_t key, in
- 	struct ipc_namespace *ns;
- 	struct ipc_ops sem_ops;
- 	struct ipc_params sem_params;
-+	long err;
+ 		arch_prepare_kretprobe(ri, regs);
+-
+ 		/* XXX(hch): why is there no hlist_move_head? */
+ 		hlist_del(&ri->uflist);
+ 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
+@@ -951,11 +956,13 @@ static void __kprobes enable_all_kprobes
+ 	if (kprobe_enabled)
+ 		goto already_enabled;
  
- 	ns = current->nsproxy->ipc_ns;
++	kernel_text_lock();
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist)
+ 			arch_arm_kprobe(p);
+ 	}
++	kernel_text_unlock();
  
-@@ -326,7 +328,9 @@ asmlinkage long sys_semget(key_t key, in
- 	sem_params.flg = semflg;
- 	sem_params.u.nsems = nsems;
+ 	kprobe_enabled = true;
+ 	printk(KERN_INFO "Kprobes globally enabled\n");
+@@ -980,6 +987,7 @@ static void __kprobes disable_all_kprobe
  
--	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
-+	err = ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
-+	trace_mark(ipc_sem_create, "id %ld flags %d", err, semflg);
-+	return err;
- }
+ 	kprobe_enabled = false;
+ 	printk(KERN_INFO "Kprobes globally disabled\n");
++	kernel_text_lock();
+ 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
+ 		head = &kprobe_table[i];
+ 		hlist_for_each_entry_rcu(p, node, head, hlist) {
+@@ -987,6 +995,7 @@ static void __kprobes disable_all_kprobe
+ 				arch_disarm_kprobe(p);
+ 		}
+ 	}
++	kernel_text_unlock();
  
- /* Manage the doubly linked list sma->sem_pending as a FIFO:
-Index: linux-2.6-lttng/ipc/shm.c
-===================================================================
---- linux-2.6-lttng.orig/ipc/shm.c	2008-03-27 07:40:09.000000000 -0400
-+++ linux-2.6-lttng/ipc/shm.c	2008-03-27 07:40:12.000000000 -0400
-@@ -39,6 +39,7 @@
- #include <linux/nsproxy.h>
- #include <linux/mount.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/marker.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -482,6 +483,7 @@ asmlinkage long sys_shmget (key_t key, s
- 	struct ipc_namespace *ns;
- 	struct ipc_ops shm_ops;
- 	struct ipc_params shm_params;
-+	long err;
- 
- 	ns = current->nsproxy->ipc_ns;
- 
-@@ -493,7 +495,9 @@ asmlinkage long sys_shmget (key_t key, s
- 	shm_params.flg = shmflg;
- 	shm_params.u.size = size;
- 
--	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
-+	err = ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
-+	trace_mark(ipc_shm_create, "id %ld flags %d", err, shmflg);
-+	return err;
- }
- 
- static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
+ 	mutex_unlock(&kprobe_mutex);
+ 	/* Allow all currently running kprobes to complete */
 
 -- 
 Mathieu Desnoyers
