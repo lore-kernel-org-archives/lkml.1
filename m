@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761087AbYDXRdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbYDXRf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761087AbYDXRdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 13:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbYDXRdn
+	id S1761347AbYDXRf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 13:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYDXRfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 13:33:43 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38572 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbYDXRdn (ORCPT
+	Thu, 24 Apr 2008 13:35:10 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:52147 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755443AbYDXRfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 13:33:43 -0400
-Date: Thu, 24 Apr 2008 13:29:49 -0400
-Message-Id: <200804241729.m3OHTnNx016180@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
+	Thu, 24 Apr 2008 13:35:09 -0400
+Date: Thu, 24 Apr 2008 18:34:32 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-net@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
-In-reply-to: Your message of "Thu, 24 Apr 2008 15:28:57 BST."
-             <20080424142857.GF15214@ZenIV.linux.org.uk> 
-X-MailKey: Erez_Zadok
+Subject: Re: [PATCH] DM9000: Reimplement 2-resource device specification
+	(fwd)
+Message-ID: <20080424173432.GE16284@fluff.org.uk>
+References: <20080424125217.M52274@saturn.araneidae.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424125217.M52274@saturn.araneidae.co.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080424142857.GF15214@ZenIV.linux.org.uk>, Al Viro writes:
-> On Thu, Apr 24, 2008 at 04:09:18PM +0200, Miklos Szeredi wrote:
-[...]
-> FWIW, I'm not all that happy about the way ecryptfs_interpose() is done,
-> while we are at it.  We get the sucker opened by whoever steps on given
-> place in the tree first, with subsequent operations done using the resulting
-> struct file.  With fallback to r/o open.  What happens to somebody who
-> tries to open it with enough permissions to do r/w?
+On Thu, Apr 24, 2008 at 12:57:08PM +0000, Michael Abbott wrote:
+> From: Michael Abbott <michael.abbott@diamond.ac.uk>
+>
+> [PATCH] DM9000: Reimplement 2-resource device specification
+>
+> In commit 1a5f1c4ff80f522555d78d4dd0109f18395c6d83 a change was made to
+> the handling of the resources passed the DM9000 device.  Unfortunately,
+> if only two resources are passed (the read and write register in the same
+> area) the pointer db->irq_res ends up being used without being initialised.
+>
+> This patch tidies this up a little.  Only one architecture class,
+> blackfin, uses two resource specification, so it may be better to enforce
+> three resource specification as before by simply removing the 0 and 2
+> resource branches from dm9000_probe.
 
-Yes, ecryptfs_interpose() calls ecryptfs_init_persistent_file() which calls
-dentry_open(O_RDWR).  What's the proposed solution for this in the face of
-r/o vfsmounts?  How could ecryptfs avoid calling this dentry_open in the
-first place?
+I think then we should probably make the driver simpler and remove the
+special case for the two resources... any small saving of using just
+two resources is probably cancelled out by the extra code needed.
 
-For unionfs, all I need is return -EROFS or the like to trigger a possible
-copyup.
+> +#define res_size(_r) (((_r)->end - (_r)->start) + 1)
+> +
 
-Erez.
+I'd like to see something like this as an inline function in the
+relevant header, and some patches to get other users to find it.
+
+> -
+>  		if (pdata->outblk != NULL)
+>  			db->outblk = pdata->outblk;
+> -
+>  		if (pdata->dumpblk != NULL)
+>  			db->dumpblk = pdata->dumpblk;
+
+I'd rather not see spacing changes done, especially as I don't like
+to see lots of code cramped together. 
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
