@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbYDXQw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYDXQxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760383AbYDXQw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 12:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYDXQwq
+	id S1760910AbYDXQxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 12:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYDXQx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 12:52:46 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34464 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbYDXQwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 12:52:45 -0400
-Date: Thu, 24 Apr 2008 12:52:27 -0400
-Message-Id: <200804241652.m3OGqRGQ011996@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts 
-In-reply-to: Your message of "Thu, 24 Apr 2008 13:39:50 +0200."
-             <20080424113950.818688067@szeredi.hu> 
-X-MailKey: Erez_Zadok
+	Thu, 24 Apr 2008 12:53:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55084 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753303AbYDXQx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 12:53:27 -0400
+Message-ID: <4810BAE3.5070406@redhat.com>
+Date: Thu, 24 Apr 2008 09:52:51 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>,
+       David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] alternative to sys_indirect, part 1
+References: <200804240403.m3O43us8028699@devserv.devel.redhat.com>  <20080424112514.055d8071@the-village.bc.nu>  <alpine.LFD.1.10.0804240828100.2779@woody.linux-foundation.org>  <20080424.083908.147395158.davem@davemloft.net> <517f3f820804240903y788102bar5c7d1fa9bcee1c8a@mail.gmail.com> <alpine.LFD.1.10.0804240921460.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804240921460.2779@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080424113950.818688067@szeredi.hu>, Miklos Szeredi writes:
-> Patches 1-3 are cleanups/bugfixes preceding the main series.  The
-> description is in 4/13.  This is against latest git.
-> 
-> <rant>
-> 
-> R/O bind mounts patches have been reviewed numerous times.  Still a
-> relatively large number of places remained where checking for R/O
-> mounts was missed.
-> 
-> Then I did this series, which basically guarantees, that that cannot
-> happen.  Al rejected it, and rather fixed some of the remaining
-> places.  He still missed several, which sort of proves my point.
-> 
-> I think it's totally pointless to continue trying to fix the symptoms
-> instead of getting at the root of the problem.
-> 
-> I know that VFS interfaces are a sensitive question, but it would be
-> nice it we could have some sanity back in this discussion.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-And I'll reiterate my desire (see http://lkml.org/lkml/2008/4/8/394) for
-stackable file systems to know as little as possible about vfsmounts (or
-their derivatives ala struct path).  If I have to call helpers which require
-vfsmounts, but similar objects don't get passed to me somehow, then I have
-to maintain vfsmounts on my own.
+Linus Torvalds wrote:
+> So while I don't dislike the indirect system call, I do think that if we 
+> can handle a large case of the problems with an added flag to already 
+> existing system calls,
 
-Sure, unionfs already does some of it now (and some of it can be recoded
-more cleanly), but I'd like to get rid of much of it if I could -- these new
-path_* helpers make me have to maintain vfsmounts even moreso than before.
+The easy, clean cases I already handled back when.  I wouldn't have
+implemented socket this way to preserve the function signature but
+that's just me.  It's hopefully over now.
 
-> </rant>
-> 
-> Thanks,
-> Miklos
+What remains isn't that easy to fix.  We need syscall interface changes.
+ Yes, I'd like to avoid them, too.  But sometimes the existing
+interfaces are just wrong and now we have to make a decision: new
+syscalls or sys_indirect.  No way around it.
 
-Erez.
+As far as the userlevel interface is concerned, this is not quite the
+same.  As explained before, I've anticipated some of the problems.
+signalfd, eventfd have no flags parameter in the syscall but I have them
+in the userlevel interface.  I.e., any kernel change will be hidden.  At
+least as far as the interface signature is concerned.
+
+
+So, the question still is on the table: do you want sys_indirect?
+
+If yes, then then new sys_accept would use sys_indirect instead of a new
+entry point.  If you don't want sys_indirect, then I'll submit a new
+sys_accept syscall (already have the patch here ready to go).
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFIELrj2ijCOnn/RHQRAtewAJ4+826rxwtckEvvOaXdiNSr/5ECPACfWwTn
+hgt5EYrrj/imBloPE7DxHJA=
+=T6LW
+-----END PGP SIGNATURE-----
