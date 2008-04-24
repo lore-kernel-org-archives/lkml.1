@@ -1,119 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYDXKuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYDXKuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYDXKuN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 06:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDXKt7
+	id S1757635AbYDXKuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 06:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYDXKug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 06:49:59 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12725 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYDXKt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 06:49:57 -0400
-Date: Thu, 24 Apr 2008 12:49:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080424104945.GV12774@kernel.dk>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <1207628587.7535.8.camel@charm-linux> <20080423074518.GA12774@kernel.dk> <1209011553.9808.10.camel@charm-linux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209011553.9808.10.camel@charm-linux>
+	Thu, 24 Apr 2008 06:50:36 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36427 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751585AbYDXKuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 06:50:35 -0400
+Date: Thu, 24 Apr 2008 11:21:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH2] Basic braille screen reader support
+Message-ID: <20080424112126.674acf7d@the-village.bc.nu>
+In-Reply-To: <20080424003900.GO4825@implementation>
+References: <20080204031842.GE4439@implementation>
+	<20080205220054.GD4394@implementation>
+	<20080205165853.561d5f3d.akpm@linux-foundation.org>
+	<20080206020423.GG4394@implementation>
+	<20080222002822.GB32480@implementation>
+	<20080223000410.674ce674.akpm@linux-foundation.org>
+	<20080223131028.GC4244@implementation>
+	<20080424003900.GO4825@implementation>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23 2008, Tom Zanussi wrote:
-> 
-> On Wed, 2008-04-23 at 09:45 +0200, Jens Axboe wrote:
-> > On Mon, Apr 07 2008, Tom Zanussi wrote:
-> > > 
-> > > On Fri, 2008-03-14 at 14:22 +0100, Christof Schmitt wrote:
-> > > > plain text document attachment (Re: blktrace/relay/s390: Oops in
-> > > > subbuf_splice_actor.eml)
-> > > > On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > > > > On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > > > > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > > > > > That is indeed a bug, does this work for you?
-> > > > > > > 
-> > > > > > > diff --git a/kernel/relay.c b/kernel/relay.c
-> > > > > > > index d080b9d..39d1fa8 100644
-> > > > > > > --- a/kernel/relay.c
-> > > > > > > +++ b/kernel/relay.c
-> > > > > > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > > > > > >  			       unsigned int flags,
-> > > > > > >  			       int *nonpad_ret)
-> > > > > > >  {
-> > > > > > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > > > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > > > > >  	struct rchan_buf *rbuf = in->private_data;
-> > > > > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > > > > >  	uint64_t pos = (uint64_t) *ppos;
-> > > > > > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > > > > > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > > > > > >  	poff = read_start & ~PAGE_MASK;
-> > > > > > > 
-> > > > > > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > > > > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > > > > > +
-> > > > > > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > > > > > >  		unsigned int this_len, this_end, private;
-> > > > > > >  		unsigned int cur_pos = read_start + total_len;
-> > > > > > 
-> > > > > > With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > > > > > oops. But the output from blktrace only contains only zeros and no
-> > > > > > usable data for blkparse. Using blktrace to write the data directly to
-> > > > > > disk, without using the blktrace server works. Is there anything i
-> > > > > > should look for to help debugging the problem?
-> > > > > 
-> > > > > We should probably get Tom in the loop, as he is the relay expert. I'll
-> > > > > make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > > > > that needs fixing.
-> > > > 
-> > > > http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > > > his email address seems to be no longer valid. I copy Dave Wilder
-> > > > here, since he is mentioned as relay maintainer on the web page.
-> > > > 
-> > > 
-> > > Hi,
-> > > 
-> > > Yeah, I no longer work for IBM - I need to update the relayfs site to
-> > > reflect that.
-> > > 
-> > > > Dave, can you have a look at this? I can easily reproduce the problem
-> > > > on s390 Linux for testing and getting more debug information.
-> > > > 
-> > > 
-> > > Not sure anyone's still looking into this, but it doesn't look like an
-> > > s390 problem specifically.  Apparently what happened was that some
-> > > internal changes to splice seem to have broken the relay splice_read
-> > > implementation.  The above patch fixes part of the problem; the patch
-> > > below should fix the rest, and AFAICT it doesn't break anything else.
-> > > 
-> > > Signed-off-by: Tom Zanussi <zanussi@comcast.net>
-> > > 
-> > > diff --git a/fs/splice.c b/fs/splice.c
-> > > index a861bb3..068b210 100644
-> > > --- a/fs/splice.c
-> > > +++ b/fs/splice.c
-> > > @@ -1094,7 +1094,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
-> > >  
-> > >  	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
-> > >  	if (ret > 0)
-> > > -		*ppos += ret;
-> > > +		*ppos = sd.pos;
-> > 
-> > Tom, did you verify that sd.pos is always updated?
-> > 
-> 
-> Yeah, everything else that can be a sendfile source ends up using
-> generic_file_splice_read(), which updates sd.pos as expected.
+On Thu, 24 Apr 2008 01:39:00 +0100
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
 
-Goodie, thanks for confirming!
+> Hello,
+> 
+> Could the basic braille screen reader be pushed to 2.6.26?
+> 
+> Else, could at least the patch below be applied, so that people can
+> compile external accessibility modules a lot more easily? (no need to
+> patch vanilla kernel, which is a huge win for people who already have a
+> hard time just using their computer...)
+> 
+> Samuel
+> 
+> Export functions typically used by screen reading modules.
+> 
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+Seems the right small set of changes to get us started with the real
+merge and its useful for the tty cleanup to have these exports visible so
+I know what will affect others.
+
+Acked-by: Alan Cox <alan@redhat.com>
+
+
+> 
+> diff -ur linux-2.6.24.1-orig/drivers/char/consolemap.c linux-2.6.24.1-perso/drivers/char/consolemap.c
+> --- linux-2.6.24.1-orig/drivers/char/consolemap.c	2008-01-25 09:32:05.000000000 +0100
+> +++ linux-2.6.24.1-perso/drivers/char/consolemap.c	2008-02-03 22:27:04.000000000 +0100
+> @@ -277,6 +277,7 @@
+>  			return p->inverse_translations[m][glyph];
+>  	}
+>  }
+> +EXPORT_SYMBOL_GPL(inverse_translate);
+>  
+>  static void update_user_maps(void)
+>  {
+> diff -ur linux-2.6.24.1-orig/drivers/char/keyboard.c linux-2.6.24.1-perso/drivers/char/keyboard.c
+> --- linux-2.6.24.1-orig/drivers/char/keyboard.c	2008-01-25 09:32:06.000000000 +0100
+> +++ linux-2.6.24.1-perso/drivers/char/keyboard.c	2008-02-04 03:44:37.000000000 +0100
+> @@ -110,6 +110,7 @@
+>  const int NR_TYPES = ARRAY_SIZE(max_vals);
+>  
+>  struct kbd_struct kbd_table[MAX_NR_CONSOLES];
+> +EXPORT_SYMBOL_GPL(kbd_table);
+>  static struct kbd_struct *kbd = kbd_table;
+>  
+>  struct vt_spawn_console vt_spawn_con = {
+> @@ -260,6 +261,7 @@
+>  	} else
+>  		kd_nosound(0);
+>  }
+> +EXPORT_SYMBOL_GPL(kd_mksound);
+>  
+>  /*
+>   * Setting the keyboard rate.
+> diff -ur linux-2.6.24.1-orig/drivers/char/vt.c linux-2.6.24.1-perso/drivers/char/vt.c
+> --- linux-2.6.24.1-orig/drivers/char/vt.c	2008-01-25 09:32:06.000000000 +0100
+> +++ linux-2.6.24.1-perso/drivers/char/vt.c	2008-02-03 22:27:04.000000000 +0100
+> @@ -3982,6 +3982,7 @@
+>  		c |= 0x100;
+>  	return c;
+>  }
+> +EXPORT_SYMBOL_GPL(screen_glyph);
+>  
+>  /* used by vcs - note the word offset */
+>  unsigned short *screen_pos(struct vc_data *vc, int w_offset, int viewed)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
 
 -- 
-Jens Axboe
-
+--
+	"Alan, I'm getting a bit worried about you."
+				-- Linus Torvalds
