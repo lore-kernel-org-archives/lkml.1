@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYDXJ2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbYDXJak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYDXJ2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 05:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYDXJ2G
+	id S1755829AbYDXJak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 05:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYDXJab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 05:28:06 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:36326 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYDXJ2F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 05:28:05 -0400
-Subject: Re: cpu_clock confusion
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, benh@ozlabs.org, linuxppc-dev@ozlabs.org, arndb@de.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <20080424.022404.151729194.davem@davemloft.net>
-References: <1207240450.3797.22.camel@johannes.berg>
-	 <20080404144641.GA15844@elte.hu> <1209028912.3357.52.camel@johannes.berg>
-	 <20080424.022404.151729194.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-KgKVwN7fyWIfBjxIeN7E"
-Date: Thu, 24 Apr 2008 11:27:37 +0200
-Message-Id: <1209029257.3357.55.camel@johannes.berg>
+	Thu, 24 Apr 2008 05:30:31 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56247 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751420AbYDXJaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 05:30:30 -0400
+Date: Thu, 24 Apr 2008 19:30:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 24
+Message-Id: <20080424193023.862cacd7.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0804240942300.10239@vixen.sonytel.be>
+References: <20080424173626.bcd088e7.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0804240942300.10239@vixen.sonytel.be>
+X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__24_Apr_2008_19_30_23_+1000_Fh5sq0q+Ff8W2Tb8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-KgKVwN7fyWIfBjxIeN7E
-Content-Type: text/plain
+--Signature=_Thu__24_Apr_2008_19_30_23_+1000_Fh5sq0q+Ff8W2Tb8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-04-24 at 02:24 -0700, David Miller wrote:
-> From: Johannes Berg <johannes@sipsolutions.net>
-> Date: Thu, 24 Apr 2008 11:21:52 +0200
+Hi Geert,
+
+On Thu, 24 Apr 2008 09:45:57 +0200 (CEST) Geert Uytterhoeven <geert@linux-m=
+68k.org> wrote:
+>
+> For m68k, I've added multi_defconfig, to build a kernel for all supported=
+ m68k
+> platforms, excluding Sun 3 (Sun 3 kernels are incompatible with all other=
+ m68k
+> platforms).
 >=20
-> > Hmm. Why is that whole cpu_clock stuff in place anyway? powerpc has
-> > perfectly synchronised time across processors with dirt cheap access to
-> > it as well, so why build all this code that only messes it up on top of
-> > it?
->=20
-> Same on sparc64.  These changes add more bugs than they fix.
+> Hence if you would build multi_defconfig and sun3_defconfig, you cover al=
+l of
+> our platforms and drivers.
 
-I tend to think all this clock business should be done local to those
-arches that aren't capable of providing cheap, useful synchronised and
-accurate clocks themselves. Or be a lib that they can link in if needed.
-As it stands, it seems to me that it all just penalises those
-architectures that have decent clocks.
+Done.  Thanks.
 
-johannes
+> Alternatively, you can just build all defconfigs, but that's more work ;-)
 
---=-KgKVwN7fyWIfBjxIeN7E
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+:-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__24_Apr_2008_19_30_23_+1000_Fh5sq0q+Ff8W2Tb8
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iQIVAwUASBBSiKVg1VMiehFYAQKZYhAAvu79aDQ29ZuybMzVS719na1/mYCbzePU
-VdD3W9mJ/vGgNTXOcNwbQ5a7R6R+Qr4Uc6brltUVVOGLbm3fRvKAOLNlxhGKs6Tp
-xO3DMPM6J2ZyULCcBSvjTgI9zKMrqkJvEkwvaUD6KHocPrGjev3DHsgDXZA3kbHG
-NJc+xR3w67D27l06YLAa1SPZdXjSQ7elEnNksw4P3GuC/Qx5GSpNOwgkxdUTyfu+
-DTMzja+erUATFsDid86sZI09/UZ5D0X8ox1N0tSKmuuQsmwlOaf83FnBEoLx2S1i
-OQMDzJjVIyCmfeyR5f7jYZd1K4sqm78is7WlOxnqT9Y9MTqp5NgBMCqAg1fD5i8n
-6qUZqyElpxxcsbK8y9aBzgdCezPmsbUkNqHxGTYZmncmyUJE1o90G5ZrtLjYU8w5
-i9kq/VaxZZM9CIlOgl/boFjbCbZFJoDkmZat6Ifv1LcDSOLI31ZuaNkdafdoUevl
-QsK0jHIVYfxeMvKm+l4KX45sJldNePNrnTk7NPSWTKikelCgREt4qeyzKYS5xb4m
-i5Kan05KzACSLCRm+wt0AJTtQCNY56uXVqatn47p2zwyajkVqhF8pWnNrX5H94jw
-rJd1jOv9c0+9WlRfWawkZ5xmdu8fmW32VVft6Rv3toCvXozS4EJPn26gpzGV9ZPG
-RvTNTGbqIYk=
-=18oW
+iD8DBQFIEFMzTgG2atn1QN8RAvJJAJkBJMuve/HfxMMiABBRyqrNVPjekwCfW/qY
+vIxGUdZG3k2qBAVaFDxXYto=
+=WFRf
 -----END PGP SIGNATURE-----
 
---=-KgKVwN7fyWIfBjxIeN7E--
-
+--Signature=_Thu__24_Apr_2008_19_30_23_+1000_Fh5sq0q+Ff8W2Tb8--
