@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYDXPCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYDXPEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbYDXPCN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 11:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbYDXPCD
+	id S1758435AbYDXPEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 11:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYDXPEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 11:02:03 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53328 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752628AbYDXPCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 11:02:01 -0400
-Date: Thu, 24 Apr 2008 15:32:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, vojtech@suse.cz,
-       muli@il.ibm.com, jdmason@kudzu.us, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH RFC] x86: Fix 64-bit DMA masks on VIA
-Message-ID: <20080424153240.33b5300c@the-village.bc.nu>
-In-Reply-To: <200804241606.00883.mb@bu3sch.de>
-References: <200804232055.13102.mb@bu3sch.de>
-	<87mynjgyg9.fsf@basil.nowhere.org>
-	<200804241606.00883.mb@bu3sch.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 11:04:40 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10621 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752872AbYDXPEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 11:04:40 -0400
+Date: Thu, 24 Apr 2008 17:04:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
+Message-ID: <20080424150425.GD12774@kernel.dk>
+References: <480F8936.5030406@hp.com> <87ve27gz4u.fsf@basil.nowhere.org> <67E36C56-E149-4C87-8788-05BA43C1C2AD@kernel.dk> <4810961A.4000104@firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4810961A.4000104@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008 16:06:00 +0200
-Michael Buesch <mb@bu3sch.de> wrote:
-
-> On Thursday 24 April 2008 15:43:50 Andi Kleen wrote:
-> > Michael Buesch <mb@bu3sch.de> writes:
-> > 
-> > > This untested patch is supposed to fix DMAing on some VIA boards.
-> > > Currently the DMA subsystem returns an error, if the driver does
-> > > tell that it supports a 64bit DMA mask. So the driver probing
-> > > would fail in that case. 
-> > 
-> > The driver is broken then. It is supposed to retry with a small
-> > mask on an error. Please fix the driver.
+On Thu, Apr 24 2008, Andi Kleen wrote:
 > 
-> I already added a workaround to the driver.
-> Why do we need to workaround this in _every_ driver? (Note that _every_
-> driver supporting a 64bit mask is affected). Why not fix it in the DMA layer?
+> > Not a good idea IMHO, it's much better with an explicit setting. That
+> > way you don't introduce indeterministic behavior.
+> 
+> So you would be deterministically slower.
 
-Some hardware wants to know it can get a given DMA mask or failure. I
-agree however that a "pci_prefer_64bit_dma(pdev)" function would be a
-good patch for someone to submit tot he PCI layer code.
+Yes, absolutely. Think about the case for a second - the potential gain is in
+fractions of a percent basically, the potential loss however is HUGE.
+There's absolutely no way on earth I'd ever make this dynamic.
 
-Alan
+> Another way to avoid this problem would be to keep the statistics per
+> IO context, then the same run of a program would always get the same
+> behaviour. Drawback is that if your non mergeable workload consists of
+> lots of short running processes (like a shell script) the optimization
+> wouldn't work. Not sure if it's really practical, but it would be an option.
+
+Complexity for basically zero gain, no thanks.
+
+> I think in modern systems with caches etc. you typically have enough
+> non quite deterministic and other surprising and hard to analyze
+> behaviour anyways, so a little more doesn't make much difference.
+
+Sorry Andi, but that is nonsense. Not merging IOs when you should can
+cut your performance to a 5th or something of that order, it's an
+entirely different ballgame.
+
+-- 
+Jens Axboe
+
