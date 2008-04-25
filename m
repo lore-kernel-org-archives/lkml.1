@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbYDYHBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbYDYHC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbYDYHBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYDYHBk
+	id S1757581AbYDYHC5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYDYHCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:01:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38735 "EHLO
+	Fri, 25 Apr 2008 03:02:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35035 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbYDYHBj (ORCPT
+	with ESMTP id S1752012AbYDYHCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:01:39 -0400
-Date: Fri, 25 Apr 2008 03:01:36 -0400
+	Fri, 25 Apr 2008 03:02:49 -0400
+Date: Fri, 25 Apr 2008 03:02:47 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Soeren Sandmann <sandmann@daimi.au.dk>, linux-kernel@vger.kernel.org
-Subject: Re: stat benchmark
-Message-ID: <20080425070136.GA13138@infradead.org>
-References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk> <alpine.LNX.1.10.0804242329060.11644@fbirervta.pbzchgretzou.qr>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mingo@redhat.com
+Subject: Re: [PATCH] Drop "init_mm" from being exported via
+	EXPORT_UNUSED_SYMBOL.
+Message-ID: <20080425070247.GB13138@infradead.org>
+References: <alpine.LFD.1.10.0804241728510.4087@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0804242329060.11644@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LFD.1.10.0804241728510.4087@localhost.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -28,11 +30,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 11:44:04PM +0200, Jan Engelhardt wrote:
-> XFS for example already has bulkstat, but it is not really
-> exported to userspace :-/
+On Thu, Apr 24, 2008 at 05:31:20PM -0400, Robert P. J. Day wrote:
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> 
+> ---
+> 
+>   since this was listed as removable as of 2.6.26, does that mean its
+> removal can go into an appropriate tree now?  or would that mean
+> *after* the release of 2.6.26?
 
-It is avaiable through an ugly ioctl.  Doesn't really help in this
-use-case because bulkstat iterates over all inodes of a given filesystem
-and not inodes of a directory.
-
+Davem mentioned this has valid use-cases on non-x86 architectures
+because it's exposed through mm macros.  So please audit it's users and
+make sure the export is only dropped for architectures where it's not
+actually needed.
