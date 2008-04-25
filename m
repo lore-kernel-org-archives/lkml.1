@@ -1,107 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764572AbYDYTry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765366AbYDYTse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764572AbYDYTry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYDYTrr
+	id S1765366AbYDYTse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbYDYTsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 15:47:47 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40079 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbYDYTrq (ORCPT
+	Fri, 25 Apr 2008 15:48:22 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50010 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753333AbYDYTsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 15:47:46 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Containers <containers@lists.osdl.org>,
-       clg@fr.ibm.com, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Benjamin Thery <benjamin.thery@bull.net>
-References: <20080408215333.GA8799@us.ibm.com> <47FC138B.4070408@zytor.com>
-	<1207779313.16926.12.camel@x61.ebiederm.org>
-	<20080410015955.GA18227@sergelap.austin.rr.com>
-	<1207812980.7509.25.camel@x61.ebiederm.org>
-	<20080422142539.GA12623@sergelap.austin.ibm.com>
-	<m1hcdtsovg.fsf@frodo.ebiederm.org>
-	<20080423143610.GA13718@sergelap.austin.ibm.com>
-	<20080423175749.GA17618@sergelap.austin.ibm.com>
-	<m1tzhsmmo5.fsf@frodo.ebiederm.org>
-	<20080425192102.GA17896@sergelap.austin.ibm.com>
-Date: Fri, 25 Apr 2008 12:47:27 -0700
-In-Reply-To: <20080425192102.GA17896@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Fri, 25 Apr 2008 14:21:02 -0500")
-Message-ID: <m1lk314sz4.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 25 Apr 2008 15:48:21 -0400
+Message-ID: <4812357C.5010904@zytor.com>
+Date: Fri, 25 Apr 2008 12:48:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Matthew Wilcox <matthew@wil.cx>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com> <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.10.0804251133100.2779@woody.linux-foundation.org> <20080425185251.GL14990@parisc-linux.org> <48122CB0.7020003@zytor.com> <20080425192858.GM14990@parisc-linux.org> <48123325.30003@zytor.com> <alpine.LFD.1.10.0804251243590.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804251243590.2779@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+Linus Torvalds wrote:
+> 
+> On Fri, 25 Apr 2008, H. Peter Anvin wrote:
+>> I have to admit to liking the Windows extension %I64u for this kind of stuff.
+>> Unfortunately gcc/glibc decided to use I for internationalized digits instead
+>> :(
+> 
+> The sad part is that this is purely a gcc thing. We could easily do the 
+> right thing in the kernel vsnprintf stuff, but then we'd have to drop the 
+> nice format warnings from gcc ;(
+> 
 
+Yes, that's the fundamental problem.
 
-> Heh, well I tried several approaches - adding tag_ops to kset, to ktype,
-> etc.  Finally ended up just calling sysfs_enable_tagging on
-> /sys/kernel/uids when that is created.  It's now working perfectly.
+There isn't even a flag for gcc to set this behaviour, with the result 
+that any code compiled with MinGW (gcc for Win32) spews warnings like crazy.
 
-Sounds good.
-
->> I suspect since you are working on this and I seem to be stuck
->> in molasses at the moment it makes sense to figure out what it
->> will take to handle the uid namespace before pushing these
->> patches again.
->
-> I had ported your patches to 2.6.25, but Benjamin in the meantime ported
-> them to 2.6.25-mm1.  Since that's closer to the -net tree it's a more
-> useful port, so I'll let him post his patchset.  Then I'll send the
-> userns patch on top of that.  While I'm not actually able to send
-> network traffic over a veth dev (I probably am still not setting it up
-> right), I am able to pass veth devices into network namespaces, and the
-> user namespaces are properly handled.
->
-> I believe Benjamin did notice a problem with some symlinks not existing,
-> and I think we want one more patch on top of yours removing the
-> hold_net() from sysfs_mount, which I don't think was what you really
-> wanted to do.  By simply removing that, if all tasks in a netns go away,
-> the netns actually goes away and a lookup under a bind-mounted copy of
-> its /sys/class/net is empty.
-
-I will have to look, I need to refresh myself on where all of this code is.
-I think hold_net was what I wanted.  A record that there is a user
-but not something that will keep the network namespace from going away.
-
-Essentially hold_net should be a debugging check rather then a
-real limitation.
-
-
-> Anyway the patches should be hitting the list next week.
-
-Cool.  We can figure out what we need to do to merge them from
-there.
-
->> Taking a quick look and having a clue what we will need to
->> do for a theoretical device namespace is also a possibility.
->
-> I'm not sure I'm familiar enough with the kobject/class/sysfs/device
-> relationships yet to comment on that.  It doesn't look like it should
-> really be a problem, though simply adding tags to every directory
-> under /sys/class (/sys/class/tty, /sys/class/usb_device, etc) doesn't
-> seem like necessarily the nicest way to go...
-
-True.  And the goal is something maintainable.  There are still a lot
-of implications of a device namespace left unexamined so we shall see.
-
-Eric
+	-hpa
