@@ -1,108 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbYDYQeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763984AbYDYQfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763938AbYDYQeR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760265AbYDYQeC
+	id S1763984AbYDYQfW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbYDYQfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:34:02 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48106 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759319AbYDYQeA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:34:00 -0400
-Subject: Re: Voyager phys_cpu_present_map compile error
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080425161745.GA21168@cs181133002.pp.htv.fi>
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
-	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
-	 <20080421120054.GA6788@elte.hu>
-	 <20080421132705.GG6011@cs181133002.pp.htv.fi>
-	 <20080421201434.GN8770@elte.hu>
-	 <1209135044.3087.3.camel@localhost.localdomain>
-	 <20080425161745.GA21168@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 11:33:53 -0500
-Message-Id: <1209141233.3087.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 12:35:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44842 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758478AbYDYQfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:35:03 -0400
+Date: Fri, 25 Apr 2008 18:33:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080425163309.GA17792@elte.hu>
+References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <alpine.LFD.1.10.0804250915340.2779@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804250915340.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-25 at 19:17 +0300, Adrian Bunk wrote:
-> On Fri, Apr 25, 2008 at 09:50:43AM -0500, James Bottomley wrote:
-> > On Mon, 2008-04-21 at 22:14 +0200, Ingo Molnar wrote:
-> > > * Adrian Bunk <bunk@kernel.org> wrote:
-> > > 
-> > > > > +#ifndef CONFIG_X86_VOYAGER
-> > > > >  /* Bitmask of physically existing CPUs */
-> > > > >  physid_mask_t phys_cpu_present_map;
-> > > > > +#endif
-> > > > >...
-> > > > 
-> > > > Alexey noted that phys_cpu_present_map for Voyager and !Voyager also 
-> > > > have different types and suggested to make the Voyager one static 
-> > > > instead (additional renaming of the Voyager one also makes sense).
-> > > 
-> > > yep, done by the patch below.
-> > 
-> > Actually, this isn't the right patch.  The point is not to avoid the
-> > symbol clash, it's to let voyager identify correctly that you have a
-> > leaking symbol.  In this case phys_cpu_present_map is exposed outside of
-> > SMP.  The correct fix (and one which sweeps op other storage for
-> > unnecessary symbols is this):
-> > 
-> > James
-> > 
-> > ---
-> > 
-> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> > index c0c68c1..d68aa53 100644
-> > --- a/arch/x86/kernel/setup.c
-> > +++ b/arch/x86/kernel/setup.c
-> > @@ -12,6 +12,7 @@
-> >  #include <asm/mpspec.h>
-> >  #include <asm/apicdef.h>
-> >  
-> > +#ifdef CONIFG_X86_SMP
-> >...
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > Not sure how the fixmap is better. It's pretty much equivalent, 
+> > isn't it? Perhaps a little cheaper, but the code shouldn't be 
+> > performance critical.
 > 
-> tpyo  ;)
+> I have no really strong opinions. However, we do have a *lot* of lock 
+> prefixes in the kernel, and fixmaps are a lot cheaper than vmap(). It 
+> may not be performance-critical, but for me the "locks" section for 
+> the kernel is 0x8060 bytes long, which would seem to say that this is 
+> called four thousand times for each suspend and resume.
+> 
+> With each invocation being thousands of instructions and a cross-CPU 
+> IPI for the tlb flush, that kind of stuff adds up. We're likely 
+> talking real fractions of a second, rather than milliseconds.
 
-Oh ... oops ... unfortunately one I wouldn't spot in a voyager build.
+the other thing is atomicity - your new version of text_poke() is 
+evidently atomic - while vmap() does a kmalloc which might sleep. 
+Atomicity for something as fragile as code-patching never hurts, so i 
+definitely like your version more.
 
-This should be the corrected patch; thanks.
+it's also the more familar API - set_fixmap() is used more frequently 
+than vmap() - hence less danger of doing something wrong.
 
-James
+in fact i'd do the extra sanity check below as well on top of your patch 
+- all core kernel text pages are PageReserved so the one below would 
+have caught the memory corruption right at its source.
 
+	Ingo
+
+---------------->
+Subject: x86: harden kernel code patching
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri Apr 25 17:07:03 CEST 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/kernel/alternative.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index c0c68c1..13ea170 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -12,6 +12,7 @@
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
+Index: linux/arch/x86/kernel/alternative.c
+===================================================================
+--- linux.orig/arch/x86/kernel/alternative.c
++++ linux/arch/x86/kernel/alternative.c
+@@ -522,6 +522,8 @@ void *__kprobes text_poke(void *addr, co
+ 		unsigned long virt = fix_to_virt(FIX_POKE);
+ 		phys &= PAGE_MASK;
  
-+#ifdef CONFIG_X86_SMP
- unsigned int num_processors;
- unsigned disabled_cpus __cpuinitdata;
- /* Processor that is doing the boot up */
-@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- 
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map;
-+#endif
- 
--#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
-+#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
- /*
-  * Copy data used in early init routines from the initial arrays to the
-  * per cpu data areas.  These arrays then become expendable and the
-
-
++		WARN_ON(!PageReserved(virt_to_page(addr)));
++
+ 		spin_lock_irqsave(&poke_lock, flags);
+ 		set_fixmap(FIX_POKE, phys);
+ 		memcpy((void *)(virt + offset), opcode, len);
