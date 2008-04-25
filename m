@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYDYLK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbYDYLMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYDYLK2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 07:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYDYLKP
+	id S1758761AbYDYLMI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 07:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYDYLL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 07:10:15 -0400
-Received: from khc.piap.pl ([195.187.100.11]:33508 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbYDYLKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 07:10:14 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, paulkf@microgate.com,
-       jchapman@katalix.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m3r6cv75xq.fsf@maximus.localdomain>
-	<20080424.063006.153647297.davem@davemloft.net>
-	<m3mynj74nw.fsf@maximus.localdomain>
-	<20080424.065555.30390704.davem@davemloft.net>
-	<m3ve27nfpx.fsf@maximus.localdomain>
-	<20080424214457.1d5a1655@the-village.bc.nu>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 25 Apr 2008 13:10:11 +0200
-In-Reply-To: <20080424214457.1d5a1655@the-village.bc.nu> (Alan Cox's message of "Thu\, 24 Apr 2008 21\:44\:57 +0100")
-Message-ID: <m3prse2nsc.fsf@maximus.localdomain>
+	Fri, 25 Apr 2008 07:11:57 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52496 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbYDYLL4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 07:11:56 -0400
+Date: Fri, 25 Apr 2008 13:12:37 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "John W. Linville" <linville@tuxdriver.com>, cfarrell@suse.de
+Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com
+Subject: Re: w35und: good news about licensing
+Message-ID: <20080425111237.GA15479@elf.ucw.cz>
+References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz> <20080415132845.GA11789@tuxdriver.com> <20080415195603.GE4994@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080415195603.GE4994@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Hi!
 
-> I would agree with this. There isn't a sane way to sort out the old
-> kernel side syncppp (which is useless for todays networks as it doesn't
-> do compression, IPv6 or auth protocols) except by going to user space.
+> > > Actually you are about month early to the party ;-). We are trying to
+> > > clean up winbond usb wireless driver, so that it can think about
+> > > inclusion in kernel.
+> > > 
+> > > http://code.google.com/p/winbondport/
+> > > 
+> > > Unfortunately, original driver carries its own 802.11 stack with it;
+> > > that needs to be stripped down. (And then code needs to be rewritten
+> > > due to horrible coding style).
+> > 
+> > I see...OK.
+> > 
+> > Did you get any legal advice regarding whether or not
+> > MODULE_LICENSE("GPL") was sufficient to proclaim the driver as covered
+> > by the GPL?
+> 
+> I dislike talking to lawyers, do not have any easily physically
+> reachable, and believe the case is pretty clear...
+> 
+> ...plus, we plan to rewrite the driver, anyway...
 
-Well, I never used compression or auth on fixed line, and that would
-require generic PPP. Perhaps we should use it, I don't know.
+Ok, so I did actually talk to a lawyer that happened to be nearby. We
+did short analysis, and we believe that yes, w35und is under GPL. The
+only problem is in wpa/ subdirectory where md5 (IIRC) is under RSA
+license.
+
+wpa/ subdirectory is already empty in my version, so we should be ok.
+
+								Pavel
 -- 
-Krzysztof Halasa
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
