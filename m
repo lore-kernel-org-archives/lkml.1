@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYDYBgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYDYBhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYDYBgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 21:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYDYBgE
+	id S1757435AbYDYBhz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbYDYBhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 21:36:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42453
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753774AbYDYBgC (ORCPT
+	Thu, 24 Apr 2008 21:37:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:55211 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754711AbYDYBhq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 21:36:02 -0400
-Date: Thu, 24 Apr 2008 18:35:58 -0700 (PDT)
-Message-Id: <20080424.183558.96469288.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4811090A.9030809@gmail.com>
-References: <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com>
-	<alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>
-	<4811090A.9030809@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 21:37:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
+   d="scan'208";a="274512889"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 09/24] ia64: types: use <asm-generic/int-*.h> for the ia64 architecture
+Date: Thu, 24 Apr 2008 18:37:44 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC012F9FDA@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <1209078352-7593-18-git-send-email-hpa@zytor.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 09/24] ia64: types: use <asm-generic/int-*.h> for the ia64 architecture
+Thread-Index: AcimX9AXBdl/BaKETwSIWWgdWnHFdgAE5sqg
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com> <1209078352-7593-4-git-send-email-hpa@zytor.com> <1209078352-7593-5-git-send-email-hpa@zytor.com> <1209078352-7593-6-git-send-email-hpa@zytor.com> <1209078352-7593-7-git-send-email-hpa@zytor.com> <1209078352-7593-8-git-send-email-hpa@zytor.com> <1209078352-7593-9-git-send-email-hpa@zytor.com> <1209078352-7593-10-git-send-email-hpa@zytor.com> <1209078352-7593-11-git-send-email-hpa@zytor.com> <1209078352-7593-12-git-send-email-hpa@zytor.com> <1209078352-7593-13-git-send-email-hpa@zytor.com> <1209078352-7593-14-git-send-email-hpa@zytor.com> <1209078352-7593-15-git-send-email-hpa@zytor.com> <1209078352-7593-16-git-send-email-hpa@zytor.com> <1209078352-7593-17-git-send-email-hpa@zytor.com> <1209078352-7593-18-git-send-email-hpa@zytor.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Arch Mailing List" <linux-arch@vger.kernel.org>
+X-OriginalArrivalTime: 25 Apr 2008 01:37:45.0171 (UTC) FILETIME=[F5E21230:01C8A674]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Fri, 25 Apr 2008 00:26:18 +0200
+I get an error while building the ia64 sim_defconfig (which
+uses CONFIG_HZ=32)
 
-> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadccf0 
-
-0xf0...  Is this a 4-cpu machine?
-
-I doubt it, because this is on a laptop as far as I can tell,
-but I thought I'd ask. :-)
-
-So the clue is setting some byte at ((offset % 8) == 0) into a
-structure with 0xf0...
+kernel/time.c: In function `msecs_to_jiffies':
+kernel/time.c:472: error: `MSEC_TO_HZ_MUL32UL' undeclared (first use in this function)
+kernel/time.c:472: error: (Each undeclared identifier is reported only once
+kernel/time.c:472: error: for each function it appears in.)
 
 
+The generated timeconst.h has:
+#define MSEC_TO_HZ_MUL32        0x83126e98
+
+So some weird cpp thing happened and the UL got concatenated
+before the MSEC_TO_HZ_MUL32 was swapped out for its defined
+value.
+
+All the rest of the ia64 configs build ok.
+
+-Tony
