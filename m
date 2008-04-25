@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbYDYRMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764026AbYDYROl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763614AbYDYRMM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 13:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYDYRL7
+	id S1764026AbYDYROl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbYDYROd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:11:59 -0400
-Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:34650 "HELO
-	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753184AbYDYRL7 (ORCPT
+	Fri, 25 Apr 2008 13:14:33 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:37560 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752370AbYDYROc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:11:59 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: pci commands resume order [Was: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff]
-Date: Fri, 25 Apr 2008 10:11:51 -0700
-User-Agent: KMail/1.9.9
-Cc: Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-References: <alpine.LFD.1.10.0804241841280.2779@woody.linux-foundation.org> <20080425.004523.146850490.davem@davemloft.net> <481193EF.9050308@gmail.com>
-In-Reply-To: <481193EF.9050308@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 25 Apr 2008 13:14:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAPutEUhMROPA/2dsb2JhbACBU6sq
+Date: Fri, 25 Apr 2008 13:09:29 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080425170929.GA16180@Krystal>
+References: <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804251011.52542.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 63.227.221.253 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <481209F2.4050908@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:50:43 up 56 days, 13:01,  7 users,  load average: 0.29, 0.36,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, April 25, 2008 1:18 am Jiri Slaby wrote:
-> On 04/25/2008 09:45 AM, David Miller wrote:
-> > I notice Jiri, in your hardware list, you have an ath5k Atheros AR5212
-> > chip in there.
-> >
-> > I took a look at the resume code for ath5k but nothing really suspicious
-> > there except:
-> >
-> > 	err = pci_enable_device(pdev);
-> > 	if (err)
-> > 		return err;
-> >
-> > 	pci_restore_state(pdev);
-> >
-> > Shouldn't we restore state before we turn the chip back on and thus
-> > potentially let it start DMA'ing all over the place?
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>> Yes, the immediate values, in general, only need to do atomic writes,
+>> because I have taken care of placing the mov instruction in the correct
+>> alignment so its immediate value happens to be aligned in memory.
+>> However, the latest optimisation I did to change a conditional branch
+>> into a jump when the correct code pattern is detected :
+>> mov, test, bne short
+>> into a
+>> nop2, nop2, nop1, jmp short
+>> or
+>> mov, test, bne near
+>> into a
+>> nop2, nop2, nop1, jmp near
 >
-> Hmm, actually every second wireless driver do this :/. I think it's wrong
-> too. Jesse?
+> And how, pray tell, do you deal with the fact that:
+>
+> a) the EFLAGS may be live on exit;
 
-It might be a little safer to enable the device after restoring its state, but 
-if your device starts DMAing randomly when going from D3->D0 it's probably 
-not a very good device. :)
+Actually, not only EFLAGS can be live on exit, but also the immediate
+value itself.
 
-> BTW pci_set_power_state(pdev, PCI_D0); in resume isn't needed at all,
-> right? It's done in pci_enable_device, isn't it?
+If we take the mov, test, jne short case into account, I force the mov
+to populate the %al register with some immediate value. Then, this value
+is extracted from the inline assembly and feeded to an if() c statement
+under the form of a variable. So, I check precisely for a mov %al,0,
+followed by test and bne. If I don't find it (due to gcc optimizations),
+then I leave the original immediate value there. I start the pattern
+matching from the address of the movb instruction, which I extract from
+the inline assembly. So, about the EFLAGS : given that I first change
+the jne for an unconditional jump, I just don't care about the status of
+the ZF : jump does not change the EFLAGS, and it does not depend on any.
+However, it is still valid to leave the mov and test instructions there,
+because ZF is considered "live" by gcc across the test+jne instructions.
 
-Right, pci_enable_device will put the device in D0, so setting it again is 
-redundant (looks like lots of drivers do this).
+Then, I patch mov and test in any order, because we just don't care
+about the status of the ZF, or do we... ? The only limitation is that a
+given imv_cond(var) should only be used in the following pattern :
 
-Jesse
+if (imv_cond(var)) ...
+
+Trying to save the result of imv_cond(var) and use it in multiple if()
+statements would cause the compiler to duplicate tests and branches on
+that variable and the pattern matching would not see that. I think it's
+what you fear. Now that you speak of it, it might be better to leave the
+movb and test instruction there to make sure we don't kill the ZF which
+might be needed by some other code.
+
+> b) there might be a jump into the middle of this instruction sequence?
+>
+
+If we change that, as discussed above, so the liveliness of ZF and of
+the %al register is still insured by leaving the mov and test
+instructions in place, we end up only modifying a single instruction and
+the problem fades away. We would end up changing a jne for a jmp.
+
+Thanks,
+
+Mathieu
+
+> 	-hpa
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
