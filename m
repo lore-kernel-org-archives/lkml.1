@@ -1,248 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765210AbYDYTuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYDYUEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765210AbYDYTuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbYDYTub
+	id S1762047AbYDYUEh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbYDYUE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 15:50:31 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:62409 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757266AbYDYTua (ORCPT
+	Fri, 25 Apr 2008 16:04:27 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:50582 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758800AbYDYUE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 15:50:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fJTOTSZpWhEo64vzf9hqzQSkXik/rvomDrXcpgatU/Gli4AaXJQsiJW0Ot05x7X9uQTrxN7BrjZrMElusm8zZk6i/968Wr3xPcGa4b6pHOcMRPEgyo0eXV6kZlFtim6QKP1HQoGUuHd9hst8ouYoGExdZaVSRYHByvnTmFz46MY=
-Message-ID: <cfd18e0f0804251250i74cd42d4v5b408a74635e7254@mail.gmail.com>
-Date: Fri, 25 Apr 2008 21:50:24 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: core_pattern pipe documentation
-Cc: linux-man@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Petr Gajdos" <pgajdos@suse.cz>, michael.kerrisk@gmail.com,
-       "Neil Horman" <nhorman@tuxdriver.com>
-In-Reply-To: <20080425185442.GC9833@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Apr 2008 16:04:26 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAA/WEUhMROPA/2dsb2JhbACBU6sW
+Date: Fri, 25 Apr 2008 16:04:23 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080425200423.GA25950@Krystal>
+References: <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48122ECF.405@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <cfd18e0f0804151409q178addf4t4c6cba683bd0bff4@mail.gmail.com>
-	 <cfd18e0f0804151411x62080f10y833493db7f1b8cfd@mail.gmail.com>
-	 <48051FBA.60503@firstfloor.org> <4808D1F4.7050705@gmail.com>
-	 <cfd18e0f0804230509g4e7456ecgd40c0bfee874a82c@mail.gmail.com>
-	 <20080423145933.GA26228@hmsendeavour.rdu.redhat.com>
-	 <cfd18e0f0804250618ic6dfd09gf68573256be3ff@mail.gmail.com>
-	 <20080425162225.GA9833@hmsreliant.think-freely.org>
-	 <cfd18e0f0804251113w4ef2dea3t6727009aa67e6e09@mail.gmail.com>
-	 <20080425185442.GC9833@hmsreliant.think-freely.org>
+In-Reply-To: <48122ECF.405@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:37:03 up 56 days, 15:48,  7 users,  load average: 0.70, 0.77,
+	1.16
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, Can you offer any input on the last topic in the message below?
-
-On Fri, Apr 25, 2008 at 8:54 PM, Neil Horman <nhorman@tuxdriver.com> wrote:
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>>>> b) there might be a jump into the middle of this instruction sequence?
+>>>>
+>>> If we change that, as discussed above, so the liveliness of ZF and of
+>>> the %al register is still insured by leaving the mov and test
+>>> instructions in place, we end up only modifying a single instruction and
+>>> the problem fades away. We would end up changing a jne for a jmp.
+>> So, if we do is I propose here, we have to take into account this
+>> question too. Any jump that jumps in the middle of this instruction
+>> sequence would have to insure correct liveliness of %al and ZF. However,
+>> since we just limited the scope of their liveliness, there are no other
+>> code paths which can jump in the middle of our instruction sequence and
+>> insure correct ZF and %al liveliness.
 >
-> On Fri, Apr 25, 2008 at 08:13:21PM +0200, Michael Kerrisk wrote:
-> > On Fri, Apr 25, 2008 at 6:22 PM, Neil Horman <nhorman@tuxdriver.com> wrote:
-> > >
-> > > On Fri, Apr 25, 2008 at 03:18:46PM +0200, Michael Kerrisk wrote:
-> > > > Hi Neil,
-> > > >
-> > > > On Wed, Apr 23, 2008 at 4:59 PM, Neil Horman <nhorman@tuxdriver.com> wrote:
-> > > > >
-> > > > > On Wed, Apr 23, 2008 at 02:09:14PM +0200, Michael Kerrisk wrote:
-> > > > > > Andi -- ping!
-> > > > > >
-> > > > > > Adding Neil to CC, since it looks like he also did some work here, and
-> > > > > > so can perhaps comment.
-> > > > > >
-> > > > > > On Fri, Apr 18, 2008 at 6:53 PM, Michael Kerrisk
-> > > > > > <mtk.manpages@googlemail.com> wrote:
-> > > > > > > Andi,
-> > > > > > >
-> > > > > > > I wrote the following description of the core_pattern pipe feature.  Does this
-> > > > > > > seem okay?
-> > > > > > >
-> > > > > > >   Piping core dumps to a program
-> > > > > > >       Since kernel 2.6.19, Linux supports an  alternate  syntax
-> > > > > > >       for the /proc/sys/kernel/core_pattern file.  If the first
-> > > > > > >       character of this file is a pipe  symbol  (|),  then  the
-> > > > > > >       remainder  of  the line is interpreted as a program to be
-> > > > > > >       executed.  Instead of being written to a disk  file,  the
-> > > > > > >       core  dump  is  given  as  standard input to the program.
-> > > > > > >       Note the following points:
-> > > > > > >
-> > > > > > >       *  The program must be specified using an absolute  path-
-> > > > > > >          name  (or  a  pathname relative to the root directory,
-> > > > > > >          /), and must immediately follow the '|' character.
-> > > > > > >
-> > > > > > >       *  The process created to run the program  runs  as  user
-> > > > > > >          and group root.
-> > > > > > >
-> > > > > > >       *  Arguments can be supplied to the program, delimited by
-> > > > > > >          white space (up to a total line length of 128  bytes).
-> > > > > > >
-> > > > > > > Cheers,
-> > > > > > >
-> > > > > > > Michael
-> > > > > > >
-> > > > > Thanks for CC'ing me.  The above all looks good.  I would add documentation
-> > > > > however, about the available macros that can be used when core_pattern is
-> > > > > specified as a pipe.  Adding something like the following would be good:
-> > > > >
-> > > > >        * Arguments can be statically declared or implied via the use of macros,
-> > > > >          denoted by the use of the %sign.  The following macros are supported:
-> > > > >                * %% - output a literal % sign on the command line
-> > > > >                * %p - the pid of the crashing process
-> > > > >                * %u - the uid of the crashing process
-> > > > >                * %g - the gid of the crashing process
-> > > > >                * %s - the signal that caused the crashing process to crash
-> > > > >                * %t - the time the crashing process dumped
-> > > > >                * %h - the hostname of the system
-> > > > >                * %e - the executable name of the crashing process
-> > > > >                * %c - the core limit size of the crashing process
-> > > >
-> > > > Thanks for pointing that out!  I'll note it in the page.
-> > > >
-> > > > >          Note that the core limit size macro may be a different value than what
-> > > > >          is returned by getrlimit(RLIMIT_CORE,...).  This is due to the fact
-> > > > >          that the core_pattern specified executible will be run as the same uid
-> > > > >          as the crashing process, and to facilitate reception of the entire
-> > > > >          core, the kernel will temporarily set RLIMIT_CORE to unlimited while
-> > > > >          the dump is in progress.
-> > > >
-> > > > Actually, I can't seem to get an example of this behavior.  In my
-> > > > experiments, %c always seems to give the "right" info (i.e., I don't
-> > > > ever see %c showing 2^32 (unlimited) when I set a soft limit).  Can
-> > > > you show a specific case where it doesn't give the "right" value?
-> > > >
-> > > Oops, you're right.  I had initially implemented my core pattern updates this
-> > > way, but in the end wound up just ignoring the limit in do_coredump, rather than
-> > > re-writing it.  Thanks for that.  You can scratch this.
-> > >
-> > >
-> > > > >          Note also %u and %g may be different values
-> > > > >          than getuid/getgid in the event that the core_pattern executable is
-> > > > >          set[u|g]id root
-> > > >
-> > > > I'm slightly confused by that last point.  According to my
-> > > > experiments, the core_pattern executable is always run as user and
-> > > > group root, so making it set[ug]id root would seem to be a no-op.
-> > > > (But anyway, %u and %g do give the "right" values -- the UID and GID
-> > > > of the dumping process.)
-> > > >
-> > > Hmm, are you sure, I was under the impression that we fork the usermodehelper in
-> > > do_coredump as a parent of current, which has the dumping processes uid/gid.  I
-> > > do see that in do_coredump we call get_dumpable(mm) and if it returns with the
-> > > appropriate value we switch current->fsuid to 0.  I wonder if thats what you're
-> > > seeing?
-> >
-> > Have a look at the following.  It demonstrates what I'm seeing (that
-> > the coredump program is run as root/root).
-> >
-> > ===
-> > $ cat core_pattern_test.c
-> > /* core_pattern_test.c */
-> >
-> > #define _GNU_SOURCE
-> > #include <sys/stat.h>
-> > #include <fcntl.h>
-> > #include <stdio.h>
-> > #include <stdlib.h>
-> > #include <unistd.h>
-> >
-> > #define BUF_SIZE 1024
-> >
-> > int
-> > main(int argc, char *argv[])
-> > {
-> >     int fd, tot, j;
-> >     ssize_t nread;
-> >     char buf[BUF_SIZE];
-> >     FILE *fp;
-> >
-> >     fd = open(argv[1], O_CREAT | O_WRONLY | O_TRUNC, 0666);
-> >     if (fd == -1)
-> >         exit(EXIT_FAILURE);
-> >
-> >     fp = fdopen(fd, "a");
-> >
-> >     fprintf(fp, "PID=%ld\n", (long) getpid());
-> >     fprintf(fp, "cwd=%s\n", get_current_dir_name());
-> >     fprintf(fp, "UID=%ld; EUID=%ld\n", (long) getuid(), (long) geteuid());
-> >     fprintf(fp, "GID=%ld; EGID=%ld\n", (long) getgid(), (long) getegid());
-> >
-> >     fprintf(fp, "argc=%d\n", argc);
-> >     for (j = 0; j < argc; j++)
-> >         fprintf(fp, "argc[%d]=<%s>\n", j, argv[j]);
-> >
-> >     /* Count bytes in standard input */
-> >
-> >     tot = 0;
-> >     while ((nread = read(STDIN_FILENO, buf, BUF_SIZE)) > 0)
-> >         tot += nread;
-> >     fprintf(fp, "Total bytes in core dump: %d\n", tot);
-> >
-> >     exit(EXIT_SUCCESS);
-> > }
-> > $ cc core_pattern_test.c
-> > $ sudo sh -c 'echo "|$PWD/core_pattern_test $PWD/c p_%p u_%u g_%g t_%t
-> > c_%c" > /proc/sys/kernel/core_pattern'
-> > root's password:
-> > $ id
-> > uid=1000(mtk) gid=100(users) groups=16(dialout),33(video),100(users)
-> > $ sleep 100
-> > [type ^\]
-> > Quit (core dumped)
-> > $ cat c
-> > PID=6743
-> > cwd=/
-> > UID=0; EUID=0
-> > GID=0; EGID=0
-> > argc=7
-> > argc[0]=</home/mtk/man-pages/man5/core_pattern_test>
-> > argc[1]=</home/mtk/man-pages/man5/c>
-> > argc[2]=<p_6742>
-> > argc[3]=<u_1000>
-> > argc[4]=<g_100>
-> > argc[5]=<t_1209146940>
-> > argc[6]=<c_4294967295>
-> > Total bytes in core dump: 282624
-> > $
-> > ===
-> >
-> > Your thoughts?
-> >
-> > Cheers,
-> >
-> > Michael
+> I wanted to point out that this, in particular, is utter nonsense. Consider 
+> a sequence that looks something like this:
 >
-> I certainly don't doubt your results.  The uid/gid options IIRC were there when
-> I made my updates and so I left them alone, wokring under the asumption that
-> thats what they were there for.  Clearly you have evidence to the contrary here.
-> It seems like we should run the core collector as the uid of the dumping
-> process, simply because it doesn't need to be run as root (and one could force
-> the running of the commadn as root using the suid bit on the executable file).
+> if (foo ? bar : imv_cond(var)) {
+> 	blah();
+> }
 >
-> I say documented like your experiment shows it to work, and I'll try to find
-> some time to investigate where we switch uids and why.
+> An entirely sane transformation of this (as far as gcc is concerned), is 
+> something like:
 >
-> Thanks for the info!
-> Neil
+> 	cmpl $0,foo
+> 	je 1f
+> 	cmpl $0,bar
+> 	jmp 2f
+> 1:
+> #APP
+> 	movb var,%al	/* This is your imv */
+> #NO_APP
+> 	testb %al,%al
+> 2:
+> 	je 3f
+> 	call blah
+> 3:
 >
-> --
-> /****************************************************
->  * Neil Horman <nhorman@tuxdriver.com>
->  * Software Engineer, Red Hat
->  ****************************************************/
+> Your code would take the movb-testb-je sequence and combine them, then we 
+> jump into the middle of the new instruction when jumping at 2!
 >
 
+I am glad you come up with a counter argument. Let's look at what would
+happen here with my modified code :
 
+	cmpl $0,foo
+	je 1f
+	cmpl $0,bar
+	jmp 2f
+1:
+#APP
+	mov %esi, %esi /* nop 2 bytes */
+#NO_APP
+	mov %esi, %esi /* nop 2 bytes */
+2:
+	jmp 3f         /* 2 bytes short jump */
+	call blah
+3:
+
+First of all, I do not "combine" the instructions.. that would be really
+dangerous (and bug-prone, since any interrupt could iret to an invalid
+instruction). No, all I do is to swap instructions for other
+instructions of the same size (or smaller in the case of jne 6 bytes ->
+nop1 + jmp 5 bytes).
+
+I see the problem you show here : it's dangerous to change an
+instruction generated by gcc because it can be re-used for other
+purposes, as in your example.
+
+Then, what I propose is the following : instead of modifying the
+conditional branch instruction, I prefix my inline assembly with a 5
+bytes jump. I can then have the exact same behavior as the original
+conditional branch; I either jump at the address following the
+conditional branch or at the target address. I would still have to check
+for ZF and %al liveliness as I proposed earlier, because I would skip
+the movb and test instructions.
+
+> There are only two ways to deal with this - extensive analysis of the 
+> entire flow of control, or telling the compiler exactly what is *actually* 
+> going on.  The latter is the preferred way, obviously.
+>
+
+Yes, in an ideal world, gcc would help here.
+
+Mathieu
+
+> 	-hpa
+>
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
