@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934016AbYDYTMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbYDYTNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934016AbYDYTMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933741AbYDYTKR
+	id S933703AbYDYTNP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbYDYTLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 15:10:17 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34420 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933688AbYDYTKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 15:10:13 -0400
-Date: Fri, 25 Apr 2008 21:10:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Massimo Maiurana <maiurana@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: fix broken target update-po-config
-Message-ID: <20080425191045.GA11263@uranus.ravnborg.org>
-References: <480FAC63.6060109@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480FAC63.6060109@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 25 Apr 2008 15:11:22 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39461 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765218AbYDYTLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 15:11:21 -0400
+Message-ID: <48122CB0.7020003@zytor.com>
+Date: Fri, 25 Apr 2008 12:10:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com> <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.10.0804251133100.2779@woody.linux-foundation.org> <20080425185251.GL14990@parisc-linux.org>
+In-Reply-To: <20080425185251.GL14990@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 11:38:43PM +0200, Massimo Maiurana wrote:
-> In the latest kernel "make update-po-config" fails because it tries
-> to open arch/Kconfig/Kconfig, since the ls command doesn't
-> distinguish between files and directories.
+Matthew Wilcox wrote:
 > 
-> trivial patch below.
+> So ... given all this, why do we define s64 to be 'long' on some
+> architectures and 'long long' on others?  It seems to actively _hinder_
+> passing it to printf(), so there must be some other good reason that
+> I'm missing to not make it 'long long' everywhere.
+> 
 
-Thanks.
+Well, compatibility with userspace is probably one aspect of that. 
+x86-64 is the odd man out there, it defines __s64 as "long long" even 
+for userspace, even though int64_t from <stdint.h> is "long".  This, 
+IMO, is the Wrong Thing, but it's a separate set of changes.
 
-Your patch was MIME damaged so when looking closer at it I
-decided for a simpler approach:
+The right thing to do is probably to always use "long long" in the 
+kernel, while defining __s64 et al as "long" on 64-bit platforms when 
+not under __KERNEL__.
 
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 32e8c5a..fa1a7d5 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -36,10 +36,10 @@ update-po-config: $(obj)/kxgettext $(obj)/gconf.glade.h
- 	    --output $(obj)/config.pot
- 	$(Q)sed -i s/CHARSET/UTF-8/ $(obj)/config.pot
- 	$(Q)ln -fs Kconfig.i386 arch/um/Kconfig.arch
--	$(Q)(for i in `ls arch/`;                        \
-+	$(Q)(for i in `ls arch/*/Kconfig`;               \
- 	    do                                           \
- 		echo "  GEN $$i";                        \
--		$(obj)/kxgettext arch/$$i/Kconfig        \
-+		$(obj)/kxgettext $$i                     \
- 		     >> $(obj)/config.pot;               \
- 	    done )
- 	$(Q)msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
+Again, this is a separate set of changes from this patchset, which is 
+just a code transformation.
 
-	Sam
+	-hpa
+
