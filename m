@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbYDYH5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbYDYH61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760357AbYDYH5s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYDYH5k
+	id S1760559AbYDYH61 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbYDYH6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:57:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57054
+	Fri, 25 Apr 2008 03:58:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57062
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752152AbYDYH5j (ORCPT
+	by vger.kernel.org with ESMTP id S1754169AbYDYH6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:57:39 -0400
-Date: Fri, 25 Apr 2008 00:57:38 -0700 (PDT)
-Message-Id: <20080425.005738.114887644.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       alan@lxorguk.ukuu.org.uk, tglx@linutronix.de
-Subject: Re: [git pull] scheduler/misc fixes
+	Fri, 25 Apr 2008 03:58:17 -0400
+Date: Fri, 25 Apr 2008 00:58:16 -0700 (PDT)
+Message-Id: <20080425.005816.249606540.davem@davemloft.net>
+To: jirislaby@gmail.com
+Cc: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209109710.7115.400.camel@twins>
-References: <20080424225530.GA8717@elte.hu>
-	<20080424.204620.88617191.davem@davemloft.net>
-	<1209109710.7115.400.camel@twins>
+In-Reply-To: <48118EAB.5040004@gmail.com>
+References: <48118B73.6000700@gmail.com>
+	<20080425.004943.148536408.davem@davemloft.net>
+	<48118EAB.5040004@gmail.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,63 +32,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 25 Apr 2008 09:48:30 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+Date: Fri, 25 Apr 2008 09:56:27 +0200
 
->  c) there are 'IPI' handlers on SPARC64 that look like they can wake
->     the CPU from idle sleep but do not appear to call irq_enter() which
->     has the above patch's touch_softlock_watchdog() in its callchain.
+> On 04/25/2008 09:49 AM, David Miller wrote:
+> > Two hyperthreads per-core?
 > 
-> tl0_irq1:       TRAP_IRQ(smp_call_function_client, 1)
-> tl0_irq2:       TRAP_IRQ(smp_receive_signal_client, 2)
-> tl0_irq3:       TRAP_IRQ(smp_penguin_jailcell, 3)
-> tl0_irq4:       TRAP_IRQ(smp_new_mmu_context_version_client, 4)
+> Hmm, how to find out? I suppose it will show up 4 (virtual) processors in 
+> cpuinfo, right? Although there is ht bit in cpuinfo on each core and 
+> CONFIG_X86_HT=y, I don't see 4 cpus.
+
+Ok, good to know.
+
+> > If so that could match up to the pattern.  It is just one theory
+> > though.  The wireless possibility holds just as much weight.
 > 
-> 
-> 
-> So the current working thesis is that the bug in a) hides a real problem
-> not quite fixed by b) and exploited by c).
+> The mac80211 is theory too so far :).
 
-The equivalent to smp_receive_signal_client() on x86
-(smp_reschedule_interrupt) doesn't do an irq_enter() either.
+I'll try to do some commit mining of my own.
 
-However x86 does do an irq_enter() for smp_call_function() interrupt
-handling.
-
-What is the rule in these cases?
-
-Anyways, does the following patch fix the problem?
-
-diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
-index 524b889..bf4ef84 100644
---- a/arch/sparc64/kernel/smp.c
-+++ b/arch/sparc64/kernel/smp.c
-@@ -866,14 +866,21 @@ void smp_call_function_client(int irq, struct pt_regs *regs)
- 	void *info = call_data->info;
- 
- 	clear_softint(1 << irq);
-+
-+	irq_enter();
-+
-+	if (!call_data->wait) {
-+		/* let initiator proceed after getting data */
-+		atomic_inc(&call_data->finished);
-+	}
-+
-+	func(info);
-+
-+	irq_exit();
-+
- 	if (call_data->wait) {
- 		/* let initiator proceed only after completion */
--		func(info);
--		atomic_inc(&call_data->finished);
--	} else {
--		/* let initiator proceed after getting data */
- 		atomic_inc(&call_data->finished);
--		func(info);
- 	}
- }
- 
-
-
+Thanks for all of the info so far.
