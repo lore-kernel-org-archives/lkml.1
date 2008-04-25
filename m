@@ -1,110 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYDYOrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYDYOu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYDYOrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 10:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYDYOrZ
+	id S1757916AbYDYOu4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 10:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYDYOut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 10:47:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:3420 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbYDYOrY (ORCPT
+	Fri, 25 Apr 2008 10:50:49 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50168 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750901AbYDYOus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 10:47:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DUfQlJvKXrjbucuJcaSL6mBDpCdSKC8j8qXIskqvwhxwZZOrbFevXFxN+1fw1aCV7JXa/gAhMLYLiUCyWLLtRbUAdow+XAXrIbutsQ7LhlN4abzdjlwlve4PM3nvIPr9cq0DQy1zIh3S340ELUfZpdMILX5HnOHFfWaea+dOriM=
-Message-ID: <dd18b0c30804250747u4168bafsccc6feec0ba78c26@mail.gmail.com>
-Date: Fri, 25 Apr 2008 14:47:23 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [ INFO: iconsistent lock state ]
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-In-Reply-To: <1209125470.24931.10.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Apr 2008 10:50:48 -0400
+Subject: Re: Voyager phys_cpu_present_map compile error
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080421201434.GN8770@elte.hu>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
+	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
+	 <20080421120054.GA6788@elte.hu>
+	 <20080421132705.GG6011@cs181133002.pp.htv.fi>
+	 <20080421201434.GN8770@elte.hu>
+Content-Type: text/plain
+Date: Fri, 25 Apr 2008 09:50:43 -0500
+Message-Id: <1209135044.3087.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804241724t2dcc044dvab4a5ad506255d8d@mail.gmail.com>
-	 <1209125470.24931.10.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 12:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Fri, 2008-04-25 at 00:24 +0000, Justin Mattock wrote:
->
->  > [   13.269763] =================================
->  > [   13.270954] [ INFO: inconsistent lock state ]
->  > [   13.271865] 2.6.25-04569-gb69d398 #3
->
->  What tree is that? git checkout gb69d398 doesn't want to happen here.
->
->  > [   13.272614] ---------------------------------
->  > [   13.273521] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
->  > [   13.274745] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
->  > [   13.275787]  (&rq->rq_lock_key){++..}, at: [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
->  > [   13.276859] {in-hardirq-W} state was registered at:
->  > [   13.276859]   [<c01423d8>] __lock_acquire+0x419/0xb70
->  > [   13.276859]   [<c0142bae>] lock_acquire+0x7f/0xa6
->  > [   13.280188]   [<c0394132>] _spin_lock+0x1c/0x49
->  > [   13.280188]   [<c0121c44>] scheduler_tick+0x43/0x1bd
->  > [   13.280188]   [<c012d99f>] update_process_times+0x3d/0x49
->  > [   13.283524]   [<c013daf6>] tick_periodic+0x66/0x72
->  > [   13.283524]   [<c013db1b>] tick_handle_periodic+0x19/0x6a
->  > [   13.283524]   [<c0105a87>] timer_interrupt+0x47/0x4e
->  > [   13.286855]   [<c015cf64>] handle_IRQ_event+0x1a/0x4f
->  > [   13.286855]   [<c015e3e9>] handle_level_irq+0x7f/0xca
->  > [   13.286855]   [<c0105a27>] do_IRQ+0x71/0x8a
->  > [   13.290190]   [<c01043fe>] common_interrupt+0x2e/0x34
->  > [   13.290190]   [<c038bd6f>] calibrate_delay+0x8f/0x276
->  > [   13.290190]   [<c04f0883>] start_kernel+0x27c/0x2f8
->  > [   13.293520]   [<c04f0008>] __init_begin+0x8/0xa
->  > [   13.293520]   [<ffffffff>] 0xffffffff
->  > [   13.293520] irq event stamp: 253965
->  > [   13.296856] hardirqs last  enabled at (253965): [<c0108069>] native_sched_clock+0xe7/0xff
->  > [   13.296856] hardirqs last disabled at (253964): [<c0107fef>] native_sched_clock+0x6d/0xff
->  > [   13.300190] softirqs last  enabled at (253958): [<c0129cea>] __do_softirq+0xf9/0xff
->  > [   13.300190] softirqs last disabled at (253953): [<c0129d3d>] do_softirq+0x4d/0x79
->  > [   13.303522]
->  > [   13.303522] other info that might help us debug this:
->  > [   13.303522] no locks held by swapper/0.
->  > [   13.303522]
->  > [   13.303522] stack backtrace:
->  > [   13.306852] Pid: 0, comm: swapper Not tainted 2.6.25-04569-gb69d398 #3
->  > [   13.336851]  [<c01409f9>] print_usage_bug+0x106/0x113
->  > [   13.340185]  [<c0141823>] mark_lock+0x1ed/0x3a5
->  > [   13.343519]  [<c014244d>] __lock_acquire+0x48e/0xb70
->  > [   13.346852]  [<c0142bae>] lock_acquire+0x7f/0xa6
->  > [   13.350185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
->  > [   13.353519]  [<c0394132>] _spin_lock+0x1c/0x49
->  > [   13.360185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
->  > [   13.363518]  [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
->  > [   13.366851]  [<f883919b>] acpi_idle_enter_bm+0x2b3/0x333 [processor]
->  > [   13.370184]  [<c02e5ec1>] cpuidle_idle_call+0x63/0x92
->  > [   13.373517]  [<c02e5e5e>] ? cpuidle_idle_call+0x0/0x92
->  > [   13.380184]  [<c010257d>] cpu_idle+0xb6/0xd6
->  > [   13.383517]  [<c0387071>] rest_init+0x49/0x4b
->  > [   13.386850]  =======================
->
->  looking at current -linus I'm not directly seeing how we can get there
->  with interrupts enabled.
->
->
+On Mon, 2008-04-21 at 22:14 +0200, Ingo Molnar wrote:
+> * Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > > +#ifndef CONFIG_X86_VOYAGER
+> > >  /* Bitmask of physically existing CPUs */
+> > >  physid_mask_t phys_cpu_present_map;
+> > > +#endif
+> > >...
+> > 
+> > Alexey noted that phys_cpu_present_map for Voyager and !Voyager also 
+> > have different types and suggested to make the Voyager one static 
+> > instead (additional renaming of the Voyager one also makes sense).
+> 
+> yep, done by the patch below.
 
-Hello; I have been using:
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+Actually, this isn't the right patch.  The point is not to avoid the
+symbol clash, it's to let voyager identify correctly that you have a
+leaking symbol.  In this case phys_cpu_present_map is exposed outside of
+SMP.  The correct fix (and one which sweeps op other storage for
+unnecessary symbols is this):
 
-I used the tutorial from kernel hackers, and IBM. If this is what you're asking.
-All I know is last friday I did git-pull, "2.6.25-xxxx-xxxxx" and my
-system has not been able to run right,
-If I new how to pull code out of my ass I would probably have fixed
-this problem that I have by now, but I dont,
-regards;
+James
+
+---
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index c0c68c1..d68aa53 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -12,6 +12,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ 
++#ifdef CONIFG_X86_SMP
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ /* Processor that is doing the boot up */
+@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ 
+ /* Bitmask of physically existing CPUs */
+ physid_mask_t phys_cpu_present_map;
++#endif
+ 
+-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
++#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+  * per cpu data areas.  These arrays then become expendable and the
 
 
--- 
-Justin P. Mattock
