@@ -1,107 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765240AbYDYVrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbYDYVtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765240AbYDYVrk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 17:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbYDYVrK
+	id S932741AbYDYVtS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 17:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758403AbYDYVtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 17:47:10 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2976 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754128AbYDYVrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 17:47:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,709,1199692800"; 
-   d="scan'208";a="274838590"
-Message-ID: <48125150.9020203@linux.intel.com>
-Date: Fri, 25 Apr 2008 14:46:56 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 25 Apr 2008 17:49:06 -0400
+Received: from outbound-mail-105.bluehost.com ([69.89.18.5]:53042 "HELO
+	outbound-mail-105.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756162AbYDYVtG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 17:49:06 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz, yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] pci/irq: restore mask_bits in msi shutdown -v3
+Date: Fri, 25 Apr 2008 14:48:21 -0700
+User-Agent: KMail/1.9.9
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "David Miller" <davem@davemloft.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, tglx@linutronix.de,
+       "Greg KH" <greg@kroah.com>, "Jeff Garzik" <jeff@garzik.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Sathya Prakash <sathya.prakash@lsi.com>
+References: <200804222148.17530.yhlu.kernel@gmail.com> <200804231456.30786.yhlu.kernel@gmail.com>
+In-Reply-To: <200804231456.30786.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Top 10 Oops/Warning reports for the week of April 25th, 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804251448.21966.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.88.206.99 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing really exciting in the last week or two; we're fixing all the frequent bugs,
-or the bugs are in out of tree drivers / various git trees.
+On Wednesday, April 23, 2008 2:56 pm Yinghai Lu wrote:
+> Yinghai found after using 2.6.25-rc3 later to kexec RHEL 5.1,
+> NIC can not be used.
+>
+> bisected to
 
-For the 2.6.25 development cycle, an overview of the sightings can be seen at:
+Hi Yinghai, I've been thinking about these patches a bit...  They seem like an 
+important bug fix (making sure kexec'd kernels work), but I'm a bit worried 
+that the kexec'd kernel can't handle potentially broken MSI/INTx setups.  
+Shouldn't the kexec'd kernel be a bit more robust?  I guess in this case 
+you're kexec'ing an old kernel, so there's not much we can do, but it still 
+makes me a little uneasy.
 
-http://www.kerneloops.org/twentyfive.html
+I guess for this particular set it doesn't matter much, since we should be 
+restoring things in pci_msi*_shutdown and pci_shutdown_device either way.  
+Can you clean up the changelog a bit and maybe make it more concise?  E.g. we 
+probably don't need the whole commit message for the bisect, and we want to 
+be clearer about what the failure mode is w/o the changes...
 
-
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a top 10 list of the oopses collected in the last 7 days.
-(Reports prior to 2.6.23 have been omitted in collecting the top 10)
-
-This week, a total of 647 oopses and warnings have been reported,
-compared to 719 reports in the previous week.
-
-
-Rank 1: __register_sysctl_paths
-	Reported 74 times (372 total reports)
-	Duplicate /proc registration. Most bugs are in madwifi but also in the parport driver
-	This warning was last seen in version 2.6.25, and first seen in 2.6.25-rc3.
-	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
-
-Rank 2: set_dentry_child_flags  [fixed]
-	Reported 64 times (665 total reports)
-	Bug in the 2.6.24 inotify code that got exposed by KDE4 and got fixed in 2.6.25
-	This warning was last seen in version 2.6.24.4, and first seen in 2.6.24-rc8-git4.
-	More info: http://www.kerneloops.org/searchweek.php?search=set_dentry_child_flags
-
-Rank 3: mark_buffer_dirty
-	Reported 43 times (144 total reports)
-	EXT3 bug while hot-removing a USB device
-	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
-
-Rank 4: input_release_device [fixed]
-	Reported 40 times (718 total reports)
-	sysfs refcounting cleanup exposed input layer issues; fixed in 2.6.25-rc9
-	This oops was last seen in version 2.6.25-rc7-git4, and first seen in 2.6.25-rc2.
-	More info: http://www.kerneloops.org/searchweek.php?search=input_release_device
-
-Rank 5: sysfs_add_one
-	Reported 39 times (171 total reports)
-	Various buggy subsystems that register duplicate sysfs files
-	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
-
-Rank 6: radeon_cp_init_ring_buffer [out of tree]
-	Reported 28 times (50 total reports)
-	drm.git bug in the radeon driver
-	This oops was last seen in version 2.6.25, and first seen in 2.6.25-rc8-git7.
-	More info: http://www.kerneloops.org/searchweek.php?search=radeon_cp_init_ring_buffer
-
-Rank 7: sysctl_check_lookup [out of tree]
-	Reported 18 times (173 total reports)
-	Bug in the proprietary madwifi driver
-	Oops only shows up in tainted kernels
-	This warning was last seen in version 2.6.24.4, and first seen in 2.6.24-rc5.
-	More info: http://www.kerneloops.org/searchweek.php?search=sysctl_check_lookup
-
-Rank 8: sk_free [out of tree]
-	Reported 16 times (23 total reports)
-	VMWare driver bug
-	Oops only shows up in tainted kernels
-	This oops was last seen in version 2.6.25, and first seen in 2.6.23.9.
-	More info: http://www.kerneloops.org/searchweek.php?search=sk_free
-
-Rank 9: __ieee80211_rx
-	Warning at net/mac80211/rx.c:2183 in __ieee80211_rx
-	Reported 16 times (176 total reports)
-	Seen with various wireless drivers
-	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=__ieee80211_rx
-
-Rank 10: read_apic_id
-	Reported 13 times (15 total reports)
-	This oops was last seen in version 2.6.25-git2, and first seen in 2.6.25-rc8.
-	More info: http://www.kerneloops.org/searchweek.php?search=read_apic_id
+Thanks,
+Jesse
