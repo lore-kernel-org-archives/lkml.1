@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765583AbYDYSDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbYDYSDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765583AbYDYSDF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762599AbYDYR50
+	id S932457AbYDYSDc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbYDYR51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:57:26 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:53126 "EHLO
+	Fri, 25 Apr 2008 13:57:27 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53138 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764784AbYDYR5D (ORCPT
+	with ESMTP id S1762635AbYDYR5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:57:03 -0400
-Date: Fri, 25 Apr 2008 13:56:09 -0400
+	Fri, 25 Apr 2008 13:57:21 -0400
+Date: Fri, 25 Apr 2008 13:56:03 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 6/19] UML - hppfs fixes
-Message-ID: <20080425175608.GA11182@c2.user-mode-linux.org>
+Subject: [PATCH 1/19] UML - Redo host capability detection and disabling
+Message-ID: <20080425175602.GA11170@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,238 +24,180 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hppfs tidying and fixes noticed during hch's get_inode work -
-      style fixes
-      a copy_to_user got its return value checked
-      hppfs_write no longer fiddles file->f_pos because it gets and
-returns pos in its arguments
-      hppfs_delete_inode dputs the underlyng procfs dentry stored in
-its private data and mntputs the vfsmnt stashed in s_fs_info
-      hppfs_put_super no longer needs to mntput the s_fs_info, so it
-no longer needs to exist
-      hppfs_readlink and hppfs_follow_link were doing a bunch of stuff
-with a struct file which they didn't use
-      there is now a ->permission which calls generic_permission
-      get_inode was always returning 0 for some reason - it now
-returns an inode if nothing bad happened
+Redo how host capabilities are recorded at startup and disabled on the
+command line.
+
+There are now explicit variables saying what's been disabled by the
+command line rather than the implicitness of the have_* variable being
+zero.  The capability variables now start at zero and are set to one
+as their capabilities are found to be present on the host.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- fs/hppfs/hppfs_kern.c |   82 ++++++++++++++++++--------------------------------
- 1 file changed, 30 insertions(+), 52 deletions(-)
+ arch/um/os-Linux/start_up.c |   81 ++++++++++++++++++++++----------------------
+ 1 file changed, 41 insertions(+), 40 deletions(-)
 
-Index: linux-2.6.22/fs/hppfs/hppfs_kern.c
+Index: linux-2.6-git/arch/um/os-Linux/start_up.c
 ===================================================================
---- linux-2.6.22.orig/fs/hppfs/hppfs_kern.c	2008-04-24 13:35:54.000000000 -0400
-+++ linux-2.6.22/fs/hppfs/hppfs_kern.c	2008-04-24 15:31:59.000000000 -0400
-@@ -33,7 +33,7 @@ struct hppfs_private {
- };
+--- linux-2.6-git.orig/arch/um/os-Linux/start_up.c	2008-04-24 16:06:01.000000000 -0400
++++ linux-2.6-git/arch/um/os-Linux/start_up.c	2008-04-24 16:08:31.000000000 -0400
+@@ -23,6 +23,7 @@
+ #include "mem_user.h"
+ #include "ptrace_user.h"
+ #include "registers.h"
++#include "skas.h"
+ #include "skas_ptrace.h"
  
- struct hppfs_inode_info {
--        struct dentry *proc_dentry;
-+	struct dentry *proc_dentry;
- 	struct inode vfs_inode;
- };
- 
-@@ -52,7 +52,7 @@ static int is_pid(struct dentry *dentry)
- 	int i;
- 
- 	sb = dentry->d_sb;
--	if ((sb->s_op != &hppfs_sbops) || (dentry->d_parent != sb->s_root))
-+	if (dentry->d_parent != sb->s_root)
- 		return 0;
- 
- 	for (i = 0; i < dentry->d_name.len; i++) {
-@@ -136,7 +136,7 @@ static int file_removed(struct dentry *d
+ static int ptrace_child(void)
+@@ -142,14 +143,27 @@ static int stop_ptraced_child(int pid, i
  }
  
- static struct dentry *hppfs_lookup(struct inode *ino, struct dentry *dentry,
--                                  struct nameidata *nd)
-+				   struct nameidata *nd)
- {
- 	struct dentry *proc_dentry, *new, *parent;
- 	struct inode *inode;
-@@ -254,6 +254,8 @@ static ssize_t hppfs_read(struct file *f
- 	int err;
- 
- 	if (hppfs->contents != NULL) {
-+		int rem;
+ /* Changed only during early boot */
+-int ptrace_faultinfo = 1;
+-int ptrace_ldt = 1;
+-int proc_mm = 1;
+-int skas_needs_stub = 0;
++int ptrace_faultinfo;
++static int disable_ptrace_faultinfo;
 +
- 		if (*ppos >= hppfs->len)
- 			return 0;
- 
-@@ -267,8 +269,10 @@ static ssize_t hppfs_read(struct file *f
- 
- 		if (off + count > hppfs->len)
- 			count = hppfs->len - off;
--		copy_to_user(buf, &data->contents[off], count);
--		*ppos += count;
-+		rem = copy_to_user(buf, &data->contents[off], count);
-+		*ppos += count - rem;
-+		if (rem > 0)
-+			return -EFAULT;
- 	} else if (hppfs->host_fd != -1) {
- 		err = os_seek_file(hppfs->host_fd, *ppos);
- 		if (err) {
-@@ -285,21 +289,15 @@ static ssize_t hppfs_read(struct file *f
- 	return count;
- }
- 
--static ssize_t hppfs_write(struct file *file, const char __user *buf, size_t len,
--			   loff_t *ppos)
-+static ssize_t hppfs_write(struct file *file, const char __user *buf,
-+			   size_t len, loff_t *ppos)
- {
- 	struct hppfs_private *data = file->private_data;
- 	struct file *proc_file = data->proc_file;
- 	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
--	int err;
- 
- 	write = proc_file->f_path.dentry->d_inode->i_fop->write;
--
--	proc_file->f_pos = file->f_pos;
--	err = (*write)(proc_file, buf, len, &proc_file->f_pos);
--	file->f_pos = proc_file->f_pos;
--
--	return err;
-+	return (*write)(proc_file, buf, len, ppos);
- }
- 
- static int open_host_sock(char *host_file, int *filter_out)
-@@ -357,7 +355,7 @@ static struct hppfs_data *hppfs_get_data
- 
- 	if (filter) {
- 		while ((n = read_proc(proc_file, data->contents,
--				     sizeof(data->contents), NULL, 0)) > 0)
-+				      sizeof(data->contents), NULL, 0)) > 0)
- 			os_write_file(fd, data->contents, n);
- 		err = os_shutdown_socket(fd, 0, 1);
- 		if (err) {
-@@ -429,8 +427,8 @@ static int file_mode(int fmode)
- static int hppfs_open(struct inode *inode, struct file *file)
- {
- 	struct hppfs_private *data;
--	struct dentry *proc_dentry;
- 	struct vfsmount *proc_mnt;
-+	struct dentry *proc_dentry;
- 	char *host_file;
- 	int err, fd, type, filter;
- 
-@@ -492,8 +490,8 @@ static int hppfs_open(struct inode *inod
- static int hppfs_dir_open(struct inode *inode, struct file *file)
- {
- 	struct hppfs_private *data;
--	struct dentry *proc_dentry;
- 	struct vfsmount *proc_mnt;
-+	struct dentry *proc_dentry;
- 	int err;
- 
- 	err = -ENOMEM;
-@@ -620,6 +618,9 @@ static struct inode *hppfs_alloc_inode(s
- 
- void hppfs_delete_inode(struct inode *ino)
- {
-+	dput(HPPFS_I(ino)->proc_dentry);
-+	mntput(ino->i_sb->s_fs_info);
++int ptrace_ldt;
++static int disable_ptrace_ldt;
 +
- 	clear_inode(ino);
- }
++int proc_mm;
++static int disable_proc_mm;
++
++int have_switch_mm;
++static int disable_switch_mm;
++
++int skas_needs_stub;
  
-@@ -628,69 +629,46 @@ static void hppfs_destroy_inode(struct i
- 	kfree(HPPFS_I(inode));
- }
- 
--static void hppfs_put_super(struct super_block *sb)
--{
--	mntput(sb->s_fs_info);
--}
--
- static const struct super_operations hppfs_sbops = {
- 	.alloc_inode	= hppfs_alloc_inode,
- 	.destroy_inode	= hppfs_destroy_inode,
- 	.delete_inode	= hppfs_delete_inode,
- 	.statfs		= hppfs_statfs,
--	.put_super	= hppfs_put_super,
- };
- 
- static int hppfs_readlink(struct dentry *dentry, char __user *buffer,
- 			  int buflen)
+ static int __init skas0_cmd_param(char *str, int* add)
  {
--	struct file *proc_file;
- 	struct dentry *proc_dentry;
--	struct vfsmount *proc_mnt;
--	int ret;
- 
- 	proc_dentry = HPPFS_I(dentry->d_inode)->proc_dentry;
--	proc_mnt = dentry->d_sb->s_fs_info;
--
--	proc_file = dentry_open(dget(proc_dentry), mntget(proc_mnt), O_RDONLY);
--	if (IS_ERR(proc_file))
--		return PTR_ERR(proc_file);
--
--	ret = proc_dentry->d_inode->i_op->readlink(proc_dentry, buffer, buflen);
--
--	fput(proc_file);
--
--	return ret;
-+	return proc_dentry->d_inode->i_op->readlink(proc_dentry, buffer,
-+						    buflen);
+-	ptrace_faultinfo = proc_mm = 0;
++	disable_ptrace_faultinfo = 1;
++	disable_ptrace_ldt = 1;
++	disable_proc_mm = 1;
++	disable_switch_mm = 1;
++
+ 	return 0;
  }
  
--static void* hppfs_follow_link(struct dentry *dentry, struct nameidata *nd)
-+static void *hppfs_follow_link(struct dentry *dentry, struct nameidata *nd)
+@@ -159,15 +173,12 @@ static int __init mode_skas0_cmd_param(c
+ 	__attribute__((alias("skas0_cmd_param")));
+ 
+ __uml_setup("skas0", skas0_cmd_param,
+-		"skas0\n"
+-		"    Disables SKAS3 usage, so that SKAS0 is used, unless \n"
+-	        "    you specify mode=tt.\n\n");
++"skas0\n"
++"    Disables SKAS3 and SKAS4 usage, so that SKAS0 is used\n\n");
+ 
+ __uml_setup("mode=skas0", mode_skas0_cmd_param,
+-		"mode=skas0\n"
+-		"    Disables SKAS3 usage, so that SKAS0 is used, unless you \n"
+-		"    specify mode=tt. Note that this was recently added - on \n"
+-		"    older kernels you must use simply \"skas0\".\n\n");
++"mode=skas0\n"
++"    Disables SKAS3 and SKAS4 usage, so that SKAS0 is used.\n\n");
+ 
+ /* Changed only during early boot */
+ static int force_sysemu_disabled = 0;
+@@ -362,7 +373,7 @@ void __init os_early_checks(void)
+ 
+ static int __init noprocmm_cmd_param(char *str, int* add)
  {
--	struct file *proc_file;
- 	struct dentry *proc_dentry;
--	struct vfsmount *proc_mnt;
--	void *ret;
- 
- 	proc_dentry = HPPFS_I(dentry->d_inode)->proc_dentry;
--	proc_mnt = dentry->d_sb->s_fs_info;
--
--	proc_file = dentry_open(dget(proc_dentry), mntget(proc_mnt), O_RDONLY);
--	if (IS_ERR(proc_file))
--		return proc_file;
--
--	ret = proc_dentry->d_inode->i_op->follow_link(proc_dentry, nd);
- 
--	fput(proc_file);
-+	return proc_dentry->d_inode->i_op->follow_link(proc_dentry, nd);
-+}
- 
--	return ret;
-+int hppfs_permission(struct inode *inode, int mask, struct nameidata *nd)
-+{
-+	return generic_permission(inode, mask, NULL);
+-	proc_mm = 0;
++	disable_proc_mm = 1;
+ 	return 0;
  }
  
- static const struct inode_operations hppfs_dir_iops = {
- 	.lookup		= hppfs_lookup,
-+	.permission	= hppfs_permission,
- };
+@@ -374,7 +385,7 @@ __uml_setup("noprocmm", noprocmm_cmd_par
  
- static const struct inode_operations hppfs_link_iops = {
- 	.readlink	= hppfs_readlink,
- 	.follow_link	= hppfs_follow_link,
-+	.permission	= hppfs_permission,
- };
+ static int __init noptracefaultinfo_cmd_param(char *str, int* add)
+ {
+-	ptrace_faultinfo = 0;
++	disable_ptrace_faultinfo = 1;
+ 	return 0;
+ }
  
- static struct inode *get_inode(struct super_block *sb, struct dentry *dentry)
-@@ -712,7 +690,7 @@ static struct inode *get_inode(struct su
- 		inode->i_fop = &hppfs_file_fops;
+@@ -386,7 +397,7 @@ __uml_setup("noptracefaultinfo", noptrac
+ 
+ static int __init noptraceldt_cmd_param(char *str, int* add)
+ {
+-	ptrace_ldt = 0;
++	disable_ptrace_ldt = 1;
+ 	return 0;
+ }
+ 
+@@ -406,17 +417,15 @@ static inline void check_skas3_ptrace_fa
+ 
+ 	n = ptrace(PTRACE_FAULTINFO, pid, 0, &fi);
+ 	if (n < 0) {
+-		ptrace_faultinfo = 0;
+ 		if (errno == EIO)
+ 			non_fatal("not found\n");
+ 		else
+ 			perror("not found");
+-	}
++	} else if (disable_ptrace_faultinfo)
++		non_fatal("found but disabled on command line\n");
+ 	else {
+-		if (!ptrace_faultinfo)
+-			non_fatal("found but disabled on command line\n");
+-		else
+-			non_fatal("found\n");
++		ptrace_faultinfo = 1;
++		non_fatal("found\n");
  	}
  
--	HPPFS_I(inode)->proc_dentry = dentry;
-+	HPPFS_I(inode)->proc_dentry = dget(dentry);
+ 	stop_ptraced_child(pid, 1, 1);
+@@ -439,38 +448,30 @@ static inline void check_skas3_ptrace_ld
+ 	if (n < 0) {
+ 		if (errno == EIO)
+ 			non_fatal("not found\n");
+-		else {
++		else
+ 			perror("not found");
+-		}
+-		ptrace_ldt = 0;
+-	}
++	} else if (disable_ptrace_ldt)
++		non_fatal("found, but use is disabled\n");
+ 	else {
+-		if (ptrace_ldt)
+-			non_fatal("found\n");
+-		else
+-			non_fatal("found, but use is disabled\n");
++		ptrace_ldt = 1;
++		non_fatal("found\n");
+ 	}
  
- 	inode->i_uid = proc_ino->i_uid;
- 	inode->i_gid = proc_ino->i_gid;
-@@ -725,7 +703,7 @@ static struct inode *get_inode(struct su
- 	inode->i_size = proc_ino->i_size;
- 	inode->i_blocks = proc_ino->i_blocks;
- 
--	return 0;
-+	return inode;
+ 	stop_ptraced_child(pid, 1, 1);
+-#else
+-	/* PTRACE_LDT might be disabled via cmdline option.
+-	 * We want to override this, else we might use the stub
+-	 * without real need
+-	 */
+-	ptrace_ldt = 1;
+ #endif
  }
  
- static int hppfs_fill_super(struct super_block *sb, void *d, int silent)
+ static inline void check_skas3_proc_mm(void)
+ {
+ 	non_fatal("  - /proc/mm...");
+-	if (access("/proc/mm", W_OK) < 0) {
+-		proc_mm = 0;
++	if (access("/proc/mm", W_OK) < 0)
+ 		perror("not found");
+-	}
+-	else if (!proc_mm)
++	else if (disable_proc_mm)
+ 		non_fatal("found but disabled on command line\n");
+-	else non_fatal("found\n");
++	else {
++		proc_mm = 1;
++		non_fatal("found\n");
++	}
+ }
+ 
+ void can_do_skas(void)
