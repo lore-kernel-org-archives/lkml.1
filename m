@@ -1,200 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbYDYXNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbYDYXOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994AbYDYXNR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 19:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYDYXNF
+	id S933109AbYDYXOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 19:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759716AbYDYXOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 19:13:05 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10780 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751870AbYDYXNE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 19:13:04 -0400
-Date: Fri, 25 Apr 2008 16:11:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, mporter@kernel.crashing.org
-Subject: [PATCH -mm] rapidio: fix kernel-doc problems
-Message-Id: <20080425161130.cc4e4062.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 Apr 2008 19:14:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:50821 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758205AbYDYXOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 19:14:06 -0400
+Message-ID: <481265B7.9040505@goop.org>
+Date: Fri, 25 Apr 2008 16:13:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap@sources.redhat.com
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org> <20080425230028.GC31226@Krystal>
+In-Reply-To: <20080425230028.GC31226@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Matt Porter <mporter@kernel.crashing.org>
+Mathieu Desnoyers wrote:
+> This idea has been considered a few years ago at OLS in the tracing BOF
+> if I remember well.  The results were this : First, there is no way to
+> guarantee that no code path, nor any return address from any function,
+> interrupt, sleeping thread, will return to the "old" version of the
+> function. Nor is it possible to determine when a quiescent state is
+> reached. Therefore, we couldn't see how we can do the teardown.
+>   
 
-RapidIO kernel-doc:
-fix multiple kernel-doc warnings and correct some doc typos.
+Does that matter?  The new function is semantically identical to the old 
+one, and the old code will remain in place.  If there's still users in 
+the old function it may take a while for them to get flushed out (and 
+won't be traced in the meantime), but you have to expect some missed 
+events if you're shoving any kind of dynamic marker into the code.  The 
+main problem is if there's something still depending on the first 5 
+bytes of the function (most likely if there's a loop head somewhere near 
+the top of the function).
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/powerpc/sysdev/fsl_rio.c |   13 +++++++++++--
- drivers/rapidio/rio.c         |   10 +++++-----
- include/linux/rio.h           |    5 +++++
- 3 files changed, 21 insertions(+), 7 deletions(-)
+Updating the markers would mean you'd leave a trail of old versions 
+hanging around as modules, but that's not a huge cost...
 
---- linux-2.6.25-mm1.orig/include/linux/rio.h
-+++ linux-2.6.25-mm1/include/linux/rio.h
-@@ -163,9 +163,13 @@ enum rio_phy_type {
-  * @outb_msg: RIO outbound message event descriptors
-  * @host_deviceid: Host device ID associated with this master port
-  * @ops: configuration space functions
-+ * @mops: memory operations functions
-  * @id: Port ID, unique among all ports
-  * @index: Port index, unique among all port interfaces of the same type
-+ * @sys_size: RapidIO common transport system size
-+ * @phy_type: RapidIO phy type
-  * @name: Port name string
-+ * @dev: struct device pointer
-  * @priv: Master port private data
-  */
- struct rio_mport {
-@@ -329,6 +333,7 @@ struct rio_route_ops {
-  * @node: Node in list of memories
-  * @virt: The virtual address for mapped memory accessing.
-  * @owner: The owner id of this memory.
-+ * @dev: device-specific pointer
-  * @size: The size of memory space, it should same to iores and riores.
-  * @iores: The resource of local IO region for mapping.
-  * @riores: The resource of mapped RapidIO space region.
---- linux-2.6.25-mm1.orig/drivers/rapidio/rio.c
-+++ linux-2.6.25-mm1/drivers/rapidio/rio.c
-@@ -353,7 +353,7 @@ int rio_release_outb_dbell(struct rio_de
-  * @mport: Master port
-  * @res: Resource need be requested.
-  *
-- * Return: 0 - Successed.
-+ * Return: 0 - Success.
-  */
- int rio_request_io_region(struct rio_mport *mport, struct resource *res)
- {
-@@ -369,7 +369,7 @@ EXPORT_SYMBOL_GPL(rio_request_io_region)
-  * @mport: Master port
-  * @size: IO resource size
-  * @name: Resource name
-- * @flag: Flag for resource
-+ * @flags: Flags for resource
-  * @res: Return resource which has been allocated.
-  */
- int rio_alloc_io(struct rio_mport *mport, resource_size_t size,
-@@ -476,7 +476,7 @@ void rio_unmap_outb_region(struct rio_mp
-  * @mport: Master port
-  * @mem: Inbound region descriptor
-  *
-- * Return 0 is successed.
-+ * Return 0 -- success.
-  */
- int rio_release_inb_region(struct rio_mport *mport, struct rio_mem *mem)
- {
-@@ -508,7 +508,7 @@ int rio_release_inb_region(struct rio_mp
-  * @name: The region name
-  * @owner: The region owner driver id
-  *
-- * Retrun: The rio_mem struction for inbound memory descriptor.
-+ * Return: The rio_mem struction for inbound memory descriptor.
-  *
-  * This function is used for request RapidIO space inbound region. If the size
-  * less than 4096 or not aligned to 2^N, it will be adjusted. The function will
-@@ -582,7 +582,7 @@ err:
-  * @mport: Master port
-  * @mem: Outbound region descriptor
-  *
-- * Return 0 is successed.
-+ * Return 0 -- success.
-  */
- int rio_release_outb_region(struct rio_mport *mport, struct rio_mem *mem)
- {
---- linux-2.6.25-mm1.orig/arch/powerpc/sysdev/fsl_rio.c
-+++ linux-2.6.25-mm1/arch/powerpc/sysdev/fsl_rio.c
-@@ -198,6 +198,7 @@ struct rio_priv {
- 
- /**
-  * fsl_rio_doorbell_send - Send a MPC85xx doorbell message
-+ * @mport: RapidIO master port info
-  * @index: ID of RapidIO interface
-  * @destid: Destination ID of target device
-  * @data: 16-bit info field of RapidIO doorbell message
-@@ -233,6 +234,7 @@ static int fsl_rio_doorbell_send(struct 
- 
- /**
-  * fsl_local_config_read - Generate a MPC85xx local config space read
-+ * @mport: RapidIO master port info
-  * @index: ID of RapdiIO interface
-  * @offset: Offset into configuration space
-  * @len: Length (in bytes) of the maintenance transaction
-@@ -254,6 +256,7 @@ static int fsl_local_config_read(struct 
- 
- /**
-  * fsl_local_config_write - Generate a MPC85xx local config space write
-+ * @mport: RapidIO master port info
-  * @index: ID of RapdiIO interface
-  * @offset: Offset into configuration space
-  * @len: Length (in bytes) of the maintenance transaction
-@@ -276,6 +279,7 @@ static int fsl_local_config_write(struct
- 
- /**
-  * fsl_rio_config_read - Generate a MPC85xx read maintenance transaction
-+ * @mport: RapidIO master port info
-  * @index: ID of RapdiIO interface
-  * @destid: Destination ID of transaction
-  * @hopcount: Number of hops to target device
-@@ -317,6 +321,7 @@ fsl_rio_config_read(struct rio_mport *mp
- 
- /**
-  * fsl_rio_config_write - Generate a MPC85xx write maintenance transaction
-+ * @mport: RapidIO master port info
-  * @index: ID of RapdiIO interface
-  * @destid: Destination ID of transaction
-  * @hopcount: Number of hops to target device
-@@ -357,6 +362,7 @@ fsl_rio_config_write(struct rio_mport *m
- 
- /**
-  * fsl_rio_map_inb_mem -- Mapping inbound memory region.
-+ * @mport: RapidIO master port info
-  * @lstart: Local memory space start address.
-  * @rstart: RapidIO space start address.
-  * @size: The mapping region size.
-@@ -419,6 +425,7 @@ static int fsl_rio_map_inb_mem(struct ri
- 
- /**
-  * fsl_rio_map_outb_mem -- Mapping outbound memory region.
-+ * @mport: RapidIO master port info
-  * @lstart: Local memory space start address.
-  * @rstart: RapidIO space start address.
-  * @size: The mapping region size.
-@@ -487,6 +494,7 @@ static int fsl_rio_map_outb_mem(struct r
- 
- /**
-  * fsl_rio_unmap_inb_mem -- Unmapping inbound memory region.
-+ * @mport: RapidIO master port info
-  * @lstart: Local memory space start address.
-  */
- static void fsl_rio_unmap_inb_mem(struct rio_mport *mport,
-@@ -510,6 +518,7 @@ static void fsl_rio_unmap_inb_mem(struct
- 
- /**
-  * fsl_rio_unmap_inb_mem -- Unmapping outbound memory region.
-+ * @mport: RapidIO master port info
-  * @lstart: Local memory space start address.
-  */
- static void fsl_rio_unmap_outb_mem(struct rio_mport *mport,
-@@ -1201,8 +1210,8 @@ static inline void fsl_rio_info(struct d
- }
- 
- /**
-- * fsl_rio_setup - Setup MPC85xx RapidIO interface
-- * @fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
-+ * fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
-+ * @dev: of_device pointer
-  *
-  * Initializes MPC85xx RapidIO hardware interface, configures
-  * master port with system-specific info, and registers the
+> The second point is dependency between execution flow and variables. If
+> we don't do a complete copy of the variables (which I don't see how we
+> can do atomically), we will have to share the variables between the old
+> and the new copies of the functions. However, some variables might
+> encode information about the execution flow of the program and depend on
+> the actual address at which the code is linked (function pointers for
+> instance). Stuff like "goto *addr" would also break.
+>   
+
+Obviously you'd only pick up new callers of the function, which would 
+mean that they'd pick up the new versions of those function-local 
+things.  Though you'd need to make sure that the new versions of the 
+function are using the old version's static variables...
+
+>
+> Then dealing with multiple code patching infrastructures (kprobes,
+> alternatives, paravirt) would become hellish. If a kprobe is planted in
+> the original version of the function, we have to insert it in the new
+> version... and the teardown of the old function is still a problem.
+>   
+
+The module machinery already deals with patching paravirt and 
+alternatives into loaded modules.  Your bespoke module would get dealt 
+with like any other module.
+
+    J
