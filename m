@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765450AbYDYUTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765340AbYDYUVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765450AbYDYUTG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 16:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764507AbYDYUSZ
+	id S1765340AbYDYUVX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbYDYUVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 16:18:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59662
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1764355AbYDYUSY (ORCPT
+	Fri, 25 Apr 2008 16:21:15 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34422 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761341AbYDYUVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 16:18:24 -0400
-Date: Fri, 25 Apr 2008 13:18:23 -0700 (PDT)
-Message-Id: <20080425.131823.109945389.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: jirislaby@gmail.com, zdenek.kabelac@gmail.com, rjw@sisk.pl,
-       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, andi@firstfloor.org, pageexec@freemail.hu,
-       hpa@zytor.com, jeremy@goop.org, mingo@elte.hu
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org>
-References: <20080425.021301.193689806.davem@davemloft.net>
-	<1209343883-7991-1-git-send-email-jirislaby@gmail.com>
-	<alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Apr 2008 16:21:14 -0400
+Date: Fri, 25 Apr 2008 21:20:10 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Paul Walmsley <paul@pwsan.com>, Dmitry <dbaryshkov@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
+       David Brownell <david-b@pacbell.net>, hiroshi.DOYU@nokia.com
+Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
+Message-ID: <20080425202010.GA28893@flint.arm.linux.org.uk>
+References: <20080420082925.GA32739@doriath.ww600.siemens.net> <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com> <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com> <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com> <20080425103942.GC14903@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080425103942.GC14903@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 25 Apr 2008 08:03:27 -0700 (PDT)
+On Fri, Apr 25, 2008 at 12:39:42PM +0200, Pavel Machek wrote:
+> WTF? There are currently around 10 copies of clock code in the tree,
+> every one slightly different. If this can help us get rid of all that
+> crap, that's a GOOD THING, normative or not.
 
-> On Mon, 28 Apr 2008, Jiri Slaby wrote:
-> > 
-> > Thanks. Bisected mm down to git-x86.patch, bisected git-x86-latest down to
-> > x86: enhance DEBUG_RODATA support - alternatives
-> > The patch below fixes the problem for me. Comments welcome.
-> 
-> You're a hero, Jiri.
+At the expense of people going off and inventing their own APIs because
+they find that the "normatived" clock API doesn't do what they need to?
 
-Indeed, what a heroic effort to fix a bug, thanks Jiri!!
+That's what will happen if you try to force a framework on folk which
+they don't agree with.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
