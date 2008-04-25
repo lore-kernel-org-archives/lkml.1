@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbYDYTFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbYDYTF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294AbYDYTFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765344AbYDYSlm
+	id S933565AbYDYTF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764542AbYDYSlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:41:42 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:28759 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764072AbYDYSj4 (ORCPT
+	Fri, 25 Apr 2008 14:41:44 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:9749 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761464AbYDYSji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:39:56 -0400
-Message-Id: <20080425183928.375529075@ldl.fc.hp.com>
+	Fri, 25 Apr 2008 14:39:38 -0400
+Message-Id: <20080425183925.949094545@ldl.fc.hp.com>
 References: <20080425183807.366134771@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 12:38:28 -0600
+Date: Fri, 25 Apr 2008 12:38:16 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: Adam Belay <ambx1@neo.rr.com>
 Cc: Adam M Belay <abelay@mit.edu>
@@ -26,308 +26,115 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 21/54] PNP: add debug when assigning PNP resources
-Content-Disposition: inline; filename=pnp-add-resource-list-debug-output
+Subject: [patch 09/54] PNP: change pnp_add_card_id() to allocate its own pnp_id structures
+Content-Disposition: inline; filename=pnp-move-allocation-into-pnp_add_card_id
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds code to dump PNP resources before and after
-assigning resources and before writing them to the device.
-
-This is enabled by CONFIG_PNP_DEBUG=y.
+This moves some of the pnp_id knowledge out of the backends and into
+the PNP core.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Acked-By: Rene Herman <rene.herman@gmail.com>
 
 Index: work10/drivers/pnp/base.h
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-04-25 11:14:51.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-04-25 11:14:57.000000000 -0600
-@@ -16,3 +16,5 @@
- int pnp_check_mem(struct pnp_dev * dev, int idx);
- int pnp_check_irq(struct pnp_dev * dev, int idx);
- int pnp_check_dma(struct pnp_dev * dev, int idx);
-+
-+void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc);
-Index: work10/drivers/pnp/support.c
+--- work10.orig/drivers/pnp/base.h	2008-04-25 11:14:50.000000000 -0600
++++ work10/drivers/pnp/base.h	2008-04-25 11:14:50.000000000 -0600
+@@ -4,7 +4,7 @@
+ void pnp_eisa_id_to_string(u32 id, char *str);
+ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
+ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+-int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card);
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
+ int pnp_interface_attach_device(struct pnp_dev *dev);
+ void pnp_fixup_device(struct pnp_dev *dev);
+ void pnp_free_option(struct pnp_option *option);
+Index: work10/drivers/pnp/card.c
 ===================================================================
---- work10.orig/drivers/pnp/support.c	2008-04-25 11:14:48.000000000 -0600
-+++ work10/drivers/pnp/support.c	2008-04-25 11:14:57.000000000 -0600
-@@ -51,3 +51,44 @@
- 	str[6] = hex_asc((id >>  0) & 0xf);
- 	str[7] = '\0';
+--- work10.orig/drivers/pnp/card.c	2008-04-25 11:12:17.000000000 -0600
++++ work10/drivers/pnp/card.c	2008-04-25 11:14:50.000000000 -0600
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/ctype.h>
+ #include <linux/slab.h>
+ #include <linux/pnp.h>
+ #include "base.h"
+@@ -100,19 +101,33 @@
+  * @id: pointer to a pnp_id structure
+  * @card: pointer to the desired card
+  */
+-int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card)
++struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id)
+ {
+-	struct pnp_id *ptr;
++	struct pnp_id *dev_id, *ptr;
+ 
+-	id->next = NULL;
++	dev_id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
++	if (!dev_id)
++		return NULL;
++
++	dev_id->id[0] = id[0];
++	dev_id->id[1] = id[1];
++	dev_id->id[2] = id[2];
++	dev_id->id[3] = tolower(id[3]);
++	dev_id->id[4] = tolower(id[4]);
++	dev_id->id[5] = tolower(id[5]);
++	dev_id->id[6] = tolower(id[6]);
++	dev_id->id[7] = '\0';
++
++	dev_id->next = NULL;
+ 	ptr = card->id;
+ 	while (ptr && ptr->next)
+ 		ptr = ptr->next;
+ 	if (ptr)
+-		ptr->next = id;
++		ptr->next = dev_id;
+ 	else
+-		card->id = id;
+-	return 0;
++		card->id = dev_id;
++
++	return dev_id;
  }
-+
-+#ifdef DEBUG
-+void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
-+{
-+	struct resource *res;
-+	int i;
-+
-+	dev_dbg(&dev->dev, "current resources: %s\n", desc);
-+
-+	for (i = 0; i < PNP_MAX_IRQ; i++) {
-+		res = &dev->res.irq_resource[i];
-+		if (!(res->flags & IORESOURCE_UNSET))
-+			dev_dbg(&dev->dev, "  irq %lld flags 0x%lx\n",
-+				(unsigned long long) res->start, res->flags);
-+	}
-+	for (i = 0; i < PNP_MAX_DMA; i++) {
-+		res = &dev->res.dma_resource[i];
-+		if (!(res->flags & IORESOURCE_UNSET))
-+			dev_dbg(&dev->dev, "  dma %lld flags 0x%lx\n",
-+				(unsigned long long) res->start, res->flags);
-+	}
-+	for (i = 0; i < PNP_MAX_PORT; i++) {
-+		res = &dev->res.port_resource[i];
-+		if (!(res->flags & IORESOURCE_UNSET))
-+			dev_dbg(&dev->dev, "  io  0x%llx-0x%llx flags 0x%lx\n",
-+				(unsigned long long) res->start,
-+				(unsigned long long) res->end, res->flags);
-+	}
-+	for (i = 0; i < PNP_MAX_MEM; i++) {
-+		res = &dev->res.mem_resource[i];
-+		if (!(res->flags & IORESOURCE_UNSET))
-+			dev_dbg(&dev->dev, "  mem 0x%llx-0x%llx flags 0x%lx\n",
-+				(unsigned long long) res->start,
-+				(unsigned long long) res->end, res->flags);
-+	}
-+}
-+#else
-+void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
-+{
-+}
-+#endif
-Index: work10/drivers/pnp/manager.c
+ 
+ static void pnp_free_card_ids(struct pnp_card *card)
+Index: work10/drivers/pnp/isapnp/core.c
 ===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-04-25 11:14:55.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-04-25 11:14:57.000000000 -0600
-@@ -28,20 +28,25 @@
- 		return 1;
- 	}
+--- work10.orig/drivers/pnp/isapnp/core.c	2008-04-25 11:14:49.000000000 -0600
++++ work10/drivers/pnp/isapnp/core.c	2008-04-25 11:14:50.000000000 -0600
+@@ -822,17 +822,18 @@
+ static void isapnp_parse_card_id(struct pnp_card *card, unsigned short vendor,
+ 				 unsigned short device)
+ {
+-	struct pnp_id *id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
++	char id[8];
  
--	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO))
--		return 1;
--
- 	start = &dev->res.port_resource[idx].start;
- 	end = &dev->res.port_resource[idx].end;
- 	flags = &dev->res.port_resource[idx].flags;
- 
-+	/* check if this resource has been manually set, if so skip */
-+	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO)) {
-+		dev_dbg(&dev->dev, "  io %d already set to 0x%llx-0x%llx "
-+			"flags 0x%x\n", idx, (unsigned long long) *start,
-+			(unsigned long long) *end, (int) *flags);
-+		return 1;
-+	}
-+
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_IO;
- 	*flags &= ~IORESOURCE_UNSET;
- 
- 	if (!rule->size) {
- 		*flags |= IORESOURCE_DISABLED;
-+		dev_dbg(&dev->dev, "  io %d disabled\n", idx);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
-@@ -52,9 +57,13 @@
- 	while (!pnp_check_port(dev, idx)) {
- 		*start += rule->align;
- 		*end = *start + rule->size - 1;
--		if (*start > rule->max || !rule->align)
-+		if (*start > rule->max || !rule->align) {
-+			dev_dbg(&dev->dev, "  couldn't assign io %d\n", idx);
- 			return 0;
-+		}
- 	}
-+	dev_dbg(&dev->dev, "  assign io  %d 0x%llx-0x%llx\n", idx,
-+		(unsigned long long) *start, (unsigned long long) *end);
- 	return 1;
- }
- 
-@@ -69,14 +78,18 @@
- 		return 1;
- 	}
- 
--	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO))
--		return 1;
--
- 	start = &dev->res.mem_resource[idx].start;
- 	end = &dev->res.mem_resource[idx].end;
- 	flags = &dev->res.mem_resource[idx].flags;
- 
-+	/* check if this resource has been manually set, if so skip */
-+	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO)) {
-+		dev_dbg(&dev->dev, "  mem %d already set to 0x%llx-0x%llx "
-+			"flags 0x%x\n", idx, (unsigned long long) *start,
-+			(unsigned long long) *end, (int) *flags);
-+		return 1;
-+	}
-+
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_MEM;
- 	*flags &= ~IORESOURCE_UNSET;
-@@ -93,6 +106,7 @@
- 
- 	if (!rule->size) {
- 		*flags |= IORESOURCE_DISABLED;
-+		dev_dbg(&dev->dev, "  mem %d disabled\n", idx);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
-@@ -103,9 +117,13 @@
- 	while (!pnp_check_mem(dev, idx)) {
- 		*start += rule->align;
- 		*end = *start + rule->size - 1;
--		if (*start > rule->max || !rule->align)
-+		if (*start > rule->max || !rule->align) {
-+			dev_dbg(&dev->dev, "  couldn't assign mem %d\n", idx);
- 			return 0;
-+		}
- 	}
-+	dev_dbg(&dev->dev, "  assign mem %d 0x%llx-0x%llx\n", idx,
-+		(unsigned long long) *start, (unsigned long long) *end);
- 	return 1;
- }
- 
-@@ -126,20 +144,24 @@
- 		return 1;
- 	}
- 
--	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO))
--		return 1;
--
- 	start = &dev->res.irq_resource[idx].start;
- 	end = &dev->res.irq_resource[idx].end;
- 	flags = &dev->res.irq_resource[idx].flags;
- 
-+	/* check if this resource has been manually set, if so skip */
-+	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO)) {
-+		dev_dbg(&dev->dev, "  irq %d already set to %d flags 0x%x\n",
-+			idx, (int) *start, (int) *flags);
-+		return 1;
-+	}
-+
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_IRQ;
- 	*flags &= ~IORESOURCE_UNSET;
- 
- 	if (bitmap_empty(rule->map, PNP_IRQ_NR)) {
- 		*flags |= IORESOURCE_DISABLED;
-+		dev_dbg(&dev->dev, "  irq %d disabled\n", idx);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
-@@ -147,15 +169,20 @@
- 	*start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
- 	if (*start < PNP_IRQ_NR) {
- 		*end = *start;
-+		dev_dbg(&dev->dev, "  assign irq %d %d\n", idx, (int) *start);
- 		return 1;
- 	}
- 	for (i = 0; i < 16; i++) {
- 		if (test_bit(xtab[i], rule->map)) {
- 			*start = *end = xtab[i];
--			if (pnp_check_irq(dev, idx))
-+			if (pnp_check_irq(dev, idx)) {
-+				dev_dbg(&dev->dev, "  assign irq %d %d\n", idx,
-+					(int) *start);
- 				return 1;
-+			}
- 		}
- 	}
-+	dev_dbg(&dev->dev, "  couldn't assign irq %d\n", idx);
- 	return 0;
- }
- 
-@@ -175,14 +202,17 @@
- 		return;
- 	}
- 
--	/* check if this resource has been manually set, if so skip */
--	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO))
+-	if (!id)
 -		return;
--
- 	start = &dev->res.dma_resource[idx].start;
- 	end = &dev->res.dma_resource[idx].end;
- 	flags = &dev->res.dma_resource[idx].flags;
- 
-+	/* check if this resource has been manually set, if so skip */
-+	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO)) {
-+		dev_dbg(&dev->dev, "  dma %d already set to %d flags 0x%x\n",
-+			idx, (int) *start, (int) *flags);
-+		return;
-+	}
+-	sprintf(id->id, "%c%c%c%x%x%x%x",
+-		'A' + ((vendor >> 2) & 0x3f) - 1,
+-		'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1,
+-		'A' + ((vendor >> 8) & 0x1f) - 1,
+-		(device >> 4) & 0x0f,
+-		device & 0x0f, (device >> 12) & 0x0f, (device >> 8) & 0x0f);
+-	pnp_add_card_id(id, card);
++	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
++	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
++	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
++	id[3] = hex_asc((device >> 4) & 0x0f);
++	id[4] = hex_asc(device & 0x0f);
++	id[5] = hex_asc((device >> 12) & 0x0f);
++	id[6] = hex_asc((device >> 8) & 0x0f);
++	id[7] = '\0';
 +
- 	/* set the initial values */
- 	*flags |= rule->flags | IORESOURCE_DMA;
- 	*flags &= ~IORESOURCE_UNSET;
-@@ -190,14 +220,18 @@
- 	for (i = 0; i < 8; i++) {
- 		if (rule->map & (1 << xtab[i])) {
- 			*start = *end = xtab[i];
--			if (pnp_check_dma(dev, idx))
-+			if (pnp_check_dma(dev, idx)) {
-+				dev_dbg(&dev->dev, "  assign dma %d %d\n", idx,
-+					(int) *start);
- 				return;
-+			}
- 		}
- 	}
- #ifdef MAX_DMA_CHANNELS
- 	*start = *end = MAX_DMA_CHANNELS;
- #endif
- 	*flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
-+	dev_dbg(&dev->dev, "  disable dma %d\n", idx);
++	pnp_add_card_id(card, id);
  }
  
- /**
-@@ -298,9 +332,11 @@
- 	if (!pnp_can_configure(dev))
- 		return -ENODEV;
- 
-+	dbg_pnp_show_resources(dev, "before pnp_assign_resources");
- 	mutex_lock(&pnp_res_mutex);
- 	pnp_clean_resource_table(&dev->res);	/* start with a fresh slate */
- 	if (dev->independent) {
-+		dev_dbg(&dev->dev, "assigning independent options\n");
- 		port = dev->independent->port;
- 		mem = dev->independent->mem;
- 		irq = dev->independent->irq;
-@@ -333,6 +369,8 @@
- 	if (depnum) {
- 		struct pnp_option *dep;
- 		int i;
-+
-+		dev_dbg(&dev->dev, "assigning dependent option %d\n", depnum);
- 		for (i = 1, dep = dev->dependent; i < depnum;
- 		     i++, dep = dep->next)
- 			if (!dep)
-@@ -368,11 +406,13 @@
- 		goto fail;
- 
- 	mutex_unlock(&pnp_res_mutex);
-+	dbg_pnp_show_resources(dev, "after pnp_assign_resources");
- 	return 1;
- 
- fail:
- 	pnp_clean_resource_table(&dev->res);
- 	mutex_unlock(&pnp_res_mutex);
-+	dbg_pnp_show_resources(dev, "after pnp_assign_resources (failed)");
- 	return 0;
- }
- 
-@@ -473,6 +513,7 @@
- 		return -EINVAL;
- 	}
- 
-+	dbg_pnp_show_resources(dev, "pnp_start_dev");
- 	if (dev->protocol->set(dev) < 0) {
- 		dev_err(&dev->dev, "activation failed\n");
- 		return -EIO;
+ /*
 
 -- 
