@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbYDYDz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYDYD6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbYDYDz6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 23:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYDYDzu
+	id S1758576AbYDYD6B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 23:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYDYD5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 23:55:50 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:8754 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbYDYDzt (ORCPT
+	Thu, 24 Apr 2008 23:57:51 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:14216 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753355AbYDYD5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 23:55:49 -0400
-X-IronPort-AV: E=Sophos;i="4.25,706,1199682000"; 
-   d="scan'208";a="67099514"
-From: Bryan Wu <cooloney@kernel.org>
-To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [INPUT/KEYBOARD] Blackfin BF54x: Add infrastructure for keypad wakeups
-Date: Fri, 25 Apr 2008 11:55:28 +0800
-Message-Id: <1209095728-21119-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
+	Thu, 24 Apr 2008 23:57:50 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: MSI, fun for the whole family
+References: <20080422221733.GA16260@havoc.gtf.org>
+	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>
+	<480E6DE5.6010103@garzik.org>
+	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
+	<480E796E.4070001@garzik.org>
+	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>
+	<20080423000529.GG28933@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
+	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
+	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
+	<m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org>
+	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>
+	<4810A9E6.1080201@garzik.org>
+	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org>
+	<m1r6cvgpw2.fsf@frodo.ebiederm.org> <4810C3B5.3020605@garzik.org>
+	<m11w4u8x1c.fsf@frodo.ebiederm.org> <481150EE.3040103@garzik.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Apr 2008 20:57:48 -0700
+In-Reply-To: <481150EE.3040103@garzik.org> (Jeff Garzik's message of "Thu, 24
+	Apr 2008 23:33:02 -0400")
+Message-ID: <adaiqy67fib.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Apr 2008 03:57:48.0768 (UTC) FILETIME=[86D13600:01C8A688]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+ > > To my knowledge there is not any information that varies each time an
+ > > interrupt fires.
+ > 
+ > Absolutely there is!  This is why MSI is so cool.
+ > 
+ > You get a tiny chunk of data from the hardware, across the PCI bus in
+ > a single PCI transaction, sent [well, basically...] straight to the
+ > driver __for each MSI interrupt__.  Rather than having a separate
+ > interrupt line -- really an ugly OOB mechanism -- you get a bus
+ > transaction as God intended, a bus transaction just like all the
+ > others going across the PCI bus.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/input/keyboard/bf54x-keys.c |   36 ++++++++++++++++++++++++++++++++--
- 1 files changed, 33 insertions(+), 3 deletions(-)
+I think you've fundamentally misunderstood what the PCI spec for MSI
+multi message means.  It is true that if the whole system agrees, then
+an MSI-capable device that supports multiple messages might be allocated
+a range of vectors (MSI is kind of stupid because it only allows
+multiple messages to be generated by varying the low order bits -- MSI-X
+fixes this limitation).  However, the way that these different messages
+are handled is that they are all independent interrupt vectors.
 
-diff --git a/drivers/input/keyboard/bf54x-keys.c b/drivers/input/keyboard/bf54x-keys.c
-index 05e3494..2db5d37 100644
---- a/drivers/input/keyboard/bf54x-keys.c
-+++ b/drivers/input/keyboard/bf54x-keys.c
-@@ -312,6 +312,8 @@ static int __devinit bfin_kpad_probe(struct platform_device *pdev)
- 
- 	bfin_write_KPAD_CTL(bfin_read_KPAD_CTL() | KPAD_EN);
- 
-+	device_init_wakeup(&pdev->dev, 1);
-+
- 	printk(KERN_ERR DRV_NAME
- 		": Blackfin BF54x Keypad registered IRQ %d\n", bf54x_kpad->irq);
- 
-@@ -354,12 +356,40 @@ static int __devexit bfin_kpad_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+static int bfin_kpad_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct bf54x_kpad *bf54x_kpad = platform_get_drvdata(pdev);
-+
-+	if (device_may_wakeup(&pdev->dev))
-+		enable_irq_wake(bf54x_kpad->irq);
-+
-+	return 0;
-+}
-+
-+static int bfin_kpad_resume(struct platform_device *pdev)
-+{
-+	struct bf54x_kpad *bf54x_kpad = platform_get_drvdata(pdev);
-+
-+	if (device_may_wakeup(&pdev->dev))
-+		disable_irq_wake(bf54x_kpad->irq);
-+
-+	return 0;
-+}
-+#else
-+# define bfin_kpad_suspend NULL
-+# define bfin_kpad_resume  NULL
-+#endif
-+
- struct platform_driver bfin_kpad_device_driver = {
--	.probe		= bfin_kpad_probe,
--	.remove		= __devexit_p(bfin_kpad_remove),
- 	.driver		= {
- 		.name	= DRV_NAME,
--	}
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= bfin_kpad_probe,
-+	.remove		= __devexit_p(bfin_kpad_remove),
-+	.suspend	= bfin_kpad_suspend,
-+	.resume		= bfin_kpad_resume,
- };
- 
- static int __init bfin_kpad_init(void)
--- 
-1.5.5
+Now, it is true that the kernel could do something crazy and collapse
+all these interrupt vectors into a single "IRQ" and then tell the
+interrupt handler which vector it was by passing some "metadata" in, but
+why not just give each MSI message it's own IRQ?
+
+By the way, for MSI on Linux this is theoretical, since MSI messages
+have to be consecutive, and the kernel (on standard x86 at least) can't
+really allocate a chunk of consecutive vectors.  However, Linux has
+quite a few device drivers that handle devices that generate multiple
+MSI-X messages, and the model of having each message be a different IRQ
+works quite well.
+
+You are correct that MSI/MSI-X has the advantage of being an in-band
+transaction that obeys PCI ordering rules, rather than going through an
+asynchronous separate wire that might reach the CPU before the DMA it is
+signaling.
+
+ > An AHCI PCI device uses MSI messages to inform the driver which <mask>
+ > of 32 SATA ports have asserted an activity indication.
+
+Actually from the spec it looks like it uses multiple MSI messages to
+give each port its own interrupt.  There aren't enough bits available to
+| together a bitwise port mask, and it wouldn't be sane to have eg 3
+separate interrupt handlers for port 1 interrupts, port 2 interrupts,
+and port 1 *and* 2 interrupts.
+
+ - R.
