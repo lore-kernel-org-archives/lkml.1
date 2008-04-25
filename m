@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbYDYMG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYDYMHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759058AbYDYMG5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 08:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYDYMGs
+	id S1761328AbYDYMHg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 08:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYDYMH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 08:06:48 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:58555 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753402AbYDYMGr (ORCPT
+	Fri, 25 Apr 2008 08:07:27 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:58532 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbYDYMH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 08:06:47 -0400
-From: Aaron Carroll <aaronc@cse.unsw.edu.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 25 Apr 2008 22:06:23 +1000
-Message-ID: <4811C93F.70001@cse.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080316)
+	Fri, 25 Apr 2008 08:07:26 -0400
+Message-ID: <4811C978.6010508@fr.ibm.com>
+Date: Fri, 25 Apr 2008 14:07:20 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-CC: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk> <48107891.5000308@hp.com> <20080425083809.GG12774@kernel.dk> <4811BDBB.8010604@hp.com> <20080425112543.GQ12774@kernel.dk>
-In-Reply-To: <20080425112543.GQ12774@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: Matt Helsley <matthltc@us.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/5] Container Freezer: Make refrigerator always
+ available
+References: <20080424064756.643890130@us.ibm.com> <20080424064757.227289200@us.ibm.com> <20080425110456.GF14903@elf.ucw.cz>
+In-Reply-To: <20080425110456.GF14903@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
->> I have the results from leaving in just the one-hit cache merge
->> attempts, and started a run leaving in both that and the back-merge
->> rq_hash checks. (The patch below basically undoes patch 3/3 - putting
->> back in the addition of rqs onto the hash list, and moves the nomerges
->> check below the back merge attempts.)
->>
->> We /could/ change the tunable to a dial (or a mask) - enabling/disabling
->> specific merge attempts, but that seems a bit confusing/complex.
->>
->> Jens: What do you think?
+Pavel Machek wrote:
+> Hi!
 > 
-> I think we should keep it simple. I don't particularly like having a
-> switch to toggle merges, no one will ever use it. So I'm more inclined
-> to just disable front merges unconditionally if the theory of where
-> the cycles are spent holds up. We'll still do front merges on the
-> one-hit cache, just not spend time looking up an io context and request
-> in the rbtree for basically no gain.
+>> Now that the TIF_FREEZE flag is available in all architectures,
+>> extract the refrigerator() and freeze_task() from kernel/power/process.c
+>> and make it available to all.
+>>
+>> The refrigerator() can now be used in a control group subsystem 
+>> implementing a control group freezer.
+>>
+>> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+>> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+>> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> 
+> There's no problem with doing this... but you should get some debate
+> (with Linus?) whether using freezer for cgroups is sane. 
 
-Front merging is probably a waste of time, but it could also be a hash table
-lookup if you think the rbtree traversal is sinking too many cycles.
+Yes that's what we are trying to know, is the fake signal mechanism 
+used by the freezer something we can build upon ? 
 
-I wonder if there's any merit in junking the merge hash (and front-merging in
-the ioscheds proper) and just having per-process one-hit caches.  That's going
-to catch the majority of merge cases.  For requests that happen to be adjacent
-by chance, they are just as likely to be back or front merges.
+> When that is done, there's no problem with this going in, probably 
+> through rafael's patch queue.
 
+OK
 
- -- Aaron
+> (The first patch -- add freezer for all archs -- is probably
+> reasonably to go in ASAP, through akpm or something...)
+
+Thanks,
+
+C.
