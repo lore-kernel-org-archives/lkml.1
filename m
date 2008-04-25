@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762757AbYDYOWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762084AbYDYOWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762757AbYDYOWh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 10:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761150AbYDYOVZ
+	id S1762084AbYDYOWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 10:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761596AbYDYOV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 10:21:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35424 "EHLO
+	Fri, 25 Apr 2008 10:21:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49688 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756916AbYDYOVN (ORCPT
+	with ESMTP id S1756968AbYDYOVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Apr 2008 10:21:13 -0400
-Message-Id: <20080425142110.380944244@goodmis.org>
+Message-Id: <20080425142110.022987814@goodmis.org>
 References: <20080425130908.140707404@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 09:09:14 -0400
+Date: Fri, 25 Apr 2008 09:09:12 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org,
        linux-rt-users <linux-rt-users@vger.kernel.org>
@@ -25,314 +25,262 @@ Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Jon Masters <jonathan@jonmasters.org>,
        Gregory Haskins <ghaskins@novell.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH RT 6/6] read lock Priority Inheritance implementation
-Content-Disposition: inline; filename=multi-reader-pi.patch
+Subject: [PATCH RT 4/6] implement reader limit on read write locks
+Content-Disposition: inline; filename=multi-reader-limit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the priority inheritance (PI) to the read / write locks.
-When a task is blocked on the lock that eventually is owned by a reader
-in the PI chain, it will boost all the readers if they are of lower priority
-than the blocked task.
+This patch allows for limiting the number of readers a lock may have.
+The limit is default to "no limit". The read write locks now keep
+track of, not only the number of times a lock is held by read, but also
+the number of tasks that have a reader. i.e. If 2 tasks hold the same
+read/write lock, and one task holds the lock twice, the count for the
+read/write lock would be 3 and the owner count is 2.
+
+The limit of readers is controlled by
+
+  /proc/sys/kernel/rwlock_reader_limit
+
+If this is set to zero or negative, than there is no limit.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/init_task.h |    8 +++
- include/linux/rt_lock.h   |    4 +
- kernel/fork.c             |    1 
- kernel/rtmutex.c          |  115 ++++++++++++++++++++++++++++++++++++++++++----
- 4 files changed, 118 insertions(+), 10 deletions(-)
+ include/linux/rt_lock.h |    1 
+ kernel/rtmutex.c        |   89 +++++++++++++++++++++++++++++++++++-------------
+ kernel/sysctl.c         |   14 +++++++
+ 3 files changed, 80 insertions(+), 24 deletions(-)
 
 Index: linux-2.6.24.4-rt4/include/linux/rt_lock.h
 ===================================================================
---- linux-2.6.24.4-rt4.orig/include/linux/rt_lock.h	2008-03-25 23:13:17.000000000 -0400
-+++ linux-2.6.24.4-rt4/include/linux/rt_lock.h	2008-03-25 23:14:47.000000000 -0400
-@@ -13,6 +13,7 @@
- #include <linux/rtmutex.h>
- #include <asm/atomic.h>
- #include <linux/spinlock_types.h>
-+#include <linux/sched_prio.h>
- 
- #ifdef CONFIG_PREEMPT_RT
- /*
-@@ -66,6 +67,7 @@ struct rw_mutex {
+--- linux-2.6.24.4-rt4.orig/include/linux/rt_lock.h	2008-03-25 22:54:24.000000000 -0400
++++ linux-2.6.24.4-rt4/include/linux/rt_lock.h	2008-03-25 23:00:46.000000000 -0400
+@@ -64,6 +64,7 @@ struct rw_mutex {
+ 	struct task_struct	*owner;
+ 	struct rt_mutex		mutex;
  	atomic_t		count;	/* number of times held for read */
- 	atomic_t		owners; /* number of owners as readers */
- 	struct list_head	readers;
-+	int prio;
++	atomic_t		owners; /* number of owners as readers */
  };
  
  /*
-@@ -98,6 +100,7 @@ typedef struct {
- 
- #define __RW_LOCK_UNLOCKED(name) (rwlock_t) \
- 	{ .owners.mutex = __RT_SPIN_INITIALIZER(name.owners.mutex),	\
-+	  .owners.prio = MAX_PRIO,					\
- 	  RW_DEP_MAP_INIT(name) }
- #else /* !PREEMPT_RT */
- 
-@@ -196,6 +199,7 @@ extern int __bad_func_type(void);
- 
- #define __RWSEM_INITIALIZER(name) \
- 	{ .owners.mutex = __RT_MUTEX_INITIALIZER(name.owners.mutex),	\
-+	  .owners.prio = MAX_PRIO,					\
- 	  RW_DEP_MAP_INIT(name) }
- 
- #define DECLARE_RWSEM(lockname) \
 Index: linux-2.6.24.4-rt4/kernel/rtmutex.c
 ===================================================================
---- linux-2.6.24.4-rt4.orig/kernel/rtmutex.c	2008-03-25 23:13:17.000000000 -0400
-+++ linux-2.6.24.4-rt4/kernel/rtmutex.c	2008-03-25 23:14:47.000000000 -0400
-@@ -133,6 +133,8 @@ static inline void init_lists(struct rt_
- 	}
+--- linux-2.6.24.4-rt4.orig/kernel/rtmutex.c	2008-03-25 22:55:46.000000000 -0400
++++ linux-2.6.24.4-rt4/kernel/rtmutex.c	2008-03-25 23:06:32.000000000 -0400
+@@ -927,6 +927,8 @@ __rt_spin_lock_init(spinlock_t *lock, ch
  }
+ EXPORT_SYMBOL(__rt_spin_lock_init);
  
-+static int rt_mutex_get_readers_prio(struct task_struct *task, int prio);
++int rt_rwlock_limit;
 +
- /*
-  * Calculate task priority from the waiter list priority
-  *
-@@ -143,6 +145,8 @@ int rt_mutex_getprio(struct task_struct 
- {
- 	int prio = min(task->normal_prio, get_rcu_prio(task));
+ static inline int rt_release_bkl(struct rt_mutex *lock, unsigned long flags);
+ static inline void rt_reacquire_bkl(int saved_lock_depth);
  
-+	prio = rt_mutex_get_readers_prio(task, prio);
-+
- 	if (likely(!task_has_pi_waiters(task)))
- 		return prio;
- 
-@@ -185,6 +189,11 @@ static void rt_mutex_adjust_prio(struct 
-  */
- int max_lock_depth = 1024;
- 
-+static int rt_mutex_adjust_readers(struct rt_mutex *orig_lock,
-+				   struct rt_mutex_waiter *orig_waiter,
-+				   struct task_struct *top_task,
-+				   struct rt_mutex *lock,
-+				   int recursion_depth);
- /*
-  * Adjust the priority chain. Also used for deadlock detection.
-  * Decreases task's usage by one - may thus free the task.
-@@ -194,7 +203,8 @@ static int rt_mutex_adjust_prio_chain(st
- 				      int deadlock_detect,
- 				      struct rt_mutex *orig_lock,
- 				      struct rt_mutex_waiter *orig_waiter,
--				      struct task_struct *top_task)
-+				      struct task_struct *top_task,
-+				      int recursion_depth)
- {
- 	struct rt_mutex *lock;
- 	struct rt_mutex_waiter *waiter, *top_waiter = orig_waiter;
-@@ -296,8 +306,13 @@ static int rt_mutex_adjust_prio_chain(st
- 	/* Grab the next task */
- 	task = rt_mutex_owner(lock);
- 
--	/* Writers do not boost their readers. */
-+	/*
-+	 * Readers are special. We may need to boost more than one owner.
-+	 */
- 	if (task == RT_RW_READER) {
-+		ret = rt_mutex_adjust_readers(orig_lock, orig_waiter,
-+					      top_task, lock,
-+					      recursion_depth);
- 		spin_unlock_irqrestore(&lock->wait_lock, flags);
- 		goto out;
+@@ -1000,6 +1002,10 @@ static int try_to_take_rw_read(struct rw
+ 		goto taken;
  	}
-@@ -479,9 +494,12 @@ static int task_blocks_on_rt_mutex(struc
- 	spin_unlock(&current->pi_lock);
  
- 	if (waiter == rt_mutex_top_waiter(lock)) {
--		/* readers are not handled */
--		if (owner == RT_RW_READER)
--			return 0;
-+		/* readers are handled differently */
-+		if (owner == RT_RW_READER) {
-+			res = rt_mutex_adjust_readers(lock, waiter,
-+						      current, lock, 0);
-+			return res;
-+		}
++	/* Check for rwlock limits */
++	if (rt_rwlock_limit && atomic_read(&rwm->owners) >= rt_rwlock_limit)
++		return 0;
++
+ 	if (mtxowner && mtxowner != RT_RW_READER) {
+ 		if (!try_to_steal_lock(mutex)) {
+ 			/*
+@@ -1044,6 +1050,7 @@ static int try_to_take_rw_read(struct rw
+ 	rt_rwlock_set_owner(rwm, RT_RW_READER, 0);
+  taken:
+ 	if (incr) {
++		atomic_inc(&rwm->owners);
+ 		reader_count = current->reader_lock_count++;
+ 		if (likely(reader_count < MAX_RWLOCK_DEPTH)) {
+ 			current->owned_read_locks[reader_count].lock = rwm;
+@@ -1221,6 +1228,7 @@ rt_read_fastlock(struct rw_mutex *rwm,
+ 			goto retry;
+ 		}
  
- 		spin_lock(&owner->pi_lock);
- 		plist_del(&top_waiter->pi_list_entry, &owner->pi_waiters);
-@@ -508,7 +526,7 @@ static int task_blocks_on_rt_mutex(struc
- 	spin_unlock_irqrestore(&lock->wait_lock, flags);
++		atomic_inc(&rwm->owners);
+ 		reader_count = current->reader_lock_count++;
+ 		if (likely(reader_count < MAX_RWLOCK_DEPTH)) {
+ 			current->owned_read_locks[reader_count].lock = rwm;
+@@ -1280,6 +1288,7 @@ retry:
+ 			goto retry;
+ 		}
  
- 	res = rt_mutex_adjust_prio_chain(owner, detect_deadlock, lock, waiter,
--					 current);
-+					 current, 0);
++		atomic_inc(&rwm->owners);
+ 		reader_count = current->reader_lock_count++;
+ 		if (likely(reader_count < MAX_RWLOCK_DEPTH)) {
+ 			current->owned_read_locks[reader_count].lock = rwm;
+@@ -1471,6 +1480,7 @@ rt_read_slowunlock(struct rw_mutex *rwm,
+ 	struct rt_mutex *mutex = &rwm->mutex;
+ 	struct rt_mutex_waiter *waiter;
+ 	unsigned long flags;
++	unsigned int reader_count;
+ 	int savestate = !mtx;
+ 	int i;
  
- 	spin_lock_irq(&lock->wait_lock);
- 
-@@ -625,7 +643,7 @@ static void remove_waiter(struct rt_mute
- 
- 	spin_unlock_irqrestore(&lock->wait_lock, flags);
- 
--	rt_mutex_adjust_prio_chain(owner, 0, lock, NULL, current);
-+	rt_mutex_adjust_prio_chain(owner, 0, lock, NULL, current, 0);
- 
- 	spin_lock_irq(&lock->wait_lock);
- }
-@@ -652,7 +670,7 @@ void rt_mutex_adjust_pi(struct task_stru
- 	get_task_struct(task);
- 	spin_unlock_irqrestore(&task->pi_lock, flags);
- 
--	rt_mutex_adjust_prio_chain(task, 0, NULL, NULL, task);
-+	rt_mutex_adjust_prio_chain(task, 0, NULL, NULL, task, 0);
- }
- 
- /*
-@@ -1088,7 +1106,6 @@ static int try_to_take_rw_read(struct rw
- 			if (rt_rwlock_pending_writer(rwm))
- 				return 0;
- 			if (rt_mutex_has_waiters(mutex)) {
--				/* readers don't do PI */
- 				waiter = rt_mutex_top_waiter(mutex);
- 				if (current->prio >= waiter->task->prio)
- 					return 0;
-@@ -1102,7 +1119,7 @@ static int try_to_take_rw_read(struct rw
- 				spin_unlock(&mtxowner->pi_lock);
+@@ -1493,6 +1503,7 @@ rt_read_slowunlock(struct rw_mutex *rwm,
+ 			if (!current->owned_read_locks[i].count) {
+ 				current->reader_lock_count--;
+ 				WARN_ON_ONCE(i != current->reader_lock_count);
++				atomic_dec(&rwm->owners);
  			}
- 		} else if (rt_mutex_has_waiters(mutex)) {
--			/* Readers don't do PI */
-+			/* Readers do things differently with respect to PI */
- 			waiter = rt_mutex_top_waiter(mutex);
- 			spin_lock(&current->pi_lock);
- 			plist_del(&waiter->pi_list_entry, &current->pi_waiters);
-@@ -1608,6 +1625,7 @@ rt_read_slowunlock(struct rw_mutex *rwm,
+ 			break;
+ 		}
+@@ -1500,20 +1511,34 @@ rt_read_slowunlock(struct rw_mutex *rwm,
+ 	WARN_ON_ONCE(i < 0);
+ 
+ 	/*
+-	 * If there are more readers, let the last one do any wakeups.
+-	 * Also check to make sure the owner wasn't cleared when two
+-	 * readers released the lock at the same time, and the count
+-	 * went to zero before grabbing the wait_lock.
++	 * If the last two (or more) readers unlocked at the same
++	 * time, the owner could be cleared since the count went to
++	 * zero. If this has happened, the rwm owner will not
++	 * be set to current or readers. This means that another reader
++	 * already reset the lock, so there is nothing left to do.
+ 	 */
+-	if (atomic_read(&rwm->count) ||
+-	    (rt_rwlock_owner(rwm) != current &&
+-	     rt_rwlock_owner(rwm) != RT_RW_READER)) {
+-		spin_unlock_irqrestore(&mutex->wait_lock, flags);
+-		return;
+-	}
++	if ((rt_rwlock_owner(rwm) != current &&
++	     rt_rwlock_owner(rwm) != RT_RW_READER))
++		goto out;
++
++	/*
++	 * If there are more readers and we are under the limit
++	 * let the last reader do the wakeups.
++	 */
++	reader_count = atomic_read(&rwm->count);
++	if (reader_count &&
++	    (!rt_rwlock_limit || atomic_read(&rwm->owners) >= rt_rwlock_limit))
++		goto out;
  
  	/* If no one is blocked, then clear all ownership */
  	if (!rt_mutex_has_waiters(mutex)) {
-+		rwm->prio = MAX_PRIO;
- 		/*
- 		 * If count is not zero, we are under the limit with
- 		 * no other readers.
-@@ -1838,11 +1856,88 @@ void rt_mutex_rwsem_init(struct rw_mutex
++		/*
++		 * If count is not zero, we are under the limit with
++		 * no other readers.
++		 */
++		if (reader_count)
++			goto out;
++
+ 		/* We could still have a pending reader waiting */
+ 		if (rt_mutex_owner_pending(mutex)) {
+ 			/* set the rwm back to pending */
+@@ -1525,24 +1550,32 @@ rt_read_slowunlock(struct rw_mutex *rwm,
+ 		goto out;
+ 	}
+ 
+-	/* We are the last reader with pending waiters. */
++	/*
++	 * If the next waiter is a reader, this can be because of
++	 * two things. One is that we hit the reader limit, or
++	 * Two, there is a pending writer.
++	 * We still only wake up one reader at a time (even if
++	 * we could wake up more). This is because we dont
++	 * have any idea if a writer is pending.
++	 */
+ 	waiter = rt_mutex_top_waiter(mutex);
+-	if (waiter->write_lock)
++	if (waiter->write_lock) {
++		/* only wake up if there are no readers */
++		if (reader_count)
++			goto out;
+ 		rwm->owner = RT_RW_PENDING_WRITE;
+-	else
++	} else {
++		/*
++		 * It is also possible that the reader limit decreased.
++		 * If the limit did decrease, we may not be able to
++		 * wake up the reader if we are currently above the limit.
++		 */
++		if (rt_rwlock_limit &&
++		    unlikely(atomic_read(&rwm->owners) >= rt_rwlock_limit))
++			goto out;
+ 		rwm->owner = RT_RW_PENDING_READ;
++	}
+ 
+-	/*
+-	 * It is possible to have a reader waiting. We still only
+-	 * wake one up in that case. A way we can have a reader waiting
+-	 * is because a writer woke up, a higher prio reader came
+-	 * and stole the lock from the writer. But the writer now
+-	 * is no longer waiting on the lock and needs to retake
+-	 * the lock. We simply wake up the reader and let the
+-	 * reader have the lock. If the writer comes by, it
+-	 * will steal the lock from the reader. This is the
+-	 * only time we can have a reader pending on a lock.
+-	 */
+ 	wakeup_next_waiter(mutex, savestate);
+ 
+  out:
+@@ -1558,15 +1591,22 @@ rt_read_fastunlock(struct rw_mutex *rwm,
+ 		   int mtx)
+ {
+ 	WARN_ON(!atomic_read(&rwm->count));
++	WARN_ON(!atomic_read(&rwm->owners));
+ 	WARN_ON(!rwm->owner);
+ 	atomic_dec(&rwm->count);
+ 	if (likely(rt_rwlock_cmpxchg(rwm, current, NULL))) {
+ 		int reader_count = --current->reader_lock_count;
++		int owners;
+ 		rt_mutex_deadlock_account_unlock(current);
+ 		if (unlikely(reader_count < 0)) {
+ 			    reader_count = 0;
+ 			    WARN_ON_ONCE(1);
+ 		}
++		owners = atomic_dec_return(&rwm->owners);
++		if (unlikely(owners < 0)) {
++			atomic_set(&rwm->owners, 0);
++			WARN_ON_ONCE(1);
++		}
+ 		WARN_ON_ONCE(current->owned_read_locks[reader_count].lock != rwm);
+ 	} else
+ 		slowfn(rwm, mtx);
+@@ -1717,6 +1757,7 @@ void rt_mutex_rwsem_init(struct rw_mutex
+ 
  	rwm->owner = NULL;
  	atomic_set(&rwm->count, 0);
- 	atomic_set(&rwm->owners, 0);
-+	rwm->prio = MAX_PRIO;
- 	INIT_LIST_HEAD(&rwm->readers);
++	atomic_set(&rwm->owners, 0);
  
  	__rt_mutex_init(mutex, name);
  }
- 
-+static int rt_mutex_get_readers_prio(struct task_struct *task, int prio)
-+{
-+	struct reader_lock_struct *rls;
-+	struct rw_mutex *rwm;
-+	int lock_prio;
-+	int i;
-+
-+	for (i = 0; i < task->reader_lock_count; i++) {
-+		rls = &task->owned_read_locks[i];
-+		rwm = rls->lock;
-+		if (rwm) {
-+			lock_prio = rwm->prio;
-+			if (prio > lock_prio)
-+				prio = lock_prio;
-+		}
-+	}
-+
-+	return prio;
-+}
-+
-+static int rt_mutex_adjust_readers(struct rt_mutex *orig_lock,
-+				   struct rt_mutex_waiter *orig_waiter,
-+				   struct task_struct *top_task,
-+				   struct rt_mutex *lock,
-+				   int recursion_depth)
-+{
-+	struct reader_lock_struct *rls;
-+	struct rt_mutex_waiter *waiter;
-+	struct task_struct *task;
-+	struct rw_mutex *rwm = container_of(lock, struct rw_mutex, mutex);
-+
-+	if (rt_mutex_has_waiters(lock)) {
-+		waiter = rt_mutex_top_waiter(lock);
-+		/*
-+		 * Do we need to grab the task->pi_lock?
-+		 * Really, we are only reading it. If it
-+		 * changes, then that should follow this chain
-+		 * too.
-+		 */
-+		rwm->prio = waiter->task->prio;
-+	} else
-+		rwm->prio = MAX_PRIO;
-+
-+	if (recursion_depth >= MAX_RWLOCK_DEPTH) {
-+		WARN_ON(1);
-+		return 1;
-+	}
-+
-+	list_for_each_entry(rls, &rwm->readers, list) {
-+		task = rls->task;
-+		get_task_struct(task);
-+		/*
-+		 * rt_mutex_adjust_prio_chain will do
-+		 * the put_task_struct
-+		 */
-+		rt_mutex_adjust_prio_chain(task, 0, orig_lock,
-+					   orig_waiter, top_task,
-+					   recursion_depth+1);
-+	}
-+
-+	return 0;
-+}
-+#else
-+static int rt_mutex_adjust_readers(struct rt_mutex *orig_lock,
-+				   struct rt_mutex_waiter *orig_waiter,
-+				   struct task_struct *top_task,
-+				   struct rt_mutex *lock,
-+				   int recursion_depth)
-+{
-+	return 0;
-+}
-+
-+static int rt_mutex_get_readers_prio(struct task_struct *task, int prio)
-+{
-+	return prio;
-+}
- #endif /* CONFIG_PREEMPT_RT */
- 
- #ifdef CONFIG_PREEMPT_BKL
-Index: linux-2.6.24.4-rt4/include/linux/init_task.h
+Index: linux-2.6.24.4-rt4/kernel/sysctl.c
 ===================================================================
---- linux-2.6.24.4-rt4.orig/include/linux/init_task.h	2008-03-25 16:41:47.000000000 -0400
-+++ linux-2.6.24.4-rt4/include/linux/init_task.h	2008-03-25 23:14:47.000000000 -0400
-@@ -99,6 +99,13 @@ extern struct nsproxy init_nsproxy;
- #define INIT_PREEMPT_RCU_BOOST(tsk)
- #endif /* #else #ifdef CONFIG_PREEMPT_RCU_BOOST */
+--- linux-2.6.24.4-rt4.orig/kernel/sysctl.c	2008-03-25 16:41:48.000000000 -0400
++++ linux-2.6.24.4-rt4/kernel/sysctl.c	2008-03-25 23:00:12.000000000 -0400
+@@ -150,6 +150,10 @@ static int parse_table(int __user *, int
+ 		void __user *, size_t, struct ctl_table *);
+ #endif
  
 +#ifdef CONFIG_PREEMPT_RT
-+# define INIT_RW_OWNERS(tsk) .owned_read_locks = {			\
-+		[0 ... (MAX_RWLOCK_DEPTH - 1) ] = { .task = &tsk } },
-+#else
-+# define INIT_RW_OWNERS(tsk)
++extern int rt_rwlock_limit;
 +#endif
 +
- extern struct group_info init_groups;
  
- #define INIT_STRUCT_PID {						\
-@@ -189,6 +196,7 @@ extern struct group_info init_groups;
- 	INIT_TRACE_IRQFLAGS						\
- 	INIT_LOCKDEP							\
- 	INIT_PREEMPT_RCU_BOOST(tsk)					\
-+	INIT_RW_OWNERS(tsk)						\
- }
- 
- 
-Index: linux-2.6.24.4-rt4/kernel/fork.c
-===================================================================
---- linux-2.6.24.4-rt4.orig/kernel/fork.c	2008-03-25 23:13:17.000000000 -0400
-+++ linux-2.6.24.4-rt4/kernel/fork.c	2008-03-25 23:14:47.000000000 -0400
-@@ -1214,6 +1214,7 @@ static struct task_struct *copy_process(
- 			INIT_LIST_HEAD(&p->owned_read_locks[i].list);
- 			p->owned_read_locks[i].count = 0;
- 			p->owned_read_locks[i].lock = NULL;
-+			p->owned_read_locks[i].task = p;
- 		}
- 	}
+ #ifdef CONFIG_PROC_SYSCTL
+ static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
+@@ -399,6 +403,16 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
  #endif
++#ifdef CONFIG_PREEMPT_RT
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "rwlock_reader_limit",
++		.data		= &rt_rwlock_limit,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++#endif
+ 	{
+ 		.ctl_name	= KERN_PANIC,
+ 		.procname	= "panic",
 
 -- 
