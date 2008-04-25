@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbYDYQCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbYDYQFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbYDYQCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYDYQCa
+	id S1762875AbYDYQFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYDYQFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:02:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41189 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754274AbYDYQC3 (ORCPT
+	Fri, 25 Apr 2008 12:05:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43223 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756882AbYDYQFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:02:29 -0400
-Date: Fri, 25 Apr 2008 09:05:18 -0700
-From: Greg KH <greg@kroah.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       dsd@gentoo.org, linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org
-Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before
-	mounting root
-Message-ID: <20080425160518.GE9739@kroah.com>
-References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <20080424225604.GA18737@kroah.com> <20080424233048.GQ16272@one-eyed-alien.net> <Pine.LNX.4.64.0804250921090.27978@sbz-30.cs.Helsinki.FI> <20080425070439.GA18915@one-eyed-alien.net> <Pine.LNX.4.64.0804251116000.758@sbz-30.cs.Helsinki.FI>
+	Fri, 25 Apr 2008 12:05:22 -0400
+Message-ID: <4811FF60.6040905@zytor.com>
+Date: Fri, 25 Apr 2008 08:57:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804251116000.758@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425155000.GA4438@elte.hu>
+In-Reply-To: <20080425155000.GA4438@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 11:19:02AM +0300, Pekka J Enberg wrote:
-> Hi Matthew,
+Ingo Molnar wrote:
 > 
-> On Thu, 24 Apr 2008, Matthew Dharm wrote:
-> > > > This also has all sorts of races between do_mounts 'waiting' and the actual
-> > > > USB device enumeration.  It's entirely possible that the kernel loads via
-> > > > BIOS, the USB drivers are loaded, that forces devices to disconnect/reset,
-> > > > and they take a while to re-enumerate.  During that delay, the kernel gets
-> > > > to do_mount; now, no devices show in this "waiting for scan" count.
+> text_poke() itself only applies/unapplies the LOCK prefix - a single 
+> byte. We shouldnt be doing that at all: the cost of LOCK is 
+> insignificant (a few cycles) and most systems are SMP anyway.
 > 
-> On Fri, Apr 25, 2008 at 09:30:52AM +0300, Pekka J Enberg wrote:
-> > > So how does that happen? ->storage_probe fails and driver core calls it 
-> > > later at some point?
-> 
-> On Fri, 25 Apr 2008, Matthew Dharm wrote:
-> > There's no guarantee that storage_probe is going to get called in a timely
-> > manner.
-> 
-> How can we add such a guarantee? Don't we have this problem with any other 
-> storage devices?
 
-No we don't.  The problem with USB is that you _never_ know if you are
-done discovering all of the devices that are currently plugged into the
-bus.  For PCI SCSI and ATA devices, that is not an issue.  So no matter
-how many times you think you can mark things "done" you never really
-know for sure.
+Alas, on older CPUs the cost of LOCK can be massive.  The question is 
+how much we really care - the embedded people (who would definitely be 
+affected) will simply build UP kernels, and this only affects booting 
+SMP kernels on UP.
 
-So this means that we can't do this in the kernel, use an initramfs if
-you want such functionality, you can sit and spin there and wait until
-the device that you think you "know" is there to show up before
-continuing on with the boot process.
-
-thanks,
-
-greg k-h
+	-hpa
