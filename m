@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbYDYSbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbYDYShS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbYDYSbj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYDYSbc
+	id S1759721AbYDYShS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYDYShD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:31:32 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:64898 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbYDYSbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:31:31 -0400
-Message-ID: <48122379.3080606@aknet.ru>
-Date: Fri, 25 Apr 2008 22:31:21 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 25 Apr 2008 14:37:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34738 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751353AbYDYShA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:37:00 -0400
+Date: Fri, 25 Apr 2008 11:36:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
+In-Reply-To: <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.1.10.0804251133100.2779@woody.linux-foundation.org>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com> <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-References: <s5h8wz7cng7.wl%tiwai@suse.de> <480CD50F.20706@aknet.ru> <s5hbq42b3j7.wl%tiwai@suse.de> <480E2EE5.5040208@aknet.ru> <s5hiqy9dkhv.wl%tiwai@suse.de> <480F95BE.60109@aknet.ru> <s5h3apbd1zx.wl%tiwai@suse.de> <4811555E.3040509@aknet.ru> <s5hfxta4fem.wl%tiwai@suse.de> <48120ABF.1050802@aknet.ru> <20080425140448.ZZRA012@mailhub.coreip.homeip.net>
-In-Reply-To: <20080425140448.ZZRA012@mailhub.coreip.homeip.net>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Dmitry Torokhov wrote:
-> abudance of on-board sound I doubt any distriution would want to have
-> snd-pcsp enabled since there is a chance it may come up as a primary
-> (default) sound device.
-I avoid that by adding
-options snd-pcsp index=1
-into /etc/modprobe.conf.
-Maybe index=5 or alike would be
-safer for those who have many cards.
+
+On Fri, 25 Apr 2008, Jan Engelhardt wrote:
+> 
+> long long is 64 bits on both 32 and 64, is not it?
+> If so, the split between 32 and 64 should not be necessary.
+
+They may be the same size, but there are still pure C-level _type_ 
+differences that the compiler will warn about.
+
+This is the same issue as a 32-bit type on x86-32: is it an "int" or a 
+"long"? From a pure size perspective it shouldn't matter, but if you pass 
+a pointer to it, or use it in a "printf()", it matters a whole lot, 
+because the compiler will complain if you use the wrong version.
+
+So on some 32-bit architectures, "size_t" is "unsigned int", on others it 
+is "unsigned long", and you have to get it right in order to avoid 
+complaints. 
+
+The exact same thing is true about "long" vs "long long" on 64-bit 
+architectures. They may have the same size, but they don't have the same 
+type.
+
+		Linus
+
+
