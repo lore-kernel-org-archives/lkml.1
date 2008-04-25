@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbYDYUat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765947AbYDYUeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbYDYUat (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 16:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762343AbYDYUad
+	id S1765947AbYDYUeZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761735AbYDYUeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 16:30:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54469
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760643AbYDYUaa (ORCPT
+	Fri, 25 Apr 2008 16:34:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41537 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759181AbYDYUeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 16:30:30 -0400
-Date: Fri, 25 Apr 2008 13:30:30 -0700 (PDT)
-Message-Id: <20080425.133030.229754755.davem@davemloft.net>
-To: jengelh@computergmbh.de
-Cc: hpa@zytor.com, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
-References: <1209078352-7593-2-git-send-email-hpa@zytor.com>
-	<1209078352-7593-3-git-send-email-hpa@zytor.com>
-	<alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Apr 2008 16:34:10 -0400
+Message-ID: <48123A7A.6090402@zytor.com>
+Date: Fri, 25 Apr 2008 13:09:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48122ECF.405@zytor.com> <20080425200423.GA25950@Krystal>
+In-Reply-To: <20080425200423.GA25950@Krystal>
+Content-Type: text/plain; charset=windows-1250; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Engelhardt <jengelh@computergmbh.de>
-Date: Fri, 25 Apr 2008 20:27:53 +0200 (CEST)
-
-> On Friday 2008-04-25 01:05, H. Peter Anvin wrote:
+Mathieu Desnoyers wrote:
 > 
-> >This creates two generic files with common integer definitions; one
-> >where 64 bits is "long" (most 64-bit architectures) and one where 64
-> >bits is "long long" (all 32-bit architectures and x86-64.)
+>> There are only two ways to deal with this - extensive analysis of the 
+>> entire flow of control, or telling the compiler exactly what is *actually* 
+>> going on.  The latter is the preferred way, obviously.
+>>
 > 
-> long long is 64 bits on both 32 and 64, is not it?
-> If so, the split between 32 and 64 should not be necessary.
+> Yes, in an ideal world, gcc would help here.
+> 
 
-Because of the large precendence, if you change this stuff, you're
-going to get tons of warnings on the platforms that use "unsigned
-long" currently if you change them to use "unsigned long long".
+gcc is a free software project, and the gcc maintainers are around and 
+can be approached.  A good proposal will go a long way, and patches will 
+go even longer.
 
-Think about all of the implicit type conversions, argument passing,
-et al.
-
-I know because I tried to convert sparc64 over to "unsigned long long"
-to make it more like powerpc, and I found quickly that fixing up all
-the fallout simply was not worth it.
+	-hpa
