@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYDYHm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbYDYHpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbYDYHm7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYDYHmw
+	id S1760068AbYDYHpe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbYDYHpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:42:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:28870 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbYDYHmv (ORCPT
+	Fri, 25 Apr 2008 03:45:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48982
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753429AbYDYHpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:42:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=maMGGZas2qNWFpWoZR0bJ6DeXxGlnLaXgOWGcBDfzVyHC66cpOnVPiqIuuybMM2aGCj5fq+OM6F0TSis2Sjumxbk45yfxg72RD0z2xXnEFUd0B4sObzBZacLPUmCJVgdXAGyYJ+0h+ayntRHaVQW/66dKY8iJIHXY+AWNJOMurs=
-Message-ID: <48118B73.6000700@gmail.com>
-Date: Fri, 25 Apr 2008 09:42:43 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
+	Fri, 25 Apr 2008 03:45:23 -0400
+Date: Fri, 25 Apr 2008 00:45:23 -0700 (PDT)
+Message-Id: <20080425.004523.146850490.davem@davemloft.net>
+To: jirislaby@gmail.com
+Cc: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
        rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
-References: <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com>	<alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org>	<4811090A.9030809@gmail.com> <20080424.183558.96469288.davem@davemloft.net>
-In-Reply-To: <20080424.183558.96469288.davem@davemloft.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       johannes@sipsolutions.net, flamingice@sourmilk.net, jbenc@suse.cz
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48118B18.5020008@gmail.com>
+References: <alpine.LFD.1.10.0804241841280.2779@woody.linux-foundation.org>
+	<20080424.185757.254044977.davem@davemloft.net>
+	<48118B18.5020008@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/25/2008 03:35 AM, David Miller wrote:
-> From: Jiri Slaby <jirislaby@gmail.com>
-> Date: Fri, 25 Apr 2008 00:26:18 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+Date: Fri, 25 Apr 2008 09:41:12 +0200
+
+> Added 3 80211 experts.
 > 
->> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadccf0 
+> On 04/25/2008 03:57 AM, David Miller wrote:
+> > From: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date: Thu, 24 Apr 2008 18:48:32 -0700 (PDT)
+> > 
+> >> But that 0xf0 definitely has shown up before. It's not the *only* 
+> >> corruption, but it's definitely a very interesting pattern. And the other 
+> >> ones that didn't show the 0xf0 pattern could obviously be due to pointers 
+> >> that were corrupted by 0xf0 in low bytes, so it _may_ be the source of the 
+> >> other corruptions too that didn't have an obvious 0xf0 directly in them.
+> > 
+> > Ok.
+> > 
+> > Do we know of any pattern of the wireless device type in use?
+> > If there is a pattern to that, it would be a huge clue.
+> > 
+> > And if it is predominantly one particular wireless device type, we
+> > should be able to come up with a patch to test.
 > 
-> 0xf0...  Is this a 4-cpu machine?
+> Johannes, Michael, Jiri? Someone writes to freed memory patterns 0xf0 (not 
+> aligned to anything, addressed per byte), one of suspects is mac80211, don't you 
+> know that pattern from anywhere?
 
-It's a 2 cores machine.
+I notice Jiri, in your hardware list, you have an ath5k Atheros AR5212 chip
+in there.
 
-> I doubt it, because this is on a laptop as far as I can tell,
-> but I thought I'd ask. :-)
+I took a look at the resume code for ath5k but nothing really suspicious
+there except:
 
-Well, it's not :), it's a desktop.
+	err = pci_enable_device(pdev);
+	if (err)
+		return err;
 
-		Jiri
+	pci_restore_state(pdev);
+
+Shouldn't we restore state before we turn the chip back on and thus
+potentially let it start DMA'ing all over the place?
