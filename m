@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYDYGCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYDYGDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYDYGCj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 02:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbYDYGCE
+	id S1758084AbYDYGDZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 02:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbYDYGCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 02:02:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58467 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755575AbYDYGCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 02:02:01 -0400
-Message-ID: <481173D6.6080609@garzik.org>
-Date: Fri, 25 Apr 2008 02:01:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 25 Apr 2008 02:02:21 -0400
+Received: from [83.228.35.12] ([83.228.35.12]:38920 "EHLO fs.ru.acad.bg"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757517AbYDYGCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 02:02:18 -0400
+Message-ID: <481173E7.3050903@fs.ru.acad.bg>
+Date: Fri, 25 Apr 2008 09:02:15 +0300
+From: Plamen Petrov <plamen.petrov@fs.ru.acad.bg>
+Organization: Filial - Silistra
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Removing dead code in /drivers/net/wan/hdlc_fr.c
-References: <m3lk385tx4.fsf@maximus.localdomain>
-In-Reply-To: <m3lk385tx4.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: Ivo van Doorn <ivdoorn@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: latest git (linux-2.6.25-git6) compile error
+References: <200804250028.24913.pvp@fs.ru.acad.bg> <200804250107.40778.IvDoorn@gmail.com>
+In-Reply-To: <200804250107.40778.IvDoorn@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> From: Cédric Augonnet <Cedric.Augonnet@ens-lyon.fr>
-> 
-> Removing dead code in /drivers/net/wan/hdlc_fr.c
->     
-> The local variable "prefix" is never used anymore, and the content of
-> this string appears a bit later, directly in a call to "alloc_netdev"
-> after doing exactly the same if/else test. So there seems to be no
-> point keeping those 4 lines anymore.
->     
-> Signed-off-by: Cédric Augonnet <cedric.augonnet@ens-lyon.org>
-> Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
-> 
-> diff --git a/drivers/net/wan/hdlc_fr.c b/drivers/net/wan/hdlc_fr.c
-> index c4ab032..520bb0b 100644
-> --- a/drivers/net/wan/hdlc_fr.c
-> +++ b/drivers/net/wan/hdlc_fr.c
-> @@ -1090,10 +1090,6 @@ static int fr_add_pvc(struct net_device *frad, unsigned int dlci, int type)
->  	pvc_device *pvc = NULL;
->  	struct net_device *dev;
->  	int result, used;
-> -	char * prefix = "pvc%d";
-> -
-> -	if (type == ARPHRD_ETHER)
-> -		prefix = "pvceth%d";
->  
->  	if ((pvc = add_pvc(frad, dlci)) == NULL) {
+Ivo van Doorn wrote:
+> On Thursday 24 April 2008, Plamen Petrov wrote:
+>   
+>> Hi, folks!
+>>
+>> Just "git pulled" 2.6.25-git6, did the
+>> "zcat /proc/config.gz > .config && make oldconfig" stuff,
+>> and when I was asked for leds support (RT61PCI_LEDS) 
+>> in the RT61 driver I happen to use, got this:
+>>
+>> [***************** SNIP *********************]
+>>   LD      net/built-in.o
+>>   LD      vmlinux.o
+>>   MODPOST vmlinux.o
+>> WARNING: modpost: Found 16 section mismatch(es).
+>> To see full details build your kernel with:
+>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>>   GEN     .version
+>>   CHK     include/linux/compile.h
+>>   UPD     include/linux/compile.h
+>>   CC      init/version.o
+>>   LD      init/built-in.o
+>>   LD      .tmp_vmlinux1
+>> drivers/built-in.o: In function `rt2x00leds_resume':
+>> /tmp/compile/linux-2.6/drivers/net/wireless/rt2x00/rt2x00leds.c:216: undefined 
+>> reference to `led_classdev_resume'
+>>     
+>
+> Can you confirm that this error goes away when enabling CONFIG_NEW_LEDS ?
+>
+> Ivo
+>   
+Will try and report later - now I'm at work, away from the machine.
 
-applied
+Thanks,
 
+-- 
+Plamen Petrov, network & system administrator
+Filial - Silistra
+RU "Angel Kantchev"
+http://fs.ru.acad.bg/
+--------------------------------
+this message is UTF8 encoded
 
