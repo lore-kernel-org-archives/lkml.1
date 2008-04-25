@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765789AbYDYVgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYDYVhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765789AbYDYVgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 17:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbYDYVgO
+	id S932832AbYDYVhA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 17:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762913AbYDYVgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 17:36:14 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:33733 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762685AbYDYVgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 17:36:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rFG9hyv7x4rSwBYylTFHLt+zQcyqKlzwJjENO7TS9bPaEFPl7cvNiO4LXAeH0nfVYXFfv+/ubSpjJgdKcnvZAns3neUGoXlgZdByfxzq3jzHKURmjw1LvMt0nl2932LMOUtwbOzoLZVrUh3cH54too4RqidD7IxyHF2lDT2O6/c=
-Message-ID: <bc64b4640804251436o27a968a7w88f24e07366fec99@mail.gmail.com>
-Date: Sat, 26 Apr 2008 01:36:10 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Paul Walmsley" <paul@pwsan.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "pHilipp Zabel" <philipp.zabel@gmail.com>, tony@atomide.com,
-       "David Brownell" <david-b@pacbell.net>, hiroshi.DOYU@nokia.com
-In-Reply-To: <20080425211343.GD28893@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 17:36:48 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56696 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762529AbYDYVgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 17:36:47 -0400
+Date: Fri, 25 Apr 2008 23:37:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Richard Hacker <lerichi@gmx.net>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [2.6 patch] scripts/Makefile.modpost typo fix
+Message-ID: <20080425213720.GA12787@uranus.ravnborg.org>
+References: <20080425204016.GB20630@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080420082925.GA32739@doriath.ww600.siemens.net>
-	 <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>
-	 <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com>
-	 <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
-	 <20080425103942.GC14903@elf.ucw.cz>
-	 <20080425202010.GA28893@flint.arm.linux.org.uk>
-	 <20080425205151.GA6251@elf.ucw.cz>
-	 <20080425211343.GD28893@flint.arm.linux.org.uk>
+In-Reply-To: <20080425204016.GB20630@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Apr 25, 2008 at 11:40:16PM +0300, Adrian Bunk wrote:
+> -EVIUSER  ;-)
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-2008/4/26 Russell King <rmk+lkml@arm.linux.org.uk>:
-> On Fri, Apr 25, 2008 at 10:51:51PM +0200, Pavel Machek wrote:
->  > Hi!
->  >
->  > > > WTF? There are currently around 10 copies of clock code in the tree,
->  > > > every one slightly different. If this can help us get rid of all that
->  > > > crap, that's a GOOD THING, normative or not.
->  > >
->  > > At the expense of people going off and inventing their own APIs because
->  > > they find that the "normatived" clock API doesn't do what they need to?
->  >
->  > Just now, everyone just cuts&copies clock.c. I do not think "new"
->  > situation can worse than that.
->
->  That's certainly not what I've seen going on.  Each implementation is
->  customised to the needs of the SoC it's running on - OMAP has a complex
->  implementation, whereas simpler SoCs have a more simple implementation.
->
->  That's an entirely reasonable state of affairs - those who need complexity
->  are able to have it, whereas those who don't need complexity don't have
->  to be lumbered with it.
->
->  It's a long way from a "cut and copy" situation you're trying to suggest
->  it is.  Certainly on ARM, your viewpoint does not hold.
+Thanks Adrian.
 
-Actually it is "cut and copy". I once have examined all arm clock subsystems
-and converted most of them (excluding OMAP, at91, maybe some others)
-to the clocklib. There is more code duplication
-that one would think. E.g. DaVinci clock.h contains a few flags
-definitions, that
-are totally unused by the code (most probably direct c&p from omap code).
+I will wait a few days pushing this obvious fix
+because I hope to find at least a few hours to walk
+through my inbox aka patchqueue and include a few more
+patches.
 
-I don't understand why do you give such strong oppression to these patches.
-Simple systems (like sa1100) will be reduced just to few lines of code.
-Mediocre (like pxa) will be again highly reduced in terms of size,
-maintainability, etc.
-And highly comliex (like omap) do already provide some type of framework
-like clocklib.
-
--- 
-With best wishes
-Dmitry
+	Sam
