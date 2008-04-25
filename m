@@ -1,165 +1,711 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbYDYSKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765162AbYDYSLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932529AbYDYSKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765170AbYDYSIe
+	id S1765162AbYDYSLa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765768AbYDYSIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:08:34 -0400
-Received: from vena.lwn.net ([206.168.112.25]:49259 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765475AbYDYSIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:08:30 -0400
-To: torvalds@linux-foundation.org
-Subject: [PULL] A few documentation updates
-cc: greg@kroah.com, viro@parcelfarce.linux.theplanet.co.uk,
-       linux-kernel@vger.kernel.org
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 25 Apr 2008 12:08:28 -0600
-Message-ID: <2501.1209146908@vena.lwn.net>
+	Fri, 25 Apr 2008 14:08:54 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:40087 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765675AbYDYSIv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:08:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sjMcJV+4Cqe+GBmcKBulOdy+zhPzzcOpNXPYyFVb96S55CLzs7zXsSo7QAB2ZXuwvMF5RolgOBdgIioNfT+b+9W5LrBpfymgBNu7LAPG1vnKS52D1fAq61WZ86xWy/MMZdmAAQicVaX2PWoMBQUE/9O+b5qJOHrgOmQlGA8D6cw=
+Message-ID: <dd18b0c30804251108q2d55736dtd4807db2a9ffb6c5@mail.gmail.com>
+Date: Fri, 25 Apr 2008 18:08:49 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] idle (arch, acpi and apm) and lockdep
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Brown, Len" <len.brown@intel.com>
+In-Reply-To: <1209137941.32291.10.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30804241724t2dcc044dvab4a5ad506255d8d@mail.gmail.com>
+	 <1209125470.24931.10.camel@lappy>
+	 <dd18b0c30804250747u4168bafsccc6feec0ba78c26@mail.gmail.com>
+	 <1209135549.32291.5.camel@lappy> <1209137941.32291.10.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a few updates queued up in my documentation tree:
+O.K. I applied this patch, below are the results:
 
-  git://git.lwn.net/linux-2.6 docs
+On Fri, Apr 25, 2008 at 3:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2008-04-25 at 16:59 +0200, Peter Zijlstra wrote:
+>  > On Fri, 2008-04-25 at 14:47 +0000, Justin Mattock wrote:
+>  > > On Fri, Apr 25, 2008 at 12:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  > > > On Fri, 2008-04-25 at 00:24 +0000, Justin Mattock wrote:
+>  > > >
+>  > > >  > [   13.269763] =================================
+>  > > >  > [   13.270954] [ INFO: inconsistent lock state ]
+>  > > >  > [   13.271865] 2.6.25-04569-gb69d398 #3
+>  > > >  > [   13.272614] ---------------------------------
+>  > > >  > [   13.273521] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+>  > > >  > [   13.274745] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>  > > >  > [   13.275787]  (&rq->rq_lock_key){++..}, at: [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
+>  > > >  > [   13.276859] {in-hardirq-W} state was registered at:
+>  > > >  > [   13.276859]   [<c01423d8>] __lock_acquire+0x419/0xb70
+>  > > >  > [   13.276859]   [<c0142bae>] lock_acquire+0x7f/0xa6
+>  > > >  > [   13.280188]   [<c0394132>] _spin_lock+0x1c/0x49
+>  > > >  > [   13.280188]   [<c0121c44>] scheduler_tick+0x43/0x1bd
+>  > > >  > [   13.280188]   [<c012d99f>] update_process_times+0x3d/0x49
+>  > > >  > [   13.283524]   [<c013daf6>] tick_periodic+0x66/0x72
+>  > > >  > [   13.283524]   [<c013db1b>] tick_handle_periodic+0x19/0x6a
+>  > > >  > [   13.283524]   [<c0105a87>] timer_interrupt+0x47/0x4e
+>  > > >  > [   13.286855]   [<c015cf64>] handle_IRQ_event+0x1a/0x4f
+>  > > >  > [   13.286855]   [<c015e3e9>] handle_level_irq+0x7f/0xca
+>  > > >  > [   13.286855]   [<c0105a27>] do_IRQ+0x71/0x8a
+>  > > >  > [   13.290190]   [<c01043fe>] common_interrupt+0x2e/0x34
+>  > > >  > [   13.290190]   [<c038bd6f>] calibrate_delay+0x8f/0x276
+>  > > >  > [   13.290190]   [<c04f0883>] start_kernel+0x27c/0x2f8
+>  > > >  > [   13.293520]   [<c04f0008>] __init_begin+0x8/0xa
+>  > > >  > [   13.293520]   [<ffffffff>] 0xffffffff
+>  > > >  > [   13.293520] irq event stamp: 253965
+>  > > >  > [   13.296856] hardirqs last  enabled at (253965): [<c0108069>] native_sched_clock+0xe7/0xff
+>  > > >  > [   13.296856] hardirqs last disabled at (253964): [<c0107fef>] native_sched_clock+0x6d/0xff
+>  > > >  > [   13.300190] softirqs last  enabled at (253958): [<c0129cea>] __do_softirq+0xf9/0xff
+>  > > >  > [   13.300190] softirqs last disabled at (253953): [<c0129d3d>] do_softirq+0x4d/0x79
+>  > > >  > [   13.303522]
+>  > > >  > [   13.303522] other info that might help us debug this:
+>  > > >  > [   13.303522] no locks held by swapper/0.
+>  > > >  > [   13.303522]
+>  > > >  > [   13.303522] stack backtrace:
+>  > > >  > [   13.306852] Pid: 0, comm: swapper Not tainted 2.6.25-04569-gb69d398 #3
+>  > > >  > [   13.336851]  [<c01409f9>] print_usage_bug+0x106/0x113
+>  > > >  > [   13.340185]  [<c0141823>] mark_lock+0x1ed/0x3a5
+>  > > >  > [   13.343519]  [<c014244d>] __lock_acquire+0x48e/0xb70
+>  > > >  > [   13.346852]  [<c0142bae>] lock_acquire+0x7f/0xa6
+>  > > >  > [   13.350185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
+>  > > >  > [   13.353519]  [<c0394132>] _spin_lock+0x1c/0x49
+>  > > >  > [   13.360185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
+>  > > >  > [   13.363518]  [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
+>  >
+>  > Got it:
+>  >
+>  >   acpi_idle_do_entry()
+>  >     acpi_processor_ffh_cstate_enter()
+>  >       mwait_idle_with_hints() (32 bit)
+>  >         local_irq_enable()
+>  >
+>  >   sched_clock_idle_wakeup_event()
+>  >
+>  >
+>  > I think my recent idle patches should address this, no?
+>  >
+>  > > >  > [   13.366851]  [<f883919b>] acpi_idle_enter_bm+0x2b3/0x333 [processor]
+>  > > >  > [   13.370184]  [<c02e5ec1>] cpuidle_idle_call+0x63/0x92
+>  > > >  > [   13.373517]  [<c02e5e5e>] ? cpuidle_idle_call+0x0/0x92
+>  > > >  > [   13.380184]  [<c010257d>] cpu_idle+0xb6/0xd6
+>  > > >  > [   13.383517]  [<c0387071>] rest_init+0x49/0x4b
+>  > > >  > [   13.386850]  =======================
+>
+>  (I just found out I failed to copy LKML on the last discussion about
+>  these patches)
+>
+>  ---
+>  Subject: [PATCH] idle (arch,acpi and apm) and lockdep
+>  From: Peter Zijlstra <peterz@infradead.org>
+>
+>  OK, so 25-mm1 gave a lockdep error which made me look into this.
+>
+>  The first thing that I noticed was the horrible mess; the second thing I
+>  saw was hacks like: 71e93d15612c61c2e26a169567becf088e71b8ff
+>
+>  The problem is that arch idle routines are somewhat inconsitent with
+>  their IRQ state handling and instead of fixing _that_, we go paper over
+>  the problem.
+>
+>  So the thing I've tried to do is set a standard for idle routines and
+>  fix them all up to adhere to that. So the rules are:
+>
+>   idle routines are entered with IRQs disabled
+>   idle routines will exit with IRQs enabled
+>
+>  Nearly all already did this in one form or another.
+>
+>  Merge the 32 and 64 bit bits so they no longer have different bugs.
+>
+>  As for the actual lockdep warning; __sti_mwait() did a plainly un-annotated
+>  irq-enable.
+>
+>  Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>  ---
+>   arch/x86/kernel/apm_32.c      |    3 +
+>   arch/x86/kernel/process.c     |  117 +++++++++++++++++++++++++++++++++++++++
+>   arch/x86/kernel/process_32.c  |  118 +---------------------------------------
+>   arch/x86/kernel/process_64.c  |  123 +-----------------------------------------
+>   drivers/acpi/processor_idle.c |   19 +++---
+>   include/asm-x86/processor.h   |    1
+>   6 files changed, 137 insertions(+), 244 deletions(-)
+>
+>  Index: linux-2.6-2/arch/x86/kernel/process_32.c
+>  ===================================================================
+>  --- linux-2.6-2.orig/arch/x86/kernel/process_32.c
+>  +++ linux-2.6-2/arch/x86/kernel/process_32.c
+>  @@ -111,12 +111,10 @@ void default_idle(void)
+>                  */
+>                 smp_mb();
+>
+>  -               local_irq_disable();
+>  -               if (!need_resched()) {
+>  +               if (!need_resched())
+>                         safe_halt();    /* enables interrupts racelessly */
+>  -                       local_irq_disable();
+>  -               }
+>  -               local_irq_enable();
+>  +               else
+>  +                       local_irq_enable();
+>                 current_thread_info()->status |= TS_POLLING;
+>         } else {
+>                 local_irq_enable();
+>  @@ -128,17 +126,6 @@ void default_idle(void)
+>   EXPORT_SYMBOL(default_idle);
+>   #endif
+>
+>  -/*
+>  - * On SMP it's slightly faster (but much more power-consuming!)
+>  - * to poll the ->work.need_resched flag instead of waiting for the
+>  - * cross-CPU IPI to arrive. Use this option with caution.
+>  - */
+>  -static void poll_idle(void)
+>  -{
+>  -       local_irq_enable();
+>  -       cpu_relax();
+>  -}
+>  -
+>   #ifdef CONFIG_HOTPLUG_CPU
+>   #include <asm/nmi.h>
+>   /* We don't actually take CPU down, just spin without interrupts. */
+>  @@ -196,6 +183,7 @@ void cpu_idle(void)
+>                         if (cpu_is_offline(cpu))
+>                                 play_dead();
+>
+>  +                       local_irq_disable();
+>                         __get_cpu_var(irq_stat).idle_timestamp = jiffies;
+>                         idle();
+>                 }
+>  @@ -206,104 +194,6 @@ void cpu_idle(void)
+>         }
+>   }
+>
+>  -static void do_nothing(void *unused)
+>  -{
+>  -}
+>  -
+>  -/*
+>  - * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
+>  - * pm_idle and update to new pm_idle value. Required while changing pm_idle
+>  - * handler on SMP systems.
+>  - *
+>  - * Caller must have changed pm_idle to the new value before the call. Old
+>  - * pm_idle value will not be used by any CPU after the return of this function.
+>  - */
+>  -void cpu_idle_wait(void)
+>  -{
+>  -       smp_mb();
+>  -       /* kick all the CPUs so that they exit out of pm_idle */
+>  -       smp_call_function(do_nothing, NULL, 0, 1);
+>  -}
+>  -EXPORT_SYMBOL_GPL(cpu_idle_wait);
+>  -
+>  -/*
+>  - * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
+>  - * which can obviate IPI to trigger checking of need_resched.
+>  - * We execute MONITOR against need_resched and enter optimized wait state
+>  - * through MWAIT. Whenever someone changes need_resched, we would be woken
+>  - * up from MWAIT (without an IPI).
+>  - *
+>  - * New with Core Duo processors, MWAIT can take some hints based on CPU
+>  - * capability.
+>  - */
+>  -void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
+>  -{
+>  -       if (!need_resched()) {
+>  -               __monitor((void *)&current_thread_info()->flags, 0, 0);
+>  -               smp_mb();
+>  -               if (!need_resched())
+>  -                       __sti_mwait(ax, cx);
+>  -               else
+>  -                       local_irq_enable();
+>  -       } else
+>  -               local_irq_enable();
+>  -}
+>  -
+>  -/* Default MONITOR/MWAIT with no hints, used for default C1 state */
+>  -static void mwait_idle(void)
+>  -{
+>  -       local_irq_enable();
+>  -       mwait_idle_with_hints(0, 0);
+>  -}
+>  -
+>  -static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+>  -{
+>  -       if (force_mwait)
+>  -               return 1;
+>  -       /* Any C1 states supported? */
+>  -       return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
+>  -}
+>  -
+>  -void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+>  -{
+>  -       static int selected;
+>  -
+>  -       if (selected)
+>  -               return;
+>  -#ifdef CONFIG_X86_SMP
+>  -       if (pm_idle == poll_idle && smp_num_siblings > 1) {
+>  -               printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
+>  -                       " performance may degrade.\n");
+>  -       }
+>  -#endif
+>  -       if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+>  -               /*
+>  -                * Skip, if setup has overridden idle.
+>  -                * One CPU supports mwait => All CPUs supports mwait
+>  -                */
+>  -               if (!pm_idle) {
+>  -                       printk(KERN_INFO "using mwait in idle threads.\n");
+>  -                       pm_idle = mwait_idle;
+>  -               }
+>  -       }
+>  -       selected = 1;
+>  -}
+>  -
+>  -static int __init idle_setup(char *str)
+>  -{
+>  -       if (!strcmp(str, "poll")) {
+>  -               printk("using polling idle threads.\n");
+>  -               pm_idle = poll_idle;
+>  -       } else if (!strcmp(str, "mwait"))
+>  -               force_mwait = 1;
+>  -       else
+>  -               return -1;
+>  -
+>  -       boot_option_idle_override = 1;
+>  -       return 0;
+>  -}
+>  -early_param("idle", idle_setup);
+>  -
+>   void __show_registers(struct pt_regs *regs, int all)
+>   {
+>         unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L;
+>  Index: linux-2.6-2/arch/x86/kernel/process_64.c
+>  ===================================================================
+>  --- linux-2.6-2.orig/arch/x86/kernel/process_64.c
+>  +++ linux-2.6-2/arch/x86/kernel/process_64.c
+>  @@ -106,26 +106,13 @@ void default_idle(void)
+>          * test NEED_RESCHED:
+>          */
+>         smp_mb();
+>  -       local_irq_disable();
+>  -       if (!need_resched()) {
+>  +       if (!need_resched())
+>                 safe_halt();    /* enables interrupts racelessly */
+>  -               local_irq_disable();
+>  -       }
+>  -       local_irq_enable();
+>  +       else
+>  +               local_irq_enable();
+>         current_thread_info()->status |= TS_POLLING;
+>   }
+>
+>  -/*
+>  - * On SMP it's slightly faster (but much more power-consuming!)
+>  - * to poll the ->need_resched flag instead of waiting for the
+>  - * cross-CPU IPI to arrive. Use this option with caution.
+>  - */
+>  -static void poll_idle(void)
+>  -{
+>  -       local_irq_enable();
+>  -       cpu_relax();
+>  -}
+>  -
+>   #ifdef CONFIG_HOTPLUG_CPU
+>   DECLARE_PER_CPU(int, cpu_state);
+>
+>  @@ -192,110 +179,6 @@ void cpu_idle(void)
+>         }
+>   }
+>
+>  -static void do_nothing(void *unused)
+>  -{
+>  -}
+>  -
+>  -/*
+>  - * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
+>  - * pm_idle and update to new pm_idle value. Required while changing pm_idle
+>  - * handler on SMP systems.
+>  - *
+>  - * Caller must have changed pm_idle to the new value before the call. Old
+>  - * pm_idle value will not be used by any CPU after the return of this function.
+>  - */
+>  -void cpu_idle_wait(void)
+>  -{
+>  -       smp_mb();
+>  -       /* kick all the CPUs so that they exit out of pm_idle */
+>  -       smp_call_function(do_nothing, NULL, 0, 1);
+>  -}
+>  -EXPORT_SYMBOL_GPL(cpu_idle_wait);
+>  -
+>  -/*
+>  - * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
+>  - * which can obviate IPI to trigger checking of need_resched.
+>  - * We execute MONITOR against need_resched and enter optimized wait state
+>  - * through MWAIT. Whenever someone changes need_resched, we would be woken
+>  - * up from MWAIT (without an IPI).
+>  - *
+>  - * New with Core Duo processors, MWAIT can take some hints based on CPU
+>  - * capability.
+>  - */
+>  -void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
+>  -{
+>  -       if (!need_resched()) {
+>  -               __monitor((void *)&current_thread_info()->flags, 0, 0);
+>  -               smp_mb();
+>  -               if (!need_resched())
+>  -                       __mwait(ax, cx);
+>  -       }
+>  -}
+>  -
+>  -/* Default MONITOR/MWAIT with no hints, used for default C1 state */
+>  -static void mwait_idle(void)
+>  -{
+>  -       if (!need_resched()) {
+>  -               __monitor((void *)&current_thread_info()->flags, 0, 0);
+>  -               smp_mb();
+>  -               if (!need_resched())
+>  -                       __sti_mwait(0, 0);
+>  -               else
+>  -                       local_irq_enable();
+>  -       } else {
+>  -               local_irq_enable();
+>  -       }
+>  -}
+>  -
+>  -
+>  -static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+>  -{
+>  -       if (force_mwait)
+>  -               return 1;
+>  -       /* Any C1 states supported? */
+>  -       return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
+>  -}
+>  -
+>  -void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+>  -{
+>  -       static int selected;
+>  -
+>  -       if (selected)
+>  -               return;
+>  -#ifdef CONFIG_X86_SMP
+>  -       if (pm_idle == poll_idle && smp_num_siblings > 1) {
+>  -               printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
+>  -                       " performance may degrade.\n");
+>  -       }
+>  -#endif
+>  -       if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+>  -               /*
+>  -                * Skip, if setup has overridden idle.
+>  -                * One CPU supports mwait => All CPUs supports mwait
+>  -                */
+>  -               if (!pm_idle) {
+>  -                       printk(KERN_INFO "using mwait in idle threads.\n");
+>  -                       pm_idle = mwait_idle;
+>  -               }
+>  -       }
+>  -       selected = 1;
+>  -}
+>  -
+>  -static int __init idle_setup(char *str)
+>  -{
+>  -       if (!strcmp(str, "poll")) {
+>  -               printk("using polling idle threads.\n");
+>  -               pm_idle = poll_idle;
+>  -       } else if (!strcmp(str, "mwait"))
+>  -               force_mwait = 1;
+>  -       else
+>  -               return -1;
+>  -
+>  -       boot_option_idle_override = 1;
+>  -       return 0;
+>  -}
+>  -early_param("idle", idle_setup);
+>  -
+>   /* Prints also some state that isn't saved in the pt_regs */
+>   void __show_regs(struct pt_regs * regs)
+>   {
+>  Index: linux-2.6-2/drivers/acpi/processor_idle.c
+>  ===================================================================
+>  --- linux-2.6-2.orig/drivers/acpi/processor_idle.c
+>  +++ linux-2.6-2/drivers/acpi/processor_idle.c
+>  @@ -418,13 +418,12 @@ static void acpi_processor_idle(void)
+>
+>         cx = pr->power.state;
+>         if (!cx || acpi_idle_suspend) {
+>  -               if (pm_idle_save)
+>  -                       pm_idle_save();
+>  -               else
+>  +               if (pm_idle_save) {
+>  +                       pm_idle_save(); /* enables IRQs */
+>  +               } else {
+>                         acpi_safe_halt();
+>  -
+>  -               if (irqs_disabled())
+>                         local_irq_enable();
+>  +               }
+>
+>                 return;
+>         }
+>  @@ -520,10 +519,12 @@ static void acpi_processor_idle(void)
+>                  * Use the appropriate idle routine, the one that would
+>                  * be used without acpi C-states.
+>                  */
+>  -               if (pm_idle_save)
+>  -                       pm_idle_save();
+>  -               else
+>  +               if (pm_idle_save) {
+>  +                       pm_idle_save(); /* enables IRQs */
+>  +               } else {
+>                         acpi_safe_halt();
+>  +                       local_irq_enable();
+>  +               }
+>
+>                 /*
+>                  * TBD: Can't get time duration while in C1, as resumes
+>  @@ -534,8 +535,6 @@ static void acpi_processor_idle(void)
+>                  *       skew otherwise.
+>                  */
+>                 sleep_ticks = 0xFFFFFFFF;
+>  -               if (irqs_disabled())
+>  -                       local_irq_enable();
+>
+>                 break;
+>
+>  Index: linux-2.6-2/arch/x86/kernel/apm_32.c
+>  ===================================================================
+>  --- linux-2.6-2.orig/arch/x86/kernel/apm_32.c
+>  +++ linux-2.6-2/arch/x86/kernel/apm_32.c
+>  @@ -904,6 +904,7 @@ recalc:
+>                         original_pm_idle();
+>                 else
+>                         default_idle();
+>  +               local_irq_disable();
+>                 jiffies_since_last_check = jiffies - last_jiffies;
+>                 if (jiffies_since_last_check > idle_period)
+>                         goto recalc;
+>  @@ -911,6 +912,8 @@ recalc:
+>
+>         if (apm_idle_done)
+>                 apm_do_busy();
+>  +
+>  +       local_irq_enable();
+>   }
+>
+>   /**
+>  Index: linux-2.6-2/include/asm-x86/processor.h
+>  ===================================================================
+>  --- linux-2.6-2.orig/include/asm-x86/processor.h
+>  +++ linux-2.6-2/include/asm-x86/processor.h
+>  @@ -723,6 +723,7 @@ static inline void __mwait(unsigned long
+>
+>   static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
+>   {
+>  +       trace_hardirqs_on();
+>         /* "mwait %eax, %ecx;" */
+>         asm volatile("sti; .byte 0x0f, 0x01, 0xc9;"
+>                      :: "a" (eax), "c" (ecx));
+>  Index: linux-2.6-2/arch/x86/kernel/process.c
+>  ===================================================================
+>  --- linux-2.6-2.orig/arch/x86/kernel/process.c
+>  +++ linux-2.6-2/arch/x86/kernel/process.c
+>  @@ -4,6 +4,8 @@
+>   #include <linux/smp.h>
+>   #include <linux/slab.h>
+>   #include <linux/sched.h>
+>  +#include <linux/module.h>
+>  +#include <linux/pm.h>
+>
+>   struct kmem_cache *task_xstate_cachep;
+>
+>  @@ -42,3 +44,118 @@ void arch_task_cache_init(void)
+>                                   __alignof__(union thread_xstate),
+>                                   SLAB_PANIC, NULL);
+>   }
+>  +
+>  +static void do_nothing(void *unused)
+>  +{
+>  +}
+>  +
+>  +/*
+>  + * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
+>  + * pm_idle and update to new pm_idle value. Required while changing pm_idle
+>  + * handler on SMP systems.
+>  + *
+>  + * Caller must have changed pm_idle to the new value before the call. Old
+>  + * pm_idle value will not be used by any CPU after the return of this function.
+>  + */
+>  +void cpu_idle_wait(void)
+>  +{
+>  +       smp_mb();
+>  +       /* kick all the CPUs so that they exit out of pm_idle */
+>  +       smp_call_function(do_nothing, NULL, 0, 1);
+>  +}
+>  +EXPORT_SYMBOL_GPL(cpu_idle_wait);
+>  +
+>  +/*
+>  + * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
+>  + * which can obviate IPI to trigger checking of need_resched.
+>  + * We execute MONITOR against need_resched and enter optimized wait state
+>  + * through MWAIT. Whenever someone changes need_resched, we would be woken
+>  + * up from MWAIT (without an IPI).
+>  + *
+>  + * New with Core Duo processors, MWAIT can take some hints based on CPU
+>  + * capability.
+>  + */
+>  +void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
+>  +{
+>  +       if (!need_resched()) {
+>  +               __monitor((void *)&current_thread_info()->flags, 0, 0);
+>  +               smp_mb();
+>  +               if (!need_resched())
+>  +                       __mwait(ax, cx);
+>  +       }
+>  +}
+>  +
+>  +/* Default MONITOR/MWAIT with no hints, used for default C1 state */
+>  +static void mwait_idle(void)
+>  +{
+>  +       if (!need_resched()) {
+>  +               __monitor((void *)&current_thread_info()->flags, 0, 0);
+>  +               smp_mb();
+>  +               if (!need_resched())
+>  +                       __sti_mwait(0, 0);
+>  +               else
+>  +                       local_irq_enable();
+>  +       } else
+>  +               local_irq_enable();
+>  +}
+>  +
+>  +
+>  +static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+>  +{
+>  +       if (force_mwait)
+>  +               return 1;
+>  +       /* Any C1 states supported? */
+>  +       return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
+>  +}
+>  +
+>  +/*
+>  + * On SMP it's slightly faster (but much more power-consuming!)
+>  + * to poll the ->work.need_resched flag instead of waiting for the
+>  + * cross-CPU IPI to arrive. Use this option with caution.
+>  + */
+>  +static void poll_idle(void)
+>  +{
+>  +       local_irq_enable();
+>  +       cpu_relax();
+>  +}
+>  +
+>  +void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+>  +{
+>  +       static int selected;
+>  +
+>  +       if (selected)
+>  +               return;
+>  +#ifdef CONFIG_X86_SMP
+>  +       if (pm_idle == poll_idle && smp_num_siblings > 1) {
+>  +               printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
+>  +                       " performance may degrade.\n");
+>  +       }
+>  +#endif
+>  +       if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+>  +               /*
+>  +                * Skip, if setup has overridden idle.
+>  +                * One CPU supports mwait => All CPUs supports mwait
+>  +                */
+>  +               if (!pm_idle) {
+>  +                       printk(KERN_INFO "using mwait in idle threads.\n");
+>  +                       pm_idle = mwait_idle;
+>  +               }
+>  +       }
+>  +       selected = 1;
+>  +}
+>  +
+>  +static int __init idle_setup(char *str)
+>  +{
+>  +       if (!strcmp(str, "poll")) {
+>  +               printk("using polling idle threads.\n");
+>  +               pm_idle = poll_idle;
+>  +       } else if (!strcmp(str, "mwait"))
+>  +               force_mwait = 1;
+>  +       else
+>  +               return -1;
+>  +
+>  +       boot_option_idle_override = 1;
+>  +       return 0;
+>  +}
+>  +early_param("idle", idle_setup);
+>  +
+>
+>
+>
 
-Changes are:
+patching file arch/x86/kernel/process_32.c
+Hunk #1 FAILED at 111.
+Hunk #2 FAILED at 126.
+Hunk #3 FAILED at 183.
+Hunk #4 FAILED at 194.
+4 out of 4 hunks FAILED -- saving rejects to file
+arch/x86/kernel/process_32.c.rej
+patching file arch/x86/kernel/process_64.c
+Hunk #1 FAILED at 106.
+Hunk #2 FAILED at 179.
+2 out of 2 hunks FAILED -- saving rejects to file
+arch/x86/kernel/process_64.c.rej
+patching file drivers/acpi/processor_idle.c
+Hunk #1 FAILED at 418.
+Hunk #2 FAILED at 519.
+Hunk #3 FAILED at 535.
+3 out of 3 FAILED -- saving rejects to file drivers/acpi/processor_idle.c.rej
+pathing file arch/x86/kernel/apm_32.c
+Hunk #1 FAILED at 904.
+Hunk #2 FAILED at 912.
+2 out of 2 hunks FAILED -- saving rejects to file arch/x86/kernel/apm_32.c.rej
+patching file include/asm/asm-x86/processor.h
+Hunk #1 FAILED at 723.
+1 out of 1 hunk FAILE -- saving rejects to file include/asm-x86/processor.h.rej
+patching file arch/x86/kernel/process.c
+Hunk #2 succeeded at 44 with fuzz 2.
 
-Jonathan Corbet (3):
-      Document SEQ_SKIP
-      Various fixes to Documentation/HOWTO
-      Document seq_path_root()
+When I compile the kernel I'm receiving this.
 
- Documentation/HOWTO                    |   30 +++++++++++++++++++-----------
- Documentation/filesystems/seq_file.txt |   19 +++++++++++++++----
- 2 files changed, 34 insertions(+), 15 deletions(-)
+arch/x86/kernel/process.o: In function `select_idle_routine':
+process.c:(.cpuinit.text+0x0): multiple definition of `select_idle_routine'
+arch/x86/kernel/process_32.o:process_32.c(.cpuinit.text+0x0: first defined here
+arch/x86/kernel/process.o: In function `cpu_idle_wait':
+process.c:(text+0x16): multiple definition of `cpu_idle_wait'
+arch/x86/kernel/process_32.o:process_32.c:(.text0x432): first defined here
+arch/x86/kernel/process.o: In function `mwait_idle_with_hints':
+process.c:(.text+0x113): multiple definition of 'mwait_idle_with_hints'
+arch/x86/kernel/process_32.o:process_32.c:(.text+0x1db): first defined here
+make[1]: *** [arch/x86/kernel/built-in.o] Error 1
+make: *** [arch/x86/kernel] Error 2
 
-The diff is small, so I'll just put it here for the curious:
 
-diff --git a/Documentation/HOWTO b/Documentation/HOWTO
-index 5483561..0291ade 100644
---- a/Documentation/HOWTO
-+++ b/Documentation/HOWTO
-@@ -249,9 +249,11 @@ process is as follows:
-     release a new -rc kernel every week.
-   - Process continues until the kernel is considered "ready", the
-     process should last around 6 weeks.
--  - A list of known regressions present in each -rc release is
--    tracked at the following URI:
--    http://kernelnewbies.org/known_regressions
-+  - Known regressions in each release are periodically posted to the 
-+    linux-kernel mailing list.  The goal is to reduce the length of 
-+    that list to zero before declaring the kernel to be "ready," but, in
-+    the real world, a small number of regressions often remain at 
-+    release time.
- 
- It is worth mentioning what Andrew Morton wrote on the linux-kernel
- mailing list about kernel releases:
-@@ -261,7 +263,7 @@ mailing list about kernel releases:
- 
- 2.6.x.y -stable kernel tree
- ---------------------------
--Kernels with 4 digit versions are -stable kernels. They contain
-+Kernels with 4-part versions are -stable kernels. They contain
- relatively small and critical fixes for security problems or significant
- regressions discovered in a given 2.6.x kernel.
- 
-@@ -273,7 +275,10 @@ If no 2.6.x.y kernel is available, then the highest numbered 2.6.x
- kernel is the current stable kernel.
- 
- 2.6.x.y are maintained by the "stable" team <stable@kernel.org>, and are
--released almost every other week.
-+released as needs dictate.  The normal release period is approximately 
-+two weeks, but it can be longer if there are no pressing problems.  A
-+security-related problem, instead, can cause a release to happen almost
-+instantly.
- 
- The file Documentation/stable_kernel_rules.txt in the kernel tree
- documents what kinds of changes are acceptable for the -stable tree, and
-@@ -298,7 +303,9 @@ a while Andrew or the subsystem maintainer pushes it on to Linus for
- inclusion in mainline.
- 
- It is heavily encouraged that all new patches get tested in the -mm tree
--before they are sent to Linus for inclusion in the main kernel tree.
-+before they are sent to Linus for inclusion in the main kernel tree.  Code
-+which does not make an appearance in -mm before the opening of the merge
-+window will prove hard to merge into the mainline.
- 
- These kernels are not appropriate for use on systems that are supposed
- to be stable and they are more risky to run than any of the other
-@@ -354,11 +361,12 @@ Here is a list of some of the different kernel trees available:
-     - SCSI, James Bottomley <James.Bottomley@SteelEye.com>
- 	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
- 
-+    - x86, Ingo Molnar <mingo@elte.hu>
-+	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-+
-   quilt trees:
--    - USB, PCI, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
-+    - USB, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
- 	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
--    - x86-64, partly i386, Andi Kleen <ak@suse.de>
--        ftp.firstfloor.org:/pub/ak/x86_64/quilt/
- 
-   Other kernel trees can be found listed at http://git.kernel.org/ and in
-   the MAINTAINERS file.
-@@ -392,8 +400,8 @@ If you want to be advised of the future bug reports, you can subscribe to the
- bugme-new mailing list (only new bug reports are mailed here) or to the
- bugme-janitor mailing list (every change in the bugzilla is mailed here)
- 
--	http://lists.osdl.org/mailman/listinfo/bugme-new
--	http://lists.osdl.org/mailman/listinfo/bugme-janitors
-+	http://lists.linux-foundation.org/mailman/listinfo/bugme-new
-+	http://lists.linux-foundation.org/mailman/listinfo/bugme-janitors
- 
- 
- 
-diff --git a/Documentation/filesystems/seq_file.txt b/Documentation/filesystems/seq_file.txt
-index 7fb8e6d..b843743 100644
---- a/Documentation/filesystems/seq_file.txt
-+++ b/Documentation/filesystems/seq_file.txt
-@@ -122,8 +122,7 @@ stop() is the place to free it.
- 	}
- 
- Finally, the show() function should format the object currently pointed to
--by the iterator for output. It should return zero, or an error code if
--something goes wrong. The example module's show() function is:
-+by the iterator for output.  The example module's show() function is:
- 
- 	static int ct_seq_show(struct seq_file *s, void *v)
- 	{
-@@ -132,6 +131,12 @@ something goes wrong. The example module's show() function is:
- 	        return 0;
- 	}
- 
-+If all is well, the show() function should return zero.  A negative error
-+code in the usual manner indicates that something went wrong; it will be
-+passed back to user space.  This function can also return SEQ_SKIP, which
-+causes the current item to be skipped; if the show() function has already
-+generated output before returning SEQ_SKIP, that output will be dropped.
-+
- We will look at seq_printf() in a moment. But first, the definition of the
- seq_file iterator is finished by creating a seq_operations structure with
- the four functions we have just defined:
-@@ -182,12 +187,18 @@ The first two output a single character and a string, just like one would
- expect. seq_escape() is like seq_puts(), except that any character in s
- which is in the string esc will be represented in octal form in the output.
- 
--There is also a function for printing filenames:
-+There is also a pair of functions for printing filenames:
- 
- 	int seq_path(struct seq_file *m, struct path *path, char *esc);
-+	int seq_path_root(struct seq_file *m, struct path *path,
-+			  struct path *root, char *esc)
- 
- Here, path indicates the file of interest, and esc is a set of characters
--which should be escaped in the output.
-+which should be escaped in the output.  A call to seq_path() will output
-+the path relative to the current process's filesystem root.  If a different
-+root is desired, it can be used with seq_path_root().  Note that, if it
-+turns out that path cannot be reached from root, the value of root will be
-+changed in seq_file_root() to a root which *does* work.
- 
- 
- Making it all work
+Should I just go ahead and try git-pull to see if these patches are
+applied over there correctly.
+regards;
+
+
+
+
+-- 
+Justin P. Mattock
