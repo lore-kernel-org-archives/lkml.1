@@ -1,103 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYDYQG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbYDYQJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763378AbYDYQG1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYDYQGU
+	id S1762436AbYDYQJe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbYDYQJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:06:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19923 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756453AbYDYQGT (ORCPT
+	Fri, 25 Apr 2008 12:09:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54546 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753864AbYDYQJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:06:19 -0400
-Date: Fri, 25 Apr 2008 09:04:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "werner" <werner@copaya.yi.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: EDD problem -- regression -- crash on booting by probing EDD
-Message-Id: <20080425090441.27d8e90b.randy.dunlap@oracle.com>
-In-Reply-To: <1208910044.20701@copaya.yi.org>
-References: <20080422142103.GA5652@auslistsprd01.us.dell.com>
-	<1208910044.20701@copaya.yi.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 25 Apr 2008 12:09:25 -0400
+Date: Fri, 25 Apr 2008 09:06:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+In-Reply-To: <20080425154854.GC3265@one.firstfloor.org>
+Message-ID: <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org>
+References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu>
+ <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Apr 2008 21:20:44 -0300 (GFT) werner wrote:
-
-> As I tested yesterday extensively, the problem wasn't present at 2.6.24-rc5-git6 (SYS Linux 0.17 install DVD) nor at 2.6.24-rc6-git2 (SYS 0.19) ,  but at 2.6.24-rc6-git8 (SYS 0.20-rc1 and 0.20-rc2) and 2.6.25 (0.21-r3).
-> 
-> The whole compiled packages of these kernels still are at copaya.yi.org/tgz , but I extracted  the important parts, see enclosed here.    The .tar.bz2 file contains  the config  and the protocoll of the compilation (inclusive warning / error messages). 
-> 
-> As you can see, the diff between the config of 2.6.24-rc6-git2 and -git8 is nothing.  That means: THE ERROR ENTERED INTO THE KERNEL BETWEEN THESE TWO GITs !!      
-> 
-> You may also analyze the error/warning messages. Please observe that the error message just at the beginning was already subject of another reclamation mine together with another person, and seems to have be corrected.
-> 
-> I inform still about the following:    As I make many experients and also install Linux often for firnds and neighbours, I see steady-steady some kernel errors, but have normally no time to track them, in the house of the persons.  That error here, I saw already several times, and never it helped the edd=off option.    Yesterday it happened that a friend brought a laptop (ACER Aspire 7004WSMi) to me, after he was unsuccessfull to install  SYS 0.21-r3 dvd with 2.6.25-rc7 . Then I tracked that problem during about 5 hours, inclusively trying a lot of different kernel options.  edd=off don't work at all, with no of the affected kernels.  With 2.6.24-rc6-git2 and earlier kernels the problem didnt appear, even without edd=off option, and with the later kernels it appears, even with edd=off .    With pci=off , also the recent kernels boots -- but this is useless because the system don't find any hard disk.  acpi=off or hwprobe=off have no influence on that problem.
-> 
-> Pls search that error and repair it !
-> **********  YOU SHOULD MAKE AN EXTRA KERNEL OPTION, WHAT IGNORES THE HARDWARE AND CONTINUES TO BOOT, like pci=off,  BUT WHAT DETECTS CD ROMS, HARD DISKS SATA / IDE / RAID , AND WHAT PERMITS TO USE THE COMPUTER NORMALLY AT LEAST IN VESA-FB OR FBDEV MODE !!!!! *************
-> 
-> As there has no other solution, I released last night SYS 0.21-r4 DVD , what contains both, the 2.6.25 , and alternatively 2.6.24-rc6-git2 , so that people can use them computer anyway / anyhow :    ftp://ftp5.gwdg.de/pub/linux/install/sys/  
-> 
-> I can put the suggested debug, generally, in the kernel command line of my SYS install DVD. However, the person gone with his laptop so that at the moment I cannot test it; I have to wait if the same problem occurs on another computer.  
-
-We need that initcall_debug information.  And it would be helpful
-to have a list of hardware that is installed on the problem system:
-lspci -v
 
 
-> Werner Landgraf
+On Fri, 25 Apr 2008, Andi Kleen wrote:
 > 
-> Linux  SYS   
-> 
-> http://linux.softpedia.com/get/System/Operating-Systems/Linux-Distributions/SYS-34168.shtml
->  
-> 
-> 
-> annexed: 1 file
-> ======================================================================================
-> On 22/Abr/2008 11:21 Matt Domsch wrote ..
-> > On Tue, Apr 22, 2008 at 06:28:40AM -0700, Andrew Morton wrote:
-> > > > On Sun, 20 Apr 2008 19:33:32 -0300 (GFT) "werner" <werner@copaya.yi.org> wrote:
-> > > > There is a regression in 2.6.25.
-> > > 
-> > > Rafael bcc'ed.
-> > > 
-> > > >   Booting stops with: Probing EDD (edd=off to disable) message.
-> > > > 
-> > > > It dont work the kernel boot parameter edd=off .  With pci=off the computer
-> > continues to boot, but later it dont find hard disks etc.
-> > > 
-> > > Tim and Matt cc'ed.
-> > > 
-> > > > Thats happening on 2.6.25   definitive, but was verified to go back until 2.6.24-rc6-git8,
-> > but it wasnt yet at 2.6.24-rc6-git2 which worked correctly.
-> > > > 
-> > > 
-> > > hm, that's a nice narrow window.  Unfortunately for the next few days I
-> > > can't personally get in and find out what we changed during it.
-> > 
-> > I've scanned the diff between these, and can't see anything that would
-> > obviously cause a problem.  Nothing that touches the EDD codepath
-> > directly at least.  I'll be curious to see the additional initcall
-> > debug data.
-> > 
-> > -- 
-> > Matt Domsch
-> > Linux Technology Strategist, Dell Office of the CTO
-> > linux.dell.com & www.dell.com/linux
-> 
+> So all these checks can be just removed.
 
+Quite frankly, I'd rather tighten them up. All the callers actually seem 
+to do just a single-byte one.
+
+So I'd suggest really tightening it up to require total natural alignment 
+(rather than the weaker version that required that it fit in an aligned 
+unsigned long or whatever). And I'd suggest using FIXMAP's instead of 
+vmap. Maybe something like the appended (TOTALLY UNTESTED!)
+
+		Linus
 
 ---
-~Randy
+ arch/x86/kernel/alternative.c |   32 ++++++++++++++++----------------
+ include/asm-x86/fixmap_32.h   |    1 +
+ include/asm-x86/fixmap_64.h   |    1 +
+ 3 files changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index df4099d..6172e40 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -508,24 +508,24 @@ void *text_poke_early(void *addr, const void *opcode, size_t len)
+  */
+ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ {
+-	unsigned long flags;
+-	char *vaddr;
+-	int nr_pages = 2;
++	static DEFINE_SPINLOCK(poke_lock);
++	unsigned long flags, bits;
+ 
++	bits = (unsigned long) addr;
+ 	BUG_ON(len > sizeof(long));
+-	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
+-		- ((long)addr & ~(sizeof(long) - 1)));
+-	if (kernel_text_address((unsigned long)addr)) {
+-		struct page *pages[2] = { virt_to_page(addr),
+-			virt_to_page(addr + PAGE_SIZE) };
+-		if (!pages[1])
+-			nr_pages = 1;
+-		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+-		BUG_ON(!vaddr);
+-		local_irq_save(flags);
+-		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+-		local_irq_restore(flags);
+-		vunmap(vaddr);
++	BUG_ON(len & (len-1));
++	BUG_ON(bits & (len-1));
++
++	if (core_kernel_text(bits)) {
++		unsigned long phys = __pa(addr);
++		unsigned long offset = phys & ~PAGE_MASK;
++		unsigned long virt = fix_to_virt(FIX_POKE);
++		phys &= PAGE_MASK;
++
++		spin_lock_irqsave(&poke_lock, flags);
++		set_fixmap(FIX_POKE, phys);
++		memcpy((void *)(virt + offset), opcode, len);
++		spin_unlock_irqrestore(&poke_lock, flags);
+ 	} else {
+ 		/*
+ 		 * modules are in vmalloc'ed memory, always writable.
+diff --git a/include/asm-x86/fixmap_32.h b/include/asm-x86/fixmap_32.h
+index eb16651..1f6df95 100644
+--- a/include/asm-x86/fixmap_32.h
++++ b/include/asm-x86/fixmap_32.h
+@@ -55,6 +55,7 @@ enum fixed_addresses {
+ 	FIX_HOLE,
+ 	FIX_VDSO,
+ 	FIX_DBGP_BASE,
++	FIX_POKE,
+ 	FIX_EARLYCON_MEM_BASE,
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+diff --git a/include/asm-x86/fixmap_64.h b/include/asm-x86/fixmap_64.h
+index f3d7685..75e6004 100644
+--- a/include/asm-x86/fixmap_64.h
++++ b/include/asm-x86/fixmap_64.h
+@@ -37,6 +37,7 @@ enum fixed_addresses {
+ 	VSYSCALL_FIRST_PAGE = VSYSCALL_LAST_PAGE
+ 			    + ((VSYSCALL_END-VSYSCALL_START) >> PAGE_SHIFT) - 1,
+ 	VSYSCALL_HPET,
++	FIX_POKE,
+ 	FIX_DBGP_BASE,
+ 	FIX_EARLYCON_MEM_BASE,
+ 	FIX_HPET_BASE,
