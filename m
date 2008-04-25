@@ -1,51 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbYDYSht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbYDYSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762043AbYDYSht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYDYShL
+	id S1762975AbYDYSiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbYDYShy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:37:11 -0400
-Received: from el-out-1112.google.com ([209.85.162.178]:27768 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754444AbYDYShI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:37:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=oBjUH4U8hgq82/F2LlYSQ0sf5m1U39eO5P4yYZy9bPsZIw5Ylw2VoUQ6zu1arU9GBXNB+dTR1v4Xw1G6YcYDjLKLDjjN2iAC6YjBjKvj1JJiVdXFEqGe6wIZ6IkzrPX0bfhh07jPeXSLQAD4fWuDWf3tkos7PrMOZoQJirJYHko=
-Date: Fri, 25 Apr 2008 14:37:02 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-Message-ID: <20080425143606.ZZRA012@mailhub.coreip.homeip.net>
-References: <s5hbq42b3j7.wl%tiwai@suse.de> <480E2EE5.5040208@aknet.ru> <s5hiqy9dkhv.wl%tiwai@suse.de> <480F95BE.60109@aknet.ru> <s5h3apbd1zx.wl%tiwai@suse.de> <4811555E.3040509@aknet.ru> <s5hfxta4fem.wl%tiwai@suse.de> <48120ABF.1050802@aknet.ru> <20080425140448.ZZRA012@mailhub.coreip.homeip.net> <48122379.3080606@aknet.ru>
+	Fri, 25 Apr 2008 14:37:54 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:33341 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762207AbYDYShv convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:37:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAObBEUhMROPA/2dsb2JhbACBU6s7
+Date: Fri, 25 Apr 2008 14:37:48 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080425183748.GB16180@Krystal>
+References: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48122379.3080606@aknet.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20080425170929.GA16180@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:47:52 up 56 days, 13:58,  7 users,  load average: 1.48, 0.56,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 10:31:21PM +0400, Stas Sergeev wrote:
-> Hello.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * H. Peter Anvin (hpa@zytor.com) wrote:
+> > Mathieu Desnoyers wrote:
+> >> Yes, the immediate values, in general, only need to do atomic writes,
+> >> because I have taken care of placing the mov instruction in the correct
+> >> alignment so its immediate value happens to be aligned in memory.
+> >> However, the latest optimisation I did to change a conditional branch
+> >> into a jump when the correct code pattern is detected :
+> >> mov, test, bne short
+> >> into a
+> >> nop2, nop2, nop1, jmp short
+> >> or
+> >> mov, test, bne near
+> >> into a
+> >> nop2, nop2, nop1, jmp near
+> >
+> > And how, pray tell, do you deal with the fact that:
+> >
+> > a) the EFLAGS may be live on exit;
 > 
-> Dmitry Torokhov wrote:
-> > abudance of on-board sound I doubt any distriution would want to have
-> > snd-pcsp enabled since there is a chance it may come up as a primary
-> > (default) sound device.
-> I avoid that by adding
-> options snd-pcsp index=1
-> into /etc/modprobe.conf.
-> Maybe index=5 or alike would be
-> safer for those who have many cards.
+> Actually, not only EFLAGS can be live on exit, but also the immediate
+> value itself.
+> 
+> If we take the mov, test, jne short case into account, I force the mov
+> to populate the %al register with some immediate value. Then, this value
+> is extracted from the inline assembly and feeded to an if() c statement
+> under the form of a variable. So, I check precisely for a mov %al,0,
+> followed by test and bne. If I don't find it (due to gcc optimizations),
+> then I leave the original immediate value there. I start the pattern
+> matching from the address of the movb instruction, which I extract from
+> the inline assembly. So, about the EFLAGS : given that I first change
+> the jne for an unconditional jump, I just don't care about the status of
+> the ZF : jump does not change the EFLAGS, and it does not depend on any.
+> However, it is still valid to leave the mov and test instructions there,
+> because ZF is considered "live" by gcc across the test+jne instructions.
+> 
+> Then, I patch mov and test in any order, because we just don't care
+> about the status of the ZF, or do we... ? The only limitation is that a
+> given imv_cond(var) should only be used in the following pattern :
+> 
+> if (imv_cond(var)) ...
+> 
+> Trying to save the result of imv_cond(var) and use it in multiple if()
+> statements would cause the compiler to duplicate tests and branches on
+> that variable and the pattern matching would not see that. I think it's
+> what you fear. Now that you speak of it, it might be better to leave the
+> movb and test instruction there to make sure we don't kill the ZF which
+> might be needed by some other code.
+> 
 
-Yes, it could be. But face it, the number of users wanting to play
-musuc through PC speaker is quite small and unlikely to increase in
-the future.
+Thinking about it, there could be a way to insure limited ZF and %al
+liveliness: adding an epilogue to the expected instruction sequence
+formed by an asm statement which clobbers the flags (flags are clobbered
+in any asm statement on x86) and clobbers %al.
+
+>From that point, we just have to find a specific signature that gcc
+could not imitate to put in this asm statement, so we can detect if
+other instructions have been placed in the middle of our sequence by
+gcc. Actually, I think the best thing to do with this asm statement is
+to put the instruction pointer in a special section, so we know that
+this code location marks the end of ZF and %al liveliness. There would
+be therefore no added code, just asm constraints.
+
+This epilogue should then be used on both branches of the condition,
+like this :
+
+if (unlikely(imv_cond(var))) {
+  imv_cond_end();
+  ...
+} else {
+  imv_cond_end();
+   ...
+}
+
+Where imv_cond_end() would look like this :
+
++/*
++ * Puts a test and branch make sure the %al register and ZF are not live
++ * anymore.
++ * All asm statements clobbers the flags, but add "cc" clobber just to be sure.
++ * Clobbers %al.
++ */
++#define imv_cond_end()                                                 \
++       do {                                                            \
++               asm (".section __imv_cond_end,\"a\",@progbits\n\t"      \
++                               _ASM_PTR "1f\n\t"                       \
++                               ".previous\n\t"                         \
++                               "1:\n\t"                                \
++                               : : : "a", "cc");                       \
++       } while (0)
++
+
+The pattern to test for will therefore become :
+
+mov, test, branch, address following branch should be in the
+__imv_cond_end table.
+The address of the branch target site would also have to be in the
+__imv_cond_end table.
+
+
+> > b) there might be a jump into the middle of this instruction sequence?
+> >
+> 
+> If we change that, as discussed above, so the liveliness of ZF and of
+> the %al register is still insured by leaving the mov and test
+> instructions in place, we end up only modifying a single instruction and
+> the problem fades away. We would end up changing a jne for a jmp.
+> 
+
+So, if we do is I propose here, we have to take into account this
+question too. Any jump that jumps in the middle of this instruction
+sequence would have to insure correct liveliness of %al and ZF. However,
+since we just limited the scope of their liveliness, there are no other
+code paths which can jump in the middle of our instruction sequence and
+insure correct ZF and %al liveliness.
+
+Does it make sense ?
+
+Thanks,
+
+Mathieu
+
+
+> Thanks,
+> 
+> Mathieu
+> 
+> > 	-hpa
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
 -- 
-Dmitry
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
