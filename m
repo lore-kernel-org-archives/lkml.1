@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbYDYXF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbYDYXGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbYDYXF7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 19:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760485AbYDYXFh
+	id S933365AbYDYXGa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 19:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759471AbYDYXGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 19:05:37 -0400
-Received: from cpc4-cbly1-0-0-cust583.glfd.cable.ntl.com ([86.16.162.72]:37316
-	"EHLO crisp.demon.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758435AbYDYXFg (ORCPT
+	Fri, 25 Apr 2008 19:06:03 -0400
+Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:3541 "EHLO
+	anchor-post-30.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933236AbYDYXGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 19:05:36 -0400
-Date: Sat, 26 Apr 2008 00:05:28 +0100
-From: paul <fox@crisp.demon.co.uk>
-Message-Id: <200804252305.m3PN5SFL008798@crisp.demon.co.uk>
-Reply-To: fox@crisp.demon.co.uk
+	Fri, 25 Apr 2008 19:06:01 -0400
+From: fox@crisp.demon.co.uk
 To: t-nishiie@np.css.fujitsu.com, bart.vanassche@gmail.com
-Subject: RE: dtrace for linux
 Cc: linux-kernel@vger.kernel.org
-X-Mailer: CRiSP-Mail v4.0
+Subject: RE: dtrace for linux
+Date: Sat, 26 Apr 2008 00:05:58 +0100
+User-Agent: Demon-WebMail/2.0
+MIME-Version: 1.0
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Message-Id: <E1JpWzO-000Ftm-Ot@pr-webmail-2.demon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -94,4 +96,6 @@ me + Ubuntu to get a custom Linus kernel to boot. Hopefully the weekend
 will fare better.
 
 -pdf
+
+
 
