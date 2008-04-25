@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYDYHRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbYDYHSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbYDYHRo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYDYHRh
+	id S1759371AbYDYHSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYDYHS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:17:37 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:45857 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbYDYHRh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:17:37 -0400
-Date: Fri, 25 Apr 2008 09:17:32 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 00/24] Unify integer type definitions, and add fixed type
- constructor macros
-In-Reply-To: <1209078352-7593-1-git-send-email-hpa@zytor.com>
-Message-ID: <Pine.LNX.4.64.0804250915030.21224@anakin>
-References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
+	Fri, 25 Apr 2008 03:18:29 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26638 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbYDYHS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 03:18:29 -0400
+Date: Fri, 25 Apr 2008 09:18:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+Message-ID: <20080425071823.GF12774@kernel.dk>
+References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-2-git-send-email-jens.axboe@oracle.com> <20080424220157.GA26179@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424220157.GA26179@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008, H. Peter Anvin wrote:
-> This patchset unifies the integer definitions across all the
-> <asm-*/types.h> files, replacing them with two asm-generic files, one
-> for the LL64 model (all 32-bit architectures plus x86-64) and one for
-> the L64 model (all other 64-bit architectures.)
+On Thu, Apr 24 2008, Russell King wrote:
+> On Tue, Apr 22, 2008 at 08:50:17PM +0200, Jens Axboe wrote:
+> > +		data->csd.func(data->csd.info);
+> > +
+> > +		spin_lock(&data->lock);
+> > +		cpu_clear(cpu, data->cpumask);
+> > +		WARN_ON(data->refs == 0);
+> > +		data->refs--;
+> > +		refs = data->refs;
+> 
+> Probably a silly question, but what does data->refs do that
+> cpus_empty(data->cpumask) wouldn't do?  (as indeed ARM presently does.)
 
-Just a minor nitpick, what about calling them LP32 and LP64, like
-everybody else does?
-I.e. asm-generic/types-lp{32,64}.h?
+I guess it can be marginally slower for NR_CPUS > BITS_PER_LONG,
+otherwise there's absolutely no reason to have a seperate ref counter.
 
-Gr{oetje,eeting}s,
+-- 
+Jens Axboe
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
