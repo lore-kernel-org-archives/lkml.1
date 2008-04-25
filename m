@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYDYEtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYDYEu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbYDYEtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 00:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbYDYEsq
+	id S1758618AbYDYEu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 00:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYDYEur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 00:48:46 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46597 "EHLO mail.dvmed.net"
+	Fri, 25 Apr 2008 00:50:47 -0400
+Received: from ns.store20.com ([212.7.7.16]:51609 "EHLO store20.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757930AbYDYEso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 00:48:44 -0400
-Message-ID: <481162A4.50500@garzik.org>
-Date: Fri, 25 Apr 2008 00:48:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@redhat.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make sata_set_spd_needed() static
-References: <20080421085117.GC26897@cs181133002.pp.htv.fi>
-In-Reply-To: <20080421085117.GC26897@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1753093AbYDYEuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 00:50:46 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Apr 2008 00:50:46 EDT
+Subject: [REGRESSION] x86: support for new UV apic
+From: Priit Laes <plaes@plaes.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Date: Fri, 25 Apr 2008 07:43:20 +0300
+Message-Id: <1209098600.3707.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> sata_set_spd_needed() can now become static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/ata/libata-core.c |    2 +-
->  drivers/ata/libata.h      |    1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> bb4bcf58edb56a5fc9d7401046adcafcffff46a6 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 4b918d7..8c2bb65 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -2761,7 +2761,7 @@ static int __sata_set_spd_needed(struct ata_link *link, u32 *scontrol)
->   *	RETURNS:
->   *	1 if SATA spd configuration is needed, 0 otherwise.
->   */
-> -int sata_set_spd_needed(struct ata_link *link)
-> +static int sata_set_spd_needed(struct ata_link *link)
->  {
->  	u32 scontrol;
->  
-> diff --git a/drivers/ata/libata.h b/drivers/ata/libata.h
-> index 4aeeabb..ae2cfd9 100644
-> --- a/drivers/ata/libata.h
-> +++ b/drivers/ata/libata.h
-> @@ -101,7 +101,6 @@ extern int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
->  			      unsigned int readid_flags);
->  extern int ata_dev_configure(struct ata_device *dev);
->  extern int sata_down_spd_limit(struct ata_link *link);
-> -extern int sata_set_spd_needed(struct ata_link *link);
->  extern int ata_down_xfermask_limit(struct ata_device *dev, unsigned int sel);
->  extern void ata_sg_clean(struct ata_queued_cmd *qc);
->  extern void ata_qc_free(struct ata_queued_cmd *qc);
+Hey,
 
-applied
+I am getting two following warnings (probable one per each CPU core)
+using the latest Linus's git:
 
+WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
+
+Call Trace:
+ [<ffffffff8022f1e1>] warn_on_slowpath+0x51/0x63
+ [<ffffffff80282e48>] sys_ioctl+0x2d/0x5d
+ [<ffffffff805185ff>] _spin_lock+0xe/0x24
+ [<ffffffff80227459>] task_rq_lock+0x3d/0x73
+ [<ffffffff805133c3>] set_cpu_sibling_map+0x336/0x350
+ [<ffffffff8021c1b8>] read_apic_id+0x30/0x62
+ [<ffffffff806d921d>] verify_local_APIC+0x90/0x138
+ [<ffffffff806d84b5>] native_smp_prepare_cpus+0x1f9/0x305
+ [<ffffffff806ce7b1>] kernel_init+0x59/0x2d9
+ [<ffffffff80518a26>] _spin_unlock_irq+0x11/0x2b
+ [<ffffffff8020bf48>] child_rip+0xa/0x12
+ [<ffffffff806ce758>] kernel_init+0x0/0x2d9
+ [<ffffffff8020bf3e>] child_rip+0x0/0x12
+
+---[ end trace ca143223eefdc828 ]---
+
+Few hours of bisecting gave me following commit as a suspect
+
+
+ac23d4ee3f84de33c16ed7e68f9adee2386e74fb is first bad commit
+commit ac23d4ee3f84de33c16ed7e68f9adee2386e74fb
+Author: Jack Steiner <steiner@sgi.com>
+Date:   Fri Mar 28 14:12:16 2008 -0500
+
+    x86: support for new UV apic
 
