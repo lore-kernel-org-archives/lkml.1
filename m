@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761168AbYDYSGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbYDYSHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761168AbYDYSGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764729AbYDYR5g
+	id S932396AbYDYSHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764838AbYDYR5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:57:36 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:53144 "EHLO
+	Fri, 25 Apr 2008 13:57:37 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53142 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764351AbYDYR5Y (ORCPT
+	with ESMTP id S1762573AbYDYR5W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:57:24 -0400
-Date: Fri, 25 Apr 2008 13:56:13 -0400
+	Fri, 25 Apr 2008 13:57:22 -0400
+Date: Fri, 25 Apr 2008 13:56:17 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH 12/19] UML - Fix build when SLOB is enabled
-Message-ID: <20080425175613.GA11194@c2.user-mode-linux.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH 18/19] UML - use PAGE_SIZE in linker scripts
+Message-ID: <20080425175617.GA11206@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,302 +25,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reintroduce uml_kmalloc for the benefit of UML libc code.  The
-previous tactic of declaring __kmalloc so it could be called directly
-from the libc side of the house turned out to be getting too intimate
-with slab, and it doesn't work with slob.
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-So, the uml_kmalloc wrapper is back.  It calls kmalloc or whatever
-that translates into, and libc code calls it.
+This patch includes page.h header into liker scripts that
+allow us to use PAGE_SIZE macro instead of numeric constant.
 
-kfree is left alone since that still works, leaving a somewhat
-inconsistent API.
+To be able to include page.h into linker scripts page.h is
+needed for some modification - i.e. we need to use __ASSEMBLY__
+and _AC macro
 
+[ jdike@linux.intel.com - fixed conflict with as-layout.h ]
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/drivers/chan_user.c              |    1 +
- arch/um/drivers/cow_sys.h                |    2 +-
- arch/um/drivers/daemon_user.c            |    4 ++--
- arch/um/drivers/fd.c                     |    2 +-
- arch/um/drivers/mcast_user.c             |    3 ++-
- arch/um/drivers/net_user.c               |    2 +-
- arch/um/drivers/port_user.c              |    2 +-
- arch/um/drivers/pty.c                    |    2 +-
- arch/um/drivers/slip_user.c              |    2 +-
- arch/um/drivers/tty.c                    |    2 +-
- arch/um/drivers/xterm.c                  |    2 +-
- arch/um/include/um_malloc.h              |    9 +++------
- arch/um/kernel/mem.c                     |    5 +++++
- arch/um/os-Linux/drivers/ethertap_user.c |    4 ++--
- arch/um/os-Linux/helper.c                |    4 ++--
- arch/um/os-Linux/main.c                  |    2 +-
- arch/um/os-Linux/sigio.c                 |    4 ++--
- 17 files changed, 28 insertions(+), 24 deletions(-)
+ arch/um/include/as-layout.h |   14 +++++++-------
+ arch/um/kernel/dyn.lds.S    |    7 ++++---
+ arch/um/kernel/uml.lds.S    |    7 ++++---
+ include/asm-um/page.h       |   17 +++++++++++------
+ 4 files changed, 26 insertions(+), 19 deletions(-)
 
-Index: linux-2.6-git/arch/um/drivers/chan_user.c
+Index: linux-2.6-git/arch/um/kernel/dyn.lds.S
 ===================================================================
---- linux-2.6-git.orig/arch/um/drivers/chan_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/chan_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -11,6 +11,7 @@
- #include <termios.h>
- #include <sys/ioctl.h>
- #include "chan_user.h"
-+#include "kern_constants.h"
- #include "os.h"
- #include "um_malloc.h"
- #include "user.h"
-Index: linux-2.6-git/arch/um/drivers/cow_sys.h
+--- linux-2.6-git.orig/arch/um/kernel/dyn.lds.S	2008-04-24 16:51:07.000000000 -0400
++++ linux-2.6-git/arch/um/kernel/dyn.lds.S	2008-04-24 17:07:28.000000000 -0400
+@@ -1,4 +1,5 @@
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/page.h>
+ 
+ OUTPUT_FORMAT(ELF_FORMAT)
+ OUTPUT_ARCH(ELF_ARCH)
+@@ -21,7 +22,7 @@ SECTIONS
+ 	_einittext = .;
+   }
+ 
+-  . = ALIGN(4096);
++  . = ALIGN(PAGE_SIZE);
+ 
+   /* Read-only sections, merged into text segment: */
+   .hash           : { *(.hash) }
+@@ -68,9 +69,9 @@ SECTIONS
+     /* .gnu.warning sections are handled specially by elf32.em.  */
+     *(.gnu.warning)
+ 
+-    . = ALIGN(4096);
++    . = ALIGN(PAGE_SIZE);
+   } =0x90909090
+-  . = ALIGN(4096);
++  . = ALIGN(PAGE_SIZE);
+   .syscall_stub : {
+ 	__syscall_stub_start = .;
+ 	*(.__syscall_stub*)
+Index: linux-2.6-git/arch/um/kernel/uml.lds.S
 ===================================================================
---- linux-2.6-git.orig/arch/um/drivers/cow_sys.h	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/cow_sys.h	2008-04-25 11:20:31.000000000 -0400
-@@ -8,7 +8,7 @@
+--- linux-2.6-git.orig/arch/um/kernel/uml.lds.S	2008-04-24 16:51:07.000000000 -0400
++++ linux-2.6-git/arch/um/kernel/uml.lds.S	2008-04-24 17:07:28.000000000 -0400
+@@ -1,4 +1,5 @@
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/page.h>
  
- static inline void *cow_malloc(int size)
- {
--	return kmalloc(size, UM_GFP_KERNEL);
-+	return uml_kmalloc(size, UM_GFP_KERNEL);
- }
+ OUTPUT_FORMAT(ELF_FORMAT)
+ OUTPUT_ARCH(ELF_ARCH)
+@@ -26,7 +27,7 @@ SECTIONS
+ 	INIT_TEXT
+ 	_einittext = .;
+   }
+-  . = ALIGN(4096);
++  . = ALIGN(PAGE_SIZE);
  
- static inline void cow_free(void *ptr)
-Index: linux-2.6-git/arch/um/drivers/daemon_user.c
+   .text      :
+   {
+@@ -39,7 +40,7 @@ SECTIONS
+     *(.gnu.linkonce.t*)
+   }
+ 
+-  . = ALIGN(4096);
++  . = ALIGN(PAGE_SIZE);
+   .syscall_stub : {
+ 	__syscall_stub_start = .;
+ 	*(.__syscall_stub*)
+@@ -79,7 +80,7 @@ SECTIONS
+   .sdata     : { *(.sdata) }
+   _edata  =  .;
+   PROVIDE (edata = .);
+-  . = ALIGN(0x1000);
++  . = ALIGN(PAGE_SIZE);
+   .sbss      :
+   {
+    __bss_start = .;
+Index: linux-2.6-git/include/asm-um/page.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/drivers/daemon_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/daemon_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -34,7 +34,7 @@ static struct sockaddr_un *new_addr(void
- {
- 	struct sockaddr_un *sun;
+--- linux-2.6-git.orig/include/asm-um/page.h	2008-04-24 16:51:07.000000000 -0400
++++ linux-2.6-git/include/asm-um/page.h	2008-04-24 17:07:28.000000000 -0400
+@@ -7,16 +7,20 @@
+ #ifndef __UM_PAGE_H
+ #define __UM_PAGE_H
  
--	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
-+	sun = uml_kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
- 	if (sun == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_un "
- 		       "failed\n");
-@@ -83,7 +83,7 @@ static int connect_to_switch(struct daem
- 		goto out_close;
- 	}
- 
--	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
-+	sun = uml_kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
- 	if (sun == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_un "
- 		       "failed\n");
-Index: linux-2.6-git/arch/um/drivers/fd.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/fd.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/fd.c	2008-04-25 11:20:31.000000000 -0400
-@@ -40,7 +40,7 @@ static void *fd_init(char *str, int devi
- 		return NULL;
- 	}
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 
-Index: linux-2.6-git/arch/um/drivers/mcast_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/mcast_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/mcast_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <unistd.h>
- #include <errno.h>
- #include <netinet/in.h>
-+#include "kern_constants.h"
- #include "mcast.h"
- #include "net_user.h"
- #include "um_malloc.h"
-@@ -24,7 +25,7 @@ static struct sockaddr_in *new_addr(char
- {
- 	struct sockaddr_in *sin;
- 
--	sin = kmalloc(sizeof(struct sockaddr_in), UM_GFP_KERNEL);
-+	sin = uml_kmalloc(sizeof(struct sockaddr_in), UM_GFP_KERNEL);
- 	if (sin == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_in "
- 		       "failed\n");
-Index: linux-2.6-git/arch/um/drivers/net_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/net_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/net_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -222,7 +222,7 @@ static void change(char *dev, char *what
- 		netmask[2], netmask[3]);
- 
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	if (output == NULL)
- 		printk(UM_KERN_ERR "change : failed to allocate output "
- 		       "buffer\n");
-Index: linux-2.6-git/arch/um/drivers/port_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/port_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/port_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -47,7 +47,7 @@ static void *port_init(char *str, int de
- 	if (kern_data == NULL)
- 		return NULL;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		goto err;
- 
-Index: linux-2.6-git/arch/um/drivers/pty.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/pty.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/pty.c	2008-04-25 11:20:31.000000000 -0400
-@@ -29,7 +29,7 @@ static void *pty_chan_init(char *str, in
- {
- 	struct pty_chan *data;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 
-Index: linux-2.6-git/arch/um/drivers/slip_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/slip_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/slip_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -96,7 +96,7 @@ static int slip_tramp(char **argv, int f
- 	pid = err;
- 
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	if (output == NULL) {
- 		printk(UM_KERN_ERR "slip_tramp : failed to allocate output "
- 		       "buffer\n");
-Index: linux-2.6-git/arch/um/drivers/tty.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/tty.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/tty.c	2008-04-25 11:20:31.000000000 -0400
-@@ -29,7 +29,7 @@ static void *tty_chan_init(char *str, in
- 	}
- 	str++;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 	*data = ((struct tty_chan) { .dev 	= str,
-Index: linux-2.6-git/arch/um/drivers/xterm.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/xterm.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/drivers/xterm.c	2008-04-25 11:20:31.000000000 -0400
-@@ -30,7 +30,7 @@ static void *xterm_init(char *str, int d
- {
- 	struct xterm_chan *data;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 	*data = ((struct xterm_chan) { .pid 		= -1,
-Index: linux-2.6-git/arch/um/include/um_malloc.h
-===================================================================
---- linux-2.6-git.orig/arch/um/include/um_malloc.h	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/include/um_malloc.h	2008-04-25 11:20:31.000000000 -0400
-@@ -8,15 +8,12 @@
- 
- #include "kern_constants.h"
- 
--extern void *__kmalloc(int size, int flags);
--static inline void *kmalloc(int size, int flags)
--{
--	return __kmalloc(size, flags);
--}
+-struct page;
 -
-+extern void *uml_kmalloc(int size, int flags);
- extern void kfree(const void *ptr);
+-#include <linux/types.h>
+-#include <asm/vm-flags.h>
++#include <linux/const.h>
  
- extern void *vmalloc(unsigned long size);
- extern void vfree(void *ptr);
+ /* PAGE_SHIFT determines the page size */
+ #define PAGE_SHIFT	12
+-#define PAGE_SIZE	(1UL << PAGE_SHIFT)
++#define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
+ #define PAGE_MASK	(~(PAGE_SIZE-1))
  
- #endif /* __UM_MALLOC_H__ */
++#ifndef __ASSEMBLY__
 +
++struct page;
 +
-Index: linux-2.6-git/arch/um/kernel/mem.c
++#include <linux/types.h>
++#include <asm/vm-flags.h>
++
+ /*
+  * These are used to make use of C type-checking..
+  */
+@@ -120,4 +124,5 @@ extern struct page *arch_validate(struct
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/page.h>
+ 
+-#endif
++#endif	/* __ASSEMBLY__ */
++#endif	/* __UM_PAGE_H */
+Index: linux-2.6-git/arch/um/include/as-layout.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/kernel/mem.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/kernel/mem.c	2008-04-25 11:20:31.000000000 -0400
-@@ -375,3 +375,8 @@ pmd_t *pmd_alloc_one(struct mm_struct *m
- 	return pmd;
- }
+--- linux-2.6-git.orig/arch/um/include/as-layout.h	2008-04-24 16:51:07.000000000 -0400
++++ linux-2.6-git/arch/um/include/as-layout.h	2008-04-24 17:08:16.000000000 -0400
+@@ -23,16 +23,16 @@
+  */
+ 
+ #ifdef __ASSEMBLY__
+-#define _AC(X, Y)	(Y)
++#define _UML_AC(X, Y)	(Y)
+ #else
+-#define __AC(X, Y)	(X (Y))
+-#define _AC(X, Y)	__AC(X, Y)
++#define __UML_AC(X, Y)	(X(Y))
++#define _UML_AC(X, Y)	__UML_AC(X, Y)
  #endif
-+
-+void *uml_kmalloc(int size, int flags)
-+{
-+	return kmalloc(size, flags);
-+}
-Index: linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/drivers/ethertap_user.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c	2008-04-25 11:20:31.000000000 -0400
-@@ -52,7 +52,7 @@ static void etap_change(int op, unsigned
- 		return;
- 	}
  
--	output = kmalloc(UM_KERN_PAGE_SIZE, UM_GFP_KERNEL);
-+	output = uml_kmalloc(UM_KERN_PAGE_SIZE, UM_GFP_KERNEL);
- 	if (output == NULL)
- 		printk(UM_KERN_ERR "etap_change : Failed to allocate output "
- 		       "buffer\n");
-@@ -165,7 +165,7 @@ static int etap_open(void *data)
- 	err = etap_tramp(pri->dev_name, pri->gate_addr, control_fds[0],
- 			 control_fds[1], data_fds[0], data_fds[1]);
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	read_output(control_fds[0], output, output_len);
+-#define STUB_START _AC(, 0x100000)
+-#define STUB_CODE _AC((unsigned long), STUB_START)
+-#define STUB_DATA _AC((unsigned long), STUB_CODE + UM_KERN_PAGE_SIZE)
+-#define STUB_END _AC((unsigned long), STUB_DATA + UM_KERN_PAGE_SIZE)
++#define STUB_START _UML_AC(, 0x100000)
++#define STUB_CODE _UML_AC((unsigned long), STUB_START)
++#define STUB_DATA _UML_AC((unsigned long), STUB_CODE + UM_KERN_PAGE_SIZE)
++#define STUB_END _UML_AC((unsigned long), STUB_DATA + UM_KERN_PAGE_SIZE)
  
- 	if (output == NULL)
-Index: linux-2.6-git/arch/um/os-Linux/helper.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/helper.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/os-Linux/helper.c	2008-04-25 11:20:31.000000000 -0400
-@@ -70,8 +70,8 @@ int run_helper(void (*pre_exec)(void *),
- 	data.pre_data = pre_data;
- 	data.argv = argv;
- 	data.fd = fds[1];
--	data.buf = __cant_sleep() ? kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
--					kmalloc(PATH_MAX, UM_GFP_KERNEL);
-+	data.buf = __cant_sleep() ? uml_kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
-+					uml_kmalloc(PATH_MAX, UM_GFP_KERNEL);
- 	pid = clone(helper_child, (void *) sp, CLONE_VM, &data);
- 	if (pid < 0) {
- 		ret = -errno;
-Index: linux-2.6-git/arch/um/os-Linux/main.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/main.c	2008-04-25 10:42:12.000000000 -0400
-+++ linux-2.6-git/arch/um/os-Linux/main.c	2008-04-25 11:20:31.000000000 -0400
-@@ -199,7 +199,7 @@ void *__wrap_malloc(int size)
- 		return __real_malloc(size);
- 	else if (size <= UM_KERN_PAGE_SIZE)
- 		/* finding contiguous pages can be hard*/
--		ret = kmalloc(size, UM_GFP_KERNEL);
-+		ret = uml_kmalloc(size, UM_GFP_KERNEL);
- 	else ret = vmalloc(size);
+ #ifndef __ASSEMBLY__
  
- 	/*
-Index: linux-2.6-git/arch/um/os-Linux/sigio.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/sigio.c	2008-04-25 11:19:11.000000000 -0400
-+++ linux-2.6-git/arch/um/os-Linux/sigio.c	2008-04-25 11:20:31.000000000 -0400
-@@ -110,7 +110,7 @@ static int need_poll(struct pollfds *pol
- 	if (n <= polls->size)
- 		return 0;
- 
--	new = kmalloc(n * sizeof(struct pollfd), UM_GFP_ATOMIC);
-+	new = uml_kmalloc(n * sizeof(struct pollfd), UM_GFP_ATOMIC);
- 	if (new == NULL) {
- 		printk(UM_KERN_ERR "need_poll : failed to allocate new "
- 		       "pollfds\n");
-@@ -244,7 +244,7 @@ static struct pollfd *setup_initial_poll
- {
- 	struct pollfd *p;
- 
--	p = kmalloc(sizeof(struct pollfd), UM_GFP_KERNEL);
-+	p = uml_kmalloc(sizeof(struct pollfd), UM_GFP_KERNEL);
- 	if (p == NULL) {
- 		printk(UM_KERN_ERR "setup_initial_poll : failed to allocate "
- 		       "poll\n");
