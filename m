@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765947AbYDYUeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbYDYUfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765947AbYDYUeZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 16:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761735AbYDYUeM
+	id S932473AbYDYUfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762958AbYDYUfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 16:34:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41537 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759181AbYDYUeK (ORCPT
+	Fri, 25 Apr 2008 16:35:06 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:33077 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbYDYUfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 16:34:10 -0400
-Message-ID: <48123A7A.6090402@zytor.com>
-Date: Fri, 25 Apr 2008 13:09:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 25 Apr 2008 16:35:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KnIQvKWKlOVS7pjxQWsUxdVhltm84/HS3Q9khxj+/v8FiklAW1BvRMq4uz4nswUhw6Kfu+CR94HxWe/3y0VBoLYAdJulbX5Dwv1f5GmJfgySat1OztvKSmSd6JmpFnaShHhIJFn1OKUO2gUI5eOVFSQvO+qIgGG+WDTWCVt0ato=
+Message-ID: <bc64b4640804251334j7e2fbf30u358e010bc3e5d5ec@mail.gmail.com>
+Date: Sat, 26 Apr 2008 00:34:55 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Russell King" <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Paul Walmsley" <paul@pwsan.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "pHilipp Zabel" <philipp.zabel@gmail.com>, tony@atomide.com,
+       "David Brownell" <david-b@pacbell.net>, hiroshi.DOYU@nokia.com
+In-Reply-To: <20080425202010.GA28893@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48122ECF.405@zytor.com> <20080425200423.GA25950@Krystal>
-In-Reply-To: <20080425200423.GA25950@Krystal>
-Content-Type: text/plain; charset=windows-1250; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080420082925.GA32739@doriath.ww600.siemens.net>
+	 <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>
+	 <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com>
+	 <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
+	 <20080425103942.GC14903@elf.ucw.cz>
+	 <20080425202010.GA28893@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> 
->> There are only two ways to deal with this - extensive analysis of the 
->> entire flow of control, or telling the compiler exactly what is *actually* 
->> going on.  The latter is the preferred way, obviously.
->>
-> 
-> Yes, in an ideal world, gcc would help here.
-> 
+Hi,
 
-gcc is a free software project, and the gcc maintainers are around and 
-can be approached.  A good proposal will go a long way, and patches will 
-go even longer.
+2008/4/26, Russell King <rmk+lkml@arm.linux.org.uk>:
+> On Fri, Apr 25, 2008 at 12:39:42PM +0200, Pavel Machek wrote:
+>  > WTF? There are currently around 10 copies of clock code in the tree,
+>  > every one slightly different. If this can help us get rid of all that
+>  > crap, that's a GOOD THING, normative or not.
+>
+>
+> At the expense of people going off and inventing their own APIs because
+>  they find that the "normatived" clock API doesn't do what they need to?
 
-	-hpa
+Why? We do already have the API. And it's pretty normative. And the
+goal of my framework is to allow me and few other people not to
+reinvent the API for non-platform clocks.
+
+>  That's what will happen if you try to force a framework on folk which
+>  they don't agree with.
+
+If you don't want to use it, you are free to do so. E.g. you can use
+your own set of functions to implement GPIO api.
+
+-- 
+With best wishes
+Dmitry
