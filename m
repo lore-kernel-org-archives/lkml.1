@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYDYQBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbYDYQCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYDYQBH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYDYQAw
+	id S1762690AbYDYQCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYDYQCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:00:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39511 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756519AbYDYQAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:00:51 -0400
-Date: Fri, 25 Apr 2008 17:59:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       pageexec@freemail.hu, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080425155953.GA11243@elte.hu>
-References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425155444.GB9503@Krystal>
+	Fri, 25 Apr 2008 12:02:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41189 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbYDYQC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:02:29 -0400
+Date: Fri, 25 Apr 2008 09:05:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before
+	mounting root
+Message-ID: <20080425160518.GE9739@kroah.com>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <20080424225604.GA18737@kroah.com> <20080424233048.GQ16272@one-eyed-alien.net> <Pine.LNX.4.64.0804250921090.27978@sbz-30.cs.Helsinki.FI> <20080425070439.GA18915@one-eyed-alien.net> <Pine.LNX.4.64.0804251116000.758@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080425155444.GB9503@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0804251116000.758@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> Woooow, just a sec here. I removed the atomicity test _because_ there 
-> happen to be a case where it's safe to do non-atomic instruction 
-> modification. If we do :
+On Fri, Apr 25, 2008 at 11:19:02AM +0300, Pekka J Enberg wrote:
+> Hi Matthew,
 > 
-> 1) replace the instruction first byte by a breakpoint, execute an
->   instruction bypass (see the immediate values patches for detail)
-> 2) modify the instruction non-atomically
-> 3) put back the original instruction first byte.
+> On Thu, 24 Apr 2008, Matthew Dharm wrote:
+> > > > This also has all sorts of races between do_mounts 'waiting' and the actual
+> > > > USB device enumeration.  It's entirely possible that the kernel loads via
+> > > > BIOS, the USB drivers are loaded, that forces devices to disconnect/reset,
+> > > > and they take a while to re-enumerate.  During that delay, the kernel gets
+> > > > to do_mount; now, no devices show in this "waiting for scan" count.
 > 
-> That's why I removed the BUG_ONs at the beginning of the function. 
-> That's also why it's required to deal with page crossing.
+> On Fri, Apr 25, 2008 at 09:30:52AM +0300, Pekka J Enberg wrote:
+> > > So how does that happen? ->storage_probe fails and driver core calls it 
+> > > later at some point?
+> 
+> On Fri, 25 Apr 2008, Matthew Dharm wrote:
+> > There's no guarantee that storage_probe is going to get called in a timely
+> > manner.
+> 
+> How can we add such a guarantee? Don't we have this problem with any other 
+> storage devices?
 
-but the code as-is is nonsensical. It checks for:
+No we don't.  The problem with USB is that you _never_ know if you are
+done discovering all of the devices that are currently plugged into the
+bus.  For PCI SCSI and ATA devices, that is not an issue.  So no matter
+how many times you think you can mark things "done" you never really
+know for sure.
 
-        BUG_ON(len > sizeof(long));
+So this means that we can't do this in the kernel, use an initramfs if
+you want such functionality, you can sit and spin there and wait until
+the device that you think you "know" is there to show up before
+continuing on with the boot process.
 
-but then deals with page crossing...
+thanks,
 
-it should also rename text_poke_early() to text_poke_core(), and call 
-_that_ from text_poke() if core_kernel_text(). From that alone the whole 
-poke_text() function would look a whole lot cleaner.
-
-	Ingo
+greg k-h
