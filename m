@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764683AbYDYR4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764785AbYDYR5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764683AbYDYR4R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 13:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762194AbYDYR4G
+	id S1764785AbYDYR5C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:57:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbYDYR4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:56:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36109 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762048AbYDYR4F (ORCPT
+	Fri, 25 Apr 2008 13:56:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:51202 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753518AbYDYR4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:56:05 -0400
-Subject: Re: [PATCH] sched: make rt_sched_class, idle_sched_class static
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Harvey Harrison <harvey.harrison@gmail.com>
+	Fri, 25 Apr 2008 13:56:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=b9Qd4mUBNSyoQoLUQ2tXRMVkt/OYMVAYNh5NdGtdtobDpoMB3ytSWamHa6M8gBMc3PJm8Hhjd2aO7uvFs6phn7B64Hhp0jaOE/3B3QRFw1ruNMFHo3ekh7H923316rX2yANd5gSKkIJEr0+tKeuiS0LThOR9RYkepmOwIkbFQoU=
+Subject: Re: [PATCH] sched: add statics, don't return void expressions
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1209145993.20088.16.camel@brick>
-References: <1209145993.20088.16.camel@brick>
+In-Reply-To: <1209125826.24931.12.camel@lappy>
+References: <1209086275.20088.4.camel@brick>
+	 <1209125826.24931.12.camel@lappy>
 Content-Type: text/plain
-Date: Fri, 25 Apr 2008 19:55:31 +0200
-Message-Id: <1209146131.1956.8.camel@lappy>
+Date: Fri, 25 Apr 2008 10:56:51 -0700
+Message-Id: <1209146211.20088.21.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-25 at 10:53 -0700, Harvey Harrison wrote:
-> The C files are included directly in sched.c, so they are
-> effectively static.
+On Fri, 2008-04-25 at 14:17 +0200, Peter Zijlstra wrote:
+> On Thu, 2008-04-24 at 18:17 -0700, Harvey Harrison wrote:
+> > Noticed by sparse:
+> > kernel/sched.c:760:20: warning: symbol 'sched_feat_names' was not declared. Should it be static?
+> > kernel/sched.c:767:5: warning: symbol 'sched_feat_open' was not declared. Should it be static?
+> > kernel/sched_fair.c:845:3: warning: returning void-valued expression
+> > kernel/sched.c:4386:3: warning: returning void-valued expression
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> ---
->  kernel/sched_idletask.c                          |    2 +-
->  kernel/sched_rt.c                                |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> I'm still of two minds about that latter warning, I think:
 > 
-> diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-> index 2bcafa3..3a4f92d 100644
-> --- a/kernel/sched_idletask.c
-> +++ b/kernel/sched_idletask.c
-> @@ -99,7 +99,7 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
->  /*
->   * Simple, special scheduling class for the per-CPU idle tasks:
->   */
-> -const struct sched_class idle_sched_class = {
-> +static const struct sched_class idle_sched_class = {
->  	/* .next is NULL */
->  	/* no enqueue/yield_task for idle tasks */
->  
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index c2730a5..dcd6495 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -1309,7 +1309,7 @@ static void set_curr_task_rt(struct rq *rq)
->  	p->se.exec_start = rq->clock;
->  }
->  
-> -const struct sched_class rt_sched_class = {
-> +static const struct sched_class rt_sched_class = {
->  	.next			= &fair_sched_class,
->  	.enqueue_task		= enqueue_task_rt,
->  	.dequeue_task		= dequeue_task_rt,
+> void foo(void);
+> 
+> void bar(void)
+> {
+> 	return foo();
+> }
+> 
+> isn't wrong, as the return types match.
+> 
+
+True it's not wrong, but it is a trivial way to reduce the sparse noise
+somewhat which can make it harder to see real bugs.  Just like the
+integer used as NULL pointer warnings.
+
+And even though in this case, I can't see the return type changing to
+actually return something, coding it this way makes it obvious if you
+ever missed a return site.
+
+No strong feelings.
+
+Harvey
 
