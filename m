@@ -1,137 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYDYCrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYDYCyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbYDYCrQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 22:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYDYCq7
+	id S1757443AbYDYCyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 22:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYDYCyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 22:46:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43518 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752505AbYDYCq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 22:46:58 -0400
-Message-ID: <48114620.2060508@garzik.org>
-Date: Thu, 24 Apr 2008 22:46:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 24 Apr 2008 22:54:11 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:46446 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbYDYCyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 22:54:09 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+References: <20080422221733.GA16260@havoc.gtf.org>
+	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>
+	<480E6DE5.6010103@garzik.org>
+	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
+	<480E796E.4070001@garzik.org>
+	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>
+	<20080423000529.GG28933@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
+	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
+	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
+	<m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org>
+	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>
+	<4810A9E6.1080201@garzik.org>
+	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org>
+	<m1r6cvgpw2.fsf@frodo.ebiederm.org> <4810C3B5.3020605@garzik.org>
+Date: Thu, 24 Apr 2008 19:53:51 -0700
+In-Reply-To: <4810C3B5.3020605@garzik.org> (Jeff Garzik's message of "Thu, 24
+	Apr 2008 13:30:29 -0400")
+Message-ID: <m11w4u8x1c.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [git patches] ISDN cleanups (modularization prep)
-References: <20080420223959.GA17998@havoc.gtf.org> <200804210205.38891.elendil@planet.nl> <480BF15D.2090100@garzik.org> <200804211536.57655.elendil@planet.nl> <200804211536.57655.elendil@planet.nl> <480CE960.4050000@garzik.org> <200804212221.24586.elendil@planet.nl>
-In-Reply-To: <200804212221.24586.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [git patch] free_irq() fixes
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> (Let's change the subject back to what it was :-)
-> 
-> Jeff Garzik wrote:
->> Frans Pop wrote:
->>> But when I tried to modprobe hisax, I got:
->>> # modprobe hisax
->>> FATAL: Module hisax not found.
->>>
->>> Cause seems to be:
->>> # depmod -a
->>> WARNING: Module
->>> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisaxdiva.ko ignored,
->>> due to loop WARNING: Module
->>> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/libhisax.ko ignored,
->>> due to loop WARNING: Loop
->>> detected: /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko
->>> needs libhisax.ko which needs hisax.ko again!
->>> WARNING: Module
->>> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/hisax.ko ignored, due
->>> to loop
->> Yeah, that's what my patchset does -- splits the "hisax" driver into
->> multiple smaller drivers.  Thus, "modprobe hisax" produces the results
->> that you are seeing.
-> 
-> Hmmm. Isn't that going to break things for existing users?
+Jeff Garzik <jeff@garzik.org> writes:
 
-At present, yes.  Ultimately I want to find a solution that doesn't 
-break existing users, but I am still at the early "trying to see if it 
-works at all" stage.
+> Eric W. Biederman wrote:
+>> And on x86 at least the hardware maps the MSI write into an interrupt.
+>> So there is not an opportunity to get any metdata/OOB data from the
+>> MSI message.  Instead we just potentially get a boatload more irq
+>> sources.  Which is one of the things making a static NR_IRQS painful.
+>>
+>> To be safe we have to make NR_IRQS 10x+ or so bigger then people use
+>> today.  Just in case they decide to plug in some really irq hungry
+>> cards.
+>
+>
+> Just to be clear, irq_chip/irq_desc and metadata/OOB data are two very different
+> beasts.  irq_chip/irq_desc is more a system attribute as Linus notes.  Also, it
+> doesn't change very often.
+>
+> metadata/OOB, on the other hand, is different -for each interrupt-, and is
+> highly relevant to drivers.  Thus should be part of the driver API somehow.
 
+I'm not certain I follow so I will ask.
 
-> For example, I currently have this in /etc/modprobe.d/hisax to get the two 
-> cards to work correctly:
-> options hisax type=9,11 protocol=2,2 irq=10 io=0x398
-> 
-> This effectively translates to:
-> - ITK card:  type=9  protocol=2 irq=10 io=0x398
-> - Diva card: type=11 protocol=2
-> 
-> To what would I have to change this?
+Do you mean information that is different each time an interrupt is fires?
 
-Two changes:
+Or do you mean information that differs for each different interrupt?
+Something like the current dev_id?
 
-1) 'type' is now automatically deduced based on your choice of driver, 
-so it is not needed anymore.
+To my knowledge there is not any information that varies each time an
+interrupt fires.
 
-2) The module options are passed to the specific module, rather than the 
-hisax module.
-
-'protocol', 'irq' and 'io' module options should remain completely 
-compatible with existing setups.
-
-
->> You'll need to determine which newly-created kernel module applies to
->> your hardware.  Let me know if you need help with that.  The new drivers
->> should be in /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax/
->> provided that you enabled them in the kernel configuration.
-> 
-> I think that I have the correct config (unset options omitted):
-> CONFIG_ISDN=m
-> CONFIG_ISDN_I4L=m
-> # ISDN feature submodules
-> # ISDN4Linux hardware drivers
-> # Passive cards
-> CONFIG_ISDN_DRV_HISAX=m
-> # D-channel protocol features
-> CONFIG_HISAX_EURO=y
-> CONFIG_HISAX_MAX_CARDS=8
-> # HiSax supported cards
-> CONFIG_HISAX_16_3=y
-> CONFIG_HISAX_IX1MICROR2=y
-> CONFIG_HISAX_DIEHLDIVA=m
-> 
-> Note that HISAX_16_3 and HISAX_IX1MICROR2 are y/n config options; making 
-> those modular is not allowed.
-> 
-> This results in the following modules under drivers/isdn:
-> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/hisax:
-> hisaxdiva.ko  hisax.ko  libhisax.ko
-> /lib/modules/2.6.25-isdn/kernel/drivers/isdn/i4l:
-> isdn.ko
-> 
-> So AFAICT, I should still be loading hisax for the ITK card.
-> 
-> Also, I doubt that depmod is supposed to fail like the way I saw. Seems to 
-> me that the "loop" errors during depmod are the cause of the modules not 
-> being loadable.
-> Note that 'modprobe hisaxdiva' fails with the exact same message as for 
-> hisax and that depmod even explicitly says that the modules are "ignored"!
-
-Yeah, it looks like the ITK card is still served by the main hisax 
-module (not all were converted, just the ones related to PCI).
-
-Maybe try manually modprobing libhisax and then hisaxdiva.
-
-Also try disabling the ITK support in Kconfig and see if that at least 
-permits you to load the hisaxdiva driver.
-
-
-My apologies for all the caveats, this is quite raw code.  I appreciate 
-your taking a look at this!
-
-	Jeff
-
-
+Eric
