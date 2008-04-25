@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYDYJqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760729AbYDYJsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbYDYJqH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 05:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYDYJp4
+	id S1760729AbYDYJsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 05:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759190AbYDYJsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 05:45:56 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:62472 "EHLO
+	Fri, 25 Apr 2008 05:48:06 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:62823 "EHLO
 	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYDYJpz (ORCPT
+	with ESMTP id S1759265AbYDYJsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 05:45:55 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Priit Laes <plaes@plaes.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [REGRESSION] x86: support for new UV apic
+	Fri, 25 Apr 2008 05:48:05 -0400
+To: Joerg Friedrich <Joerg.Friedrich@friedrich-kn.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-gitX and pmd_bad() on x86_32
 From: Andi Kleen <andi@firstfloor.org>
-References: <1209098600.3707.13.camel@localhost>
-	<20080425064405.GA23043@elte.hu>
-Date: Fri, 25 Apr 2008 11:45:26 +0200
-In-Reply-To: <20080425064405.GA23043@elte.hu> (Ingo Molnar's message of "Fri, 25 Apr 2008 08:44:06 +0200")
-Message-ID: <87abjixo7d.fsf@basil.nowhere.org>
+References: <20080425084007.GC14387@stardust.frews.de>
+Date: Fri, 25 Apr 2008 11:48:02 +0200
+In-Reply-To: <20080425084007.GC14387@stardust.frews.de> (Joerg Friedrich's message of "Fri, 25 Apr 2008 10:40:07 +0200")
+Message-ID: <8763u6xo31.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Apr 2008 09:38:35.0815 (UTC) FILETIME=[2234FB70:01C8A6B8]
+X-OriginalArrivalTime: 25 Apr 2008 09:41:11.0785 (UTC) FILETIME=[7F2C1D90:01C8A6B8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Joerg Friedrich <Joerg.Friedrich@friedrich-kn.de> writes:
 
-> * Priit Laes <plaes@plaes.org> wrote:
->
->> Hey,
->> 
->> I am getting two following warnings (probable one per each CPU core) 
->> using the latest Linus's git:
->> 
->> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
->> Modules linked in:
->> Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
->
-> thanks - could you check the patch below, does it fix the warnings?
+> Yesterday I tried to compile 2.6.25-git5 but I ran into a "Unknown
+> Symbol" (pmd_bad)  warning from linker while compiling the nvidia-binary module.
 
-I think it would have been better to change the WARN_ON to
+pmd_bad is always optional. You can safely make it return 0 in some local
+macro.
 
-WARN_ON(preemptible() && num_online_cpus() > 1)
+> AFAICS, x86_32 is the only architecture where pmd_bad is neither a
+> define or a static inline. Including asm/pgtable.h is no longer
+> sufficient on x868_32. Is this behaviour intended or is there just a
+> EXPORT_SYMBOL missing?
 
-Preemption is actually ok here because this runs before the other
-CPUs are started
-
-Alternative patch appended.
+Kernel changes generally don't care about out of tree modules.
+Also pmd_bad() is kind of internal anyways.
 
 -Andi
-
----
-
-Don't warn in read_apic_id() when preemptible but only one CPU online.
-
-Signed-off-by: Andi Kleen <andi@firstfloor.org>
-
-Index: linux/arch/x86/kernel/genapic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c
-+++ linux/arch/x86/kernel/genapic_64.c
-@@ -83,7 +83,7 @@ unsigned int read_apic_id(void)
- {
- 	unsigned int id;
- 
--	WARN_ON(preemptible());
-+	WARN_ON(preemptible() && num_online_cpus() > 1);
- 	id = apic_read(APIC_ID);
- 	if (uv_system_type >= UV_X2APIC)
- 		id  |= __get_cpu_var(x2apic_extra_bits);
