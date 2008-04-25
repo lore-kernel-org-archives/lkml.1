@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbYDYL0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYDYLcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbYDYL0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 07:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbYDYLZt
+	id S1759862AbYDYLcq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 07:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYDYLcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 07:25:49 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15896 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754408AbYDYLZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 07:25:48 -0400
-Date: Fri, 25 Apr 2008 13:25:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-Message-ID: <20080425112543.GQ12774@kernel.dk>
-References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk> <48107891.5000308@hp.com> <20080425083809.GG12774@kernel.dk> <4811BDBB.8010604@hp.com>
+	Fri, 25 Apr 2008 07:32:35 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:47835 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbYDYLce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 07:32:34 -0400
+X-Greylist: delayed 15297 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Apr 2008 07:32:33 EDT
+Date: Fri, 25 Apr 2008 13:32:28 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: John Williams <jwilliams@itee.uq.edu.au>,
+       microblaze-uclinux@itee.uq.edu.au, Arnd Bergmann <arnd@arndb.de>,
+       Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com
+Subject: Re: [microblaze-uclinux] Re: microblaze syscall list
+In-Reply-To: <20080425100614.GB14990@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0804251331230.29595@anakin>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com>
+ <200804221515.28075.arnd@arndb.de> <480FA729.3000406@seznam.cz>
+ <200804241311.09881.arnd@arndb.de> <4810D4A4.7050900@seznam.cz>
+ <4811A623.80104@itee.uq.edu.au> <20080425100614.GB14990@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4811BDBB.8010604@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25 2008, Alan D. Brunelle wrote:
-> >>
-> >> I'll look into retaining the one-hit cache merge functionality, remove
-> >> the errant elv_rqhas_del code, and repost w/ the results from the other
-> >> tests I've run.
-> > 
-> > Also please do a check where you only disable the front merge logic, as
-> > that is the most expensive bit (and the least likely to occur). I would
-> > not be surprised if just removing the front merge bit would get you the
-> > majority of the gain already. I have in the past considered just getting
-> > rid of that bit, as it rarely triggers and it is a costly rbtree lookup
-> > for each IO. The back merge lookup+merge should be cheaper, it's just a
-> > hash lookup.
-> > 
+On Fri, 25 Apr 2008, Matthew Wilcox wrote:
+> On Fri, Apr 25, 2008 at 07:36:35PM +1000, John Williams wrote:
+> > Please remember that MicroBlaze has been around as an arch for > 4 
+> > years, just not in the kernel.org tree.  These older style syscall 
+> > interfaces are all part of the uClibc and glibc ports for MicroBlaze.
 > 
-> I have the results from leaving in just the one-hit cache merge
-> attempts, and started a run leaving in both that and the back-merge
-> rq_hash checks. (The patch below basically undoes patch 3/3 - putting
-> back in the addition of rqs onto the hash list, and moves the nomerges
-> check below the back merge attempts.)
-> 
-> We /could/ change the tunable to a dial (or a mask) - enabling/disabling
-> specific merge attempts, but that seems a bit confusing/complex.
-> 
-> Jens: What do you think?
+> So is it fair to say that you now understand this was the Wrong Way To
+> Do Things, and if anyone asks, you'd recommend getting an arch merged
+> into kernel.org sooner rather than later?
 
-I think we should keep it simple. I don't particularly like having a
-switch to toggle merges, no one will ever use it. So I'm more inclined
-to just disable front merges unconditionally if the theory of where
-the cycles are spent holds up. We'll still do front merges on the
-one-hit cache, just not spend time looking up an io context and request
-in the rbtree for basically no gain.
+It's also an indicator we should have an asm-generic/unistd.h ASAP (as
+Arnd suggested), to make sure future archs don't make the same mistake
+over and over again.
 
--- 
-Jens Axboe
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
