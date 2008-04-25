@@ -1,69 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbYDYH3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbYDYHc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbYDYH3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYDYH3R
+	id S1759488AbYDYHc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYDYHcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:29:17 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:56211 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753704AbYDYH3Q (ORCPT
+	Fri, 25 Apr 2008 03:32:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60501
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752955AbYDYHcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:29:16 -0400
-Date: Fri, 25 Apr 2008 09:29:10 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 14/15] m68k: Update defconfigs
-In-Reply-To: <20080424211124.GD2131@mail.oracle.com>
-Message-ID: <Pine.LNX.4.64.0804250922360.21224@anakin>
-References: <20080424182940.424312704@mail.of.borg> <20080424183243.884021921@mail.of.borg>
- <20080424211124.GD2131@mail.oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 25 Apr 2008 03:32:45 -0400
+Date: Fri, 25 Apr 2008 00:32:45 -0700 (PDT)
+Message-Id: <20080425.003245.245378428.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080425072621.GA21299@havoc.gtf.org>
+References: <20080425072621.GA21299@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008, Joel Becker wrote:
-> On Thu, Apr 24, 2008 at 08:29:54PM +0200, Geert Uytterhoeven wrote:
-> > From: Geert Uytterhoeven <geert@linux-m68k.org>
-> > 
-> > Update the m68k defconfigs
-> 
-> <snip>
-> 
-> >  CONFIG_OCFS2_FS=m
-> > +# CONFIG_OCFS2_FS_O2CB is not set
-> > +# CONFIG_OCFS2_FS_USERSPACE_CLUSTER is not set
-> >  # CONFIG_OCFS2_DEBUG_MASKLOG is not set
-> >  # CONFIG_OCFS2_DEBUG_FS is not set
-> 
-> 	In these defconfigs, you disable the cluster stack drivers for
-> ocfs2.  This means that ocfs2 can only work as a local filesystem.
-> While it will work fine that way, I figured I'd send an email in case
-> that wasn't your intention :-)  I note that the following
-> multi_defconfig has the cluster stack drivers enabled:
-> 
-> +CONFIG_OCFS2_FS=m
-> +CONFIG_OCFS2_FS_O2CB=m
-> +CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 25 Apr 2008 03:26:21 -0400
 
-multi_defconfig is supposed to be the `or' of all the others (minus Sun 3),
-so I have to make some changes :-)
+> Please pull from 'upstream-davem' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
 
-I'll enable the cluster stack drivers in all configs, if it doesn't make
-much sense not to have them.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Pulled, and thanks a lot for fixing the Tehuti ioctl bug.
