@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYDYH1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbYDYH3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbYDYH1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757678AbYDYH0o
+	id S1759511AbYDYH3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYDYH3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:26:44 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39020
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755977AbYDYH0g (ORCPT
+	Fri, 25 Apr 2008 03:29:17 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:56211 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753704AbYDYH3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:26:36 -0400
-Date: Fri, 25 Apr 2008 00:26:36 -0700 (PDT)
-Message-Id: <20080425.002636.250010462.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: seraph@xs4all.nl, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [SPARC64] INO problem Re: [Bug 10273] New: Sun GEM (PCI) -
- network device doesn't work
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080402182655.GA2739@ami.dom.local>
-References: <20080317143624.da313311.akpm@linux-foundation.org>
-	<20080402182655.GA2739@ami.dom.local>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 03:29:16 -0400
+Date: Fri, 25 Apr 2008 09:29:10 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 14/15] m68k: Update defconfigs
+In-Reply-To: <20080424211124.GD2131@mail.oracle.com>
+Message-ID: <Pine.LNX.4.64.0804250922360.21224@anakin>
+References: <20080424182940.424312704@mail.of.borg> <20080424183243.884021921@mail.of.borg>
+ <20080424211124.GD2131@mail.oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Wed, 2 Apr 2008 20:26:55 +0200
+On Thu, 24 Apr 2008, Joel Becker wrote:
+> On Thu, Apr 24, 2008 at 08:29:54PM +0200, Geert Uytterhoeven wrote:
+> > From: Geert Uytterhoeven <geert@linux-m68k.org>
+> > 
+> > Update the m68k defconfigs
+> 
+> <snip>
+> 
+> >  CONFIG_OCFS2_FS=m
+> > +# CONFIG_OCFS2_FS_O2CB is not set
+> > +# CONFIG_OCFS2_FS_USERSPACE_CLUSTER is not set
+> >  # CONFIG_OCFS2_DEBUG_MASKLOG is not set
+> >  # CONFIG_OCFS2_DEBUG_FS is not set
+> 
+> 	In these defconfigs, you disable the cluster stack drivers for
+> ocfs2.  This means that ocfs2 can only work as a local filesystem.
+> While it will work fine that way, I figured I'd send an email in case
+> that wasn't your intention :-)  I note that the following
+> multi_defconfig has the cluster stack drivers enabled:
+> 
+> +CONFIG_OCFS2_FS=m
+> +CONFIG_OCFS2_FS_O2CB=m
+> +CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
 
-> Nice work Jos! I forward it to the author and the lists.
+multi_defconfig is supposed to be the `or' of all the others (minus Sun 3),
+so I have to make some changes :-)
 
-I haven't forgotten about this bug report, in fact I did some
-investigation and thinking about it.
+I'll enable the cluster stack drivers in all configs, if it doesn't make
+much sense not to have them.
 
-I think the case being triggered in the new code is IRQ_DISABLED.
+Gr{oetje,eeting}s,
 
-If this is the problem, I suspect that what needs to happen is that
-when we re-enable the interrupt we have to forcefully hit the clear
-register to put it back into transmit state.  Otherwise it can
-get stuck.
+						Geert
 
-Please give this patch a try (this is against 2.6.23, which is the
-version you reported the bug against, let me know if another version
-is more convenient).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks!
-
-diff --git a/arch/sparc64/kernel/irq.c b/arch/sparc64/kernel/irq.c
-index 2395609..98b68d2 100644
---- a/arch/sparc64/kernel/irq.c
-+++ b/arch/sparc64/kernel/irq.c
-@@ -313,6 +313,8 @@ static void sun4u_irq_enable(unsigned int virt_irq)
- 			 IMAP_AID_SAFARI | IMAP_NID_SAFARI);
- 		val |= tid | IMAP_VALID;
- 		upa_writeq(val, imap);
-+
-+		upa_writeq(ICLR_IDLE, data->iclr);
- 	}
- }
- 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
