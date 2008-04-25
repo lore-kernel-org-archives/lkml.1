@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYDYBBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYDYBNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYDYBBY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 21:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYDYBBO
+	id S1756820AbYDYBNV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYDYBNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 21:01:14 -0400
-Received: from mga11.intel.com ([192.55.52.93]:24935 "EHLO mga11.intel.com"
+	Thu, 24 Apr 2008 21:13:11 -0400
+Received: from mga03.intel.com ([143.182.124.21]:11855 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYDYBBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 21:01:12 -0400
+	id S1752744AbYDYBNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 21:13:09 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
-   d="scan'208";a="321090920"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [2.6 patch] ia64: let NUMA select SMP
-Date: Thu, 24 Apr 2008 18:01:10 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843EC012F9FAD@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080425004139.GE18854@cs181133002.pp.htv.fi>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] ia64: let NUMA select SMP
-Thread-Index: AcimbT+j2bK8f3QeSKOpVwApoWrRYgAARTag
-References: <1FE6DD409037234FAB833C420AA843EC012F9EF0@orsmsx424.amr.corp.intel.com> <20080425001652.GD18854@cs181133002.pp.htv.fi> <1FE6DD409037234FAB833C420AA843EC012F9F55@orsmsx424.amr.corp.intel.com> <20080425004139.GE18854@cs181133002.pp.htv.fi>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Cc: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-ia64@vger.kernel.org>, "Mike Travis" <travis@sgi.com>,
-       "Russ Anderson" <rja@sgi.com>
-X-OriginalArrivalTime: 25 Apr 2008 01:01:11.0873 (UTC) FILETIME=[DA935B10:01C8A66F]
+   d="scan'208";a="237586690"
+Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
+From: Shaohua Li <shaohua.li@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <200804240833.19614.jbarnes@virtuousgeek.org>
+References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
+	 <87abjjzo84.fsf@basil.nowhere.org>
+	 <1209024126.7479.0.camel@sli10-desk.sh.intel.com>
+	 <200804240833.19614.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Fri, 25 Apr 2008 09:16:21 +0800
+Message-Id: <1209086181.1220.7.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3P11hEB023347
 
-> CONFIG_NUMA=y, CONFIG_SMP=n isn't a useful combination, so let NUMA 
-> select SMP.
 
-Yup.  That looks good.  Means that my allnoconfig will now
-have SMP=y though :-(  Root of that is selecting GENERIC,
-and I'm not sure there is a better choice.
+On Thu, 2008-04-24 at 08:33 -0700, Jesse Barnes wrote:
+> On Thursday, April 24, 2008 1:02 am Shaohua Li wrote:
+> > On Thu, 2008-04-24 at 09:49 +0200, Andi Kleen wrote:
+> > > Shaohua Li <shaohua.li@intel.com> writes:
+> > > > Ok, I'm fine with the patch. Though by default, the policy is to use
+> > > > BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
+> > >
+> > > Once the feature is considered stable it would be nice to make it
+> > > default y
+> > > again. I think any power saving should be on by default (unless
+> > > serious
+> > > issues are known), not off.
+> >
+> > yes, we could do it in next release.
+> 
+> When we move to 'default y' we should also update the Kconfig text, removing 
+> the experimental tag and changing the advice.
+> 
+> And yeah, I'd like to save power by default too, but do you think this has 
+> seen enough test coverage to enable it by default?  Do we know of any 
+> platforms where ASPM causes problems because the BIOS enabled it and we tried 
+> to use it?
+Some chipset or device don't implement ASPM well. It's said some e1000
+card has the bug and maybe other devices. ASPM patch provided API to let
+driver disable ASPM too, hopefully driver can start using it. The
+default policy is using BIOS setting, so only when BIOS uses it we will
+try to use it. At this point, we should be safe unless BIOS is broken.
 
-Doesn't change the need for the patch to delete the #if NUMA
-clause inside the SMP=n path though (your patch would make my
-build work by forcing SMP=y ... so the build error would go
-away ... but that doesn't make it OK to have #if NUMA code
-inside the SMP=n clause).
+Thanks,
+Shaohua
 
-This does make we wonder how much dead code is hidden inside
-impossibly nested #ifdefs elsewhere in the kernel.
-
--Tony
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
