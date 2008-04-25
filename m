@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYDYBlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYDYBrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbYDYBlQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 21:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbYDYBk7
+	id S1757434AbYDYBrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYDYBrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 21:40:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39549
+	Thu, 24 Apr 2008 21:47:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41416
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753774AbYDYBk5 (ORCPT
+	by vger.kernel.org with ESMTP id S1753774AbYDYBrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 21:40:57 -0400
-Date: Thu, 24 Apr 2008 18:40:51 -0700 (PDT)
-Message-Id: <20080424.184051.192887364.davem@davemloft.net>
-To: drepper@redhat.com
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] alternative^2 to sys_indirect: socket, socketpair
+	Thu, 24 Apr 2008 21:47:14 -0400
+Date: Thu, 24 Apr 2008 18:47:08 -0700 (PDT)
+Message-Id: <20080424.184708.203846258.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: lkml@ml.breakpoint.cc, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove -numa from EXTRAVERSION
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4810B75B.20202@redhat.com>
-References: <200804241618.m3OGI9kd013025@devserv.devel.redhat.com>
-	<20080424170325.569afa43@the-village.bc.nu>
-	<4810B75B.20202@redhat.com>
+In-Reply-To: <alpine.LFD.1.10.0804241238250.3607@woody.linux-foundation.org>
+References: <20080424193228.GA30634@Chamillionaire.breakpoint.cc>
+	<alpine.LFD.1.10.0804241238250.3607@woody.linux-foundation.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,19 +27,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ulrich Drepper <drepper@redhat.com>
-Date: Thu, 24 Apr 2008 09:37:47 -0700
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 24 Apr 2008 12:38:36 -0700 (PDT)
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Alan Cox wrote:
-> 
-> >> -int sock_map_fd(struct socket *sock)
-> >> +static int sock_map_fd_flags(struct socket *sock, int flags)
-> 
-> sock_map_fd is exported to modules.  Isn't it a big no-no to change
-> those interfaces?
+> Heh. Thanks,
 
-It's perfectly acceptable to change the interface however
-you like when necessary, and merely fix up all the in-tree users.
+Sorry, I let that slip in by mistake :-)
