@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764563AbYDYREg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbYDYRMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764563AbYDYREg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 13:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759476AbYDYRE2
+	id S1763614AbYDYRMM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYDYRL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:04:28 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:36447
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756114AbYDYRE2 (ORCPT
+	Fri, 25 Apr 2008 13:11:59 -0400
+Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:34650 "HELO
+	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753184AbYDYRL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:04:28 -0400
-Date: Fri, 25 Apr 2008 19:04:25 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
-	operation to happen
-Message-ID: <20080425170425.GB23300@duo.random>
-References: <ec6d8f91b299cf26cce5.1207669444@duo.random> <200804221506.26226.rusty@rustcorp.com.au> <20080425165639.GA23300@duo.random>
+	Fri, 25 Apr 2008 13:11:59 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: pci commands resume order [Was: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff]
+Date: Fri, 25 Apr 2008 10:11:51 -0700
+User-Agent: KMail/1.9.9
+Cc: Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+References: <alpine.LFD.1.10.0804241841280.2779@woody.linux-foundation.org> <20080425.004523.146850490.davem@davemloft.net> <481193EF.9050308@gmail.com>
+In-Reply-To: <481193EF.9050308@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080425165639.GA23300@duo.random>
+Message-Id: <200804251011.52542.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 63.227.221.253 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 06:56:39PM +0200, Andrea Arcangeli wrote:
-> > > +		data->i_mmap_locks = vmalloc(nr_i_mmap_locks *
-> > > +					     sizeof(spinlock_t));
-> > 
-> > This is why non-typesafe allocators suck.  You want 'sizeof(spinlock_t *)' 
-> > here.
-> > 
-> > > +		data->anon_vma_locks = vmalloc(nr_anon_vma_locks *
-> > > +					       sizeof(spinlock_t));
-> > 
-> > and here.
-> 
-> Great catch! (it was temporarily wasting some ram which isn't nice at all)
+On Friday, April 25, 2008 1:18 am Jiri Slaby wrote:
+> On 04/25/2008 09:45 AM, David Miller wrote:
+> > I notice Jiri, in your hardware list, you have an ath5k Atheros AR5212
+> > chip in there.
+> >
+> > I took a look at the resume code for ath5k but nothing really suspicious
+> > there except:
+> >
+> > 	err = pci_enable_device(pdev);
+> > 	if (err)
+> > 		return err;
+> >
+> > 	pci_restore_state(pdev);
+> >
+> > Shouldn't we restore state before we turn the chip back on and thus
+> > potentially let it start DMA'ing all over the place?
+>
+> Hmm, actually every second wireless driver do this :/. I think it's wrong
+> too. Jesse?
 
-As I went into the editor I just found the above already fixed in
-#v14-pre3. And I can't move the structure into the file anymore
-without kmallocing it. Exposing that structure avoids the
-ERR_PTR/PTR_ERR on the retvals and one kmalloc so I think it makes the
-code simpler in the end to keep it as it is now. I'd rather avoid
-further changes to the 1/N patch, as long as they don't make any
-difference at runtime and as long as they involve more than
-cut-and-pasting a structure from .h to .c file.
+It might be a little safer to enable the device after restoring its state, but 
+if your device starts DMAing randomly when going from D3->D0 it's probably 
+not a very good device. :)
+
+> BTW pci_set_power_state(pdev, PCI_D0); in resume isn't needed at all,
+> right? It's done in pci_enable_device, isn't it?
+
+Right, pci_enable_device will put the device in D0, so setting it again is 
+redundant (looks like lots of drivers do this).
+
+Jesse
