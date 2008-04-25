@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761089AbYDYJQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbYDYJT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761089AbYDYJQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 05:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbYDYJQm
+	id S1761383AbYDYJT5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 05:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbYDYJTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 05:16:42 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:17335 "EHLO kernel.dk"
+	Fri, 25 Apr 2008 05:19:46 -0400
+Received: from ns.store20.com ([212.7.7.16]:53323 "EHLO store20.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758667AbYDYJQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 05:16:41 -0400
-Date: Fri, 25 Apr 2008 11:16:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Mundt <lethal@linux-sh.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org
-Subject: Re: [PATCH 10/11] sh: convert to generic helpers for IPI function calls
-Message-ID: <20080425091635.GI12774@kernel.dk>
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-11-git-send-email-jens.axboe@oracle.com> <20080425085637.GA30569@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080425085637.GA30569@linux-sh.org>
+	id S1758602AbYDYJTq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 05:19:46 -0400
+Subject: Re: [REGRESSION] x86: support for new UV apic
+From: Priit Laes <plaes@plaes.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>, Gabriel C <nix.or.die@googlemail.com>
+In-Reply-To: <20080425064405.GA23043@elte.hu>
+References: <1209098600.3707.13.camel@localhost>
+	 <20080425064405.GA23043@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 25 Apr 2008 12:19:42 +0300
+Message-Id: <1209115182.3857.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25 2008, Paul Mundt wrote:
-> On Tue, Apr 22, 2008 at 08:50:26PM +0200, Jens Axboe wrote:
-> > This converts sh to use the new helpers for smp_call_function() and
-> > friends, and adds support for smp_call_function_single(). Not tested,
-> > but it compiles.
-> > 
-> > Cc: Paul Mundt <lethal@linux-sh.org>
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Ühel kenal päeval, R, 2008-04-25 kell 08:44, kirjutas Ingo Molnar:
+> * Priit Laes <plaes@plaes.org> wrote:
 > 
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
+> > Hey,
+> > 
+> > I am getting two following warnings (probable one per each CPU core) 
+> > using the latest Linus's git:
+> > 
+> > WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
+> 
+> thanks - could you check the patch below, does it fix the warnings?
 
-Thanks Paul!
+Works for me!
 
--- 
-Jens Axboe
+Thanks :)
 
+--
+Priit Laes
