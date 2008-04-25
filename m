@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbYDYH61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYDYH65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbYDYH61 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbYDYH6T
+	id S1760673AbYDYH65 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbYDYH6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:58:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57062
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754169AbYDYH6R (ORCPT
+	Fri, 25 Apr 2008 03:58:49 -0400
+Received: from atlanta.zankel.net ([69.61.78.146]:1292 "EHLO
+	atlanta.zankel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757325AbYDYH6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:58:17 -0400
-Date: Fri, 25 Apr 2008 00:58:16 -0700 (PDT)
-Message-Id: <20080425.005816.249606540.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48118EAB.5040004@gmail.com>
-References: <48118B73.6000700@gmail.com>
-	<20080425.004943.148536408.davem@davemloft.net>
-	<48118EAB.5040004@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Apr 2008 03:58:48 -0400
+Message-ID: <48118F35.3030102@zankel.net>
+Date: Fri, 25 Apr 2008 00:58:45 -0700
+From: Christian Zankel <chris@zankel.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] xtensa: don't offer ATA
+References: <20080414195521.GB26885@cs181133002.pp.htv.fi> <4807A771.2020405@pobox.com> <20080421193927.GA2633@cs181133002.pp.htv.fi>
+In-Reply-To: <20080421193927.GA2633@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Fri, 25 Apr 2008 09:56:27 +0200
+Hi Adrian,
 
-> On 04/25/2008 09:49 AM, David Miller wrote:
-> > Two hyperthreads per-core?
+Adrian Bunk wrote:
+>> XTENSA offers HAS_IOMEM but not iomem functions?  That seems like the  
+>> problem to me.
 > 
-> Hmm, how to find out? I suppose it will show up 4 (virtual) processors in 
-> cpuinfo, right? Although there is ht bit in cpuinfo on each core and 
-> CONFIG_X86_HT=y, I don't see 4 cpus.
+> Chris, can you comment on this?
 
-Ok, good to know.
+Yes, the iomem functions are missing. I finally have a board that allows 
+me to test io functionality. I don't just want to add the functions 
+without having the chance to test them.
 
-> > If so that could match up to the pattern.  It is just one theory
-> > though.  The wireless possibility holds just as much weight.
-> 
-> The mac80211 is theory too so far :).
-
-I'll try to do some commit mining of my own.
-
-Thanks for all of the info so far.
+-Chris
