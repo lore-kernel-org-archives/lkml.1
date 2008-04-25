@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYDYCRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbYDYCSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbYDYCRc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 22:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYDYCRX
+	id S1755753AbYDYCSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 22:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYDYCSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 22:17:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46961 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755098AbYDYCRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 22:17:22 -0400
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 34/37] LTTng instrumentation ipc
-References: <20080424150324.802695381@polymtl.ca>
-	<20080424151407.622943449@polymtl.ca>
-	<20080424230238.GA11699@martell.zuzino.mipt.ru>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 24 Apr 2008 22:15:27 -0400
-In-Reply-To: <20080424230238.GA11699@martell.zuzino.mipt.ru> (Alexey Dobriyan's message of "Fri, 25 Apr 2008 03:02:38 +0400")
-Message-ID: <y0mve26r874.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Apr 2008 22:18:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33294 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbYDYCSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 22:18:04 -0400
+Date: Thu, 24 Apr 2008 23:16:40 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Brandon Philips <bphilips@suse.de>
+Cc: Adrian Bunk <bunk@kernel.org>, Matthias Schwarzott <zzam@gentoo.org>,
+       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
+       Patrick Boettcher <pb@linuxtv.org>
+Subject: Re: [v4l-dvb-maintainer] no help text for DVB_TUNER_ITD1000
+Message-ID: <20080424231640.3f8f2d9a@gaivota>
+In-Reply-To: <20080425002351.GA19764@plankton>
+References: <20080424202257.GC18854@cs181133002.pp.htv.fi>
+	<20080424172838.5df1da67@gaivota>
+	<20080424210821.GA14416@plankton>
+	<20080424203937.0c21093b@gaivota>
+	<20080425002351.GA19764@plankton>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Apr 2008 17:23:51 -0700
+Brandon Philips <bphilips@suse.de> wrote:
 
-Alexey Dobriyan <adobriyan@gmail.com> writes:
+> On 20:39 Thu 24 Apr 2008, Mauro Carvalho Chehab wrote:
+> > I've did a diff between the applied patch and the original ones. It is
+> > not easy to compare the diffs manually, since file order changes, but
+> > it seems that the other patches are ok.
+> 
+> interdiff can help find identical patches that just change file order.
 
-> [...]
-> Can I write
-> 	if (rv < 0)
-> 		trace_mark(foo, "rv %d", rv);
+Very useful. 
 
-Sure.
+It confirmed that the only two patches with problems are:
 
-> Looks like i could. But people want also want to see success, so what?
-> Two markers per exit?
->
-> 	rv = ipc_get(...);
-> 	if (rv < 0)
-> 		trace_marker(foo_err, ...);
-> 	trace_marker(foo_all, ...);
+v4l_dvb_hg_7571_mt312_cleanup_buffer_variables_of_read_write_functions.patch:
+--- b/drivers/media/dvb/frontends/Kconfig
++++ a/drivers/media/dvb/frontends/Kconfig
 
-That seems excessive.  Just pass "rv" value and let the consumer
-decide whether they care about < 0.
+-config DVB_TUNER_ITD1000
+-       tristate "Integrant ITD1000 Zero IF tuner for DVB-S/DSS"
+-       depends on DVB_CORE && I2C
+-       default m if DVB_FE_CUSTOMISE
+-
+ comment "Miscellaneous devices"
+--- b/drivers/media/dvb/frontends/Makefile
++++ a/drivers/media/dvb/frontends/Makefile
+ obj-$(CONFIG_DVB_TUNER_XC5000) += xc5000.o
+-obj-$(CONFIG_DVB_TUNER_ITD1000) += itd1000.o
 
-You seem to be operating under the mistaken assumption that marker
-consumers will simply have to pass on the full firehose flow without
-filtering.  That is not so.  I suspect lttng can do it, but I know
-that with systemtap, it's trivial to encode conditions on the marker
-parameters and other state (e.g., recent events of interest), so that
-only finely tuned events actually get sent to the end user.
+and v4l_dvb_hg_7569_added_support_for_skystar2_rev2_7_and_itd1000_dvb_s_tuner.patch:
 
+only in patch2:
+--- oldtree/drivers/media/dvb/frontends/Kconfig 2008-04-14 22:19:41.000000000 -0300
++++ linux/drivers/media/dvb/frontends/Kconfig   2008-04-14 22:19:38.000000000 -0300
 
-> Also everything inserted so far is static. Sometimes only one bit in
-> mask is interesting and to save time to parse nibbles people do:
-> 	printk("foo = %d\n", !!(mask & foo));
-> And interesting bits vary.
++config DVB_TUNER_ITD1000
++       tristate "Integrant ITD1000 Zero IF tuner for DVB-S/DSS"
++       depends on DVB_CORE && I2C
++       default m if DVB_FE_CUSTOMISE
++
+ comment "Miscellaneous devices"
+only in patch2:
+--- oldtree/drivers/media/dvb/frontends/Makefile        2008-04-14 22:19:41.000000000 -0300
++++ linux/drivers/media/dvb/frontends/Makefile  2008-04-14 22:19:38.000000000 -0300
+ obj-$(CONFIG_DVB_TUNER_XC5000) += xc5000.o
++obj-$(CONFIG_DVB_TUNER_ITD1000) += itd1000.o
 
-OK, perhaps pass both mask & foo, and let the consumer perform the
-arithmetic they deem appropriate.
-
-
-> Again, all events aren't interesting:
-> 	if (file && file->f_op == &shm_file_operations)
-> 		printk("%s: file = %p: START\n", __func__, file);
-> Can I write this with markers?
-
-Of course, if you really want to.
-
-> So what is proposed? Insert markers at places that look strategic? 
-
-"strategic" is the wrong term.  Choose those places that reflect
-internal occurrences that are useful but difficult to reverse-engineer
-from other visible interface points like system calls.  Data that
-helps answer questions like "Why did (subtle internal phenomenon)
-happen?" in a live system.
+I can't understand what happened by looking on my procedure. It really seems to
+be some corruption on -git, maybe due to stgit porcelain.
 
 
-> mm/ patch is full if "file %p". Do you realize that pointers are
-> only sometimes interesting and sometimes you want dentry (not pointer,
-> but name!):
-> 	printk("file = '%s'\n", file->f_dentry->d_name.name);
-
-It may not be excessive to put both file and the dname.name as marker
-parameters.
-
-
-> So, let me say even more explicitly. Looking at proposed places elite
-> enough to be blessed with marker...
->
-> Those which are close enough to system call boundary are essentially
-> strace(1).
-
-Those may not sound worthwhile to put a marker for, BUT, you're
-ignoring the huge differences of impact and scope.  A system-wide
-marker-based trace (filtered a la systemtap if desired) can be done
-with a tiny fraction of system load and none of the disruption caused
-by an strace of all the processes.
-
-
-> [...]  Markers points won't be removed, only accumulated -- somebody
-> _might_ be interested in this information.
-
-We all (data producers and consumers) need to use good judgment and
-accept moderate change.
-
-
-- FChE
+Cheers,
+Mauro
