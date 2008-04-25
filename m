@@ -1,137 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760384AbYDYOgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYDYOrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760384AbYDYOgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 10:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbYDYOgl
+	id S1756889AbYDYOrf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 10:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYDYOrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 10:36:41 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50721 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757866AbYDYOgk (ORCPT
+	Fri, 25 Apr 2008 10:47:25 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:3420 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbYDYOrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 10:36:40 -0400
-Date: Fri, 25 Apr 2008 16:37:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
-       lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: w35und: remove warnings
-Message-ID: <20080425143720.GB30033@elf.ucw.cz>
+	Fri, 25 Apr 2008 10:47:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DUfQlJvKXrjbucuJcaSL6mBDpCdSKC8j8qXIskqvwhxwZZOrbFevXFxN+1fw1aCV7JXa/gAhMLYLiUCyWLLtRbUAdow+XAXrIbutsQ7LhlN4abzdjlwlve4PM3nvIPr9cq0DQy1zIh3S340ELUfZpdMILX5HnOHFfWaea+dOriM=
+Message-ID: <dd18b0c30804250747u4168bafsccc6feec0ba78c26@mail.gmail.com>
+Date: Fri, 25 Apr 2008 14:47:23 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [ INFO: iconsistent lock state ]
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Brown, Len" <len.brown@intel.com>
+In-Reply-To: <1209125470.24931.10.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <dd18b0c30804241724t2dcc044dvab4a5ad506255d8d@mail.gmail.com>
+	 <1209125470.24931.10.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 25, 2008 at 12:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Fri, 2008-04-25 at 00:24 +0000, Justin Mattock wrote:
+>
+>  > [   13.269763] =================================
+>  > [   13.270954] [ INFO: inconsistent lock state ]
+>  > [   13.271865] 2.6.25-04569-gb69d398 #3
+>
+>  What tree is that? git checkout gb69d398 doesn't want to happen here.
+>
+>  > [   13.272614] ---------------------------------
+>  > [   13.273521] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+>  > [   13.274745] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>  > [   13.275787]  (&rq->rq_lock_key){++..}, at: [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
+>  > [   13.276859] {in-hardirq-W} state was registered at:
+>  > [   13.276859]   [<c01423d8>] __lock_acquire+0x419/0xb70
+>  > [   13.276859]   [<c0142bae>] lock_acquire+0x7f/0xa6
+>  > [   13.280188]   [<c0394132>] _spin_lock+0x1c/0x49
+>  > [   13.280188]   [<c0121c44>] scheduler_tick+0x43/0x1bd
+>  > [   13.280188]   [<c012d99f>] update_process_times+0x3d/0x49
+>  > [   13.283524]   [<c013daf6>] tick_periodic+0x66/0x72
+>  > [   13.283524]   [<c013db1b>] tick_handle_periodic+0x19/0x6a
+>  > [   13.283524]   [<c0105a87>] timer_interrupt+0x47/0x4e
+>  > [   13.286855]   [<c015cf64>] handle_IRQ_event+0x1a/0x4f
+>  > [   13.286855]   [<c015e3e9>] handle_level_irq+0x7f/0xca
+>  > [   13.286855]   [<c0105a27>] do_IRQ+0x71/0x8a
+>  > [   13.290190]   [<c01043fe>] common_interrupt+0x2e/0x34
+>  > [   13.290190]   [<c038bd6f>] calibrate_delay+0x8f/0x276
+>  > [   13.290190]   [<c04f0883>] start_kernel+0x27c/0x2f8
+>  > [   13.293520]   [<c04f0008>] __init_begin+0x8/0xa
+>  > [   13.293520]   [<ffffffff>] 0xffffffff
+>  > [   13.293520] irq event stamp: 253965
+>  > [   13.296856] hardirqs last  enabled at (253965): [<c0108069>] native_sched_clock+0xe7/0xff
+>  > [   13.296856] hardirqs last disabled at (253964): [<c0107fef>] native_sched_clock+0x6d/0xff
+>  > [   13.300190] softirqs last  enabled at (253958): [<c0129cea>] __do_softirq+0xf9/0xff
+>  > [   13.300190] softirqs last disabled at (253953): [<c0129d3d>] do_softirq+0x4d/0x79
+>  > [   13.303522]
+>  > [   13.303522] other info that might help us debug this:
+>  > [   13.303522] no locks held by swapper/0.
+>  > [   13.303522]
+>  > [   13.303522] stack backtrace:
+>  > [   13.306852] Pid: 0, comm: swapper Not tainted 2.6.25-04569-gb69d398 #3
+>  > [   13.336851]  [<c01409f9>] print_usage_bug+0x106/0x113
+>  > [   13.340185]  [<c0141823>] mark_lock+0x1ed/0x3a5
+>  > [   13.343519]  [<c014244d>] __lock_acquire+0x48e/0xb70
+>  > [   13.346852]  [<c0142bae>] lock_acquire+0x7f/0xa6
+>  > [   13.350185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
+>  > [   13.353519]  [<c0394132>] _spin_lock+0x1c/0x49
+>  > [   13.360185]  [<c01208e9>] ? sched_clock_idle_wakeup_event+0x43/0x74
+>  > [   13.363518]  [<c01208e9>] sched_clock_idle_wakeup_event+0x43/0x74
+>  > [   13.366851]  [<f883919b>] acpi_idle_enter_bm+0x2b3/0x333 [processor]
+>  > [   13.370184]  [<c02e5ec1>] cpuidle_idle_call+0x63/0x92
+>  > [   13.373517]  [<c02e5e5e>] ? cpuidle_idle_call+0x0/0x92
+>  > [   13.380184]  [<c010257d>] cpu_idle+0xb6/0xd6
+>  > [   13.383517]  [<c0387071>] rest_init+0x49/0x4b
+>  > [   13.386850]  =======================
+>
+>  looking at current -linus I'm not directly seeing how we can get there
+>  with interrupts enabled.
+>
+>
 
-Remove some warnings.
+Hello; I have been using:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
----
-commit b8ad3cb3e88202aea88c7fca3d4adfd1a0940808
-tree eddd540a2b5779a95d05d6ad0ed1c2185d075631
-parent dde5f03291e3dd8cb1f958134c57cfcd406ab748
-author Pavel <pavel@amd.ucw.cz> Fri, 25 Apr 2008 16:35:36 +0200
-committer Pavel <pavel@amd.ucw.cz> Fri, 25 Apr 2008 16:35:36 +0200
+I used the tutorial from kernel hackers, and IBM. If this is what you're asking.
+All I know is last friday I did git-pull, "2.6.25-xxxx-xxxxx" and my
+system has not been able to run right,
+If I new how to pull code out of my ass I would probably have fixed
+this problem that I have by now, but I dont,
+regards;
 
- .../net/wireless/winbond/winbondport/linux/wbusb.c |    4 +---
- drivers/net/wireless/winbond/winbondport/mds.c     |    8 --------
- drivers/net/wireless/winbond/winbondport/wbhal.c   |    4 ----
- drivers/net/wireless/winbond/winbondport/wblinux.c |    2 --
- 4 files changed, 1 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/wireless/winbond/winbondport/linux/wbusb.c b/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-index d883873..8c9451a 100644
---- a/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-+++ b/drivers/net/wireless/winbond/winbondport/linux/wbusb.c
-@@ -78,7 +78,6 @@ static void wbsoft_configure_filter(stru
- 				     unsigned int *total_flags,
- 				     int mc_count, struct dev_mc_list *mclist)
- {
--	static const u8 bcast[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
- 	unsigned int bit_nr, new_flags;
- 	u32 mc_filter[2];
- 	int i;
-@@ -129,9 +128,8 @@ static int wbsoft_start(struct ieee80211
- 
- static int wbsoft_config(struct ieee80211_hw *dev, struct ieee80211_conf *conf)
- {
--	printk("wbsoft_config called\n");
--
- 	ChanInfo ch;
-+	printk("wbsoft_config called\n");
- 
- 	ch.band = 1;
- 	ch.ChanNo = 1;	/* Should use channel_num, or something, as that is already pre-translated */
-diff --git a/drivers/net/wireless/winbond/winbondport/mds.c b/drivers/net/wireless/winbond/winbondport/mds.c
-index 743a2f2..66def9b 100644
---- a/drivers/net/wireless/winbond/winbondport/mds.c
-+++ b/drivers/net/wireless/winbond/winbondport/mds.c
-@@ -219,19 +219,12 @@ Mds_SendComplete(PADAPTER Adapter, PT02_
- {
- 	PMDS	pMds = &Adapter->Mds;
- 	phw_data_t	pHwData = &Adapter->sHwData;
--	PUCHAR	pTxBuffer;
- 	u8	PacketId = (u8)pT02->T02_Tx_PktID;
- 	unsigned char	SendOK = TRUE;
- 	u8	RetryCount, TxRate;
--	u16	wIndex, wReasonCode;
--
- 
- 	if (pT02->T02_IgnoreResult) // Don't care the result
- 		return;
--    #ifdef _PE_TX_DUMP_
--	WBDEBUG(("###  Tx complete, PacketId =%x, pT02->T02_Tx_PktID =%x\n",
--							PacketId, pT02->T02_Tx_PktID));
--    #endif	
- 	if (pT02->T02_IsLastMpdu) {
- 		//TODO: DTO -- get the retry count and fragment count
- 		// Tx rate
-@@ -300,7 +293,6 @@ Mds_HeaderCopy(PADAPTER Adapter, PDESCRI
- {
- 	PMDS	pMds = &Adapter->Mds;
- 	PUCHAR	src_buffer = pDes->buffer_address[0];//931130.5.g
--	PUCHAR	buffer;
- 	PT00_DESCRIPTOR	pT00;
- 	PT01_DESCRIPTOR	pT01;
- 	u16	stmp;
-diff --git a/drivers/net/wireless/winbond/winbondport/wbhal.c b/drivers/net/wireless/winbond/winbondport/wbhal.c
-index 6cdc162..1cdd10c 100644
---- a/drivers/net/wireless/winbond/winbondport/wbhal.c
-+++ b/drivers/net/wireless/winbond/winbondport/wbhal.c
-@@ -211,8 +211,6 @@ void hal_set_current_channel_ex(  phw_da
- //---------------------------------------------------------------------------------------------------
- void hal_set_current_channel(  phw_data_t pHwData,  ChanInfo channel )
- {
--	PADAPTER	Adapter = pHwData->Adapter;
--
- 	hal_set_current_channel_ex( pHwData, channel );
- }
- //---------------------------------------------------------------------------------------------------
-@@ -867,8 +865,6 @@ void hal_rate_change(  phw_data_t pHwDat
- 
- void hal_set_rf_power(phw_data_t pHwData, u8 PowerIndex)
- {
--	PADAPTER Adapter = pHwData->Adapter;
--
- 	RFSynthesizer_SetPowerIndex( pHwData, PowerIndex );
- }
- 
-diff --git a/drivers/net/wireless/winbond/winbondport/wblinux.c b/drivers/net/wireless/winbond/winbondport/wblinux.c
-index fd07130..d486508 100644
---- a/drivers/net/wireless/winbond/winbondport/wblinux.c
-+++ b/drivers/net/wireless/winbond/winbondport/wblinux.c
-@@ -79,8 +79,6 @@ WBLINUX_GetNextPacketCompleted(PADAPTER 
- void
- WBLINUX_Destroy(PADAPTER Adapter)
- {
--	PWBLINUX pWbLinux = &Adapter->WbLinux;
--
- 	WBLINUX_stop( Adapter );
- 	OS_SPIN_LOCK_FREE( &pWbNdis->SpinLock );
- #ifdef _PE_USB_INI_DUMP_
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Justin P. Mattock
