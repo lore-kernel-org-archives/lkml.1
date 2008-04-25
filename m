@@ -1,130 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764282AbYDYQ4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764338AbYDYRAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764282AbYDYQ4w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbYDYQ4p
+	id S1764338AbYDYRAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762352AbYDYRAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:56:45 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55958
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756114AbYDYQ4n (ORCPT
+	Fri, 25 Apr 2008 13:00:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51123 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762232AbYDYRAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:56:43 -0400
-Date: Fri, 25 Apr 2008 18:56:40 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
-	operation to happen
-Message-ID: <20080425165639.GA23300@duo.random>
-References: <ec6d8f91b299cf26cce5.1207669444@duo.random> <200804221506.26226.rusty@rustcorp.com.au>
+	Fri, 25 Apr 2008 13:00:23 -0400
+Date: Fri, 25 Apr 2008 11:00:21 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Announce: Semaphore-Removal tree
+Message-ID: <20080425170021.GH14990@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804221506.26226.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I somehow lost missed this email in my inbox, found it now because it
-was strangely still unread... Sorry for the late reply!
 
-On Tue, Apr 22, 2008 at 03:06:24PM +1000, Rusty Russell wrote:
-> On Wednesday 09 April 2008 01:44:04 Andrea Arcangeli wrote:
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
-> > @@ -1050,6 +1050,15 @@
-> >  				   unsigned long addr, unsigned long len,
-> >  				   unsigned long flags, struct page **pages);
-> >
-> > +struct mm_lock_data {
-> > +	spinlock_t **i_mmap_locks;
-> > +	spinlock_t **anon_vma_locks;
-> > +	unsigned long nr_i_mmap_locks;
-> > +	unsigned long nr_anon_vma_locks;
-> > +};
-> > +extern struct mm_lock_data *mm_lock(struct mm_struct * mm);
-> > +extern void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data);
-> 
-> As far as I can tell you don't actually need to expose this struct at all?
+It's been a Good Idea for a while to use mutexes instead of
+semaphores where possible.  Additional debuggability, better optimised,
+better-enforced semantics, etc.
 
-Yes, it should be possible to only expose 'struct mm_lock_data;'.
+Obviously, there are some places that can't be converted to mutexes.
+I'm not proposing blind changes.  I've been through a dozen places
+and found some that can be converted to spinlocks, others to
+completions, but mostly to mutexes.  So as not to lose these patches,
+I've made them available as a git tree.  I think the right way to get
+these patches in will be to go through the maintainers of each file.
 
-> > +		data->i_mmap_locks = vmalloc(nr_i_mmap_locks *
-> > +					     sizeof(spinlock_t));
-> 
-> This is why non-typesafe allocators suck.  You want 'sizeof(spinlock_t *)' 
-> here.
-> 
-> > +		data->anon_vma_locks = vmalloc(nr_anon_vma_locks *
-> > +					       sizeof(spinlock_t));
-> 
-> and here.
+I'll post a list of the places using semaphores later.  My current list
+is a bit out of date and contains insulting comments that I would like
+to rephrase before the authors of the code in question see them ;-)
 
-Great catch! (it was temporarily wasting some ram which isn't nice at all)
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore-removal
 
-> > +	err = -EINTR;
-> > +	i_mmap_lock_last = NULL;
-> > +	nr_i_mmap_locks = 0;
-> > +	for (;;) {
-> > +		spinlock_t *i_mmap_lock = (spinlock_t *) -1UL;
-> > +		for (vma = mm->mmap; vma; vma = vma->vm_next) {
-> ...
-> > +		data->i_mmap_locks[nr_i_mmap_locks++] = i_mmap_lock;
-> > +	}
-> > +	data->nr_i_mmap_locks = nr_i_mmap_locks;
-> 
-> How about you track your running counter in data->nr_i_mmap_locks, leave 
-> nr_i_mmap_locks alone, and BUG_ON(data->nr_i_mmap_locks != nr_i_mmap_locks)?
-> 
-> Even nicer would be to wrap this in a "get_sorted_mmap_locks()" function.
+Stephen, could you pick these patches up for linux-next?
 
-I'll try to clean this up further and I'll make a further update for review.
+git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git semaphore-removal
 
-> Unfortunately, I just don't think we can fail locking like this.  In your next 
-> patch unregistering a notifier can fail because of it: that not usable.
-
-Fortunately I figured out we don't really need mm_lock in unregister
-because it's ok to unregister in the middle of the range_begin/end
-critical section (that's definitely not ok for register that's why
-register needs mm_lock). And it's perfectly ok to fail in register().
-
-Also it wasn't ok to unpin the module count in ->release as ->release
-needs to 'ret' to get back to the mmu notifier code. And without any
-unregister at all, the module can't be unloaded at all which
-is quite unacceptable...
-
-The logic is to prevent mmu_notifier_register to race with
-mmu_notifier_release because it takes the mm_users pin (implicit or
-explicit, and then mmput just after mmu_notifier_register
-returns). Then _register serializes against all the mmu notifier
-methods (except ->release) with srcu (->release can't run thanks to
-the mm_users pin). The mmu_notifier_mm->lock then serializes the
-modification on the list (register vs unregister) and it ensures one
-and only one between _unregister and _releases calls ->release before
-_unregister returns. All other methods runs freely with srcu. Having
-the guarante that ->release is called just before all pages are freed
-or inside _unregister, allows the module to zap and freeze its
-secondary mmu inside ->release with the race condition of exit()
-against mmu_notifier_unregister internally by the mmu notifier code
-and without dependency on exit_files/exit_mm ordering depending if the
-fd of the driver is open the filetables or in the vma only. The
-mmu_notifier_mm can be reset to 0 only after the last mmdrop.
-
-About the mm_count refcounting for _release and _unregiste: no mmu
-notifier and not even mmu_notifier_unregister and _release can cope
-with mmu_notfier_mm list and srcu structures going away out of
-order. exit_mmap is safe as it holds an mm_count implicitly because
-mmdrop is run after exit_mmap returns. mmu_notifier_unregister is safe
-too as _register takes the mm_count pin. We can't prevent
-mmu_notifer_mm to go away with mm_users as that will screwup the vma
-filedescriptor closure that only happens inside exit_mmap (mm_users
-pinned prevents exit_mmap to run, and it can only be taken temporarily
-until _register returns).
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
