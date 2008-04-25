@@ -1,145 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933628AbYDYTGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933689AbYDYTGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933628AbYDYTGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764861AbYDYSou
+	id S933689AbYDYTGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbYDYSqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:44:50 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53314 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765216AbYDYSor convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:44:47 -0400
-Message-Id: <1209149086.433.1249904351@webmail.messagingengine.com>
-X-Sasl-Enc: oIXDdFlkkztV8JU73KoVg+1XNafWc1VtQzb2u3QRyCsY 1209149086
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Eric Dumazet" <dada1@cosmosbay.com>, "David Chinner" <dgc@sgi.com>,
-       xfs-masters@oss.sgi.com
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="ISO-8859-1"
+	Fri, 25 Apr 2008 14:46:10 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53507 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932402AbYDYSqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:46:07 -0400
+Date: Fri, 25 Apr 2008 13:46:06 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: jes@sgi.com, tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] allocate multiple contiguous pages via uncached allocator -v2
+Message-ID: <20080425184606.GA13773@sgi.com>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080425090901.ca642c4d.randy.dunlap@oracle.com>
-   <48121331.1030204@cosmosbay.com>
-   <1209145675.2005.1249890339@webmail.messagingengine.com>
-   <48121A37.5020504@cosmosbay.com>
-   <20080425191830.GA4898@martell.zuzino.mipt.ru>
-Subject: Re: [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
-In-Reply-To: <20080425191830.GA4898@martell.zuzino.mipt.ru>
-Date: Fri, 25 Apr 2008 20:44:46 +0200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Enable the uncached allocator to allocate multiple pages of contiguous
+uncached memory.
+ 
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+ 
+---
 
-On Fri, 25 Apr 2008 23:18:30 +0400, "Alexey Dobriyan"
-<adobriyan@gmail.com> said:
-> >>>> Pid: 20926, comm: cat Not tainted 2.6.25-git5 #1
-> >>>> RIP: 0010:[<ffffffff80357aac>]  [<ffffffff80357aac>] strnlen+0x15/0x1f
-> >>>> RSP: 0018:ffff810274981cc8  EFLAGS: 00010297
-> >>>> RAX: ffffffffa00b7551 RBX: ffff810274981d38 RCX: ffffffff80603719
-> >>>> RDX: ffff810274981d68 RSI: fffffffffffffffe RDI: ffffffffa00b7551
-> >>>> RBP: ffff810274981cc8 R08: 00000000ffffffff R09: 00000000000000c8
-> >>>> R10: 0000000000000050 R11: 0000000000000246 R12: ffff8102364600cc
-> >>>> R13: ffffffffa00b7551 R14: 0000000000000011 R15: 0000000000000010
-> >>>> FS:  00007f956375d6f0(0000) GS:ffff81027f808980(0000) 
-> >>>> knlGS:00000000f7f7f6c0
-> >>>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> >>>> CR2: ffffffffa00b7551 CR3: 00000002734d5000 CR4: 00000000000006e0
-> >>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> >>>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> >>>> Process cat (pid: 20926, threadinfo ffff810274980000, task 
-> >>>> ffff81026d18ce20)
-> >>>> Stack:  ffff810274981d28 ffffffff80358d5a ffff810274981d28 
-> >>>> 0000000000000f34
-> >>>>  ffff8102364600cc ffff810236461000 ffffffff80603719 ffff81024ac14f00
-> >>>>  ffff81024ac14f00 0000000000000004 0000000000000000 0000000000000000
-> >>>> Call Trace:
-> >>>>  [<ffffffff80358d5a>] vsnprintf+0x31b/0x592
-> >>>>  [<ffffffff802a78eb>] seq_printf+0x7e/0xa7
-> >>>>  [<ffffffff8024c6fe>] ? debug_mutex_free_waiter+0x46/0x4a
-> >>>>  [<ffffffff8053aaa2>] ? __down_read+0x17/0x92
-> >>>>  [<ffffffff80539c25>] ? __mutex_lock_slowpath+0x1d8/0x1e5
-> >>>>  [<ffffffff802886c2>] ? count_partial+0x45/0x4d
-> >>>>  [<ffffffff80289a6d>] s_show+0x7e/0xcb
-> >>>>  [<ffffffff802a7dd9>] seq_read+0x10b/0x298
-> >>>>  [<ffffffff802c7dbb>] proc_reg_read+0x7b/0x95
-> >>>>  [<ffffffff8028ec0b>] vfs_read+0xab/0x154
-> >>>>  [<ffffffff8028f015>] sys_read+0x47/0x6f
-> >>>>  [<ffffffff8020c182>] tracesys+0xd5/0xda
-> >>>>
-> >>>>
-> >>>> Code: 48 8d 44 11 ff 40 38 30 74 0a 48 ff c8 48 39 d0 73 f3 31 c0 c9 c3 
-> >>>> 55 48 89 f8 48 89 e5 eb 03 48 ff c0 48 ff ce 48 83 fe ff 74 05 <80> 38 
-> >>>> 00 75 ef c9 48 29 f8 c3 55 31 c0 48 89 e5 eb 13 41 38 c8 RIP  
-> >>>> [<ffffffff80357aac>] strnlen+0x15/0x1f
-> >>>>  RSP <ffff810274981cc8>
-> >>>> CR2: ffffffffa00b7551
-> >>>>
-> >>>>
-> >>>> ---
-> >>>>
-> >>>>         
-> >>> My initial thoughts are :
-> >>>
-> >>> Fault address is  0xffffffffa00b7551 which is in module mapping space on 
-> >>> x86_64
-> >>>
-> >>> strnlen() is OK
-> >>>
-> >>> Some module created a kmem_cache (with kmem_cache_create()).
-> >>> slub or slab kept a pointer to the cache name in their internal
-> >>> structures.
-> >>> Module was unloaded but forgot to destroy kmem cache before unloading.
-> >>>
-> >>> Fault happens while doing "cat /proc/slabinfo", when trying to 
-> >>> dereference cache name since module was unloaded and its memory unmapped.
-> >>>
-> >>> Next step is to find which module was unloaded ...
-> >>>     
-> >>
-> >> The last one was reiserfs, apparently ;).
-> 
-> Which doesn't mean anything ;-)
+Version 1 of this patch was missing the necessary changes to xpc_partition.c
+to support this change. A future patch will take advantage of this new
+capability of the uncached allocator.
+ 
+ arch/ia64/kernel/uncached.c         |   21 ++++++++++++---------
+ drivers/char/mspec.c                |   12 ++++++------
+ drivers/misc/sgi-xp/xpc_partition.c |    4 ++--
+ include/asm-ia64/uncached.h         |    4 ++--
+ 4 files changed, 22 insertions(+), 19 deletions(-)
 
-It was a filesystem, though :-/.
-
-> >>   
-> > Yes but reiserfs correctly destroys its cache at unload time.
-> >
-> > Must be something else...
-> 
-> 
-> [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
-> 
-> Bug introduces in commit eb01c9cd87c7a9998c2edf209721ea069e3e3652
-> aka "[XFS] Remove the xlog_ticket allocator"
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
-> 
->  fs/xfs/xfs_vfsops.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- a/fs/xfs/xfs_vfsops.c
-> +++ b/fs/xfs/xfs_vfsops.c
-> @@ -186,6 +186,7 @@ xfs_cleanup(void)
->  	kmem_zone_destroy(xfs_efi_zone);
->  	kmem_zone_destroy(xfs_ifork_zone);
->  	kmem_zone_destroy(xfs_ili_zone);
-> +	kmem_zone_destroy(xfs_log_ticket_zone);
->  }
->  
->  /*
-> 
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - And now for something completely different…
-
+Index: linux-2.6/arch/ia64/kernel/uncached.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/uncached.c	2008-04-25 13:20:33.305200359 -0500
++++ linux-2.6/arch/ia64/kernel/uncached.c	2008-04-25 13:25:06.773566374 -0500
+@@ -177,12 +177,13 @@ failed:
+  * uncached_alloc_page
+  *
+  * @starting_nid: node id of node to start with, or -1
++ * @n_pages: number of contiguous pages to allocate
+  *
+- * Allocate 1 uncached page. Allocates on the requested node. If no
+- * uncached pages are available on the requested node, roundrobin starting
+- * with the next higher node.
++ * Allocate the specified number of contiguous uncached pages on the
++ * the requested node. If not enough contiguous uncached pages are available
++ * on the requested node, roundrobin starting with the next higher node.
+  */
+-unsigned long uncached_alloc_page(int starting_nid)
++unsigned long uncached_alloc_page(int starting_nid, int n_pages)
+ {
+ 	unsigned long uc_addr;
+ 	struct uncached_pool *uc_pool;
+@@ -202,7 +203,8 @@ unsigned long uncached_alloc_page(int st
+ 		if (uc_pool->pool == NULL)
+ 			continue;
+ 		do {
+-			uc_addr = gen_pool_alloc(uc_pool->pool, PAGE_SIZE);
++			uc_addr = gen_pool_alloc(uc_pool->pool,
++						 n_pages * PAGE_SIZE);
+ 			if (uc_addr != 0)
+ 				return uc_addr;
+ 		} while (uncached_add_chunk(uc_pool, nid) == 0);
+@@ -217,11 +219,12 @@ EXPORT_SYMBOL(uncached_alloc_page);
+ /*
+  * uncached_free_page
+  *
+- * @uc_addr: uncached address of page to free
++ * @uc_addr: uncached address of first page to free
++ * @n_pages: number of contiguous pages to free
+  *
+- * Free a single uncached page.
++ * Free the specified number of uncached pages.
+  */
+-void uncached_free_page(unsigned long uc_addr)
++void uncached_free_page(unsigned long uc_addr, int n_pages)
+ {
+ 	int nid = paddr_to_nid(uc_addr - __IA64_UNCACHED_OFFSET);
+ 	struct gen_pool *pool = uncached_pools[nid].pool;
+@@ -232,7 +235,7 @@ void uncached_free_page(unsigned long uc
+ 	if ((uc_addr & (0XFUL << 60)) != __IA64_UNCACHED_OFFSET)
+ 		panic("uncached_free_page invalid address %lx\n", uc_addr);
+ 
+-	gen_pool_free(pool, uc_addr, PAGE_SIZE);
++	gen_pool_free(pool, uc_addr, n_pages * PAGE_SIZE);
+ }
+ EXPORT_SYMBOL(uncached_free_page);
+ 
+Index: linux-2.6/drivers/char/mspec.c
+===================================================================
+--- linux-2.6.orig/drivers/char/mspec.c	2008-04-25 13:20:33.305200359 -0500
++++ linux-2.6/drivers/char/mspec.c	2008-04-25 13:25:06.793568744 -0500
+@@ -180,7 +180,7 @@ mspec_close(struct vm_area_struct *vma)
+ 		my_page = vdata->maddr[index];
+ 		vdata->maddr[index] = 0;
+ 		if (!mspec_zero_block(my_page, PAGE_SIZE))
+-			uncached_free_page(my_page);
++			uncached_free_page(my_page, 1);
+ 		else
+ 			printk(KERN_WARNING "mspec_close(): "
+ 			       "failed to zero page %ld\n", my_page);
+@@ -209,7 +209,7 @@ mspec_nopfn(struct vm_area_struct *vma, 
+ 	index = (address - vdata->vm_start) >> PAGE_SHIFT;
+ 	maddr = (volatile unsigned long) vdata->maddr[index];
+ 	if (maddr == 0) {
+-		maddr = uncached_alloc_page(numa_node_id());
++		maddr = uncached_alloc_page(numa_node_id(), 1);
+ 		if (maddr == 0)
+ 			return NOPFN_OOM;
+ 
+@@ -218,7 +218,7 @@ mspec_nopfn(struct vm_area_struct *vma, 
+ 			vdata->count++;
+ 			vdata->maddr[index] = maddr;
+ 		} else {
+-			uncached_free_page(maddr);
++			uncached_free_page(maddr, 1);
+ 			maddr = vdata->maddr[index];
+ 		}
+ 		spin_unlock(&vdata->lock);
+@@ -367,7 +367,7 @@ mspec_init(void)
+ 				int nasid;
+ 				unsigned long phys;
+ 
+-				scratch_page[nid] = uncached_alloc_page(nid);
++				scratch_page[nid] = uncached_alloc_page(nid, 1);
+ 				if (scratch_page[nid] == 0)
+ 					goto free_scratch_pages;
+ 				phys = __pa(scratch_page[nid]);
+@@ -414,7 +414,7 @@ mspec_init(void)
+  free_scratch_pages:
+ 	for_each_node(nid) {
+ 		if (scratch_page[nid] != 0)
+-			uncached_free_page(scratch_page[nid]);
++			uncached_free_page(scratch_page[nid], 1);
+ 	}
+ 	return ret;
+ }
+@@ -431,7 +431,7 @@ mspec_exit(void)
+ 
+ 		for_each_node(nid) {
+ 			if (scratch_page[nid] != 0)
+-				uncached_free_page(scratch_page[nid]);
++				uncached_free_page(scratch_page[nid], 1);
+ 		}
+ 	}
+ }
+Index: linux-2.6/include/asm-ia64/uncached.h
+===================================================================
+--- linux-2.6.orig/include/asm-ia64/uncached.h	2008-04-25 13:20:33.305200359 -0500
++++ linux-2.6/include/asm-ia64/uncached.h	2008-04-25 13:25:06.821572061 -0500
+@@ -8,5 +8,5 @@
+  * Prototypes for the uncached page allocator
+  */
+ 
+-extern unsigned long uncached_alloc_page(int nid);
+-extern void uncached_free_page(unsigned long);
++extern unsigned long uncached_alloc_page(int, int);
++extern void uncached_free_page(unsigned long, int);
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_partition.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_partition.c	2008-04-25 13:12:02.000000000 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_partition.c	2008-04-25 13:28:24.340999346 -0500
+@@ -211,7 +211,7 @@ xpc_rsvd_page_init(void)
+ 	 */
+ 	amos_page = xpc_vars->amos_page;
+ 	if (amos_page == NULL) {
+-		amos_page = (AMO_t *)TO_AMO(uncached_alloc_page(0));
++		amos_page = (AMO_t *)TO_AMO(uncached_alloc_page(0, 1));
+ 		if (amos_page == NULL) {
+ 			dev_err(xpc_part, "can't allocate page of AMOs\n");
+ 			return NULL;
+@@ -230,7 +230,7 @@ xpc_rsvd_page_init(void)
+ 				dev_err(xpc_part, "can't change memory "
+ 					"protections\n");
+ 				uncached_free_page(__IA64_UNCACHED_OFFSET |
+-						   TO_PHYS((u64)amos_page));
++						   TO_PHYS((u64)amos_page), 1);
+ 				return NULL;
+ 			}
+ 		}
