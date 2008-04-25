@@ -1,94 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbYDYVrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765240AbYDYVrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbYDYVrU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 17:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758403AbYDYVrI
+	id S1765240AbYDYVrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 17:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbYDYVrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 17:47:08 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:58714 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751220AbYDYVrH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 17:47:10 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2976 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754128AbYDYVrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Apr 2008 17:47:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EADPuEUhMROPA/2dsb2JhbACBU6sZ
-Date: Fri, 25 Apr 2008 17:47:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080425214704.GD25950@Krystal>
-References: <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,709,1199692800"; 
+   d="scan'208";a="274838590"
+Message-ID: <48125150.9020203@linux.intel.com>
+Date: Fri, 25 Apr 2008 14:46:56 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Top 10 Oops/Warning reports for the week of April 25th, 2008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <481249FB.8070204@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:28:59 up 56 days, 17:39,  7 users,  load average: 0.32, 0.31,
-	0.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
->> The point is to provide a way to dynamically enable code at runtime
->> without noticeable performance impact on the system. It's principally
->> useful to control the markers in the kernel, which can be placed in very
->> frequently executed code paths. The original markers add a memory read,
->> test and conditional branch at each marker site. By using the immediate
->> values patchset, it goes down to a load immediate value, test and branch.
->> However, Ingo was still unhappy with the conditional branch, so I cooked
->> this jump patching optimization on top of the immediate values. It
->> looks for an expected pattern which limits the liveliness of the %al and
->> ZF registers to the 3 instructions and, if it finds it, patches a jump
->> located just before the mov instruction to skip the whole pattern and
->> behave exactly like the conditional branch.
->> So basically we get code dynamically actvated by patching a single jump.
->
-> Note that all these optimizations only make sense if the case where we 
-> *take* the "marker" is frequent, *and* the marker itself is not too 
-> expensive.
->
+Nothing really exciting in the last week or two; we're fixing all the frequent bugs,
+or the bugs are in out of tree drivers / various git trees.
 
-Yes, this is the case. Using breakpoints for markers quickly becomes
-noticeable for thing such as scheduler instrumentation, page fault
-handler instrumentation, etc. And yes, I have developed kernel tracer,
-LTTng, which takes care of writing the data to trace buffers
-efficiently. The last time I took performance measurements, it was
-performing locking and writing to the memory buffer in about 270ns on a
-3GHz Pentium 4. It might be a tiny bit slower now that it parses the
-markers format strings dynamically, but nothing very significant.
+For the 2.6.25 development cycle, an overview of the sightings can be seen at:
 
-But there is another point that markers do which the breakpoint won't
-give you : they extract local variables from functions and they identify
-them with field names which separates the instrumentation from the
-actual kernel implementation details. In order to do that, I rely on gcc
-building a stack frame for a function call, which I don't want to build
-unnecessarity when the marker is disabled. This is why I use a jump to
-skip passing the arguments on the stack and the function call.
+http://www.kerneloops.org/twentyfive.html
 
-Mathieu
 
-> If that is not the case, just put in a noop that is dynamically patched to 
-> an INT3 or ICEBP instruction (one byte) or an INT instruction (two bytes), 
-> take the exception, look up the source address and revector to the marker 
-> code.
->
-> 	-hpa
+The http://www.kerneloops.org website collects kernel oops and
+warning reports from various mailing lists and bugzillas as well as
+with a client users can install to auto-submit oopses.
+Below is a top 10 list of the oopses collected in the last 7 days.
+(Reports prior to 2.6.23 have been omitted in collecting the top 10)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This week, a total of 647 oopses and warnings have been reported,
+compared to 719 reports in the previous week.
+
+
+Rank 1: __register_sysctl_paths
+	Reported 74 times (372 total reports)
+	Duplicate /proc registration. Most bugs are in madwifi but also in the parport driver
+	This warning was last seen in version 2.6.25, and first seen in 2.6.25-rc3.
+	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
+
+Rank 2: set_dentry_child_flags  [fixed]
+	Reported 64 times (665 total reports)
+	Bug in the 2.6.24 inotify code that got exposed by KDE4 and got fixed in 2.6.25
+	This warning was last seen in version 2.6.24.4, and first seen in 2.6.24-rc8-git4.
+	More info: http://www.kerneloops.org/searchweek.php?search=set_dentry_child_flags
+
+Rank 3: mark_buffer_dirty
+	Reported 43 times (144 total reports)
+	EXT3 bug while hot-removing a USB device
+	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
+
+Rank 4: input_release_device [fixed]
+	Reported 40 times (718 total reports)
+	sysfs refcounting cleanup exposed input layer issues; fixed in 2.6.25-rc9
+	This oops was last seen in version 2.6.25-rc7-git4, and first seen in 2.6.25-rc2.
+	More info: http://www.kerneloops.org/searchweek.php?search=input_release_device
+
+Rank 5: sysfs_add_one
+	Reported 39 times (171 total reports)
+	Various buggy subsystems that register duplicate sysfs files
+	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+
+Rank 6: radeon_cp_init_ring_buffer [out of tree]
+	Reported 28 times (50 total reports)
+	drm.git bug in the radeon driver
+	This oops was last seen in version 2.6.25, and first seen in 2.6.25-rc8-git7.
+	More info: http://www.kerneloops.org/searchweek.php?search=radeon_cp_init_ring_buffer
+
+Rank 7: sysctl_check_lookup [out of tree]
+	Reported 18 times (173 total reports)
+	Bug in the proprietary madwifi driver
+	Oops only shows up in tainted kernels
+	This warning was last seen in version 2.6.24.4, and first seen in 2.6.24-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=sysctl_check_lookup
+
+Rank 8: sk_free [out of tree]
+	Reported 16 times (23 total reports)
+	VMWare driver bug
+	Oops only shows up in tainted kernels
+	This oops was last seen in version 2.6.25, and first seen in 2.6.23.9.
+	More info: http://www.kerneloops.org/searchweek.php?search=sk_free
+
+Rank 9: __ieee80211_rx
+	Warning at net/mac80211/rx.c:2183 in __ieee80211_rx
+	Reported 16 times (176 total reports)
+	Seen with various wireless drivers
+	This warning was last seen in version 2.6.25, and first seen in 2.6.24-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=__ieee80211_rx
+
+Rank 10: read_apic_id
+	Reported 13 times (15 total reports)
+	This oops was last seen in version 2.6.25-git2, and first seen in 2.6.25-rc8.
+	More info: http://www.kerneloops.org/searchweek.php?search=read_apic_id
