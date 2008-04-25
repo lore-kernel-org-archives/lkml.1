@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764078AbYDYQoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbYDYQqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764078AbYDYQoy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbYDYQoq
+	id S1764029AbYDYQqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761150AbYDYQqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:44:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35769 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760851AbYDYQop (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:44:45 -0400
-Date: Fri, 25 Apr 2008 09:37:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-In-Reply-To: <20080425162215.GA16273@elte.hu>
-Message-ID: <alpine.LFD.1.10.0804250925341.2779@woody.linux-foundation.org>
-References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu>
- <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425162215.GA16273@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 25 Apr 2008 12:46:03 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:62939 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759942AbYDYQqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:46:01 -0400
+Message-ID: <48120ABF.1050802@aknet.ru>
+Date: Fri, 25 Apr 2008 20:45:51 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5h8wz7cng7.wl%tiwai@suse.de>	<480CD50F.20706@aknet.ru>	<s5hbq42b3j7.wl%tiwai@suse.de>	<480E2EE5.5040208@aknet.ru>	<s5hiqy9dkhv.wl%tiwai@suse.de>	<480F95BE.60109@aknet.ru>	<s5h3apbd1zx.wl%tiwai@suse.de>	<4811555E.3040509@aknet.ru> <s5hfxta4fem.wl%tiwai@suse.de>
+In-Reply-To: <s5hfxta4fem.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
+Takashi Iwai wrote:
+> Yeah, of course.  Don't mix up with the argument about Kconfig
+> dependency issues.  I just reacted against your statement that input
+> pcspkr driver will be obsoleted.
+Those are the different ones of course.
+For me the dependancy issue is a primary
+problem of course, so the other one I
+simply ducked.
 
-On Fri, 25 Apr 2008, Ingo Molnar wrote:
-> 
-> hm, right now we've got a debug protection in set_fixmap() to make sure 
-> it's only ever called once. So it's going to be a noisy bootup. (but 
-> it's a warning only) The patch below removes that.
+> I actually removed the dependency from snd-pcsp Kconfig again since
+> this causes a dependency loop (at least, kbuild can't handle
+> properly). 
+OK, good to know this. :)
 
-No, I think the warning is good, I should have done some kind of 
-clear_fixmap() after doing the mmap. 
-
-
-But there was actually a much worse problem with my patch: __set_fixmap() 
-is __init. Which means that my patch was just totally broken.
-
-What I really wanted to do was to just follow the page tables and mark it 
-writable temporarily over the whole loop, and get rid of the whole mess.
-
-(We'd need to make __set_fixmap() non-init, and probably return the pte_t 
-pointer that it used, so that we could then just use "native_pte_clear()" 
-on the thing after having done the memcpy()).
-
-I suspect I should have just kept using vmap(), even if I do dislike just 
-how insanely expensive that likely is.
-
-			Linus
+> But anyway, as mentioned in my previous post, snd-pcsp wouldn't be
+> enabled on most of distros' kernels because it cannot be built
+> together with input-pcspkr driver, unfortunately...
+Yes, making them to play well together is
+something to think about too. But I don't
+see how it can affect the distributors.
+If the distro doesn't have the sound enabled,
+then it won't enable snd-pcsp no matter
+what. If it does have the sound enabled,
+then why would it ever want to use pcspkr
+instead of snd-pcsp?
+I see this issue mostly as a theoretical
+one. If you see the real problems with
+the current situation, please let me know.
