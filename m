@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933432AbYDYTEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbYDYTEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933432AbYDYTEd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764933AbYDYSlg
+	id S932774AbYDYTEx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765329AbYDYSlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:41:36 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:7438 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761290AbYDYSki (ORCPT
+	Fri, 25 Apr 2008 14:41:39 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:9995 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764669AbYDYSkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:40:38 -0400
-Message-Id: <20080425183934.149874598@ldl.fc.hp.com>
+	Fri, 25 Apr 2008 14:40:12 -0400
+Message-Id: <20080425183930.822331763@ldl.fc.hp.com>
 References: <20080425183807.366134771@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 12:38:56 -0600
+Date: Fri, 25 Apr 2008 12:38:40 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -26,161 +26,112 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 49/54] PNP: use pnp_get_pnp_resource() in resource assignment functions
-Content-Disposition: inline; filename=pnp-add-get-pnp-resource
+Subject: [patch 33/54] PNP: reduce redundancy in pnp_set_current_resources()
+Content-Disposition: inline; filename=pnp-simplify-proc-functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes PNP_MAX_PORT, etc., uses and removes direct references
-to the pnp_resource_table.
-
-I don't like pnp_get_pnp_resource() and hope that it is temporary,
-but the assignment functions need the pnp_resource (not just the
-struct resource) because they need to fill in the ISAPNP index.
+Use a temporary "res" pointer to replace repeated lookups in
+the pnp resource tables.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
----
- drivers/pnp/base.h     |    3 +++
- drivers/pnp/manager.c  |   16 ++++++++--------
- drivers/pnp/resource.c |   24 ++++++++++++++++++------
- 3 files changed, 29 insertions(+), 14 deletions(-)
-
-Index: work10/drivers/pnp/base.h
+Index: work10/drivers/pnp/interface.c
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-04-25 11:15:13.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-04-25 11:15:14.000000000 -0600
-@@ -21,6 +21,9 @@
- 
- void pnp_init_resource(struct resource *res);
- 
-+struct pnp_resource *pnp_get_pnp_resource(struct pnp_dev *dev,
-+					  unsigned int type, unsigned int num);
-+
- #define PNP_MAX_PORT		40
- #define PNP_MAX_MEM		24
- #define PNP_MAX_IRQ		 2
-Index: work10/drivers/pnp/resource.c
-===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-04-25 11:15:13.000000000 -0600
-+++ work10/drivers/pnp/resource.c	2008-04-25 11:15:14.000000000 -0600
-@@ -499,8 +499,8 @@
- #endif
- }
- 
--struct resource *pnp_get_resource(struct pnp_dev *dev,
--				  unsigned int type, unsigned int num)
-+struct pnp_resource *pnp_get_pnp_resource(struct pnp_dev *dev,
-+					  unsigned int type, unsigned int num)
+--- work10.orig/drivers/pnp/interface.c	2008-04-25 11:14:58.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-04-25 11:15:04.000000000 -0600
+@@ -323,6 +323,7 @@
+ 			  const char *ubuf, size_t count)
  {
- 	struct pnp_resource_table *res = dev->res;
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
++	struct resource *res;
+ 	char *buf = (void *)ubuf;
+ 	int retval = 0;
  
-@@ -508,22 +508,34 @@
- 	case IORESOURCE_IO:
- 		if (num >= PNP_MAX_PORT)
- 			return NULL;
--		return &res->port[num].res;
-+		return &res->port[num];
- 	case IORESOURCE_MEM:
- 		if (num >= PNP_MAX_MEM)
- 			return NULL;
--		return &res->mem[num].res;
-+		return &res->mem[num];
- 	case IORESOURCE_IRQ:
- 		if (num >= PNP_MAX_IRQ)
- 			return NULL;
--		return &res->irq[num].res;
-+		return &res->irq[num];
- 	case IORESOURCE_DMA:
- 		if (num >= PNP_MAX_DMA)
- 			return NULL;
--		return &res->dma[num].res;
-+		return &res->dma[num];
- 	}
- 	return NULL;
- }
-+
-+struct resource *pnp_get_resource(struct pnp_dev *dev,
-+				  unsigned int type, unsigned int num)
-+{
-+	struct pnp_resource *pnp_res;
-+
-+	pnp_res = pnp_get_pnp_resource(dev, type, num);
-+	if (pnp_res)
-+		return &pnp_res->res;
-+
-+	return NULL;
-+}
- EXPORT_SYMBOL(pnp_get_resource);
- 
- static struct pnp_resource *pnp_new_resource(struct pnp_dev *dev, int type)
-Index: work10/drivers/pnp/manager.c
-===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-04-25 11:15:10.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-04-25 11:15:14.000000000 -0600
-@@ -22,13 +22,13 @@
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
- 
--	if (idx >= PNP_MAX_PORT) {
-+	pnp_res = pnp_get_pnp_resource(dev, IORESOURCE_IO, idx);
-+	if (!pnp_res) {
- 		dev_err(&dev->dev, "too many I/O port resources\n");
- 		/* pretend we were successful so at least the manager won't try again */
- 		return 1;
- 	}
- 
--	pnp_res = &dev->res->port[idx];
- 	res = &pnp_res->res;
- 
- 	/* check if this resource has been manually set, if so skip */
-@@ -72,13 +72,13 @@
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
- 
--	if (idx >= PNP_MAX_MEM) {
-+	pnp_res = pnp_get_pnp_resource(dev, IORESOURCE_MEM, idx);
-+	if (!pnp_res) {
- 		dev_err(&dev->dev, "too many memory resources\n");
- 		/* pretend we were successful so at least the manager won't try again */
- 		return 1;
- 	}
- 
--	pnp_res = &dev->res->mem[idx];
- 	res = &pnp_res->res;
- 
- 	/* check if this resource has been manually set, if so skip */
-@@ -138,13 +138,13 @@
- 		5, 10, 11, 12, 9, 14, 15, 7, 3, 4, 13, 0, 1, 6, 8, 2
- 	};
- 
--	if (idx >= PNP_MAX_IRQ) {
-+	pnp_res = pnp_get_pnp_resource(dev, IORESOURCE_IRQ, idx);
-+	if (!pnp_res) {
- 		dev_err(&dev->dev, "too many IRQ resources\n");
- 		/* pretend we were successful so at least the manager won't try again */
- 		return 1;
- 	}
- 
--	pnp_res = &dev->res->irq[idx];
- 	res = &pnp_res->res;
- 
- 	/* check if this resource has been manually set, if so skip */
-@@ -198,12 +198,12 @@
- 		1, 3, 5, 6, 7, 0, 2, 4
- 	};
- 
--	if (idx >= PNP_MAX_DMA) {
-+	pnp_res = pnp_get_pnp_resource(dev, IORESOURCE_DMA, idx);
-+	if (!pnp_res) {
- 		dev_err(&dev->dev, "too many DMA resources\n");
- 		return;
- 	}
- 
--	pnp_res = &dev->res->dma[idx];
- 	res = &pnp_res->res;
- 
- 	/* check if this resource has been manually set, if so skip */
+@@ -382,21 +383,18 @@
+ 				buf += 2;
+ 				while (isspace(*buf))
+ 					++buf;
+-				dev->res.port_resource[nport].start =
+-				    simple_strtoul(buf, &buf, 0);
++				res = &dev->res.port_resource[nport];
++				res->start = simple_strtoul(buf, &buf, 0);
+ 				while (isspace(*buf))
+ 					++buf;
+ 				if (*buf == '-') {
+ 					buf += 1;
+ 					while (isspace(*buf))
+ 						++buf;
+-					dev->res.port_resource[nport].end =
+-					    simple_strtoul(buf, &buf, 0);
++					res->end = simple_strtoul(buf, &buf, 0);
+ 				} else
+-					dev->res.port_resource[nport].end =
+-					    dev->res.port_resource[nport].start;
+-				dev->res.port_resource[nport].flags =
+-				    IORESOURCE_IO;
++					res->end = res->start;
++				res->flags = IORESOURCE_IO;
+ 				nport++;
+ 				if (nport >= PNP_MAX_PORT)
+ 					break;
+@@ -406,21 +404,18 @@
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
+-				dev->res.mem_resource[nmem].start =
+-				    simple_strtoul(buf, &buf, 0);
++				res = &dev->res.mem_resource[nmem];
++				res->start = simple_strtoul(buf, &buf, 0);
+ 				while (isspace(*buf))
+ 					++buf;
+ 				if (*buf == '-') {
+ 					buf += 1;
+ 					while (isspace(*buf))
+ 						++buf;
+-					dev->res.mem_resource[nmem].end =
+-					    simple_strtoul(buf, &buf, 0);
++					res->end = simple_strtoul(buf, &buf, 0);
+ 				} else
+-					dev->res.mem_resource[nmem].end =
+-					    dev->res.mem_resource[nmem].start;
+-				dev->res.mem_resource[nmem].flags =
+-				    IORESOURCE_MEM;
++					res->end = res->start;
++				res->flags = IORESOURCE_MEM;
+ 				nmem++;
+ 				if (nmem >= PNP_MAX_MEM)
+ 					break;
+@@ -430,11 +425,10 @@
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
+-				dev->res.irq_resource[nirq].start =
+-				    dev->res.irq_resource[nirq].end =
++				res = &dev->res.irq_resource[nirq];
++				res->start = res->end =
+ 				    simple_strtoul(buf, &buf, 0);
+-				dev->res.irq_resource[nirq].flags =
+-				    IORESOURCE_IRQ;
++				res->flags = IORESOURCE_IRQ;
+ 				nirq++;
+ 				if (nirq >= PNP_MAX_IRQ)
+ 					break;
+@@ -444,11 +438,10 @@
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
+-				dev->res.dma_resource[ndma].start =
+-				    dev->res.dma_resource[ndma].end =
++				res = &dev->res.dma_resource[ndma];
++				res->start = res->end =
+ 				    simple_strtoul(buf, &buf, 0);
+-				dev->res.dma_resource[ndma].flags =
+-				    IORESOURCE_DMA;
++				res->flags = IORESOURCE_DMA;
+ 				ndma++;
+ 				if (ndma >= PNP_MAX_DMA)
+ 					break;
 
 -- 
