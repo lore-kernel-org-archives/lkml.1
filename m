@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbYDYMOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbYDYMPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760789AbYDYMOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 08:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYDYMOe
+	id S1761675AbYDYMPe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 08:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbYDYMPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 08:14:34 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23672 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914AbYDYMOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 08:14:33 -0400
-Date: Fri, 25 Apr 2008 14:14:27 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Aaron Carroll <aaronc@cse.unsw.edu.au>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-Message-ID: <20080425121427.GR12774@kernel.dk>
-References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk> <48107891.5000308@hp.com> <20080425083809.GG12774@kernel.dk> <4811BDBB.8010604@hp.com> <20080425112543.GQ12774@kernel.dk> <4811C93F.70001@cse.unsw.edu.au>
+	Fri, 25 Apr 2008 08:15:24 -0400
+Received: from rv-out-0708.google.com ([209.85.198.249]:41248 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753770AbYDYMPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 08:15:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ym1wCNXo1u80YvAC4pAVnnqaRviydeUUO7qQYbpgyfI+BnJr4/04Pj7kX5VuDdp5zwM1VNbkbVjEn1bYZ1SjDS7sBPmWVQMDrkPMNMwgEqhLI9kqreIEpyzqGfhDNwzax7DUvtGpv9Tm68xFEwVwPBTA/RDC7RCAALYPJpl4vfA=
+Message-ID: <c4e36d110804250515u713775bdjbb7bfac2d0e83d96@mail.gmail.com>
+Date: Fri, 25 Apr 2008 14:15:22 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+Cc: jirislaby@gmail.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
+In-Reply-To: <20080425.021301.193689806.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4811C93F.70001@cse.unsw.edu.au>
+References: <4811090A.9030809@gmail.com>
+	 <alpine.LFD.1.10.0804241539150.2779@woody.linux-foundation.org>
+	 <4812108D.6020103@gmail.com>
+	 <20080425.021301.193689806.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25 2008, Aaron Carroll wrote:
-> Jens Axboe wrote:
-> >>I have the results from leaving in just the one-hit cache merge
-> >>attempts, and started a run leaving in both that and the back-merge
-> >>rq_hash checks. (The patch below basically undoes patch 3/3 - putting
-> >>back in the addition of rqs onto the hash list, and moves the nomerges
-> >>check below the back merge attempts.)
-> >>
-> >>We /could/ change the tunable to a dial (or a mask) - enabling/disabling
-> >>specific merge attempts, but that seems a bit confusing/complex.
-> >>
-> >>Jens: What do you think?
-> >
-> >I think we should keep it simple. I don't particularly like having a
-> >switch to toggle merges, no one will ever use it. So I'm more inclined
-> >to just disable front merges unconditionally if the theory of where
-> >the cycles are spent holds up. We'll still do front merges on the
-> >one-hit cache, just not spend time looking up an io context and request
-> >in the rbtree for basically no gain.
-> 
-> Front merging is probably a waste of time, but it could also be a hash table
-> lookup if you think the rbtree traversal is sinking too many cycles.
+2008/4/25, David Miller <davem@davemloft.net>:
+> From: Jiri Slaby <jirislaby@gmail.com>
+>
+> Date: Fri, 25 Apr 2008 19:10:37 +0200
+>
+>
+>  > I'm going to bisect it, will be back in few hours ;).
+>
+>
+> Thanks for all of this hard work and investigation Jiri!
+>
 
-The front merges weren't considered important enough to add space for a
-seperate hash table, that is why they are (re)using the normal rb sort
-tree for lookups.
+Well just to show it's not happing only to Jiri:
 
-> I wonder if there's any merit in junking the merge hash (and
-> front-merging in the ioscheds proper) and just having per-process
-> one-hit caches.  That's going to catch the majority of merge cases.
-> For requests that happen to be adjacent by chance, they are just as
-> likely to be back or front merges.
+It's actually shows immediately on my box after suspend-resume...
 
-It's a possibility, the per-process plugging does that. The merge hash
-is fairly cheap though, so unless we ever merge the per-process
-plugging, I don't think it's a good idea to change it.
-
--- 
-Jens Axboe
-
+ ./testf     (Jiri's test code from this thread)
+alloced 0
+WHAT THE HELL (015130f8):
+ff00aa00deadcc22 ff00aa00f0adcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22
+ff00aa00deadcc22 ff00aa00deadcc22
