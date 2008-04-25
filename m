@@ -1,236 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764474AbYDYQyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764282AbYDYQ4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764474AbYDYQyW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbYDYQyK
+	id S1764282AbYDYQ4w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbYDYQ4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:54:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51010 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759904AbYDYQyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:54:07 -0400
-Date: Fri, 25 Apr 2008 18:52:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080425165245.GC19962@elte.hu>
-References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425162215.GA16273@elte.hu> <alpine.LFD.1.10.0804250925341.2779@woody.linux-foundation.org>
+	Fri, 25 Apr 2008 12:56:45 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55958
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756114AbYDYQ4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:56:43 -0400
+Date: Fri, 25 Apr 2008 18:56:40 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
+	operation to happen
+Message-ID: <20080425165639.GA23300@duo.random>
+References: <ec6d8f91b299cf26cce5.1207669444@duo.random> <200804221506.26226.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804250925341.2779@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200804221506.26226.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I somehow lost missed this email in my inbox, found it now because it
+was strangely still unread... Sorry for the late reply!
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> But there was actually a much worse problem with my patch: 
-> __set_fixmap() is __init. Which means that my patch was just totally 
-> broken.
+On Tue, Apr 22, 2008 at 03:06:24PM +1000, Rusty Russell wrote:
+> On Wednesday 09 April 2008 01:44:04 Andrea Arcangeli wrote:
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -1050,6 +1050,15 @@
+> >  				   unsigned long addr, unsigned long len,
+> >  				   unsigned long flags, struct page **pages);
+> >
+> > +struct mm_lock_data {
+> > +	spinlock_t **i_mmap_locks;
+> > +	spinlock_t **anon_vma_locks;
+> > +	unsigned long nr_i_mmap_locks;
+> > +	unsigned long nr_anon_vma_locks;
+> > +};
+> > +extern struct mm_lock_data *mm_lock(struct mm_struct * mm);
+> > +extern void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data);
 > 
-> What I really wanted to do was to just follow the page tables and mark 
-> it writable temporarily over the whole loop, and get rid of the whole 
-> mess.
+> As far as I can tell you don't actually need to expose this struct at all?
+
+Yes, it should be possible to only expose 'struct mm_lock_data;'.
+
+> > +		data->i_mmap_locks = vmalloc(nr_i_mmap_locks *
+> > +					     sizeof(spinlock_t));
 > 
-> (We'd need to make __set_fixmap() non-init, and probably return the 
-> pte_t pointer that it used, so that we could then just use 
-> "native_pte_clear()" on the thing after having done the memcpy()).
+> This is why non-typesafe allocators suck.  You want 'sizeof(spinlock_t *)' 
+> here.
 > 
-> I suspect I should have just kept using vmap(), even if I do dislike 
-> just how insanely expensive that likely is.
+> > +		data->anon_vma_locks = vmalloc(nr_anon_vma_locks *
+> > +					       sizeof(spinlock_t));
+> 
+> and here.
 
-clear_fixmap() is OK. I've made a tree with all these fixlets, in the 
-proper order and with the commit logs tidied up:
+Great catch! (it was temporarily wasting some ram which isn't nice at all)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-x86-fixes3.git for-linus
+> > +	err = -EINTR;
+> > +	i_mmap_lock_last = NULL;
+> > +	nr_i_mmap_locks = 0;
+> > +	for (;;) {
+> > +		spinlock_t *i_mmap_lock = (spinlock_t *) -1UL;
+> > +		for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> ...
+> > +		data->i_mmap_locks[nr_i_mmap_locks++] = i_mmap_lock;
+> > +	}
+> > +	data->nr_i_mmap_locks = nr_i_mmap_locks;
+> 
+> How about you track your running counter in data->nr_i_mmap_locks, leave 
+> nr_i_mmap_locks alone, and BUG_ON(data->nr_i_mmap_locks != nr_i_mmap_locks)?
+> 
+> Even nicer would be to wrap this in a "get_sorted_mmap_locks()" function.
 
-[ i integrated Jiri's commit to before your fix because he really 
-  deserves that commit (and more) for his relentless debugging effort. ]
+I'll try to clean this up further and I'll make a further update for review.
 
-below is the full shortlog and diff. Minimally tested on 64-bit so far.
+> Unfortunately, I just don't think we can fail locking like this.  In your next 
+> patch unregistering a notifier can fail because of it: that not usable.
 
-	Ingo
+Fortunately I figured out we don't really need mm_lock in unregister
+because it's ok to unregister in the middle of the range_begin/end
+critical section (that's definitely not ok for register that's why
+register needs mm_lock). And it's perfectly ok to fail in register().
 
------------------->
+Also it wasn't ok to unpin the module count in ->release as ->release
+needs to 'ret' to get back to the mmu notifier code. And without any
+unregister at all, the module can't be unloaded at all which
+is quite unacceptable...
 
-Ingo Molnar (3):
-      x86: make clear_fixmap() available on 64-bit as well
-      x86: make __set_fixmap() non-init
-      x86: harden kernel code patching
+The logic is to prevent mmu_notifier_register to race with
+mmu_notifier_release because it takes the mm_users pin (implicit or
+explicit, and then mmput just after mmu_notifier_register
+returns). Then _register serializes against all the mmu notifier
+methods (except ->release) with srcu (->release can't run thanks to
+the mm_users pin). The mmu_notifier_mm->lock then serializes the
+modification on the list (register vs unregister) and it ensures one
+and only one between _unregister and _releases calls ->release before
+_unregister returns. All other methods runs freely with srcu. Having
+the guarante that ->release is called just before all pages are freed
+or inside _unregister, allows the module to zap and freeze its
+secondary mmu inside ->release with the race condition of exit()
+against mmu_notifier_unregister internally by the mmu notifier code
+and without dependency on exit_files/exit_mm ordering depending if the
+fd of the driver is open the filetables or in the vma only. The
+mmu_notifier_mm can be reset to 0 only after the last mmdrop.
 
-Jiri Slaby (1):
-      x86: fix text_poke()
-
-Linus Torvalds (1):
-      x86: clean up text_poke()
-
- arch/x86/kernel/alternative.c |   35 +++++++++++++++++++----------------
- arch/x86/mm/init_64.c         |    5 ++---
- include/asm-x86/fixmap.h      |    8 ++++++++
- include/asm-x86/fixmap_32.h   |    8 +++-----
- include/asm-x86/fixmap_64.h   |    5 +++--
- 5 files changed, 35 insertions(+), 26 deletions(-)
-
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index df4099d..2e39830 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -508,24 +508,27 @@ void *text_poke_early(void *addr, const void *opcode, size_t len)
-  */
- void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- {
--	unsigned long flags;
--	char *vaddr;
--	int nr_pages = 2;
-+	static DEFINE_SPINLOCK(poke_lock);
-+	unsigned long flags, bits;
- 
-+	bits = (unsigned long) addr;
- 	BUG_ON(len > sizeof(long));
--	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
--		- ((long)addr & ~(sizeof(long) - 1)));
--	if (kernel_text_address((unsigned long)addr)) {
--		struct page *pages[2] = { virt_to_page(addr),
--			virt_to_page(addr + PAGE_SIZE) };
--		if (!pages[1])
--			nr_pages = 1;
--		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
--		BUG_ON(!vaddr);
--		local_irq_save(flags);
--		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--		local_irq_restore(flags);
--		vunmap(vaddr);
-+	BUG_ON(len & (len-1));
-+	BUG_ON(bits & (len-1));
-+
-+	if (core_kernel_text(bits)) {
-+		unsigned long phys = __pa(addr);
-+		unsigned long offset = phys & ~PAGE_MASK;
-+		unsigned long virt = fix_to_virt(FIX_POKE);
-+		phys &= PAGE_MASK;
-+
-+		WARN_ON(!PageReserved(virt_to_page(addr)));
-+
-+		spin_lock_irqsave(&poke_lock, flags);
-+		set_fixmap(FIX_POKE, phys);
-+		memcpy((void *)(virt + offset), opcode, len);
-+		clear_fixmap(FIX_POKE);
-+		spin_unlock_irqrestore(&poke_lock, flags);
- 	} else {
- 		/*
- 		 * modules are in vmalloc'ed memory, always writable.
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1ff7906..7a81dd0 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -135,7 +135,7 @@ static __init void *spp_getpage(void)
- 	return ptr;
- }
- 
--static __init void
-+static void
- set_pte_phys(unsigned long vaddr, unsigned long phys, pgprot_t prot)
- {
- 	pgd_t *pgd;
-@@ -214,8 +214,7 @@ void __init cleanup_highmap(void)
- }
- 
- /* NOTE: this is meant to be run only at boot */
--void __init
--__set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
-+void __set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
- {
- 	unsigned long address = __fix_to_virt(idx);
- 
-diff --git a/include/asm-x86/fixmap.h b/include/asm-x86/fixmap.h
-index 382eb27..5bd2069 100644
---- a/include/asm-x86/fixmap.h
-+++ b/include/asm-x86/fixmap.h
-@@ -1,5 +1,13 @@
-+#ifndef _ASM_FIXMAP_H
-+#define _ASM_FIXMAP_H
-+
- #ifdef CONFIG_X86_32
- # include "fixmap_32.h"
- #else
- # include "fixmap_64.h"
- #endif
-+
-+#define clear_fixmap(idx)			\
-+	__set_fixmap(idx, 0, __pgprot(0))
-+
-+#endif
-diff --git a/include/asm-x86/fixmap_32.h b/include/asm-x86/fixmap_32.h
-index eb16651..e5db7d5 100644
---- a/include/asm-x86/fixmap_32.h
-+++ b/include/asm-x86/fixmap_32.h
-@@ -10,8 +10,8 @@
-  * Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
-  */
- 
--#ifndef _ASM_FIXMAP_H
--#define _ASM_FIXMAP_H
-+#ifndef _ASM_FIXMAP_32_H
-+#define _ASM_FIXMAP_32_H
- 
- 
- /* used by vmalloc.c, vsyscall.lds.S.
-@@ -55,6 +55,7 @@ enum fixed_addresses {
- 	FIX_HOLE,
- 	FIX_VDSO,
- 	FIX_DBGP_BASE,
-+	FIX_POKE,
- 	FIX_EARLYCON_MEM_BASE,
- #ifdef CONFIG_X86_LOCAL_APIC
- 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
-@@ -121,9 +122,6 @@ extern void reserve_top_address(unsigned long reserve);
- #define set_fixmap_nocache(idx, phys)			\
- 	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
- 
--#define clear_fixmap(idx)			\
--	__set_fixmap(idx, 0, __pgprot(0))
--
- #define FIXADDR_TOP	((unsigned long)__FIXADDR_TOP)
- 
- #define __FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
-diff --git a/include/asm-x86/fixmap_64.h b/include/asm-x86/fixmap_64.h
-index f3d7685..ba80e6b 100644
---- a/include/asm-x86/fixmap_64.h
-+++ b/include/asm-x86/fixmap_64.h
-@@ -8,8 +8,8 @@
-  * Copyright (C) 1998 Ingo Molnar
-  */
- 
--#ifndef _ASM_FIXMAP_H
--#define _ASM_FIXMAP_H
-+#ifndef _ASM_FIXMAP_64_H
-+#define _ASM_FIXMAP_64_H
- 
- #include <linux/kernel.h>
- #include <asm/apicdef.h>
-@@ -37,6 +37,7 @@ enum fixed_addresses {
- 	VSYSCALL_FIRST_PAGE = VSYSCALL_LAST_PAGE
- 			    + ((VSYSCALL_END-VSYSCALL_START) >> PAGE_SHIFT) - 1,
- 	VSYSCALL_HPET,
-+	FIX_POKE,
- 	FIX_DBGP_BASE,
- 	FIX_EARLYCON_MEM_BASE,
- 	FIX_HPET_BASE,
+About the mm_count refcounting for _release and _unregiste: no mmu
+notifier and not even mmu_notifier_unregister and _release can cope
+with mmu_notfier_mm list and srcu structures going away out of
+order. exit_mmap is safe as it holds an mm_count implicitly because
+mmdrop is run after exit_mmap returns. mmu_notifier_unregister is safe
+too as _register takes the mm_count pin. We can't prevent
+mmu_notifer_mm to go away with mm_users as that will screwup the vma
+filedescriptor closure that only happens inside exit_mmap (mm_users
+pinned prevents exit_mmap to run, and it can only be taken temporarily
+until _register returns).
