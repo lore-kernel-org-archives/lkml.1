@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbYDYQqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbYDYQql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764029AbYDYQqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761150AbYDYQqD
+	id S1764170AbYDYQql (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762040AbYDYQqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:46:03 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:62939 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759942AbYDYQqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:46:01 -0400
-Message-ID: <48120ABF.1050802@aknet.ru>
-Date: Fri, 25 Apr 2008 20:45:51 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 25 Apr 2008 12:46:30 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:58250 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764060AbYDYQq3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:46:29 -0400
+Date: Fri, 25 Apr 2008 12:46:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: trivial@kernel.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SYSFS: Correct misleading documentation in params.c.
+Message-ID: <alpine.LFD.1.10.0804251244070.14768@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5h8wz7cng7.wl%tiwai@suse.de>	<480CD50F.20706@aknet.ru>	<s5hbq42b3j7.wl%tiwai@suse.de>	<480E2EE5.5040208@aknet.ru>	<s5hiqy9dkhv.wl%tiwai@suse.de>	<480F95BE.60109@aknet.ru>	<s5h3apbd1zx.wl%tiwai@suse.de>	<4811555E.3040509@aknet.ru> <s5hfxta4fem.wl%tiwai@suse.de>
-In-Reply-To: <s5hfxta4fem.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Takashi Iwai wrote:
-> Yeah, of course.  Don't mix up with the argument about Kconfig
-> dependency issues.  I just reacted against your statement that input
-> pcspkr driver will be obsoleted.
-Those are the different ones of course.
-For me the dependancy issue is a primary
-problem of course, so the other one I
-simply ducked.
+A couple comment fixes related to creating module parameter files
+under /sys.
 
-> I actually removed the dependency from snd-pcsp Kconfig again since
-> this causes a dependency loop (at least, kbuild can't handle
-> properly). 
-OK, good to know this. :)
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> But anyway, as mentioned in my previous post, snd-pcsp wouldn't be
-> enabled on most of distros' kernels because it cannot be built
-> together with input-pcspkr driver, unfortunately...
-Yes, making them to play well together is
-something to think about too. But I don't
-see how it can affect the distributors.
-If the distro doesn't have the sound enabled,
-then it won't enable snd-pcsp no matter
-what. If it does have the sound enabled,
-then why would it ever want to use pcspkr
-instead of snd-pcsp?
-I see this issue mostly as a theoretical
-one. If you see the real problems with
-the current situation, please let me know.
+---
+
+  i have no idea what means that reference to symlinks to
+/sys/parameters.  something long since gone away?
+
+diff --git a/kernel/params.c b/kernel/params.c
+index afc46a2..52ac726 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -372,7 +372,7 @@ int param_get_string(char *buffer, struct kernel_param *kp)
+ 	return strlcpy(buffer, kps->string, kps->maxlen);
+ }
+
+-/* sysfs output in /sys/modules/XYZ/parameters/ */
++/* sysfs output in /sys/module/XYZ/parameters/ */
+
+ extern struct kernel_param __start___param[], __stop___param[];
+
+@@ -506,8 +506,7 @@ param_sysfs_setup(struct module_kobject *mk,
+  * @kparam: module parameters (array)
+  * @num_params: number of module parameters
+  *
+- * Adds sysfs entries for module parameters, and creates a link from
+- * /sys/module/[mod->name]/parameters to /sys/parameters/[mod->name]/
++ * Adds sysfs entries for module parameters.
+  */
+ int module_param_sysfs_setup(struct module *mod,
+ 			     struct kernel_param *kparam,
+@@ -572,7 +571,7 @@ static void __init kernel_param_sysfs_setup(const char *name,
+ }
+
+ /*
+- * param_sysfs_builtin - add contents in /sys/parameters for built-in modules
++ * param_sysfs_builtin - add contents under /sys for built-in modules
+  *
+  * Add module_parameters to sysfs for "modules" built into the kernel.
+  *
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
