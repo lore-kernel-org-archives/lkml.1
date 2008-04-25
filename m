@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761695AbYDYJlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYDYJqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761695AbYDYJlV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 05:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYDYJlP
+	id S1760883AbYDYJqH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 05:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYDYJp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 05:41:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50297 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbYDYJlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 05:41:14 -0400
-Date: Fri, 25 Apr 2008 19:41:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: jbarnes@virtuousgeek.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: gregkh-02-pci tree is now gone
-Message-Id: <20080425194108.78cdafb7.sfr@canb.auug.org.au>
-In-Reply-To: <20080424225104.GA16529@kroah.com>
-References: <20080424225104.GA16529@kroah.com>
-X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__25_Apr_2008_19_41_08_+1000_UOvs_rOHnb8gmK30"
+	Fri, 25 Apr 2008 05:45:56 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:62472 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbYDYJpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 05:45:55 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Priit Laes <plaes@plaes.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [REGRESSION] x86: support for new UV apic
+From: Andi Kleen <andi@firstfloor.org>
+References: <1209098600.3707.13.camel@localhost>
+	<20080425064405.GA23043@elte.hu>
+Date: Fri, 25 Apr 2008 11:45:26 +0200
+In-Reply-To: <20080425064405.GA23043@elte.hu> (Ingo Molnar's message of "Fri, 25 Apr 2008 08:44:06 +0200")
+Message-ID: <87abjixo7d.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Apr 2008 09:38:35.0815 (UTC) FILETIME=[2234FB70:01C8A6B8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__25_Apr_2008_19_41_08_+1000_UOvs_rOHnb8gmK30
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ingo Molnar <mingo@elte.hu> writes:
 
-Hi Greg,
-
-On Thu, 24 Apr 2008 15:51:04 -0700 Greg KH <greg@kroah.com> wrote:
+> * Priit Laes <plaes@plaes.org> wrote:
 >
-> My gregkh-02-pci tree is now gone as Jesse is now the PCI maintainer.
-> I'll let him tell you all where to get his PCI patch queue from as I
-> have no idea.
->=20
-> This means that my other trees have been renamed, so you might want to
-> adjust your scripts accordingly:
-> 	gregkh-01-driver_core 	->  gregkh-01-driver_core   (no change)
-> 	gregkh-03-usb		->  gregkh-02-usb
-> 	gregkh-04-ldp		->  gregkh-03-ldp
+>> Hey,
+>> 
+>> I am getting two following warnings (probable one per each CPU core) 
+>> using the latest Linus's git:
+>> 
+>> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
+>> Modules linked in:
+>> Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
+>
+> thanks - could you check the patch below, does it fix the warnings?
 
-OK, I have fixed up my lists, thanks.
+I think it would have been better to change the WARN_ON to
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+WARN_ON(preemptible() && num_online_cpus() > 1)
 
---Signature=_Fri__25_Apr_2008_19_41_08_+1000_UOvs_rOHnb8gmK30
-Content-Type: application/pgp-signature
+Preemption is actually ok here because this runs before the other
+CPUs are started
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Alternative patch appended.
 
-iD8DBQFIEac4TgG2atn1QN8RAu8ZAJ9VZu5nRJNSCRmBZaCZZ/4tIxRvpQCgjHpZ
-73Q/7aL+LqR5GRvjwEi4fRY=
-=05jf
------END PGP SIGNATURE-----
+-Andi
 
---Signature=_Fri__25_Apr_2008_19_41_08_+1000_UOvs_rOHnb8gmK30--
+---
+
+Don't warn in read_apic_id() when preemptible but only one CPU online.
+
+Signed-off-by: Andi Kleen <andi@firstfloor.org>
+
+Index: linux/arch/x86/kernel/genapic_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genapic_64.c
++++ linux/arch/x86/kernel/genapic_64.c
+@@ -83,7 +83,7 @@ unsigned int read_apic_id(void)
+ {
+ 	unsigned int id;
+ 
+-	WARN_ON(preemptible());
++	WARN_ON(preemptible() && num_online_cpus() > 1);
+ 	id = apic_read(APIC_ID);
+ 	if (uv_system_type >= UV_X2APIC)
+ 		id  |= __get_cpu_var(x2apic_extra_bits);
