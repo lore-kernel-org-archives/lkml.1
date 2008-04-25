@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYDYBNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbYDYBSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYDYBNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 21:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYDYBNL
+	id S1757197AbYDYBSS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYDYBSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 21:13:11 -0400
-Received: from mga03.intel.com ([143.182.124.21]:11855 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbYDYBNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 21:13:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
-   d="scan'208";a="237586690"
-Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
-From: Shaohua Li <shaohua.li@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <200804240833.19614.jbarnes@virtuousgeek.org>
-References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
-	 <87abjjzo84.fsf@basil.nowhere.org>
-	 <1209024126.7479.0.camel@sli10-desk.sh.intel.com>
-	 <200804240833.19614.jbarnes@virtuousgeek.org>
+	Thu, 24 Apr 2008 21:18:06 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:58602 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbYDYBSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 21:18:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BV7B/PiAvc1i4FQZZzFZqL+AM6jgU/3oxD/tug3RmeGksgpOv1K+ix4U7N5ym0xVq7MNAsRIDtOHLPC8vUSjNKTZ7WXiySwqQrpLLQOwQz45nE3Oayd2xSQB66KAXm/i61CeLqFDVIpdWliVfgzbLyUTYDimfXjmKafhC2+xVJc=
+Subject: [PATCH] sched: add statics, don't return void expressions
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 25 Apr 2008 09:16:21 +0800
-Message-Id: <1209086181.1220.7.camel@sli10-desk.sh.intel.com>
+Date: Thu, 24 Apr 2008 18:17:55 -0700
+Message-Id: <1209086275.20088.4.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -32,35 +28,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Noticed by sparse:
+kernel/sched.c:760:20: warning: symbol 'sched_feat_names' was not declared. Should it be static?
+kernel/sched.c:767:5: warning: symbol 'sched_feat_open' was not declared. Should it be static?
+kernel/sched_fair.c:845:3: warning: returning void-valued expression
+kernel/sched.c:4386:3: warning: returning void-valued expression
 
-On Thu, 2008-04-24 at 08:33 -0700, Jesse Barnes wrote:
-> On Thursday, April 24, 2008 1:02 am Shaohua Li wrote:
-> > On Thu, 2008-04-24 at 09:49 +0200, Andi Kleen wrote:
-> > > Shaohua Li <shaohua.li@intel.com> writes:
-> > > > Ok, I'm fine with the patch. Though by default, the policy is to use
-> > > > BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
-> > >
-> > > Once the feature is considered stable it would be nice to make it
-> > > default y
-> > > again. I think any power saving should be on by default (unless
-> > > serious
-> > > issues are known), not off.
-> >
-> > yes, we could do it in next release.
-> 
-> When we move to 'default y' we should also update the Kconfig text, removing 
-> the experimental tag and changing the advice.
-> 
-> And yeah, I'd like to save power by default too, but do you think this has 
-> seen enough test coverage to enable it by default?  Do we know of any 
-> platforms where ASPM causes problems because the BIOS enabled it and we tried 
-> to use it?
-Some chipset or device don't implement ASPM well. It's said some e1000
-card has the bug and maybe other devices. ASPM patch provided API to let
-driver disable ASPM too, hopefully driver can start using it. The
-default policy is using BIOS setting, so only when BIOS uses it we will
-try to use it. At this point, we should be safe unless BIOS is broken.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ kernel/sched.c      |   10 ++++++----
+ kernel/sched_fair.c |    6 ++++--
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-Thanks,
-Shaohua
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0014b03..81ff960 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -757,14 +757,14 @@ const_debug unsigned int sysctl_sched_features =
+ #define SCHED_FEAT(name, enabled)	\
+ 	#name ,
+ 
+-__read_mostly char *sched_feat_names[] = {
++static __read_mostly char *sched_feat_names[] = {
+ #include "sched_features.h"
+ 	NULL
+ };
+ 
+ #undef SCHED_FEAT
+ 
+-int sched_feat_open(struct inode *inode, struct file *filp)
++static int sched_feat_open(struct inode *inode, struct file *filp)
+ {
+ 	filp->private_data = inode->i_private;
+ 	return 0;
+@@ -4382,8 +4382,10 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+ 	struct rq *rq = this_rq();
+ 	cputime64_t tmp;
+ 
+-	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0))
+-		return account_guest_time(p, cputime);
++	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
++		account_guest_time(p, cputime);
++		return;
++	}
+ 
+ 	p->stime = cputime_add(p->stime, cputime);
+ 
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 89fa32b..0bd575e 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -841,8 +841,10 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
+ 	 * queued ticks are scheduled to match the slice, so don't bother
+ 	 * validating it and just reschedule.
+ 	 */
+-	if (queued)
+-		return resched_task(rq_of(cfs_rq)->curr);
++	if (queued) {
++		resched_task(rq_of(cfs_rq)->curr);
++		return;
++	}
+ 	/*
+ 	 * don't let the period tick interfere with the hrtick preemption
+ 	 */
+-- 
+1.5.5.1.270.g89765
+
+
 
