@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbYDYUJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764564AbYDYUNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764134AbYDYUJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 16:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760544AbYDYUJJ
+	id S1764564AbYDYUNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762738AbYDYUM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 16:09:09 -0400
-Received: from pearlgates.net ([82.92.180.13]:53797 "EHLO mail.pearlgates.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760480AbYDYUJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 16:09:08 -0400
-X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Apr 2008 16:09:07 EDT
-Date: Fri, 25 Apr 2008 21:59:05 +0200
-From: Jos van der Ende <seraph@xs4all.nl>
-To: David Miller <davem@davemloft.net>
-Cc: jarkao2@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [SPARC64] INO problem Re: [Bug 10273] New: Sun GEM (PCI) -
- network device doesn't work
-Message-Id: <20080425215905.0d21f5ca.seraph@xs4all.nl>
-In-Reply-To: <20080425.002636.250010462.davem@davemloft.net>
-References: <20080317143624.da313311.akpm@linux-foundation.org>
-	<20080402182655.GA2739@ami.dom.local>
-	<20080425.002636.250010462.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.8; i686-pc-linux-gnu)
+	Fri, 25 Apr 2008 16:12:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45439
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1762636AbYDYUMz convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 16:12:55 -0400
+Date: Fri, 25 Apr 2008 13:12:55 -0700 (PDT)
+Message-Id: <20080425.131255.95495287.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: shigeonx@gmail.com, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: XTP for 2.6.25
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0804251558550.1888@wrl-59.cs.helsinki.fi>
+References: <18b669d80804250151h516788cdqc7931a7ab5a195de@mail.gmail.com>
+	<20080425.015508.254917794.davem@davemloft.net>
+	<Pine.LNX.4.64.0804251558550.1888@wrl-59.cs.helsinki.fi>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please give this patch a try (this is against 2.6.23, which is the
-> version you reported the bug against, let me know if another version
-> is more convenient).
+From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Fri, 25 Apr 2008 16:05:51 +0300 (EEST)
 
-I applied the patch against 2.6.24-gentoo-r4, the current kernel on this machine. It worked fine, with only an offset of 12 lines. Nothing unusual during compile either.
+> On Fri, 25 Apr 2008, David Miller wrote:
+> 
+> > From: "Shigeo N" <shigeonx@gmail.com>
+> > Date: Fri, 25 Apr 2008 17:51:49 +0900
+> > 
+> > > One host(sender) is 2.6.25, but the other(receiver) is 2.6.18.
+> > > I will evaluate again after I upgrade it to 2.6.25.
+> > 
+> > The bug fix isn't in 2.6.25 either.
+> 
+> Sure it is, or git is lying:
+> 
+> $ git-describe dd9e0dda66ba38a2ddd1405ac279894260dc5c36
+> v2.6.25-rc8-1190-gdd9e0dd
 
-The first results are hopeful: I am no longer able to trigger this bug by loading sym53c8xx before sungem, nor by having them both loaded by udev. Nothing odd in dmesg and the machine is completely functional.
+I just submitted the TCP reorder patch for 2.6.25-stable, it applied
+on top of a tree for which I did:
 
+	git checkout -b linux25 v2.6.25
 
-I don't have much time for testing today, but if desired I will gladly do some more testing tomorrow or Sunday.
-
-
--- 
-Jos van der Ende <seraph@xs4all.nl>
+so something is up :-)
