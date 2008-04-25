@@ -1,75 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765856AbYDYSEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765347AbYDYSFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765856AbYDYSEz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764710AbYDYR5c
+	id S1765347AbYDYSFa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762495AbYDYR5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:57:32 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:40412 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764695AbYDYR5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:57:21 -0400
-Date: Fri, 25 Apr 2008 13:57:13 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: more nfsd changes for 2.6.26
-Message-ID: <20080425175713.GA1057@fieldses.org>
-References: <20080423213337.GG8302@fieldses.org>
+	Fri, 25 Apr 2008 13:57:33 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53143 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764497AbYDYR5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 13:57:23 -0400
+Date: Fri, 25 Apr 2008 13:56:09 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 5/19] UML - random driver style fixes
+Message-ID: <20080425175608.GA11184@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080423213337.GG8302@fieldses.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few more nfsd-related changes are available in the git repository at:
+Give random.c a style workover while I'm changing it.
 
-	git://linux-nfs.org/~bfields/linux.git for-linus
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/drivers/random.c |   77 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 40 insertions(+), 37 deletions(-)
 
-Mainly this adds a couple new interfaces from Wendy Cheng which allow
-userland to tell the nfs server to drop locks held on a given filesystem
-(or held by clients accessing the server via a given server ip address),
-helpful in high-availability setups when taking down a server whose job
-is being taken over by another.
-
-(This could have probably gone with the first pull request, but the
-patches were still getting a little work--a small bugfix, and some
-fiddling with function names and such.)
-
-The rest are miscellaneous minor bugfixes and cleanup.
-
---b.
-
-David M. Richter (4):
-      leases: fix a return-value mixup
-      leases: when unlocking, skip locking-related steps
-      leases: move lock allocation earlier in generic_setlease()
-      leases: remove unneeded variable from fcntl_setlease().
-
-J. Bruce Fields (2):
-      locks: don't call ->copy_lock methods on return of conflicting locks
-      nfsd: don't allow setting ctime over v4
-
-James Lentini (1):
-      Update to NFS/RDMA documentation
-
-Wendy Cheng (2):
-      lockd: unlock lockd locks associated with a given server ip
-      lockd: unlock lockd locks held for a certain filesystem
-
- Documentation/filesystems/nfs-rdma.txt |   14 ++++--
- fs/lockd/svclock.c                     |    2 +-
- fs/lockd/svcsubs.c                     |   69 ++++++++++++++++++++++++++++----
- fs/locks.c                             |   32 ++++++++-------
- fs/nfsd/nfs4state.c                    |    3 -
- fs/nfsd/nfs4xdr.c                      |   14 ------
- fs/nfsd/nfsctl.c                       |   65 ++++++++++++++++++++++++++++++
- include/linux/fs.h                     |    1 +
- include/linux/lockd/lockd.h            |    8 +++-
- include/linux/nfsd/nfsd.h              |    2 +-
- 10 files changed, 162 insertions(+), 48 deletions(-)
-
+Index: linux-2.6-git/arch/um/drivers/random.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/drivers/random.c	2008-02-06 12:20:23.000000000 -0500
++++ linux-2.6-git/arch/um/drivers/random.c	2008-02-06 12:24:05.000000000 -0500
+@@ -1,4 +1,5 @@
+-/* Copyright (C) 2005 Jeff Dike <jdike@addtoit.com> */
++/* Copyright (C) 2005 - 2008 Jeff Dike <jdike@{linux.intel,addtoit}.com> */
++
+ /* Much of this ripped from drivers/char/hw_random.c, see there for other
+  * copyright.
+  *
+@@ -35,7 +36,7 @@ static int rng_dev_open (struct inode *i
+ 	/* enforce read-only access to this chrdev */
+ 	if ((filp->f_mode & FMODE_READ) == 0)
+ 		return -EINVAL;
+-	if (filp->f_mode & FMODE_WRITE)
++	if ((filp->f_mode & FMODE_WRITE) != 0)
+ 		return -EINVAL;
+ 
+ 	return 0;
+@@ -44,31 +45,31 @@ static int rng_dev_open (struct inode *i
+ static atomic_t host_sleep_count = ATOMIC_INIT(0);
+ 
+ static ssize_t rng_dev_read (struct file *filp, char __user *buf, size_t size,
+-                             loff_t * offp)
++			     loff_t *offp)
+ {
+-        u32 data;
+-        int n, ret = 0, have_data;
++	u32 data;
++	int n, ret = 0, have_data;
+ 
+-        while(size){
+-                n = os_read_file(random_fd, &data, sizeof(data));
+-                if(n > 0){
+-                        have_data = n;
+-                        while (have_data && size) {
+-                                if (put_user((u8)data, buf++)) {
+-                                        ret = ret ? : -EFAULT;
+-                                        break;
+-                                }
+-                                size--;
+-                                ret++;
+-                                have_data--;
+-                                data>>=8;
+-                        }
+-                }
+-                else if(n == -EAGAIN){
++	while (size) {
++		n = os_read_file(random_fd, &data, sizeof(data));
++		if (n > 0) {
++			have_data = n;
++			while (have_data && size) {
++				if (put_user((u8) data, buf++)) {
++					ret = ret ? : -EFAULT;
++					break;
++				}
++				size--;
++				ret++;
++				have_data--;
++				data >>= 8;
++			}
++		}
++		else if (n == -EAGAIN) {
+ 			DECLARE_WAITQUEUE(wait, current);
+ 
+-                        if (filp->f_flags & O_NONBLOCK)
+-                                return ret ? : -EAGAIN;
++			if (filp->f_flags & O_NONBLOCK)
++				return ret ? : -EAGAIN;
+ 
+ 			atomic_inc(&host_sleep_count);
+ 			reactivate_fd(random_fd, RANDOM_IRQ);
+@@ -85,8 +86,10 @@ static ssize_t rng_dev_read (struct file
+ 				ignore_sigio_fd(random_fd);
+ 				deactivate_fd(random_fd, RANDOM_IRQ);
+ 			}
+-                }
+-                else return n;
++		}
++		else
++			return n;
++
+ 		if (signal_pending (current))
+ 			return ret ? : -ERESTARTSYS;
+ 	}
+@@ -120,33 +123,33 @@ static int __init rng_init (void)
+ {
+ 	int err;
+ 
+-        err = os_open_file("/dev/random", of_read(OPENFLAGS()), 0);
+-        if(err < 0)
+-                goto out;
++	err = os_open_file("/dev/random", of_read(OPENFLAGS()), 0);
++	if (err < 0)
++		goto out;
+ 
+-        random_fd = err;
++	random_fd = err;
+ 
+ 	err = um_request_irq(RANDOM_IRQ, random_fd, IRQ_READ, random_interrupt,
+ 			     IRQF_DISABLED | IRQF_SAMPLE_RANDOM, "random",
+ 			     NULL);
+-        if(err)
++	if (err)
+ 		goto err_out_cleanup_hw;
+ 
+ 	sigio_broken(random_fd, 1);
+ 
+ 	err = misc_register (&rng_miscdev);
+ 	if (err) {
+-		printk (KERN_ERR RNG_MODULE_NAME ": misc device register failed\n");
++		printk (KERN_ERR RNG_MODULE_NAME ": misc device register "
++			"failed\n");
+ 		goto err_out_cleanup_hw;
+ 	}
++out:
++	return err;
+ 
+- out:
+-        return err;
+-
+- err_out_cleanup_hw:
++err_out_cleanup_hw:
+ 	os_close_file(random_fd);
+-        random_fd = -1;
+-        goto out;
++	random_fd = -1;
++	goto out;
+ }
+ 
+ /*
