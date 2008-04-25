@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYDYHQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYDYHRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbYDYHQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYDYHQi
+	id S1759247AbYDYHRo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYDYHRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:16:38 -0400
-Received: from mga02.intel.com ([134.134.136.20]:49782 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753156AbYDYHQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:16:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
-   d="scan'208";a="274597219"
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-In-Reply-To: <20080425071258.GA4460@Chamillionaire.breakpoint.cc>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com>
-	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
-	 <1208333949.4322.5.camel@caritas-dev.intel.com>
-	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
-	 <1208403403.4322.27.camel@caritas-dev.intel.com>
-	 <20080423223221.GB16683@Chamillionaire.breakpoint.cc>
-	 <1209093077.20936.24.camel@caritas-dev.intel.com>
-	 <20080425071258.GA4460@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Apr 2008 15:21:27 +0800
-Message-Id: <1209108087.20936.30.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 25 Apr 2008 07:16:32.0360 (UTC) FILETIME=[49D4F680:01C8A6A4]
+	Fri, 25 Apr 2008 03:17:37 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:45857 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbYDYHRh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 03:17:37 -0400
+Date: Fri, 25 Apr 2008 09:17:32 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 00/24] Unify integer type definitions, and add fixed type
+ constructor macros
+In-Reply-To: <1209078352-7593-1-git-send-email-hpa@zytor.com>
+Message-ID: <Pine.LNX.4.64.0804250915030.21224@anakin>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Sebastian,
+On Thu, 24 Apr 2008, H. Peter Anvin wrote:
+> This patchset unifies the integer definitions across all the
+> <asm-*/types.h> files, replacing them with two asm-generic files, one
+> for the LL64 model (all 32-bit architectures plus x86-64) and one for
+> the L64 model (all other 64-bit architectures.)
 
-On Fri, 2008-04-25 at 09:12 +0200, Sebastian Siewior wrote:
-> * Huang, Ying | 2008-04-25 11:11:17 [+0800]:
-> 
-> >Hi, Sebastian,
-> Hi Huang,
-> 
-> >So I think the reason maybe the read/write port throughput of CPU.
-> Ah so it is just a local problem you say? I may get my fingers on
-> another amd box....
+Just a minor nitpick, what about calling them LP32 and LP64, like
+everybody else does?
+I.e. asm-generic/types-lp{32,64}.h?
 
-I mean the read/write port design difference between CPU
-micro-architecture. It is not a local problem. Sorry for my English.
+Gr{oetje,eeting}s,
 
-> >I changed the patches to group the read or write together instead of
-> >interleaving. Can you help me to test these new patches? The new patches
-> >is attached with the mail.
-> Sure.
-Thank you very much.
+						Geert
 
-Best Regards,
-Huang Ying
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
