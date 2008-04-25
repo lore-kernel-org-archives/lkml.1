@@ -1,75 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764228AbYDYVHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764495AbYDYVNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764228AbYDYVHX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 17:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760360AbYDYVHG
+	id S1764495AbYDYVNJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 17:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759929AbYDYVM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 17:07:06 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58255 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758628AbYDYVHF (ORCPT
+	Fri, 25 Apr 2008 17:12:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57321 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759080AbYDYVM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 17:07:05 -0400
-Date: Sat, 26 Apr 2008 00:06:58 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>
-cc: shigeonx@gmail.com, andi@firstfloor.org,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
-Subject: Re: XTP for 2.6.25
-In-Reply-To: <20080425.131255.95495287.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0804252353550.9132@wrl-59.cs.helsinki.fi>
-References: <18b669d80804250151h516788cdqc7931a7ab5a195de@mail.gmail.com>
- <20080425.015508.254917794.davem@davemloft.net>
- <Pine.LNX.4.64.0804251558550.1888@wrl-59.cs.helsinki.fi>
- <20080425.131255.95495287.davem@davemloft.net>
+	Fri, 25 Apr 2008 17:12:57 -0400
+Date: Fri, 25 Apr 2008 17:12:50 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Announce: Semaphore-Removal tree
+Message-ID: <20080425211250.GA13858@infradead.org>
+References: <20080425170021.GH14990@parisc-linux.org> <1209155917.12461.46.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-213856561-1209157618=:9132"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209155917.12461.46.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Apr 25, 2008 at 01:38:37PM -0700, Daniel Walker wrote:
+> I was reviewing your patches, and I don't like the semaphore to spinlock
+> changes.. There's no reason to start adding spinlocks, unless it's
+> really performance sensitive which none of those places are.. 
 
----696208474-213856561-1209157618=:9132
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Yes, there is.  The spinlock is our most efficient locking primitive
+for the normal mostly un-contentded case.  Please get out of your
+realtime-ghetto.
 
-On Fri, 25 Apr 2008, David Miller wrote:
-
-> From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
-> Date: Fri, 25 Apr 2008 16:05:51 +0300 (EEST)
-> 
-> > On Fri, 25 Apr 2008, David Miller wrote:
-> > 
-> > > From: "Shigeo N" <shigeonx@gmail.com>
-> > > Date: Fri, 25 Apr 2008 17:51:49 +0900
-> > > 
-> > > > One host(sender) is 2.6.25, but the other(receiver) is 2.6.18.
-> > > > I will evaluate again after I upgrade it to 2.6.25.
-> > > 
-> > > The bug fix isn't in 2.6.25 either.
-> > 
-> > Sure it is, or git is lying:
-> > 
-> > $ git-describe dd9e0dda66ba38a2ddd1405ac279894260dc5c36
-> > v2.6.25-rc8-1190-gdd9e0dd
-> 
-> I just submitted the TCP reorder patch for 2.6.25-stable, it applied
-> on top of a tree for which I did:
-> 
-> 	git checkout -b linux25 v2.6.25
-> 
-> so something is up :-)
-
-Of course I was wrong :-), misintepreted git-describe's result as it 
-cannot prove what I was trying to make it to prove (basically it was
-reporting just the latest net-2.6 -> net-2.6.26 merge of yours, while 
-that doesn't tell anything about entry of a commit to Linus' tree).
-
-...Sorry about the noise.
-
--- 
- i.
----696208474-213856561-1209157618=:9132--
