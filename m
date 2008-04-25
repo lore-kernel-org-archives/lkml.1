@@ -1,225 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbYDYPTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYDYPVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600AbYDYPTt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 11:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYDYPTk
+	id S1761479AbYDYPVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 11:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYDYPUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 11:19:40 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41944 "EHLO gir.skynet.ie"
+	Fri, 25 Apr 2008 11:20:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48719 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbYDYPTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 11:19:39 -0400
-Date: Fri, 25 Apr 2008 16:19:00 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: wli@holomorphy.com, agl@us.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Reserve huge pages for reliable MAP_PRIVATE hugetlbfs mappings
-Message-ID: <20080425151859.GA2094@csn.ul.ie>
-References: <20080421183621.GA13100@csn.ul.ie> <20080425142813.GA27530@shadowen.org>
+	id S1752370AbYDYPUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 11:20:52 -0400
+Date: Fri, 25 Apr 2008 17:19:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080425151931.GA25510@elte.hu>
+References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080425142813.GA27530@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (25/04/08 15:28), Andy Whitcroft didst pronounce:
-> > <SNIP>
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Mon, 28 Apr 2008, Jiri Slaby wrote:
 > > 
-> > Opinions?
+> > Thanks. Bisected mm down to git-x86.patch, bisected git-x86-latest 
+> > down to x86: enhance DEBUG_RODATA support - alternatives The patch 
+> > below fixes the problem for me. Comments welcome.
 > 
-> [This is one of those patches which is best read applied, diff has not
-> been friendly to the reviewer.]
+> You're a hero, Jiri.
+
+indeed!
+
+> And that also explains why I didn't see it - I don't do modules.
+
+neither does my auto-test :-/
+
+Suspend/resume goes from SMP to UP and then back - and triggers all the 
+instrument patching code. I suspect we should/could have seen similar 
+problems with a pure CPU hotplug stress-test, on a modular kernel.
+
+> Thanks a heap.
 > 
-
-Yeah, I noticed that all right. Will see can it be fixed up in a future
-revision.
-
-> Overall I think we should be sanitising these semantics.  So I would
-> like to see this stack progressed.
+> > The 0xf0 pattern comes from alternatives_smp_lock: text_poke(*ptr, 
+> > ((unsigned char []){0xf0}), 1);
 > 
+> And we should really add a lot more sanity checking there.
 
-Right.
+yeah.
 
-> > <SNIP>
-> > +
-> > +static void hugetlb_vm_open(struct vm_area_struct *vma)
-> > +{
-> > +	if (!(vma->vm_flags & VM_MAYSHARE))
-> > +		set_vma_resv_huge_pages(vma, 0);
-> > +}
-> 
-> Ok, you zap out the reservation when the VMA is opened.  How does that
-> tie in with the VMA modifications which occur when we mprotect a page in
-> the middle of a map?
-> 
+incidentally, this bug was fixed by Mathieu yesterday but the full 
+impact of the bug was not realized. Below is that patch from 
+sched-devel.
 
-Umm.... Badly.
+i'm wondering what the best sanity checking would be. What we want is to 
+be sure the patch we modify is truly a kernel or module text page.  
 
-> From my reading of vma_adjust and vma_split, I am not convinced you
-> would maintain the reservation correctly. I suspect that the original
-> VMA will retain the whole reservation which it will then not be able to
-> use. 
+Perhaps we should start marking all kernel/module text pages with 
+PageReserved? That way we can not corrupt any userspace/pagecache page. 
+(and we'd clear PageReserved on module unload)
 
-You're right. The only raw of light here is that the reservation should
-not leak. On exit, the VMA will be closed and the reserve given back on the
-assumption it was pages reserved but not faulted. Not a great consolation,
-this is still wrong.
+	Ingo
 
-> The new VMAs would not have any reservation and might then fail on
-> fault dispite the total reservation being sufficient.
-> 
+------------------------->
+Subject: Fix sched-devel text_poke
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Thu, 24 Apr 2008 11:03:33 -0400
 
-Correct. It would get nailed by this check.
+Use core_text_address() instead of kernel_text_address(). Deal with modules in
+the same way used for the core kernel.
 
-        /*
-         * A child process with MAP_PRIVATE mappings created by their parent
-         * have no page reserves. This check ensures that reservations are
-         * not "stolen". The child may still get SIGKILLed
-         */
-        if (!(vma->vm_flags & VM_MAYSHARE) &&
-                        !vma_resv_huge_pages(vma) &&
-                        free_huge_pages - resv_huge_pages == 0)
-                return NULL;
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/alternative.c |   38 ++++++++++++++++++--------------------
+ 1 file changed, 18 insertions(+), 20 deletions(-)
 
-I will try altering dup_mmap() to reset the reserves during fork() instead
-of vm_ops->open(). The vm_ops->close() should still be ok.
-
-> > +
-> > +static void hugetlb_vm_close(struct vm_area_struct *vma)
-> > +{
-> > +	unsigned long reserve = vma_resv_huge_pages(vma);
-> > +	if (reserve)
-> > +		hugetlb_acct_memory(-reserve);
-> > +}
-> > +
-> >  struct vm_operations_struct hugetlb_vm_ops = {
-> >  	.fault = hugetlb_vm_op_fault,
-> > +	.close = hugetlb_vm_close,
-> > +	.open = hugetlb_vm_open,
-> >  };
-> >  
-> >  static pte_t make_huge_pte(struct vm_area_struct *vma, struct page *page,
-> > @@ -1223,52 +1305,30 @@ static long region_truncate(struct list_
-> >  	return chg;
-> >  }
-> >  
-> > -static int hugetlb_acct_memory(long delta)
-> > +int hugetlb_reserve_pages(struct inode *inode,
-> > +					long from, long to,
-> > +					struct vm_area_struct *vma)
-> >  {
-> > -	int ret = -ENOMEM;
-> > +	long ret, chg;
-> >  
-> > -	spin_lock(&hugetlb_lock);
-> >  	/*
-> > -	 * When cpuset is configured, it breaks the strict hugetlb page
-> > -	 * reservation as the accounting is done on a global variable. Such
-> > -	 * reservation is completely rubbish in the presence of cpuset because
-> > -	 * the reservation is not checked against page availability for the
-> > -	 * current cpuset. Application can still potentially OOM'ed by kernel
-> > -	 * with lack of free htlb page in cpuset that the task is in.
-> > -	 * Attempt to enforce strict accounting with cpuset is almost
-> > -	 * impossible (or too ugly) because cpuset is too fluid that
-> > -	 * task or memory node can be dynamically moved between cpusets.
-> > -	 *
-> > -	 * The change of semantics for shared hugetlb mapping with cpuset is
-> > -	 * undesirable. However, in order to preserve some of the semantics,
-> > -	 * we fall back to check against current free page availability as
-> > -	 * a best attempt and hopefully to minimize the impact of changing
-> > -	 * semantics that cpuset has.
-> > +	 * Shared mappings and read-only mappings should based their reservation
-> > +	 * on the number of pages that are already allocated on behalf of the
-> > +	 * file. Private mappings that are writable need to reserve the full
-> > +	 * area. Note that a read-only private mapping that subsequently calls
-> > +	 * mprotect() to make it read-write may not work reliably
-> >  	 */
-> > -	if (delta > 0) {
-> > -		if (gather_surplus_pages(delta) < 0)
-> > -			goto out;
-> > -
-> > -		if (delta > cpuset_mems_nr(free_huge_pages_node)) {
-> > -			return_unused_surplus_pages(delta);
-> > -			goto out;
-> > -		}
-> > +	if (vma->vm_flags & VM_SHARED)
-> > +		chg = region_chg(&inode->i_mapping->private_list, from, to);
-> > +	else {
-> > +		if (vma->vm_flags & VM_MAYWRITE)
-> > +			chg = to - from;
-> > +		else
-> > +			chg = region_chg(&inode->i_mapping->private_list,
-> > +								from, to);
-> 
-> In the read-only case you only create a reservation for the first mmap
-> of a particular offset in the file.  I do not think this will work as
-> intended. 
-
-You're right.
-
-> If we consider a process which forks, and each process then
-> mmaps the same offset.  The first will get a reservation for its mmap,
-> the second will not.  This seems to violate the "mapper is guarenteed
-> to get sufficient pages" guarentee for the second mapper.  As the
-> pages are missing and read-only we know that we actually could share the
-> pages so in some sense this might make sense _if_ we could find and
-> share the pages at fault time.  Currently we do not have the information
-> required to find these pages so we would have to allocate pages for each
-> mmap.
-> 
-> As things stand I think that we should be using 'chg = to - from' for
-> all private mappings.  As each mapping is effectivly independant.
-> 
-> > +		set_vma_resv_huge_pages(vma, chg);
-> 
-
-Agreed. It's also a case that mprotect() to PROT_WRITE is not handled by this
-patch at all. chg = to - from; appears to be the way to go for a multitute
-of reasons.
-
-> Whats not clear from the diff is that this change leaves us with two
-> cases where we apply region_chg() and one where we do not, but we then
-> always apply region_add().  Now when writing that region code I intended
-> the region_chg/region_add as prepare/commit pair with the former
-> performing any memory allocation we might require.  It is not safe to
-> call region_add without first calling region_chg.  Yes the names are not
-> helpful.  That region_add probabally should be:
-> 
->         if (vma->vm_flags & VM_SHARED || !(vma->vm_flags & VM_MAYWRITE))
-> 		region_add(&inode->i_mapping->private_list, from, to);
-> 
-
-Big oops on my part. You're right again.
-
-> 
-> >  	}
-> > -
-> > -	ret = 0;
-> > -	if (delta < 0)
-> > -		return_unused_surplus_pages((unsigned long) -delta);
-> > -
-> > -out:
-> > -	spin_unlock(&hugetlb_lock);
-> > -	return ret;
-> > -}
-> > -
-> > -int hugetlb_reserve_pages(struct inode *inode, long from, long to)
-> > -{
-> > -	long ret, chg;
-> > -
-> > -	chg = region_chg(&inode->i_mapping->private_list, from, to);
-> > +
-> >  	if (chg < 0)
-> >  		return chg;
-> 
-
-Thanks Andy.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Index: linux/arch/x86/kernel/alternative.c
+===================================================================
+--- linux.orig/arch/x86/kernel/alternative.c
++++ linux/arch/x86/kernel/alternative.c
+@@ -511,31 +511,29 @@ void *__kprobes text_poke(void *addr, co
+ 	unsigned long flags;
+ 	char *vaddr;
+ 	int nr_pages = 2;
++	struct page *pages[2];
++	int i;
+ 
+-	BUG_ON(len > sizeof(long));
+-	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
+-		- ((long)addr & ~(sizeof(long) - 1)));
+-	if (kernel_text_address((unsigned long)addr)) {
+-		struct page *pages[2] = { virt_to_page(addr),
+-			virt_to_page(addr + PAGE_SIZE) };
+-		if (!pages[1])
+-			nr_pages = 1;
+-		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+-		BUG_ON(!vaddr);
+-		local_irq_save(flags);
+-		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+-		local_irq_restore(flags);
+-		vunmap(vaddr);
++	if (!core_kernel_text((unsigned long)addr)) {
++		pages[0] = vmalloc_to_page(addr);
++		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+ 	} else {
+-		/*
+-		 * modules are in vmalloc'ed memory, always writable.
+-		 */
+-		local_irq_save(flags);
+-		memcpy(addr, opcode, len);
+-		local_irq_restore(flags);
++		pages[0] = virt_to_page(addr);
++		pages[1] = virt_to_page(addr + PAGE_SIZE);
+ 	}
++	BUG_ON(!pages[0]);
++	if (!pages[1])
++		nr_pages = 1;
++	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
++	BUG_ON(!vaddr);
++	local_irq_save(flags);
++	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
++	local_irq_restore(flags);
++	vunmap(vaddr);
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
++	for (i = 0; i < len; i++)
++		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
+ 	return addr;
+ }
