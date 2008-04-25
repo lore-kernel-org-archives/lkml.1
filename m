@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbYDYPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYDYPys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbYDYPxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 11:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYDYPxK
+	id S1763289AbYDYPys (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 11:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759902AbYDYPyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 11:53:10 -0400
-Received: from ns.store20.com ([212.7.7.16]:47367 "EHLO store20.com"
+	Fri, 25 Apr 2008 11:54:40 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:41682 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756358AbYDYPxJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 11:53:09 -0400
-Subject: Re: [REGRESSION] x86: support for new UV apic
-From: Priit Laes <plaes@plaes.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jack Steiner <steiner@sgi.com>
-In-Reply-To: <87abjixo7d.fsf@basil.nowhere.org>
-References: <1209098600.3707.13.camel@localhost>
-	 <20080425064405.GA23043@elte.hu>  <87abjixo7d.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Fri, 25 Apr 2008 18:53:02 +0300
-Message-Id: <1209138782.6899.0.camel@localhost>
+	id S1756889AbYDYPyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 11:54:40 -0400
+Date: Fri, 25 Apr 2008 17:54:23 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: post-2.6.25 locks up hard without any message
+Message-ID: <20080425175423.4bfd1c7b@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ühel kenal päeval, R, 2008-04-25 kell 11:45, kirjutas Andi Kleen:
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > * Priit Laes <plaes@plaes.org> wrote:
-> >
-> >> Hey,
-> >> 
-> >> I am getting two following warnings (probable one per each CPU core) 
-> >> using the latest Linus's git:
-> >> 
-> >> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
-> >> Modules linked in:
-> >> Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
-> >
-> > thanks - could you check the patch below, does it fix the warnings?
-> 
-> I think it would have been better to change the WARN_ON to
-> 
-> WARN_ON(preemptible() && num_online_cpus() > 1)
-> 
-> Preemption is actually ok here because this runs before the other
-> CPUs are started
-> 
-> Alternative patch appended.
+Something that was merged this window has made my life a bit difficult.
+My machine (a Thinkpad R61) locks up hard after a few minutes. There is
+no output on the console and no blinking keyboard leds, so it doesn't
+look like it's a panic.
 
-Worksforme :)
+My current HEAD is v2.6.25-3530-g94bc891 but I saw it in
+v2.6.25-2519-g3925e6f as well.
 
---
-Priit Laes
+Any ideas or is it time for everyone's favourite git tool?
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
