@@ -1,127 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932210AbYDYXFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbYDYXF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932210AbYDYXFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 19:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYDYXFd
+	id S933231AbYDYXF7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 19:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760485AbYDYXFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 19:05:33 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:64605 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754988AbYDYXFc (ORCPT
+	Fri, 25 Apr 2008 19:05:37 -0400
+Received: from cpc4-cbly1-0-0-cust583.glfd.cable.ntl.com ([86.16.162.72]:37316
+	"EHLO crisp.demon.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758435AbYDYXFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 19:05:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAD8AEkhMROPA/2dsb2JhbACBU6p5
-Date: Fri, 25 Apr 2008 19:00:28 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, systemtap@sources.redhat.com
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080425230028.GC31226@Krystal>
-References: <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:34:20 up 56 days, 18:45,  7 users,  load average: 0.52, 0.68,
-	0.56
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 25 Apr 2008 19:05:36 -0400
+Date: Sat, 26 Apr 2008 00:05:28 +0100
+From: paul <fox@crisp.demon.co.uk>
+Message-Id: <200804252305.m3PN5SFL008798@crisp.demon.co.uk>
+Reply-To: fox@crisp.demon.co.uk
+To: t-nishiie@np.css.fujitsu.com, bart.vanassche@gmail.com
+Subject: RE: dtrace for linux
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: CRiSP-Mail v4.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+
+> >> On Sun, Apr 20, 2008 at 1:17 AM,  <fox@crisp.demon.co.uk> wrote:
+> >>>
+> >>>  I would like to announce that I am working on dtrace for Linux.
+> >>>  I have the userland dtrace binary compiled, along with the first
+> >>>  pre-pre-alpha dtracedrv.ko module loaded into my kernel.
+> >> 
+> >> This is great news. How will this dtrace implementation differ from
+> >> SystemTap (http://sourceware.org/systemtap/) ?
+> >> 
+> >> Bart.
+> >> 
+> >> 
+> >
+> >Hello Bart,
+> >
+> >
+> >I dont know systemtap all that well, other than what i have
+> >read on the net and browsed in the source. systemtap is similar,
+> >but dtrace provides a high level functional language (D) and
+> >a set of methodologies and scripts which mean learning/training
+> >will make it easier to use.
 > 
+> Hello,
 > 
-> On Fri, 25 Apr 2008, Mathieu Desnoyers wrote:
-> > 
-> > The point is to provide a way to dynamically enable code at runtime
-> > without noticeable performance impact on the system.
+>   SystemTAP is the tool developed in order to do the same thing 
+> as Dtrace. When development of SystemTAP started, Dtrace was not
+>  able to be used with restriction by the license at linux. The 
+> difference in both SystemTAP and Dtrace is produced by avoiding 
+> being based on mounting peculiar to linux, and a license.
 > 
-> Quite frankly, maybe I'm a bit dense, but why don't you just recompile the 
-> whole original function (at run-time), load that new version of a function 
-> as a mini-module, and then insert a marker at the top of the old function 
-> that just does a "jmp replacementfunction".
+>   By the way, aren't any ideas found in order to mitigate the 
+> load when acquiring trace? If load when having taken trace as 
+> for LTTng as for SystemTAP is too heavy, I feel. For example, 
+> it is desirable that trace with lighter load can be taken by the
+>  limiting conditions of obtaining the trace result only for 
+> several seconds until panic occurs. 
 > 
-> That has _zero_ cost for the non-marker case, and allows you to do pretty 
-> much any arbitrary code changes for the marker case.
-> 
-> It's also a much simpler replacement.
-> 
+> Regards
 
-This idea has been considered a few years ago at OLS in the tracing BOF
-if I remember well.  The results were this : First, there is no way to
-guarantee that no code path, nor any return address from any function,
-interrupt, sleeping thread, will return to the "old" version of the
-function. Nor is it possible to determine when a quiescent state is
-reached. Therefore, we couldn't see how we can do the teardown.
+I'm not really taking part in the licensing discussion - its complex,
+and partially personal, and I am not in a good position to advise
+either way. I am not seeking to close the source or make $$$ out of it,
+so from a 'free' point of view, its something the receiver will need
+to decide for themselves. At best, I am adding something to the free-pool,
+and not claiming any innovation or righs over the code.
 
-The second point is dependency between execution flow and variables. If
-we don't do a complete copy of the variables (which I don't see how we
-can do atomically), we will have to share the variables between the old
-and the new copies of the functions. However, some variables might
-encode information about the execution flow of the program and depend on
-the actual address at which the code is linked (function pointers for
-instance). Stuff like "goto *addr" would also break.
+The subtle difference between systemtap and dtrace - as i see it -
+is that dtrace has a well thought out language. Systemtap doesnt.
+The mechanisms of both are similar at a base level, but in practise
+dtrace is designed to be more 'modular'. Sun spent a lot of effort
+to put the hooks in to let dtrace be effective. Some of the hooks are
+available in linux - some not. So its a matter of quality of implementation.
 
+As for performance - they are possibly similar but based on different
+principals. Dtrace (like systemtap) costs nothing if you dont use it.
+If you do, the performance impact depends on the quality of your
+scripts (but cannot cause a kernel panic or infinite loop - in theory).
+Systemtap doesnt make such guarantees. The whole raison for d'etre
+for dtrace/systemtap is that when you need it, you need it *bad*. And
+the minor perf hit is likely acceptable for your specific use-case.
 
-> Yeah, that "jmp replacementfunction" is five or more bytes, but you can 
-> trivially do the actual _replacement_ write by writing it first as a 
-> single-byte debug trap, and after that has been written, write the target 
-> address after it, and then write the first byte of the "jmp" instruction 
-> last. In the (very unlikely) case that another CPU hits that debug trap, 
-> you just fix it up in the debug handler - you only need a single datum of 
-> "this is where that debug trap should relocate", because you simply create 
-> a triial spinlock around the code-sequence that does the instruction 
-> rewrite.
-> 
+I am not an expert in dtrace or systemtap - i have knowledge of
+some aspects of both, and anything i may write on the matter may
+be suspect/wrong/incorrect. I hope to correct my incorrect understandings
+by virtue of this project.
 
-That's actually what I do in my immediate values implementation.
+BTW: progress this week has been near-zero due to a fight between
+me + Ubuntu to get a custom Linus kernel to boot. Hopefully the weekend
+will fare better.
 
-> When undoing it, just do the same thing in reverse.
-> 
-> Yeah, this requires you to basically recompile some function snippet when 
-> you insert a probe, but if that scares people, you could basically do it 
-> using the old code and inserting the markers and "relinking" it - avoiding 
-> the C compiler, and just basically have an "assembly recompiler".
-> 
-> And yeah, maybe you want to do without the use of modules, and you'd just 
-> have a memory area that is kept free for these kinds of code replacement 
-> issues. And you can optimize it to not recompile the whole function, but 
-> do it on a finer granularity if you want.
-> 
+-pdf
 
-Then dealing with multiple code patching infrastructures (kprobes,
-alternatives, paravirt) would become hellish. If a kprobe is planted in
-the original version of the function, we have to insert it in the new
-version... and the teardown of the old function is still a problem.
-
-> And sure, you want to really make sure that there is security in place so 
-> that this isn't used for rootkits, but isn't that true of pretty much 
-> *any* trace facility?
-> 
-
-Yep.
-
-The discussion I refer to took place at OLS a few years ago. Other
-participants might remember some other details I forgot.
-
-Mathieu
-
-> 			Linus
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
