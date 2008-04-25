@@ -1,97 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765682AbYDYSIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765951AbYDYSJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765682AbYDYSIp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762841AbYDYR5i
+	id S1765951AbYDYSJQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764848AbYDYR5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:57:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55831 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764762AbYDYR47 (ORCPT
+	Fri, 25 Apr 2008 13:57:39 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53148 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764815AbYDYR5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:56:59 -0400
-Message-Id: <20080425175656.742025100@szeredi.hu>
-References: <20080425175520.735386844@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Fri, 25 Apr 2008 19:55:22 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 2/5] fuse: fix node ID type
-Content-Disposition: inline; filename=fuse_64bit_nodeid.patch
+	Fri, 25 Apr 2008 13:57:30 -0400
+Date: Fri, 25 Apr 2008 13:56:10 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 9/19] UML - Tidy ptrace interface
+Message-ID: <20080425175610.GA11188@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Tidy the ptrace interface code.  Removed a bunch of unused macros.
+Started converting register sets from arrays of longs to structures.
 
-Node ID is 64bit but it is passed as unsigned long to some functions.
-This breakage wasn't noticed, because libfuse uses unsigned long too.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- fs/fuse/fuse_i.h |    4 ++--
- fs/fuse/inode.c  |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/um/include/sysdep-i386/ptrace_user.h   |   30 ----------------------------
+ arch/um/include/sysdep-x86_64/ptrace_user.h |   17 +++------------
+ arch/um/os-Linux/sys-i386/registers.c       |    5 ++--
+ arch/um/sys-i386/ptrace.c                   |   30 +++++++++++++---------------
+ arch/um/sys-i386/user-offsets.c             |    2 -
+ arch/um/sys-x86_64/user-offsets.c           |    1 
+ 6 files changed, 23 insertions(+), 62 deletions(-)
 
-Index: linux/fs/fuse/fuse_i.h
+Index: linux-2.6-git/arch/um/include/sysdep-i386/ptrace_user.h
 ===================================================================
---- linux.orig/fs/fuse/fuse_i.h	2008-04-09 13:17:45.000000000 +0200
-+++ linux/fs/fuse/fuse_i.h	2008-04-09 13:17:59.000000000 +0200
-@@ -461,7 +461,7 @@ extern const struct file_operations fuse
- /**
-  * Get a filled in inode
-  */
--struct inode *fuse_iget(struct super_block *sb, unsigned long nodeid,
-+struct inode *fuse_iget(struct super_block *sb, u64 nodeid,
- 			int generation, struct fuse_attr *attr,
- 			u64 attr_valid, u64 attr_version);
+--- linux-2.6-git.orig/arch/um/include/sysdep-i386/ptrace_user.h	2008-02-12 13:05:07.000000000 -0500
++++ linux-2.6-git/arch/um/include/sysdep-i386/ptrace_user.h	2008-02-12 13:09:44.000000000 -0500
+@@ -41,38 +41,10 @@
+ #define PT_SP_OFFSET PT_OFFSET(UESP)
+ #define PT_SP(regs) ((regs)[UESP])
  
-@@ -469,7 +469,7 @@ struct inode *fuse_iget(struct super_blo
-  * Send FORGET command
-  */
- void fuse_send_forget(struct fuse_conn *fc, struct fuse_req *req,
--		      unsigned long nodeid, u64 nlookup);
-+		      u64 nodeid, u64 nlookup);
+-#define FP_SIZE ((HOST_XFP_SIZE > HOST_FP_SIZE) ? HOST_XFP_SIZE : HOST_FP_SIZE)
++#define FP_SIZE ((HOST_FPX_SIZE > HOST_FP_SIZE) ? HOST_FPX_SIZE : HOST_FP_SIZE)
  
- /**
-  * Initialize READ or READDIR request
-Index: linux/fs/fuse/inode.c
+ #ifndef FRAME_SIZE
+ #define FRAME_SIZE (17)
+ #endif
+-#define FRAME_SIZE_OFFSET (FRAME_SIZE * sizeof(unsigned long))
+-
+-#define FP_FRAME_SIZE (27)
+-#define FPX_FRAME_SIZE (128)
+-
+-#ifdef PTRACE_GETREGS
+-#define UM_HAVE_GETREGS
+-#endif
+-
+-#ifdef PTRACE_SETREGS
+-#define UM_HAVE_SETREGS
+-#endif
+-
+-#ifdef PTRACE_GETFPREGS
+-#define UM_HAVE_GETFPREGS
+-#endif
+-
+-#ifdef PTRACE_SETFPREGS
+-#define UM_HAVE_SETFPREGS
+-#endif
+-
+-#ifdef PTRACE_GETFPXREGS
+-#define UM_HAVE_GETFPXREGS
+-#endif
+-
+-#ifdef PTRACE_SETFPXREGS
+-#define UM_HAVE_SETFPXREGS
+-#endif
+ 
+ #endif
+Index: linux-2.6-git/arch/um/include/sysdep-x86_64/ptrace_user.h
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2008-04-09 13:17:45.000000000 +0200
-+++ linux/fs/fuse/inode.c	2008-04-09 13:17:59.000000000 +0200
-@@ -84,7 +84,7 @@ static void fuse_destroy_inode(struct in
+--- linux-2.6-git.orig/arch/um/include/sysdep-x86_64/ptrace_user.h	2008-02-12 13:05:07.000000000 -0500
++++ linux-2.6-git/arch/um/include/sysdep-x86_64/ptrace_user.h	2008-02-12 13:09:44.000000000 -0500
+@@ -48,7 +48,8 @@
+ #define PT_ORIG_RAX_OFFSET (ORIG_RAX)
+ #define PT_ORIG_RAX(regs) ((regs)[PT_INDEX(ORIG_RAX)])
+ 
+-/* x86_64 FC3 doesn't define this in /usr/include/linux/ptrace.h even though
++/*
++ * x86_64 FC3 doesn't define this in /usr/include/linux/ptrace.h even though
+  * it's defined in the kernel's include/linux/ptrace.h. Additionally, use the
+  * 2.4 name and value for 2.4 host compatibility.
+  */
+@@ -56,7 +57,8 @@
+ #define PTRACE_OLDSETOPTIONS 21
+ #endif
+ 
+-/* These are before the system call, so the system call number is RAX
++/*
++ * These are before the system call, so the system call number is RAX
+  * rather than ORIG_RAX, and arg4 is R10 rather than RCX
+  */
+ #define REGS_SYSCALL_NR PT_INDEX(RAX)
+@@ -73,14 +75,3 @@
+ #define FP_SIZE (HOST_FP_SIZE)
+ 
+ #endif
+-
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
+Index: linux-2.6-git/arch/um/sys-i386/ptrace.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/sys-i386/ptrace.c	2008-02-12 12:44:44.000000000 -0500
++++ linux-2.6-git/arch/um/sys-i386/ptrace.c	2008-02-12 13:16:14.000000000 -0500
+@@ -148,14 +148,13 @@ int peek_user(struct task_struct *child,
+ int get_fpregs(struct user_i387_struct __user *buf, struct task_struct *child)
+ {
+ 	int err, n, cpu = ((struct thread_info *) child->stack)->cpu;
+-	long fpregs[HOST_FP_SIZE];
++	struct user_i387_struct fpregs;
+ 
+-	BUG_ON(sizeof(*buf) != sizeof(fpregs));
+-	err = save_fp_registers(userspace_pid[cpu], fpregs);
++	err = save_fp_registers(userspace_pid[cpu], (unsigned long *) &fpregs);
+ 	if (err)
+ 		return err;
+ 
+-	n = copy_to_user(buf, fpregs, sizeof(fpregs));
++	n = copy_to_user(buf, &fpregs, sizeof(fpregs));
+ 	if(n > 0)
+ 		return -EFAULT;
+ 
+@@ -165,27 +164,26 @@ int get_fpregs(struct user_i387_struct _
+ int set_fpregs(struct user_i387_struct __user *buf, struct task_struct *child)
+ {
+ 	int n, cpu = ((struct thread_info *) child->stack)->cpu;
+-	long fpregs[HOST_FP_SIZE];
++	struct user_i387_struct fpregs;
+ 
+-	BUG_ON(sizeof(*buf) != sizeof(fpregs));
+-	n = copy_from_user(fpregs, buf, sizeof(fpregs));
++	n = copy_from_user(&fpregs, buf, sizeof(fpregs));
+ 	if (n > 0)
+ 		return -EFAULT;
+ 
+-	return restore_fp_registers(userspace_pid[cpu], fpregs);
++	return restore_fp_registers(userspace_pid[cpu],
++				    (unsigned long *) &fpregs);
  }
  
- void fuse_send_forget(struct fuse_conn *fc, struct fuse_req *req,
--		      unsigned long nodeid, u64 nlookup)
-+		      u64 nodeid, u64 nlookup)
+ int get_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *child)
  {
- 	struct fuse_forget_in *inarg = &req->misc.forget_in;
- 	inarg->nlookup = nlookup;
-@@ -207,7 +207,7 @@ static void fuse_init_inode(struct inode
+ 	int err, n, cpu = ((struct thread_info *) child->stack)->cpu;
+-	long fpregs[HOST_XFP_SIZE];
++	struct user_fxsr_struct fpregs;
  
- static int fuse_inode_eq(struct inode *inode, void *_nodeidp)
- {
--	unsigned long nodeid = *(unsigned long *) _nodeidp;
-+	u64 nodeid = *(u64 *) _nodeidp;
- 	if (get_node_id(inode) == nodeid)
- 		return 1;
- 	else
-@@ -216,12 +216,12 @@ static int fuse_inode_eq(struct inode *i
+-	BUG_ON(sizeof(*buf) != sizeof(fpregs));
+-	err = save_fpx_registers(userspace_pid[cpu], fpregs);
++	err = save_fpx_registers(userspace_pid[cpu], (unsigned long *) &fpregs);
+ 	if (err)
+ 		return err;
  
- static int fuse_inode_set(struct inode *inode, void *_nodeidp)
+-	n = copy_to_user(buf, fpregs, sizeof(fpregs));
++	n = copy_to_user(buf, &fpregs, sizeof(fpregs));
+ 	if(n > 0)
+ 		return -EFAULT;
+ 
+@@ -195,14 +193,14 @@ int get_fpxregs(struct user_fxsr_struct 
+ int set_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *child)
  {
--	unsigned long nodeid = *(unsigned long *) _nodeidp;
-+	u64 nodeid = *(u64 *) _nodeidp;
- 	get_fuse_inode(inode)->nodeid = nodeid;
- 	return 0;
+ 	int n, cpu = ((struct thread_info *) child->stack)->cpu;
+-	long fpregs[HOST_XFP_SIZE];
++	struct user_fxsr_struct fpregs;
+ 
+-	BUG_ON(sizeof(*buf) != sizeof(fpregs));
+-	n = copy_from_user(fpregs, buf, sizeof(fpregs));
++	n = copy_from_user(&fpregs, buf, sizeof(fpregs));
+ 	if (n > 0)
+ 		return -EFAULT;
+ 
+-	return restore_fpx_registers(userspace_pid[cpu], fpregs);
++	return restore_fpx_registers(userspace_pid[cpu],
++				     (unsigned long *) &fpregs);
  }
  
--struct inode *fuse_iget(struct super_block *sb, unsigned long nodeid,
-+struct inode *fuse_iget(struct super_block *sb, u64 nodeid,
- 			int generation, struct fuse_attr *attr,
- 			u64 attr_valid, u64 attr_version)
+ long subarch_ptrace(struct task_struct *child, long request, long addr,
+Index: linux-2.6-git/arch/um/os-Linux/sys-i386/registers.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/sys-i386/registers.c	2008-02-12 13:05:07.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/sys-i386/registers.c	2008-02-12 13:10:44.000000000 -0500
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <errno.h>
++#include <asm/user.h>
+ #include "kern_constants.h"
+ #include "longjmp.h"
+ #include "user.h"
+@@ -74,10 +75,10 @@ int put_fp_registers(int pid, unsigned l
+ 
+ void arch_init_registers(int pid)
  {
-
---
+-	unsigned long fpx_regs[HOST_XFP_SIZE];
++	struct user_fxsr_struct fpx_regs;
+ 	int err;
+ 
+-	err = ptrace(PTRACE_GETFPXREGS, pid, 0, fpx_regs);
++	err = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpx_regs);
+ 	if (!err)
+ 		return;
+ 
+Index: linux-2.6-git/arch/um/sys-i386/user-offsets.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/sys-i386/user-offsets.c	2008-02-12 13:00:01.000000000 -0500
++++ linux-2.6-git/arch/um/sys-i386/user-offsets.c	2008-02-12 13:09:44.000000000 -0500
+@@ -22,7 +22,7 @@ void foo(void)
+ 	OFFSET(HOST_SC_CR2, sigcontext, cr2);
+ 
+ 	DEFINE_LONGS(HOST_FP_SIZE, sizeof(struct user_fpregs_struct));
+-	DEFINE_LONGS(HOST_XFP_SIZE, sizeof(struct user_fpxregs_struct));
++	DEFINE_LONGS(HOST_FPX_SIZE, sizeof(struct user_fpxregs_struct));
+ 
+ 	DEFINE(HOST_IP, EIP);
+ 	DEFINE(HOST_SP, UESP);
+Index: linux-2.6-git/arch/um/sys-x86_64/user-offsets.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/sys-x86_64/user-offsets.c	2008-02-12 13:00:01.000000000 -0500
++++ linux-2.6-git/arch/um/sys-x86_64/user-offsets.c	2008-02-12 13:09:44.000000000 -0500
+@@ -24,7 +24,6 @@ void foo(void)
+ 	OFFSET(HOST_SC_TRAPNO, sigcontext, trapno);
+ 
+ 	DEFINE(HOST_FP_SIZE, sizeof(struct _fpstate) / sizeof(unsigned long));
+-	DEFINE(HOST_XFP_SIZE, 0);
+ 	DEFINE_LONGS(HOST_RBX, RBX);
+ 	DEFINE_LONGS(HOST_RCX, RCX);
+ 	DEFINE_LONGS(HOST_RDI, RDI);
