@@ -1,65 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbYDYRk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763688AbYDYRsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbYDYRk0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 13:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760934AbYDYRkN
+	id S1763688AbYDYRsN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYDYRr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:40:13 -0400
-Received: from main.gmane.org ([80.91.229.2]:48390 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760107AbYDYRkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:40:12 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: x86: 4kstacks default
-Date: Fri, 25 Apr 2008 17:39:53 +0000 (UTC)
-Message-ID: <loom.20080425T172649-672@post.gmane.org>
-References: <200804181737.m3IHbabI010051@hera.kernel.org> <20080418142934.38ce6bf4.akpm@linux-foundation.org> <20080419142329.GA5339@elte.hu> <20080419104911.07d299ef.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 68.60.35.179 (Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1))
+	Fri, 25 Apr 2008 13:47:57 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:36055 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756852AbYDYRr4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 13:47:56 -0400
+Message-Id: <1209145675.2005.1249890339@webmail.messagingengine.com>
+X-Sasl-Enc: e/2gkWnHYuWgmMRCMwR98cPaVW+XxokBbjFv4bcMFJ43 1209145675
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: "lkml" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080425090901.ca642c4d.randy.dunlap@oracle.com>
+   <48121331.1030204@cosmosbay.com>
+Subject: Re: BUG in strnlen
+In-Reply-To: <48121331.1030204@cosmosbay.com>
+Date: Fri, 25 Apr 2008 19:47:55 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm <at> linux-foundation.org> writes:
+On Fri, 25 Apr 2008 19:21:53 +0200, "Eric Dumazet" <dada1@cosmosbay.com>
+said:
+> Randy Dunlap a écrit :
+> > Hi,
+> >
+> > All of my daily testing (x86_64, 4 CPUs, 8 GB RAM)
+> > since (after) 2.6.25 is seeing this BUG:
+> > (i.e., 2.6.25 does not do this)
+> >
+> >
+> > BUG: unable to handle kernel paging request at ffffffffa00b7551
+> > IP: [<ffffffff80357aac>] strnlen+0x15/0x1f
+> > PGD 203067 PUD 207063 PMD 27e44f067 PTE 0
+> > Oops: 0000 [1] SMP 
+> > CPU 3 
+> > Modules linked in: hp_ilo parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd uhci_hcd [last unloaded: reiserfs]
 
-> 
-> > On Sat, 19 Apr 2008 16:23:29 +0200 Ingo Molnar <mingo <at> elte.hu> wrote:
-> > 
-> > * Andrew Morton <akpm <at> linux-foundation.org> wrote:
-> > 
-> > > >  config 4KSTACKS
-> > > >  	bool "Use 4Kb for kernel stacks instead of 8Kb"
-> > > > -	depends on DEBUG_KERNEL
-> > > >  	depends on X86_32
-> > > > +	default y
-> > > 
-> > > This patch will cause kernels to crash.
-> > 
-> > what mainline kernels crash and how will they crash?
-> 
-> There has been a dribble of reports - I don't have the links handy, nor did
-> I search for them.
-> 
-> > Fedora and other 
-> > distros have had 4K stacks enabled for years:
-> > 
-> >   $ grep 4K /boot/config-2.6.24-9.fc9
-> >   CONFIG_4KSTACKS=y
+------------------------------------------------------------------------------------------^^^^^^
 
-Here is a report - Fedora 8 default kernel, Mac Mini file server, Not Tainted. 
-Attempt to copy 100Gb+ of data from a hfsplus file system on a USB drive to a 
-firewire drive with XFS filesystem - I got a nasty panic with a huge stack 
-backtrace. I gave up and switched to Ubuntu. With a stock kernel.org kernel I 
-was able to successfully copy the data over. I still have the machine and the 
-restored drives and can try to reproduce it with Fedora 9 w/4K stacks if 
-anyone thinks it is worthwhile (i.e. fixable).
+> > Pid: 20926, comm: cat Not tainted 2.6.25-git5 #1
+> > RIP: 0010:[<ffffffff80357aac>]  [<ffffffff80357aac>] strnlen+0x15/0x1f
+> > RSP: 0018:ffff810274981cc8  EFLAGS: 00010297
+> > RAX: ffffffffa00b7551 RBX: ffff810274981d38 RCX: ffffffff80603719
+> > RDX: ffff810274981d68 RSI: fffffffffffffffe RDI: ffffffffa00b7551
+> > RBP: ffff810274981cc8 R08: 00000000ffffffff R09: 00000000000000c8
+> > R10: 0000000000000050 R11: 0000000000000246 R12: ffff8102364600cc
+> > R13: ffffffffa00b7551 R14: 0000000000000011 R15: 0000000000000010
+> > FS:  00007f956375d6f0(0000) GS:ffff81027f808980(0000) knlGS:00000000f7f7f6c0
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: ffffffffa00b7551 CR3: 00000002734d5000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Process cat (pid: 20926, threadinfo ffff810274980000, task ffff81026d18ce20)
+> > Stack:  ffff810274981d28 ffffffff80358d5a ffff810274981d28 0000000000000f34
+> >  ffff8102364600cc ffff810236461000 ffffffff80603719 ffff81024ac14f00
+> >  ffff81024ac14f00 0000000000000004 0000000000000000 0000000000000000
+> > Call Trace:
+> >  [<ffffffff80358d5a>] vsnprintf+0x31b/0x592
+> >  [<ffffffff802a78eb>] seq_printf+0x7e/0xa7
+> >  [<ffffffff8024c6fe>] ? debug_mutex_free_waiter+0x46/0x4a
+> >  [<ffffffff8053aaa2>] ? __down_read+0x17/0x92
+> >  [<ffffffff80539c25>] ? __mutex_lock_slowpath+0x1d8/0x1e5
+> >  [<ffffffff802886c2>] ? count_partial+0x45/0x4d
+> >  [<ffffffff80289a6d>] s_show+0x7e/0xcb
+> >  [<ffffffff802a7dd9>] seq_read+0x10b/0x298
+> >  [<ffffffff802c7dbb>] proc_reg_read+0x7b/0x95
+> >  [<ffffffff8028ec0b>] vfs_read+0xab/0x154
+> >  [<ffffffff8028f015>] sys_read+0x47/0x6f
+> >  [<ffffffff8020c182>] tracesys+0xd5/0xda
+> >
+> >
+> > Code: 48 8d 44 11 ff 40 38 30 74 0a 48 ff c8 48 39 d0 73 f3 31 c0 c9 c3 55 48 89 f8 48 89 e5 eb 03 48 ff c0 48 ff ce 48 83 fe ff 74 05 <80> 38 00 75 ef c9 48 29 f8 c3 55 31 c0 48 89 e5 eb 13 41 38 c8 
+> > RIP  [<ffffffff80357aac>] strnlen+0x15/0x1f
+> >  RSP <ffff810274981cc8>
+> > CR2: ffffffffa00b7551
+> >
+> >
+> > ---
+> >
+> >   
+> My initial thoughts are :
+> 
+> Fault address is  0xffffffffa00b7551 which is in module mapping space on 
+> x86_64
+> 
+> strnlen() is OK
+> 
+> Some module created a kmem_cache (with kmem_cache_create()).
+> slub or slab kept a pointer to the cache name in their internal
+> structures.
+> Module was unloaded but forgot to destroy kmem cache before unloading.
+> 
+> Fault happens while doing "cat /proc/slabinfo", when trying to 
+> dereference cache name since module was unloaded and its memory unmapped.
+> 
+> Next step is to find which module was unloaded ...
 
-Parag
+The last one was reiserfs, apparently ;).
+
+Greetings,
+    Alexander
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Email service worth paying for. Try it for free
 
