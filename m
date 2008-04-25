@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbYDYLMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYDYLMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758761AbYDYLMI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 07:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYDYLL5
+	id S1759918AbYDYLMy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 07:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYDYLMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 07:11:57 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52496 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751640AbYDYLL4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 07:11:56 -0400
-Date: Fri, 25 Apr 2008 13:12:37 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "John W. Linville" <linville@tuxdriver.com>, cfarrell@suse.de
-Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
-       lcostantino@gmail.com
-Subject: Re: w35und: good news about licensing
-Message-ID: <20080425111237.GA15479@elf.ucw.cz>
-References: <20080414224740.GA31431@elf.ucw.cz> <20080415002826.GC4270@tuxdriver.com> <20080415070923.GA13767@elf.ucw.cz> <20080415132845.GA11789@tuxdriver.com> <20080415195603.GE4994@elf.ucw.cz>
+	Fri, 25 Apr 2008 07:12:46 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56915 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750901AbYDYLMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 07:12:45 -0400
+Date: Fri, 25 Apr 2008 06:12:43 -0500
+From: Robin Holt <holt@sgi.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Avi Kivity <avi@qumranet.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Minimal mmu notifiers for kvm
+Message-ID: <20080425111243.GA17326@sgi.com>
+References: <200804250813.00792.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080415195603.GE4994@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200804250813.00792.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This patch would require GRU to maintain its own page tables and hold
+reference counts on the pages.  That seems like a complete waste of
+memory compared to Andrea's most recent patch.  The invalidate_range_start
+and invalidate_range_end pair is needed to eliminate the page reference
+counts.  The _start callout sets an internal structure in a state that
+prevents GRU from satisfying faults, then executes the GRU instruction
+to flush the TLB entry.  The _end callout releases the block on faults.
 
-> > > Actually you are about month early to the party ;-). We are trying to
-> > > clean up winbond usb wireless driver, so that it can think about
-> > > inclusion in kernel.
-> > > 
-> > > http://code.google.com/p/winbondport/
-> > > 
-> > > Unfortunately, original driver carries its own 802.11 stack with it;
-> > > that needs to be stripped down. (And then code needs to be rewritten
-> > > due to horrible coding style).
-> > 
-> > I see...OK.
-> > 
-> > Did you get any legal advice regarding whether or not
-> > MODULE_LICENSE("GPL") was sufficient to proclaim the driver as covered
-> > by the GPL?
-> 
-> I dislike talking to lawyers, do not have any easily physically
-> reachable, and believe the case is pretty clear...
-> 
-> ...plus, we plan to rewrite the driver, anyway...
+On Fri, Apr 25, 2008 at 08:13:00AM +1000, Rusty Russell wrote:
+> +static DEFINE_SPINLOCK(notifier_lock);
+> +
+> +/*
+> + * Must not hold mmap_sem nor any other VM related lock when calling
+> + * this registration function.
+> + */
+> +int mm_add_notifier_ops(struct mm_struct *mm,
+> +			const struct mmu_notifier_ops *mops)
+> +{
+> +	int err;
+> +
+> +	spin_lock(&notifier_lock);
 
-Ok, so I did actually talk to a lawyer that happened to be nearby. We
-did short analysis, and we believe that yes, w35und is under GPL. The
-only problem is in wpa/ subdirectory where md5 (IIRC) is under RSA
-license.
+This one global lock will get extremely hot when a 4096 MPI rank job
+is starting up and every one of them goes to use the GRU at once.  I am
+not sure where x86_64 peaks out, but on ia64 going beyond approx 32 cpus
+contending for the same lock made starvation a very important issue.
 
-wpa/ subdirectory is already empty in my version, so we should be ok.
+> +	if (mm->mmu_notifier_ops)
+> +		err = -EBUSY;
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+So we can only use one of KVM or GRU or Quadrix or IB or (later) XPMEM
+per mm?
+
+> +	else {
+> +		mm->mmu_notifier_ops = mops;
+> +		err = 0;
+> +	}
+> +	spin_unlock(&notifier_lock);
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_add_notifier_ops);
+
+Robin
