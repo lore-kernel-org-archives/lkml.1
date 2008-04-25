@@ -1,119 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbYDYLR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYDYLVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760306AbYDYLR0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 07:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYDYLRT
+	id S1759499AbYDYLVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 07:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYDYLVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 07:17:19 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:20188 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751430AbYDYLRS (ORCPT
+	Fri, 25 Apr 2008 07:21:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:8523 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbYDYLVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 07:17:18 -0400
-Message-ID: <4811BDBB.8010604@hp.com>
-Date: Fri, 25 Apr 2008 07:17:15 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 25 Apr 2008 07:21:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=KZrWmrNxMlqQcEb4bLDPu51Wkj4UNFOcNYP2E4LYzLNEXN8Ab1bLjaS7lZIRvM+LP1ywe/K3amVE0MxpRjdGEBzo6237K3JFN+y3IuHIrYoMh0eWrIjIrEIaQIa0ksmdSxIwbdYwa2exmIeRZv4/QYj9cio+Iib9zCp46jbgko4=
+Message-ID: <4811BEA1.502@googlemail.com>
+Date: Fri, 25 Apr 2008 13:21:05 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/3] Skip I/O merges when disabled
-References: <480F8936.5030406@hp.com> <20080424070923.GQ12774@kernel.dk> <48107891.5000308@hp.com> <20080425083809.GG12774@kernel.dk>
-In-Reply-To: <20080425083809.GG12774@kernel.dk>
-Content-Type: multipart/mixed;
- boundary="------------010501070209050008010907"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Priit Laes <plaes@plaes.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [REGRESSION] x86: support for new UV apic
+References: <1209098600.3707.13.camel@localhost>	<20080425064405.GA23043@elte.hu> <87abjixo7d.fsf@basil.nowhere.org>
+In-Reply-To: <87abjixo7d.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010501070209050008010907
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
+Andi Kleen wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+>> * Priit Laes <plaes@plaes.org> wrote:
 >>
->> I'll look into retaining the one-hit cache merge functionality, remove
->> the errant elv_rqhas_del code, and repost w/ the results from the other
->> tests I've run.
+>>> Hey,
+>>>
+>>> I am getting two following warnings (probable one per each CPU core) 
+>>> using the latest Linus's git:
+>>>
+>>> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x30/0x62()
+>>> Modules linked in:
+>>> Pid: 1, comm: swapper Not tainted 2.6.25-03563-gf7288b1 #20
+>> thanks - could you check the patch below, does it fix the warnings?
 > 
-> Also please do a check where you only disable the front merge logic, as
-> that is the most expensive bit (and the least likely to occur). I would
-> not be surprised if just removing the front merge bit would get you the
-> majority of the gain already. I have in the past considered just getting
-> rid of that bit, as it rarely triggers and it is a costly rbtree lookup
-> for each IO. The back merge lookup+merge should be cheaper, it's just a
-> hash lookup.
+> I think it would have been better to change the WARN_ON to
 > 
+> WARN_ON(preemptible() && num_online_cpus() > 1)
 
-I have the results from leaving in just the one-hit cache merge
-attempts, and started a run leaving in both that and the back-merge
-rq_hash checks. (The patch below basically undoes patch 3/3 - putting
-back in the addition of rqs onto the hash list, and moves the nomerges
-check below the back merge attempts.)
+Hmm , I think you are right , Ingo's patch fixes the warning on boot but now I get one when I reboot the box.
 
-We /could/ change the tunable to a dial (or a mask) - enabling/disabling
-specific merge attempts, but that seems a bit confusing/complex.
+> 
+> Preemption is actually ok here because this runs before the other
+> CPUs are started
+> 
+> Alternative patch appended.
 
-Jens: What do you think?
+I will test your patch in some minutes.
 
-Alan
+> 
+> -Andi
 
---------------010501070209050008010907
-Content-Type: text/x-patch;
- name="0005-Enables-back-merge-checks-and-one-hit-cache-checks.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0005-Enables-back-merge-checks-and-one-hit-cache-checks.patc";
- filename*1="h"
+Gabriel
 
->From eb158393a5fd2eec0582bbba8af588be7e08ef32 Mon Sep 17 00:00:00 2001
-From: Alan D. Brunelle <alan.brunelle@hp.com>
-Date: Fri, 25 Apr 2008 07:14:42 -0400
-Subject: [PATCH] Enables back-merge checks (and one-hit cache checks) for merges
+> 
+> ---
+> 
+> Don't warn in read_apic_id() when preemptible but only one CPU online.
+> 
+> Signed-off-by: Andi Kleen <andi@firstfloor.org>
+> 
+> Index: linux/arch/x86/kernel/genapic_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/genapic_64.c
+> +++ linux/arch/x86/kernel/genapic_64.c
+> @@ -83,7 +83,7 @@ unsigned int read_apic_id(void)
+>  {
+>  	unsigned int id;
+>  
+> -	WARN_ON(preemptible());
+> +	WARN_ON(preemptible() && num_online_cpus() > 1);
+>  	id = apic_read(APIC_ID);
+>  	if (uv_system_type >= UV_X2APIC)
+>  		id  |= __get_cpu_var(x2apic_extra_bits);
 
-Undoes patch 3/3 -- puts rqs onto the rq_hash list -- and performs simple
-hash list checks for back-merges only.
-
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
----
- block/elevator.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/block/elevator.c b/block/elevator.c
-index 557ee38..59be58d 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -488,9 +488,6 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 		}
- 	}
- 
--	if (blk_queue_nomerges(q))
--		return ELEVATOR_NO_MERGE;
--
- 	/*
- 	 * See if our hash lookup can find a potential backmerge.
- 	 */
-@@ -500,6 +497,9 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 		return ELEVATOR_BACK_MERGE;
- 	}
- 
-+	if (blk_queue_nomerges(q))
-+		return ELEVATOR_NO_MERGE;
-+
- 	if (e->ops->elevator_merge_fn)
- 		return e->ops->elevator_merge_fn(q, req, bio);
- 
-@@ -604,7 +604,7 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
- 		BUG_ON(!blk_fs_request(rq));
- 		rq->cmd_flags |= REQ_SORTED;
- 		q->nr_sorted++;
--		if (!blk_queue_nomerges(q) && rq_mergeable(rq)) {
-+		if (rq_mergeable(rq)) {
- 			elv_rqhash_add(q, rq);
- 			if (!q->last_merge)
- 				q->last_merge = rq;
--- 
-1.5.2.5
-
-
---------------010501070209050008010907--
