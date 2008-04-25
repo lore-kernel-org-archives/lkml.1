@@ -1,191 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933689AbYDYTGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933728AbYDYTHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933689AbYDYTGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbYDYSqK
+	id S933728AbYDYTHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932679AbYDYSuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:46:10 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53507 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932402AbYDYSqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:46:07 -0400
-Date: Fri, 25 Apr 2008 13:46:06 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: jes@sgi.com, tony.luck@intel.com
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] allocate multiple contiguous pages via uncached allocator -v2
-Message-ID: <20080425184606.GA13773@sgi.com>
+	Fri, 25 Apr 2008 14:50:04 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57588 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932976AbYDYSuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:50:01 -0400
+Date: Fri, 25 Apr 2008 12:50:00 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dean Nelson <dcn@sgi.com>
+Cc: jes@sgi.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] allocate multiple contiguous pages via uncached allocator -v2
+Message-ID: <20080425185000.GK14990@parisc-linux.org>
+References: <20080425184606.GA13773@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080425184606.GA13773@sgi.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable the uncached allocator to allocate multiple pages of contiguous
-uncached memory.
- 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
- 
----
+On Fri, Apr 25, 2008 at 01:46:06PM -0500, Dean Nelson wrote:
+> +++ linux-2.6/include/asm-ia64/uncached.h	2008-04-25 13:25:06.821572061 -0500
+> @@ -8,5 +8,5 @@
+>   * Prototypes for the uncached page allocator
+>   */
+>  
+> -extern unsigned long uncached_alloc_page(int nid);
+> -extern void uncached_free_page(unsigned long);
+> +extern unsigned long uncached_alloc_page(int, int);
+> +extern void uncached_free_page(unsigned long, int);
 
-Version 1 of this patch was missing the necessary changes to xpc_partition.c
-to support this change. A future patch will take advantage of this new
-capability of the uncached allocator.
- 
- arch/ia64/kernel/uncached.c         |   21 ++++++++++++---------
- drivers/char/mspec.c                |   12 ++++++------
- drivers/misc/sgi-xp/xpc_partition.c |    4 ++--
- include/asm-ia64/uncached.h         |    4 ++--
- 4 files changed, 22 insertions(+), 19 deletions(-)
+It would be good to name the arguments, particularly since you can't
+identify them by type.
 
-Index: linux-2.6/arch/ia64/kernel/uncached.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/uncached.c	2008-04-25 13:20:33.305200359 -0500
-+++ linux-2.6/arch/ia64/kernel/uncached.c	2008-04-25 13:25:06.773566374 -0500
-@@ -177,12 +177,13 @@ failed:
-  * uncached_alloc_page
-  *
-  * @starting_nid: node id of node to start with, or -1
-+ * @n_pages: number of contiguous pages to allocate
-  *
-- * Allocate 1 uncached page. Allocates on the requested node. If no
-- * uncached pages are available on the requested node, roundrobin starting
-- * with the next higher node.
-+ * Allocate the specified number of contiguous uncached pages on the
-+ * the requested node. If not enough contiguous uncached pages are available
-+ * on the requested node, roundrobin starting with the next higher node.
-  */
--unsigned long uncached_alloc_page(int starting_nid)
-+unsigned long uncached_alloc_page(int starting_nid, int n_pages)
- {
- 	unsigned long uc_addr;
- 	struct uncached_pool *uc_pool;
-@@ -202,7 +203,8 @@ unsigned long uncached_alloc_page(int st
- 		if (uc_pool->pool == NULL)
- 			continue;
- 		do {
--			uc_addr = gen_pool_alloc(uc_pool->pool, PAGE_SIZE);
-+			uc_addr = gen_pool_alloc(uc_pool->pool,
-+						 n_pages * PAGE_SIZE);
- 			if (uc_addr != 0)
- 				return uc_addr;
- 		} while (uncached_add_chunk(uc_pool, nid) == 0);
-@@ -217,11 +219,12 @@ EXPORT_SYMBOL(uncached_alloc_page);
- /*
-  * uncached_free_page
-  *
-- * @uc_addr: uncached address of page to free
-+ * @uc_addr: uncached address of first page to free
-+ * @n_pages: number of contiguous pages to free
-  *
-- * Free a single uncached page.
-+ * Free the specified number of uncached pages.
-  */
--void uncached_free_page(unsigned long uc_addr)
-+void uncached_free_page(unsigned long uc_addr, int n_pages)
- {
- 	int nid = paddr_to_nid(uc_addr - __IA64_UNCACHED_OFFSET);
- 	struct gen_pool *pool = uncached_pools[nid].pool;
-@@ -232,7 +235,7 @@ void uncached_free_page(unsigned long uc
- 	if ((uc_addr & (0XFUL << 60)) != __IA64_UNCACHED_OFFSET)
- 		panic("uncached_free_page invalid address %lx\n", uc_addr);
- 
--	gen_pool_free(pool, uc_addr, PAGE_SIZE);
-+	gen_pool_free(pool, uc_addr, n_pages * PAGE_SIZE);
- }
- EXPORT_SYMBOL(uncached_free_page);
- 
-Index: linux-2.6/drivers/char/mspec.c
-===================================================================
---- linux-2.6.orig/drivers/char/mspec.c	2008-04-25 13:20:33.305200359 -0500
-+++ linux-2.6/drivers/char/mspec.c	2008-04-25 13:25:06.793568744 -0500
-@@ -180,7 +180,7 @@ mspec_close(struct vm_area_struct *vma)
- 		my_page = vdata->maddr[index];
- 		vdata->maddr[index] = 0;
- 		if (!mspec_zero_block(my_page, PAGE_SIZE))
--			uncached_free_page(my_page);
-+			uncached_free_page(my_page, 1);
- 		else
- 			printk(KERN_WARNING "mspec_close(): "
- 			       "failed to zero page %ld\n", my_page);
-@@ -209,7 +209,7 @@ mspec_nopfn(struct vm_area_struct *vma, 
- 	index = (address - vdata->vm_start) >> PAGE_SHIFT;
- 	maddr = (volatile unsigned long) vdata->maddr[index];
- 	if (maddr == 0) {
--		maddr = uncached_alloc_page(numa_node_id());
-+		maddr = uncached_alloc_page(numa_node_id(), 1);
- 		if (maddr == 0)
- 			return NOPFN_OOM;
- 
-@@ -218,7 +218,7 @@ mspec_nopfn(struct vm_area_struct *vma, 
- 			vdata->count++;
- 			vdata->maddr[index] = maddr;
- 		} else {
--			uncached_free_page(maddr);
-+			uncached_free_page(maddr, 1);
- 			maddr = vdata->maddr[index];
- 		}
- 		spin_unlock(&vdata->lock);
-@@ -367,7 +367,7 @@ mspec_init(void)
- 				int nasid;
- 				unsigned long phys;
- 
--				scratch_page[nid] = uncached_alloc_page(nid);
-+				scratch_page[nid] = uncached_alloc_page(nid, 1);
- 				if (scratch_page[nid] == 0)
- 					goto free_scratch_pages;
- 				phys = __pa(scratch_page[nid]);
-@@ -414,7 +414,7 @@ mspec_init(void)
-  free_scratch_pages:
- 	for_each_node(nid) {
- 		if (scratch_page[nid] != 0)
--			uncached_free_page(scratch_page[nid]);
-+			uncached_free_page(scratch_page[nid], 1);
- 	}
- 	return ret;
- }
-@@ -431,7 +431,7 @@ mspec_exit(void)
- 
- 		for_each_node(nid) {
- 			if (scratch_page[nid] != 0)
--				uncached_free_page(scratch_page[nid]);
-+				uncached_free_page(scratch_page[nid], 1);
- 		}
- 	}
- }
-Index: linux-2.6/include/asm-ia64/uncached.h
-===================================================================
---- linux-2.6.orig/include/asm-ia64/uncached.h	2008-04-25 13:20:33.305200359 -0500
-+++ linux-2.6/include/asm-ia64/uncached.h	2008-04-25 13:25:06.821572061 -0500
-@@ -8,5 +8,5 @@
-  * Prototypes for the uncached page allocator
-  */
- 
--extern unsigned long uncached_alloc_page(int nid);
--extern void uncached_free_page(unsigned long);
-+extern unsigned long uncached_alloc_page(int, int);
-+extern void uncached_free_page(unsigned long, int);
-Index: linux-2.6/drivers/misc/sgi-xp/xpc_partition.c
-===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpc_partition.c	2008-04-25 13:12:02.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpc_partition.c	2008-04-25 13:28:24.340999346 -0500
-@@ -211,7 +211,7 @@ xpc_rsvd_page_init(void)
- 	 */
- 	amos_page = xpc_vars->amos_page;
- 	if (amos_page == NULL) {
--		amos_page = (AMO_t *)TO_AMO(uncached_alloc_page(0));
-+		amos_page = (AMO_t *)TO_AMO(uncached_alloc_page(0, 1));
- 		if (amos_page == NULL) {
- 			dev_err(xpc_part, "can't allocate page of AMOs\n");
- 			return NULL;
-@@ -230,7 +230,7 @@ xpc_rsvd_page_init(void)
- 				dev_err(xpc_part, "can't change memory "
- 					"protections\n");
- 				uncached_free_page(__IA64_UNCACHED_OFFSET |
--						   TO_PHYS((u64)amos_page));
-+						   TO_PHYS((u64)amos_page), 1);
- 				return NULL;
- 			}
- 		}
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
