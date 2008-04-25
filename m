@@ -1,143 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764696AbYDYWF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765789AbYDYWHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764696AbYDYWF4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 18:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYDYWFs
+	id S1765789AbYDYWHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 18:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbYDYWHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 18:05:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:53329 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbYDYWFr (ORCPT
+	Fri, 25 Apr 2008 18:07:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39970 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755322AbYDYWHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 18:05:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=vICVvueqdQ/1DsudnRxECIdmDdCwqwnbtl+hXZ3kL5MG6bpFDZDixRS3XFLgU/fp4cMzaruUARsnywq7HgQ+944iLUTiC1FaBSzV9PBpnoFwbcBMINf7ZMCL/P+6xbDnq2W4G4dfdcTzOSfZLLVdJcrRm3/L6gup3lGs+r8Kyj0=
-Message-ID: <dd18b0c30804251505k1a281404lb5434874f10f925@mail.gmail.com>
-Date: Fri, 25 Apr 2008 22:05:45 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH] idle (arch, acpi and apm) and lockdep
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-In-Reply-To: <dd18b0c30804251218r3bd45591p229e8832e8b1e137@mail.gmail.com>
+	Fri, 25 Apr 2008 18:07:19 -0400
+Date: Fri, 25 Apr 2008 15:04:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+In-Reply-To: <20080425211205.GC25950@Krystal>
+Message-ID: <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal>
+ <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804241724t2dcc044dvab4a5ad506255d8d@mail.gmail.com>
-	 <1209125470.24931.10.camel@lappy>
-	 <dd18b0c30804250747u4168bafsccc6feec0ba78c26@mail.gmail.com>
-	 <1209135549.32291.5.camel@lappy> <1209137941.32291.10.camel@lappy>
-	 <dd18b0c30804251108q2d55736dtd4807db2a9ffb6c5@mail.gmail.com>
-	 <1209147590.1956.12.camel@lappy>
-	 <dd18b0c30804251218r3bd45591p229e8832e8b1e137@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 7:18 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->
-> On Fri, Apr 25, 2008 at 6:19 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->  > On Fri, 2008-04-25 at 18:08 +0000, Justin Mattock wrote:
->  >  > O.K. I applied this patch, below are the results:
->  >
->  >
->  >
->  > > patching file arch/x86/kernel/process_32.c
->  >  > Hunk #1 FAILED at 111.
->  >  > Hunk #2 FAILED at 126.
->  >  > Hunk #3 FAILED at 183.
->  >  > Hunk #4 FAILED at 194.
->  >  > 4 out of 4 hunks FAILED -- saving rejects to file
->  >  > arch/x86/kernel/process_32.c.rej
->  >  > patching file arch/x86/kernel/process_64.c
->  >  > Hunk #1 FAILED at 106.
->  >  > Hunk #2 FAILED at 179.
->  >  > 2 out of 2 hunks FAILED -- saving rejects to file
->  >  > arch/x86/kernel/process_64.c.rej
->  >  > patching file drivers/acpi/processor_idle.c
->  >  > Hunk #1 FAILED at 418.
->  >  > Hunk #2 FAILED at 519.
->  >  > Hunk #3 FAILED at 535.
->  >  > 3 out of 3 FAILED -- saving rejects to file drivers/acpi/processor_idle.c.rej
->  >  > pathing file arch/x86/kernel/apm_32.c
->  >  > Hunk #1 FAILED at 904.
->  >  > Hunk #2 FAILED at 912.
->  >  > 2 out of 2 hunks FAILED -- saving rejects to file arch/x86/kernel/apm_32.c.rej
->  >  > patching file include/asm/asm-x86/processor.h
->  >  > Hunk #1 FAILED at 723.
->  >  > 1 out of 1 hunk FAILE -- saving rejects to file include/asm-x86/processor.h.rej
->  >  > patching file arch/x86/kernel/process.c
->  >  > Hunk #2 succeeded at 44 with fuzz 2.
->  >  >
->  >  > When I compile the kernel I'm receiving this.
->  >  >
->  >  > arch/x86/kernel/process.o: In function `select_idle_routine':
->  >  > process.c:(.cpuinit.text+0x0): multiple definition of `select_idle_routine'
->  >  > arch/x86/kernel/process_32.o:process_32.c(.cpuinit.text+0x0: first defined here
->  >  > arch/x86/kernel/process.o: In function `cpu_idle_wait':
->  >  > process.c:(text+0x16): multiple definition of `cpu_idle_wait'
->  >  > arch/x86/kernel/process_32.o:process_32.c:(.text0x432): first defined here
->  >  > arch/x86/kernel/process.o: In function `mwait_idle_with_hints':
->  >  > process.c:(.text+0x113): multiple definition of 'mwait_idle_with_hints'
->  >  > arch/x86/kernel/process_32.o:process_32.c:(.text+0x1db): first defined here
->  >  > make[1]: *** [arch/x86/kernel/built-in.o] Error 1
->  >  > make: *** [arch/x86/kernel] Error 2
->  >  >
->  >  >
->  >  > Should I just go ahead and try git-pull to see if these patches are
->  >  > applied over there correctly.
->  >  > regards;
->  >
->  >  That's no good :-/
->  >
->  >  weird, I have:
->  >
->  >  # git describe
->  >  v2.6.25-4569-gb69d398
->  >
->  >  # quilt push
->  >  Applying patch patches/idle-lockdep-1.patch
->  >
->  > patching file arch/x86/kernel/process_32.c
->  >
->  > patching file arch/x86/kernel/process_64.c
->  >
->  > patching file drivers/acpi/processor_idle.c
->  >  patching file arch/x86/kernel/apm_32.c
->  >  patching file include/asm-x86/processor.h
->  >
->  > patching file arch/x86/kernel/process.c
->  >
->  >  Now at patch patches/idle-lockdep-1.patch
->  >
->  >
->  >  And I did a i386 and x86_64 defconfig build before I send it out.
->  >
->  >
->
->  I did patch -p1 < xxx.patch
->
->  --
->  Justin P. Mattock
->
 
-Hello;
- Thank you very much for that patch, the system is running and I dont
-need to use nohz=off ("knock on wood")
-I dont know why the patch failed the first time, so I decide to clean
-the board and start fresh, then manually go in and add and subtract
-what
-you had from the patch.( "I need to get better at reading and
-writting") So far I'm not receiving any freezes, but it's only been
-around 20 minutes. I'll leave the system running for a while to see if
-there's a freeze.
-again thank you very much,
-regards;
 
--- 
-Justin P. Mattock
+On Fri, 25 Apr 2008, Mathieu Desnoyers wrote:
+> 
+> The point is to provide a way to dynamically enable code at runtime
+> without noticeable performance impact on the system.
+
+Quite frankly, maybe I'm a bit dense, but why don't you just recompile the 
+whole original function (at run-time), load that new version of a function 
+as a mini-module, and then insert a marker at the top of the old function 
+that just does a "jmp replacementfunction".
+
+That has _zero_ cost for the non-marker case, and allows you to do pretty 
+much any arbitrary code changes for the marker case.
+
+It's also a much simpler replacement.
+
+Yeah, that "jmp replacementfunction" is five or more bytes, but you can 
+trivially do the actual _replacement_ write by writing it first as a 
+single-byte debug trap, and after that has been written, write the target 
+address after it, and then write the first byte of the "jmp" instruction 
+last. In the (very unlikely) case that another CPU hits that debug trap, 
+you just fix it up in the debug handler - you only need a single datum of 
+"this is where that debug trap should relocate", because you simply create 
+a triial spinlock around the code-sequence that does the instruction 
+rewrite.
+
+When undoing it, just do the same thing in reverse.
+
+Yeah, this requires you to basically recompile some function snippet when 
+you insert a probe, but if that scares people, you could basically do it 
+using the old code and inserting the markers and "relinking" it - avoiding 
+the C compiler, and just basically have an "assembly recompiler".
+
+And yeah, maybe you want to do without the use of modules, and you'd just 
+have a memory area that is kept free for these kinds of code replacement 
+issues. And you can optimize it to not recompile the whole function, but 
+do it on a finer granularity if you want.
+
+And sure, you want to really make sure that there is security in place so 
+that this isn't used for rootkits, but isn't that true of pretty much 
+*any* trace facility?
+
+			Linus
