@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbYDYJWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbYDYJ3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761582AbYDYJWf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 05:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759060AbYDYJW2
+	id S1761532AbYDYJ3a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 05:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759150AbYDYJ3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 05:22:28 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:7918 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759126AbYDYJW1 convert rfc822-to-8bit (ORCPT
+	Fri, 25 Apr 2008 05:29:21 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:4066 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759088AbYDYJ3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 05:22:27 -0400
-X-IronPort-AV: E=Sophos;i="4.25,706,1199682000"; 
-   d="scan'208";a="67113015"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 25 Apr 2008 05:29:21 -0400
+Message-ID: <4811A464.4070203@imap.cc>
+Date: Fri, 25 Apr 2008 11:29:08 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: Blackfin Serial Driver: Enable IR function when user application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line discipline N_IRDA
-Date: Fri, 25 Apr 2008 17:22:20 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA0164BC7A@chinexm1.ad.analog.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Blackfin Serial Driver: Enable IR function when user application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line discipline N_IRDA
-Thread-Index: AcimULgvgHhCDp5MRkO47mz+sp+IfAAMiRku
-References: <200804241929.m3OJToSE021045@hera.kernel.org> <20080424215004.34517136@the-village.bc.nu>
-From: "Yang, Graf" <Graf.Yang@analog.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Cc: <graf.yang@analog.com>
-X-OriginalArrivalTime: 25 Apr 2008 09:22:25.0878 (UTC) FILETIME=[E0145760:01C8A6B5]
+To: Roel Kluin <12o3l@tiscali.nl>
+CC: hjlipp@web.de, gigaset307x-common@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gigaset: gigaset_isowbuf_getbytes() may return signed
+ unnoticed
+References: <480FA9BC.7070205@tiscali.nl>
+In-Reply-To: <480FA9BC.7070205@tiscali.nl>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig41FAD5A0D46B415FD5F346BA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Alan,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig41FAD5A0D46B415FD5F346BA
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for your suggestions!
+Am 23.04.2008 23:27 schrieb Roel Kluin:
+> ifd->offset is unsigned. gigaset_isowbuf_getbytes() may return signed u=
+nnoticed
+
+Thanks, good catch. I wonder why neither sparse nor gcc emitted
+a warning for that.
+
+> --- a/drivers/isdn/gigaset/bas-gigaset.c
+> +++ b/drivers/isdn/gigaset/bas-gigaset.c
+> @@ -1050,9 +1050,9 @@ static int submit_iso_write_urb(struct isow_urbct=
+x_t *ucx)
+>  		}
+> =20
+>  		/* retrieve block of data to send */
+> -		ifd->offset =3D gigaset_isowbuf_getbytes(ubc->isooutbuf,
+> -						       ifd->length);
+> -		if (ifd->offset < 0) {
+> +		rc =3D gigaset_isowbuf_getbytes(ubc->isooutbuf, ifd->length);
+> +		ifd->offset =3D rc;
+> +		if (rc < 0) {
+>  			if (ifd->offset =3D=3D -EBUSY) {
+>  				gig_dbg(DEBUG_ISO,
+>  					"%s: buffer busy at frame %d",
+
+Please, also replace ifd->offset by rc in the body of the "if (rc < 0)"
+and put the assignment to ifd->offset behind it so that it is only done
+if rc >=3D 0. (Frame *ifd is not used in the < 0 case.)
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-Have the tty patches that you mentioned been checked in? Would you please give a link about "the tty patches as they move the tty driver operations out of the tty driver ..."?
+--------------enig41FAD5A0D46B415FD5F346BA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I made and tested this patch on 2.6.24.4 kernel, it works, although is ugly.
-Blackfin serial driver register as a UART driver, which will call tty_set_operations(...,&uart_ops), while uart_ops hasn't set_ldisc function.
-Do you mean I should declare a tty_ops and call tty_set_operations(..., &tty_ops) in bfin_5xx.c to register my set_ldisc?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
+iD8DBQFIEaRkQ3+did9BuFsRAtEpAJ4hk/NrAMldANVglDl9tZPZmM0pAwCfTPll
+v821vauA/NKQCnTUSBFSvmA=
+=K/Tl
+-----END PGP SIGNATURE-----
 
-BRs,
-Graf
------Original Message-----
-From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
-Sent: Fri 4/25/2008 4:50 AM
-To: Linux Kernel Mailing List
-Cc: graf.yang@analog.com
-Subject: Re: Blackfin Serial Driver: Enable IR function when user application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line discipline N_IRDA
- 
-O>     Blackfin Serial Driver: Enable IR function when user application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line discipline N_IRDA
-
->  	if (ret == 0) {
-> +		bfin_serial_reg.tty_driver->set_ldisc = bfin_set_ldisc;
->  		ret = platform_driver_register(&bfin_serial_driver);
-
-This will not work when combined with the tty patches as they move the
-tty driver operations out of the tty driver and also make them shared and
-const. You need to declare two sets of tty_ops and register the correct
-one for your device.
-
-Alan
+--------------enig41FAD5A0D46B415FD5F346BA--
