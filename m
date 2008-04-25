@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbYDYS2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbYDYSbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765222AbYDYS2F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbYDYS1z
+	id S1759253AbYDYSbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYDYSbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:27:55 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46912 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757939AbYDYS1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:27:54 -0400
-Date: Fri, 25 Apr 2008 20:27:53 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
-In-Reply-To: <1209078352-7593-3-git-send-email-hpa@zytor.com>
-Message-ID: <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
-References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 25 Apr 2008 14:31:32 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:64898 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751454AbYDYSbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:31:31 -0400
+Message-ID: <48122379.3080606@aknet.ru>
+Date: Fri, 25 Apr 2008 22:31:21 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
+References: <s5h8wz7cng7.wl%tiwai@suse.de> <480CD50F.20706@aknet.ru> <s5hbq42b3j7.wl%tiwai@suse.de> <480E2EE5.5040208@aknet.ru> <s5hiqy9dkhv.wl%tiwai@suse.de> <480F95BE.60109@aknet.ru> <s5h3apbd1zx.wl%tiwai@suse.de> <4811555E.3040509@aknet.ru> <s5hfxta4fem.wl%tiwai@suse.de> <48120ABF.1050802@aknet.ru> <20080425140448.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080425140448.ZZRA012@mailhub.coreip.homeip.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-On Friday 2008-04-25 01:05, H. Peter Anvin wrote:
-
->This creates two generic files with common integer definitions; one
->where 64 bits is "long" (most 64-bit architectures) and one where 64
->bits is "long long" (all 32-bit architectures and x86-64.)
-
-long long is 64 bits on both 32 and 64, is not it?
-If so, the split between 32 and 64 should not be necessary.
-
+Dmitry Torokhov wrote:
+> abudance of on-board sound I doubt any distriution would want to have
+> snd-pcsp enabled since there is a chance it may come up as a primary
+> (default) sound device.
+I avoid that by adding
+options snd-pcsp index=1
+into /etc/modprobe.conf.
+Maybe index=5 or alike would be
+safer for those who have many cards.
