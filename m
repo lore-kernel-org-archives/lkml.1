@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYDYOu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYDYO4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbYDYOu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 10:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYDYOut
+	id S1758212AbYDYO4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 10:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYDYO4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 10:50:49 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50168 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750901AbYDYOus (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 10:50:48 -0400
-Subject: Re: Voyager phys_cpu_present_map compile error
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080421201434.GN8770@elte.hu>
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
-	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
-	 <20080421120054.GA6788@elte.hu>
-	 <20080421132705.GG6011@cs181133002.pp.htv.fi>
-	 <20080421201434.GN8770@elte.hu>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 09:50:43 -0500
-Message-Id: <1209135044.3087.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 10:56:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36311 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbYDYO4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 10:56:44 -0400
+Date: Fri, 25 Apr 2008 16:55:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
+Subject: Re: [patch 13/37] Immediate Values - Architecture Independent Code
+Message-ID: <20080425145552.GA20351@elte.hu>
+References: <20080424150324.802695381@polymtl.ca> <20080424151357.576697846@polymtl.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080424151357.576697846@polymtl.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-21 at 22:14 +0200, Ingo Molnar wrote:
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > > +#ifndef CONFIG_X86_VOYAGER
-> > >  /* Bitmask of physically existing CPUs */
-> > >  physid_mask_t phys_cpu_present_map;
-> > > +#endif
-> > >...
-> > 
-> > Alexey noted that phys_cpu_present_map for Voyager and !Voyager also 
-> > have different types and suggested to make the Voyager one static 
-> > instead (additional renaming of the Voyager one also makes sense).
-> 
-> yep, done by the patch below.
 
-Actually, this isn't the right patch.  The point is not to avoid the
-symbol clash, it's to let voyager identify correctly that you have a
-leaking symbol.  In this case phys_cpu_present_map is exposed outside of
-SMP.  The correct fix (and one which sweeps op other storage for
-unnecessary symbols is this):
+randconfig testing in sched-devel caught a build bug - fixed by the 
+patch below.
 
-James
+	Ingo
 
+-------------->
+Subject: markers: build fix
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri Apr 25 16:36:15 CEST 2008
+
+fix:
+
+ include/linux/module.h:587: error: redefinition of 'module_imv_update'
+ include/linux/immediate.h:74: error: previous definition of 'module_imv_update' was here
+
+the prototype was unnecessary.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ include/linux/immediate.h |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index c0c68c1..d68aa53 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -12,6 +12,7 @@
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
+Index: linux/include/linux/immediate.h
+===================================================================
+--- linux.orig/include/linux/immediate.h
++++ linux/include/linux/immediate.h
+@@ -71,7 +71,6 @@ extern void imv_unref(struct __imv *begi
+ #define imv_set(name, i)		(name##__imv = (i))
  
-+#ifdef CONIFG_X86_SMP
- unsigned int num_processors;
- unsigned disabled_cpus __cpuinitdata;
- /* Processor that is doing the boot up */
-@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ static inline void core_imv_update(void) { }
+-static inline void module_imv_update(void) { }
+ static inline void imv_unref_core_init(void) { }
  
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map;
-+#endif
- 
--#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
-+#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
- /*
-  * Copy data used in early init routines from the initial arrays to the
-  * per cpu data areas.  These arrays then become expendable and the
-
-
+ #endif
