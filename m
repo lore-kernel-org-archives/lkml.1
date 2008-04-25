@@ -1,54 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbYDYHiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYDYHkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbYDYHiL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYDYHh5
+	id S1759862AbYDYHkE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbYDYHju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:37:57 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:44831 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753679AbYDYHh4 (ORCPT
+	Fri, 25 Apr 2008 03:39:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45826
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755696AbYDYHjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:37:56 -0400
-Date: Fri, 25 Apr 2008 09:37:51 +0200
-From: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-Message-ID: <20080425073751.GC4460@Chamillionaire.breakpoint.cc>
-Reply-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com> <20080416073108.GA13494@Chamillionaire.breakpoint.cc> <1208333949.4322.5.camel@caritas-dev.intel.com> <20080416184016.GA21365@Chamillionaire.breakpoint.cc> <1208403403.4322.27.camel@caritas-dev.intel.com> <20080423223221.GB16683@Chamillionaire.breakpoint.cc> <1209093077.20936.24.camel@caritas-dev.intel.com> <20080425071258.GA4460@Chamillionaire.breakpoint.cc> <1209108087.20936.30.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1209108087.20936.30.camel@caritas-dev.intel.com>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 25 Apr 2008 03:39:49 -0400
+Date: Fri, 25 Apr 2008 00:39:47 -0700 (PDT)
+Message-Id: <20080425.003947.72853787.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linville@tuxdriver.com, tomas.winkler@intel.com,
+       linux-kernel@vger.kernel.org, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl,
+       ivdoorn@gmail.com
+Subject: Re: [build bug] drivers/built-in.o: In function
+ `rt2x00leds_resume': : undefined reference to `led_classdev_resume'
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080425073504.GA12549@elte.hu>
+References: <20080420081302.GA11954@elte.hu>
+	<20080420.020557.231970202.davem@davemloft.net>
+	<20080425073504.GA12549@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Huang, Ying | 2008-04-25 15:21:27 [+0800]:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 25 Apr 2008 09:35:04 +0200
 
->Hi, Sebastian,
-Hi Huang,
+> hm, it seems there's still some small hole left in its Kconfig 
+> structure, overnight testing triggered this randconfig combination:
+> 
+> |  drivers/built-in.o: In function `rt2x00leds_resume':
+> |  : undefined reference to `led_classdev_resume'
+> |  drivers/built-in.o: In function `rt2x00leds_resume':
+> |  : undefined reference to `led_classdev_resume'
+> |
+> |  http://redhat.com/~mingo/misc/config-Fri_Apr_25_08_50_47_CEST_2008.bad
 
->> >So I think the reason maybe the read/write port throughput of CPU.
->> Ah so it is just a local problem you say? I may get my fingers on
->> another amd box....
->
->I mean the read/write port design difference between CPU
->micro-architecture. It is not a local problem. Sorry for my English.
-No, that is what I meant somehow. It is possible that AMD improved this
-in a later CPU generation. The AMD box I have is a pretty old one in
-comparison to Intel's dual core. It is also possible that they are
-aiming a different target and nothing changed :)
+This was reported elsewhere as well.
 
->Best Regards,
->Huang Ying
+I was sure that the patch below fixed it.
 
-Sebastian
+I don't understand how it can still fail, unless the problem is that
+selecting "FOO" does not take care to enable any dependencies of
+"FOO".
+
+commit 201410ce85d80b7b893cdc72e944a1341dd393f1
+Author: David S. Miller <davem@davemloft.net>
+Date:   Wed Apr 23 03:34:50 2008 -0700
+
+    rt2x00: Select LEDS_CLASS.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/wireless/rt2x00/Kconfig b/drivers/net/wireless/rt2x00/Kconfig
+index a1e3938..ab1029e 100644
+--- a/drivers/net/wireless/rt2x00/Kconfig
++++ b/drivers/net/wireless/rt2x00/Kconfig
+@@ -60,7 +60,8 @@ config RT2400PCI_RFKILL
+ 
+ config RT2400PCI_LEDS
+ 	bool "RT2400 leds support"
+-	depends on RT2400PCI && LEDS_CLASS
++	depends on RT2400PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -86,7 +87,8 @@ config RT2500PCI_RFKILL
+ 
+ config RT2500PCI_LEDS
+ 	bool "RT2500 leds support"
+-	depends on RT2500PCI && LEDS_CLASS
++	depends on RT2500PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -114,7 +116,8 @@ config RT61PCI_RFKILL
+ 
+ config RT61PCI_LEDS
+ 	bool "RT61 leds support"
+-	depends on RT61PCI && LEDS_CLASS
++	depends on RT61PCI
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -130,7 +133,8 @@ config RT2500USB
+ 
+ config RT2500USB_LEDS
+ 	bool "RT2500 leds support"
+-	depends on RT2500USB && LEDS_CLASS
++	depends on RT2500USB
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
+@@ -148,7 +152,8 @@ config RT73USB
+ 
+ config RT73USB_LEDS
+ 	bool "RT73 leds support"
+-	depends on RT73USB && LEDS_CLASS
++	depends on RT73USB
++	select LEDS_CLASS
+ 	select RT2X00_LIB_LEDS
+ 	---help---
+ 	  This adds support for led triggers provided my mac80211.
