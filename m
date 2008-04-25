@@ -1,35 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYDYBrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbYDYBv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbYDYBrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 21:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYDYBrO
+	id S1757568AbYDYBv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbYDYBvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 21:47:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41416
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753774AbYDYBrO (ORCPT
+	Thu, 24 Apr 2008 21:51:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36315 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754256AbYDYBvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 21:47:14 -0400
-Date: Thu, 24 Apr 2008 18:47:08 -0700 (PDT)
-Message-Id: <20080424.184708.203846258.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: lkml@ml.breakpoint.cc, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove -numa from EXTRAVERSION
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0804241238250.3607@woody.linux-foundation.org>
-References: <20080424193228.GA30634@Chamillionaire.breakpoint.cc>
-	<alpine.LFD.1.10.0804241238250.3607@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Apr 2008 21:51:18 -0400
+Date: Thu, 24 Apr 2008 18:48:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: jirislaby@gmail.com, zdenek.kabelac@gmail.com, mingo@elte.hu, rjw@sisk.pl,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
+ ffffffffffffffff
+In-Reply-To: <20080424.183558.96469288.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0804241841280.2779@woody.linux-foundation.org>
+References: <c4e36d110804230150n796c2733x5880b8e24ebc9da8@mail.gmail.com> <alpine.LFD.1.10.0804230746480.2779@woody.linux-foundation.org> <4811090A.9030809@gmail.com> <20080424.183558.96469288.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 24 Apr 2008 12:38:36 -0700 (PDT)
 
-> Heh. Thanks,
 
-Sorry, I let that slip in by mistake :-)
+On Thu, 24 Apr 2008, David Miller wrote:
+> 
+> So the clue is setting some byte at ((offset % 8) == 0) into a
+> structure with 0xf0...
+
+It's not always at (offset % 8) == 0. We've seen that 0xf0 pattern in 
+other oopses, but it's not always 8-byte aligned. In fact, when we've seen 
+it in oopses, it has generally been in the higher bytes (eg offset 5 
+within a 64-bit word, causing an invalid pointer on x86-64).
+
+But that 0xf0 definitely has shown up before. It's not the *only* 
+corruption, but it's definitely a very interesting pattern. And the other 
+ones that didn't show the 0xf0 pattern could obviously be due to pointers 
+that were corrupted by 0xf0 in low bytes, so it _may_ be the source of the 
+other corruptions too that didn't have an obvious 0xf0 directly in them.
+
+			Linus
