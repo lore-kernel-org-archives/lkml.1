@@ -1,140 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbYDYTF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933628AbYDYTGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbYDYTF5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764542AbYDYSlo
+	id S933628AbYDYTGX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764861AbYDYSou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:41:44 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:9749 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761464AbYDYSji (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:39:38 -0400
-Message-Id: <20080425183925.949094545@ldl.fc.hp.com>
-References: <20080425183807.366134771@ldl.fc.hp.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 12:38:16 -0600
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: Adam Belay <ambx1@neo.rr.com>
-Cc: Adam M Belay <abelay@mit.edu>
-Cc: Li Shaohua <shaohua.li@intel.com>
-Cc: Matthieu Castet <castet.matthieu@free.fr>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 09/54] PNP: change pnp_add_card_id() to allocate its own pnp_id structures
-Content-Disposition: inline; filename=pnp-move-allocation-into-pnp_add_card_id
+	Fri, 25 Apr 2008 14:44:50 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53314 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765216AbYDYSor convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 14:44:47 -0400
+Message-Id: <1209149086.433.1249904351@webmail.messagingengine.com>
+X-Sasl-Enc: oIXDdFlkkztV8JU73KoVg+1XNafWc1VtQzb2u3QRyCsY 1209149086
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Eric Dumazet" <dada1@cosmosbay.com>, "David Chinner" <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "lkml" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080425090901.ca642c4d.randy.dunlap@oracle.com>
+   <48121331.1030204@cosmosbay.com>
+   <1209145675.2005.1249890339@webmail.messagingengine.com>
+   <48121A37.5020504@cosmosbay.com>
+   <20080425191830.GA4898@martell.zuzino.mipt.ru>
+Subject: Re: [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
+In-Reply-To: <20080425191830.GA4898@martell.zuzino.mipt.ru>
+Date: Fri, 25 Apr 2008 20:44:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This moves some of the pnp_id knowledge out of the backends and into
-the PNP core.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Acked-By: Rene Herman <rene.herman@gmail.com>
+On Fri, 25 Apr 2008 23:18:30 +0400, "Alexey Dobriyan"
+<adobriyan@gmail.com> said:
+> >>>> Pid: 20926, comm: cat Not tainted 2.6.25-git5 #1
+> >>>> RIP: 0010:[<ffffffff80357aac>]  [<ffffffff80357aac>] strnlen+0x15/0x1f
+> >>>> RSP: 0018:ffff810274981cc8  EFLAGS: 00010297
+> >>>> RAX: ffffffffa00b7551 RBX: ffff810274981d38 RCX: ffffffff80603719
+> >>>> RDX: ffff810274981d68 RSI: fffffffffffffffe RDI: ffffffffa00b7551
+> >>>> RBP: ffff810274981cc8 R08: 00000000ffffffff R09: 00000000000000c8
+> >>>> R10: 0000000000000050 R11: 0000000000000246 R12: ffff8102364600cc
+> >>>> R13: ffffffffa00b7551 R14: 0000000000000011 R15: 0000000000000010
+> >>>> FS:  00007f956375d6f0(0000) GS:ffff81027f808980(0000) 
+> >>>> knlGS:00000000f7f7f6c0
+> >>>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> >>>> CR2: ffffffffa00b7551 CR3: 00000002734d5000 CR4: 00000000000006e0
+> >>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> >>>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> >>>> Process cat (pid: 20926, threadinfo ffff810274980000, task 
+> >>>> ffff81026d18ce20)
+> >>>> Stack:  ffff810274981d28 ffffffff80358d5a ffff810274981d28 
+> >>>> 0000000000000f34
+> >>>>  ffff8102364600cc ffff810236461000 ffffffff80603719 ffff81024ac14f00
+> >>>>  ffff81024ac14f00 0000000000000004 0000000000000000 0000000000000000
+> >>>> Call Trace:
+> >>>>  [<ffffffff80358d5a>] vsnprintf+0x31b/0x592
+> >>>>  [<ffffffff802a78eb>] seq_printf+0x7e/0xa7
+> >>>>  [<ffffffff8024c6fe>] ? debug_mutex_free_waiter+0x46/0x4a
+> >>>>  [<ffffffff8053aaa2>] ? __down_read+0x17/0x92
+> >>>>  [<ffffffff80539c25>] ? __mutex_lock_slowpath+0x1d8/0x1e5
+> >>>>  [<ffffffff802886c2>] ? count_partial+0x45/0x4d
+> >>>>  [<ffffffff80289a6d>] s_show+0x7e/0xcb
+> >>>>  [<ffffffff802a7dd9>] seq_read+0x10b/0x298
+> >>>>  [<ffffffff802c7dbb>] proc_reg_read+0x7b/0x95
+> >>>>  [<ffffffff8028ec0b>] vfs_read+0xab/0x154
+> >>>>  [<ffffffff8028f015>] sys_read+0x47/0x6f
+> >>>>  [<ffffffff8020c182>] tracesys+0xd5/0xda
+> >>>>
+> >>>>
+> >>>> Code: 48 8d 44 11 ff 40 38 30 74 0a 48 ff c8 48 39 d0 73 f3 31 c0 c9 c3 
+> >>>> 55 48 89 f8 48 89 e5 eb 03 48 ff c0 48 ff ce 48 83 fe ff 74 05 <80> 38 
+> >>>> 00 75 ef c9 48 29 f8 c3 55 31 c0 48 89 e5 eb 13 41 38 c8 RIP  
+> >>>> [<ffffffff80357aac>] strnlen+0x15/0x1f
+> >>>>  RSP <ffff810274981cc8>
+> >>>> CR2: ffffffffa00b7551
+> >>>>
+> >>>>
+> >>>> ---
+> >>>>
+> >>>>         
+> >>> My initial thoughts are :
+> >>>
+> >>> Fault address is  0xffffffffa00b7551 which is in module mapping space on 
+> >>> x86_64
+> >>>
+> >>> strnlen() is OK
+> >>>
+> >>> Some module created a kmem_cache (with kmem_cache_create()).
+> >>> slub or slab kept a pointer to the cache name in their internal
+> >>> structures.
+> >>> Module was unloaded but forgot to destroy kmem cache before unloading.
+> >>>
+> >>> Fault happens while doing "cat /proc/slabinfo", when trying to 
+> >>> dereference cache name since module was unloaded and its memory unmapped.
+> >>>
+> >>> Next step is to find which module was unloaded ...
+> >>>     
+> >>
+> >> The last one was reiserfs, apparently ;).
+> 
+> Which doesn't mean anything ;-)
 
-Index: work10/drivers/pnp/base.h
-===================================================================
---- work10.orig/drivers/pnp/base.h	2008-04-25 11:14:50.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-04-25 11:14:50.000000000 -0600
-@@ -4,7 +4,7 @@
- void pnp_eisa_id_to_string(u32 id, char *str);
- struct pnp_dev *pnp_alloc_dev(struct pnp_protocol *, int id, char *pnpid);
- struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
--int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card);
-+struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
- int pnp_interface_attach_device(struct pnp_dev *dev);
- void pnp_fixup_device(struct pnp_dev *dev);
- void pnp_free_option(struct pnp_option *option);
-Index: work10/drivers/pnp/card.c
-===================================================================
---- work10.orig/drivers/pnp/card.c	2008-04-25 11:12:17.000000000 -0600
-+++ work10/drivers/pnp/card.c	2008-04-25 11:14:50.000000000 -0600
-@@ -5,6 +5,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/ctype.h>
- #include <linux/slab.h>
- #include <linux/pnp.h>
- #include "base.h"
-@@ -100,19 +101,33 @@
-  * @id: pointer to a pnp_id structure
-  * @card: pointer to the desired card
-  */
--int pnp_add_card_id(struct pnp_id *id, struct pnp_card *card)
-+struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id)
- {
--	struct pnp_id *ptr;
-+	struct pnp_id *dev_id, *ptr;
- 
--	id->next = NULL;
-+	dev_id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
-+	if (!dev_id)
-+		return NULL;
-+
-+	dev_id->id[0] = id[0];
-+	dev_id->id[1] = id[1];
-+	dev_id->id[2] = id[2];
-+	dev_id->id[3] = tolower(id[3]);
-+	dev_id->id[4] = tolower(id[4]);
-+	dev_id->id[5] = tolower(id[5]);
-+	dev_id->id[6] = tolower(id[6]);
-+	dev_id->id[7] = '\0';
-+
-+	dev_id->next = NULL;
- 	ptr = card->id;
- 	while (ptr && ptr->next)
- 		ptr = ptr->next;
- 	if (ptr)
--		ptr->next = id;
-+		ptr->next = dev_id;
- 	else
--		card->id = id;
--	return 0;
-+		card->id = dev_id;
-+
-+	return dev_id;
- }
- 
- static void pnp_free_card_ids(struct pnp_card *card)
-Index: work10/drivers/pnp/isapnp/core.c
-===================================================================
---- work10.orig/drivers/pnp/isapnp/core.c	2008-04-25 11:14:49.000000000 -0600
-+++ work10/drivers/pnp/isapnp/core.c	2008-04-25 11:14:50.000000000 -0600
-@@ -822,17 +822,18 @@
- static void isapnp_parse_card_id(struct pnp_card *card, unsigned short vendor,
- 				 unsigned short device)
- {
--	struct pnp_id *id = kzalloc(sizeof(struct pnp_id), GFP_KERNEL);
-+	char id[8];
- 
--	if (!id)
--		return;
--	sprintf(id->id, "%c%c%c%x%x%x%x",
--		'A' + ((vendor >> 2) & 0x3f) - 1,
--		'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1,
--		'A' + ((vendor >> 8) & 0x1f) - 1,
--		(device >> 4) & 0x0f,
--		device & 0x0f, (device >> 12) & 0x0f, (device >> 8) & 0x0f);
--	pnp_add_card_id(id, card);
-+	id[0] = 'A' + ((vendor >> 2) & 0x3f) - 1;
-+	id[1] = 'A' + (((vendor & 3) << 3) | ((vendor >> 13) & 7)) - 1;
-+	id[2] = 'A' + ((vendor >> 8) & 0x1f) - 1;
-+	id[3] = hex_asc((device >> 4) & 0x0f);
-+	id[4] = hex_asc(device & 0x0f);
-+	id[5] = hex_asc((device >> 12) & 0x0f);
-+	id[6] = hex_asc((device >> 8) & 0x0f);
-+	id[7] = '\0';
-+
-+	pnp_add_card_id(card, id);
- }
- 
- /*
+It was a filesystem, though :-/.
+
+> >>   
+> > Yes but reiserfs correctly destroys its cache at unload time.
+> >
+> > Must be something else...
+> 
+> 
+> [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
+> 
+> Bug introduces in commit eb01c9cd87c7a9998c2edf209721ea069e3e3652
+> aka "[XFS] Remove the xlog_ticket allocator"
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
+>  fs/xfs/xfs_vfsops.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- a/fs/xfs/xfs_vfsops.c
+> +++ b/fs/xfs/xfs_vfsops.c
+> @@ -186,6 +186,7 @@ xfs_cleanup(void)
+>  	kmem_zone_destroy(xfs_efi_zone);
+>  	kmem_zone_destroy(xfs_ifork_zone);
+>  	kmem_zone_destroy(xfs_ili_zone);
+> +	kmem_zone_destroy(xfs_log_ticket_zone);
+>  }
+>  
+>  /*
+> 
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
+http://www.fastmail.fm - And now for something completely different…
+
