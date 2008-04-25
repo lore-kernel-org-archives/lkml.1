@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765951AbYDYSJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbYDYSJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765951AbYDYSJQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764848AbYDYR5j
+	id S932074AbYDYSJu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762519AbYDYR5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:57:39 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:53148 "EHLO
+	Fri, 25 Apr 2008 13:57:42 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53154 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764815AbYDYR5a (ORCPT
+	with ESMTP id S1764850AbYDYR5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:57:30 -0400
-Date: Fri, 25 Apr 2008 13:56:10 -0400
+	Fri, 25 Apr 2008 13:57:40 -0400
+Date: Fri, 25 Apr 2008 13:56:06 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 9/19] UML - Tidy ptrace interface
-Message-ID: <20080425175610.GA11188@c2.user-mode-linux.org>
+Subject: [PATCH 2/19] UML - Tidy stub management code
+Message-ID: <20080425175606.GA11174@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,225 +24,241 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tidy the ptrace interface code.  Removed a bunch of unused macros.
-Started converting register sets from arrays of longs to structures.
+Restructure the stub management code to make it simpler.
+
+syscall_stub_done is extracted from do_syscall_stub.
+
+The counters are gone since I never looked at them.
+
+The common code in run_syscall_stub and syscall_stub_data is extracted
+into flush_syscalls.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/include/sysdep-i386/ptrace_user.h   |   30 ----------------------------
- arch/um/include/sysdep-x86_64/ptrace_user.h |   17 +++------------
- arch/um/os-Linux/sys-i386/registers.c       |    5 ++--
- arch/um/sys-i386/ptrace.c                   |   30 +++++++++++++---------------
- arch/um/sys-i386/user-offsets.c             |    2 -
- arch/um/sys-x86_64/user-offsets.c           |    1 
- 6 files changed, 23 insertions(+), 62 deletions(-)
+ arch/um/os-Linux/skas/mem.c |  162 +++++++++++++++++++++++---------------------
+ 1 file changed, 85 insertions(+), 77 deletions(-)
 
-Index: linux-2.6-git/arch/um/include/sysdep-i386/ptrace_user.h
+Index: linux-2.6-git/arch/um/os-Linux/skas/mem.c
 ===================================================================
---- linux-2.6-git.orig/arch/um/include/sysdep-i386/ptrace_user.h	2008-02-12 13:05:07.000000000 -0500
-+++ linux-2.6-git/arch/um/include/sysdep-i386/ptrace_user.h	2008-02-12 13:09:44.000000000 -0500
-@@ -41,38 +41,10 @@
- #define PT_SP_OFFSET PT_OFFSET(UESP)
- #define PT_SP(regs) ((regs)[UESP])
+--- linux-2.6-git.orig/arch/um/os-Linux/skas/mem.c	2008-04-25 11:36:59.000000000 -0400
++++ linux-2.6-git/arch/um/os-Linux/skas/mem.c	2008-04-25 11:39:07.000000000 -0400
+@@ -40,35 +40,69 @@ static unsigned long syscall_regs[MAX_RE
  
--#define FP_SIZE ((HOST_XFP_SIZE > HOST_FP_SIZE) ? HOST_XFP_SIZE : HOST_FP_SIZE)
-+#define FP_SIZE ((HOST_FPX_SIZE > HOST_FP_SIZE) ? HOST_FPX_SIZE : HOST_FP_SIZE)
- 
- #ifndef FRAME_SIZE
- #define FRAME_SIZE (17)
- #endif
--#define FRAME_SIZE_OFFSET (FRAME_SIZE * sizeof(unsigned long))
--
--#define FP_FRAME_SIZE (27)
--#define FPX_FRAME_SIZE (128)
--
--#ifdef PTRACE_GETREGS
--#define UM_HAVE_GETREGS
--#endif
--
--#ifdef PTRACE_SETREGS
--#define UM_HAVE_SETREGS
--#endif
--
--#ifdef PTRACE_GETFPREGS
--#define UM_HAVE_GETFPREGS
--#endif
--
--#ifdef PTRACE_SETFPREGS
--#define UM_HAVE_SETFPREGS
--#endif
--
--#ifdef PTRACE_GETFPXREGS
--#define UM_HAVE_GETFPXREGS
--#endif
--
--#ifdef PTRACE_SETFPXREGS
--#define UM_HAVE_SETFPXREGS
--#endif
- 
- #endif
-Index: linux-2.6-git/arch/um/include/sysdep-x86_64/ptrace_user.h
-===================================================================
---- linux-2.6-git.orig/arch/um/include/sysdep-x86_64/ptrace_user.h	2008-02-12 13:05:07.000000000 -0500
-+++ linux-2.6-git/arch/um/include/sysdep-x86_64/ptrace_user.h	2008-02-12 13:09:44.000000000 -0500
-@@ -48,7 +48,8 @@
- #define PT_ORIG_RAX_OFFSET (ORIG_RAX)
- #define PT_ORIG_RAX(regs) ((regs)[PT_INDEX(ORIG_RAX)])
- 
--/* x86_64 FC3 doesn't define this in /usr/include/linux/ptrace.h even though
-+/*
-+ * x86_64 FC3 doesn't define this in /usr/include/linux/ptrace.h even though
-  * it's defined in the kernel's include/linux/ptrace.h. Additionally, use the
-  * 2.4 name and value for 2.4 host compatibility.
-  */
-@@ -56,7 +57,8 @@
- #define PTRACE_OLDSETOPTIONS 21
- #endif
- 
--/* These are before the system call, so the system call number is RAX
-+/*
-+ * These are before the system call, so the system call number is RAX
-  * rather than ORIG_RAX, and arg4 is R10 rather than RCX
-  */
- #define REGS_SYSCALL_NR PT_INDEX(RAX)
-@@ -73,14 +75,3 @@
- #define FP_SIZE (HOST_FP_SIZE)
- 
- #endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6-git/arch/um/sys-i386/ptrace.c
-===================================================================
---- linux-2.6-git.orig/arch/um/sys-i386/ptrace.c	2008-02-12 12:44:44.000000000 -0500
-+++ linux-2.6-git/arch/um/sys-i386/ptrace.c	2008-02-12 13:16:14.000000000 -0500
-@@ -148,14 +148,13 @@ int peek_user(struct task_struct *child,
- int get_fpregs(struct user_i387_struct __user *buf, struct task_struct *child)
+ static int __init init_syscall_regs(void)
  {
- 	int err, n, cpu = ((struct thread_info *) child->stack)->cpu;
--	long fpregs[HOST_FP_SIZE];
-+	struct user_i387_struct fpregs;
- 
--	BUG_ON(sizeof(*buf) != sizeof(fpregs));
--	err = save_fp_registers(userspace_pid[cpu], fpregs);
-+	err = save_fp_registers(userspace_pid[cpu], (unsigned long *) &fpregs);
- 	if (err)
- 		return err;
- 
--	n = copy_to_user(buf, fpregs, sizeof(fpregs));
-+	n = copy_to_user(buf, &fpregs, sizeof(fpregs));
- 	if(n > 0)
- 		return -EFAULT;
- 
-@@ -165,27 +164,26 @@ int get_fpregs(struct user_i387_struct _
- int set_fpregs(struct user_i387_struct __user *buf, struct task_struct *child)
- {
- 	int n, cpu = ((struct thread_info *) child->stack)->cpu;
--	long fpregs[HOST_FP_SIZE];
-+	struct user_i387_struct fpregs;
- 
--	BUG_ON(sizeof(*buf) != sizeof(fpregs));
--	n = copy_from_user(fpregs, buf, sizeof(fpregs));
-+	n = copy_from_user(&fpregs, buf, sizeof(fpregs));
- 	if (n > 0)
- 		return -EFAULT;
- 
--	return restore_fp_registers(userspace_pid[cpu], fpregs);
-+	return restore_fp_registers(userspace_pid[cpu],
-+				    (unsigned long *) &fpregs);
++	unsigned long *stub_entry;
++
+ 	get_safe_registers(syscall_regs);
++	stub_entry = &batch_syscall_stub;
++
+ 	syscall_regs[REGS_IP_INDEX] = STUB_CODE +
+-		((unsigned long) &batch_syscall_stub -
++		((unsigned long) stub_entry -
+ 		 (unsigned long) &__syscall_stub_start);
+ 	return 0;
  }
  
- int get_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *child)
+ __initcall(init_syscall_regs);
+ 
+-extern int proc_mm;
++static int syscall_stub_done(unsigned long stack)
++{
++	unsigned long *syscall, *data, offset;
++	int ret, n;
++
++	/*
++	 * When the stub stops, we find the following values on the
++	 * beginning of the stack:
++	 * (long) return_value
++	 * (long) offset to failed sycall data (0 if no error)
++	 */
++	ret = *((unsigned long *) stack);
++	offset = *((unsigned long *) stack + 1);
++	if (offset == 0)
++		return 0;
+ 
+-int single_count = 0;
+-int multi_count = 0;
+-int multi_op_count = 0;
++	data = (unsigned long *)(stack + offset - STUB_DATA);
++	printk(UM_KERN_ERR "syscall_stub_done : ret = %d, offset = %ld, "
++	       "data = %p\n", ret, offset, data);
++	syscall = (unsigned long *)((unsigned long)data + data[0]);
++	printk(UM_KERN_ERR "syscall_stub_done : syscall %ld failed, "
++	       "return value = 0x%x, expected return value = 0x%lx\n",
++	       syscall[0], ret, syscall[7]);
++	printk(UM_KERN_ERR "    syscall parameters: "
++	       "0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
++	       syscall[1], syscall[2], syscall[3],
++	       syscall[4], syscall[5], syscall[6]);
++	for (n = 1; n < data[0]/sizeof(long); n++) {
++		if (n == 1)
++			printk(UM_KERN_ERR "    additional syscall "
++			       "data:");
++		if (n % 4 == 1)
++			printk(UM_KERN_CONT "\n" UM_KERN_ERR "      ");
++		printk(UM_KERN_CONT "  0x%lx", data[n]);
++	}
++	if (n > 1)
++		printk("\n");
+ 
+-static inline long do_syscall_stub(struct mm_id * mm_idp, void **addr)
++	return ret;
++}
++
++static long do_syscall_stub(struct mm_id *mm_idp, void **addr)
  {
- 	int err, n, cpu = ((struct thread_info *) child->stack)->cpu;
--	long fpregs[HOST_XFP_SIZE];
-+	struct user_fxsr_struct fpregs;
+-	int n, i;
+-	long ret, offset;
+-	unsigned long * data;
+-	unsigned long * syscall;
+-	int err, pid = mm_idp->u.pid;
++	long ret;
++	int n, i, err, pid = mm_idp->u.pid;
  
--	BUG_ON(sizeof(*buf) != sizeof(fpregs));
--	err = save_fpx_registers(userspace_pid[cpu], fpregs);
-+	err = save_fpx_registers(userspace_pid[cpu], (unsigned long *) &fpregs);
- 	if (err)
- 		return err;
+ 	if (proc_mm)
+ 		/* FIXME: Need to look up userspace_pid by cpu */
+ 		pid = userspace_pid[0];
  
--	n = copy_to_user(buf, fpregs, sizeof(fpregs));
-+	n = copy_to_user(buf, &fpregs, sizeof(fpregs));
- 	if(n > 0)
- 		return -EFAULT;
+-	multi_count++;
+-
+ 	n = ptrace_setregs(pid, syscall_regs);
+ 	if (n < 0) {
+ 		printk(UM_KERN_ERR "Registers - \n");
+@@ -85,52 +119,39 @@ static inline long do_syscall_stub(struc
  
-@@ -195,14 +193,14 @@ int get_fpxregs(struct user_fxsr_struct 
- int set_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *child)
- {
- 	int n, cpu = ((struct thread_info *) child->stack)->cpu;
--	long fpregs[HOST_XFP_SIZE];
-+	struct user_fxsr_struct fpregs;
+ 	wait_stub_done(pid);
  
--	BUG_ON(sizeof(*buf) != sizeof(fpregs));
--	n = copy_from_user(fpregs, buf, sizeof(fpregs));
-+	n = copy_from_user(&fpregs, buf, sizeof(fpregs));
- 	if (n > 0)
- 		return -EFAULT;
+-	/*
+-	 * When the stub stops, we find the following values on the
+-	 * beginning of the stack:
+-	 * (long )return_value
+-	 * (long )offset to failed sycall-data (0, if no error)
+-	 */
+-	ret = *((unsigned long *) mm_idp->stack);
+-	offset = *((unsigned long *) mm_idp->stack + 1);
+-	if (offset) {
+-		data = (unsigned long *)(mm_idp->stack + offset - STUB_DATA);
+-		printk(UM_KERN_ERR "do_syscall_stub : ret = %ld, offset = %ld, "
+-		       "data = %p\n", ret, offset, data);
+-		syscall = (unsigned long *)((unsigned long)data + data[0]);
+-		printk(UM_KERN_ERR "do_syscall_stub: syscall %ld failed, "
+-		       "return value = 0x%lx, expected return value = 0x%lx\n",
+-		       syscall[0], ret, syscall[7]);
+-		printk(UM_KERN_ERR "    syscall parameters: "
+-		       "0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
+-		       syscall[1], syscall[2], syscall[3],
+-		       syscall[4], syscall[5], syscall[6]);
+-		for (n = 1; n < data[0]/sizeof(long); n++) {
+-			if (n == 1)
+-				printk(UM_KERN_ERR "    additional syscall "
+-				       "data:");
+-			if (n % 4 == 1)
+-				printk("\n" UM_KERN_ERR "      ");
+-			printk("  0x%lx", data[n]);
+-		}
+-		if (n > 1)
+-			printk("\n");
+-	}
+-	else ret = 0;
++	ret = syscall_stub_done(mm_idp->stack);
  
--	return restore_fpx_registers(userspace_pid[cpu], fpregs);
-+	return restore_fpx_registers(userspace_pid[cpu],
-+				     (unsigned long *) &fpregs);
+ 	*addr = check_init_stack(mm_idp, NULL);
+ 
+ 	return ret;
  }
  
- long subarch_ptrace(struct task_struct *child, long request, long addr,
-Index: linux-2.6-git/arch/um/os-Linux/sys-i386/registers.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/sys-i386/registers.c	2008-02-12 13:05:07.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/sys-i386/registers.c	2008-02-12 13:10:44.000000000 -0500
-@@ -5,6 +5,7 @@
-  */
- 
- #include <errno.h>
-+#include <asm/user.h>
- #include "kern_constants.h"
- #include "longjmp.h"
- #include "user.h"
-@@ -74,10 +75,10 @@ int put_fp_registers(int pid, unsigned l
- 
- void arch_init_registers(int pid)
+-long run_syscall_stub(struct mm_id * mm_idp, int syscall,
++static int flush_syscalls(struct mm_id *mm_idp, void **addr, int extra)
++{
++	unsigned long *stack = check_init_stack(mm_idp, *addr);
++	int current, end;
++
++	current = ((unsigned long) stack) & ~UM_KERN_PAGE_MASK;
++	end = UM_KERN_PAGE_SIZE;
++
++	if (current + (10 + extra) * sizeof(long) < end)
++		return 0;
++
++	return do_syscall_stub(mm_idp, addr);
++}
++
++long run_syscall_stub(struct mm_id *mm_idp, int syscall,
+ 		      unsigned long *args, long expected, void **addr,
+ 		      int done)
  {
--	unsigned long fpx_regs[HOST_XFP_SIZE];
-+	struct user_fxsr_struct fpx_regs;
- 	int err;
+-	unsigned long *stack = check_init_stack(mm_idp, *addr);
++	unsigned long *stack;
++	int ret;
  
--	err = ptrace(PTRACE_GETFPXREGS, pid, 0, fpx_regs);
-+	err = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpx_regs);
- 	if (!err)
- 		return;
+-	if (done && *addr == NULL)
+-		single_count++;
++	ret = flush_syscalls(mm_idp, addr, 0);
++	if (ret)
++		return ret;
++
++	stack = check_init_stack(mm_idp, *addr);
  
-Index: linux-2.6-git/arch/um/sys-i386/user-offsets.c
-===================================================================
---- linux-2.6-git.orig/arch/um/sys-i386/user-offsets.c	2008-02-12 13:00:01.000000000 -0500
-+++ linux-2.6-git/arch/um/sys-i386/user-offsets.c	2008-02-12 13:09:44.000000000 -0500
-@@ -22,7 +22,7 @@ void foo(void)
- 	OFFSET(HOST_SC_CR2, sigcontext, cr2);
+ 	*stack += sizeof(long);
+ 	stack += *stack / sizeof(long);
+@@ -144,45 +165,32 @@ long run_syscall_stub(struct mm_id * mm_
+ 	*stack++ = args[5];
+ 	*stack++ = expected;
+ 	*stack = 0;
+-	multi_op_count++;
  
- 	DEFINE_LONGS(HOST_FP_SIZE, sizeof(struct user_fpregs_struct));
--	DEFINE_LONGS(HOST_XFP_SIZE, sizeof(struct user_fpxregs_struct));
-+	DEFINE_LONGS(HOST_FPX_SIZE, sizeof(struct user_fpxregs_struct));
+-	if (!done && ((((unsigned long) stack) & ~UM_KERN_PAGE_MASK) <
+-		     UM_KERN_PAGE_SIZE - 10 * sizeof(long))) {
+-		*addr = stack;
+-		return 0;
+-	}
++	if (done)
++		return do_syscall_stub(mm_idp, addr);
  
- 	DEFINE(HOST_IP, EIP);
- 	DEFINE(HOST_SP, UESP);
-Index: linux-2.6-git/arch/um/sys-x86_64/user-offsets.c
-===================================================================
---- linux-2.6-git.orig/arch/um/sys-x86_64/user-offsets.c	2008-02-12 13:00:01.000000000 -0500
-+++ linux-2.6-git/arch/um/sys-x86_64/user-offsets.c	2008-02-12 13:09:44.000000000 -0500
-@@ -24,7 +24,6 @@ void foo(void)
- 	OFFSET(HOST_SC_TRAPNO, sigcontext, trapno);
+-	return do_syscall_stub(mm_idp, addr);
++	*addr = stack;
++
++	return 0;
+ }
  
- 	DEFINE(HOST_FP_SIZE, sizeof(struct _fpstate) / sizeof(unsigned long));
--	DEFINE(HOST_XFP_SIZE, 0);
- 	DEFINE_LONGS(HOST_RBX, RBX);
- 	DEFINE_LONGS(HOST_RCX, RCX);
- 	DEFINE_LONGS(HOST_RDI, RDI);
+-long syscall_stub_data(struct mm_id * mm_idp,
+-		       unsigned long *data, int data_count,
+-		       void **addr, void **stub_addr)
++long syscall_stub_data(struct mm_id *mm_idp, unsigned long *data,
++		       int data_count, void **addr, void **stub_addr)
+ {
+ 	unsigned long *stack;
+-	int ret = 0;
++	int ret;
+ 
+-	/*
+-	 * If *addr still is uninitialized, it *must* contain NULL.
+-	 * Thus in this case do_syscall_stub correctly won't be called.
+-	 */
+-	if ((((unsigned long) *addr) & ~UM_KERN_PAGE_MASK) >=
+-	   UM_KERN_PAGE_SIZE - (10 + data_count) * sizeof(long)) {
+-		ret = do_syscall_stub(mm_idp, addr);
+-		/* in case of error, don't overwrite data on stack */
+-		if (ret)
+-			return ret;
+-	}
++	ret = flush_syscalls(mm_idp, addr, data_count);
++	if (ret)
++		return ret;
+ 
+ 	stack = check_init_stack(mm_idp, *addr);
+-	*addr = stack;
+-
+-	*stack = data_count * sizeof(long);
++	*stack++ = data_count * sizeof(long);
+ 
+-	memcpy(stack + 1, data, data_count * sizeof(long));
++	memcpy(stack, data, data_count * sizeof(long));
+ 
+-	*stub_addr = (void *)(((unsigned long)(stack + 1) &
+-			       ~UM_KERN_PAGE_MASK) + STUB_DATA);
++	*stub_addr = (void *)(((unsigned long) stack & ~UM_KERN_PAGE_MASK) +
++			      STUB_DATA);
+ 
+ 	return 0;
+ }
