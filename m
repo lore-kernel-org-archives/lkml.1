@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbYDYUHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbYDYUJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763475AbYDYUHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 16:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbYDYUHl
+	id S1764134AbYDYUJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 16:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760544AbYDYUJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 16:07:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56146
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759703AbYDYUHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 16:07:40 -0400
-Date: Fri, 25 Apr 2008 13:07:39 -0700 (PDT)
-Message-Id: <20080425.130739.121044720.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: peterz@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk, tglx@linutronix.de
-Subject: Re: [git pull] scheduler/misc fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080425105149.GA11227@elte.hu>
-References: <1209109710.7115.400.camel@twins>
-	<1209118778.7115.417.camel@twins>
-	<20080425105149.GA11227@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Apr 2008 16:09:09 -0400
+Received: from pearlgates.net ([82.92.180.13]:53797 "EHLO mail.pearlgates.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760480AbYDYUJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 16:09:08 -0400
+X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Apr 2008 16:09:07 EDT
+Date: Fri, 25 Apr 2008 21:59:05 +0200
+From: Jos van der Ende <seraph@xs4all.nl>
+To: David Miller <davem@davemloft.net>
+Cc: jarkao2@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [SPARC64] INO problem Re: [Bug 10273] New: Sun GEM (PCI) -
+ network device doesn't work
+Message-Id: <20080425215905.0d21f5ca.seraph@xs4all.nl>
+In-Reply-To: <20080425.002636.250010462.davem@davemloft.net>
+References: <20080317143624.da313311.akpm@linux-foundation.org>
+	<20080402182655.GA2739@ami.dom.local>
+	<20080425.002636.250010462.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.8; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 25 Apr 2008 12:51:49 +0200
+> Please give this patch a try (this is against 2.6.23, which is the
+> version you reported the bug against, let me know if another version
+> is more convenient).
 
-> I.e. i'd pretty much concur with you that the best solution is the very 
-> first patch - which is also in the pull to Linus - we just now 
-> understand exactly why ;-) David, do you agree?
+I applied the patch against 2.6.24-gentoo-r4, the current kernel on this machine. It worked fine, with only an offset of 12 lines. Nothing unusual during compile either.
 
-I just want my machines working, so I wrapped all sparc64 IPI
-calls in irq_{enter,exit}() and pushed that to Linus.
+The first results are hopeful: I am no longer able to trigger this bug by loading sym53c8xx before sungem, nor by having them both loaded by udev. Nothing odd in dmesg and the machine is completely functional.
+
+
+I don't have much time for testing today, but if desired I will gladly do some more testing tomorrow or Sunday.
+
+
+-- 
+Jos van der Ende <seraph@xs4all.nl>
