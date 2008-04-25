@@ -1,120 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYDYFss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYDYFwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYDYFss (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 01:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbYDYFsi
+	id S1757304AbYDYFwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 01:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbYDYFwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 01:48:38 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:53089 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbYDYFsg (ORCPT
+	Fri, 25 Apr 2008 01:52:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:5797 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYDYFwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 01:48:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-References: <20080422221733.GA16260@havoc.gtf.org>
-	<480E6DE5.6010103@garzik.org>
-	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>
-	<480E796E.4070001@garzik.org>
-	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>
-	<20080423000529.GG28933@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>
-	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>
-	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>
-	<m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org>
-	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>
-	<4810A9E6.1080201@garzik.org>
-	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org>
-	<m1r6cvgpw2.fsf@frodo.ebiederm.org> <4810C3B5.3020605@garzik.org>
-	<m11w4u8x1c.fsf@frodo.ebiederm.org> <481150EE.3040103@garzik.org>
-	<adaiqy67fib.fsf@cisco.com> <48115F90.1030100@garzik.org>
-Date: Thu, 24 Apr 2008 22:48:24 -0700
-In-Reply-To: <48115F90.1030100@garzik.org> (Jeff Garzik's message of "Fri, 25
-	Apr 2008 00:35:28 -0400")
-Message-ID: <m1zlri4h93.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 25 Apr 2008 01:52:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=tLQ4teqHiKtcftB0iJVCkBzyAP6LgwqI4bJ1XXFY1S91fyw0sHPSOVuvTsSLsohHC
+	I+LR8+fhYPaLwJ+J8EVLQ==
+Message-ID: <6599ad830804242251w439dd712tc1919b489535c74c@mail.gmail.com>
+Date: Thu, 24 Apr 2008 22:51:57 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Matt Helsley" <matthltc@us.ibm.com>
+Subject: Re: [RFC][PATCH 3/5] Container Freezer: Implement freezer cgroup subsystem
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Cedric Le Goater" <clg@fr.ibm.com>,
+       "Oren Laadan" <orenl@cs.columbia.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Pavel Machek" <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <20080424064757.526468716@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  2.2 XMSubMetaSxObfu_04 Obfuscated Sexy Noun-Thing
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: MSI, fun for the whole family
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080424064756.643890130@us.ibm.com>
+	 <20080424064757.526468716@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+>+static const char *freezer_state_strs[] = {
+>+	"RUNNING\n",
+>+	"FREEZING\n" ,
+>+	"FROZEN\n"
+>+};
 
-> Roland Dreier wrote:
->> I think you've fundamentally misunderstood what the PCI spec for MSI
->> multi message means.  It is true that if the whole system agrees, then
->
-> You seem to be ignoring a key usage...
->
->
->> an MSI-capable device that supports multiple messages might be allocated
->> a range of vectors (MSI is kind of stupid because it only allows
->> multiple messages to be generated by varying the low order bits -- MSI-X
->> fixes this limitation).  However, the way that these different messages
->> are handled is that they are all independent interrupt vectors.
->>
->> Now, it is true that the kernel could do something crazy and collapse
->> all these interrupt vectors into a single "IRQ" and then tell the
->> interrupt handler which vector it was by passing some "metadata" in, but
->> why not just give each MSI message it's own IRQ?
->
-> The answer is: the driver might prefer to see the message as it arrived, rather
-> than dividing it up into independent vectors.  The message itself is a unit of
-> data consistency, and there is value in letting the driver see the bounds of
-> that unit.
+I think it might be cleaner to not include the \n characters in this array.
 
-On x86 the driver very much sees the message as it arrived at the cpu.
-If you want the message as it was sent we would need to deduce it from
-which cpu we are on and which interrupt descriptors function was called.
+>+static inline int cgroup_frozen(struct task_struct *task)
+>+{
+>+	struct cgroup *cgroup = task_cgroup(task, freezer_subsys_id);
+>+	struct freezer *freezer = cgroup_freezer(cgroup);
+>+	enum freezer_state state;
+>+
+>+	spin_lock(&freezer->lock);
+>+	state = freezer->state;
+>+	spin_unlock(&freezer->lock);
+>+
+>+	return (state == STATE_FROZEN);
+>+}
 
-As for the bounds of data consistency currently no information is lost.
+You need to be in an RCU critical section or else hold task_lock() in
+order to dereference the cgroup returned from task_cgroup()
 
-> As it stands now, we only a spray of $N function calls for each message, with no
-> notion of "we started processing this set of messages" and "we ended
-> processing[...]"
+I'm not sure that you need to take freezer->lock here - you're just
+reading a single word.
 
-Hopefully my other messages explains it better but there is no
-spray of function calls.  Nor can there be.  There is not a bitmask in
-your MSI message there is instead a base 2 number encoding which port
-had traffic.  You don't have 32 bits but 5.
+>+
+>+	if (!capable(CAP_SYS_ADMIN))
+>+		return ERR_PTR(-EPERM);
+>+
 
-> Don't assume that the way Linux supports this stuff today is the best, or the
-> only way to do things.  It's not "collapsing all these interrupt vectors" --
-> remember that an expansion occurred, and /avoiding expansion/ into multiple
-> vectors for multiple messages may be an optimal path for a specific driver
-> application.
+Why does everyone keep throwing calls to check CAP_SYS_ADMIN into
+their cgroup create callbacks? You have to be root in order to mount a
+cgroups hierarchy in the first place, and filesystem permissions will
+control who can create new cgroups.
 
-If we were receiving a bitmask I would find this more persuasive.
+>+static int freezer_can_attach(struct cgroup_subsys *ss,
+>+			      struct cgroup *new_cgroup,
+>+			      struct task_struct *task)
+>+{
+>+	struct freezer *freezer = cgroup_freezer(new_cgroup);
+>+	int retval = 0;
+>+
+>+	if (freezer->state == STATE_FROZEN)
+>+		retval = -EBUSY;
+>+
+>+	return retval;
+>+}
 
-To implement what you suggest currently feels like a lot of work digging
-through each architectures implementation of MSI and seeing if it possible
-and maintainable on each architecture, and refactoring a lot of the interrupt
-handling infrastructure to get there.  All to support hardware vendors
-that were too lazy to either implement MSI-X or implement a DMAing a
-status value to a known spot before sending the MSI.
+You should comment here that the call to cgroup_lock() in the
+freezer.state write method prevents a write to that file racing
+against an attach, and hence the can_attach() result will remain valid
+until the attach completes.
 
-I don't see it being worth it at this time.
+>+static ssize_t freezer_write(struct cgroup *cgroup,
+>+			     struct cftype *cft,
+>+			     struct file *file,
+>+			     const char __user *userbuf,
+>+			     size_t nbytes, loff_t *unused_ppos)
+>+{
+>+	char *buffer;
+>+	int retval = 0;
+>+	enum freezer_state goal_state;
+>+
+>+	if (nbytes >= PATH_MAX)
+>+		return -E2BIG;
+>+
+>+	/* +1 for nul-terminator */
+>+	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
+>+	if (buffer == NULL)
+>+		return -ENOMEM;
 
-Eric
+Given that you're copying a string whose maximum valid length is
+"FREEZING" you don't really need to use a dynamically-allocated
+buffer.
+
+But I really ought to provide a write_string() method that handles
+this kind of copying on behalf of cgroup subsystems, the way it
+already does for 64-bit ints.
+
+>+	if (strcmp(buffer, "RUNNING") == 0)
+>+		goal_state = STATE_RUNNING;
+>+	else if (strcmp(buffer, "FROZEN") == 0)
+>+		goal_state = STATE_FROZEN;
+
+Would it make sense to compare against the strings you already have in
+the array earlier in the file?
+
+Paul
